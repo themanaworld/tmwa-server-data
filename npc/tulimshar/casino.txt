@@ -1,0 +1,180 @@
+// Warps room 1
+new_8-1.gat,45,24	warp	upstairs	0,2,new_8-1.gat,65,25
+new_8-1.gat,25,35	warp	outside	0,2,new_3-1.gat,33,73
+// Warps room 2
+new_8-1.gat,64,25	warp	downstairs	0,1,new_8-1.gat,42,25
+new_8-1.gat,68,22	warp	tocasino	2,0,new_8-1.gat,32,72
+new_8-1.gat,67,31	warp	tobedroom1	1,1,new_8-1.gat,102,23
+new_8-1.gat,76,31	warp	tobedroom2	1,1,new_8-1.gat,130,23
+// Warps room 3
+new_8-1.gat,102,22	warp	bedroom1tohall	2,0,new_8-1.gat,67,29
+// Warps room 4
+new_8-1.gat,130,22	warp	bedroom2tohall	2,0,new_8-1.gat,76,29
+// Warps room 5
+new_8-1.gat,32,74	warp	tohall	1,0,new_8-1.gat,68,23
+
+new_8-1.gat,26,26,0	shop	InnKeeper	112,539:175,513:20,519
+
+new_8-1.gat,103,26,0	script	Waitress	118,{
+	mes "[Rebecca]";
+	mes "Would you like to rest? It's only 100 gp.";
+	next;
+	
+	menu "Yes",L_Yes,"No",L_No;
+L_Yes:
+	mes "Sleep well!";
+	next;
+	if (zeny < 100) goto L_NoMoney;
+	set zeny,zeny-100;
+	heal 10000,10000;
+	close;
+	
+L_No:
+	mes "See you.";
+	close;
+	
+L_NoMoney:
+	mes "Hey! You don't have enough money!";
+	close;
+}
+
+new_8-1.gat,134,23,0	script	Worker	117,{
+	mes "[Valdo]";
+	mes "Please let me work, I'm really in a hurry!";
+	close;
+}
+
+new_8-1.gat,37,65,0	script	Slot1	127,{
+	mes "Pull the lever...";
+	next;
+	if(countitem(503) < 1) goto L_NoCoin;
+	delitem 503,1;
+	set @Temp1,rand(7);
+	set @Temp2,rand(7);
+	set @Temp3,rand(7);
+	mes "Numbers: "+ @Temp1 +"/"+ @Temp2 +"/"+ @Temp3 +"";
+	next;
+	if(@Temp1 != @Temp2) goto L_Lost;
+	if(@Temp2 != @Temp3) goto L_Lost;
+	if(@Temp1 != @Temp3) goto L_Lost;
+	mes "Congratulations! You won!";
+	mes "You get 10 casino coins";
+	getitem 503,10;
+	close;
+	
+L_Lost:
+	mes "You lost!";
+	close;
+	
+L_NoCoin:
+	mes "Insert coin";
+	close;
+}
+
+new_8-1.gat,39,65,0	script	Slot2	127,{
+	mes "Pull the lever...";
+	next;
+	if(countitem(503) < 1) goto L_NoCoin;
+	delitem 503,1;
+	set @Temp1,rand(7);
+	set @Temp2,rand(7);
+	set @Temp3,rand(7);
+	mes "Numbers: "+ @Temp1 +"/"+ @Temp2 +"/"+ @Temp3 +"";
+	next;
+	if(@Temp1 != @Temp2) goto L_Lost;
+	if(@Temp2 != @Temp3) goto L_Lost;
+	if(@Temp1 != @Temp3) goto L_Lost;
+	mes "Congratulations! You won!";
+	mes "You get 10 casino coins";
+	getitem 503,10;
+	close;
+	
+L_Lost:
+	mes "You lost!";
+	close;
+	
+L_NoCoin:
+	mes "Insert coin";
+	close;
+}
+
+new_8-1.gat,41,65,0	script	Slot3	127,{
+	mes "Pull the lever...";
+	next;
+	if(countitem(503) < 1) goto L_NoCoin;
+	delitem 503,1;
+	set @Temp1,rand(7);
+	set @Temp2,rand(7);
+	set @Temp3,rand(7);
+	mes "Numbers: "+ @Temp1 +"/"+ @Temp2 +"/"+ @Temp3 +"";
+	next;
+	if(@Temp1 != @Temp2) goto L_Lost;
+	if(@Temp2 != @Temp3) goto L_Lost;
+	if(@Temp1 != @Temp3) goto L_Lost;
+	mes "Congratulations! You won!";
+	mes "You get 10 casino coins";
+	getitem 503,10;
+	close;
+	
+L_Lost:
+	mes "You lost!";
+	close;
+	
+L_NoCoin:
+	mes "Insert coin";
+	close;
+}
+
+new_8-1.gat,32,67,0	shop	MoneyChanger	124,503:10
+
+new_8-1.gat,28,63,0	script	BlackJack	107,{
+	mes "[Croupier]";
+	mes "Would you like to play Black Jack?";
+	mes "You will need 5 casino coins";
+	next;
+	
+	menu "Yes",L_Yes,"No",L_No;
+L_Yes:
+	if(countitem(503) < 5) goto L_NoCoin;
+	delitem 503,5;
+	set @croupier,rand(4);
+	set @croupier, croupier + 17;
+	
+	set @player,rand(20);
+	set @player,@player+1;
+	
+	mes "You got " + @player + "";
+	mes "Do you want another card?";
+	next;
+	
+	menu "Yes",L_Another,"No",L_End;
+L_Another:
+	set @card,rand(10);
+	set @card,@card+1;
+	set @player,@player+@card;
+	
+	mes "You got " + @player + "";
+	if (@player > 21) goto L_Lost;
+	mes "Do you want another card?";
+	next;
+	
+	menu "Yes",L_Another,"No",L_End;
+	
+L_End:
+	if (@player < @croupier) goto L_Lost;
+	mes "Congratulations, you won!";
+	mes "You get 50 casino coins";
+	getitem 503,50;
+	
+L_No:
+	mes "As you wish";
+	close;
+	
+L_NoCoin:
+	mes "You need at least 5 coins";
+	close;
+	
+L_Lost:
+	mes "I'm sorry but you lost";
+	close;
+}
