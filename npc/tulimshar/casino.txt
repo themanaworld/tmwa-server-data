@@ -137,11 +137,10 @@ new_8-1.gat,28,63,0	script	BlackJack	107,{
 L_Yes:
 	if(countitem(503) < 15) goto L_NoCoin;
 	delitem 503,15;
-	set @croupier,rand(4);
+	set @croupier,rand(0, 4);
 	set @croupier,@croupier + 17;
 	
-	set @player,rand(17);
-	set @player,@player + 4;
+	set @player,rand(4, 20);
 	
 	mes "You got " + @player + " with your cards.";
 	mes "Do you want another card?";
@@ -149,9 +148,7 @@ L_Yes:
 	
 	menu "Yes",L_Another,"No",L_End;
 L_Another:
-	set @card,rand(9);
-	set @card,@card + 2;
-	set @player,@player+@card;
+	set @player,@player+rand(2, 11);
 	
 	if (@player > 21) goto L_Lost;	
 	mes "You got " + @player + " with your cards.";	
@@ -182,3 +179,187 @@ L_Lost:
 	mes "I had " + @croupier + "";
 	close;
 }
+
+new_8-1.gat,22,69,0	script	Roulette	107,{
+	mes "Good evening monsieur...";
+	mes "How much would you like to bet?";
+	next;
+	
+	menu "Maybe I'll play later",L_Later,"1 coin",L_b1,"5 coins",L_b5,"10 coins",L_b10,"50 coins",L_b50,"100 coins",L_b100;
+L_b1:
+	set @bet,1;
+	goto L_Check;
+L_b5:
+	set @bet,5;
+	goto L_Check;
+L_b10:
+	set @bet,10;
+	goto L_Check;
+L_b50:
+	set @bet,50;
+	goto L_Check;
+L_b100:
+	set @bet,100;
+	goto L_Check;
+	
+L_Check:
+	if(countitem(503) < @bet) goto L_NoCoin;
+	delitem 503,@bet;	
+	
+	menu "Choose a color",L_Color,"Choose a number",L_Number;
+	
+L_Color:
+	menu "Black",L_ColorEnd,"Red",L_ColorEnd;
+
+L_ColorEnd:
+    set @color,rand(2);
+	if(@color == 1) goto L_Lost;
+	mes "You won!";
+	getitem 503,@bet * 2;
+	close;
+
+L_Number:
+	menu "0",L0,"00",L00,"1",L1,"2",L2,"3",L3,"4",L4,"5",L5,"6",L6,"7",L7,
+		 "8",L8,"9",L9,"10",L10,"11",L11,"12",L12,"13",L13,"14",L14,"15",L15,
+		 "16",L16,"17",L17,"18",L18,"19",L19,"20",L20,"21",L21,"22",L22,
+		 "23",L23,"24",L24,"25",L25,"26",L26,"27",L27,"28",L28,"29",L29,
+		 "30",L30,"31",L31,"32",L32,"33",L33,"34",L34,"35",L35,"36",L36;
+		 
+L0:
+	set @number,0;
+	goto L_CheckNumber;
+L00:
+	set @number,37;
+	goto L_CheckNumber;
+L1:
+	set @number,1;
+	goto L_CheckNumber;
+L2:
+	set @number,2;
+	goto L_CheckNumber;
+L3:
+	set @number,3;
+	goto L_CheckNumber;
+L4:
+	set @number,4;
+	goto L_CheckNumber;
+L5:
+	set @number,5;
+	goto L_CheckNumber;
+L6:
+	set @number,6;
+	goto L_CheckNumber;
+L7:
+	set @number,7;
+	goto L_CheckNumber;
+L8:
+	set @number,8;
+	goto L_CheckNumber;
+L9:
+	set @number,9;
+	goto L_CheckNumber;
+L10:
+	set @number,10;
+	goto L_CheckNumber;
+L11:
+	set @number,11;
+	goto L_CheckNumber;
+L12:
+	set @number,12;
+	goto L_CheckNumber;
+L13:
+	set @number,13;
+	goto L_CheckNumber;
+L14:
+	set @number,14;
+	goto L_CheckNumber;
+L15:
+	set @number,15;
+	goto L_CheckNumber;
+L16:
+	set @number,16;
+	goto L_CheckNumber;
+L17:
+	set @number,17;
+	goto L_CheckNumber;
+L18:
+	set @number,18;
+	goto L_CheckNumber;
+L19:
+	set @number,19;
+	goto L_CheckNumber;
+L20:
+	set @number,20;
+	goto L_CheckNumber;
+L21:
+	set @number,21;
+	goto L_CheckNumber;
+L22:
+	set @number,22;
+	goto L_CheckNumber;
+L23:
+	set @number,23;
+	goto L_CheckNumber;
+L24:
+	set @number,24;
+	goto L_CheckNumber;
+L25:
+	set @number,25;
+	goto L_CheckNumber;
+L26:
+	set @number,26;
+	goto L_CheckNumber;
+L27:
+	set @number,27;
+	goto L_CheckNumber;
+L28:
+	set @number,28;
+	goto L_CheckNumber;
+L29:
+	set @number,29;
+	goto L_CheckNumber;
+L30:
+	set @number,30;
+	goto L_CheckNumber;
+L31:
+	set @number,31;
+	goto L_CheckNumber;
+L32:
+	set @number,32;
+	goto L_CheckNumber;
+L33:
+	set @number,33;
+	goto L_CheckNumber;
+L34:
+	set @number,34;
+	goto L_CheckNumber;
+L35:
+	set @number,35;
+	goto L_CheckNumber;
+L36:
+	set @number,36;
+	goto L_CheckNumber;
+	
+L_CheckNumber:
+	set @roulette,rand(38);
+	if (@roulette == 37) mes "We got a 00";
+	if (@roulette < 37) mes "We got a " + @roulette;
+	if (@number != @roulette) goto L_Lost;
+	mes "You won!";
+	getitem 503,@bet * 10;
+	close;
+
+L_Later:
+	mes "Rien va plus...";
+	close;
+
+L_NoCoin:
+	mes "You don't have enough coins";
+	close;
+	
+L_Lost:
+	mes "I'm sorry, you lost."
+	close;
+}
+
+
