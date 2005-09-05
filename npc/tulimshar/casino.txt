@@ -1,6 +1,7 @@
 // Warps room 1
 new_8-1.gat,45,24	warp	upstairs	0,2,new_8-1.gat,65,25
 new_8-1.gat,25,36	warp	outside	0,2,new_3-1.gat,33,73
+new_3-1.gat,32,73	warp	inside	1,0,new_8-1.gat,25,34
 // Warps room 2
 new_8-1.gat,64,25	warp	downstairs	0,1,new_8-1.gat,42,25
 new_8-1.gat,68,22	warp	tocasino	2,0,new_8-1.gat,32,72
@@ -20,10 +21,10 @@ new_8-1.gat,103,26,0	script	Waitress	118,{
 	mes "Would you like to rest? It's only 100 gp.";
 	next;
 	
-	menu "Yes",L_Yes,"No",L_No;
-L_Yes:
+	menu "Yes",-,"No",L_No;
 	mes "Sleep well!";
 	next;
+	
 	if (zeny < 100) goto L_NoMoney;
 	set zeny,zeny-100;
 	heal 10000,10000;
@@ -47,6 +48,7 @@ new_8-1.gat,134,23,0	script	Worker	117,{
 new_8-1.gat,37,65,0	script	Slot1	127,{
 	mes "Pull the lever...";
 	next;
+	
 	if(countitem(503) < 1) goto L_NoCoin;
 	delitem 503,1;
 	set @Temp1,rand(7);
@@ -54,6 +56,7 @@ new_8-1.gat,37,65,0	script	Slot1	127,{
 	set @Temp3,rand(7);
 	mes "Numbers: "+ @Temp1 +"/"+ @Temp2 +"/"+ @Temp3 +"";
 	next;
+	
 	if(@Temp1 != @Temp2) goto L_Lost;
 	if(@Temp2 != @Temp3) goto L_Lost;
 	if(@Temp1 != @Temp3) goto L_Lost;
@@ -74,6 +77,7 @@ L_NoCoin:
 new_8-1.gat,39,65,0	script	Slot2	127,{
 	mes "Pull the lever...";
 	next;
+	
 	if(countitem(503) < 1) goto L_NoCoin;
 	delitem 503,1;
 	set @Temp1,rand(7);
@@ -81,6 +85,7 @@ new_8-1.gat,39,65,0	script	Slot2	127,{
 	set @Temp3,rand(7);
 	mes "Numbers: "+ @Temp1 +"/"+ @Temp2 +"/"+ @Temp3 +"";
 	next;
+	
 	if(@Temp1 != @Temp2) goto L_Lost;
 	if(@Temp2 != @Temp3) goto L_Lost;
 	if(@Temp1 != @Temp3) goto L_Lost;
@@ -101,6 +106,7 @@ L_NoCoin:
 new_8-1.gat,41,65,0	script	Slot3	127,{
 	mes "Pull the lever...";
 	next;
+	
 	if(countitem(503) < 1) goto L_NoCoin;
 	delitem 503,1;
 	set @Temp1,rand(7);
@@ -108,6 +114,7 @@ new_8-1.gat,41,65,0	script	Slot3	127,{
 	set @Temp3,rand(7);
 	mes "Numbers: "+ @Temp1 +"/"+ @Temp2 +"/"+ @Temp3 +"";
 	next;
+	
 	if(@Temp1 != @Temp2) goto L_Lost;
 	if(@Temp2 != @Temp3) goto L_Lost;
 	if(@Temp1 != @Temp3) goto L_Lost;
@@ -133,31 +140,26 @@ new_8-1.gat,28,63,0	script	BlackJack	107,{
 	mes "You will need 15 casino coins";
 	next;
 	
-	menu "Yes",L_Yes,"No",L_No;
-L_Yes:
+	menu "Yes",-,"No",L_No;
 	if(countitem(503) < 15) goto L_NoCoin;
 	delitem 503,15;
 	set @croupier,rand(0, 4);
-	set @croupier,@croupier + 17;
-	
-	set @player,rand(4, 20);
-	
+	set @croupier,@croupier + 17;	
+	set @player,rand(4, 20);	
 	mes "You got " + @player + " with your cards.";
 	mes "Do you want another card?";
 	next;
 	
 	menu "Yes",L_Another,"No",L_End;
-L_Another:
-	set @player,@player+rand(2, 11);
 	
+L_Another:
+	set @player,@player+rand(2, 11);	
 	if (@player > 21) goto L_Lost;	
 	mes "You got " + @player + " with your cards.";	
 	mes "Do you want another card?";
 	next;
 	
-	menu "Yes",L_Another,"No",L_End;
-	
-L_End:
+	menu "Yes",L_Another,"No",-;	
 	if (@player < @croupier) goto L_Lost;
 	mes "Congratulations, you won!";
 	mes "I had " + @croupier + "";
@@ -185,8 +187,7 @@ new_8-1.gat,22,69,0	script	Roulette	107,{
 	mes "How much would you like to bet?";
 	next;
 	
-	menu "Maybe I'll play later",L_Later,"1 coin",L_b1,"5 coins",L_b5,"10 coins",L_b10,"50 coins",L_b50,"100 coins",L_b100;
-L_b1:
+	menu "Maybe I'll play later",L_Later,"1 coin",-,"5 coins",L_b5,"10 coins",L_b10,"50 coins",L_b50,"100 coins",L_b100;
 	set @bet,1;
 	goto L_Check;
 L_b5:
@@ -204,14 +205,9 @@ L_b100:
 	
 L_Check:
 	if(countitem(503) < @bet) goto L_NoCoin;
-	delitem 503,@bet;	
-	
-	menu "Choose a color",L_Color,"Choose a number",L_Number;
-	
-L_Color:
-	menu "Black",L_ColorEnd,"Red",L_ColorEnd;
-
-L_ColorEnd:
+	delitem 503,@bet;		
+	menu "Choose a color",-,"Choose a number",L_Number;	
+	menu "Black",-,"Red",-;
     set @color,rand(2);
 	if(@color == 1) goto L_Lost;
 	mes "You won!";
@@ -219,13 +215,11 @@ L_ColorEnd:
 	close;
 
 L_Number:
-	menu "0",L0,"00",L00,"1",L1,"2",L2,"3",L3,"4",L4,"5",L5,"6",L6,"7",L7,
+	menu "0",-,"00",L00,"1",L1,"2",L2,"3",L3,"4",L4,"5",L5,"6",L6,"7",L7,
 		 "8",L8,"9",L9,"10",L10,"11",L11,"12",L12,"13",L13,"14",L14,"15",L15,
 		 "16",L16,"17",L17,"18",L18,"19",L19,"20",L20,"21",L21,"22",L22,
 		 "23",L23,"24",L24,"25",L25,"26",L26,"27",L27,"28",L28,"29",L29,
 		 "30",L30,"31",L31,"32",L32,"33",L33,"34",L34,"35",L35,"36",L36;
-		 
-L0:
 	set @number,0;
 	goto L_CheckNumber;
 L00:
