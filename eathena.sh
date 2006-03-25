@@ -33,7 +33,7 @@ eathena_stop() {
 eathena_restart() {
     eathena_stop
     echo "Waiting for all eathena processes to end..."
-    sleep 5
+    sleep 1
     eathena_start
 }
 
