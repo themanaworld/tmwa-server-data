@@ -13,7 +13,6 @@
 PATH=$PATH:.
 SRVHOMEDIR=$HOME/tmwserver
 #----------------------------------------------------------------------
-# main()
 
 cd ${SRVHOMEDIR}
 
