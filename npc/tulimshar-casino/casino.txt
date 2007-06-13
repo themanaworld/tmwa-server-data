@@ -168,7 +168,7 @@ new_8-1.gat,28,63,0	script	BlackJack	107,{
 	delitem 503,15;
 	set @croupier,rand(0, 4);
 	set @croupier,@croupier + 17;	
-	set @player,rand(4, 20);	
+	set @player,rand(4, 21);	
 	mes "You got " + @player + " with your cards.";
 	mes "Do you want another card?";
 	next;
@@ -176,7 +176,9 @@ new_8-1.gat,28,63,0	script	BlackJack	107,{
 	menu "Yes",L_Another,"No",L_End;
 	
 L_Another:
-	set @player,@player+rand(2, 11);	
+	set @tempace,rand(2,11);
+	if (@tempace == 11) goto L_Ace;
+	set @player,@player+@tempace;	
 	if (@player > 21) goto L_Lost;	
 	mes "You got " + @player + " with your cards.";	
 	mes "Do you want another card?";
@@ -184,7 +186,7 @@ L_Another:
 	
 	menu "Yes",L_Another,"No",L_End;
 L_End:
-	if (@player < @croupier) goto L_Lost;
+	if (@player <= @croupier) goto L_Lost;
 	mes "Congratulations, you won!";
 	mes "I had " + @croupier + "";
 	mes "You get 50 casino coins";
@@ -204,6 +206,17 @@ L_Lost:
 	mes "You got " + @player + " with your cards.";	
 	mes "I had " + @croupier + "";
 	close;
+
+L_Ace:
+	set @player,@player + 11;
+	if (@player > 21) set @player,@player - 10;
+	if (@player > 21) goto L_Lost;	
+	mes "You got " + @player + " with your cards.";	
+	mes "Do you want another card?";
+	next;
+	
+	menu "Yes",L_Another,"No",L_End;
+
 }
 
 new_8-1.gat,22,69,0	script	Roulette	107,{
