@@ -1,0 +1,64 @@
+//#################################################################################
+//#                                                                               #
+//# this script file contains the npc scripts for the quest to obtain a scythe.   #
+//#                                                                               #
+//# Needed: 10 Pink Antenna                                                       #
+//#                                                                               #
+//# Reward: Scythe                                                                #
+//#                                                                               #
+//#################################################################################
+
+//Farmer
+
+new_18-1.gat,101,30,0	script	Farmer	125, {
+	if (QUEST_Scythe_state == 1) goto L_Exchange;
+	if (QUEST_Scythe_state == 2) goto L_ThanksAgain;
+	mes "[Farmer Hinnak]";
+	mes "Argh! I hate them! I @#$% hate them! I @#$% hate these @#$% pinkies!";
+	next;
+
+	menu "You need some anger control therapy.",-,"Why do you hate them?", L_Reason;
+		close;
+	L_Reason:
+		mes "These @#$% beasts are jumping around in my fields destroying all my harvest.";
+		mes "But they are too fast. I can't catch them.";
+		next;
+
+		menu "Want me to help you?",L_Help,"Well, life ain't fair.",-;
+			close;
+		L_Help:
+			mes "Yes, you look quite fast. Maybe you can catch some of them. That will pay them a lesson.";
+			mes "Slay some of them and bring me 10 of their antennae.";
+			set QUEST_Scythe_state, 1;
+			next;
+
+			menu "Sure, I'm on my way",-,"How much is this worth to you?", L_Reward;
+				close;
+			L_Reward:
+				mes "Well, I can't offer you much. But I got an old scythe laying around. Maybe you can use it as a weapon.";
+				close;
+
+	L_Exchange:
+		mes "Have you got the 10 antennae?";
+		next;
+
+		if (countitem(614) < 10) goto L_Exchange_Notenough;
+
+		menu "Not yet, but I am working on it.",-,"Sure, here they are!",L_Exchange_Exchange;
+			close;
+
+		L_Exchange_Exchange:
+			delitem 614,10;
+			getitem 623,1;
+			set QUEST_Scythe_state, 2;
+			mes "Thank you very much. I've got something for you. My old scythe. Maybe you can use it as a weapon. It is a bit cumbersome but its strikes are deadly.";
+			close;
+
+		L_Exchange_Notenough:
+			menu "Not yet, but I am working on it.",-;
+			close;
+
+	L_ThanksAgain:
+		mes "Thanks again for helping me with the pinkies.";
+		close;
+}
