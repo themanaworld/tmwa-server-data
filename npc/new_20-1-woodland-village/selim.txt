@@ -1,0 +1,139 @@
+//#################################################################################
+//#                                                                               #
+//# This script file contains the script for the cloth dyer.   It has been        #
+//# revised to require dye items; collaborating NPCs are Selim and Angus.         #
+//#                                                                               #
+//#################################################################################
+
+new_20-1.gat,32,104,0	script	Selim	142,{
+	setarray @all_colours$, "red", "green", "dark blue", "yellow", "light blue", "pink", "black", "orange", "purple", "dark green";
+	setarray @all_colours_cap$, "Red", "Green", "Dark Blue", "Yellow", "Light Blue", "Pink", "Black", "Orange", "Purple", "Dark Green";
+
+        mes "[Selim]";	
+	mes "\"What can I dye for you today?\"";
+        set QUEST_clothdyer_state, 3;
+	next;
+
+L_clothes_choice:
+        set @pronoun$, "it";
+        set @is_verb$, "is";
+	menu
+		"Cotton shirt", L_cottonshirt,
+		"V-Neck sweater", L_vneck,
+		"Turtleneck sweater", L_tneck,
+		"Cotton shorts", L_shorts,
+		"Cotton skirt", L_skirt,
+		"Tank top ", L_tanktop,
+		"Short tank top", L_tanktop_short,
+		"Silk robe", L_robe,
+		"I'm fine for now, thanks.", -;
+	close;
+
+L_cottonshirt:
+	set @del, 1202;
+	set @new, 2050;
+        set @name$, "cotton shirt";
+	goto L_picked_item;
+
+L_vneck:
+	set @del, 624;
+	set @new, 2060;
+        set @name$, "V-neck sweater";
+	goto L_picked_item;
+
+L_tneck:
+	set @del, 564;
+	set @new, 2070;
+        set @name$, "turtleneck sweater";
+	goto L_picked_item;
+
+L_shorts:
+	set @del, 586;
+	set @new, 2110;
+        set @name$, "cotton shorts";
+        set @pronoun$, "them";
+        set @is_verb$, "are";
+	goto L_picked_item;
+
+L_skirt:
+	set @del, 632;
+	set @new, 2100;
+        set @name$, "cotton skirt";
+	goto L_picked_item;
+
+L_tanktop:
+	set @del, 688;
+	set @new, 2090;
+        set @name$, "tanktop";
+	goto L_picked_item;
+
+L_tanktop_short:
+	set @del, 689;
+	set @new, 2120;
+        set @name$, "short tanktop";
+	goto L_picked_item;
+
+L_robe:
+	set @del, 720;
+	set @new, 2080;
+        set @name$, "silk robe";
+	goto L_picked_item;
+
+L_picked_item:
+	if (countitem(@del) == 0) goto L_havenone;
+L_colour:
+        mes "[Selim]";	
+	mes "\"Excellent.  Now, what color do you want?\"";
+	next;
+	menu
+		@all_colours_cap$[0], -,
+		@all_colours_cap$[1], -,
+		@all_colours_cap$[2], -,
+		@all_colours_cap$[3], -,
+		@all_colours_cap$[4], -,
+		@all_colours_cap$[5], -,
+		@all_colours_cap$[6], -,
+		@all_colours_cap$[7], -,
+		@all_colours_cap$[8], -,
+		@all_colours_cap$[9], -;
+        set @colour, @menu - 1;
+        set @vial, 690 + @colour;
+        if (countitem(@vial) == 0) goto L_no_dye;
+        goto L_finish;
+
+L_no_dye:
+        mes "[Selim]";	
+        mes "\"I would love to dye your " + @name$ + " for you, but you will have to bring me some " + @all_colours$[@colour] + " dye first.\"";
+        next;
+        menu
+        	"Sorry, I meant a different color.", L_colour,
+                "I wanted to dye a different item anyway.", L_clothes_choice,
+                "What do you mean, `bring you dye'?", L_explain_dye,
+                "Where would I get dye?", L_explain_dye,
+        	"Never mind.", -;
+        close;
+
+L_explain_dye:
+	if (QUEST_clothdyer_knowsdye < 1) set QUEST_clothdyer_knowsdye, 1;
+        mes "[Selim]";	
+        mes "\"Well, dye is very expensive, and since I don't charge adventurers anything, I can't give you any for free.";
+        mes "But most alchemists can make dye; perhaps you can find one around here.\"";
+        next;
+        close;
+
+L_finish:
+	if (countitem(@del) == 0) goto L_havenone;
+	delitem @vial, 1;
+	delitem @del, 1;
+	getitem @new + @colour, 1;
+        mes "[Selim]";	
+	mes "\"Here " + @is_verb$ + " your " + @all_colours$[@colour] + " " + @name$ + "!  Please let " + @pronoun$ + " dry for a minute before you put " + @pronoun$ + " on.\"";
+	close;
+
+L_havenone:
+        mes "[Selim]";	
+	mes "\"You don't have any uncolored " + @name$ + "?  That's unfortunate.";
+	mes "Would you like to dye something else?\"";
+        next;
+        goto L_clothes_choice;	
+}

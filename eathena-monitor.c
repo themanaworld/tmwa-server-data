@@ -126,9 +126,9 @@ void start_process(char *exec) {
 }
 
 void stop_process(int sig) {
-    system("killall -9 map-server");
-    system("killall -9 login-server");
-    system("killall -9 char-server");    
+    system("killall map-server");
+    system("killall login-server");
+    system("killall char-server");    
     exit(0);
 }
 

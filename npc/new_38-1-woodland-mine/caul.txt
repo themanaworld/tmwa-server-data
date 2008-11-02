@@ -1,0 +1,479 @@
+//#################################################################################
+//#
+//# this script file contains the script for the NPC which allows the
+//# PCs to create potions from herbs.
+//#
+//# Participates in the monster oil subquest (cf. Nicholas' Setzer quest)
+//#
+//#################################################################################
+
+new_38-1.gat,37,22,0	script	Caul	107,{
+        set @SETZER_INITIAL, 0;
+        set @SETZER_KNOWS_OIL, 1;
+        set @SETZER_KNOWS_STINGER, 2;
+        set @SETZER_FLAG_MADE_OIL, 4;
+
+        set @PEARL, 700;
+        set @SNAKE_SKIN, 641;
+        set @BLACK_STINGER, 709;
+        set @ASH_PILE, 701;
+	set @GOLDEN_STINGER, 706;
+        set @MONSTER_OIL, 707;
+        set @MONSTER_OIL_XP, 100000;
+
+        set @Q_MASK, NIBBLE_3_MASK;
+        set @Q_SHIFT, NIBBLE_3_SHIFT;
+
+        set @MAUVE, 680;
+        set @COBALT, 681;
+        set @GAMBOGE, 682;
+        set @ALIZARIN, 683;
+
+        set @Q_status, (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
+
+	mes "[Caul]";
+	mes "\"I can help you to brew healing potions out of mauve, cobalt, gamboge and alizarin herbs.";
+	mes "How many potions do you want to brew?\"";
+	next;
+
+
+	if (@Q_status && Inspector == 10)
+		menu
+			"One", L_1,
+			"Five", L_5,
+			"Ten", L_10,
+			"Fifty", L_50,
+			"I would like to brew monster oil.", L_monster_oil_start,
+			"Actually...", L_NohMask,
+			"Never mind", L_close;
+	if (@Q_status && Inspector != 10)
+		menu
+			"One", L_1,
+			"Five", L_5,
+			"Ten", L_10,
+			"Fifty", L_50,
+			"I would like to brew monster oil.", L_monster_oil_start,
+			"Never mind", L_close;
+	if (!@Q_status && Inspector == 10)
+		menu
+			"One", L_1,
+			"Five", L_5,
+			"Ten", L_10,
+			"Fifty", L_50,
+			"Actually...", L_NohMask,
+			"Never mind", L_close;
+	if (!@Q_status && Inspector != 10)
+		menu
+			"One", L_1,
+			"Five", L_5,
+			"Ten", L_10,
+			"Fifty", L_50,
+			"Never mind", L_close;
+	
+L_1:
+	set @num, 1;
+	goto L_brew;
+
+L_5:
+	set @num, 5;
+	goto L_brew;
+
+L_10:
+	set @num, 10;
+	goto L_brew;
+
+L_50:
+	set @num, 50;
+	goto L_brew;
+
+
+L_brew:
+	mes "[Caul]";
+	mes "\"Now put " + @num + " herbs of each kind into the cauldron, stir, and concentrate all your mental energy on it.\"";
+	next;
+
+	if (countitem(@MAUVE) < @num) goto L_NotEnough;
+	if (countitem(@COBALT) < @num) goto L_NotEnough;
+	if (countitem(@GAMBOGE) < @num) goto L_NotEnough;
+	if (countitem(@ALIZARIN) < @num) goto L_NotEnough;
+
+	set @a, @num;
+	set @result1, 0;
+	set @result2, 0;
+	set @result3, 0;
+	set @result4, 0;
+
+L_CraftLoop:
+	set @throw, rand(readparam(bInt));
+	set @result, 1;
+	if (@throw >= 5) set @result, 2;
+	if (@throw >= 15) set @result, 3;
+	if (@throw >= 35) set @result, 4;
+	
+	if (@result == 1) set @result1, @result1 + 1;
+	if (@result == 2) set @result2, @result2 + 1;
+	if (@result == 3) set @result3, @result3 + 1;
+	if (@result == 4) set @result4, @result4 + 1;
+	
+	set @a, @a - 1;
+	if (@a > 0) goto L_CraftLoop;
+
+	delitem @MAUVE, @num;
+	delitem @COBALT, @num;
+	delitem @GAMBOGE, @num;
+	delitem @ALIZARIN, @num;
+
+	getitem 684, @result1;
+	getitem 685, @result2;
+	getitem 686, @result3;
+	getitem 687, @result4;
+
+	mes "[Caul]";
+	mes "\"Well done! You made:";
+	if (@result1 > 0) mes @result1 + " tiny potions";
+	if (@result2 > 0) mes @result2 + " small potions";
+	if (@result3 > 0) mes @result3 + " medium potions";
+	if (@result4 > 0) mes @result4 + " large potions";
+	mes "Come again.\"";
+	close;
+
+L_NotEnough:
+	mes "[Caul]";
+	mes "\"Oh, it seems like you don't have enough herbs. You can find herbs in deep forests.\"";
+	close;
+
+L_monster_oil_start:
+	mes "[Caul]";
+	mes "\"Monster oil?  Hmm, I have heard of it, but I don't remember the precise recipe to make it...\"";
+        next;
+        if (@Q_status == @SETZER_KNOWS_OIL)
+		menu	"OK, I'll ask around, perhaps someone else knows.", L_close;
+        if (@Q_status > @SETZER_KNOWS_OIL)
+		menu	"Rauk told me the recipe.", L_monster_oil_knows_recipe;
+	close;
+
+L_monster_oil_knows_recipe:
+	mes "[Caul]";
+	mes "\"Ah, but of course!  Yes, we should be able to brew that here.  Except that... hmm.  Pearl and three black scorpion stingers?  This sounds very dangerous;";
+        mes "I fear that I will have to ask you to do this yourself.\"";
+        next;
+
+L_monster_oil_main_menu:
+        set @main_menu, 1;
+        menu
+		"What do you mean by 'dangerous'?", L_monster_oil_why_dangerous,
+		"What do I need, again?", L_monster_oil_ingredients,
+		"How does this work?", L_monster_oil_explain,
+		"Let's start!", L_monster_oil_start_brew,
+                "Where can I get a golden scorpion stinger?", L_monster_oil_where_gold,
+		"I've changed my mind.", L_close;
+        close;
+
+L_monster_oil_why_dangerous:
+	mes "[Caul]";
+	mes "\"Well, with those two reagents in there at that ratio, you risk an explosion-- quite possibly a fatal one.  So be prepared to duck if the brew gets too bubbly-- it's better to lose the ingredients than your head!\"";
+        next;
+	goto L_monster_oil_main_menu;
+
+L_monster_oil_ingredients:
+	mes "[Caul]";
+	mes "\"You will need one pearl, two snake skins, three black scorpion stingers, two piles of ash, and a golden scorpion stinger.  The golden stinger goes in last, after the dangerous part, so you won't lose if if your brew blows up.\"";
+        next;
+	mes "[Caul]";
+	mes "\"You should also bring gamboge, mauve, alizarin and cobalt leaves. You will have to stabilize the brew, and they will help with that.\"";
+        next;
+	goto L_monster_oil_main_menu;
+
+L_monster_oil_explain:
+	mes "[Caul]";
+	mes "\"After you have put in the monster parts-- except for the golden stinger-- the brew will take on some random color; this can be a light, dark, or medium color.  You have to stabilize this color by adding leaves to it.\"";
+        next;
+	mes "[Caul]";
+	mes "\"Of course, with such a violent brew the mixture will change color by itself, too, probably faster than your leaves can affect it.  It will randomly add or remove colors, and might even get lighter.\"";
+        next;
+	mes "[Caul]";
+	mes "\"From what I have seen, it seems to go through phases-- for each alternate leaf it adds a colour, then removes a color, then adds again and so on.  Of course, if the color is there already it can't add any more.\"";
+        next;
+	mes "[Caul]";
+	mes "\"I haven't figured out yet precisely when it gets lighter, though.\"";
+        next;
+	mes "[Caul]";
+	mes "\"By adding Mauve, you can make it darker.  Alizarin adds red, Gamboge yellow, Cobalt blue.  To make it a proper black, you have to get it to be dark gray, then add one Mauve leaf.\"";
+        next;
+	mes "[Caul]";
+	mes "\"Unfortunately the brew changes randomly before your leaves dissolve, so sometimes you can't help but add the wrong color...\"";
+        next;
+	mes "[Caul]";
+	mes "\"Since the brew changes its color first, you might want to add the Mauve when your color is a dark purple or dark green or dark orange and hope for the best.\"";
+        next;
+	mes "[Caul]";
+	mes "\"But don't add too much!  If you add a color that is already there, or try to make it darker at the wrong spot, it may backfire.\"";
+        next;
+        if (@main_menu)
+		goto L_monster_oil_main_menu;
+        goto L_monster_oil_loop;
+
+L_monster_oil_where_gold:
+	mes "[Caul]";
+	mes "\"Good question.  There aren't any golden scorpions nearby.  Perhaps you can find a trader or an adventurer who have travelled further south and ask them to help?\"";
+        next;
+	goto L_monster_oil_main_menu;
+
+L_monster_oil_start_brew:
+        set @main_menu, 0;
+	if (countitem (@PEARL) < 1) goto L_monster_oil_missing;
+	if (countitem (@SNAKE_SKIN) < 2) goto L_monster_oil_missing;
+	if (countitem (@BLACK_STINGER) < 3) goto L_monster_oil_missing;
+	if (countitem (@ASH_PILE) < 2) goto L_monster_oil_missing;
+	if (countitem (@GOLDEN_STINGER) < 1) goto L_monster_oil_missing_gold;
+
+	delitem @PEARL, 1;
+	delitem @SNAKE_SKIN, 2;
+	delitem @BLACK_STINGER, 3;
+	delitem @ASH_PILE, 2;
+
+        set @bubble_mode, 0;
+        setarray @bubble_modes$,
+        	"The brew is calm.",
+        	"The brew is bubbling.",
+        	"The brew is bubbling violently.";
+
+	set @color, 1 << (rand(3));
+	setarray @colors$,
+		"white",
+		"red",
+		"yellow",
+		"orange",
+		"blue",
+		"purple",
+		"green",
+		"gray"; 
+
+	set @intensity, 1;
+	setarray @intensities$,
+		"light",
+		"medium",
+		"dark";
+
+	set @auto_mode, 0;	// Start by adding a colour or going lighter
+
+	goto L_monster_oil_loop;
+
+L_monster_oil_missing:
+	mes "[Caul]";
+	mes "\"You don't seem to have all of the ingredients.  You need one pearl, two snake skins, three black stingers, two piles of ash, and one golden stinger.\"";
+        next;
+        close;
+
+L_monster_oil_missing_gold:
+	mes "[Caul]";
+	mes "\"You seem to have everything except for the golden stinger.  I understand that this one is hard to get, but I'm sure that you can find one somewhere.\"";
+        next;
+        close;
+
+L_monster_oil_loop:
+	mes "[Brewing monster oil]";
+	mes @bubble_modes$[@bubble_mode];
+        mes "It is currently a " + @intensities$[@intensity] + " " + @colors$[@color] + ".";
+        next;
+
+        menu
+		"Add alizarin leaf", L_monster_oil_alizarin,
+		"Add gamboge leaf", L_monster_oil_gamboge,
+		"Add cobalt leaf", L_monster_oil_cobalt,
+		"Add mauve leaf", L_monster_oil_mauve,
+                "Ask Caul for advice", L_monster_oil_explain,
+		"Duck!", -;
+
+	mes "[Brewing monster oil]";
+        mes "You throw yourself onto the ground.  Seconds later, the cauldron shakes, and your entire mixture explodes upwards.";
+        mes "Caul crawls out from underneath a char.";
+        next;
+	mes "[Caul]";
+        mes "\"I'm glad to see that you chose to brew another day... perhaps it might be best if you give up on this dangerous concoction, though!\"";
+        next;
+        close;
+
+L_monster_oil_out_of_leaves:
+	mes "[Brewing monster oil]";
+        mes "You don't have any of these leaves left!";
+        next;
+        goto L_monster_oil_loop;
+
+L_monster_oil_alizarin:
+	set @use_leaf, @ALIZARIN;
+	set @use_color, 1;
+        goto L_monster_oil_leaf_color;
+
+L_monster_oil_gamboge:
+	set @use_leaf, @GAMBOGE;
+	set @use_color, 2;
+        goto L_monster_oil_leaf_color;
+
+L_monster_oil_cobalt:
+	set @use_leaf, @COBALT;
+	set @use_color, 4;
+        goto L_monster_oil_leaf_color;
+
+L_monster_oil_leaf_color:
+        if (countitem (@use_leaf) < 1) goto L_monster_oil_out_of_leaves;
+
+	callsub S_monster_oil_random_move;
+	if (@color & @use_color) goto L_monster_oil_pc_bad;
+        set @color, @color | @use_color;
+        delitem @use_leaf, 1;
+
+        mes "The brew changes its hue as your leaf dissolves.";
+        next;
+        goto L_monster_oil_loop;
+
+L_monster_oil_mauve:
+	if (countitem(@MAUVE) < 1) goto L_monster_oil_out_of_leaves;
+        delitem @MAUVE, 1;
+
+	callsub S_monster_oil_random_move;
+        if (@intensity == 2 && @color == 7) goto L_monster_oil_done;
+        if (@intensity == 2) goto L_monster_oil_pc_bad;
+
+        set @intensity, @intensity + 1;
+        mes "The brew darkens as your mauve leaf dissolves.";
+        next;
+        goto L_monster_oil_loop;
+
+S_monster_oil_random_move:
+	mes "[Brewing monster oil]";
+        mes "You throw in a leaf and stir.";
+
+	if (@auto_mode == 1)
+		goto L_monster_oil_random_1;
+
+L_monster_oil_random_0: // mode 0:  add colour or lighten up
+	set @auto_mode, 1;
+        if (rand(3) == 0)
+		goto L_monster_oil_random_0_lighten;
+
+	set @choice, 1 << (rand(3));
+	if (@color & @choice)
+		goto L_monster_oil_auto_bad;
+	set @color, @color | @choice;
+
+        mes "Before your leaf has a chance to dissolve, the brew changes to a " + @colors$[@color] + " hue.";
+        return;
+
+L_monster_oil_random_0_lighten:
+	if (@intensity == 0)
+		goto L_monster_oil_auto_bad;
+	set @intensity, @intensity - 1;
+        mes "Before your leaf has a chance to dissolve, the brew takes on a lighter shade of " + @colors$[@color] + ".";
+	return;
+
+L_monster_oil_random_1: // mode 1: remove colour
+	set @auto_mode, 0;
+	set @choice, 1 << (rand(3));
+	if (!(@color & @choice))
+		goto L_monster_oil_auto_bad;
+	set @color, @color & (~@choice);
+        mes "Before your leaf has a chance to dissolve, the brew changes to a " + @colors$[@color] + " hue.";
+        return;
+
+L_monster_oil_pc_bad:
+	if (rand(readparam(bInt) + 100) > 60) goto L_monster_oil_pc_bad_ok;
+        if (@bubble_mode)
+        	mes "As your leaf dissolves, the intensity of the bubbling increases.";
+        if (!@bubble_mode)
+        	mes "As your leaf dissolves, the brew begins to bubble.";
+	next;
+        set @bubble_mode, @bubble_mode + 1;
+        if (@bubble_mode > 2)
+		goto L_monster_oil_explode;
+        goto L_monster_oil_loop;
+
+L_monster_oil_pc_bad_ok:
+	mes "Your leaf dissolves but seems to have no effect.";
+        next;
+        goto L_monster_oil_loop;
+
+L_monster_oil_auto_bad:
+	if (rand(3) == 0)
+		return;
+	if (rand(readparam(bInt) + 100) > 70)
+		return;
+        mes "The brew begins to bubble more violently.";
+        set @bubble_mode, @bubble_mode + 1;
+        if (@bubble_mode > 2)
+                next;
+        if (@bubble_mode > 2)
+		goto L_monster_oil_explode;
+	return;
+
+L_monster_oil_explode:
+        mes "[Exploding monster oil]";
+        mes "Your brew explodes!";
+        if (rand(readparam(bAgi)) > 40)
+		goto L_monster_oil_explode_dodge;
+	mes "The burst of boiling monster brew hits you.";
+        next;
+        itemheal (15 * rand(readparam(bVit))) - 1500, 0;
+        close;
+
+L_monster_oil_explode_dodge:
+	mes "You throw yourself to the ground at the very last moment, barely avoiding the burst of boiling monster brew.";
+        next;
+	mes "[Caul]";
+        mes "Caul nods at you from underneath a chair.";
+        mes "\"I told you, it's dangerous!!\"";
+        next;
+        close;
+
+L_monster_oil_done:
+        mes "As you throw in another mauve leaf, the brew takes on a deep black color and calms down.";
+        next;
+
+	mes "[Brewing monster oil]";
+        mes "As instructed, you toss in your golden scorpion stinger.";
+
+	if (countitem (@GOLDEN_STINGER) < 1) goto L_monster_oil_no_gold_end;
+
+        mes "The brew bubbles once more, then calms completely.";
+
+        delitem @GOLDEN_STINGER, 1;
+        getitem @MONSTER_OIL, 1;
+
+        if (!(@Q_status & @SETZER_FLAG_MADE_OIL))
+        	getexp @MONSTER_OIL_XP, 0;
+        if (!(@Q_status & @SETZER_FLAG_MADE_OIL))
+        	mes "[" + @MONSTER_OIL_XP + " experience points]";
+
+	set @Q_status, @Q_status | @SETZER_FLAG_MADE_OIL;
+	callsub S_Update_Var;
+        next;
+
+	mes "[Caul]";
+        mes "Caul gets up from underneath the cover he was taking and looks at your brew.  He is visibly impressed.";
+        mes "\"Well done!  This should be just enough for one potion of monster oil.  Let me get you a bottle.\"";
+        mes "He hands you the monster oil.";
+        next;
+        close;
+
+L_monster_oil_no_gold_end:
+	mes "But where is your golden stinger?  Didn't you have one earlier?";
+        mes "Frustrated, you give up.";
+        next;
+        close;
+
+L_close:
+	close;
+
+S_Update_Var:
+	set QUEST_Forestbow_state,
+		(QUEST_Forestbow_state & ~(@Q_MASK)
+		| (@Q_status << @Q_SHIFT));
+	return;
+
+L_NohMask:
+	mes "[Caul]";
+	mes "\"I'm sorry, but I didn't. I'm staying in town. Try asking one of the miners.\"";
+	close;
+}
+
+
