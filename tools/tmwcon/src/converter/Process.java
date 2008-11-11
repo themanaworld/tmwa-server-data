@@ -106,12 +106,17 @@ public class Process {
         }
     }
 
-    public static void processMap(String name, Map map) {
+    public static void processMap(String name, Map map, PrintWriter summary) {
         if (name == null) return;
         if (map == null) return;
 
         Properties props = map.getProperties();
         String title = getProp(props, "name", "");
+        if (summary != null) {
+            summary.printf("\tName: '%s'\n", title);
+            summary.printf("\tMusic: '%s'\n", getProp(props, "music", ""));
+            summary.printf("\tMinimap: '%s'\n", getProp(props, "minimap", ""));
+        }
         String folderName = "server-data/npc/" + name;
         if (title.length() > 0) {
             folderName += "_" + title.replaceAll("\\s", "_");

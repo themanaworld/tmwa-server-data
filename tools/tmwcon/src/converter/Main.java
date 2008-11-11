@@ -66,6 +66,17 @@ public class Main extends Thread {
     public static void run(String[] args, int unused) {
         reader = new XMLMapTransformer();
 
+        PrintWriter summary = null;
+
+        try {
+            File temp = new File("summary.txt");
+            temp.createNewFile();
+            summary = new PrintWriter(temp);
+        } catch (Exception e) {
+            System.out.println("Problem opening summary file for writing:");
+            e.printStackTrace();
+        }
+
         File folder = new File("server-data/data/");
         Process.prepWLK(folder);
 
@@ -76,7 +87,13 @@ public class Main extends Thread {
         for (File f : tmxs) {
             name = getName(folder, f);
             System.out.printf("== %s ==\n", name);
-            Process.processMap(name, loadMap(f));
+            if (summary != null) summary.printf("== %s ==\n", name);
+            Process.processMap(name, loadMap(f), summary);
+        }
+
+        if (summary != null) {
+            summary.flush();
+            summary.close();
         }
     }
 
