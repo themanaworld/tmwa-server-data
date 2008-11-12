@@ -1,4 +1,7 @@
-//
+/*
+ * TMWServ to eAthena Converter (c) 2008 Jared Adams
+ * License: GPL, v2 or later
+ */
 
 import java.io.*;
 import java.lang.reflect.*;
