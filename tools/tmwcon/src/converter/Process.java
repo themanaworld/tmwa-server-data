@@ -15,6 +15,13 @@ import tiled.core.*;
 import tiled.plugins.tmw.*;
 
 public class Process {
+    private static final String baseFolder = "server-data/";
+    private static final File _baseFolder = new File(baseFolder);
+    private static final String scriptDirectory = "npc/";
+    private static final String mobFile = "_mobs.txt";
+    private static final String warpFile = "_warps.txt";
+    private static final String importFile = "_import.txt";
+
     private static WLKInterface wlk = null;
 
     public static void prepWLK(File folder) {
@@ -109,9 +116,19 @@ public class Process {
         }
     }
 
-    public static void processMap(String name, Map map, PrintWriter summary) {
-        if (name == null) return;
-        if (map == null) return;
+    private static void processFiles(File folder, PrintWriter out) {
+        for (File f : folder.listFiles()) {
+            if (f.isDirectory()) {
+                processFiles(folder, out);
+            } else if (!f.getName().equals(importFile)) {
+                out.printf("npc: %s\n", f.getPath().substring(_baseFolder.getPath().length() + 1));
+            }
+        }
+    }
+
+    public static String processMap(String name, Map map, PrintWriter summary) {
+        if (name == null) return null;
+        if (map == null) return null;
 
         Properties props = map.getProperties();
         String title = getProp(props, "name", "");
@@ -120,7 +137,7 @@ public class Process {
             summary.printf("\tMusic: '%s'\n", getProp(props, "music", ""));
             summary.printf("\tMinimap: '%s'\n", getProp(props, "minimap", ""));
         }
-        String folderName = "server-data/npc/" + name;
+        String folderName =  scriptDirectory + name;
         if (title.length() > 0) {
             folderName += "_" + title.replaceAll("\\s", "_");
             title = name + " " + title;
@@ -132,10 +149,10 @@ public class Process {
 
         if (wlk != null) wlk.write(name, map);
 
-        File folder = new File(folderName);
+        File folder = new File(baseFolder + folderName);
         folder.mkdirs();
-        PrintWriter warpOut = Main.getWriter(new File(folder, "passages.txt"));
-        PrintWriter mobOut = Main.getWriter(new File(folder, "mobs.txt"));
+        PrintWriter warpOut = Main.getWriter(new File(folder, warpFile));
+        PrintWriter mobOut = Main.getWriter(new File(folder, mobFile));
 
         warpOut.printf("// %s warps\n\n", title);
         mobOut.printf("// %s mobs\n\n", title);
@@ -162,5 +179,28 @@ public class Process {
 
         mobOut.flush();
         mobOut.close();
+
+        File _import = new File(folder, importFile);
+        PrintWriter importOut = Main.getWriter(_import);
+        importOut.printf("map: %s.gat\n", name);
+        processFiles(folder, importOut);
+        importOut.flush();
+        importOut.close();
+
+        return folderName;
+    }
+
+    public static void writeMasterImport(String[] folders) {
+        File master = new File(baseFolder + scriptDirectory + "_import.txt");
+        PrintWriter out = Main.getWriter(master);
+        if (out == null) return;
+
+        for (String folder : folders) {
+            if (folder == null) continue;
+            out.printf("import: %s/_import.txt\n", folder);
+        }
+
+        out.flush();
+        out.close();
     }
 }

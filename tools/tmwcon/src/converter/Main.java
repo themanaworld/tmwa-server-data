@@ -86,18 +86,21 @@ public class Main extends Thread {
         folder = new File("tmwdata/maps/");
 
         Collection<File> tmxs = getTMXFiles(folder);
+        Vector<String> folders = new Vector<String>();
         String name;
         for (File f : tmxs) {
             name = getName(folder, f);
             System.out.printf("== %s ==\n", name);
             if (summary != null) summary.printf("== %s ==\n", name);
-            Process.processMap(name, loadMap(f), summary);
+            folders.add(Process.processMap(name, loadMap(f), summary));
         }
 
         if (summary != null) {
             summary.flush();
             summary.close();
         }
+
+        Process.writeMasterImport(folders.toArray(new String[0]));
     }
 
     public static void main(String[] args) {
