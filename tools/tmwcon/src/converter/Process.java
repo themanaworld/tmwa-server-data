@@ -10,6 +10,9 @@ import java.io.*;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
 
 import tiled.core.*;
 import tiled.plugins.tmw.*;
@@ -116,12 +119,12 @@ public class Process {
         }
     }
 
-    private static void processFiles(File folder, PrintWriter out) {
+    private static void processFiles(File folder, List<String> out) {
         for (File f : folder.listFiles()) {
             if (f.isDirectory()) {
                 processFiles(folder, out);
             } else if (!f.getName().equals(importFile)) {
-                out.printf("npc: %s\n", f.getPath().substring(_baseFolder.getPath().length() + 1));
+                out.add("npc: " + f.getPath().substring(_baseFolder.getPath().length() + 1));
             }
         }
     }
@@ -181,9 +184,13 @@ public class Process {
         mobOut.close();
 
         File _import = new File(folder, importFile);
+        List<String> output_elements = new ArrayList<String>();
+        processFiles(folder, output_elements);
         PrintWriter importOut = Main.getWriter(_import);
         importOut.printf("map: %s.gat\n", name);
-        processFiles(folder, importOut);
+        Collections.sort(output_elements);
+        for (String s : output_elements)
+                importOut.println(s);
         importOut.flush();
         importOut.close();
 
@@ -195,10 +202,16 @@ public class Process {
         PrintWriter out = Main.getWriter(master);
         if (out == null) return;
 
+        List<String> output_elements = new ArrayList<String>();
+
         for (String folder : folders) {
             if (folder == null) continue;
-            out.printf("import: %s/_import.txt\n", folder);
+            output_elements.add("import: " + folder + "/_import.txt");
         }
+
+        Collections.sort(output_elements);
+        for (String s : output_elements)
+                out.println(s);
 
         out.flush();
         out.close();
