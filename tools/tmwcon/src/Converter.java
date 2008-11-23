@@ -9,7 +9,7 @@ import java.net.*;
 import java.util.*;
 
 public abstract class Converter {
-    static String[] tiledJars = {"tile-core.jar", "tiled.jar"};
+    static String[] tiledJars = {"tiled-core.jar", "tiled.jar"};
     static String[] wlkJars = {"plugins/tmw.jar", "tmw.jar"};
 
     public static void main(String[] args) throws Exception {
