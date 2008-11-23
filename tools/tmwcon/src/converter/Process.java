@@ -142,7 +142,7 @@ public class Process {
         }
         String folderName =  scriptDirectory + name;
         if (title.length() > 0) {
-            folderName += "_" + title.replaceAll("\\s", "_");
+            folderName += "_" + title.replaceAll("\\s", "_").replaceAll("[^A-Za-z0-9\\-_]", "");
             title = name + " " + title;
         } else {
             title = name;
