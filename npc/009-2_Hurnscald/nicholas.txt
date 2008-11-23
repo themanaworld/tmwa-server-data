@@ -1,0 +1,404 @@
+//#################################################################################
+//#
+//# Nicholas the Smith.
+//# Participates in iron ore smithery and the following quests:
+//# - Together with Pachua: Iron Shield quest (repeatable)
+//#    (10 iron ores, 2 infantry helmets, 20000 GP, leather patch) -> iron shield
+//# - Primary participant in the Setzer quest (monster oil/golden stinger subquests)
+//#
+//# Variables used:  @QUEST_Forestbow_state, nibble 3 (setzer quest)
+//#                  @QUEST_Forestbow_state, nibble 4 (iron shield quest)
+//#
+//#################################################################################
+
+009-2.gat,185,55,0	script	Nicholas	135,{
+
+        set @IRON_ORE, 640;
+        set @INFANTRY, 638;
+        set @LEATHER_PATCH, 708;
+        set @SHORT_SWORD, 536;
+        set @MONSTER_OIL, 707;
+        set @SETZER, 571;
+	set @STEEL_SHIELD, 601;
+
+        set @SETZER_XP, 100000;
+        set @SHIELD_XP, 20000;
+
+        set @SHIELD_INITIAL, 0;
+        set @SHIELD_KNOWS_PATCH, 1;	// knows that a leather patch is needed
+        set @SHIELD_COMPLETED, 2;	// shield completed once
+
+        set @SETZER_INITIAL, 0;
+        set @SETZER_KNOWS_OIL, 1;
+        set @SETZER_KNOWS_STINGER, 2;
+        set @SETZER_FLAG_MADE_OIL, 4;
+        set @SETZER_FLAG_MADE_SETZER, 8;
+
+        set @Q_SETZER_MASK, NIBBLE_3_MASK;
+        set @Q_SETZER_SHIFT, NIBBLE_3_SHIFT;
+
+        set @Q_SHIELD_MASK, NIBBLE_4_MASK;
+        set @Q_SHIELD_SHIFT, NIBBLE_4_SHIFT;
+
+        set @Q_SETZER_status, (QUEST_Forestbow_state & @Q_SETZER_MASK) >> @Q_SETZER_SHIFT;
+        set @Q_SHIELD_status, (QUEST_Forestbow_state & @Q_SHIELD_MASK) >> @Q_SHIELD_SHIFT;
+
+	mes "[Nicholas]";
+	mes "\"Hello there,";
+	mes "I'm an expert blacksmith.";
+	mes "If you get me some Iron Ore";
+	mes "I could make you a very valuable shield";
+        mes "or helmet.\"";
+	next;
+	menu
+		"I have some Iron Ore!", L_Check,
+		"Where can I get this Iron Ore?", L_Info,
+		"I'm okay, thanks.", L_Pass;
+
+L_Check:
+	mes "[Nicholas]";
+	mes "\"Let me take at look at how much you have...\"";
+	next;
+	if(countitem(@IRON_ORE)<5) goto L_NoItem;
+	if(countitem(@IRON_ORE)<10) goto L_StageA;
+	if(countitem(@IRON_ORE)<15) goto L_StageB;
+	goto L_StageC;
+
+L_Info:
+	mes "[Nicholas]";
+	mes "\"You can find Iron Ore in mines.";
+	mes "It is quite hard to come by though.\"";
+	close;
+
+L_Pass:
+	mes "[Nicholas]";
+	mes "\"Oh, okay";
+	mes "Come back any time.\"";
+	close;
+
+L_StageA:
+	mes "[Nicholas]";
+	mes "\"That's just enough for me to make you";
+	mes "a winged Knight's Helmet.";
+	mes "But it'll cost you 10,000GP";
+	mes "and 5 lumps of Iron Ore.\"";
+	next;
+        goto L_main_menu;
+
+L_StageB:
+	mes "[Nicholas]";
+	mes "\"Ahh, with that much Iron Ore I can";
+	mes "make you one of two helmets,";
+	mes "for only 10,000GP, or I can";
+	mes "make you a shield, for 20,000GP.\"";
+	mes "";
+	mes "\"What would you like?\"";
+	next;
+        goto L_main_menu;
+
+L_StageC:
+	mes "[Nicholas]";
+	mes "\"Excellent, that's enough to make";
+	mes "three different types of helmet.";
+	mes "My fee is 10,000GP.";
+        mes "I can also make a shield, but that";
+        mes "that will cost you 20,000 GP.\"";
+	mes "";
+	mes "\"Which helmet or shield will it be?\"";
+	next;
+        goto L_main_menu;
+
+L_main_menu:
+
+        set @CHOICE_KNIGHT, 1;
+        set @CHOICE_CRUSADE, 2;
+        set @CHOICE_WARLORD, 3;
+        set @CHOICE_SHIELD, 4;
+        set @CHOICE_SETZER, 5;
+
+        setarray @choice$, "", "", "", "", "";
+        set @choices_nr, 0;
+        setarray @choice_idx, 0, 0, 0, 0, 0;
+
+	if (countitem(@SHORT_SWORD) < 1) goto L_main_menu_post_setzer;
+	set @choice$[@choices_nr], "Can you make my short sword better?";
+	set @choice_idx[@choices_nr], @CHOICE_SETZER;
+	set @choices_nr, 1 + @choices_nr;
+
+L_main_menu_post_setzer:
+
+	if (countitem(@IRON_ORE)<5) goto L_no_more_helmets;
+        set @choice$[@choices_nr], "Knight's Helmet. (5 Iron Ores)";
+        set @choice_idx[@choices_nr], @CHOICE_KNIGHT;
+        set @choices_nr, 1 + @choices_nr;
+
+	if (countitem(@IRON_ORE)<10) goto L_no_more_helmets;
+
+        set @choice$[@choices_nr], "Crusade Helmet. (10 Iron Ores)";
+        set @choice_idx[@choices_nr], @CHOICE_CRUSADE;
+        set @choices_nr, 1 + @choices_nr;
+
+        set @choice$[@choices_nr], "Steel Shield. (10 Iron Ores)";
+        set @choice_idx[@choices_nr], @CHOICE_SHIELD;
+        set @choices_nr, 1 + @choices_nr;
+
+	if (countitem(@IRON_ORE)<15) goto L_no_more_helmets;
+
+        set @choice$[@choices_nr], "Warlord Helmet. (15 Iron Ores)";
+        set @choice_idx[@choices_nr], @CHOICE_WARLORD;
+        set @choices_nr, 1 + @choices_nr;
+L_no_more_helmets:
+
+	menu	@choice$[0], -,
+		@choice$[1], -,
+		@choice$[2], -,
+		@choice$[3], -,
+		@choice$[4], -;
+
+        set @menu, @menu - 1;
+
+        if (@menu >= @choices_nr)
+		close;
+
+	set @choice, @choice_idx[@menu];
+
+	if (@choice == @CHOICE_KNIGHT) goto L_YesKnight;
+	if (@choice == @CHOICE_CRUSADE) goto L_YesCrusade;
+	if (@choice == @CHOICE_WARLORD) goto L_YesWarlord;
+	if (@choice == @CHOICE_SHIELD) goto L_YesShield;
+	if (@choice == @CHOICE_SETZER) goto L_SetzerQuest;
+
+	close;                
+
+
+L_NoItem:
+	mes "[Nicholas]";
+	mes "\"It appears you don't have enough Iron Ore for me to work with.";
+	mes "Please do come back when you have more though.\"";
+	close;
+
+L_ComeBack:
+	mes "[Nicholas]";
+	mes "\"Come back any time.\"";
+	close;
+
+L_NoMoney:
+	mes "[Nicholas]";
+	mes "\"Oh dear, it seems you don't have enough money.\"";
+	close;
+
+L_YesKnight:
+	if (zeny < 10000) goto L_NoMoney;
+	set zeny, zeny-10000;
+	delitem @IRON_ORE,5;
+	getitem 637,1;
+	goto L_Done;
+
+L_YesCrusade:
+	if (zeny < 10000) goto L_NoMoney;
+	set zeny, zeny-10000;
+	delitem @IRON_ORE,10;
+	getitem 639,1;
+	goto L_Done;
+
+L_YesWarlord:
+	if (zeny < 10000) goto L_NoMoney;
+	set zeny, zeny-10000;
+	delitem @IRON_ORE,15;
+	getitem 636,1;
+	goto L_Done;
+
+L_YesShield:
+        mes "[Nicholas]";
+        mes "Nicholas examines your iron ore.";
+        mes "\"No, this iron is too brittle; for something as large as a shield I need to mix in softer iron.  Can I see if you have anything suitable?\"";
+        next;
+
+        menu	"Sure, have a look!", -,
+		"No.", L_Pass;
+
+	if (countitem(@INFANTRY) == 1) goto L_MoreInfantry;
+        if (countitem(@INFANTRY) == 0) goto L_NoInfantry;
+
+        mes "[Nicholas]";
+        mes "Nicholas pulls out two of your infantry helmets.";
+        mes "\"I can use those... yes, that should work.  Now all I need is a leather patch for the handle, and 20,000 GP.\"";
+
+        if (@Q_SHIELD_status < @SHIELD_KNOWS_PATCH)
+        	set @Q_SHIELD_status, @SHIELD_KNOWS_PATCH;
+        callsub L_Update_Var;
+
+        next;
+
+	menu	"Here you are.", -,
+		"Where can I get a leather patch?", L_WhereLeather,
+        	"No way.", L_Pass;
+
+	if (zeny < 20000) goto L_ShieldNoZeny;
+	if (countitem(@INFANTRY) < 2) goto L_ShieldNoInfantry;
+	if (countitem(@IRON_ORE) < 10) goto L_ShieldNoOre;
+	if (countitem(@LEATHER_PATCH) < 1) goto L_ShieldNoLeatherPatch;
+
+        mes "[Nicholas]";
+        mes "\"Yes, it looks as if you have all that is needed!\"";
+        mes "You watch Nicholas melt the ore and helmets and form a shield out of the resulting iron.  He then cuts your leather patch apart and adds it to the handles.";
+        mes "\"Here is your shield!\"";
+
+        delitem @INFANTRY, 1;
+        delitem @INFANTRY, 1;
+        delitem @LEATHER_PATCH, 1;
+        delitem @IRON_ORE, 10;
+        set zeny, zeny - 20000;
+
+        if (@Q_SHIELD_status < @SHIELD_COMPLETED)
+		getexp @SHIELD_XP, 0;
+        if (@Q_SHIELD_status < @SHIELD_COMPLETED)
+		mes "[" + @SHIELD_XP + " experience points]";
+
+        set @Q_SHIELD_status, @SHIELD_COMPLETED; // get XP only once
+        callsub L_Update_Var;
+
+        getitem @STEEL_SHIELD, 1;
+        next;
+        close;
+
+L_ShieldNoZeny:
+        mes "[Nicholas]";
+        mes "\"I am sorry, but I must ask that you pay 20,000 GP; this is qualty work.\"";
+        next;
+        close;
+
+L_ShieldNoInfantry:
+        mes "[Nicholas]";
+        mes "\"Now this is strange... I could have sworn that you had two infantry helmets right here.  Well, come back if you have some more!\"";
+        next;
+        close;
+
+L_ShieldNoOre:
+        mes "[Nicholas]";
+        mes "\"How odd... didn't I put your iron ore on the table right here?  Well, I will need it back to make the shield.\"";
+        next;
+        close;
+
+L_ShieldNoLeatherPatch:
+        mes "[Nicholas]";
+        mes "\"You don't have a suitable leather patch.  I'm sorry, but a shield without one would chafe terribly.\"";
+        next;
+        close;
+
+L_MoreInfantry:
+        mes "[Nicholas]";
+        mes "Nicholas takes your infantry helmet and examines it.";
+        mes "\"Yes, this is perfect!  If you can bring me another one of those, I can make your shield.\"";
+        next;
+        close;
+	
+L_NoInfantry:
+        mes "[Nicholas]";
+        mes "Nicholas shakes his head.";
+        mes "\"No, none of these items are suitable.  Try looking for somewhat large metal things.\"";
+        next;
+        close;
+
+L_WhereLeather:
+        mes "[Nicholas]";
+	mes "\"Hmm.  You should look for someone who can work with some kind of leather.  Rumor has it that there is someone in the eastern desert who can, but I haven't been there.\"";
+        next;
+        close;
+
+
+L_SetzerQuest:
+        mes "[Nicholas]";
+        if (@Q_SETZER_status & @SETZER_FLAG_MADE_SETZER)
+        	mes "\"Another one?  Sure, why not.\"";
+	mes "Nicholas examines your short sword, then nods.";
+        mes "\"This is good quality.  I can make something special out of it, for five chunks of iron ore and 50,000 GP-- but I will also need a potion of monster oil.\"";
+        if (@Q_SETZER_status < @SETZER_KNOWS_OIL)
+        	set @Q_SETZER_status, @SETZER_KNOWS_OIL;
+        callsub L_Update_Var;
+        next;
+
+        menu "Here you are.", -,
+             "Monster oil?  What's that?", L_ExplainMonsterOil,
+             "HOW much?  Never mind.", L_Pass;
+
+	if (zeny < 50000) goto L_SetzerNoZeny;
+	if (countitem(@IRON_ORE) < 5) goto L_SetzerNoOre;
+	if (countitem(@MONSTER_OIL) < 1) goto L_SetzerNoMonsterOil;
+	if (countitem(@SHORT_SWORD) < 1) goto L_SetzerNoSword;
+
+        mes "[Nicholas]";
+        mes "Nicholas takes the items, heats up your sword and pounds it with a heavy hammer.  Before your eyes it turns thinner and flatter.  Finally he pours the monster oil over it, heats it up again and douses it in water.";
+
+        set zeny, zeny - 50000;
+        delitem @IRON_ORE, 5;
+        delitem @MONSTER_OIL, 1;
+        delitem @SHORT_SWORD, 1;
+
+        getitem @SETZER, 1;
+        if (!(@Q_SETZER_status & @SETZER_FLAG_MADE_SETZER))
+		mes "[" + @SETZER_XP + " experience points]";
+        if (!(@Q_SETZER_status & @SETZER_FLAG_MADE_SETZER))
+		getexp @SETZER_XP, 1;
+        set @Q_SETZER_status, @Q_SETZER_status | @SETZER_FLAG_MADE_SETZER;
+        callsub L_Update_Var;
+        next;
+
+        mes "[Nicholas]";
+        mes "Nicholas hands you the completed sword.  It feels strangely light in your hands.";
+        mes "\"I made it lighter and faster, it should also cut a little better now.  This kind of sword is called a Setzer, after a famous gambler who invented it as a weapon in between a knife and a sword.\"";
+        next;
+
+        mes "[Nicholas]";
+        mes "\"I'm quite happy with this one.  Be careful around the edge, though, it is quite sharp.\"";
+        next;
+
+        close;
+
+L_ExplainMonsterOil:
+        mes "[Nicholas]";
+        mes "\"Monster oil is a special oil that can be used to harden thin sheets of metal, if used properly.  Unfortunately it is very hard to get.  Perhaps one of our local alchemists can help you with it?\"";
+        next;
+        close;
+
+L_SetzerNoZeny:
+        mes "[Nicholas]";
+        mes "\"I am sorry, but I must ask that you pay 50,000 GP; the kind of weapon I am thinking of is not easy to make.\"";
+        next;
+        close;
+
+L_SetzerNoOre:
+        mes "[Nicholas]";
+        mes "\"Without five chunks of iron ore I can't improve your sword.\"";
+        next;
+        close;
+
+L_SetzerNoMonsterOil:
+        mes "[Nicholas]";
+        mes "\"I know that monster oil is hard to come by, but I can't do much without it.  Ask an alchemist if you need help making it.\"";
+        next;
+        close;
+
+L_SetzerNoSword:
+        mes "[Nicholas]";
+        mes "\"I will need your old short sword as a basis.  Please bring it to me first.\"";
+        next;
+        close;
+
+L_end:
+        close;
+
+L_Done:
+	mes "[Nicholas]";
+	mes "\"Here you go!\"";
+	mes "";
+	mes "\"Come back any time.\"";
+	close;
+
+L_Update_Var:
+        set QUEST_Forestbow_state,
+        	(QUEST_Forestbow_state & ~(@Q_SHIELD_MASK | Q_SETZER_MASK)
+                | (@Q_SHIELD_status << @Q_SHIELD_SHIFT)
+                | (@Q_SETZER_status << @Q_SETZER_SHIFT));
+        return;
+}

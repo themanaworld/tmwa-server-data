@@ -1,0 +1,717 @@
+// This NPC makes potions and dyes
+011-1.gat,117,77,0	script	Rauk	103,{
+
+        // Setzer quest/monster oil quest participation
+        set @SETZER_INITIAL, 0;
+        set @SETZER_KNOWS_OIL, 1;
+        set @SETZER_KNOWS_STINGER, 2;
+
+        set @Q_MASK, NIBBLE_3_MASK;
+        set @Q_SHIFT, NIBBLE_3_SHIFT;
+
+        set @Q_status, (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
+        // End of Setzer quest/monster oil quest participation
+
+	set @RED, 683;
+	set @YELLOW, 682;
+	set @BLUE, 681;
+	set @MAUVE, 680;
+	set @PETAL, 565;
+	set @PEARL, 700;
+	set @ORE, 640;
+	set @MAGGOTSLIME, 505;
+
+	set @QUEST_CAN_GET_DYE_HERE, 2;
+	set @QUEST_HAS_SOLVED_DYE_PUZZLE, 3;
+	set @QUEST_GUESS_BASE, 4;
+
+	set @CHOICE_IRON, 0;
+	set @CHOICE_CONCENTRATION, 1;
+	set @CHOICE_DYEING_INTRO, 2;
+	set @CHOICE_DYE, 3;
+	set @CHOICE_MONSTER_OIL, 4;
+	set @CHOICE_ABORT, 5;
+
+	setarray @menuitems$, "", "", "", "", "";
+	set @c, 0;
+
+	set @menuitems$[@c], "Iron potion.";
+	set @menuID[@c], @CHOICE_IRON;
+	set @c, @c + 1;
+
+	set @menuitems$[@c], "Concentration potion.";
+	set @menuID[@c], @CHOICE_CONCENTRATION;
+	set @c, @c + 1;
+
+	if (QUEST_clothdyer_knowsdye >= @QUEST_CAN_GET_DYE_HERE)
+		goto L_skip_introducing;
+
+	mes "[Rauk the Alchemist]";
+	mes "\"I'm learning the ancient science of the alchemy.";
+	mes "I already know how to create a couple of potions!!\"";
+	next;
+
+	mes "[Rauk the Alchemist]";
+	mes "\"Do you want me to create one for you?\"";
+	next;
+
+	if (QUEST_clothdyer_knowsdye == 1)
+		goto L_pre_dyeing;
+
+	goto L_certain_condition;
+
+L_skip_introducing:
+	mes "[Rauk the Alchemist]";
+	mes "\"Hello, welcome back! Are you interested in dyes again, or in one of my potions?\"";
+	next;
+
+	set @menuitems$[@c], "Dye, please.";
+	set @menuID[@c], @CHOICE_DYE;
+	set @c, @c + 1;
+
+	goto L_certain_condition;
+
+L_pre_dyeing:
+	set @menuitems$[@c], "Actually, can you make dye?";
+	set @menuID[@c], @CHOICE_DYEING_INTRO;
+	set @c, @c + 1;
+
+L_certain_condition:
+        if (@Q_status == @SETZER_INITIAL)
+		goto L_main_menu;
+	set @menuitems$[@c], "Can you make monster oil?";
+	set @menuID[@c], @CHOICE_MONSTER_OIL;
+	set @c, @c + 1;
+
+L_main_menu:
+	set @menuitems$[@c], "No thanks.";
+	set @menuID[@c], @CHOICE_ABORT;
+	set @c, @c + 1;
+
+	menu
+		@menuitems$[0], -,
+		@menuitems$[1], -,
+		@menuitems$[2], -,
+		@menuitems$[3], -,
+		@menuitems$[4], -;
+
+	set @menu, @menu - 1;
+
+	if (@menu >= @c) goto L_abort;
+	if (@menuID[@menu] == @CHOICE_IRON) goto L_iron;
+	if (@menuID[@menu] == @CHOICE_CONCENTRATION) goto L_concentration;
+	if (@menuID[@menu] == @CHOICE_DYEING_INTRO) goto L_dyeing_intro;
+	if (@menuID[@menu] == @CHOICE_DYE) goto L_pick_colour;
+	if (@menuID[@menu] == @CHOICE_MONSTER_OIL) goto L_monster_oil;
+	if (@menuID[@menu] == @CHOICE_ABORT) goto L_abort;
+
+L_iron:
+  	if(countitem(566) < 20) goto L_no_iron;
+	mes "[Rauk the Alchemist]";
+	mes "\"Great! You brought me exactly what I need!";
+	mes "Here is your Iron potion.\"";
+	delitem 566,20;
+	getitem 567,1;
+	close;
+
+L_concentration:
+	if(countitem(565) < 20) goto L_no_concentration;
+	mes "[Rauk the Alchemist]";
+	mes "\"Great! You brought me exactly what I need!";
+	mes "Here is your Concentration potion.\"";
+	delitem 565,20;
+	getitem 568,1;
+	close;
+
+L_no_iron:
+	mes "\"You have to bring me 20 small mushrooms.\"";
+	close;
+	
+L_no_concentration:
+	mes "\"You have to bring me 20 petals.\"";
+	close;
+
+L_dyeing_intro:
+	mes "[Rauk the Alchemist]";
+	mes "Rauk pauses for a moment.";
+	mes "\"Hmm, I'm not very good at that... I can only make simple dyes, the ones that you can use for cotton and wool.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"For the truly powerful ones that you can use to dye a person or an entire lake with, I would need a powerful catalyst, like an Obsidian Spork or a Wumpus Egg...\"";
+	mes "Rauk seems to be lost in his thoughts.";
+	next;
+	menu "I only want to dye clothes, though...", -,
+		"What's a 'Wumpus egg'?", L_wumpus_egg_intro,
+		"What's an 'Obsidian Spork'?", L_obsidian_spork_intro,
+		"Er, never mind...", L_abort;
+	mes "[Rauk the Alchemist]";
+	mes "\"Oh, just for clothes? Well, that is easy. I can make red, yellow, light blue, orange, pink, green, dark blue, black and purple dye, if you can get me the ingredients for it.\"";
+	next;
+	set QUEST_clothdyer_knowsdye, 2;
+	goto L_pick_colour;
+
+L_wumpus_egg_intro:
+	mes "[Rauk the Alchemist]";
+	mes "Rauk's eyes brighten up.";
+	mes "\"Ah, a wumpus egg is one of the most powerful catalysts out there, useful for transmutation and transchromation! Unfortunately the Common Wumpus is almost completely extinct these days, so they are hard to find.";
+	mes "Should you find one, please let me know-- I will pay well for one!\"";
+	next;
+	close;
+
+L_obsidian_spork_intro:
+	mes "[Rauk the Alchemist]";
+	mes "Rauk scratches his head.";
+	mes "\"Hm, obsidian is a dark, glass-like material that you can normally find near volcanos. Shaping it isn't too hard, but shaping it without it losing its magical properties is almost impossible.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"Obsidian sporks are therefore hard to make, but they are said to be very useful in certain kinds of alchemy.";
+	mes "Should you find one, please let me know!\"";
+	next;
+	close;
+
+L_pick_colour:
+	menu "What are the ingredients you need?", L_description,
+		"Red", L_red,
+		"Yellow", L_yellow,
+		"Light blue", L_light_blue,
+		"Green", L_green,
+		"Orange", L_orange,
+		"Pink", L_pink,
+		"Dark blue", L_dark_blue,
+		"Black", L_black,
+		"Purple", L_purple,
+		"Dark Green", L_dark_green,
+		"Nothing, really.", L_abort;
+	close;
+
+L_description:
+	mes "[Rauk the Alchemist]";
+	mes "\"The kinds of dyes I know are made from herbs-- alizarin for red, gamboge for yellow, cobalt for blue, and mauve as binding agent for dark colors.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"Some of the colors need more ingredients, including some that you can't find here, so I have to charge money for them.";
+	mes "Oh, and for a proper dark blue and purple I also need a pearl; without pearl dust they would not shimmer properly.\"";
+	next;
+
+L_description_quick:
+	menu "What do you need for red dye?", L_d_red,
+		"What do you need for yellow dye?", L_d_yellow,
+		"What do you need for light blue dye?", L_d_light_blue,
+		"What do you need for green dye?", L_d_green,
+		"What do you need for orange dye?", L_d_orange,
+		"What do you need for pink dye?", L_d_pink,
+		"What do you need for dark blue dye?", L_d_dark_blue,
+		"What do you need for black dye?", L_d_black,
+		"What do you need for purple dye?", L_d_purple,
+		"What do you need for dark green dye?", L_d_dark_green,
+		"Actually...", -;
+
+	menu "Can you make some dye for me, please?", L_pick_colour,
+		"Where can I get the herbs?", L_d_herbs,
+		"Where can I find petals?", L_d_petals,
+		"Where can I find iron ore?", L_d_ore,
+		"Where can I find a pearl?", L_d_pearl,
+		"Where can I find maggot slime?", L_d_maggot_slime,
+		"I see. Thank you, and a good day to you!", L_abort;
+	close;
+
+L_d_herbs:
+	mes "[Rauk the Alchemist]";
+	mes "\"Alizarin, mauve, cobalt and gamboge bushes grow in this general area. I haven't seen them nearby, but take a look around; I am sure you will find some.\"";
+	next;
+	goto L_description_quick;
+
+L_d_petals:
+	mes "[Rauk the Alchemist]";
+	mes "\"Just take some from the flowers around here. But be careful, they seem to be a bit fond of them.\"";
+	next;
+	goto L_description_quick;
+
+L_d_ore:
+	mes "[Rauk the Alchemist]";
+	mes "\"Iron ore you should be able to find in some mine, I think. That's where people usually get it from, I have been told.\"";
+	next;
+	goto L_description_quick;
+
+L_d_pearl:
+	mes "[Rauk the Alchemist]";
+	mes "\"A pearl... hm, that might be tricky. You normally find them in clams, but I haven't seen many of those here in the woodlands.\"";
+	next;
+	goto L_description_quick;
+
+L_d_maggot_slime:
+	mes "[Rauk the Alchemist]";
+	mes "\"As the name might have given away already, maggot slime is most easily obtained from maggots. Still, there are some other creatures-- such as bats-- that secrete a similar kind of slime that for alchemistic purposes is equivalent.\"";
+	next;
+	goto L_description_quick;
+
+L_intermediate:
+	menu "Can you make some dye for me?", L_pick_colour,
+		"Can you describe the ingredients?", L_description_quick,
+		"Never mind.", L_abort;
+	close;
+
+L_ok:
+	mes "[Rauk the Alchemist]";
+	mes "\"Here is your dye. Remember to use all of it at once or the color may bleach out.\"";
+	next;
+	goto L_pick_colour;
+
+L_red:
+	if (countitem(@RED) < 10) goto L_red_fail;
+	delitem @RED, 10;
+	getitem 690, 1;
+	goto L_ok;
+
+L_red_fail:
+	mes "[Rauk the Alchemist]";
+	mes "\"Hmm, sorry, but I do need ten alizarin leaves to make red dye.\"";
+	next;
+	goto L_intermediate;
+
+L_d_red:
+	mes "[Rauk the Alchemist]";
+	mes "\"Red dye is fairly simple to make. Bring me ten leaves of alizarin, and I can brew it for you right away.\"";
+	next;
+	goto L_intermediate;
+
+L_yellow:
+	if (countitem(@YELLOW) < 10) goto L_yellow_fail;
+	delitem @YELLOW, 10;
+	getitem 693, 1;
+	goto L_ok;
+
+L_yellow_fail:
+	mes "[Rauk the Alchemist]";
+	mes "\"Without enough gamboge leaves-- I would need at least ten--, I can't make yellow dye for you.\"";
+	next;
+	goto L_intermediate;
+
+L_d_yellow:
+	mes "[Rauk the Alchemist]";
+	mes "\"Yellow dye is no more than gamboge extract. If you get me ten gamboge leaves, I can make it easily.\"";
+	next;
+	goto L_intermediate;
+
+L_light_blue:
+	if (countitem(@BLUE) < 10) goto L_light_blue_fail;
+	delitem @BLUE, 10;
+	getitem 694, 1;
+	goto L_ok;
+
+L_light_blue_fail:
+	mes "[Rauk the Alchemist]";
+	mes "\"Sorry, but I won't give it to you for less than ten cobalt leaves.\"";
+	next;
+	goto L_intermediate;
+
+L_d_light_blue:
+	mes "[Rauk the Alchemist]";
+	mes "\"Light blue dye is what you get if you let cobalt leaves sit in alcohol over night. I have some here and will trade it for ten fresh cobalt leaves.\"";
+	next;
+	goto L_intermediate;
+
+L_green:
+	if (countitem(@BLUE) < 20) goto L_green_fail;
+	if (countitem(@YELLOW) < 20) goto L_green_fail;
+	if (zeny < 1000) goto L_green_fail;
+	delitem @BLUE, 20;
+	delitem @YELLOW, 20;
+	set zeny, zeny - 1000;
+	getitem 691, 1;
+	goto L_ok;
+
+L_green_fail:
+	mes "[Rauk the Alchemist]";
+	mes "\"No... I need enough gamboge and cobalt to make your dye.\"";
+	mes "\"Twenty gamboge leaves, twenty cobalt leaves, and 1000 GP should be sufficient.\"";
+	next;
+	goto L_intermediate;
+
+L_d_green:
+	mes "[Rauk the Alchemist]";
+	mes "\"Green dye is a little tricky to make, since you have to boil gamboge leaves at just the right temperature while stirring in a cobalt ester.";
+	mes "Making the cobalt ester is not easy, and every time I try I end up melting a crystal flask beyond repair...\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"Thus, I will need twenty gamboge leaves, twenty cobalt leaves, and 1000 GP for materials.";
+	next;
+	goto L_intermediate;
+
+L_orange:
+	if (countitem(@RED) < 10) goto L_orange_fail;
+	if (countitem(@YELLOW) < 10) goto L_orange_fail;
+	if (countitem(@ORE) < 2) goto L_orange_fail;
+	if (zeny < 1000) goto L_orange_fail;
+	delitem @RED, 10;
+	delitem @YELLOW, 10;
+	delitem @ORE, 2;
+	set zeny, zeny - 1000;
+	getitem 697, 1;
+	goto L_ok;
+
+L_orange_fail:
+	mes "[Rauk the Alchemist]";
+	mes "\"I'm sorry, but I need 1000 GP, two chunks of iron ore, and twenty each of gamboge and alizarin leaves.\"";
+	next;
+	goto L_intermediate;
+
+L_d_orange:
+	mes "[Rauk the Alchemist]";
+	mes "\"Orange dye is fun to make, but it requires some burnt iron, and also consummate sulphur powder, which you cannot get here easily.";
+	mes "\"Still, for 1000 GP, two pieces of iron ore, ten alizarin leaves and ten gamboge leaves, I can make you a vial of orange dye.\"";
+	next;
+	goto L_intermediate;
+
+L_pink:
+	if (countitem(@RED) < 10) goto L_pink_fail;
+	if (countitem(@PETAL) < 6) goto L_pink_fail;
+	if (zeny < 1000) goto L_pink_fail;
+	delitem @RED, 10;
+	delitem @PETAL, 6;
+	set zeny, zeny - 1000;
+	getitem 695, 1;
+	goto L_ok;
+
+L_pink_fail:
+	mes "[Rauk the Alchemist]";
+	mes "\"No, you don't have all I need, and that would be ten alizarin leaves, six flower petals, and 1000 GP.\"";
+	next;
+	goto L_intermediate;
+
+L_d_pink:
+	mes "[Rauk the Alchemist]";
+	mes "\"Pink dye... that's a funny one: you can't get proper pink out of the usual herbs. You do need ten leaves of alizarin, but you also need six pink flower petals.";
+	mes "To properly extract the pink from the petals, you have to boil it in concentrated utenum; I will have to charge 1000 GP for that.\"";
+	next;
+	goto L_intermediate;
+
+L_dark_blue:
+	if (countitem(@BLUE) < 100) goto L_dark_blue_fail;
+	if (countitem(@MAUVE) < 50) goto L_dark_blue_fail;
+	if (countitem(@PEARL) < 1) goto L_dark_blue_fail;
+	if (zeny < 10000) goto L_dark_blue_fail;
+	delitem @BLUE, 100;
+	delitem @MAUVE, 50;
+	delitem @PEARL, 1;
+	set zeny, zeny - 10000;
+	getitem 692, 1;
+	goto L_ok;
+
+L_dark_blue_fail:
+	mes "[Rauk the Alchemist]";
+	mes "\"I will need all of the ingredients to make dark blue dye for you.\"";
+	mes "\"I need 100 cobalt leaves, 50 mauve leaves, one pearl, and 10,000 GP.\"";
+	next;
+	goto L_intermediate;
+
+L_d_dark_blue:
+	mes "[Rauk the Alchemist]";
+	mes "\"Dark blue dye is one of the trickiest ones. You need concentrated extract from 100 leaves of cobalt and 50 mauve leaves for proper binding.";
+	mes "For the right shimmer, a pearl is indispensible, and the most expensive part is a rare kind of ayanamian sapphire dust that I have to charge 10,000 GP for.\"";
+	next;
+	goto L_intermediate;
+
+L_purple:
+	if (countitem(@BLUE) < 100) goto L_purple_fail;
+	if (countitem(@RED) < 100) goto L_purple_fail;
+	if (countitem(@MAUVE) < 20) goto L_purple_fail;
+	if (countitem(@PEARL) < 1) goto L_purple_fail;
+	if (zeny < 40000) goto L_purple_fail;
+	delitem @BLUE, 100;
+	delitem @RED, 100;
+	delitem @MAUVE, 20;
+	delitem @PEARL, 1;
+	set zeny, zeny - 40000;
+	getitem 698, 1;
+	goto L_ok;
+
+L_purple_fail:
+	mes "[Rauk the Alchemist]";
+	mes "\"No... I don't think that you have enough ingredients for this. Let me check my notes.\"";
+	mes "\"What I need are 100 cobalt leaves, 100 alizarin leaves, 20 mauve leaves, one pearl, and 40,000 GP.\"";
+	next;
+	goto L_intermediate;
+
+L_d_purple:
+	mes "[Rauk the Alchemist]";
+	mes "\"Hm, Purple dye... proper Tritan Purple is hard to make. Fortunately, the correct recipe has survived... but some ingredients are quite costly.";
+	mes "I can't even tell you why, unfortunately, since this is a bit of an alchemistic secret, and I really don't want to argue this out with people who can turn my nose into a rhubarb.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"Still, I can make it for you, out of 100 cobalt leaves, 100 alizarin leaves, 20 mauve leaves, one pearl, and 40,000 GP. Some other ingredients are covered by the GP.\"";
+	next;
+	goto L_intermediate;
+
+L_black:
+	if (countitem(@BLUE) < 40) goto L_black_fail;
+	if (countitem(@RED) < 40) goto L_black_fail;
+	if (countitem(@YELLOW) < 40) goto L_black_fail;
+	if (countitem(@MAUVE) < 40) goto L_black_fail;
+	if (zeny < 20000) goto L_black_fail;
+	delitem @BLUE, 40;
+	delitem @RED, 40;
+	delitem @YELLOW, 40;
+	delitem @MAUVE, 40;
+	set zeny, zeny - 20000;
+	getitem 696, 1;
+	goto L_ok;
+
+L_black_fail:
+	mes "[Rauk the Alchemist]";
+	mes "\"I am sorry, but you don't have all the items I need to make black dye. I need fourty leaves of alizarin, cobalt, gamboge and mauve each, and 20,000 GP.\"";
+	next;
+	goto L_intermediate;
+
+L_d_black:
+	mes "[Rauk the Alchemist]";
+	mes "\"Black? Ah! such a wonderful choice of color. It's my favorite! Well, if you too want something black, I would be delighted to make you some black dye.";
+	mes "Just bring me 40 leaves each of cobalt, alizarin, gamboge and mauve.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"Oh, and 20,000 GP for the charcoal and diamond dust mixture you need to keep the mauve smell out.\"";
+	next;
+	goto L_intermediate;
+	
+L_dark_green:
+	if (QUEST_clothdyer_knowsdye != @QUEST_HAS_SOLVED_DYE_PUZZLE)
+		goto L_d_dark_green;
+	if (countitem(@BLUE) < 10) goto L_dark_green_fail;
+	if (countitem(@YELLOW) < 10) goto L_dark_green_fail;
+	if (countitem(@MAUVE) < 10) goto L_dark_green_fail;
+	if (countitem(@MAGGOTSLIME) < 1) goto L_dark_green_fail;
+	if (zeny < 1000) goto L_dark_green_fail;
+	delitem @BLUE, 10;
+	delitem @MAUVE, 10;
+	delitem @YELLOW, 10;
+	delitem @MAGGOTSLIME, 1;
+	set zeny, zeny - 1000;
+	getitem 699, 1;
+	goto L_ok;
+
+L_dark_green_fail:
+	mes "[Rauk the Alchemist]";
+	mes "Rauk frowns as he examines the items you hand him.";
+	mes "\"No, this will not do. I need ten gamboge leaves, ten cobalt leaves, ten mauve leaves, slime from one maggot, and 1000 GP.\"";
+	next;
+	goto L_intermediate;
+
+L_d_dark_green:
+	mes "[Rauk the Alchemist]";
+	if (QUEST_clothdyer_knowsdye != @QUEST_HAS_SOLVED_DYE_PUZZLE)
+		goto L_d_dark_green_quest;
+	mes "\"Since we have figured out how much maggot slime we need for you, all you have to bring me are 1000 GP, one maggot slime, and ten leaves each of mauve, cobalt, and gamboge.\"";
+	next;
+	goto L_intermediate;
+	
+L_d_dark_green_quest:
+	mes "\"Ah, dark green... dark green dye is actually simple to make, except for one tiny little problem: dark green clothes fade very quickly when they touch human skin. By far the best way to fixate the color is argentum powder, mixed with dark green dye essence extracted from maggot slime.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"But just how much maggot slime goes into the fixative and how much into the rest of the mixture varies completely for every individual. We will have to figure out just how many thousandth ounces it is for you before I can make dark green dye for you.\"";
+	next;
+	if (QUEST_clothdyer_knowsdye == @QUEST_CAN_GET_DYE_HERE)
+		set QUEST_clothdyer_knowsdye, (rand(1000) + @QUEST_GUESS_BASE);
+
+L_d_dark_green_q_main:
+	menu "Uh... no thanks.", L_intermediate,
+		"So nobody else can wear clothes I dye?", L_dark_green_q_wear,
+		"OK, what should I do?", L_dark_green_q_explain,
+		"Let's figure it out!", L_dark_green_q_guess_0;
+	close;
+
+L_dark_green_q_wear:
+	mes "[Rauk the Alchemist]";
+	mes "\"The color stabilises after a week or so.";
+	mes "Others can wear the clothes you have dyed-- just make sure that you wear those clothes for a week before passing them on.\"";
+	next;
+	goto L_d_dark_green_q_main;
+
+L_dark_green_q_explain2:
+	mes "[Rauk the Alchemist]";
+	mes "Rauk blinks.";
+	mes "\"Very well. It works like this: you give me a maggot slime and tell me how many thousandth parts go into one part of the dye potion.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"Then we try whether that was the right ratio. I will tell you if you guessed right, but if you were wrong, I will tell you whether you guessed too high or too low.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"With enough slimes and enough tries we should be able to figure out just how much you need.\"";
+	next;
+	menu "Er... can you explain that again?", L_dark_green_q_explain2,
+		"Let's do it!", L_dark_green_q_guess_0,
+		"I don't have time for this.", L_intermediate;
+	close;
+
+L_dark_green_q_explain:
+	mes "[Rauk the Alchemist]";
+	mes "\"We have to measure the balance between your light and your dark bile-- two of your humors-- and use that as the maggot slime concentration.\"";
+	mes "\"This will probably take several tries; for each try we need maggot slime from one maggot.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"Each time you tell me how many thousandth parts of one ounce of the concentrate you want to use in the fixative. I will stir the mixture appropriately and put the rest of the slime into the base mixture. We then put the two together, and you dip your finger in.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"If the mixture is too dark, then that means that we put too much maggot slime into the fixative. If it discolours, we put in too little. But if it retains its color, we are done.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "Rauk smiles.";
+	mes "\"But don't worry, I will happily do all this for free-- I rather enjoy these little games.\"";
+	next;
+
+	menu "Er... can you explain that again?", L_dark_green_q_explain,
+		"Errr... what?", L_dark_green_q_explain2,
+		"Let's do it!", -,
+		"I don't have time for this.", L_intermediate;
+
+L_dark_green_q_guess_0:
+	if (countitem(@MAGGOTSLIME) < 1)
+		goto L_dark_green_q_noslime;
+	delitem @MAGGOTSLIME, 1;
+
+	mes "[Rauk the Alchemist]";
+	mes "Rauk fills your maggot slime into a small bottle and picks a glass bottle from within his robe.";
+	mes "\"Now we need to figure out just how many thousandths you need. First, tell me how many tenths of an ounce you want to put in.\"";
+	next;
+
+	menu "none", -,
+		"1 tenth", -,
+		"2 tenths", -,
+		"3 tenths", -,
+		"4 tenths", -,
+		"5 tenths", -,
+		"6 tenths", -,
+		"7 tenths", -,
+		"8 tenths", -,
+		"9 tenths", -;
+
+	set @menu, @menu - 1;
+	set @guess_accumulator, @menu * 100;
+
+	mes "[Rauk the Alchemist]";
+	if (@menu)
+		mes "Rauk pours a good-sized portion of maggot slime from the small bottle into the glass bottle.";
+	mes "\"We now have " + @guess_accumulator + " thousandths of an ounce. How many hundredths of an ounce should I add?\"";
+	next;
+
+	menu "none", -,
+		"1 hundredth", -,
+		"2 hundredths", -,
+		"3 hundredths", -,
+		"4 hundredths", -,
+		"5 hundredths", -,
+		"6 hundredths", -,
+		"7 hundredths", -,
+		"8 hundredths", -,
+		"9 hundredths", -;
+
+	set @menu, @menu - 1;
+	set @guess_accumulator, @guess_accumulator + (@menu * 10);
+
+	mes "[Rauk the Alchemist]";
+	if (@menu)
+	  mes "Rauk pours a portion of maggot slime from the small bottle into the glass bottle.";
+	mes "\"These are now " + @guess_accumulator + " thousandths of an ounce. How many thousands more?\"";
+	next;
+
+	menu "none", -,
+		"1 thousandth", -,
+		"2 thousandths", -,
+		"3 thousandths", -,
+		"4 thousandths", -,
+		"5 thousandths", -,
+		"6 thousandths", -,
+		"7 thousandths", -,
+		"8 thousandths", -,
+		"9 thousandths", -;
+
+	set @menu, @menu - 1;
+	set @guess_accumulator, @guess_accumulator + @menu;
+
+	mes "[Rauk the Alchemist]";
+	if (@menu)
+		mes "Rauk pours a tiny amount of maggot slime from the small bottle into the glass bottle.";
+	mes "Rauk mixes some more ingredients into the bottles, stirs them, heats one of them and mixes the results together.";
+	next;
+
+	mes "[Rauk the Alchemist]";
+	mes "\"Please put your finger in.\"";
+	mes "Hesitantly. you stick your finger into the resulting brew. The mixture feels warm and smooth to the touch.";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "You pull your finger out again.";
+
+	if (@guess_accumulator + @QUEST_GUESS_BASE > QUEST_clothdyer_knowsdye)
+		goto L_dark_green_q_toomuch;
+
+	if (@guess_accumulator + @QUEST_GUESS_BASE < QUEST_clothdyer_knowsdye)
+		goto L_dark_green_q_toolittle;
+
+	// otherwise correct guess
+
+	mes "Nothing seems to be happening with the mixture. Rauk's eyes lighten up.";
+	mes "\"This is it! You need precisely " + @guess_accumulator + " thousandts. Let me write this down...\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "Rauk is beaming.";
+	mes "\"I can now make dark green dye for you. All I need will be slime from one maggot, ten gamboge leaves, ten cobalt leaves, ten mauve leaves, and 1000 GP for other ingredients.\"";
+	mes "[You gain 20,000 experience points]";
+	getexp 20000, 0;
+	set QUEST_clothdyer_knowsdye, @QUEST_HAS_SOLVED_DYE_PUZZLE;
+	next;
+	goto L_intermediate;
+
+L_dark_green_q_toomuch:
+	mes "After only a second, the mixture begins to blacken. Rauk frowns.";
+	mes "\"That was too much... you need fewer than " + @guess_accumulator + " thousandths, I think.";
+	goto L_dark_green_q_again;
+
+L_dark_green_q_toolittle:
+	mes "Almost instantaneously, the mixture loses its colour and turns transparent. Rauk sighs.";
+	mes "\"That was too little. Next time, try more than " + @guess_accumulator + " thousandths.";
+	goto L_dark_green_q_again;
+
+L_dark_green_q_again:
+	mes "\"Should we try again?\"";
+	next;
+	menu "Yes!", L_dark_green_q_guess_0,
+		"No, I've had enough.", -;
+	close;
+
+L_dark_green_q_noslime:
+	mes "[Rauk the Alchemist]";
+	mes "\"Oh, you don't have any maggot slime? That's unfortunate; I am out of it myself. Still it should be easy enough to find, just bring me one and we can continue testing.\"";
+	next;
+	goto L_intermediate;
+
+L_monster_oil:
+	mes "[Rauk the Alchemist]";
+	mes "Rauk locks his eyes with you and continues in more serious tone.";
+	mes "\"I know how to create it, but you won't get it from me. It's far too dangerous; even the best alchemist may need multiple attempts and will risk blowing up! I can give you a recipe though, if you still are wanton.\"";
+	next;
+	menu
+		"Yes, tell me!", -,
+		"No, that sounds too dangerous.", L_abort;
+	mes "[Rauk the Alchemist]";
+	mes "You will need a pearl, a pair of snake skins, two piles of volcanic ash, three black scorpion stingers-- and a golden scorpion stinger. In addition you must have plenty of herbs to stabilise the concoction; mauve, alizarin, cobalt and gamboge will do just fine.";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"Take the pearl, skins, black stingers, ash, and cook briefly in a cauldron. Next add the mauve/alizarin/cobalt/gamboge as needed to stabilise into a black brew. Lastly, add the golden scorpion stinger and let boil briefly. And it's done.\"";
+	next;
+	mes "[Rauk the Alchemist]";
+	mes "\"Good luck not blowing up!\"";
+
+        set @Q_status, @Q_status | @SETZER_KNOWS_STINGER;
+        callsub L_Update_Var;
+	close;
+
+L_abort:
+	close;
+
+
+L_Update_Var:
+	set QUEST_Forestbow_state,
+		(QUEST_Forestbow_state & ~(@Q_MASK)
+		| (@Q_status << @Q_SHIFT));
+	return;
+}

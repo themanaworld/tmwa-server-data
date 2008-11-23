@@ -1,0 +1,194 @@
+006-1.gat,23,100,0 script	Pachua 143,{
+
+        set @LEATHER_PATCH, 708;
+        set @SNAKE_SKIN, 641;
+
+	set @LEATHER_PATCH_PRICE, 300;
+
+	set @wants_leather_patch, QUEST_Forestbow_state & NIBBLE_4_MASK;
+
+	mes "[Chief Pachua]";
+	mes "\"How!\"";
+	next;
+	
+	if (getequipid(equip_head) == 643 || getequipid(equip_head) == 644) goto L_WearingCowboy;
+	if (getequipid(equip_legs) == 642) goto L_WearingChaps;
+
+	mes "[Chief Pachua]";
+	mes "\"For generations my tribe has been crafting special clothes out of different items.\"";
+	next;
+
+L_Check_Shops:
+	if((countitem(610) > 0 && countitem(@SNAKE_SKIN) > 9) && (countitem(524) > 0 && countitem(@SNAKE_SKIN) > 1)) goto L_Super_store;
+	if(countitem(610) > 0 && countitem(@SNAKE_SKIN) > 9) goto L_Chaps_store;
+	if(countitem(524) > 0 && countitem(@SNAKE_SKIN) > 1) goto L_Cowboy_store;
+
+	mes "[Chief Pachua]";
+	mes "\"Maybe if you bring me the right materials I can make something for you.\"";
+        next;
+
+        if (@wants_leather_patch)
+		menu	"Wait, can you make a leather patch for me?", L_leather_patch,
+                	"OK, bye.", -;
+
+	close;
+
+L_CheckStuff:
+	mes "[Chief Pachua]";
+	mes "\"Let me see what you have there.\"";
+	next;
+	return;
+
+L_Super_store:
+	callsub L_CheckStuff;
+	mes "[Chief Pachua]";
+	mes "\"Ahh you have lots of good items to work with.\"";
+	mes "";
+	mes "\"With them I can make you either";
+	mes "a Cowboy hat or Snake Skin Chaps\"";
+	next;
+	if (@wants_leather_patch)
+		menu
+			"Cowboy hat, please.", L_BuyCowboy,
+			"Snake Skin Chaps sound good.", L_BuyChaps,
+			"Can you make a leather patch?", L_leather_patch,
+			"Not now, maybe later.", L_NoDeal;
+	if (!@wants_leather_patch)
+		menu
+			"Cowboy hat, please.", L_BuyCowboy,
+			"Snake Skin Chaps sound good.", L_BuyChaps,
+			"Not now, maybe later.", L_NoDeal;
+
+L_Cowboy_store:
+	callsub L_CheckStuff;
+	mes "[Chief Pachua]";
+	mes "\"To make you a Cowboy hat I will need:";
+	mes "1 Fancy hat";
+	mes "2 Snake skins";
+	mes "5.000 GP\"";
+	mes "";
+	mes "\"Do we have a deal?\"";
+	next;
+	if (@wants_leather_patch)
+		menu
+			"Yes, that's fine.", L_BuyCowboy,
+			"Can you make a leather patch?", L_leather_patch,
+			"On second thought, maybe later.", L_NoDeal;
+	if (!@wants_leather_patch)
+		menu
+			"Yes, that's fine.", L_BuyCowboy,
+			"On second thought, maybe later.", L_NoDeal;
+
+L_Chaps_store:
+	callsub L_CheckStuff;
+	mes "[Chief Pachua]";
+	mes "\"To make you a pair of Snake Skin Chaps I will need:";
+	mes "1 Jeans Shorts";
+	mes "10 Snake skins";
+	mes "10.000 GP\"";
+	mes "";
+	mes "\"Do we have a deal?\"";
+	next;
+	if (!@wants_leather_patch)
+		menu
+			"Yes, that's fine.", L_BuyChaps,
+			"On second thought, maybe later.", L_NoDeal;
+	if (@wants_leather_patch)
+		menu
+			"Yes, that's fine.", L_BuyChaps,
+			"Can you make a leather patch?", L_leather_patch,
+			"On second thought, maybe later.", L_NoDeal;
+
+L_BuyChaps:
+	if (zeny < 10000) goto L_NoMoney;
+	if (countitem(610) < 1) goto L_NoJeans;
+	if (countitem(@SNAKE_SKIN) < 10) goto L_NoSkin;
+	set zeny, zeny - 10000;
+	delitem @SNAKE_SKIN, 10;
+	delitem 610, 1;
+	getitem 642, 1;
+	goto L_DealDone;
+
+L_BuyCowboy:
+	if (zeny < 5000) goto L_NoMoney;
+	if (countitem(524) < 1) goto L_NoFancy;
+	if (countitem(@SNAKE_SKIN) < 2) goto L_NoSkin;
+	set zeny, zeny - 5000;
+	delitem @SNAKE_SKIN, 2;
+	delitem 524, 1;
+	set @temp,rand(2);
+	if(@temp == 0) goto L_Cowboy_white;
+	goto L_Cowboy_black;
+
+L_Cowboy_white:
+	getitem 643, 1;
+	goto L_DealDone;
+
+L_Cowboy_black:
+	getitem 644, 1;
+	goto L_DealDone;
+
+L_leather_patch:
+	mes "[Chief Pachua]";
+	mes "\"If you just want a piece of leather, then yes, I can make that.  Bring me a snake skin and " + @LEATHER_PATCH_PRICE + " GP.\"";
+        next;
+
+        menu	"Here you are.", -,
+		"OK, I'll be back later.", L_end,
+		"That's too expensive!.", L_NoDeal;
+
+	if (countitem(@SNAKE_SKIN) < 1) goto L_NoSkins;
+	if (zeny < @LEATHER_PATCH_PRICE) goto L_NoMoney;
+
+        set zeny, zeny - @LEATHER_PATCH_PRICE;
+        delitem @SNAKE_SKIN, 1;
+        getitem @LEATHER_PATCH, 1;
+        goto L_DealDone;
+
+L_DealDone:
+	mes "[Chief Pachua]";
+	mes "\"Here you are!\"";
+	mes "";
+	mes "\"Come back any time.\"";
+	close;
+
+L_NoDeal:
+	mes "[Chief Pachua]";
+	mes "\"Alright, but you wont get a better deal anywhere else!\"";
+	close;
+
+L_NoMoney:
+	mes "[Chief Pachua]";
+	mes "\"Oh dear, it seems you don't have enough money.\"";
+	close;
+
+L_NoJeans:
+	mes "[Chief Pachua]";
+	mes "\"Oh dear, it seems you don't have enough jeans shorts.\"";
+	close;
+
+L_NoFancy:
+	mes "[Chief Pachua]";
+	mes "\"Oh dear, it seems you don't have enough fancy hats.\"";
+	close;
+
+L_NoSkins:
+	mes "[Chief Pachua]";
+	mes "\"Oh dear, it seems you don't have enough snake skins.\"";
+	close;
+
+L_WearingCowboy:
+	mes "[Chief Pachua]";
+	mes "\"Ah, I see that you are wearing a hat made with the ancient methods of my tribe.\"";
+	next;
+	goto L_Check_Shops;
+
+L_WearingChaps:
+	mes "[Chief Pachua]";
+	mes "\"Ah, I see that you are wearing pants made by my tribe.\"";
+	next;
+	goto L_Check_Shops;
+
+L_end:
+	close;
+}

@@ -1,0 +1,89 @@
+//
+
+001-1.gat,50,53,0	script	Ishi	106,{
+	if (MPQUEST == 0) goto L_Register;
+	if (tvis == 0) set tvis, 1;
+	if (Mobpt < tvis) goto L_NotEnough;
+
+	setarray @Items, 502, 502, 503, 504, 505, 506, 507, 508, 509, 510, 586, 512, 513, 514, 515, 516, 517, 518, 519, 520;
+
+	mes "[Ishi the Rewards Master]";
+	mes "\"Welcome! I see you have " + Mobpt + " Monster Points. Would you like to exchange some of those for items?\"";
+	next;
+	
+	set @i, 0;
+	setarray @Menu$, "", "", "", "", "", "", "", "", "", "", "";
+	callsub SUB_prep_menu;
+	
+	menu
+		@Menu$[0], -,
+		@Menu$[1], -,
+		@Menu$[2], -,
+		@Menu$[3], -,
+		@Menu$[4], -,
+		@Menu$[5], -,
+		@Menu$[6], -,
+		@Menu$[7], -,
+		@Menu$[8], -,
+		@Menu$[9], -,
+		@Menu$[10], -;
+
+	if (@menu > @i) close;
+	
+	set @req, @menu;
+	set @rec, 0;
+	
+L_Item_Loop:
+	if (@rec == @req || Mobpt < tvis) goto L_Item_Done;
+	
+	callsub SUB_give_item;
+	set @rec, @rec + 1;
+	goto L_Item_Loop;
+	
+L_Item_Done:
+	if (@rec < @req) mes "It looks like your Monster Points were over estimated.";
+	close;
+
+L_Register:
+	mes "[Ishi the Rewards Master]";
+	mes "\"Hey, it seems like you didn't register as a quest participant yet! You can sign up with Aidan.\"";
+	close;
+
+L_NotEnough:
+	mes "[Ishi the Rewards Master]";
+	mes "\"You don't have enough Monster Points for a reward. You'll need to kill some more monsters first.\"";
+	close;
+
+//////////////////////////////////////////////////
+// Subroutines
+//////////////////////////////////////////////////
+
+SUB_prep_menu:
+	set @pts, Mobpt;
+	set @dif, tvis;
+	
+L_Menu_Loop:
+	if (@pts < @dif || @i == 10) goto L_Menu_Done;
+	
+	set @Menu$[@i], @i + 1;
+	
+	set @i, @i + 1;
+	set @pts, @pts - @dif;
+	set @dif, @dif + 1;
+	
+	goto L_Menu_Loop;
+L_Menu_Done:
+	set @Menu$[@i], "No thanks";
+	return;
+
+SUB_give_item:
+	set Mobpt, Mobpt - tvis;
+	set tvis, tvis + 1;
+	set @ID, @Items[rand(getarraysize(@Items))];
+	
+	getitem @ID, 1;
+	
+	mes "You received one " + getitemname(@ID) + "!";
+	
+	return;
+}
