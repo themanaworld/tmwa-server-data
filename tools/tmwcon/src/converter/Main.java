@@ -10,7 +10,7 @@ import java.util.*;
 
 import tiled.io.xml.*;
 
-public class Main extends Thread {
+public class Main {
     public static XMLMapTransformer reader = null;
 
     private static tiled.core.Map loadMap(File file) {
