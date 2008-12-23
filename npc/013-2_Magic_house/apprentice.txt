@@ -1,58 +1,92 @@
 013-2.gat,25,37,0	script	Fabius	115,{
-    mes "\"Hey! Wanna have a drink or something? High quality, low cost. A poor fella like me needs a bit of extra cash, ye know.\"";
-    next;
-    menu
-    "Yes please!",yes,
-    "No thanks.",no,
-    "No way, I thought it was for free!",not_free;
-yes:
-    mes "\"So what would ya like, then?\"";
-    next;
-    menu
-    "A beer",beer,
-    "A milk",milk;
-no:
-    mes "\"Suit yourself.\"";
-    next;
-    goto at_end;
-not_free:
-    mes "\"Oh, you stupid git! ... But hey, let me tell ya something...\"";
-    next;
-    mes "\"There's notes flying around in the room up there. Did ya try reading some?\"";
-    close;
-beer:
-    mes "\"That'll be 175 GP.\"";
-    next;
-    menu "Here you are",beer_yes,
-         "No thanks",beer_no;
-milk:
-    mes "\"That'll be 300 GP.\"";
-    next;
-    menu "Here you are",milk_yes,
-         "No thanks",milk_no;
-beer_yes:
-    if (zeny < 175) goto low_money;
-    getitem 539, 1;
-    set zeny, zeny - 175;
-    goto at_end;
-beer_no:
-    mes "\"No beer, no civilization!\"";
-    next;
-    goto at_end;
-milk_yes:
-    if (zeny < 300) goto low_money;
-    getitem 527, 1;
-    set zeny, zeny - 300;
-    goto at_end;
-milk_no:
-    mes "\"Oh alright. Milk is a deadly poison anyway...\"";
-    next;
-    goto at_end;
-low_money:
-    mes "\"Aw, you don't have enough gold on you!\"";
-    next;
-at_end:
-    mes "\"By the way, have you seen those flying notes and the mirror in the room next door? They're WAY COOL! Try reading some of the notes!\"";
-    close;
-}
+	mes "[Fabius]";
+	mes "\"Hey! Wanna have a drink or something? High quality, low cost. A poor fella like me needs a bit of extra cash, ye know.\"";
+	next;
+	menu
+		"Yes please!", L_Yes,
+		"No thanks.", L_No,
+		"No way, I thought it was for free!", L_Not_Free;
 
+L_Yes:
+	mes "[Fabius]";
+	mes "\"So what would ya like, then?\"";
+	next;
+	menu
+		"A beer", L_Beer,
+		"A milk", L_Milk,
+		"Nevermind", -;
+
+L_No:
+	mes "[Fabius]";
+	mes "\"Suit yourself.\"";
+	next;
+	goto L_Finish;
+
+L_Not_Free:
+	mes "[Fabius]";
+	mes "\"Oh, you stupid git! ... But hey, let me tell ya something...\"";
+	next;
+	mes "[Fabius]";
+	mes "\"There's notes flying around in the room up there. Did ya try reading some?\"";
+	close;
+
+L_Beer:
+	mes "[Fabius]";
+	mes "\"That'll be 175 GP.\"";
+	next;
+	menu
+		"Here you are", L_Beer_yes,
+		"No thanks", L_Beer_no;
+
+L_Beer_yes:
+	if (zeny < 175) goto L_Low_money;
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem(539) == 0) goto L_TooMany;
+
+	getitem 539, 1;
+	set zeny, zeny - 175;
+	goto L_Finish;
+
+L_Beer_no:
+	mes "[Fabius]";
+	mes "\"No beer, no civilization!\"";
+	next;
+	goto L_Finish;
+
+L_Milk:
+	mes "[Fabius]";
+	mes "\"That'll be 300 GP.\"";
+	next;
+	menu
+		"Here you are", L_Milk_yes,
+		"No thanks", L_Milk_no;
+
+L_Milk_yes:
+	if (zeny < 300) goto L_Low_money;
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem(527) == 0) goto L_TooMany;
+	getitem 527, 1;
+	set zeny, zeny - 300;
+	goto L_Finish;
+
+L_Milk_no:
+	mes "[Fabius]";
+	mes "\"Oh alright. Milk is a deadly poison anyway...\"";
+	next;
+	goto L_Finish;
+
+L_Low_money:
+	mes "[Fabius]";
+	mes "\"Aw, you don't have enough gold on you!\"";
+	next;
+	goto L_Finish;
+
+L_Finish:
+	mes "[Fabius]";
+	mes "\"By the way, have you seen those flying notes and the mirror in the room next door? They're WAY COOL! Try reading some of the notes!\"";
+	close;
+
+L_TooMany:
+	mes "[Fabius]";
+	mes "\"You don't have room for it.\"";
+}

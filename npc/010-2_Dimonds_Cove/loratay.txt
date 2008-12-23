@@ -429,6 +429,8 @@ L_tanktop_menu:
 L_tanktop_short:
         if (countitem (@COTTON) < 5) goto L_tanktop_insufficient_cloth;
         if (zeny < 1000) goto L_tanktop_insufficient_zeny;
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem(@COTTON) > 5) goto L_TooMany;
         set zeny, zeny - 1000;
         delitem @COTTON, 5;
         getitem 689, 1;
@@ -443,6 +445,8 @@ L_tanktop_short:
 L_tanktop_long:
         if (countitem (@COTTON) < 6) goto L_tanktop_insufficient_cloth;
         if (zeny < 1000) goto L_tanktop_insufficient_zeny;
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem(@COTTON) > 6) goto L_TooMany;
         set zeny, zeny - 1000;
         delitem @COTTON, 6;
         getitem 688, 1;
@@ -518,6 +522,9 @@ L_robe_menu:
 
         if (zeny < @ROBE_ZENY)
 		goto L_robe_missing_zeny;
+
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem(@SILK_COCOON) > @ROBE_COCOONS_NR) goto L_TooMany;
 
         set zeny, zeny - @ROBE_ZENY;
         delitem @SILK_COCOON, @ROBE_COCOONS_NR;
@@ -688,5 +695,9 @@ L_SUB_choice_join:
         if (@menu >= @c) set @item, 0;
 
         return;
-}
 
+L_TooMany:
+        mes "[Lora Tay the Seamstress]";
+        mes "\"You don't have anywhere to put this. Come back when you have more room.\"";
+	close;
+}
