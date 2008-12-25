@@ -810,12 +810,19 @@ L_knife_quest_completecheck:
 	mes "I had the nomads make me a few of them, and I hardly use them nowadays, so I think I can part with this one.";
 	next;
 
+	if (countitem(@BLACK_STINGER) < @BLACK_STINGERS_NR)
+		goto L_knife_quest_missing_stingers_2;
+
+	if (countitem(@MUSHROOM) < @MUSHROOMS_NR)
+		goto L_knife_quest_missing_mushrooms_2;
+	getinventorylist;
+	if (@inventorylist_count == 100) goto L_Knife_TooMany;
+
 	mes "[Kfahr the Warrior]";
 	mes "He hands you the knife.";
 	mes "\"Oh, and I think I'll keep those in return; I know someone who will trade them for antidote potions.\"";
 	mes "He pockets the stingers and mushrooms.";
 	mes "[" + @KNIFE_QUEST_XP + " experience points]";
-	next;
 
 	set @Q_status, @QS_KNIFE_QUEST_DONE;
 	callsub L_Update_Var;
@@ -824,9 +831,14 @@ L_knife_quest_completecheck:
 	delitem @MUSHROOM, @MUSHROOMS_NR;
 	getexp @KNIFE_QUEST_XP, 0;
 	getitem @BONE_KNIFE, 1;
-
+        next;
 
 	goto L_main_menu;
+
+L_Knife_TooMany:
+	mes "[Kfahr the Warrior]";
+	mes "\"You don't have room for this. Come back when you do.\"";
+	close;
 
 L_knife_quest_missing_stingers:
 	mes "[Kfahr the Warrior]";
@@ -838,9 +850,29 @@ L_knife_quest_missing_stingers:
 	next;
 	close;
 
+L_knife_quest_missing_stingers_2:
+	mes "[Kfahr the Warrior]";
+	mes "\"You just had " + @BLACK_STINGERS_NR + " black scorpion stingers. What happened to them?";
+	if (countitem(@BLACK_STINGER))
+		mes "You will need " + (@BLACK_STINGERS_NR - (countitem (@BLACK_STINGER))) + " more of those.\"";
+	if (countitem(@BLACK_STINGER) == 0)
+		mes "You didn't bring even a single one!\"";
+	next;
+	close;
+
 L_knife_quest_missing_mushrooms:
 	mes "[Kfahr the Warrior]";
 	mes "\"No, no... I said " + @MUSHROOMS_NR + " small mushrooms.";
+	if (countitem(@MUSHROOM))
+		mes "You will need " + (@MUSHROOMS_NR - (countitem (@MUSHROOM))) + " more of those.\"";
+	if (countitem(@MUSHROOM) == 0)
+		mes "You didn't bring me even a single little mushroom!\"";
+	next;
+	close;
+
+L_knife_quest_missing_mushrooms_2:
+	mes "[Kfahr the Warrior]";
+	mes "\"You just had " + @MUSHROOMS_NR + " small mushrooms. What happened to them?";
 	if (countitem(@MUSHROOM))
 		mes "You will need " + (@MUSHROOMS_NR - (countitem (@MUSHROOM))) + " more of those.\"";
 	if (countitem(@MUSHROOM) == 0)
@@ -863,6 +895,8 @@ L_stinger_quest_check:
 L_snakeskins_completecheck:
 	if (countitem(@SNAKE_SKIN) < @SNAKE_SKINS_NR)
 		goto L_snakeskins_missing;
+	getinventorylist;
+	if (@inventorylist_count == 100) goto L_SnakeSkins_TooMany;
 
 	delitem @SNAKE_SKIN, @SNAKE_SKINS_NR;
 	getitem @GOLDEN_STINGER, 1;
@@ -890,6 +924,10 @@ L_snakeskins_missing:
 	next;
 	close;
 
+L_SnakeSkins_TooMany:
+	mes "[Kfahr the Warrior]";
+	mes "\"YOu don't have room for this. Come back when you do.\"";
+	close;
 
 L_give_beer:
 	if (countitem(@BEER) < 1)

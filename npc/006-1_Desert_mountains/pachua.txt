@@ -134,11 +134,13 @@ L_leather_patch:
         next;
 
         menu	"Here you are.", -,
-		"OK, I'll be back later.", L_end,
+		"OK, I'll be back later.", L_End,
 		"That's too expensive!.", L_NoDeal;
 
 	if (countitem(@SNAKE_SKIN) < 1) goto L_NoSkins;
 	if (zeny < @LEATHER_PATCH_PRICE) goto L_NoMoney;
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem(@SNAKE_SKIN) > 1) goto L_TooMany;
 
         set zeny, zeny - @LEATHER_PATCH_PRICE;
         delitem @SNAKE_SKIN, 1;
@@ -189,6 +191,10 @@ L_WearingChaps:
 	next;
 	goto L_Check_Shops;
 
-L_end:
+L_End:
 	close;
+
+L_TooMany:
+	mes "[Chief Pachua]";
+	mes "\"You don't have room for a leather patch. Come back later.\"";
 }

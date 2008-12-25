@@ -110,7 +110,7 @@ L_Bow_state_2:
 	if (@Q_Forestbow > 3) goto L_Bow_state_4;
 
 	mes "\"Good luck hunting those tree monsters - you will need it.\"";
-	if (Inspector == 1) goto L_NohMask_Ask;
+	if (Inspector == 1) callsub S_NohMask_Ask;
 	close;
 
 L_Bow_state_4:
@@ -183,6 +183,8 @@ L_Shield_state_2:
 
 	if (countitem(@RAWLOG) < @RAWLOGS_AMOUNT) goto L_Not_enough_logs;
 	if (zeny < @SHIELD_COST) goto L_Not_enough_money;
+	getinventorylist;
+	if (@inventorylist_count == 100) goto L_TooMany;
 
 	delitem @RAWLOG, @RAWLOGS_AMOUNT;
 	set zeny, zeny - @SHIELD_COST;
@@ -223,16 +225,24 @@ L_Not_enough_money:
 	mes "\"You don't have enough gold, I'm afraid.  I need " + @SHIELD_COST + " GP to finish your shield.\"";
 	close;
 
+L_TooMany:
+	mes "[Jack Lumber]";
+	mes "\"You don't have enough room for the shield. Come back when you do.\"";
+	close;
+
 L_Shield_state_3:
 	mes "[Jack Lumber]";
 	mes "\"I hope that my shield will serve you well!\"";
+	next;
+
 	if (Inspector == 1)
 		menu
 			"Me too.", -,
 			"Have you seen anything that might be connected to the recent robberies in town?", L_NohMask_Answer;
 	close;
 
-L_NohMask_Ask:
+S_NohMask_Ask:
+	next;
 	menu
 		"I'll keep that in mind.", -,
 		"Have you seen anything that might be connected to the recent robberies in town?", L_NohMask_Answer;

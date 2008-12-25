@@ -1,83 +1,102 @@
 //
 
 001-1.gat,110,71,0	script	Sandra	114,{
-	if(Scorp == 2) goto done;
-	if(Scorp == 1) goto reas;
+	if(Scorp == 2) goto L_Done;
+	if(Scorp == 1) goto L_Progress;
+
 	set @TEMP,rand(3);
-	if(@TEMP == 1) goto L_1;
-	if(@TEMP == 2) goto L_2;
-	if(@TEMP == 3) goto L_3;
-	if(@TEMP == 0) goto L_4;
-L_1:
+	if(@TEMP == 1) goto L_Opening1;
+	if(@TEMP == 2) goto L_Opening2;
+	if(@TEMP == 3) goto L_Opening3;
+	if(@TEMP == 0) goto L_Opening4;
+
+L_Opening1:
 	mes "[Sandra]";
-	mes "\"In the outskirts of Tulimshar, there wanders a red scorpion. I need a favor, please help me.\"";
+	mes "\"In the outskirts of Tulimshar, there wanders a red scorpion. I need a favor, please help me. Will you?\"";
 	next;
-	goto red;
-L_2:
+	goto L_Ask;
+
+L_Opening2:
 	mes "[Sandra]";
 	mes "\"When you venture in the outskirts of Tulimshar, you can spot a red scorpion. Will you help me kill one?\"";
 	next;
-	goto red;
-L_3:
+	goto L_Ask;
+
+L_Opening3:
 	mes "[Sandra]";
-	mes "\"The red scorpion stinger carries many properties used in potions.\"";
+	mes "\"The red scorpion stinger carries many properties used in potions. Will you get some for me?\"";
 	next;
-	goto red;
-L_4:
+	goto L_Ask;
+
+L_Opening4:
 	mes "[Sandra]";
 	mes "\"You look sturdy enough, will you help me get something?\"";
 	next;
-	goto red;
-red:
-	menu "Yes",L_kl,"No",L_N;
-L_kl:
-	if(@TEMP == 1) goto K_1;
-	if(@TEMP == 2) goto K_2;
-	if(@TEMP == 3) goto K_3;
-	if(@TEMP == 0) goto K_1;
-K_1:
+	goto L_Ask;
+
+L_Ask:
+	menu
+		"Yes", L_Yes,
+		"No", L_No;
+
+L_Yes:
+	if(@TEMP == 1) goto L_Req1;
+	if(@TEMP == 2) goto L_Req2;
+	if(@TEMP == 3) goto L_Req3;
+	if(@TEMP == 0) goto L_Req1;
+
+L_Req1:
 	mes "[Sandra]";
 	mes "\"I need you to slaughter the red scorpion found outside of Tulimshar and bring me 5 [Red Stingers].\"";
 	next;
-	goto set1;
-K_2:
+	goto L_Set;
+
+L_Req2:
 	mes "[Sandra]";
 	mes "\"I heard a while ago that the stinger of a red scorpion can be used for medical purposes. I need you to help me get 5 [Red Stingers].\"";
 	next;
-	goto set1;
-K_3:
+	goto L_Set;
+
+L_Req3:
 	mes "[Sandra]";
 	mes "\"Bring me 5 [Red Stingers] and i will reward you greatly.\"";
 	next;
-	goto set1;
-set1:
+	goto L_Set;
+
+L_Set:
 	set Scorp,1;
 	mes "[Sandra]";
 	mes "\"Please bring me them!\"";
 	close;
-reas:
-	if(countitem(517) >= 5) goto have;
+
+L_Progress:
+	if (countitem(517) >= 5) goto L_Have;
 	mes "[Sandra]";
 	mes "\"Please hurry and bring me 5 [Red Stingers].\"";
 	close;
-have:
+
+L_Have:
 	mes "[Sandra]";
 	mes "\"Excellent!";
 	mes "You brought me 5 [Red Stingers]!\"";
-	delitem 517,5;
-	next;
-	mes "[Sandra]";
-	mes "\"Here you go, your reward!\"";
-	mes "+Got Bow";
-	mes "+Got Arrows 100";
-	getitem 1200,1;
-	getitem 1199,100;
-	set Scorp,2;
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem(517) > 5) goto L_TooMany;
+	delitem 517, 5;
+	getitem 1200, 1;
+	getitem 1199, 100;
+	set Scorp, 2;
 	close;
-done:
+
+L_Done:
 	mes "[Sandra]";
 	mes "\"Thank you for all your help!\"";
 	close;
-L_N:
+
+L_No:
 	close;
+
+L_TooMany:
+	next;
+	mes "[Sandra]";
+	mes "\"You don't have room for my reward. I'll wait until you do.\"";
 }
