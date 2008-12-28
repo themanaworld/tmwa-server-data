@@ -2,6 +2,8 @@
 
 001-1.gat,58,68,0	script	Elanore	108,{
 
+	set @has_magic, getskilllv(SKILL_MAGIC);
+
 	if (baselevel > 10) goto L_NoHeal;
 
 	set @TEMP,rand(4);
@@ -78,13 +80,140 @@ Heal_4:
 	close;
 	
 L_NoHeal:
+        if (MAGIC_FLAGS)
+        	goto L_Chat;
 
+L_NoHealMessage:
 	mes "[Elanore the Healer]";
 	mes "\"I'm sorry but unless you are young and in need, I can't help you, and your level is already higher than ten.";
 	mes "With so many people still injured from the earthquake, I really have no time to help.";
 	mes "You can get some rest in the inn near here.\"";
 	
 	close;
+
+L_Chat:
+	mes "[Elanore the Healer]";
+        mes "\"Hello!  Can I help you?\"";
+        next;
+L_Main:
+        if (@has_magic)
+            menu
+        	"Can you heal me?", L_NoHealMessage,
+                "Can you teach me magic?", L_Teach,
+		"What do you know about...", L_Question;
+
+        if (!@has_magic)
+            menu
+        	"Can you heal me?", L_NoHealMessage,
+		"What do you know about...", L_Question;
+        close;
+
+L_Teach:
+        close;
+
+L_Question:
+        set @QQ_MANAPOTION, 1;
+        set @QQ_MANASEED, 2;
+        set @QQ_WYARA, 3;
+        set @QQ_SAGATHA, 4;
+        set @QQ_AULDSBEL, 5;
+
+        setarray @choice$, "", "", "", "", "", "";
+        set @choices_nr, 0;
+        setarray @choice_idx, 0, 0, 0, 0, 0, 0;
+
+        if (!(MAGIC_FLAGS & (MFLAG_KNOWS_MANASEED | MFLAG_MANASEED_RUMOUR)))
+        	goto L_Q_post_manaseed;
+        set @choice$[@choices_nr], "...the Mana Seed?";
+        set @choice_idx[@choices_nr], @QQ_MANASEED;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_manaseed:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANAPOTION))
+        	goto L_Q_post_manapotion;
+        set @choice$[@choices_nr], "...Mana Potions?";
+        set @choice_idx[@choices_nr], @QQ_MANAPOTION;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_manapotion:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_WYARA))
+        	goto L_Q_post_wyara;
+        set @choice$[@choices_nr], "...Wyara the Witch?";
+        set @choice_idx[@choices_nr], @QQ_WYARA;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_wyara:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
+        	goto L_Q_post_sagatha;
+        set @choice$[@choices_nr], "...Sagatha the Witch?";
+        set @choice_idx[@choices_nr], @QQ_SAGATHA;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_sagatha:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_AULDSBEL))
+        	goto L_Q_post_auldsbel;
+        set @choice$[@choices_nr], "...Auldsbel the Wizard?";
+        set @choice_idx[@choices_nr], @QQ_AULDSBEL;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_auldsbel:
+
+        set @choice$[@choices_nr], "...never mind.";
+        set @choice_idx[@choices_nr], 0;
+        set @choices_nr, @choices_nr + 1;
+
+        menu @choice$[0], -,
+             @choice$[1], -,
+             @choice$[2], -,
+             @choice$[3], -,
+             @choice$[4], -;
+
+        set @menu, @menu - 1;
+
+        if (@menu >= @choices_nr)
+		set @menu, 0;
+	
+        set @c, @choice_idx[@menu];
+
+        if (@c == 0)		goto L_Main;
+        if (@c == @QQ_MANASEED)	goto L_Q_manaseed;
+        if (@c == @QQ_MANAPOTION)	goto L_Q_manapotion;
+        if (@c == @QQ_WYARA)	goto L_Q_wyara;
+        if (@c == @QQ_SAGATHA)	goto L_Q_sagatha;
+        if (@c == @QQ_AULDSBEL)	goto L_Q_auldsbel;
+        close;
+
+L_Q_manaseed:
+	mes "[Elanore the Healer]";
+        mes "She smiles.";
+        mes "\"If the rumors are true and there really is a Mana Seed, then that would be wonderful news-- perhaps we will have a few more healers soon!\"";
+        next;
+        goto L_Main;
+
+L_Q_manapotion:
+	mes "[Elanore the Healer]";
+        mes "\"I'm sorry, but I can't help you with that.\"";
+        next;
+        goto L_Main;
+
+L_Q_wyara:
+	mes "[Elanore the Healer]";
+        mes "\"Wyara is the Hurnscald town witch.  She was also the town healer before the Doctor moved there.\"";
+        next;
+        goto L_Main;
+
+L_Q_sagatha:
+	mes "[Elanore the Healer]";
+        mes "\"Oh, I have only met Sagatha once or twice, while collecting herbs.  She is a warm and gentle person, but she tries to hide it.\"";
+        next;
+        goto L_Main;
+
+L_Q_auldsbel:
+	mes "[Elanore the Healer]";
+        mes "\"Oh, sorry-- I don't really know him very well.\"";
+        next;
+        goto L_Main;
+
+
 
 }
 

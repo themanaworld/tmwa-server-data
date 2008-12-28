@@ -18,6 +18,9 @@
 	set @MAUVE, 680;
 	set @PETAL, 565;
 	set @PEARL, 700;
+	set @WATER, 541;
+	set @ASH, 701;
+	set @MANAPOTION, 705;
 	set @ORE, 640;
 	set @MAGGOTSLIME, 505;
 
@@ -30,9 +33,10 @@
 	set @CHOICE_DYEING_INTRO, 2;
 	set @CHOICE_DYE, 3;
 	set @CHOICE_MONSTER_OIL, 4;
-	set @CHOICE_ABORT, 5;
+	set @CHOICE_MANA_POTION, 5;
+	set @CHOICE_ABORT, 6;
 
-	setarray @menuitems$, "", "", "", "", "";
+	setarray @menuitems$, "", "", "", "", "", "";
 	set @c, 0;
 
 	set @menuitems$[@c], "Iron potion.";
@@ -42,6 +46,13 @@
 	set @menuitems$[@c], "Concentration potion.";
 	set @menuID[@c], @CHOICE_CONCENTRATION;
 	set @c, @c + 1;
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANAPOTION))
+        	goto L_post_mana_potion_c;
+	set @menuitems$[@c], "Mana potion.";
+	set @menuID[@c], @CHOICE_MANA_POTION;
+	set @c, @c + 1;
+L_post_mana_potion_c:
 
 	if (QUEST_clothdyer_knowsdye >= @QUEST_CAN_GET_DYE_HERE)
 		goto L_skip_introducing;
@@ -94,6 +105,7 @@ L_main_menu:
 		@menuitems$[2], -,
 		@menuitems$[3], -,
 		@menuitems$[4], -;
+		@menuitems$[5], -;
 
 	set @menu, @menu - 1;
 
@@ -103,7 +115,58 @@ L_main_menu:
 	if (@menuID[@menu] == @CHOICE_DYEING_INTRO) goto L_dyeing_intro;
 	if (@menuID[@menu] == @CHOICE_DYE) goto L_pick_colour;
 	if (@menuID[@menu] == @CHOICE_MONSTER_OIL) goto L_monster_oil;
+	if (@menuID[@menu] == @CHOICE_MANA_POTION) goto L_mana_potion;
 	if (@menuID[@menu] == @CHOICE_ABORT) goto L_abort;
+
+L_mana_potion:
+	mes "[Rauk the Alchemist]";
+        mes "\"Humh... I do believe that I have a recipe somewhere.  One moment...\"";
+        mes "Rauk pulls a small book out of his sleeve and leafs through it.";
+        mes "\"Aha, here we are.  Hmm, I'm not convinced that this is the best possible recipe...\"";
+        next;
+	mes "[Rauk the Alchemist]";
+        mes "\"I shall need one pearl, one bottle of water, thirty mauve leaves, twenty gamboge leaves, and five piles of volcanic ash.\"";
+        next;
+
+        menu "Here you are!", L_get_mana_potion,
+             "Never mind.", L_main_menu;
+
+	goto L_main_menu;
+
+L_get_mana_potion:
+	if(countitem(@MAUVE) < 30) goto L_mana_potion_lacking;
+	if(countitem(@YELLOW) < 20) goto L_mana_potion_lacking;
+	if(countitem(@ASH) < 5) goto L_mana_potion_lacking;
+	if(countitem(@PEARL) < 1) goto L_mana_potion_lacking;
+	if(countitem(@WATER) < 1) goto L_mana_potion_lacking;
+
+        delitem @MAUVE, 30;
+        delitem @YELLOW, 20;
+        delitem @ASH, 5;
+        delitem @PEARL, 1;
+        delitem @WATER, 1;
+        getitem @MANAPOTION, 1;
+
+	mes "[Rauk the Alchemist]";
+        mes "Rauk grinds the leaves, then crushes the pearl.  Taking out a small charcoal oven, he heats up your water bottle and dissolves first the pearl powder, then the ashes.";
+        mes "The brew begins to bubble violently.";
+        next;
+
+	mes "[Rauk the Alchemist]";
+        mes "Taking the bottle with a pair of tongs, he pours the liquid through a fine sieve, discarding the liquid.";
+        mes "He then mixes the residual paste with the leaves, stirs in a little water from the pond and fills the result into a separate bottle.";
+        next;
+
+	mes "[Rauk the Alchemist]";
+        mes "\"Here you are.  I hope that this is what you wanted.\"";
+        next;
+
+	goto L_main_menu;
+
+L_mana_potion_lacking:
+	mes "[Rauk the Alchemist]";
+        mes "\"Sorry, but I need one pearl, one bottle of water, 30 mauve leaves, 20 gamboge leaves, and five piles of volcanic ash.\"";
+        goto L_main_menu;
 
 L_iron:
   	if(countitem(566) < 20) goto L_no_iron;

@@ -402,7 +402,7 @@ L_question:
         set @choice_idx[@choices_nr], @QQ_ELANORE;
         set @choices_nr, @choices_nr + 1;
 
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANASEED))
+        if (!(MAGIC_FLAGS & (MFLAG_KNOWS_MANASEED | MFLAG_MANASEED_RUMOUR)))
         	goto L_Q_post_manaseed;
         set @choice$[@choices_nr], "...the Mana Seed?";
         set @choice_idx[@choices_nr], @QQ_MANASEED;
@@ -472,10 +472,18 @@ L_Q_sagatha:
         next;
         goto L_main_menu;
 
+L_Q_manaseed_rumour:
+        mes "[Auldsbel the Wizard]";
+        mes "\"A mana seed?  Around here?  Nah, they've been pulling your leg.  Those things are extremely rare, after all.\"";
+        next;
+        goto L_main_menu;
+
 L_Q_manaseed:
         mes "[Auldsbel the Wizard]";
         if (@has_magic)
         	goto L_Q_manaseed_withmagic;
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANASEED)) // rumour only?
+		goto L_Q_manaseed_rumour;
         if (MAGIC_FLAGS & MFLAG_DRANK_POTION)
 		goto L_Q_manaseed_prepared;
         if (MAGIC_FLAGS & MFLAG_TOUCHED_MANASEED)

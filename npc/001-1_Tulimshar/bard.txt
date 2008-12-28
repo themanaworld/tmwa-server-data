@@ -1,10 +1,153 @@
 //
 
-001-1.gat,50,44,0	script	Bard	152,{
+001-1.gat,37,73,0	script	Bard	152,{
 	setarray @songs$, "\"There once was a bard, who had it hard, because a man in dark green, was very mean.\"",
 			"\"At Hurnscald inn, there was a person of fairest skin, declining wedding bands from quite a many hands.\"",
 			"\"As the Sun sets down in the forest's brown, she whom the fragrance holds counts her gold.\"";
 	set @id, rand(3);
+        mes "[Bill Wobbleball the Bard]";
+        if (Sex)
+        	mes "\"Greetings, traveler!  Have you come to listen to my stories?\"";
+        if (!Sex)
+        	mes "\"Greetings, fair lady!  Well met, on such a lovely day!  Might I entertain you with a tale or two?\"";
+        next;
+
+L_Main:
+        menu "Sing me a song, lute man!", L_Song,
+             "Have you heard any news?", L_News,
+             "What do you know about...", L_Question,
+             "Farewell!", -;
+        close;
+
+L_News:
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"News I have for you indeed, lest you have already overheard (for then it would no longer be news to you!)\"";
+        next;
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"Rumor has it that an ancient source of magic, a Mana Seed, has been sighted in the west, beyond the fair town of Hurnscald.\"";
+        next;
+        set MFLAG, MFLAG | MFLAG_MANASEED_RUMOUR;
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"Whence it came, nobody knows... but they say that sometimes such Mana Seeds may choose a powerful individual to impart some of its mystic power to!\"";
+        next;
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"I wonder who might be qualified?\"";
+        next;
+        goto L_Main;
+
+L_Question:
+        set @QQ_ELANORE, 1;
+        set @QQ_MANASEED, 2;
+        set @QQ_WYARA, 3;
+        set @QQ_SAGATHA, 4;
+        set @QQ_AULDSBEL, 5;
+
+        setarray @choice$, "", "", "", "", "", "";
+        set @choices_nr, 0;
+        setarray @choice_idx, 0, 0, 0, 0, 0, 0;
+
+        set @choice$[@choices_nr], "...Elanore the Healer?";
+        set @choice_idx[@choices_nr], @QQ_ELANORE;
+        set @choices_nr, @choices_nr + 1;
+
+        if (!(MAGIC_FLAGS & (MFLAG_KNOWS_MANASEED | MFLAG_MANASEED_RUMOUR)))
+        	goto L_Q_post_manaseed;
+        set @choice$[@choices_nr], "...the Mana Seed?";
+        set @choice_idx[@choices_nr], @QQ_MANASEED;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_manaseed:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_WYARA))
+        	goto L_Q_post_wyara;
+        set @choice$[@choices_nr], "...Wyara the Witch?";
+        set @choice_idx[@choices_nr], @QQ_WYARA;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_wyara:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
+        	goto L_Q_post_sagatha;
+        set @choice$[@choices_nr], "...Sagatha the Witch?";
+        set @choice_idx[@choices_nr], @QQ_SAGATHA;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_sagatha:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_AULDSBEL))
+        	goto L_Q_post_auldsbel;
+        set @choice$[@choices_nr], "...Auldsbel the Wizard?";
+        set @choice_idx[@choices_nr], @QQ_AULDSBEL;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_auldsbel:
+
+        set @choice$[@choices_nr], "...never mind.";
+        set @choice_idx[@choices_nr], 0;
+        set @choices_nr, @choices_nr + 1;
+
+        menu @choice$[0], -,
+             @choice$[1], -,
+             @choice$[2], -,
+             @choice$[3], -,
+             @choice$[4], -;
+
+        set @menu, @menu - 1;
+
+        if (@menu >= @choices_nr)
+		set @menu, 0;
+	
+        set @c, @choice_idx[@menu];
+
+        if (@c == 0)		goto L_Main;
+        if (@c == @QQ_ELANORE)	goto L_Q_elanore;
+        if (@c == @QQ_MANASEED)	goto L_Q_manaseed;
+        if (@c == @QQ_WYARA)	goto L_Q_wyara;
+        if (@c == @QQ_SAGATHA)	goto L_Q_sagatha;
+        if (@c == @QQ_AULDSBEL)	goto L_Q_auldsbel;
+        close;
+
+L_Q_elanore:
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"Elanore is this town's healer.  Rumor has it that she traveled far and wide when she was younger, to learn the deepest secrets of healing magic, after her brother caught a mysterious illness.\"";
+        next;
+        goto L_Main;
+
+L_Q_manaseed:
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"The Mana Seed is said to be a source of great magic.  Perhaps some witch or wizard might know more about it?\"";
+        next;
+        goto L_Main;
+
+L_Q_wyara:
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"Wyara is not actually from Hurnscald.  As a young witch, she decided to settle down there to help the people of Hurnscald.  She is kind and gentle, except towards the Doctor, who seems to have little respect for her potions.\"";
+        next;
+        goto L_Main;
+
+L_Q_sagatha:
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"Sagatha!  Ah, such a wonderful and mysterious being; the center of many a tale...\"";
+        next;
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"Some say that she is the most powerful witch in all of Argaes.  I don't know whether that is true, but I am quite certain that the is the most beautiful of all the witches!  Alas, she will let no man touch her...\"";
+        mes "He sighs.";
+        next;
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"I met her only twice, back in my traveling days, but there are two pieces of advice I can give you:\"";
+        next;
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"First, she will suffer no fool easily, particularly no man.\"";
+        next;
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"Second, the creatures of the forest mean everything to her.  Harm them, and you may find her an enemy-- and a powerful one at that...\"";
+        next;
+        goto L_Main;
+
+L_Q_auldsbel:
+        mes "[Bill Wobbleball the Bard]";
+        mes "\"Auldsbel is some wizard from further north, from what I have gathered.  He bought a hut near Hurnscald some years back and often comes here to experiment on things, probably because he is not allowed to do these experiments where he comes from.\"";
+        next;
+        goto L_Main;
+
+
+L_Song:
 	mes @songs$[@id];
 	close;
 }

@@ -1,0 +1,153 @@
+009-2.gat,121,26,0	script	Wyara#_M	103,{
+
+	set @MAUVE, 680;
+	set @BOTTLE_WATER, 541;
+	set @MANAPOTION, 705;
+
+	set @has_magic, getskilllv(SKILL_MAGIC);
+
+	mes "[Wyara the Witch]";
+        next;
+
+        set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_WYARA;
+L_Main:
+        menu "Q: generic", L_Question,
+             "Q: buy", L_Shop,
+             "Bye", -;
+        close;
+
+L_Shop:
+	mes "[Wyara the Witch]";
+        mes "cf. Potion Shelf behind me";
+        next;
+        goto L_Main;
+
+L_Question:
+        set @QQ_ELANORE, 1;
+        set @QQ_MANASEED, 2;
+        set @QQ_MANAPOTION, 3;
+        set @QQ_SAGATHA, 4;
+        set @QQ_AULDSBEL, 5;
+
+        setarray @choice$, "", "", "", "", "", "";
+        set @choices_nr, 0;
+        setarray @choice_idx, 0, 0, 0, 0, 0, 0;
+
+        set @choice$[@choices_nr], "...Elanore the Healer?";
+        set @choice_idx[@choices_nr], @QQ_ELANORE;
+        set @choices_nr, @choices_nr + 1;
+
+        if (!(MAGIC_FLAGS & (MFLAG_KNOWS_MANASEED | MFLAG_MANASEED_RUMOUR)))
+        	goto L_Q_post_manaseed;
+        set @choice$[@choices_nr], "...the Mana Seed?";
+        set @choice_idx[@choices_nr], @QQ_MANASEED;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_manaseed:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANAPOTION))
+        	goto L_Q_post_manapotion;
+        set @choice$[@choices_nr], "...Mana Potions?";
+        set @choice_idx[@choices_nr], @QQ_MANAPOTION;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_manapotion:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
+        	goto L_Q_post_sagatha;
+        set @choice$[@choices_nr], "...Sagatha the Witch?";
+        set @choice_idx[@choices_nr], @QQ_SAGATHA;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_sagatha:
+
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_AULDSBEL))
+        	goto L_Q_post_auldsbel;
+        set @choice$[@choices_nr], "...Auldsbel the Wizard?";
+        set @choice_idx[@choices_nr], @QQ_AULDSBEL;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_auldsbel:
+
+        set @choice$[@choices_nr], "...never mind.";
+        set @choice_idx[@choices_nr], 0;
+        set @choices_nr, @choices_nr + 1;
+
+        menu @choice$[0], -,
+             @choice$[1], -,
+             @choice$[2], -,
+             @choice$[3], -,
+             @choice$[4], -;
+
+        set @menu, @menu - 1;
+
+        if (@menu >= @choices_nr)
+		set @menu, 0;
+	
+        set @c, @choice_idx[@menu];
+
+        if (@c == 0)		goto L_Main;
+        if (@c == @QQ_ELANORE)	goto L_Q_elanore;
+        if (@c == @QQ_MANASEED)	goto L_Q_manaseed;
+        if (@c == @QQ_MANAPOTION)	goto L_Q_manapotion;
+        if (@c == @QQ_SAGATHA)	goto L_Q_sagatha;
+        if (@c == @QQ_AULDSBEL)	goto L_Q_auldsbel;
+        close;
+
+L_Q_elanore:
+        mes "[Wyara the Witch]";
+        mes "\"FIXME\"";
+        next;
+        goto L_Main;
+
+L_Q_manaseed:
+        if (!@has_magic && (MAGIC_FLAGS & MFLAG_TOUCHED_MANASEED))
+        	goto L_Q_manaseed_unabsorbed;
+        mes "[Wyara the Witch]";
+        mes "\"FIXME: No idea\"";
+        next;
+        goto L_Main;
+
+L_Q_manaseed_unabsorbed:
+        mes "[Wyara the Witch]";
+        mes "\"FIXME: Perhaps a mana potion would help\"";
+        set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_MANAPOTION;
+        next;
+        goto L_Main;
+
+L_Q_manapotion:
+        mes "[Wyara the Witch]";
+        mes "\"FIXME:  Can make one for you:  40 mauve, bottle of water\"";
+        next;
+        menu "OK", L_make_manapotion,
+             "No", L_Main;
+        goto L_Main;
+
+L_make_manapotion:
+	if(countitem(@MAUVE) < 40) goto L_make_manapotion_lack;
+	if(countitem(@WATER) < 1) goto L_make_manapotion_lack;
+
+        delitem @MAUVE, 40;
+        delitem @WATER, 1;
+        getitem @MANAPOTION, 1;
+
+        mes "[Wyara the Witch]";
+        mes "\"FIXME:  Here.\"";
+
+        goto L_Main;
+
+L_make_manapotion_lack:
+        mes "[Wyara the Witch]";
+        mes "\"FIXME:  Need:  40 mauve, bottle of water\"";
+        goto L_Main;
+
+L_Q_sagatha:
+        mes "[Wyara the Witch]";
+        mes "\"FIXME\"";
+        next;
+        goto L_Main;
+
+L_Q_auldsbel:
+        mes "[Wyara the Witch]";
+        mes "\"FIXME\"";
+        next;
+        goto L_Main;
+
+
+}
