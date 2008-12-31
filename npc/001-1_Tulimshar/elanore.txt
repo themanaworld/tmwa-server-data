@@ -4,6 +4,26 @@
 
 	set @has_magic, getskilllv(SKILL_MAGIC);
 
+        set @Q_MASK, NIBBLE_5_MASK;
+        set @Q_SHIFT, NIBBLE_5_SHIFT;
+
+        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+        set @Q_heal_exp, MAGIC_EXPERIENCE >> 24;
+
+        set @BUGLEG, 518;
+        set @MAGGOTSLIME, 505;
+        set @MAUVE, 680;
+        set @GAMBOGE, 681;
+        set @COBALT, 682;
+        set @ALIZARIN, 683;
+        set @LIFESTONE, 730;
+
+        set @STATUS_INITIAL, 0;
+        set @STATUS_LEARNED_LIGHT_HEAL, 1;
+        set @STATUS_MASTERED_LIGHT_HEAL, 2;
+        set @STATUS_LEARNED_LAY_ON_HANDS, 3;
+
+
 	if (baselevel > 10) goto L_NoHeal;
 
 	set @TEMP,rand(4);
@@ -96,10 +116,17 @@ L_Chat:
         mes "\"Hello!  Can I help you?\"";
         next;
 L_Main:
-        if (@has_magic)
+        if (@has_magic && (@Q_status == @STATUS_INITIAL))
             menu
         	"Can you heal me?", L_NoHealMessage,
                 "Can you teach me magic?", L_Teach,
+		"What do you know about...", L_Question;
+
+        if (@has_magic && (@Q_status > @STATUS_INITIAL))
+            menu
+        	"Can you heal me?", L_NoHealMessage,
+                "Can you teach me more?", L_Teach,
+                "Where can I get more lifestones?, L_Lifestones,
 		"What do you know about...", L_Question;
 
         if (!@has_magic)
@@ -108,8 +135,151 @@ L_Main:
 		"What do you know about...", L_Question;
         close;
 
-L_Teach:
+OnPCKillEvent:
+        attachrid(@killerrid);
+        set @Q_heal_exp, MAGIC_EXPERIENCE >> 24;
+        if (@Q_heal_exp < 8)
+		goto L_OnPcKillWipe;
+        @Q_heal_exp = @Q_heal_exp - 8;
+        goto L_OnPcKillFinish;
+L_OnPcKillWipe:
+        @Q_heal_exp = 0;
+L_OnPcKillFinish:
+        set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE & ~(255 << 24)) | (@Q_heal_exp << 24);
         close;
+
+L_Lifestones:
+	mes "[Elanore the Healer]";
+        mes "\"I always need components for my own healing spells.  If you bring me ten gamboge leaves, ten alizarin leaves, ten mauve leaves and ten cobalt leaves, I can make ten lifestones; I will give you half of them.\"";
+        next;
+
+        menu
+		"OK, I will get them.", -,
+                "No way!", -,
+		"Here you are!", L_Lifestones_Trade,
+		"Can I make them myself?", L_Lifestones_MakeSelf;
+        close;
+
+L_Lifestones_Trade:
+	if (countitem(@MAUVE) < 10) goto L_Lifestones_Trade_Missing;
+	if (countitem(@GAMBOGE) < 10) goto L_Lifestones_Trade_Missing;
+	if (countitem(@ALIZARIN) < 10) goto L_Lifestones_Trade_Missing;
+	if (countitem(@COBALT) < 10) goto L_Lifestones_Trade_Missing;
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem(@LIFESTONE) == 0
+            && countitem(@MAUVE) > 10
+            && countitem(@GAMBOGE) > 10
+            && countitem(@ALIZARIN) > 10
+            && countitem(@COBALT) > 10) goto L_Lifestones_NoRoom;
+
+        delitem @MAUVE, 10;
+        delitem @GAMBOGE, 10;
+        delitem @ALIZARIN, 10;
+        delitem @COBALT, 10;
+        getitem @LIFESTONE, 5;
+        getexp 200, 1;
+	mes "[Elanore the Healer]";
+        mes "Elanore carefully goes over your leaves, then smiles.";
+        mes "\"These will do just fine.\";
+        mes "She picks up all fourty and presses them together in her hands, then whispers something.\"";
+        next;
+	mes "[Elanore the Healer]";
+        mes "As she opens her hands again, the leaves have turned into ten golden crystals.";
+        mes "\"Five for you and five for me.\"";
+        mes "She smiles.";
+        mes "[200 experience points]";
+        next;
+        close;
+
+L_Lifestones_NoRoom:
+	mes "[Elanore the Healer]";
+        mes "\"Oh... it seems that you have no room for the lifestones.  But please do come back later when you have made a little space.\"";
+        next;
+        close;
+
+L_Lifestones_Trade_Missing:
+	mes "[Elanore the Healer]";
+        mes "Elanore counts the leaves you show her.";
+        mes "\"No, I am sorry.  Please bring me ten leaves each of gamboge, alizarin, mauve, and cobalt.\"";
+        next;
+        close;
+
+L_Lifestones_MakeSelf:
+	mes "[Elanore the Healer]";
+	if (@has_magic >= 2)
+		mes "\"Oh, but of course!  You are powerful enough to make your own lifestones, using the enchantment '" + getspellinvocation("enchant-lifestone") + "'.  This will consume a bug leg or a maggot slime or one of each of the four healing herbs, though.\"";
+        if (@has_magic < 2)
+		mes "\"No, you are not powerful enough yet.  Please come back and ask me again when you have learned to control more powerful magic, though!.\"";
+        next;
+        close;
+
+L_Teach:
+        if (@Q_status == @STATUS_INITIAL) goto L_Teach_Initial;
+        if (@Q_status == @STATUS_LEARNED_LIGHT_HEAL) goto L_Teach_CheckAdvanceTo2;
+        if (@Q_status == @STATUS_MASTERED_LIGHT_HEAL) goto L_Teach_CheckAdvanceToLOH;
+        //if (@Q_status == @STATUS_LEARNED_LAY_ON_HANDS) goto L_Teach_CheckAdvanceTo3; // not done yet. :-)
+
+	mes "[Elanore the Healer]";
+        mes "\"You have made good progress, but you lack the magical power to advance further.  Also, I would like to observe you some more to be certain that you will make a good healer.\"";
+        next;
+        close;
+
+L_Teach_Initial:
+	mes "[Elanore the Healer]";
+        mes "\"I will only teach you magic of the school of Life, and that only if you prove yourself to be a good healer-- that is, if you use your powers to help others.\"";
+        mes "She hesistates.";
+        next;
+	mes "[Elanore the Healer]";
+        mes "\"I don't know you very well, but I don't think that there is any harm in teaching you a simple spell.\"";
+        mes "She reaches inside her satchel and pulls out a piece of crystal, glittering in the sun.";
+        mes "\"This here is a lifestone, life energy encased in a crystal shell.  You will need it for most healing magic.\"";
+        next;
+	mes "[Elanore the Healer]";
+        mes "\"To heal someone, first locate the injury.  As a beginner, you have to touch the wound; with practice, it will be enough to think about it.  Hold the lifestone in one hand, touching the wound with the other.\"";
+        mes "\"Then say, '" + getspellinvocation("lesser-heal") + "', followed by the name of the one you wish to heal.\"";
+        next;
+	mes "[Elanore the Healer]";
+        mes "\"You might want to write that down, actually.  In fact, you might want to make sure to keep notes of all spells you hear, for you never now if you will hear them again!\"";
+        mes "\"The invocation was '" + getspellinvocation("lesser-heal") + "'.\"";
+        next;
+	mes "[Elanore the Healer]";
+        mes "\"This will only cure cuts and bruises, though, and it will take some time to take effect.  It will be useless to mend broken bones or more severe injuries!\"";
+        mes "\"To heal yourself, it's enough to just say '" + getspellinvocation("lesser-heal") + "' by itself.\"";
+        next;
+	mes "[Elanore the Healer]";
+        mes "\"Let me give you a lifestone to get started with.\"";
+        next;
+
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem(@LIFESTONE) == 0)
+        	goto L_Teach_Initial_Noroom;
+
+        getitem @LIFESTONE, 1;
+        set @Q_status, @STATUS_LEARNED_LIGHT_HEAL;
+        callsub S_update_var;
+
+	mes "[Elanore the Healer]";
+        mes "Elanore hands you the crystal.";
+        mes "\"Here you are.  I hope that it will allow you to do good!\"";
+        next;
+        close;
+
+L_Teach_Initial_Noroom:
+	mes "[Elanore the Healer]";
+        mes "\"Oh... you managed to put things into every little nook and pocket, haven't you?  Well, come back later, I will give it to you then.\"";
+        close;
+
+L_Teach_CheckAdvanceTo2:
+        close;
+L_Teach_CheckAdvanceToLOH:
+        close;
+
+L_NoMagicNoTeach:
+	mes "[Elanore the Healer]";
+        mes "Elanore shakes her head.";
+        mes "\"I am sorry, but you don't have any magical abilities.  I can only teach those who already have the power to do magic.\"";
+        next;
+        goto L_Main;
 
 L_Question:
         set @QQ_MANAPOTION, 1;
@@ -214,6 +384,10 @@ L_Q_auldsbel:
         goto L_Main;
 
 
-
+S_update_var:
+	set QUEST_MAGIC,
+		(QUEST_MAGIC & ~(@Q_MASK)
+		| (@Q_status << @Q_SHIFT));
+	return;
 }
 

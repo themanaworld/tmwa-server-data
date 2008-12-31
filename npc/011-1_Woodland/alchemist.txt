@@ -9,6 +9,7 @@
         set @Q_MASK, NIBBLE_3_MASK;
         set @Q_SHIFT, NIBBLE_3_SHIFT;
 
+        set @wants_sulphur, (QUEST_MAGIC & NIBBLE_6_MASK);
         set @Q_status, (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
         // End of Setzer quest/monster oil quest participation
 
@@ -23,6 +24,8 @@
 	set @MANAPOTION, 705;
 	set @ORE, 640;
 	set @MAGGOTSLIME, 505;
+        set @SULPHUR, 703;
+        set @IRONPOWDER, 704;
 
 	set @QUEST_CAN_GET_DYE_HERE, 2;
 	set @QUEST_HAS_SOLVED_DYE_PUZZLE, 3;
@@ -34,7 +37,8 @@
 	set @CHOICE_DYE, 3;
 	set @CHOICE_MONSTER_OIL, 4;
 	set @CHOICE_MANA_POTION, 5;
-	set @CHOICE_ABORT, 6;
+	set @CHOICE_SULPHUR_POWDER, 6;
+	set @CHOICE_ABORT, 7;
 
 	setarray @menuitems$, "", "", "", "", "", "";
 	set @c, 0;
@@ -81,13 +85,20 @@ L_skip_introducing:
 	set @c, @c + 1;
 
 	goto L_certain_condition;
-
 L_pre_dyeing:
+
 	set @menuitems$[@c], "Actually, can you make dye?";
 	set @menuID[@c], @CHOICE_DYEING_INTRO;
 	set @c, @c + 1;
-
 L_certain_condition:
+
+        if (!@wants_sulphur)
+		goto L_post_sulphur_option;
+	set @menuitems$[@c], "Can you make sulphur powder?";
+	set @menuID[@c], @CHOICE_SULPHUR;
+	set @c, @c + 1;
+L_post_sulphur_option;
+
         if (@Q_status == @SETZER_INITIAL)
 		goto L_main_menu;
 	set @menuitems$[@c], "Can you make monster oil?";
@@ -104,8 +115,9 @@ L_main_menu:
 		@menuitems$[1], -,
 		@menuitems$[2], -,
 		@menuitems$[3], -,
-		@menuitems$[4], -;
-		@menuitems$[5], -;
+		@menuitems$[4], -,
+		@menuitems$[5], -,
+		@menuitems$[6], -;
 
 	set @menu, @menu - 1;
 
@@ -116,7 +128,56 @@ L_main_menu:
 	if (@menuID[@menu] == @CHOICE_DYE) goto L_pick_colour;
 	if (@menuID[@menu] == @CHOICE_MONSTER_OIL) goto L_monster_oil;
 	if (@menuID[@menu] == @CHOICE_MANA_POTION) goto L_mana_potion;
+	if (@menuID[@menu] == @CHOICE_SULPHUR) goto L_sulphur;
 	if (@menuID[@menu] == @CHOICE_ABORT) goto L_abort;
+
+L_sulphur:
+	mes "[Rauk the Alchemist]";
+        mes "\"Oh, that is easy.  Bring me three piles of volcanic ash and three mauve leaves, and I will extract twelve piles of sulphur ash for you.\"";
+        next;
+        menu
+		"I will be back.", L_abort,
+		"No, I won't!", L_abort,
+		"Here you are!", -;
+
+	if (countitem(@ASH) < 3) goto L_sulphur_noash;
+	if (countitem(@MAUVE) < 3) goto L_sulphur_nomauve;
+	getinventorylist;
+	if (@inventorylist_count == 100
+            && countitem(@SULPHUR) == 0
+            && countitem(@ASH) > 3
+            && countitem(@MAUVE) > 3)
+		goto L_sulphur_nospace;
+
+        delitem @ASH, 3;
+        delitem @MAUVE, 3;
+        getitem @SULPHUR, 12;
+	mes "[Rauk the Alchemist]";
+        mes "You watch Rauk burn the mauve leaves in the midst of the ashes.  He then dissolves the result and pours it through a filter, finally heating up the residual liquid.";
+        next;
+	mes "[Rauk the Alchemist]";
+        mes "The water having evaporated, only some yellow powder is left over.  Rauk carefully pours it into your hand.";
+        mes "\"This should be precisely twelve half-ounces of sulphur powder.\"";
+        next;
+        close;
+
+L_sulphur_noash:
+	mes "[Rauk the Alchemist]";
+        mes "\"You don't seem to have all three piles of volcanic ash.\"";
+        next;
+        close;
+
+L_sulphur_nomauve:
+	mes "[Rauk the Alchemist]";
+        mes "\"You don't seem to have the three mauve leaves I asked for.\"";
+        next;
+        close;
+
+L_sulphur_nospace:
+	mes "[Rauk the Alchemist]";
+        mes "\"Oh dear.  You don't seem to be able to carry the sulphur powder.\"";
+        next;
+        close;
 
 L_mana_potion:
 	mes "[Rauk the Alchemist]";

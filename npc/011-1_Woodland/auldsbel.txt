@@ -24,9 +24,15 @@
         set @MOUNTAIN_SNAKE_TONGUE, 711;
         set @GRASS_SNAKE_TONGUE, 712;
         set @MAGGOT_SLIME, 505;
+	set @ASH, 701;
+        set @SULPHUR, 703;
+        set @IRONPOWDER, 704;
 
         set @Q_STATUS_INITIAL, 0;
         set @Q_STATUS_POSTINTRO, 1;
+        set @Q_STATUS_INITIATION, 2; // quest for being able to cast `create mouboo figurine'
+
+        set @Q_wants_sulphur, (QUEST_MAGIC & NIBBLE_6_MASK);
 
         set @Q_MASK, NIBBLE_0_MASK | NIBBLE_1_MASK;
         set @Q_SHIFT, NIBBLE_0_SHIFT;
@@ -129,7 +135,7 @@ L_intro_who_are_you:
         mes "[Robed Man]";
         mes "\"Oh, oh my...  of course you wouldn't know me, being from the countryside and all.\"";
         mes "He laughs.";
-        mes "\"Well, my young friend, I am none other than Auldsbel the Mostly Grayish, of the Council of Transmuters!\"";
+        mes "\"Well, my young friend, I am none other than Auldsbel the Graying, of the Council of Transmuters!\"";
         next;
 
         set @Q_main_status, @Q_STATUS_POSTINTRO;
@@ -160,12 +166,69 @@ L_main_menu:
         close;
 
 L_main_menu_magic:
-        menu "How does magic work?", L_about_magic,
+        if (@wants_sulphur)
+          menu "How does magic work?", L_about_magic,
+             "Can you teach me a spell?", L_learn_spell,
+             "Where are you from?", L_about_auldsbel,
+             "Do you need help with your experiments?", L_quest,
+             "What do you know about...", L_question,
+             "Can you make sulphur powder?", L_sulphur,
+             "Goodbye.", -;
+        if (!@wants_sulphur)
+          menu "How does magic work?", L_about_magic,
              "Can you teach me a spell?", L_learn_spell,
              "Where are you from?", L_about_auldsbel,
              "Do you need help with your experiments?", L_quest,
              "What do you know about...", L_question,
              "Goodbye.", -;
+        close;
+
+L_sulphur:
+        mes "[Auldsbel the Wizard]";
+        set @cost, 400 - (@component_quest * 30);
+        mes "\"Sulphur powder?  Ah, so we have picked up a little offensive magic, haven't we?  Good thinking, good thinking.  And yes, of course I can transmute volcanic ashes into sulphur powder at a ratio of 1:5, for a mere " + @cost + " GP.\"";
+        next;
+        menu
+		"No, thank you.", -,
+		"I will see what I can find.", -,
+		"Here you are.", L_sulphur_buy;
+        close;
+
+L_sulphur_buy:
+	if (zeny < @cost)
+		goto L_sulphur_nozeny;
+	if (countitem(@ASH) < 1)
+		goto L_sulphur_noash;
+	getinventorylist;
+	if (@inventorylist_count == 100
+            && countitem(@SULPHUR) > 1
+            && countitem(@ASH) == 0)
+		goto L_sulphur_noroom;
+
+        set zeny, zeny - @cost;
+        delitem @ASH, 1;
+        getitem @SULPHUR, 1;
+        mes "[Auldsbel the Wizard]";
+        next "\"I shall transmute it later.  Here, have five half-ounces from my own stock.\"";
+        next;
+        goto L_main_menu;
+
+L_sulphur_nozeny:
+        mes "[Auldsbel the Wizard]";
+        next "\"No GP, no service.\"";
+        next;
+        goto L_main_menu;
+
+L_sulphur_noash:
+        mes "[Auldsbel the Wizard]";
+        next "\"Without volcanic ash, I can't give you any sulphur powder.  Try hunting some fire goblins, or somesuch.\"";
+        next;
+        goto L_main_menu;
+
+L_sulphur_noroom:
+        mes "[Auldsbel the Wizard]";
+        next "\"Hmm, you really managed to squeeze something into every little place you had that we could have stored the powder in... you might want to return once you have resolved this matter.\"";
+        next;
         close;
 
 L_about_magic:
@@ -831,7 +894,29 @@ L_component_quest_missing:
         goto L_main_menu;
 
 L_learn_spell:
+        if (@Q_main_status == @Q_STATUS_INITIATION) goto LL_initiation;
+
         mes "[Auldsbel the Wizard]";
+        mes "\"Wellll.... you do seem to have some magical abilities.  But do you possess the talent and diligence needed for a true wizard?\"";
+        mes "He raises an eyebrow at you, then grins.";
+        mes "\"Only one way to find out!  Let me teach you a first spell.\"";
+        next;
+        mes "[Auldsbel the Wizard]";
+        mes "\"This spell is a simple transmutation invocation.  All it takes is a clean wooden log.  Hold it in your hand, focus your powers, and say the magic invocation.\"";
+        next;
+        mes "[Auldsbel the Wizard]";
+        mes "\"You can turn the log into a wooden figurine by saying 'kular' followed by the last syllable of the name of the creature you want to shape it as.  And mind you, that syllable has to be from the Old-Tritan name...\"";
+        next;
+        mes "[Auldsbel the Wizard]";
+        mes "\"Oh, actually, make sure to write that down.  You should keep track of all spells and spell fragments, really.  I always keep a notebook handy, in fact.\"";
+        next;
+        set @Q_main_status, @Q_STATUS_INITIATION;
+        callsub S_update_var;        
+        goto L_main_menu;
+
+LL_initiation:
+        mes "[Auldsbel the Wizard]";
+        mes "\"So, have you managed to transmute something?\"";
         next;
         goto L_main_menu;
 

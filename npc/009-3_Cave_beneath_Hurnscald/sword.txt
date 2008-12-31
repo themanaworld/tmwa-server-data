@@ -1,0 +1,126 @@
+009-3.gat,26,100,0	script	#MysticSword#_M	127,{
+	if (getskilllv(SKILL_MAGIC))
+		goto L_message;
+        close;
+
+L_message:
+        set @Q_MASK, NIBBLE_6_MASK;
+        set @Q_SHIFT, NIBBLE_6_SHIFT;
+        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+
+        set @STATUS_INITIAL, 0;
+        set @STATUS_LEARNED_FLAREDART, 1;
+        set @STATUS_LEARNED_MAGICBLADE, 2;
+
+        if (@Q_status == @STATUS_INITIAL)  	goto L_Initial;
+        if (@Q_status == @STATUS_LEARNED_FLAREDART)  	goto L_PostFlareDart;
+        if (@Q_status == @STATUS_LEARNED_MAGICBLADE)  	goto L_PostMagicBlade;
+
+        mes "[Mystic Sword]";
+        mes "Come back when thou art stronger.";
+        next;
+        close;
+
+L_Initial:
+        mes "[Mystic Sword]";
+        mes "As you look at the sword, you suddenly hear a voice in your head!";
+        mes "\"Welcome to my prison, mortal!\"";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "Well, either you are going mad, or that sword in the stone is talking to you.";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "Or, well, both.";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "The deep basso voice continues.";
+        mes "\"I know not what brought thee hither, but I kindly ask that you leave me alone in my sorrow.\"";
+        next;
+
+        menu
+		"Leave", L_Close,
+                "Sorry.", -,
+                "Who or what are you?", -,
+		"What sorrow?", -,
+                "Can I help?", -,
+                "Can you teach me magic?", -;
+
+        mes "[Mystic Sword]";
+        mes "There is no answer.";
+        next;
+        close;
+
+L_PostFlareDart:
+        mes "[Mystic Sword]";
+        mes "As you look at the sword, you hear a deep voice resounding in your head.";
+        mes "\"Welcome, mortal!\"";
+        next;
+
+        mes
+		"Hi!  How are you?", L_PostFlareDart_hi,
+                "Can you teach me magic?", L_PostFlareDart_teach,
+                "Your sister sent me.", L_PostFlareDart_sister,
+                "Bye!", -;
+	close;
+
+L_PostFlareDart_hi:
+        mes "[Mystic Sword]";
+        mes "\"Mortal... I have seen pain and death beyond thine reckoning!  Mock me not with thine idle questions!\"";
+        next;
+        close;
+
+L_PostFlareDart_sister:
+        mes "[Mystic Sword]";
+        mes "\"My sister...?  Alas!  I remember now; abandoned she was, just as I; buried in stone, never to be wielded again.\"";
+        mes "\"Wherefore did she send thee?\"";
+        next;
+
+        menu "She asked me to ask you to teach me a spell.", -;
+
+L_PostFlareDart_teach:
+        mes "[Mystic Sword]";
+        mes "\"Beware, mortal... the only spells I can teach thee are those of the school of war.  Dark and dreary spells, that lot!  Pain and misery is all they bring...\"";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "The sword's voice is growing apprehensive.";
+        mes "\"Once a spell has been learned, it cannot be taken back, no more than a death can be undone.  So be careful, mortal... dost thou truly wish to know the secrets of thus destructive power?\"";
+        next;
+
+        menu
+		"Yes.", -,
+		"No.", L_Close;
+
+        mes "[Mystic Sword]";
+        mes "\"So thou art bound to the path of War, as am I, as is my sister...\"";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "\"So be it, fellow warrior.  Hear the incantation for the blade spell: '" + getspellinvocation("magic-blade") + "'\"";
+        mes "\"Hold a knife, sharp or regular, when you speak it.\"";
+        set @Q_status, @STATUS_LEARNED_MAGICBLADE;
+        callsub S_update_var;
+        next;
+
+        mes "[Mystic Sword]";
+        mes "\"But beware... the path of war that thou hast embarked upon is one from which few return.  May luck be on your side...\"";
+        next;
+        close;
+
+L_PostFlareDart_teach:
+        mes "[Mystic Sword]";
+        mes "\"Seek out my sister, and leave me alone in my sorrows.\"";
+        next;
+
+L_Close:
+        close;
+
+S_update_var:
+	set QUEST_MAGIC,
+		(QUEST_MAGIC & ~(@Q_MASK)
+		| (@Q_status << @Q_SHIFT));
+	return;
+}

@@ -1,6 +1,101 @@
+// Sagatha the witch, expert for nature and ether magic
+//----------------------------------------
+
+function	script	QuestSagathaHappy {
+        set @unhappiness, (QUEST_MAGIC & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT;
+        if (@unhappiness < @value)
+		goto L_zero;
+
+	set @unhappiness, @unhappiness - @value;
+        goto L_write;
+
+L_zero:
+	set @unhappiness, 0;
+
+L_write:
+	set QUEST_MAGIC, (QUEST_MAGIC & ~NIBBLE_3_MASK) | (@unhappiness << NIBBLE_3_SHIFT);
+}
+
+//----------------------------------------
+function	script	QuestSagathaAnnoy {
+        set @unhappiness, (QUEST_MAGIC & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT;
+        if ((@unhappiness + @value) > 15)
+		goto L_max;
+
+	set @unhappiness, @unhappiness + @value;
+        goto L_write;
+
+L_max:
+	set @unhappiness, 15;
+
+L_write:
+	set QUEST_MAGIC, (QUEST_MAGIC & ~NIBBLE_3_MASK) | (@unhappiness << NIBBLE_3_SHIFT);
+}
+
+
+//----------------------------------------
 013-1.gat,131,24,0	script	Sagatha#_M	167,{
 	set @has_magic, getskilllv(SKILL_MAGIC);
+        set @evil, 0;
+        set @good, 0;
+        set @unhappy, (QUEST_MAGIC & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT;
+
+        set @Q_MASK, NIBBLE_4_MASK;
+        set @Q_SHIFT, NIBBLE_4_SHIFT;
+
+        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+
+
+        if (MAGIC_FLAGS & FLAG_DID_CUTTREE)
+		set @evil, 1;
+
+        set @mouboo, ((QUEST_MAGIC & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT) & 3;
+
+        if (@mouboo == 3)
+		set @good, @good + 1;
+	if (@mouboo == 2)
+		set @evil, 1;
+	if (@mouboo == 1)
+		set @evil, 1;
+
+        set @druid, (((QUEST_MAGIC & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT) & 12) >> 2;
+        if (@druid == 3)
+		set @good, @good + 1;
+
+        if (MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA)
+		mes "[Sagatha the Witch]";
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
+		mes "[Witch]";
+
+        if (@evil)
+		goto L_evil;
+
+        if (@unhappy > 10)
+		goto L_unhappy;
+
+        mes "Before you stands a beautiful woman, dressed in dark purple robes and wearing a witch's hat.";
+        mes "At first glance, ";
+        if (Sex)
+		mes "She looks at you suspiciously.";
+        if (!Sex)
+		mes "She looks at you impassively.";
+        next;
+
         set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_SAGATHA;
+
+L_evil:
+	mes "The witch's eyes flare up in anger as she notices you, and she turns away from you.";
+        mes "Whatever the reason, she doesn't seem to like you.";
+        next;
+        close;
+
+L_unhappy:
+	mes "The witch glares at you in anger.";
+        mes "\"I hope you enjoyed killing those innocent forest creatures!\"";
+        mes "She turns away, clearly not interested in any discussion.";
+        mes "\"Don't come back until you have come to your senses!\"";
+        next;
+        close;
 
 L_Main:
 	menu "What do you know about...", L_Question;
@@ -126,4 +221,10 @@ L_Q_auldsbel:
         next;
         goto L_Main;
 
+
+S_update_var:
+	set QUEST_MAGIC,
+		(QUEST_MAGIC & ~(@Q_MASK)
+		| (@Q_status << @Q_SHIFT));
+	return;
 }

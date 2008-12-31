@@ -1,0 +1,155 @@
+015-1.gat,97,97,0	script	#MagicSword#_M	127,{
+	if (getskilllv(SKILL_MAGIC))
+		goto L_message;
+        close;
+
+L_message:
+        set @Q_MASK, NIBBLE_6_MASK;
+        set @Q_SHIFT, NIBBLE_6_SHIFT;
+        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+
+        set @STATUS_INITIAL, 0;
+        set @STATUS_LEARNED_FLAREDART, 1;
+        set @STATUS_LEARNED_MAGICBLADE, 2;
+
+        if (@Q_status == @STATUS_INITIAL)  		goto L_Initial;
+        if (@Q_status == @STATUS_LEARNED_FLAREDART)  	goto L_FlareStage;
+        if (@Q_status == @STATUS_LEARNED_FLAREDART)  	goto L_MagicBladeStage;
+
+        mes "[Magic Sword]";
+        mes "\"I have taught thee all I can teach for now.\"";
+        next;
+        close;
+
+L_Initial:
+        mes "[Magic Sword]";
+        mes "At this point, the river deepens, slowing down to a leisurely pace.  In its center you notice an unusual stone, waves breaking around it.";
+        mes "Sticking out of the rock is a sword hilt.";
+        next;
+
+        mes "[Magic Sword]";
+        mes "Suddenly, you hear a strange, metallic voice in your head, the voice of a woman.";
+        mes "\"A blissful day to thee, mortal!\"";
+        next;
+
+        mes "[Magic Sword]";
+        mes "\"What is it is that brings thee to this place?\"";
+        next;
+
+        menu
+		"Who are you?", L_noq,
+                "Nothing in particular.", L_Initial_nothing,
+                "I was just exploring...", L_Initial_nothing,
+                "I am trying to learn magic!", L_Initial_learn;
+        close;
+
+L_noq:
+        mes "[Magic Sword]";
+        mes "The voice sounds slightly amused.";
+        mes "\"How sad to hear how manners have degenerated in recent centuries.  Farewell for now, dear mortal.\"";
+        next;
+        close;
+
+L_Initial_nothing:
+        mes "[Magic Sword]";
+        mes "\"Then I wish thee well in thy travels, wanderer!\"";
+        next;
+        close;
+
+L_Initial_learn:
+        mes "[Magic Sword]";
+        mes "\"Magic?  Unless I am very mistaken thou already possessest some magic.  Yet perhaps I can grant thee some slight aid by providing a magical invocation?\"";
+        next;
+
+        mes "[Magic Sword]";
+        mes "\"Alas, my nature is not quite conductive for spells of healing or protection, though I can bestow upon thee the powers for a rather more martial kind of power.\"";
+        mes "\"But first... why is it that thou seekest this power?\"";
+        next;
+
+        mes
+		"Never mind.", L_Farewell;
+                "To become stronger!", L_Initial_selfish,
+                "To kill!", L_Initial_selfish,
+                "I don't know yet...", L_Initial_dontknow,
+                "To protect the ones I love!", L_Initial_protect;
+	close;
+
+L_Initial_selfish:
+        mes "[Magic Sword]";
+        mes "\"Please return when thou art taking thy quest for magic a little more seriously.\"";
+        next;
+        close;
+
+L_Initial_dontknow:
+        mes "[Magic Sword]";
+        mes "\"A fair and honest thought at so early a point in thine quest.\"";
+        goto L_Initial_ok;
+
+L_Initial_protect:
+        mes "[Magic Sword]";
+        mes "\"Quite a high and laundable goal thou hast chosen for thyself!  I do hope that thou canst live up to it.\"";
+
+L_Initial_ok:
+        mes "\"Hark, then, mortal!  For I shall bestow upon thee the secret of the flare dart spell!\"";
+        next;
+
+        mes "[Magic Sword]";
+        mes "\"Oh, my apologies-- that was a little overly dramatic.  But I do not get to talk to thy kin anymore all that often.\"";
+        next;
+
+        mes "[Magic Sword]";
+        mes "\"For the flare dart spell throw a handful of sulphur powder up into the air, and say, '" + getspellinvocation("flare-dart") + "'.\"";
+        set @Q_status, @STATUS_LEARNED_FLAREDART;
+        callsub S_update_var;
+        next;
+        close;
+
+L_FlareStage:
+        menu;
+		"Uhm... Hello, Sword?", L_FlareStage_hello,
+                "Can you teach me more magic?", L_FlareStage_impolite,
+                "Where can I get sulphur powder?", L_FlareStage_impolite;
+        close;
+
+L_FlareStage_impolite:
+        mes "[Magic Sword]";
+        mes "You hear a metallic chime in your head.  After a second, you come to the conclusion that it was probably the sword sighing.";
+        mes "\"Greetings to thee, too, mortal, and farewell until thou hast learned some proper manners.\"";
+        next;
+        close;
+
+L_FlareStage_hello:
+        mes "[Magic Sword]";
+        mes "\"Well met once more, mortal!  What brings thee here?\"";
+        next;
+
+        menu
+		"Can you teach me more magic?", L_FlareStage_moremagic,
+		"Where can I find sulphur powder?", L_FlareStage_sulphur,
+                "Farewell!", L_Farewell;
+        close;
+
+L_FlareStage_moremagic:
+        mes "[Magic Sword]";
+        mes "\"I can indeed!  But first I must see if thou art worthy.  Find my brother, and talk to him!  If thou canst find him, she shall teach thee another spell.\"";
+        next;
+        goto L_Farewell;
+
+L_FlareStage_sulphur:
+        mes "[Magic Sword]";
+        mes "\"I do not know, though I suggest to seek out a local alchemist, if there is any.\"";
+        next;
+        goto L_Farewell;
+
+L_Farewell:
+        mes "[Magic Sword]";
+        mes "\"Farewell for now!\"";
+        next;
+        close;
+
+S_update_var:
+	set QUEST_MAGIC,
+		(QUEST_MAGIC & ~(@Q_MASK)
+		| (@Q_status << @Q_SHIFT));
+	return;
+}
