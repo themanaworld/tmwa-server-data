@@ -11,28 +11,29 @@ L_message:
         set @STATUS_INITIAL, 0;
         set @STATUS_LEARNED_FLAREDART, 1;
         set @STATUS_LEARNED_MAGICBLADE, 2;
+        set @STATUS_LEVEL2, 3;
 
         if (@Q_status == @STATUS_INITIAL)  		goto L_Initial;
         if (@Q_status == @STATUS_LEARNED_FLAREDART)  	goto L_FlareStage;
-        if (@Q_status == @STATUS_LEARNED_FLAREDART)  	goto L_MagicBladeStage;
+        if (@Q_status == @STATUS_LEARNED_MAGICBLADE)  	goto L_MagicBladeStage;
 
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"I have taught thee all I can teach for now.\"";
         next;
         close;
 
 L_Initial:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "At this point, the river deepens, slowing down to a leisurely pace.  In its center you notice an unusual stone, waves breaking around it.";
         mes "Sticking out of the rock is a sword hilt.";
         next;
 
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "Suddenly, you hear a strange, metallic voice in your head, the voice of a woman.";
         mes "\"A blissful day to thee, mortal!\"";
         next;
 
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"What is it is that brings thee to this place?\"";
         next;
 
@@ -44,24 +45,24 @@ L_Initial:
         close;
 
 L_noq:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "The voice sounds slightly amused.";
         mes "\"How sad to hear how manners have degenerated in recent centuries.  Farewell for now, dear mortal.\"";
         next;
         close;
 
 L_Initial_nothing:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"Then I wish thee well in thy travels, wanderer!\"";
         next;
         close;
 
 L_Initial_learn:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"Magic?  Unless I am very mistaken thou already possessest some magic.  Yet perhaps I can grant thee some slight aid by providing a magical invocation?\"";
         next;
 
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"Alas, my nature is not quite conductive for spells of healing or protection, though I can bestow upon thee the powers for a rather more martial kind of power.\"";
         mes "\"But first... why is it that thou seekest this power?\"";
         next;
@@ -75,29 +76,29 @@ L_Initial_learn:
 	close;
 
 L_Initial_selfish:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"Please return when thou art taking thy quest for magic a little more seriously.\"";
         next;
         close;
 
 L_Initial_dontknow:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"A fair and honest thought at so early a point in thine quest.\"";
         goto L_Initial_ok;
 
 L_Initial_protect:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"Quite a high and laundable goal thou hast chosen for thyself!  I do hope that thou canst live up to it.\"";
 
 L_Initial_ok:
         mes "\"Hark, then, mortal!  For I shall bestow upon thee the secret of the flare dart spell!\"";
         next;
 
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"Oh, my apologies-- that was a little overly dramatic.  But I do not get to talk to thy kin anymore all that often.\"";
         next;
 
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"For the flare dart spell throw a handful of sulphur powder up into the air, and say, '" + getspellinvocation("flare-dart") + "'.\"";
         set @Q_status, @STATUS_LEARNED_FLAREDART;
         callsub S_update_var;
@@ -112,14 +113,14 @@ L_FlareStage:
         close;
 
 L_FlareStage_impolite:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "You hear a metallic chime in your head.  After a second, you come to the conclusion that it was probably the sword sighing.";
         mes "\"Greetings to thee, too, mortal, and farewell until thou hast learned some proper manners.\"";
         next;
         close;
 
 L_FlareStage_hello:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"Well met once more, mortal!  What brings thee here?\"";
         next;
 
@@ -130,19 +131,101 @@ L_FlareStage_hello:
         close;
 
 L_FlareStage_moremagic:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"I can indeed!  But first I must see if thou art worthy.  Find my brother, and talk to him!  If thou canst find him, she shall teach thee another spell.\"";
         next;
         goto L_Farewell;
 
 L_FlareStage_sulphur:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"I do not know, though I suggest to seek out a local alchemist, if there is any.\"";
         next;
         goto L_Farewell;
 
+L_MagicBladeStage:
+        mes "[Mystic Sword]";
+        mes "\"Welcome back!  Thou hast now learned two basic spells of War magic.\"";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "\"Dost thou wish to continue thy pursuits of this school of magic?\"";
+        next;
+
+        menu
+		"No.", -,
+                "Yes.", L_Levelup2_yes;
+
+        goto L_Farewell;
+
+L_Levelup2_yes:
+        mes "[Mystic Sword]";
+        mes "\"Beware of what thou wishest for, mortal...\"";
+        next;
+
+        if (!MPQUEST) goto L_Levelup2_must_reg;
+        if (MPQUEST && (Mobpt < 1000)) goto L_Levelup2_must_practice;
+
+        mes "[Mystic Sword]";
+        mes "\"Thou hast collected " + Mobpt + " Monster Points.  For one thousand of them, I shall admit thee to the school of war magic.\"";
+        next;
+
+        menu
+		"OK!", -,
+                "No... never mind.", L_Farewell;
+
+        set Mobpt, Mobpt - 1000;
+
+        mes "[Mystic Sword]";
+        mes "The sword begins to chant in your head!";
+        mes "  \"Lords of Thunder, Fire, Rage!\"";
+        mes "  \"Grant your powers to this mage,\"";
+        mes "  \"Rising with your dreadful roar,\"";
+        if (Sex)
+        	mes "  \"Answer to his call to War!\"";
+        if (!Sex)
+        	mes "  \"Answer to her call to War!\"";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "Your heart starts pounding, and suddenly you can hear the sound of drums in your head.";
+        mes "You smell something metallic...";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "The sensation and the noises vanish as quickly as they came.";
+        mes "[5000 experience points]";
+        mes "[Level 2 in War Magic]";
+
+        set @Q_status, @STATUS_LEVEL2;
+        callsub S_update_var;
+        getexp 5000, 0;
+        if (getskilllv(SKILL_MAGIC_WAR) < 2)
+        	skill SKILL_MAGIC_WAR, 2;
+        next;
+
+        mes "[Mystic Sword]";
+        mes "\"You have now taken your first true step down the path of war magic.  Seek out my brother for thy next spell!\"";
+        next;
+        goto L_Farewell;
+
+
+L_Levelup2_must_reg:
+        mes "[Mystic Sword]";
+        mes "\"To learn further magic, thou must advance in the school of war magic.  I shall grant thee this advance if thou provest thy worthiness as a warrior.\"";
+        next;
+        mes "[Mystic Sword]";
+        mes "\"Travel to the city of Tulimshar, and talk to Aidan.  Then, collect one thousand Monster Points and return to me.\"";
+        next;
+        goto L_Farewell;
+
+L_Levelup2_must_practice:
+        mes "[Mystic Sword]";
+        mes "\"To advance thy magical powers, I must admit thee to the school of war magic.  Prove to me that thou art a worthy warrior by collecting one thousand Monster Points, and return.\"";
+        next;
+        goto L_Farewell;
+
 L_Farewell:
-        mes "[Magic Sword]";
+        mes "[Mystic Sword]";
         mes "\"Farewell for now!\"";
         next;
         close;

@@ -270,7 +270,54 @@ L_Teach_Initial_Noroom:
         close;
 
 L_Teach_CheckAdvanceTo2:
+	mes "[Elanore the Healer]";
+        if (@Q_heal_exp < 30)
+		goto L_Teach_CheckAdvanceTo2_fail;
+        mes "Elanore smiles at you.";
+        mes "\"From what I have been hearing, you seem to be doing well on your way to becoming a healer.  I have decided to accept you as a student of the School of Life Magic.\"";
+        next;
+
+        if (getskilllv(SKILL_MAGIC) < 2)
+        	goto L_Teach_AdvanceTo2_warn;
+
+        goto L_Teach_AdvanceTo2_skip;
+L_Teach_AdvanceTo2_warn:
+	mes "[Elanore the Healer]";
+        mes "\"But be warned:  you won't be able to use advanced healing magic until you are more capable in your regular magic usage.\"";
+        next;
+L_Teach_AdvanceTo2_skip:
+
+	mes "[Elanore the Healer]";
+        mes "\"Please stand still.\"";
+        mes "She walks up to you, holds your shoulders, and smiles at you.";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "Then, she rises up on her tiptoes and kisses you on your forehead.";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "You feel a strange, tingling kind of warmth spread through your body.";
+        mes "[5000 experience points]";
+        mes "[Level 2 in Life Magic]";
+
+        set @Q_status, @STATUS_MASTERED_LIGHT_HEAL;
+        callsub S_update_var;
+        getexp 5000, 0;
+        if (getskilllv(SKILL_MAGIC_LIFE) < 2)
+        	skill SKILL_MAGIC_LIFE, 2;
         close;
+
+L_Teach_CheckAdvanceTo2_fail:
+        mes "\"I think I would like to observe you for a little longer to see if you would make a good healer.\"";
+        if (@Q_heal_exp < 5)
+        	mes "\"You are still at the beginning of your path, but do keep practicing.\"";
+        if ((@Q_heal_exp >= 5) && (@Q_heal_exp < 20)
+        	mes "\"You are making progress, but you still need more practice.\"";
+        if (@Q_heal_exp >= 20)
+        	mes "\"You have made good progress, but please do continue in your efforts.\"";
+        close;
+
 L_Teach_CheckAdvanceToLOH:
         close;
 

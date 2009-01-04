@@ -27,10 +27,12 @@
 	set @ASH, 701;
         set @SULPHUR, 703;
         set @IRONPOWDER, 704;
+        set @MOUBOO_FIGURINE, 728;
 
         set @Q_STATUS_INITIAL, 0;
         set @Q_STATUS_POSTINTRO, 1;
         set @Q_STATUS_INITIATION, 2; // quest for being able to cast `create mouboo figurine'
+        set @Q_STATUS_STUDENT, 3; // accepted as student
 
         set @Q_wants_sulphur, (QUEST_MAGIC & NIBBLE_6_MASK);
 
@@ -895,6 +897,7 @@ L_component_quest_missing:
 
 L_learn_spell:
         if (@Q_main_status == @Q_STATUS_INITIATION) goto LL_initiation;
+        if (@Q_main_status == @Q_STATUS_STUDENT) goto LL_student_start;
 
         mes "[Auldsbel the Wizard]";
         mes "\"Wellll.... you do seem to have some magical abilities.  But do you possess the talent and diligence needed for a true wizard?\"";
@@ -914,11 +917,82 @@ L_learn_spell:
         callsub S_update_var;        
         goto L_main_menu;
 
+LL_repeat_spell:
+        mes "[Auldsbel the Wizard]";
+        mes "\"The invocation is 'kular', followed by the last syllable of the name of the creature you want to shape the log into.  But this only works if you know the old Tritan name of the creature.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"And make sure to keep notes of your spells!  In the future, I will only tell you once.\"";
+        next;
+
+        goto L_main_menu;
+
 LL_initiation:
         mes "[Auldsbel the Wizard]";
         mes "\"So, have you managed to transmute something?\"";
         next;
+
+        if (countitem(@MOUBOO_FIGURINE))
+        	menu
+			"Not yet.", -,
+                        "How about this mouboo figurine?", LL_initiation_check;
+        if (!countitem(@MOUBOO_FIGURINE))
+        	menu
+			"Not yet.", -,
+                        "What was the spell again?", LL_repeat_spell;
+
         goto L_main_menu;
+
+LL_initiation_fail;
+        mes "[Auldsbel the Wizard]";
+        mes "\"No, no, no.  This is no good-- too many imperfections.\"";
+        mes "He throws it away.";
+        mes "\"Keep practicing-- and make sure to vary the spells you cast a little; that will make it easier to learn.\"";
+        next;
+        goto L_main_menu;
+
+LL_initiation_check:
+        if (!countitem (@MOUBOO_FIGURINE))
+		goto L_main_menu;
+        delitem (@MOUBOO_FIGURINE);
+        set @mexp, MAGIC_EXPERIENCE & 65535;
+
+        mes "[Auldsbel the Wizard]";
+        mes "Auldsbel inspects your figurine.";
+        next;
+
+        if (@mexp < 40)
+        	goto LL_initiation_fail;
+
+        mes "[Auldsbel the Wizard]";
+        mes "Auldsbel nods.";
+        mes "\"This looks good.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "He pockets the figurine.";
+        mes "\"Very well, then.  I shall accept you as my student.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "Auldsbel presses his index and middle finger against your forehead.";
+        mes "\"Accept my blessing!\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "You feel new powers curse flowing into your body!";
+        mes "[5000 experience points]";
+        mes "[Level 2 in Transmutation Magic]";
+
+        set @Q_status, @Q_STATUS_STUDENT;
+        callsub S_update_var;
+        getexp 5000, 0;
+        if (getskilllv(SKILL_MAGIC_TRANSMUTE) < 2)
+        	skill SKILL_MAGIC_TRANSMUTE, 2;
+        goto L_main_menu;
+
+LL_student_start:
 
 S_update_var:
         set @Q_status, @Q_main_status | (@Q_component_quest << 5);
