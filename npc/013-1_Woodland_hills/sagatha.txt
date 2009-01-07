@@ -32,23 +32,11 @@ L_write:
 	set QUEST_MAGIC, (QUEST_MAGIC & ~NIBBLE_3_MASK) | (@unhappiness << NIBBLE_3_SHIFT);
 }
 
-
-//----------------------------------------
-013-1.gat,131,24,0	script	Sagatha#_M	167,{
+function	script SagathaStatus {
 	set @has_magic, getskilllv(SKILL_MAGIC);
         set @evil, 0;
         set @good, 0;
         set @unhappy, (QUEST_MAGIC & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT;
-
-        set @Q_MASK, NIBBLE_4_MASK;
-        set @Q_SHIFT, NIBBLE_4_SHIFT;
-
-        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
-
-
-        if (MAGIC_FLAGS & FLAG_DID_CUTTREE)
-		set @evil, 1;
-
         set @mouboo, ((QUEST_MAGIC & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT) & 3;
 
         if (@mouboo == 3)
@@ -58,9 +46,22 @@ L_write:
 	if (@mouboo == 1)
 		set @evil, 1;
 
+        if (MAGIC_FLAGS & FLAG_DID_CUTTREE)
+		set @evil, 1;
+
         set @druid, (((QUEST_MAGIC & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT) & 12) >> 2;
         if (@druid == 3)
 		set @good, @good + 1;
+}
+
+//----------------------------------------
+013-1.gat,131,24,0	script	Sagatha#_M	167,{
+	callfunc "SagathaStatus";
+
+        set @Q_MASK, NIBBLE_4_MASK;
+        set @Q_SHIFT, NIBBLE_4_SHIFT;
+
+        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
 
         if (MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA)
 		mes "[Sagatha the Witch]";
@@ -74,7 +75,7 @@ L_write:
 		goto L_unhappy;
 
         mes "Before you stands a beautiful woman, dressed in dark purple robes and wearing a witch's hat.";
-        mes "At first glance, ";
+
         if (Sex)
 		mes "She looks at you suspiciously.";
         if (!Sex)

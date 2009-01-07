@@ -1,26 +1,46 @@
+function	script	PurificationPotion	{
+	announce "Meh.", 7;
+}
+
+// ----------------------------------------
+// Wyara the Hurnscald witch
+// ----------------------------------------
 009-2.gat,121,26,0	script	Wyara#_M	103,{
+        set @Q_MASK, NIBBLE_7_MASK;
+        set @Q_SHIFT, NIBBLE_7_SHIFT;
+        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+
+        set @STATUS_INITIAL, 0;
+        set @STATUS_PURIFY_EXPLAINED, 1;
+        set @STATUS_PURIFY_ONCE, 2;
+        set @STATUS_PURIFY_TWICE, 3;
 
 	set @MAUVE, 680;
+	set @MAGGOTSLIME, 505;
 	set @BOTTLE_WATER, 541;
 	set @MANAPOTION, 705;
+        set @PURIFICATIONPOTION, 733;
 
 	set @has_magic, getskilllv(SKILL_MAGIC);
 
 	mes "[Wyara the Witch]";
+        mes "The witch waves you in.";
+        mes "\"Hello and welcome!  Can I interested you in some potions?\"";
         next;
 
         set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_WYARA;
 L_Main:
-        menu "Q: generic", L_Question,
-             "Q: buy", L_Shop,
+        menu "No.  What do you know about...", L_Question,
+             "Can you help me learn magic?", L_Magic,
+             "Yes, I would like to buy potions.", L_Shop,
              "Bye", -;
         close;
 
 L_Shop:
 	mes "[Wyara the Witch]";
-        mes "cf. Potion Shelf behind me";
+        mes "\"Please have a look at the shelf behind me.\"";
         next;
-        goto L_Main;
+        close;
 
 L_Question:
         set @QQ_ELANORE, 1;
@@ -100,20 +120,23 @@ L_Q_manaseed:
         if (!@has_magic && (MAGIC_FLAGS & MFLAG_TOUCHED_MANASEED))
         	goto L_Q_manaseed_unabsorbed;
         mes "[Wyara the Witch]";
-        mes "\"FIXME: No idea\"";
+        mes "\"A mana seed?  I'm afraid that I can't help you with that.\"";
         next;
         goto L_Main;
 
 L_Q_manaseed_unabsorbed:
         mes "[Wyara the Witch]";
-        mes "\"FIXME: Perhaps a mana potion would help\"";
+        mes "\"So you touched the mana seed but weren't able to absorb its powers?  That means that you're lacking a natural magical ability.  Still, there are ways around that.\"";
+        next;
+        mes "[Wyara the Witch]";
+        mes "\"If you drink a mana potion, you should be able to retain this magical power and slowly build up a magical skill.\"";
         set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_MANAPOTION;
         next;
         goto L_Main;
 
 L_Q_manapotion:
         mes "[Wyara the Witch]";
-        mes "\"FIXME:  Can make one for you:  40 mauve, bottle of water\"";
+        mes "\"I have a simple recipe for making mana potions, but I don't have one ready right now.  Can you bring me 40 mauve leaves and a bottle of water?  I can make one from those quite easily.\"";
         next;
         menu "OK", L_make_manapotion,
              "No", L_Main;
@@ -128,26 +151,401 @@ L_make_manapotion:
         getitem @MANAPOTION, 1;
 
         mes "[Wyara the Witch]";
-        mes "\"FIXME:  Here.\"";
+        mes "Wyara takes your mauve leaves, grinds them, and pours some of the resultant paste into her cauldron.  She then takes your bottle and sticks it into her brew, head-first.";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "The water in the bottle takes on a strange golden hue, but doesn't flow out.";
+        mes "After a while, she retrieves the bottle, fills some of the liquid into a smaller, clay bottle, mixes in the rest of the paste, plugs the bottle and shakes it.";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"I shall keep the rest of your water and the bottle as a payment, if you don't mind.  But here is the potion; let it rest for a minute before you use it for maximum effect.\"";
+        next;
 
         goto L_Main;
 
 L_make_manapotion_lack:
         mes "[Wyara the Witch]";
-        mes "\"FIXME:  Need:  40 mauve, bottle of water\"";
+        mes "\"No, we need forty mauve leaves and a bottle of water.\"";
+        next;
+
         goto L_Main;
 
 L_Q_sagatha:
         mes "[Wyara the Witch]";
-        mes "\"FIXME\"";
+        mes "Wyara smiles.";
+        mes "\"You have met Sagatha?  She's a wonderful person, isn't she?  Well, she does hold back a little towards humans, but deep down she feels for them, too.\"";
         next;
+
+        mes "[Wyara the Witch]";
+        mes "\"She does hold all plants and animals very dear, though.  Well, the peaceful ones more than the aggressive ones, I suppose.\"";
+        next;
+
         goto L_Main;
 
 L_Q_auldsbel:
         mes "[Wyara the Witch]";
-        mes "\"FIXME\"";
+        mes "\"Auldsbel... the guild wizard?  I don't know him very well; as far as I know, he is only visiting.\"";
+        next;
+
+        goto L_Main;
+
+L_Magic_no:
+        mes "[Wyara the Witch]";
+        mes "\"I am sorry, but you don't seem to be able to control any magic.  That means that I really can't help you with that.\"";
         next;
         goto L_Main;
 
+L_Magic:
+	if (!@has_magic)
+		goto L_Magic_no;
+        mes "[Wyara the Witch]";
+        mes "\"Perhaps I can help you a little, but I am not a master of any school of magic.\"";
+        next;
 
+L_Magic_main:
+        menu
+		"Can you explain magic to me?", L_Magic_explain,
+		"Can you teach me a spell?", L_Magic_spell,
+		"Can you train me?", L_Magic_train,
+                "Never mind.", -;
+
+        goto L_Main;
+
+L_Magic_explain:
+        mes "[Wyara the Witch]";
+        mes "\"Magic is just a name for the force that lives in all plants and animals and emenates from there into all things, living or dead.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"Some things it finds easier to pass through-- natural things, living things-- but dead things, such as rock or metal, can slow it down.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"There are different kinds of magic, too; nature, ether, and so on, but if this interest you, you should talk to a scholar.\"";
+        next;
+
+        goto L_Magic_main;
+
+L_Magic_spell:
+        if (getskilllv(SKILL_MAGIC) > 1)
+		goto L_Magic_spell2;
+        if (getskilllv(SKILL_MAGIC_NATURE) > 1)
+		goto L_Magic_spell3;
+        mes "[Wyara the Witch]";
+        mes "\"No... I don't think that you are ready yet.  But please ask me again when you have some more control over your magical powers.\"";
+        next;
+
+        goto L_Magic_main;
+
+L_Magic_spell3:
+        mes "[Wyara the Witch]";
+        mes "\"Now that you know the basics of nature magic, here is one of my favourites: '" + getspellinvocation("rain") + "' will summon rain, whereever you are standing.  It will consume a bottle of water, though.\"";
+        next;
+
+L_Magic_spell2:
+        mes "[Wyara the Witch]";
+        mes "\"Here is an easy and useful one: '" + getspellinvocation("detect-players") + "'.  It will tell you the names of everyone nearby, but beware that there are ways to protect against it.\"";
+        next;
+
+        if (!getpartnerid2(0))
+           goto L_Magic_main;
+
+        mes "[Wyara the Witch]";
+        mes "\"Married partners can find each other even more easily.  Use the '" + getspellinvocation("detect-spouse") + "' spell instead.\"";
+        next;
+        goto L_Magic_main;
+
+L_Magic_train:
+        if (getskilllv(SKILL_MAGIC_NATURE) > 1)
+		goto L_Magic_train_no;
+        mes "[Wyara the Witch]";
+        mes "\"Train you?  No... you should talk to Sagatha.\"";
+        mes "She hesitates.";
+        next;
+
+	callfunc "SagathaStatus";
+
+        mes "[Wyara the Witch]";
+        mes "\"It would be difficult to ask her to accept you unless you understand some of the basics already, though.\"";
+        if (@evil)
+		mes "\"However, I have heard that you have done something unforgiveable; I doubt that she will train you now, and I refuse to do so, too.\"";
+        next;
+        if (@evil)
+                goto L_Magic_main;
+
+        if (@Q_status == @STATUS_PURIFY_TWICE)
+		goto L_Magic_purify_done;
+        if (@Q_status == @STATUS_PURIFY_ONCE)
+		goto L_Magic_purify_once;
+        if (@Q_status == @STATUS_PURIFY_EXPLAINED)
+		goto L_Magic_purify_explained;
+
+        mes "[Wyara the Witch]";
+        mes "\"Well, let me help you get started, then!  But first, to make sure that you are serious, I have a small task for you.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"There is a pond west of Tulimshar, a very small one, almost square in shape, with a rock on its southern ledge leading to its center.  This pond is close to dying.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"I want to save it; for that, someone will have to pour a purification potion into it.\"";
+        next;
+
+        set @Q_status, @STATUS_PURIFY_EXPLAINED;
+        callsub S_update_var;
+L_Magic_purify_explained:
+        if (countitem(@PURIFICATIONPOTION))
+		goto L_Magic_purify_doit;
+
+        mes "[Wyara the Witch]";
+        mes "\"To make the purification potion, I will need twenty maggot slimes and twenty leaves of mauve.\"";
+        next;
+
+        menu
+		"I shall get them later.", Magic_main,
+		"Booring.", Magic_main,
+		"Here they are.", -,
+	getinventorylist;
+	if ((@inventorylist_count == 100) && (countitem(@MAUVE) > 20) && (countitem(@MAGGOTSLIME) > 20))
+		goto L_Magic_purify_nospace;
+
+        if (countitem(@MAUVE) < 20)
+		goto L_Magic_purify_lacking;
+        if (countitem(@MAGGOTSLIME) < 20)
+		goto L_Magic_purify_lacking;
+        
+	delitem @MAUVE, 20;
+	delitem @MAGGOTSLIME, 20;
+        getitem @PURIFICATIONPOTION, 1;
+        mes "[Wyara the Witch]";
+        mes "\"Wyara grinds the leaves and mixes them with the slime, boils them, then speaks a brief incantation over them and hands you the result.\"";
+        next;
+
+L_Magic_purify_doit:
+        mes "[Wyara the Witch]";
+        mes "\"Take your purification potion to the pond, right next to its center, and pour the potion in.\"";
+        next;
+        close;
+
+L_Magic_purify_nospace:
+        mes "[Wyara the Witch]";
+        mes "\"You don't have enough space to carry the potion.  Please come back later.\"";
+        next;
+        goto L_Magic_main;
+
+L_Magic_purify_lacking:
+        mes "[Wyara the Witch]";
+        mes "\"You'll need twenty mauve leaves and twenty maggot slimes for the potion.\"";
+        next;
+        goto L_Magic_main;
+
+L_Magic_purify_once:
+        mes "[Wyara the Witch]";
+        mes "Wyara nods.";
+        mes "\"You have purified the pond a little, but not enough, I think.  We'll need another potion.\"";
+        next;
+
+        if (countitem(@PURIFICATIONPOTION))
+		goto L_Magic_purify_doit2;
+
+        mes "[Wyara the Witch]";
+        mes "\"I'll need twenty more maggot slimes and leaves of mauve.\"";
+        next;
+
+        menu
+		"I'll get them later.", Magic_main,
+		"No way.", Magic_main,
+		"Here you are.", -,
+	getinventorylist;
+	if ((@inventorylist_count == 100) && (countitem(@MAUVE) > 20) && (countitem(@MAGGOTSLIME) > 20))
+		goto L_Magic_purify_nospace;
+
+        if (countitem(@MAUVE) < 20)
+		goto L_Magic_purify_lacking;
+        if (countitem(@MAGGOTSLIME) < 20)
+		goto L_Magic_purify_lacking;
+        
+	delitem @MAUVE, 20;
+	delitem @MAGGOTSLIME, 20;
+        getitem @PURIFICATIONPOTION, 1;
+        mes "[Wyara the Witch]";
+        mes "\"Wyara brews another purification potion.\"";
+        next;
+L_Magic_purify_doit2:
+        mes "[Wyara the Witch]";
+        mes "\"Please apply this one quickly, again.\"";
+        next;
+        close;
+
+L_Magic_purify_twice:
+        mes "[Wyara the Witch]";
+        mes "Wyara smiles at you.";
+        mes "\"A friend told me... you have saved the pond for now.  Perhaps it will need some more attention later, but I'll ask others for this.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"Please kneel down and touch the ground.\"";
+        next;
+
+        menu
+		"Very well.", -,
+                "No way!", L_Magic_purify_abort;
+
+        mes "[Wyara the Witch]";
+        mes "You kneel down and touch the ground, and so does Wyara.";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "You sense the earth, through the floor boards, and begin to feel one with it, as if you were a plant or rock.";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "The gentle breeze coming in through the window begins to take on a very different quality, as if it were the gentle caress of a mother soothing her child.";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "You can sense the water within the ground, and from it you sense your sisters and brothers, plants, animals, people...";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "Slowly, the sensation recedes, but you feel changed.";
+        mes "[5000 experience points]";
+        mes "[Level 2 in Nature Magic]";
+
+        getexp 5000, 0;
+        if (getskilllv(SKILL_MAGIC_NATURE) < 2)
+        	skill SKILL_MAGIC_NATURE, 2;
+        close;
+
+
+L_Magic_purify_abort:
+        mes "[Wyara the Witch]";
+        mes "\"I can't help you if you don't subject yourself to the ritual.\"";
+        next;
+        close;
+
+L_Magic_train_no:
+        mes "[Wyara the Witch]";
+        mes "\"I can't teach you anything at this time.  Perhaps Sagatha can help you, but I'm not sure if she will accept you as a student.\"";
+        next;
+
+L_Magic_train_sagatha:
+        menu
+                "OK.", L_Magic_main,
+		"How can I convince her to accept me?", -;
+
+	callfunc "SagathaStatus";
+        mes "[Wyara the Witch]";
+        if (@evil)
+		L_Magic_train_sagatha_fail;
+        if (@good > 1)
+		mes "\"Come to think of it, I have heard good things about you.  Perhaps she will be willing to accept you as a student now?\"";
+        if (@good == 1)
+		mes "\"I have heard some good things about you, but I'm not sure if it will be enough to sway her-- she is hesitant to accept students.\"";
+        if (@good == 0)
+		mes "\"Sagatha cares greatly about all living creatures, but particularly about the creatures of the forest.  If you are kind to them, she will be more likely to be kind to you.\"";
+        next;
+
+        if (@druid == 3)
+        	goto L_Magic_main;
+
+        mes "[Wyara the Witch]";
+        mes "She smiles.";
+        mes "\"Actually, I think I know of a good thing you could do.  There is a very special tree in the desert south-east of Tulimshar, a tree that has been there for a very long time.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"The tree is slowly dying-- and has been for a long time-- but it is there because of a wonderful thing that happened long ago.  Tend to it, and I am sure that she will learn about this.\"";
+        next;
+        set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_DRUIDTREE;
+
+        menu
+		"What is that tree?", L_Magic_train_tree_backgd,
+		"How should I tend to it?", -,
+		"Nah.", L_Magic_main;
+
+        mes "[Wyara the Witch]";
+        mes "\"The tree has been there alone and unattended for a long time; what he needs most is water and affection.  Give him both.\"";
+        next;
+	goto Magic_main;
+
+L_Magic_train_tree_backgd:
+        mes "[Wyara the Witch]";
+        mes "\"Many generations ago, there was a lush, green oasis in the desert south-east of Tulimshar.  Plants of all kinds grew there, and many animals, including mouboos, made this place their home.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"Then there came war, and some people pleaded to the demon Grenxen.  He founded Tulimshar, and to provide it with water he changed the underground waterflow.  The oasis began to dry out quickly.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"But the oasis, like many such places back in the old days, had a druid watching over it.  The druid refused to accept what Grenxen had done, but he was powerless to revert or change it.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"All he could do was to delay the inevitable, to give the animals and nomads some time to adapt.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"But to do so, he had to reach the water streams deep underground.  Thus, he turned himself into a tree, a deep-rooted fyrad, so that his roots could reach underground.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"He had to exert himself tremendously; he had to grow deep, quickly; I believe that no druid or witch has summoned such magic before or since.  But he succeeded, and for a while he saved the oasis.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"Many generations he remained the only one ever to have successfully defied Grenxen, but this came at a price:  he had to remain a tree, and he never turned back.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"I believe that he has not forgotten his old magic, because even though a tree remembers many things for a very long time, trees are not keen to change things, not even themselves.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"Now he stands alone in the desert, dried-up and forgotten, with no-one remembering him.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"Please give him water, for he is always in need of it, and thank him for his sacrifice.  It is all we can do for him now.\"";
+        next;
+
+L_Magic_tree_menu:
+        menu
+		"How should I give him water?", L_Magic_tree_water,
+		"How should I thank him?", L_Magic_tree_remind,
+                "OK.", -,
+                "No.", -;
+        goto L_Magic_menu;
+
+L_Magic_tree_water:
+        mes "[Wyara the Witch]";
+        mes "\"A bottle of water would probably not be enough.  No, you would have to water the ground all around... that's too many bottles.  You will have to get water from elsewhere.\"";
+        next;
+        goto L_Magic_tree_menu;
+
+L_Magic_tree_remind:
+        mes "[Wyara the Witch]";
+        mes "\"Give him a sign of affection.  Something that works with a tree, but also something that humans might do to each other, to remind him of his days as a human.\"";
+        next;
+
+        mes "[Wyara the Witch]";
+        mes "\"Yes... that would be important.  Show your affection in the same way that you might towards a human.\"";
+        next;
+        goto L_Magic_tree_menu;
+
+L_Magic_train_sagatha_fail:
+        mes "She shakes her head.";
+        mes "\"No... from what I have heard, you have done something unforgivable.  I very much doubt that you can be her student now, and I won't teach you any further either.\"";
+        next;
+        goto L_Magic_main;
+
+S_update_var:
+	set QUEST_MAGIC,
+		(QUEST_MAGIC & ~(@Q_MASK)
+		| (@Q_status << @Q_SHIFT));
+	return;
 }
