@@ -1,22 +1,78 @@
-013-2.gat,66,39,0	script	Old Wizard	116,{
+013-2.gat,66,39,0	script	Old Wizard#_W	116,{
+	set @has_magic, getskilllv(SKILL_MAGIC);
+        set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_OLD_WIZARD;
+
+        mes "[Old Wizard]";
         mes "\"Welcome, dear wanderer! Come into my humble home. Take a rest, eat and drink.\"";
         next;
+
         menu
-        "Thanks, that's very kind of you!",thanks,
-        "Oh, shut up!",shutup;
+        	"Thanks, that's very kind of you!",thanks,
+                "Can you teach me magic?", L_teach_rude,
+        	"Oh, shut up!",shutup;
+        close;
+
+L_teach_rude:
+        mes "[Old Wizard]";
+        mes "\"I certainly could, but I already have an apprentice.\"";
+        close;
+
 shutup:
+        mes "[Old Wizard]";
         mes "\"That attitude isn't going to get you very far, my dear.\"";
         close;
 thanks:
+        mes "[Old Wizard]";
         mes "\"Behind this door, my apprentice will serve you.\"";
         next;
-        menu
-        "Alright.",ok,
-        "Your apprentice? ... No thanks.",nothx;
+        if (@has_magic)
+            menu
+	        "Alright.",ok,
+                "I am studying magic, can you help?", L_new_student,
+	        "Your apprentice? ... No thanks.",nothx;
+        if (!@has_magic)
+            menu
+	        "Alright.",ok,
+	        "Your apprentice? ... No thanks.",nothx;
 nothx:
+        mes "[Old Wizard]";
         mes "\"Goodbye, then!\"";
         close;
+
+L_new_student:
+        mes "[Old Wizard]";
+        mes "\"Studying is always an excellent use of one's mind! I fear that I can't offer too much assistance to you, however. But if you are interested, I could perhaps teach you a simple spell?\"";
+
+        menu
+		"That would be very kind of you!", -,
+                "No, but thank you!", nothx;
+
+        mes "[Old Wizard]";
+        mes "\"This one may not seem too powerful, but it can be quite handy; it's the 'hide' spell. It will shield you from some forms of detection magic.\"";
+        next;
+
+        mes "[Old Wizard]";
+        mes "\"Put a piece of cotton cloth on your head, and speak out '" + getspellinvocation("hide") + "', loudly and clearly. The protection lasts quite long, but you may have to renew it on occasion.\"";
+        next;
+
+        mes "[Old Wizard]";
+        mes "\"You can also cast it on others, of course. Just speak their name after you prononuce the invocation.\"";
+        next;
+
+        mes "[Old Wizard]";
+        mes "\"You may find it useful for getting a little peace and quiet at times, but it can also get in the way of friends trying to find you, so use it with care.\"";
+        next;
+
+        if (getskilllv(SKILL_MAGIC_ASTRAL) >= 2)
+		close;
+
+        mes "[Old Wizard]";
+        mes "\"I'm not sure if you are experienced enough to cast it yet, though.  You may need to first learn astral magic.\"";
+        next;
+        close;
+
 ok:
+        mes "[Old Wizard]";
         mes "\"Beware the flying notes though, some of them are really dangerous. I haven't been able to persuade them to get back into their book. And avoid the mirror, it's been acting strange lately.\"";
         next;
         mes "\"Oh, and please don't take my apprentice too seriously. He still has a lot to learn.\"";

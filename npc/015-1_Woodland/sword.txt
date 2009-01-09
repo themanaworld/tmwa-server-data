@@ -4,7 +4,7 @@
         close;
 
 L_message:
-        set @Q_MASK, NIBBLE_6_MASK;
+        set @Q_MASK, (NIBBLE_6_MASK | NIBBLE_7_MASK);
         set @Q_SHIFT, NIBBLE_6_SHIFT;
         set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
 
@@ -12,10 +12,20 @@ L_message:
         set @STATUS_LEARNED_FLAREDART, 1;
         set @STATUS_LEARNED_MAGICBLADE, 2;
         set @STATUS_LEVEL2, 3;
+        set @STATUS_W11, 4;
+        set @STATUS_W12, 5;
+        set @STATUS_W11_12, 6;
+        set @STATUS_L2_ALLSPELLS, 7;
+	set @ORE, 640;
+        set @IRONPOWDER, 704;
 
         if (@Q_status == @STATUS_INITIAL)  		goto L_Initial;
         if (@Q_status == @STATUS_LEARNED_FLAREDART)  	goto L_FlareStage;
         if (@Q_status == @STATUS_LEARNED_MAGICBLADE)  	goto L_MagicBladeStage;
+        if (@Q_status == @STATUS_LEVEL2)  		goto L_L2_W12;
+        if (@Q_status == @STATUS_W11)	  		goto L_L2_W12;
+        if (@Q_status == @STATUS_W12)	  		goto L_L2_almost_done;
+        if (@Q_status == @STATUS_W11_12)  		goto L_L2_W10;
 
         mes "[Mystic Sword]";
         mes "\"I have taught thee all I can teach for now.\"";
@@ -227,6 +237,93 @@ L_Levelup2_must_practice:
 L_Farewell:
         mes "[Mystic Sword]";
         mes "\"Farewell for now!\"";
+        next;
+        close;
+
+L_L2_W12:
+        mes "[Mystic Sword]";
+        mes "\"Welcome back, traveler!  Hast thou returned to advance in thy quest for magic?\"";
+        next;
+        menu
+		"No.", L_farewell,
+                "Yes.", -;
+
+        mes "[Mystic Sword]";
+        mes "\"Very well.  I shall teach thee another spell, if thou provest thy progress by sacrificing another one thousand monster points.\"";
+        next;
+        menu
+		"No, I don't want that.", L_farewell,
+                "I agree.", -;
+
+        if (Mobpt < 1000) goto L_lacking_mobpoints;
+
+        mes "[Mystic Sword]";
+        mes "\"Indeed thou art worthy.  The next spell I shall teach thee will enchant thy knuckles to turn them into powerful weapons; the component is a mere beer.\"";
+        mes "[1000 experience points]";
+        set Mobpt, Mobpt - 1000;
+        getexp 1000, 0;
+        set @Q_status, @Q_status + 2;
+        callsub S_update_var;
+        next;
+
+        mes "[Mystic Sword]";
+        mes "\"Speak '" + getspellinvocation("magic-knuckles") + "' and take a glass of beer and drink it, without ever taking it off your lips.  This will harden and enchant thy fists, turning them into powerful weapons.\"";
+        next;
+        close;
+
+L_L2_almost_done:
+        mes "[Mystic Sword]";
+        mes "\"Greetings once more, traveler!  I have another spell I wish to teach thee, but first thou must learn my brother's arrow spell.\"";
+        next;
+        close;
+
+L_L2_W10:
+        mes "[Mystic Sword]";
+        mes "\"Welcome back!\"";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "\"I shall now teach thee the final spell of this level of war magic.  For further spells thou wilt have to increase thy magical powers more.\"";
+        next;
+
+        mes "[Mystic Sword]";
+        mes "\"For this spell, I ask that thou bringest a lump of iron ore.  Thou must also sacrifice five thousand monster points.\"";
+        next;
+
+        menu
+		"OK.", -;
+		"No way.", L_farewell;
+
+        if (countitem(@ORE) < 1)
+		goto L_no_ore;
+        if (MPQUEST && (Mobpt < 5000)) goto L_lacking_mobpoints;
+
+        mes "[Mystic Sword]";
+        mes "\"Raise up the ore, mortal!\"";
+        mes "As you do so, the ore begins to crumble, leaving only iron powder behind.";
+        mes "[1000 experience points]";
+        set Mobpt, Mobpt - 5000;
+        getexp 1000, 0;
+        delitem @ORE, 1;
+        getitem @IRONPOWDER, 5;
+        set @Q_status, @STATUS_L2_ALLSPELLS;
+        callsub S_update_var;
+        next;
+
+        mes "[Mystic Sword]";
+        mes "\"This powder thou shalst need to cast the lightning spell.  Throw it up into the air and shout '" + getspellinvocation("lightning-strike") +  "', and smite thine enemies with lightning.\"";
+        next;
+
+
+L_farewell:
+        mes "[Mystic Sword]";
+        mes "\"Then I bid thee farewell for now!\"";
+        next;
+        close;
+
+L_lacking_mobpoints:
+        mes "[Mystic Sword]";
+        mes "\"Thou dost not have enough monster points to prove thy worthiness.  Return when thou hast slain more monsters!\"";
         next;
         close;
 

@@ -33,6 +33,7 @@ L_write:
 }
 
 function	script SagathaStatus {
+        set @mexp, MAGIC_EXPERIENCE & 65535;
 	set @has_magic, getskilllv(SKILL_MAGIC);
         set @evil, 0;
         set @good, 0;
@@ -58,8 +59,16 @@ function	script SagathaStatus {
 013-1.gat,131,24,0	script	Sagatha#_M	167,{
 	callfunc "SagathaStatus";
 
-        set @Q_MASK, NIBBLE_4_MASK;
+        set @Q_MASK, NIBBLE_4_MASK | NIBBLE_5_MASK;
         set @Q_SHIFT, NIBBLE_4_SHIFT;
+
+        set @STATUS_INITIAL, 0;
+        set @STATUS_STUDENT, 1; // N10
+        set @STATUS_STUDENT_A10, 2;
+        set @STATUS_STUDENT_A11, 3;
+        set @STATUS_STUDENT_A12, 4;
+        set @STATUS_STUDENT_N11, 5;
+        set @STATUS_STUDENT_LEVEL_3, 6;
 
         set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
 
@@ -74,6 +83,9 @@ function	script SagathaStatus {
         if (@unhappy > 10)
 		goto L_unhappy;
 
+        if (MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA)
+		goto L_wb;
+
         mes "Before you stands a beautiful woman, dressed in dark purple robes and wearing a witch's hat.";
 
         if (Sex)
@@ -82,7 +94,39 @@ function	script SagathaStatus {
 		mes "She looks at you impassively.";
         next;
 
+        menu
+		"Who are you?", -,
+                "What's your name?", L_intro_name,
+                "Hello!  My name is " + strcharinfo(0) + ".", L_intro_givename,
+                "Goodbye.", L_close;
+
+        mes "[Witch]";
+        mes "\"I am what you humans call a witch.  I am a human who has chosen all living creatures as what you call family.\"";
+        next;
+
+        menu
+                "No, I mean... what's your name?", L_intro_name,
+                "Hello!  My name is " + strcharinfo(0) + ".", L_intro_givename,
+                "Uh.... goodbye.", L_close;
+
+        close;
+
+L_intro_name:
+        mes "[Sagatha the Witch]";
+        mes "\"They call me Sagatha.\"";
         set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_SAGATHA;
+        next;
+        goto L_main;
+
+L_intro_givename:
+        mes "[Witch]";
+        mes "\"Ah.\"";
+        next;
+
+        menu
+		"What's yours?", L_intro_name,
+                "Uhm... bye.", -;
+        close;
 
 L_evil:
 	mes "The witch's eyes flare up in anger as she notices you, and she turns away from you.";
@@ -92,95 +136,193 @@ L_evil:
 
 L_unhappy:
 	mes "The witch glares at you in anger.";
-        mes "\"I hope you enjoyed killing those innocent forest creatures!\"";
-        mes "She turns away, clearly not interested in any discussion.";
-        mes "\"Don't come back until you have come to your senses!\"";
+        mes "\"I wonder if you can still sleep after killing those innocent forest creatures!  I am sure that they will come back to haunt you in your dreams!\"";
         next;
         close;
 
-L_Main:
-	menu "What do you know about...", L_Question;
+L_wb:
+        mes "[Sagatha the Witch]";
+        if (@good > 1)
+		msg "Sagatha nods as she notices you.";
+        if (@good == 1)
+		msg "Sagatha raises an eyebrow as you address her.";
+        if (@good == 0)
+		msg "Sagatha glances at you, suspicion evident in her eyes.";
+        next;
+
+L_main:
+        if (@Q_status)
+	    menu
+		"Can you explain magic to me?", L_explain_magic,
+		"Can you teach me more magic?", L_teach,
+		"What do you know about...", L_Question;
+        if (!@Q_status)
+	    menu
+		"Can you explain magic to me?", L_explain_magic,
+		"Can you teach me magic?", L_teach_initial,
+		"What do you know about...", L_Question;
         close;
 
+L_teach_initial:
+	if (@good < 2)
+		goto L_teach_initial_nogood;
+        if (getskilllv(SKILL_MAGIC_NATURE) < 2)
+		goto L_teach_initial_nonature;
+
+        mes "[Sagatha the Witch]";
+        mes "She nods.";
+        mes "\"For now, yes.  But you will have to prove that you really care about more than yourself.\"";
+        next;
+
+        mes "[Sagatha the Witch]";
+        mes "She snaps her fingers, and without warning you begin to acutely sense the magical energies around you, for a brief instant!";
+        mes "[5000 experience points]";
+        mes "[Level 2 in Ether Magic]";
+
+        set @Q_status, @STATUS_STUDENT;
+        callsub S_update_var;
+        getexp 5000, 0;
+        if (getskilllv(SKILL_MAGIC_ETHER) < 2)
+        	skill SKILL_MAGIC_ETHER, 2;
+
+        mes "[Sagatha the Witch]";
+        mes "\"In the future, I will teach you nature and ether magic.  For the other schools there are better teachers around.\"";
+        next;
+
+        goto L_main;
+
+
+L_teach_initial_nogood:
+        mes "[Sagatha the Witch]";
+        mes "\"I don't take strangers as students.\"";
+        next;
+        goto L_main;
+
+L_teach_initial_nonature:
+        mes "[Sagatha the Witch]";
+        mes "\"I might, but you don't even understand the basics of nature magic.\"";
+        next;
+        goto L_main;
+
+L_explain_magic:
+        mes "[Sagatha the Witch]";
+        mes "\"No.\"";
+        next;
+        goto L_main;
+
+L_teach:
+	if (@Q_status == @STATUS_STUDENT)
+		goto L_teach_N10;
+	if (@Q_status == @STATUS_STUDENT_A10)
+		goto L_teach_A10;
+	if (@Q_status == @STATUS_STUDENT_A11)
+		goto L_teach_A11;
+	if (@Q_status == @STATUS_STUDENT_A12)
+		goto L_teach_A12;
+	if (@Q_status == @STATUS_STUDENT_N11)
+		goto L_teach_N11;
+
+        mes "[Sagatha the Witch]";
+        mes "\"Not yet.  You have to ask the mana seed to give you more power.\"";
+        next;
+        goto L_main;        
+
+L_practice:
+        mes "[1000 experience points]";
+        set @Q_status, @Q_status + 1;
+        callsub S_update_var;
+        getexp 1000,0;
+        next;
+        mes "[Sagatha the Witch]";
+        mes "\"Now go and practice.\"";
+        next;
+        goto L_main;
+
+L_teach_N10:
+        if (@mexp < 150) goto L_teach_noexp;
+        mes "[Sagatha the Witch]";
+        mes "\"First, a nature spell.  Take a cocoon shell.  Hold it in your hand.  Feel its lightness.\"";
+        next;
+        mes "[Sagatha the Witch]";
+        mes "\"Now whisper '" + getspellinvocation("flying-backpack") + "', and if your backpack was pressing on you you should no longer feel it now.\"";
+        goto L_practice;
+
+L_teach_A10:
+        if (@mexp < 250) goto L_teach_noexp;
+        mes "[Sagatha the Witch]";
+        mes "\"To protect against others' magic, take a small mushroom from a shady place.  Mushrooms draw things out of the earth.  Rub your mushroom into pieces between your hands.\"";
+        next;
+        mes "[Sagatha the Witch]";
+        mes "\"Then say '" + getspellinvocation("barrier") + "' and let the musroom's power take over.\"";
+        next;
+        goto L_practice;
+
+L_teach_A11:
+        if (@mexp < 350) goto L_teach_noexp;
+        mes "[Sagatha the Witch]";
+        mes "\"If you must fight, call allies.  You can call scorpions with a scorpion stinger.  Hold up the stinger and call out to them: '" + getspellinvocation("summon-scorps") + "'.\"";
+        next;
+        goto L_practice;
+
+L_teach_A12:
+        if (@mexp < 450) goto L_teach_noexp;
+        mes "[Sagatha the Witch]";
+        mes "\"You can call red scorpions, too.  But for them you must call out '" + getspellinvocation("summon-red-scorps") + "' instead.\"";
+        next;
+        goto L_practice;
+
+L_teach_N11:
+        if (@mexp < 550) goto L_teach_noexp;
+        mes "[Sagatha the Witch]";
+        mes "\"You can harden your skin with a hard spike.  Hold it in your hands and speak '" + getspellinvocation("protect") + "', then draw its hardness into your skin.\"";
+        next;
+        mes "[Sagatha the Witch]";
+        mes "\"Or call it into someone else's skin, by saying that someone's name right after the '" + getspellinvocation("protect") + "'.\"";
+        next;
+        goto L_practice;
+
+L_teach_noexp:
+        mes "[Sagatha the Witch]";
+        mes "\"You must practice more first.\"";
+        next;
+        goto L_main;
+
 L_Question:
-        set @QQ_ELANORE, 1;
-        set @QQ_MANASEED, 2;
-        set @QQ_WYARA, 3;
-        set @QQ_AULDSBEL, 5;
+        callfunc "MagicTalkOptionsSetup";
+        set @ignore, @QQ_SAGATHA;
+        callfunc "MagictalkMenu";
 
-        setarray @choice$, "", "", "", "", "", "";
-        set @choices_nr, 0;
-        setarray @choice_idx, 0, 0, 0, 0, 0, 0;
-
-        set @choice$[@choices_nr], "...Elanore the Healer?";
-        set @choice_idx[@choices_nr], @QQ_ELANORE;
-        set @choices_nr, @choices_nr + 1;
-
-        if (!(MAGIC_FLAGS & (MFLAG_KNOWS_MANASEED | MFLAG_MANASEED_RUMOUR)))
-        	goto L_Q_post_manaseed;
-        set @choice$[@choices_nr], "...the Mana Seed?";
-        set @choice_idx[@choices_nr], @QQ_MANASEED;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_manaseed:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANAPOTION))
-        	goto L_Q_post_manapotion;
-        set @choice$[@choices_nr], "...Mana Potions?";
-        set @choice_idx[@choices_nr], @QQ_MANAPOTION;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_manapotion:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_WYARA))
-        	goto L_Q_post_wyara;
-        set @choice$[@choices_nr], "...Wyara the Witch?";
-        set @choice_idx[@choices_nr], @QQ_WYARA;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_wyara:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
-        	goto L_Q_post_sagatha;
-        set @choice$[@choices_nr], "...Sagatha the Witch?";
-        set @choice_idx[@choices_nr], @QQ_SAGATHA;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_sagatha:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_AULDSBEL))
-        	goto L_Q_post_auldsbel;
-        set @choice$[@choices_nr], "...Auldsbel the Wizard?";
-        set @choice_idx[@choices_nr], @QQ_AULDSBEL;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_auldsbel:
-
-        set @choice$[@choices_nr], "...never mind.";
-        set @choice_idx[@choices_nr], 0;
-        set @choices_nr, @choices_nr + 1;
-
-        menu @choice$[0], -,
-             @choice$[1], -,
-             @choice$[2], -,
-             @choice$[3], -,
-             @choice$[4], -;
-
-        set @menu, @menu - 1;
-
-        if (@menu >= @choices_nr)
-		set @menu, 0;
-	
-        set @c, @choice_idx[@menu];
-
-        if (@c == 0)		goto L_Main;
+        if (@c == 0)		goto L_main;
         if (@c == @QQ_ELANORE)	goto L_Q_elanore;
         if (@c == @QQ_MANASEED)	goto L_Q_manaseed;
         if (@c == @QQ_MANAPOTION)	goto L_Q_manapotion;
         if (@c == @QQ_WYARA)	goto L_Q_wyara;
         if (@c == @QQ_AULDSBEL)	goto L_Q_auldsbel;
-        close;
+        if (@c == @QQ_IMP)	goto L_Q_imp;
+        if (@c == @QQ_OLDWIZ)	goto L_Q_old_wizard;
+
+        mes "[Sagatha the Witch]";
+        mes "\"That doesn't concern you.\"";
+        next;
+        goto L_main;
+
+L_Q_old_wizard:
+        mes "[Sagatha the Witch]";
+        mes "\"A kind and wise wizard.\"";
+        next;
+        goto L_main_menu;
+
+L_Q_imp:
+        mes "[Sagatha the Witch]";
+        mes "\"He is an evil and cruel one.  He lies and cheats and will try to take advantage of you.  Stay away from him.\"";
+        next;
+        goto L_main_menu;
 
 L_Q_elanore:
         mes "[Sagatha the Witch]";
-        mes "\"FIXME.\"";
+        mes "\"Elanore is the Tulimshar town healer.\"";
         next;
-        goto L_Main;
+        goto L_main;
 
 L_Q_manaseed:
         mes "[Sagatha the Witch]";
@@ -188,40 +330,43 @@ L_Q_manaseed:
         	goto L_Q_manaseed_unabsorbed;
         if (@has_magic)
 		goto L_Q_manaseed_m;
-        mes "\"arimasu\"";
+        mes "\"There is a mana seed around here, but I don't see how this concerns you.\"";
         next;
-        goto L_Main;
+        goto L_main;
 
 L_Q_manaseed_unabsorbed:
         mes "[Sagatha the Witch]";
-        mes "\"...unattuned.\"";
+        mes "\"If the mana seed didn't pass its magic to you, you clearly aren't attuned to magic.\"";
         next;
-        goto L_Main;
+        goto L_main;
 
 L_Q_manaseed_m:
         mes "[Sagatha the Witch]";
-        mes "\"...\"";
+        mes "\"You were lucky that the mana seed gave you its magic.\"";
         next;
-        goto L_Main;
+        goto L_main;
 
 L_Q_manapotion:
         mes "[Sagatha the Witch]";
-        mes "\"Can't make one without a cauldron.\"";
+        mes "\"I won't make one without a cauldron, that would be wasteful.  And I'm not going to start carrying a cauldron around.\"";
         next;
-        goto L_Main;
+        goto L_main;
 
 L_Q_wyara:
         mes "[Sagatha the Witch]";
-        mes "\"\"";
+        mes "\"Wyara decided to live with humans, in Hurnscald.  She tries to make the world a better place in her own way.  Please be kind to her, she is a very good person.\"";
         next;
-        goto L_Main;
+        goto L_main;
 
 L_Q_auldsbel:
         mes "[Sagatha the Witch]";
-        mes "\"\"";
+        mes "She frowns.";
+        mes "\"He's a transmutation wizard, member of the northern council.  Reasonably competent wizard, too.\"";
         next;
-        goto L_Main;
+        goto L_main;
 
+L_close:
+	close;
 
 S_update_var:
 	set QUEST_MAGIC,

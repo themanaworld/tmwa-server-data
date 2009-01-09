@@ -9,7 +9,8 @@
         set @Q_MASK, NIBBLE_3_MASK;
         set @Q_SHIFT, NIBBLE_3_SHIFT;
 
-        set @wants_sulphur, (QUEST_MAGIC & NIBBLE_6_MASK);
+        set @wants_sulphur, (QUEST_MAGIC & (NIBBLE_6_MASK | NIBBLE_7_MASK));
+        set @wants_ironpowder, (((QUEST_MAGIC & (NIBBLE_6_MASK | NIBBLE_7_MASK)) >> NIBBLE_6_SHIFT) >= 7);
         set @Q_status, (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
         // End of Setzer quest/monster oil quest participation
 
@@ -38,9 +39,10 @@
 	set @CHOICE_MONSTER_OIL, 4;
 	set @CHOICE_MANA_POTION, 5;
 	set @CHOICE_SULPHUR_POWDER, 6;
-	set @CHOICE_ABORT, 7;
+	set @CHOICE_IRON_POWDER, 7;
+	set @CHOICE_ABORT, 8;
 
-	setarray @menuitems$, "", "", "", "", "", "";
+	setarray @menuitems$, "", "", "", "", "", "", "", "";
 	set @c, 0;
 
 	set @menuitems$[@c], "Iron potion.";
@@ -95,9 +97,16 @@ L_certain_condition:
         if (!@wants_sulphur)
 		goto L_post_sulphur_option;
 	set @menuitems$[@c], "Can you make sulphur powder?";
-	set @menuID[@c], @CHOICE_SULPHUR;
+	set @menuID[@c], @CHOICE_SULPHUR_POWDER;
 	set @c, @c + 1;
 L_post_sulphur_option:
+
+        if (!@wants_ironpowder)
+		goto L_post_ironpowder_option;
+	set @menuitems$[@c], "Can you make iron powder?";
+	set @menuID[@c], @CHOICE_IRON_POWDER;
+	set @c, @c + 1;
+L_post_ironpowder_option:
 
         if (@Q_status == @SETZER_INITIAL)
 		goto L_main_menu;
@@ -117,7 +126,8 @@ L_main_menu:
 		@menuitems$[3], -,
 		@menuitems$[4], -,
 		@menuitems$[5], -,
-		@menuitems$[6], -;
+		@menuitems$[6], -,
+		@menuitems$[7], -;
 
 	set @menu, @menu - 1;
 
@@ -128,8 +138,58 @@ L_main_menu:
 	if (@menuID[@menu] == @CHOICE_DYE) goto L_pick_colour;
 	if (@menuID[@menu] == @CHOICE_MONSTER_OIL) goto L_monster_oil;
 	if (@menuID[@menu] == @CHOICE_MANA_POTION) goto L_mana_potion;
-	if (@menuID[@menu] == @CHOICE_SULPHUR) goto L_sulphur;
+	if (@menuID[@menu] == @CHOICE_SULPHUR_POWDER) goto L_sulphur;
+	if (@menuID[@menu] == @CHOICE_IRON_POWDER) goto L_iron_powder;
 	if (@menuID[@menu] == @CHOICE_ABORT) goto L_abort;
+        goto L_abort;
+
+L_iron_powder:
+	mes "[Rauk the Alchemist]";
+        mes "\"Iron powder?  Hmm, I can extract some iron powder out of a chunk of iron ore, but that will require me to dissolve it.  If you give me a chunk of iron ore and 100 GP for the acid, I can do it.\"";
+        menu
+		"Never mind.", L_abort,
+		"Here you are!", -;
+
+        if (countitem(@ORE) < 1)
+		goto L_iron_powder_noore;
+        if (zeny < 100)
+		goto L_iron_powder_nozeny;
+	getinventorylist;
+	if (@inventorylist_count == 100
+            && countitem(@ORE) > 1
+            && countitem(@IRONPOWDER) < 1)
+		goto L_iron_powder_full;
+        delitem @ORE, 1;
+        set zeny, zeny - 100;
+        getitem @IRONPOWDER, 4;
+	mes "[Rauk the Alchemist]";
+        mes "Rauk places your chunk of ore in a strange glass container, then pours a steaming yellow liquid over it.  Before your eyes, the ore dissolves.\"";
+        next;
+
+	mes "[Rauk the Alchemist]";
+        mes "Rauk pours another liquid over the resultant mixture, then pours the result through a piece of cloth placed in a funnel.  He removes some amount of metal powder from the cloth and hands it to you.\"";
+        mes "\"This is about as fine as I can make it without mechanical help.\"";
+        next;
+
+        close;
+
+L_iron_powder_noore:
+	mes "[Rauk the Alchemist]";
+        mes "\"I do need a chunk of iron ore.  Please return when you have one.\"";
+        next;
+        close;
+
+L_iron_powder_nozeny:
+	mes "[Rauk the Alchemist]";
+        mes "\"I'm sorry, but I must ask that you pay 100 GP-- the acid I use is not cheap.\"";
+        next;
+        close;
+
+L_iron_powder_full:
+	mes "[Rauk the Alchemist]";
+        mes "\"I don't think that you have room to carry this.  Please come back later.\"";
+        next;
+        close;
 
 L_sulphur:
 	mes "[Rauk the Alchemist]";

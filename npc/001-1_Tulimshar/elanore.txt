@@ -4,10 +4,10 @@
 
 	set @has_magic, getskilllv(SKILL_MAGIC);
 
-        set @Q_MASK, NIBBLE_5_MASK;
-        set @Q_SHIFT, NIBBLE_5_SHIFT;
+        set @Q_MASK, NIBBLE_1_MASK;
+        set @Q_SHIFT, NIBBLE_1_SHIFT;
 
-        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+        set @Q_status, (QUEST_MAGIC2 & @Q_MASK) >> @Q_SHIFT;
         set @Q_heal_exp, MAGIC_EXPERIENCE >> 24;
 
         set @BUGLEG, 518;
@@ -319,6 +319,37 @@ L_Teach_CheckAdvanceTo2_fail:
         close;
 
 L_Teach_CheckAdvanceToLOH:
+        if (getskilllv(SKILL_MAGIC) < 2)
+        	goto L_Teach_LOH_advance_abort0;
+        if (@Q_heal_exp < 30)
+		goto L_Teach_LOH_advance_abort1;
+
+	mes "[Elanore the Healer]";
+        mes "\"I will now teach you how to heal by laying on your hands.  The technique is similar to the spell I taught you at the beginning, but this time you transfer your own health instead of drawing health from a lifestone.\"";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "\"First, lay your hand on the person you wish to heal.  You needn't touch the injury itself, though you have to touch the skin until you are a little more experienced.  Then, medidate on the word '" + getspellinvocation("lay-on-hands") + "'\"";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "\"This will let your own life force flow into the person you are healing.  If you are badly injured yourself, you will not be able to do this.\"";
+        mes "[1000 experience points]";
+        next;
+
+        getexp 1000, 0;
+        set @Q_status, @STATUS_LEARNED_LAY_ON_HANDS;
+        callsub S_update_var;
+        close;
+
+L_Teach_LOH_advance_abort0:
+	mes "[Elanore the Healer]";
+        mes "\"You don't have enough magical power to learn the next healing spell yet.\"";
+        close;
+
+L_Teach_LOH_advance_abort1:
+	mes "[Elanore the Healer]";
+        mes "\"I'm sorry, but I am not yet convinced that you are a good enough healer.  Please continue in your endeavours.\"";
         close;
 
 L_NoMagicNoTeach:
@@ -329,67 +360,9 @@ L_NoMagicNoTeach:
         goto L_Main;
 
 L_Question:
-        set @QQ_MANAPOTION, 1;
-        set @QQ_MANASEED, 2;
-        set @QQ_WYARA, 3;
-        set @QQ_SAGATHA, 4;
-        set @QQ_AULDSBEL, 5;
-
-        setarray @choice$, "", "", "", "", "", "";
-        set @choices_nr, 0;
-        setarray @choice_idx, 0, 0, 0, 0, 0, 0;
-
-        if (!(MAGIC_FLAGS & (MFLAG_KNOWS_MANASEED | MFLAG_MANASEED_RUMOUR)))
-        	goto L_Q_post_manaseed;
-        set @choice$[@choices_nr], "...the Mana Seed?";
-        set @choice_idx[@choices_nr], @QQ_MANASEED;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_manaseed:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANAPOTION))
-        	goto L_Q_post_manapotion;
-        set @choice$[@choices_nr], "...Mana Potions?";
-        set @choice_idx[@choices_nr], @QQ_MANAPOTION;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_manapotion:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_WYARA))
-        	goto L_Q_post_wyara;
-        set @choice$[@choices_nr], "...Wyara the Witch?";
-        set @choice_idx[@choices_nr], @QQ_WYARA;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_wyara:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
-        	goto L_Q_post_sagatha;
-        set @choice$[@choices_nr], "...Sagatha the Witch?";
-        set @choice_idx[@choices_nr], @QQ_SAGATHA;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_sagatha:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_AULDSBEL))
-        	goto L_Q_post_auldsbel;
-        set @choice$[@choices_nr], "...Auldsbel the Wizard?";
-        set @choice_idx[@choices_nr], @QQ_AULDSBEL;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_auldsbel:
-
-        set @choice$[@choices_nr], "...never mind.";
-        set @choice_idx[@choices_nr], 0;
-        set @choices_nr, @choices_nr + 1;
-
-        menu @choice$[0], -,
-             @choice$[1], -,
-             @choice$[2], -,
-             @choice$[3], -,
-             @choice$[4], -;
-
-        set @menu, @menu - 1;
-
-        if (@menu >= @choices_nr)
-		set @menu, 0;
-	
-        set @c, @choice_idx[@menu];
+        callfunc "MagicTalkOptionsSetup";
+        set @ignore, @QQ_ELANORE;
+        callfunc "MagictalkMenu";
 
         if (@c == 0)		goto L_Main;
         if (@c == @QQ_MANASEED)	goto L_Q_manaseed;
@@ -397,7 +370,19 @@ L_Q_post_auldsbel:
         if (@c == @QQ_WYARA)	goto L_Q_wyara;
         if (@c == @QQ_SAGATHA)	goto L_Q_sagatha;
         if (@c == @QQ_AULDSBEL)	goto L_Q_auldsbel;
-        close;
+        if (@c == @QQ_OLDWIZ)	goto L_Q_oldwiz;
+
+	mes "[Elanore the Healer]";
+        mes "Elanore shakes her head.";
+        mes "\"I am sorry, but I don't think that I know anything that would help you.\"";
+        next;
+        goto L_Main;
+
+L_Q_oldwiz:
+	mes "[Elanore the Healer]";
+        mes "\"He is a kind old man.  He stays mostly with his books and his apprentice, though we have chatted a few times.\"";
+        next;
+        goto L_Main;
 
 L_Q_manaseed:
 	mes "[Elanore the Healer]";
@@ -432,8 +417,8 @@ L_Q_auldsbel:
 
 
 S_update_var:
-	set QUEST_MAGIC,
-		(QUEST_MAGIC & ~(@Q_MASK)
+	set QUEST_MAGIC2,
+		(QUEST_MAGIC2 & ~(@Q_MASK)
 		| (@Q_status << @Q_SHIFT));
 	return;
 }

@@ -36,64 +36,9 @@ L_News:
         goto L_Main;
 
 L_Question:
-        set @QQ_ELANORE, 1;
-        set @QQ_MANASEED, 2;
-        set @QQ_WYARA, 3;
-        set @QQ_SAGATHA, 4;
-        set @QQ_AULDSBEL, 5;
-
-        setarray @choice$, "", "", "", "", "", "";
-        set @choices_nr, 0;
-        setarray @choice_idx, 0, 0, 0, 0, 0, 0;
-
-        set @choice$[@choices_nr], "...Elanore the Healer?";
-        set @choice_idx[@choices_nr], @QQ_ELANORE;
-        set @choices_nr, @choices_nr + 1;
-
-        if (!(MAGIC_FLAGS & (MFLAG_KNOWS_MANASEED | MFLAG_MANASEED_RUMOUR)))
-        	goto L_Q_post_manaseed;
-        set @choice$[@choices_nr], "...the Mana Seed?";
-        set @choice_idx[@choices_nr], @QQ_MANASEED;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_manaseed:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_WYARA))
-        	goto L_Q_post_wyara;
-        set @choice$[@choices_nr], "...Wyara the Witch?";
-        set @choice_idx[@choices_nr], @QQ_WYARA;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_wyara:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
-        	goto L_Q_post_sagatha;
-        set @choice$[@choices_nr], "...Sagatha the Witch?";
-        set @choice_idx[@choices_nr], @QQ_SAGATHA;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_sagatha:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_AULDSBEL))
-        	goto L_Q_post_auldsbel;
-        set @choice$[@choices_nr], "...Auldsbel the Wizard?";
-        set @choice_idx[@choices_nr], @QQ_AULDSBEL;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_auldsbel:
-
-        set @choice$[@choices_nr], "...never mind.";
-        set @choice_idx[@choices_nr], 0;
-        set @choices_nr, @choices_nr + 1;
-
-        menu @choice$[0], -,
-             @choice$[1], -,
-             @choice$[2], -,
-             @choice$[3], -,
-             @choice$[4], -;
-
-        set @menu, @menu - 1;
-
-        if (@menu >= @choices_nr)
-		set @menu, 0;
-	
-        set @c, @choice_idx[@menu];
+        callfunc "MagicTalkOptionsSetup";
+        set @ignore, 0;
+        callfunc "MagictalkMenu";
 
         if (@c == 0)		goto L_Main;
         if (@c == @QQ_ELANORE)	goto L_Q_elanore;
@@ -101,7 +46,21 @@ L_Q_post_auldsbel:
         if (@c == @QQ_WYARA)	goto L_Q_wyara;
         if (@c == @QQ_SAGATHA)	goto L_Q_sagatha;
         if (@c == @QQ_AULDSBEL)	goto L_Q_auldsbel;
-        close;
+        if (@c == @QQ_OLDWIZ)	goto L_Q_oldwiz;
+
+        mes "[" + @name + "]";
+        mes "\"Alas, I know very little about this matter.\"";
+        next;
+        goto L_Main;
+
+L_Q_oldwiz:
+        mes "[" + @name + "]";
+        mes "\"The old wizard has been an old man for as long as I remember, living near the mountains in his magic hut-- a hut that is bigger on the inside, just like in the old tales of Gyer Filla the Wise....\"";
+        next;
+        mes "[" + @name + "]";
+        mes "\"I doubt that they are the same person, though.  For one, I have never seen his hut fly.  For another, Gyer never took apprentices.\"";
+        next;
+        goto L_Main;
 
 L_Q_elanore:
         mes "[" + @name + "]";

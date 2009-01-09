@@ -9,6 +9,7 @@
 	set @MAUVE, 680;
 	set @PETAL, 565;
 	set @PEARL, 700;
+        set @WOOD, 569;
 	set @BOTTLE_WATER, 541;
         set @MANA_POTION, 705;
         set @SMALL_HEALING_POTION, 685;
@@ -28,13 +29,20 @@
         set @SULPHUR, 703;
         set @IRONPOWDER, 704;
         set @MOUBOO_FIGURINE, 728;
+        set @BUGLEG, 518;
 
         set @Q_STATUS_INITIAL, 0;
         set @Q_STATUS_POSTINTRO, 1;
         set @Q_STATUS_INITIATION, 2; // quest for being able to cast `create mouboo figurine'
         set @Q_STATUS_STUDENT, 3; // accepted as student
+        set @Q_STATUS_STUDENT0, 4; // accepted as student
+        set @Q_STATUS_STUDENT1, 5;
+        set @Q_STATUS_STUDENT2, 6;
+        set @Q_STATUS_STUDENT3, 7;
+        set @Q_STATUS_STUDENT4, 8;
 
-        set @Q_wants_sulphur, (QUEST_MAGIC & NIBBLE_6_MASK);
+        set @wants_sulphur, (QUEST_MAGIC & (NIBBLE_6_MASK | NIBBLE_7_MASK));
+        set @wants_ironpowder, (((QUEST_MAGIC & (NIBBLE_6_MASK | NIBBLE_7_MASK)) >> NIBBLE_6_SHIFT) >= 7);
 
         set @Q_MASK, NIBBLE_0_MASK | NIBBLE_1_MASK;
         set @Q_SHIFT, NIBBLE_0_SHIFT;
@@ -168,6 +176,15 @@ L_main_menu:
         close;
 
 L_main_menu_magic:
+        if (@wants_sulphur && @wants_ironpowder)
+          menu "How does magic work?", L_about_magic,
+             "Can you teach me a spell?", L_learn_spell,
+             "Where are you from?", L_about_auldsbel,
+             "Do you need help with your experiments?", L_quest,
+             "What do you know about...", L_question,
+             "Can you make sulphur powder?", L_sulphur,
+             "Can you make iron powder?", L_ironpowder,
+             "Goodbye.", -;
         if (@wants_sulphur)
           menu "How does magic work?", L_about_magic,
              "Can you teach me a spell?", L_learn_spell,
@@ -185,12 +202,28 @@ L_main_menu_magic:
              "Goodbye.", -;
         close;
 
+L_ironpowder:
+        mes "[Auldsbel the Wizard]";
+        mes "\"No, I do not know the spell for this.  I expect that it shouldn't be too hard an invocation, but I'm too busy to work it out.\"";
+        next;
+        mes "[Auldsbel the Wizard]";
+        mes "\"I know that they used to make iron ore around here, though, many years ago.  Perhaps the secret is still hidden somewhere?\"";
+        next;
+        goto L_main_menu;
+
 L_sulphur:
         mes "[Auldsbel the Wizard]";
         set @cost, 400 - (@component_quest * 30);
         mes "\"Sulphur powder?  Ah, so we have picked up a little offensive magic, haven't we?  Good thinking, good thinking.  And yes, of course I can transmute volcanic ashes into sulphur powder at a ratio of 1:5, for a mere " + @cost + " GP.\"";
         next;
-        menu
+        if (@Q_status >= @Q_STATUS_STUDENT)
+            menu
+		"No, thank you.", -,
+		"I will see what I can find.", -,
+                "Can you teach me how to make it myself?", L_sulphur_teach_spell,
+		"Here you are.", L_sulphur_buy;
+        if (@Q_status < @Q_STATUS_STUDENT)
+            menu
 		"No, thank you.", -,
 		"I will see what I can find.", -,
 		"Here you are.", L_sulphur_buy;
@@ -231,7 +264,34 @@ L_sulphur_noroom:
         mes "[Auldsbel the Wizard]";
         mes "\"Hmm, you really managed to squeeze something into every little place you had that we could have stored the powder in... you might want to return once you have resolved this matter.\"";
         next;
-        close;
+        goto L_main_menu;
+
+L_sulphur_teach_spell:
+        if (@Q_component_quest <= 4)
+		goto L_sulphur_teach_spell_no;
+        mes "[Auldsbel the Wizard]";
+        mes "\"Very well, then.  You have been quite helpful with my experiments, after all.  As you may have noticed, the spell takes a pile of volcanic ashes.  Close your hands around it, then whisper the invocation.\"";
+        next;
+        mes "[Auldsbel the Wizard]";
+        mes "\"That invocation is '" + getspellinvocation("make-sulphur") + "'.\"";
+        next;
+        mes "[Auldsbel the Wizard]";
+        mes "\"You may find that you can transmute the powder more effectively after a while; that is perfectly natural.\"";
+        next;
+        goto L_main_menu;
+
+L_sulphur_teach_spell_no:
+        mes "[Auldsbel the Wizard]";
+        mes "\"Hmm...  how about this:  you help me with a few of my experiments, and I tell you?\"";
+        next;
+        menu
+		"Very well, I will help you.", L_quest,
+                "No.", -;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"Then I fear that I shall not reveal the spell to you either.\"";
+        next;
+        goto L_main_menu;
 
 L_about_magic:
         mes "[Auldsbel the Wizard]";
@@ -454,66 +514,37 @@ L_learn_magic:
         goto L_main_menu;
 
 L_question:
-        set @QQ_ELANORE, 1;
-        set @QQ_MANASEED, 2;
-        set @QQ_WYARA, 3;
-        set @QQ_SAGATHA, 4;
-
-        setarray @choice$, "", "", "", "", "";
-        set @choices_nr, 0;
-        setarray @choice_idx, 0, 0, 0, 0, 0;
-
-        set @choice$[@choices_nr], "...Elanore the Healer?";
-        set @choice_idx[@choices_nr], @QQ_ELANORE;
-        set @choices_nr, @choices_nr + 1;
-
-        if (!(MAGIC_FLAGS & (MFLAG_KNOWS_MANASEED | MFLAG_MANASEED_RUMOUR)))
-        	goto L_Q_post_manaseed;
-        set @choice$[@choices_nr], "...the Mana Seed?";
-        set @choice_idx[@choices_nr], @QQ_MANASEED;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_manaseed:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_WYARA))
-        	goto L_Q_post_wyara;
-        set @choice$[@choices_nr], "...Wyara the Witch?";
-        set @choice_idx[@choices_nr], @QQ_WYARA;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_wyara:
-
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
-        	goto L_Q_post_sagatha;
-        set @choice$[@choices_nr], "...Sagatha the Witch?";
-        set @choice_idx[@choices_nr], @QQ_SAGATHA;
-        set @choices_nr, @choices_nr + 1;
-L_Q_post_sagatha:
-
-        set @choice$[@choices_nr], "...never mind.";
-        set @choice_idx[@choices_nr], 0;
-        set @choices_nr, @choices_nr + 1;
-
-        menu @choice$[0], -,
-             @choice$[1], -,
-             @choice$[2], -,
-             @choice$[3], -,
-             @choice$[4], -;
-
-        set @menu, @menu - 1;
-
-        if (@menu >= @choices_nr)
-		set @menu, 0;
-	
-        set @c, @choice_idx[@menu];
-
-//        mes "menu = " + @menu + ", c =  " + @c + " nr=" + @choices_nr + ", ids = " + @choice_idx[0];
-//        next;
+        callfunc "MagicTalkOptionsSetup";
+        set @ignore, @QQ_AULDSBEL;
+        callfunc "MagictalkMenu";
 
         if (@c == 0)		goto L_main_menu;
         if (@c == @QQ_ELANORE)	goto L_Q_elanore;
         if (@c == @QQ_MANASEED)	goto L_Q_manaseed;
         if (@c == @QQ_WYARA)	goto L_Q_wyara;
         if (@c == @QQ_SAGATHA)	goto L_Q_sagatha;
-        close;
+        if (@c == @QQ_IMP)	goto L_Q_imp;
+        if (@c == @QQ_OLDWIZ)	goto L_Q_old_wizard;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"Let us talk about something else.\"";
+        next;
+        goto L_main_menu;
+
+L_Q_oldwiz:
+        mes "[Auldsbel the Wizard]";
+        mes "\"I'm still not sure what exactly to make of him.  At first appearance, he seems like a senile old man, but there can be no doubt that he has-- or at least had, at some point-- a very deep understanding of magic.\"";
+        next;
+        mes "[Auldsbel the Wizard]";
+        mes "\"I have not had the opportunity to talk to him too much, though.\"";
+        next;
+        goto L_main_menu;
+
+L_Q_imp:
+        mes "[Auldsbel the Wizard]";
+        mes "\"There are many different kinds of spirits in the world.  Some are good-natured, others evil; some are weak, others very powerful.  I don't know the particular one you have encountered, though I urge caution.\"";
+        next;
+        goto L_main_menu;
 
 L_Q_elanore:
         mes "[Auldsbel the Wizard]";
@@ -898,6 +929,11 @@ L_component_quest_missing:
 L_learn_spell:
         if (@Q_main_status == @Q_STATUS_INITIATION) goto LL_initiation;
         if (@Q_main_status == @Q_STATUS_STUDENT) goto LL_student_start;
+        if (@Q_main_status == @Q_STATUS_STUDENT0) goto LL_student_0;
+        if (@Q_main_status == @Q_STATUS_STUDENT1) goto LL_student_1;
+        if (@Q_main_status == @Q_STATUS_STUDENT2) goto LL_student_2;
+        if (@Q_main_status == @Q_STATUS_STUDENT3) goto LL_student_3;
+        if (@Q_main_status == @Q_STATUS_STUDENT4) goto LL_student_4;
 
         mes "[Auldsbel the Wizard]";
         mes "\"Wellll.... you do seem to have some magical abilities.  But do you possess the talent and diligence needed for a true wizard?\"";
@@ -981,7 +1017,7 @@ LL_initiation_check:
         next;
 
         mes "[Auldsbel the Wizard]";
-        mes "You feel new powers curse flowing into your body!";
+        mes "You feel new powers flowing into your body!";
         mes "[5000 experience points]";
         mes "[Level 2 in Transmutation Magic]";
 
@@ -993,6 +1029,163 @@ LL_initiation_check:
         goto L_main_menu;
 
 LL_student_start:
+        mes "[Auldsbel the Wizard]";
+        mes "\"Next, I shall teach you a higher-level transmutation spell.\"";
+        if (getskilllv(SKILL_MAGIC) < 2)
+		msg "\"Beware, for you will not be able to use it yet.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"Bring me ten bug legs, and I will reveal its invocation to you.\"";
+        next;
+
+        menu
+		"Here you are.", -,
+                "I'll be back with them.", L_main_menu;
+
+        if (countitem(@BUGLEG) < 10)
+        	goto L_component_quest_missing;
+
+        delitem @BUGLEG, 10;
+        getexp 1000, 0;
+        set @Q_status, @Q_STATUS_STUDENT0;
+        callsub S_update_var;
+
+        mes "[Auldsbel the Wizard]";
+        mes "He picks up the bug legs.";
+        mes "\"Good.  These will come in handy later...\"";
+        mes "He grins.";
+        mes "[1000 experience points]";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"Now, listen carefully:  to make a short tank top out of three pieces of cloth, you must use the invocation '" + getspellinvocation("make-short-tanktop") + "'.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"But be careful; transmutations can go wrong, and that can injure you.  When you have some more overall spellcasting practice, come back to me.\"";
+        next;
+        goto L_main_menu;
+
+LL_notready:
+        mes "[Auldsbel the Wizard]";
+        mes "\"You still need more practice with spellcasting; I won't give you another spell until you are ready.\"";
+        next;
+        goto L_main_menu;
+
+LL_student_0:
+        if (@mexp < 350) goto LL_notready;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"The next transmutation spell is a little harder than the last one I taught you, but you should be able to manage.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"Bring me twenty mauve leaves, and I will reveal its invocation.\"";
+        next;
+
+        menu
+		"Here you are.", -,
+                "I'll be back with them.", L_main_menu;
+
+        if (countitem(@MAUVE) < 20)
+        	goto L_component_quest_missing;
+
+        delitem @MAUVE, 20;
+        getexp 1000, 0;
+        set @Q_status, @Q_STATUS_STUDENT1;
+        callsub S_update_var;
+
+        mes "[Auldsbel the Wizard]";
+        mes "He pockets your mauve leaves.";
+        mes "\"Those should go very well with the salmon.\"";
+        mes "[1000 experience points]";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"The next spell I have will make a normal tank top out of four pieces of cloth.  The invocation is '" + getspellinvocation("make-tanktop") + "', make sure to write this down.\"";
+        next;
+
+        goto L_main_menu;
+
+LL_student_1:
+        if (@mexp < 425) goto LL_notready;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"Up next is the transmutation spell for regular shirts.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"For this, I would like ten scorpion stingers.\"";
+        next;
+
+        menu
+		"Here you are.", -,
+                "I'll be back with them.", L_main_menu;
+
+        if (countitem(@STINGER) < 10)
+        	goto L_component_quest_missing;
+
+        delitem @STINGER, 10;
+        getexp 1000, 0;
+        set @Q_status, @Q_STATUS_STUDENT2;
+        callsub S_update_var;
+
+        mes "[Auldsbel the Wizard]";
+        mes "He carefully takes the stingers.";
+        mes "\"You are being quite helpful.  If my experiments go well, I will make sure to acknowledge you in a footnote somewhere.\"";
+        mes "[1000 experience points]";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"To make a shirt, use the invocation '" + getspellinvocation("make-shirt") + "'.  This will require five pieces of cloth.\"";
+        next;
+
+        goto L_main_menu;
+
+LL_student_2:
+        if (@mexp < 500) goto LL_notready;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"You may find the next spell particularly useful.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"Bring me twenty wooden logs, and I will teach you.\"";
+        next;
+
+        menu
+		"Here you are.", -,
+                "I'll be back with them.", L_main_menu;
+
+        if (countitem(@WOOD) < 20)
+        	goto L_component_quest_missing;
+
+        delitem @WOOD, 20;
+        getexp 1000, 0;
+        set @Q_status, @Q_STATUS_STUDENT3;
+        callsub S_update_var;
+
+        mes "[Auldsbel the Wizard]";
+        mes "Auldsbel places the logs next to his hut.";
+        mes "\"I'm hoping to animate them into the shape of one of those odd log heads.\"";
+        mes "[1000 experience points]";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"This spell makes arrows out of a single wooden log.  Its invocation is '" + getspellinvocation("make-arrows") + "'.\"";
+        next;
+
+        goto L_main_menu;
+
+LL_student_3:
+        // Future extensions go here
+        mes "[Auldsbel the Wizard]";
+        mes "\"No, not at this time.  You will have to advance in your overall magic skill before I can teach you more.\"";
+        next;
+
+        goto L_main_menu;
+
 
 S_update_var:
         set @Q_status, @Q_main_status | (@Q_component_quest << 5);

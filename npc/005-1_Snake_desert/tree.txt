@@ -78,17 +78,38 @@ L_water:
         mes "This must be the druid tree.";
         next;
         menu
-		"Water the tree", L_water,
+		"Water the tree", L_givewater,
 		"Kiss tree", L_kiss, 
 		"Leave it alone", -;
         close;
 
 L_both:
 	mes "[Dying Tree]";
-        mes "This must be the druid tree, the one the earth spirit asked you to cut.";
+        mes "This must be the druid tree that Wyara and the earth spirit were talking about.";
         next;
         menu
-		"Water the
+		"Water the tree", L_givewater,
+		"Kiss tree", L_kiss, 
+		"Cut off a branch", L_do_cut,
+		"Leave it alone", -;
+        close;
+
+L_givewater:
+        set @WATER, 541;
+        set @BOTTLE, 540;
+
+        if (countitem(@WATER) < 1)
+		goto L_no_water;
+        delitem @WATER, 1;
+        getitem @BOTTLE, 541;
+
+	mes "[Dying Tree]";
+        mes "You pour a bottle of water into the sand.  The water dissipates quickly, without any effect.";
+        next;
+        close;
+
+L_no_water:
+	mes "[Dying Tree]";
         mes "You don't have any water.";
         next;
         close;
@@ -118,7 +139,7 @@ L_do_cut:
 		"Yes, let's cut!", L_really_cut;
 	close;
 
-L_really_cut;
+L_really_cut:
         set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_DID_CUTTREE;
         getitem 732, 1;
 	mes "[Dying Tree]";
@@ -133,10 +154,7 @@ L_no_boneknife:
         next;
         close;
 
-L_do_cut:
-
 L_happy:
-
 	close;
 }
 

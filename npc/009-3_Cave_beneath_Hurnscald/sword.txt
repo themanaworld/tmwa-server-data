@@ -12,10 +12,18 @@ L_message:
         set @STATUS_LEARNED_FLAREDART, 1;
         set @STATUS_LEARNED_MAGICBLADE, 2;
         set @STATUS_LEVEL2, 3;
+        set @STATUS_W11, 4;
+        set @STATUS_W12, 5;
+        set @STATUS_W11_12, 6;
+        set @STATUS_L2_ALLSPELLS, 7;
 
         if (@Q_status == @STATUS_INITIAL)  	goto L_Initial;
         if (@Q_status == @STATUS_LEARNED_FLAREDART)  	goto L_PostFlareDart;
         if (@Q_status == @STATUS_LEARNED_MAGICBLADE)  	goto L_PostFlareDart_teach;
+        if (@Q_status == @STATUS_LEVEL2)  	goto L_L2_W11;
+        if (@Q_status == @STATUS_W12)	  	goto L_L2_W11;
+        if (@Q_status == @STATUS_W11)	  	goto L_L2_almost_done;
+        if (@Q_status == @STATUS_W11_12)  	goto L_L2_almost_done;
 
         mes "[Magic Sword]";
         mes "Come back when thou art stronger.";
@@ -107,7 +115,7 @@ L_PostFlareDart_teach:
         next;
 
         mes "[Magic Sword]";
-        mes "\"But beware... the path of war that thou hast embarked upon is one from which few return.  May luck be on your side...\"";
+        mes "\"But beware... the path of war that thou hast embarked upon is one from which few return.  May luck be on thy side...\"";
         next;
         close;
 
@@ -119,6 +127,59 @@ L_PostFlareDart_teach:
 L_Close:
         close;
 
+L_L2_W11:
+        mes "[Magic Sword]";
+        mes "\"You have returned.  That must mean that thy wish to learn the magic of war is still alive?\"";
+        next;
+        menu
+		"No, I just wanted to say `hi'.", L_sayhi,
+                "Yes, teach me more!", -;
+
+        mes "[Magic Sword]";
+        mes "\"If that is thy wish, I shall not stop thee.  But do not expect to find merriment down this road.\"";
+        mes "\"I must ask that you sacrifice a thousand monster points for this, however.\"";
+
+		"No, I don't want that.", L_farewell,
+                "I agree.", -;
+
+        if (Mobpt < 1000) goto L_lacking_mobpoints;
+
+        mes "[Magic Sword]";
+        mes "\"So be it, then.\"";
+        mes "[1000 experience points]";
+        set Mobpt, Mobpt - 1000;
+        getexp 1000, 0;
+        set @Q_status, @Q_status + 1;
+        callsub S_update_var;
+        next;
+
+        mes "[Magic Sword]";
+        mes "\"The spell I shall teach thee is the hail of arrows spell.  It will make arrows fall down from the heavens unto thy enemies.\"";
+        next;
+
+        mes "[Magic Sword]";
+        mes "\"Take twenty arrows, sprinkle sulphur powder over them, and then speak '" + getspellinvocation("arrow-hail") + "'.  Throw them high up in the air, and watch the hail unfold before thy feet.\"";
+        next;
+        close;
+
+
+L_L2_almost_done:
+        mes "[Magic Sword]";
+        mes "\"Return to my sister now.  I expect that she shall teach you one more spell.\"";
+        next;
+        close;
+
+L_lacking_mobpoints:
+        mes "[Magic Sword]";
+        mes "\"Thou lackest the monster points needed to prove thy worthiness.  I shall not reveal more to you until thou hast slain more monsters.\"";
+        next;
+        close;
+
+L_sayhi:
+        mes "[Magic Sword]";
+        mes "\"Please leave me in peace.\"";
+        next;
+        close;
 
 S_update_var:
 	set QUEST_MAGIC,
