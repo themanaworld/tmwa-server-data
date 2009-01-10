@@ -121,11 +121,13 @@ PROCEDURE adjust_spellpower(school) =
           experience = (script_int(caster, SCRIPT_XP) >> SCRIPT_XP_SHIFT) & SCRIPT_XP_MASK;
           spellpower = spellpower + (skill(caster, MAGIC) + skill(caster, school)) * 10;
           # Below, we adjust by special items
-          IF ((school = LIFE || school = NATURE) && (target = partner(caster)))
-          THEN (spellpower = spellpower + 200;
+          IF (not(failed(target)) && (school = LIFE || school = NATURE))
+          THEN IF (target)
+          THEN IF (pc(target) = partner(caster))
+               THEN (spellpower = spellpower + 200;
                 IF is_equipped(caster, "WeddingRing")
                 THEN spellpower = spellpower + 50;
-                IF is_equipped(target, "WeddingRing")
+                IF is_equipped(pc(target), "WeddingRing")
                 THEN spellpower = spellpower + 50;)
 
 PROCEDURE heal(target, max_heal) =
@@ -198,7 +200,6 @@ SPELL transmute-wood-to-mouboo : "#T00" =
           school = TRANSMUTE
       IN (MANA 5, CASTTIME 4000,
           REQUIRE skill(caster, MAGIC) > level,
-          REQUIRE skill(caster, school) > level,
           COMPONENTS ["RawLog"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
@@ -210,7 +211,6 @@ SPELL make-sulphur : "#T01" =
           school = TRANSMUTE
       IN (MANA 4, CASTTIME 4000,
           REQUIRE skill(caster, MAGIC) > level,
-          REQUIRE skill(caster, school) > level,
           COMPONENTS ["PileOfAsh"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
@@ -233,7 +233,7 @@ SPELL lesser-heal (target : STRING) : "#L00" =
                             THEN { mes "Your spell seems to have no effect on the mouboo."; next; close; }
                             ELSE target = caster;)
                       ELSE target = pc(target);
-                    CALL gain_heal_xp(100, 1); # report half values for non-instaheal
+                    CALL gain_heal_xp(min(100, max_hp(target) - hp(target)) / 2, 1); # report half values for non-instaheal
                     CALL heal(target, 200);
                     CALL gain_xp(1);
 
@@ -838,7 +838,7 @@ SPELL debug : "debug" =
                                  + ", lastspell=" + ((script_int(caster, "MAGIC_EXPERIENCE") >> 16) & 0xff)
                                  + ", healexp=" + ((script_int(caster, "MAGIC_EXPERIENCE") >> 24) & 0xff));
                 message (caster, "STATUS: "
-                                 + "auldsbel:" + (script_int(caster, "QUEST_MAGIC") & 0x1f) + "," + (script_int(caster, "QUEST_MAGIC") >> 5) + ", "
+                                 + "auldsbel:" + (script_int(caster, "QUEST_MAGIC") & 0x1f) + "," + ((script_int(caster, "QUEST_MAGIC") >> 5) & 0x7) + ", "
                                  + "dt/mb:" + ((script_int(caster, "QUEST_MAGIC") >> 8) & 0xf) + ", "
                                  + "s-unhappy:" + ((script_int(caster, "QUEST_MAGIC") >> 12) & 0xf) + ", "
                                  + "sagatha:" + ((script_int(caster, "QUEST_MAGIC") >> 16) & 0xff) + ", "
@@ -856,28 +856,28 @@ PROCEDURE debug_xmod(name, mask, shift, gain) =
           CALL set_var(name, mask, shift, value);
 
 PROCEDURE debug_mod(name, delta) =
-          IF (name = "mexp") THEN CALL debug_xmod("MAGIC_EXP", 0xffff, 0, delta);
-          ELSE IF (name = "lastspell") THEN CALL debug_xmod("MAGIC_EXP", 0xff, 16, delta);
-          ELSE IF (name = "lifeexp") THEN CALL debug_xmod("MAGIC_EXP", 0xff, 24, delta);
-          ELSE IF (name = "F:drank") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 0, delta);
-          ELSE IF (name = "F:Kmseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 1, delta);
-          ELSE IF (name = "F:touched-mseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 2, delta);
-          ELSE IF (name = "F:mseed-max") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 3, delta);
-          ELSE IF (name = "F:Kauldsbel") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 4, delta);
-          ELSE IF (name = "F:Kwyara") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 5, delta);
-          ELSE IF (name = "F:Ksagatha") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 6, delta);
-          ELSE IF (name = "F:Kmpotion") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 7, delta);
-          ELSE IF (name = "F:mseed-rumour") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 8, delta);
-          ELSE IF (name = "F:Kcuttree") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 9, delta);
-          ELSE IF (name = "F:cut") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 10, delta);
-          ELSE IF (name = "F:Kdruidtree") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 11, delta);
-          ELSE IF (name = "F:Kimp") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 12, delta);
-          ELSE IF (name = "F:oldwiz") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 13, delta);
+          IF (name = "mexp") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xffff, 0, delta);
+          ELSE IF (name = "lastspell") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xff, 16, delta);
+          ELSE IF (name = "lifeexp") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xff, 24, delta);
+          ELSE IF (name = "drank") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 0, delta);
+          ELSE IF (name = "Kmseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 1, delta);
+          ELSE IF (name = "touched-mseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 2, delta);
+          ELSE IF (name = "mseed-max") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 3, delta);
+          ELSE IF (name = "Kauldsbel") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 4, delta);
+          ELSE IF (name = "Kwyara") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 5, delta);
+          ELSE IF (name = "Ksagatha") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 6, delta);
+          ELSE IF (name = "Kmpotion") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 7, delta);
+          ELSE IF (name = "mseed-rumour") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 8, delta);
+          ELSE IF (name = "Kcuttree") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 9, delta);
+          ELSE IF (name = "cut") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 10, delta);
+          ELSE IF (name = "Kdruidtree") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 11, delta);
+          ELSE IF (name = "Kimp") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 12, delta);
+          ELSE IF (name = "oldwiz") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 13, delta);
           ELSE IF (name = "auldsbel") THEN CALL debug_xmod("QUEST_MAGIC", 0x1f, 0, delta);
           ELSE IF (name = "Qauldsbel") THEN CALL debug_xmod("QUEST_MAGIC", 0x7, 5, delta);
           ELSE IF (name = "dt") THEN CALL debug_xmod("QUEST_MAGIC", 0x3, 10, delta);
           ELSE IF (name = "mb") THEN CALL debug_xmod("QUEST_MAGIC", 0x3, 8, delta);
-          ELSE IF (name = "s-unhappy") THEN CALL debug_xmod("MAGIC_EXP", 0xff, 12, delta);
+          ELSE IF (name = "s-unhappy") THEN CALL debug_xmod("QUEST_MAGIC", 0xff, 12, delta);
           ELSE IF (name = "sagatha") THEN CALL debug_xmod("QUEST_MAGIC", 0xff, 16, delta);
           ELSE IF (name = "swords") THEN CALL debug_xmod("QUEST_MAGIC", 0xff, 24, delta);
           ELSE IF (name = "imp") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 0, delta);
@@ -908,10 +908,6 @@ SPELL debug-reset : "debug-reset" =
                   set_script_variable(caster, "MAGIC_FLAGS", 0);
                   set_script_variable(caster, "MAGIC_EXP", 0);
 
-SPELL debug-gotonpc (name : STRING) : "warpnpc" =
-      REQUIRE DEBUG
-	=> EFFECT warp(caster, location(npc(name)));
-      
 
 #--------------------------------------------------------------------------------
 # Special-purpose quasispells

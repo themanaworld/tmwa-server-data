@@ -103,7 +103,7 @@ L_Q_old_wizard:
 
 L_Q_elanore:
         mes "[Wyara the Witch]";
-        mes "\"Elanore is the Tulimshar healer.  She is a very nice person and was very helpful when I first moved here.\"";
+        mes "\"Elanore is the Tulimshar healer.  She is a very kind person and an outstanding healer.\"";
         next;
         goto L_Main;
 
@@ -129,16 +129,28 @@ L_Q_manapotion:
         mes "[Wyara the Witch]";
         mes "\"I have a simple recipe for making mana potions, but I don't have one ready right now.  Can you bring me 40 mauve leaves and a bottle of water?  I can make one from those quite easily.\"";
         next;
-        menu "OK", L_make_manapotion,
-             "No", L_Main;
+        menu "Sure!", L_make_manapotion,
+             "No.", L_Main;
+        goto L_Main;
+
+L_manapotion_toomany:
+        mes "[Wyara the Witch]";
+        mes "\"Hmm... looking at you, I don't think that you would be able to carry it.\"";
+        next;
         goto L_Main;
 
 L_make_manapotion:
 	if(countitem(@MAUVE) < 40) goto L_make_manapotion_lack;
-	if(countitem(@WATER) < 1) goto L_make_manapotion_lack;
+	if(countitem(@BOTTLE_WATER) < 1) goto L_make_manapotion_lack;
+	getinventorylist;
+	if ((@inventorylist_count == 100)
+            && (countitem(@MAUVE) > 40)
+            && (countitem(@BOTTLE_WATER) > 100)
+            && (countitem(@MANAPOTION) < 1))
+        	goto L_manapotion_toomany;
 
         delitem @MAUVE, 40;
-        delitem @WATER, 1;
+        delitem @BOTTLE_WATER, 1;
         getitem @MANAPOTION, 1;
 
         mes "[Wyara the Witch]";
@@ -176,7 +188,7 @@ L_Q_sagatha:
         next;
 
         mes "[Wyara the Witch]";
-        mes "\"She does hold all plants and animals very dear, though.  Well, the peaceful ones more than the aggressive ones, I suppose.\"";
+        mes "\"She does hold all plants and animals very dear, though.  Well, the peaceful ones more than the aggressive ones, I suppose, and scorpions not very much at all.\"";
         next;
 
         goto L_Main;
@@ -226,10 +238,10 @@ L_Magic_explain:
         goto L_Magic_main;
 
 L_Magic_spell:
-        if (getskilllv(SKILL_MAGIC) > 1)
-		goto L_Magic_spell2;
         if (getskilllv(SKILL_MAGIC_NATURE) > 1)
 		goto L_Magic_spell3;
+        if (getskilllv(SKILL_MAGIC) > 1)
+		goto L_Magic_spell2;
         mes "[Wyara the Witch]";
         mes "\"No... I don't think that you are ready yet.  But please ask me again when you have some more control over your magical powers.\"";
         next;
@@ -246,11 +258,11 @@ L_Magic_spell2:
         mes "\"Here is an easy and useful one: '" + getspellinvocation("detect-players") + "'.  It will tell you the names of everyone nearby, but beware that there are ways to protect against it.\"";
         next;
 
-        if (!getpartnerid2(0))
+        if (!(getpartnerid2(0)))
            goto L_Magic_main;
 
         mes "[Wyara the Witch]";
-        mes "\"Married partners can find each other even more easily.  Use the '" + getspellinvocation("detect-spouse") + "' spell instead.\"";
+        mes "\"Married partners can find each other even more easily.  Use the '" + getspellinvocation("sense-spouse") + "' spell instead.\"";
         next;
         goto L_Magic_main;
 
@@ -467,7 +479,7 @@ L_Magic_train_sagatha:
         mes "[Wyara the Witch]";
         mes "\"The tree has been there alone and unattended for a long time; what he needs most is water and affection.  Give him both.\"";
         next;
-	goto Magic_main;
+	goto L_Magic_main;
 
 L_Magic_train_tree_backgd:
         mes "[Wyara the Witch]";
@@ -514,9 +526,9 @@ L_Magic_tree_menu:
         menu
 		"How should I give him water?", L_Magic_tree_water,
 		"How should I thank him?", L_Magic_tree_remind,
-                "OK.", -,
+                "I will.", -,
                 "No.", -;
-        goto L_Magic_menu;
+        goto L_Magic_main;
 
 L_Magic_tree_water:
         mes "[Wyara the Witch]";

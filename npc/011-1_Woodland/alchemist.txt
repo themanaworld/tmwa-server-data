@@ -109,15 +109,17 @@ L_post_sulphur_option:
 L_post_ironpowder_option:
 
         if (@Q_status == @SETZER_INITIAL)
-		goto L_main_menu;
+		goto L_post_monster_oil;
 	set @menuitems$[@c], "Can you make monster oil?";
 	set @menuID[@c], @CHOICE_MONSTER_OIL;
 	set @c, @c + 1;
 
-L_main_menu:
+L_post_monster_oil:
 	set @menuitems$[@c], "No thanks.";
 	set @menuID[@c], @CHOICE_ABORT;
 	set @c, @c + 1;
+
+L_main_menu:
 
 	menu
 		@menuitems$[0], -,
@@ -260,6 +262,14 @@ L_get_mana_potion:
 	if(countitem(@ASH) < 5) goto L_mana_potion_lacking;
 	if(countitem(@PEARL) < 1) goto L_mana_potion_lacking;
 	if(countitem(@WATER) < 1) goto L_mana_potion_lacking;
+	getinventorylist;
+	if ((@inventorylist_count == 100)
+            && (countitem(@MAUVE) > 30)
+            && (countitem(@ASH) > 5)
+            && (countitem(@PEARL) > 1)
+            && (countitem(@WATER) > 1)
+            && (countitem(@MANAPOTION) < 1))
+        	goto L_mana_potion_toomuch;
 
         delitem @MAUVE, 30;
         delitem @YELLOW, 20;
@@ -284,9 +294,16 @@ L_get_mana_potion:
 
 	goto L_main_menu;
 
+L_mana_potion_toomuch:
+	mes "[Rauk the Alchemist]";
+        mes "\"You look quite burdened already.  Why don't you drop off a few things first, and come back later?\"";
+        next;
+        goto L_main_menu;
+
 L_mana_potion_lacking:
 	mes "[Rauk the Alchemist]";
         mes "\"Sorry, but I need one pearl, one bottle of water, 30 mauve leaves, 20 gamboge leaves, and five piles of volcanic ash.\"";
+        next;
         goto L_main_menu;
 
 L_iron:
