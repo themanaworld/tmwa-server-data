@@ -51,7 +51,7 @@ CONST SCRIPT_LASTSPELL_MASK  = 0xff
 CONST SCRIPT_LASTSPELL_SHIFT = 16
 CONST SCRIPT_HEALSPELL_MASK  = 0xff
 CONST SCRIPT_HEALSPELL_SHIFT = 24
-CONST DEBUG = 0
+CONST DEBUG = 1
 
 # Default sfx on caster
 PROCEDURE default_effect() =
@@ -814,6 +814,101 @@ SPELL teleport (destination : STRING) : "#A40" =
                   sfx(location(caster), SFX_TELEPORT, 100);
 
 #--------------------------------------------------------------------------------
+# Debug keywords
+#--------------------------------------------------------------------------------
+
+SPELL debug : "debug" =
+      REQUIRE DEBUG
+      => EFFECT message (caster, "FLAGS: "
+                                 + "drank=" + ((script_int(caster, "MAGIC_FLAGS") & 1) > 0) + ", "
+                                 + "Kmseed=" + ((script_int(caster, "MAGIC_FLAGS") & 2) > 0) + ", "
+                                 + "touched-mseed=" + ((script_int(caster, "MAGIC_FLAGS") & 4) > 0) + ", "
+                                 + "mseed-max=" + ((script_int(caster, "MAGIC_FLAGS") & 8) > 0) + ", "
+                                 + "Kauldsbel=" + ((script_int(caster, "MAGIC_FLAGS") & 16) > 0) + ", "
+                                 + "Kwyara=" + ((script_int(caster, "MAGIC_FLAGS") & 32) > 0) + ", "
+                                 + "Ksagatha=" + ((script_int(caster, "MAGIC_FLAGS") & 64) > 0) + ", "
+                                 + "Kmpotion=" + ((script_int(caster, "MAGIC_FLAGS") & 128) > 0) + ", "
+                                 + "mseed-rumour=" + ((script_int(caster, "MAGIC_FLAGS") & 256) > 0) + ", "
+                                 + "Kcuttree=" + ((script_int(caster, "MAGIC_FLAGS") & 512) > 0) + ", "
+                                 + "cut=" + ((script_int(caster, "MAGIC_FLAGS") & 1024) > 0) + ", "
+                                 + "Kdruidtree=" + ((script_int(caster, "MAGIC_FLAGS") & 2048) > 0) + ", "
+                                 + "Kimp=" + ((script_int(caster, "MAGIC_FLAGS") & 4096) > 0) + ", "
+                                 + "Koldwiz=" + ((script_int(caster, "MAGIC_FLAGS") & 8192) > 0));
+                message (caster, "EXP: " + (script_int(caster, "MAGIC_EXPERIENCE") & 0xffff)
+                                 + ", lastspell=" + ((script_int(caster, "MAGIC_EXPERIENCE") >> 16) & 0xff)
+                                 + ", healexp=" + ((script_int(caster, "MAGIC_EXPERIENCE") >> 24) & 0xff));
+                message (caster, "STATUS: "
+                                 + "auldsbel:" + (script_int(caster, "QUEST_MAGIC") & 0x1f) + "," + (script_int(caster, "QUEST_MAGIC") >> 5) + ", "
+                                 + "dt/mb:" + ((script_int(caster, "QUEST_MAGIC") >> 8) & 0xf) + ", "
+                                 + "s-unhappy:" + ((script_int(caster, "QUEST_MAGIC") >> 12) & 0xf) + ", "
+                                 + "sagatha:" + ((script_int(caster, "QUEST_MAGIC") >> 16) & 0xff) + ", "
+                                 + "swords:" + ((script_int(caster, "QUEST_MAGIC") >> 24) & 0xff) + ", "
+                                 + "imp:" + ((script_int(caster, "QUEST_MAGIC2") >> 0) & 0xf) + ", "
+                                 + "elanore:" + ((script_int(caster, "QUEST_MAGIC2") >> 4) & 0xf) + ", "
+                                 + "wyara:" + ((script_int(caster, "QUEST_MAGIC2") >> 8) & 0xf));
+
+PROCEDURE debug_xmod(name, mask, shift, gain) =
+          value = ((script_int(caster, name) >> shift) & mask) + gain;
+          IF (value < 0)
+          THEN value = 0;
+          IF (value > mask)
+          THEN value = mask;
+          CALL set_var(name, mask, shift, value);
+
+PROCEDURE debug_mod(name, delta) =
+          IF (name = "mexp") THEN CALL debug_xmod("MAGIC_EXP", 0xffff, 0, delta);
+          ELSE IF (name = "lastspell") THEN CALL debug_xmod("MAGIC_EXP", 0xff, 16, delta);
+          ELSE IF (name = "lifeexp") THEN CALL debug_xmod("MAGIC_EXP", 0xff, 24, delta);
+          ELSE IF (name = "F:drank") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 0, delta);
+          ELSE IF (name = "F:Kmseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 1, delta);
+          ELSE IF (name = "F:touched-mseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 2, delta);
+          ELSE IF (name = "F:mseed-max") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 3, delta);
+          ELSE IF (name = "F:Kauldsbel") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 4, delta);
+          ELSE IF (name = "F:Kwyara") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 5, delta);
+          ELSE IF (name = "F:Ksagatha") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 6, delta);
+          ELSE IF (name = "F:Kmpotion") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 7, delta);
+          ELSE IF (name = "F:mseed-rumour") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 8, delta);
+          ELSE IF (name = "F:Kcuttree") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 9, delta);
+          ELSE IF (name = "F:cut") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 10, delta);
+          ELSE IF (name = "F:Kdruidtree") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 11, delta);
+          ELSE IF (name = "F:Kimp") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 12, delta);
+          ELSE IF (name = "F:oldwiz") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 13, delta);
+          ELSE IF (name = "auldsbel") THEN CALL debug_xmod("QUEST_MAGIC", 0x1f, 0, delta);
+          ELSE IF (name = "Qauldsbel") THEN CALL debug_xmod("QUEST_MAGIC", 0x7, 5, delta);
+          ELSE IF (name = "dt") THEN CALL debug_xmod("QUEST_MAGIC", 0x3, 10, delta);
+          ELSE IF (name = "mb") THEN CALL debug_xmod("QUEST_MAGIC", 0x3, 8, delta);
+          ELSE IF (name = "s-unhappy") THEN CALL debug_xmod("MAGIC_EXP", 0xff, 12, delta);
+          ELSE IF (name = "sagatha") THEN CALL debug_xmod("QUEST_MAGIC", 0xff, 16, delta);
+          ELSE IF (name = "swords") THEN CALL debug_xmod("QUEST_MAGIC", 0xff, 24, delta);
+          ELSE IF (name = "imp") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 0, delta);
+          ELSE IF (name = "elanore") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 4, delta);
+          ELSE IF (name = "wyara") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 8, delta);
+          ELSE message(caster, "Unknown");
+
+SPELL debug-up1 (name : STRING) : "debug+1" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 1);
+
+SPELL debug-down1 (name : STRING) : "debug-1" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 0 - 1);
+
+SPELL debug-up16 (name : STRING) : "debug+16" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 16);
+
+SPELL debug-down16 (name : STRING) : "debug-16" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 0 - 16);
+
+SPELL debug-reset : "debug-reset" =
+      REQUIRE DEBUG
+	=> EFFECT set_script_variable(caster, "QUEST_MAGIC", 0);
+                  set_script_variable(caster, "QUEST_MAGIC2", 0);
+                  set_script_variable(caster, "MAGIC_FLAGS", 0);
+                  set_script_variable(caster, "MAGIC_EXP", 0);
+
+#--------------------------------------------------------------------------------
 # Special-purpose quasispells
 #--------------------------------------------------------------------------------
 
@@ -978,3 +1073,5 @@ TELEPORT-ANCHOR desert : "##02" = @("005-1.gat", 160, 64) @+ (5, 5);
 TELEPORT-ANCHOR forest : "##03" = @("015-1.gat", 35, 35) @+ (40, 40);
 TELEPORT-ANCHOR snakecave : "##04" = @("011-4.gat", 50, 75) @+ (3, 3);
 TELEPORT-ANCHOR dimondscove : "##05" = @("010-2.gat", 23, 79) @+ (3, 3);
+
+
