@@ -31,6 +31,8 @@
         set @MOUBOO_FIGURINE, 728;
         set @BUGLEG, 518;
 
+        set @mexp, MAGIC_EXPERIENCE & 65535;
+
         set @Q_STATUS_INITIAL, 0;
         set @Q_STATUS_POSTINTRO, 1;
         set @Q_STATUS_INITIATION, 2; // quest for being able to cast `create mouboo figurine'
@@ -1007,7 +1009,6 @@ LL_initiation_check:
         if (!(countitem(@MOUBOO_FIGURINE)))
 		goto L_main_menu;
         delitem @MOUBOO_FIGURINE, 1;
-        set @mexp, MAGIC_EXPERIENCE & 65535;
 
         mes "[Auldsbel the Wizard]";
         mes "Auldsbel inspects your figurine.";
@@ -1040,11 +1041,12 @@ LL_initiation_check:
         callsub S_update_var;
         getexp 5000, 0;
         if (getskilllv(SKILL_MAGIC_TRANSMUTE) < 2)
-        	skill SKILL_MAGIC_TRANSMUTE, 2;
+        	setskill SKILL_MAGIC_TRANSMUTE, 2;
         next;
         goto L_main_menu;
 
 LL_student_start:
+        if (@mexp < 200) goto LL_notready;
         mes "[Auldsbel the Wizard]";
         mes "\"Next, I shall teach you a higher-level transmutation spell.\"";
         if (getskilllv(SKILL_MAGIC) < 2)

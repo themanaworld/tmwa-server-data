@@ -204,13 +204,13 @@ L_Levelup2_yes:
 
         mes "[Mystic Sword]";
         mes "The sword begins to chant in your head!";
-        mes "  \"Lords of Thunder, Fire, Rage!\"";
-        mes "  \"Grant thy powers to this mage,\"";
-        mes "  \"Rising with thy dreadful roar,\"";
+        mes "\"Lords of Thunder, Fire, Rage!\"";
+        mes "\"Grant thy powers to this mage,\"";
+        mes "\"Rising with thy dreadful roar,\"";
         if (Sex)
-        	mes "  \"Answer to his call to War!\"";
+        	mes "\"Answer to his call to War!\"";
         if (!Sex)
-        	mes "  \"Answer to her call to War!\"";
+        	mes "\"Answer to her call to War!\"";
         next;
 
         mes "[Mystic Sword]";
@@ -227,11 +227,11 @@ L_Levelup2_yes:
         callsub S_update_var;
         getexp 5000, 0;
         if (getskilllv(SKILL_MAGIC_WAR) < 2)
-        	skill SKILL_MAGIC_WAR, 2;
+        	setskill SKILL_MAGIC_WAR, 2;
         next;
 
         mes "[Mystic Sword]";
-        mes "\"Thou hast now taken thy first true step down the path of war magic.  Seek out my brother for thy next spell!\"";
+        mes "\"Thou hast now taken thy first true step down the path of war magic.\"";
         next;
         goto L_Farewell;
 
@@ -266,18 +266,18 @@ L_L2_W12:
                 "Yes.", -;
 
         mes "[Mystic Sword]";
-        mes "\"Very well.  I shall teach thee another spell, if thou provest thy progress by sacrificing another one thousand monster points.\"";
+        mes "\"Very well.  I shall teach thee another spell, if thou provest thy progress by sacrificing another five thousand monster points.\"";
         next;
         menu
 		"No, I don't want that.", L_farewell,
-                "I agree.", -;
+                "So be it.", -;
 
-        if (Mobpt < 1000) goto L_lacking_mobpoints;
+        if (Mobpt < 5000) goto L_lacking_mobpoints;
 
         mes "[Mystic Sword]";
         mes "\"Indeed thou art worthy.  The next spell I shall teach thee will enchant thy knuckles to turn them into powerful weapons; the component is a mere beer.\"";
         mes "[1000 experience points]";
-        set Mobpt, Mobpt - 1000;
+        set Mobpt, Mobpt - 5000;
         getexp 1000, 0;
         set @Q_status, @Q_status + 2;
         callsub S_update_var;
@@ -304,7 +304,7 @@ L_L2_W10:
         next;
 
         mes "[Mystic Sword]";
-        mes "\"For this spell, I ask that thou bringest a lump of iron ore.  Thou must also sacrifice five thousand monster points.\"";
+        mes "\"For this spell, I ask that thou bringest a lump of iron ore.  Thou must also sacrifice ten thousand monster points.\"";
         next;
 
         menu
@@ -313,13 +313,13 @@ L_L2_W10:
 
         if (countitem(@ORE) < 1)
 		goto L_no_ore;
-        if (MPQUEST && (Mobpt < 5000)) goto L_lacking_mobpoints;
+        if (MPQUEST && (Mobpt < 10000)) goto L_lacking_mobpoints;
 
         mes "[Mystic Sword]";
         mes "\"Raise up the ore, mortal!\"";
         mes "As you do so, the ore begins to crumble, leaving only iron powder behind.";
         mes "[1000 experience points]";
-        set Mobpt, Mobpt - 5000;
+        set Mobpt, Mobpt - 10000;
         getexp 1000, 0;
         delitem @ORE, 1;
         getitem @IRONPOWDER, 5;
@@ -330,7 +330,13 @@ L_L2_W10:
         mes "[Mystic Sword]";
         mes "\"This powder thou shalst need to cast the lightning spell.  Throw it up into the air and shout '" + getspellinvocation("lightning-strike") +  "', and smite thine enemies with lightning.\"";
         next;
+        goto L_farewell;
 
+L_no_ore:
+        mes "[Mystic Sword]";
+        mes "\"Thou dost appear to lack ore.  We cannot continue; please fare well and return swiftly!\"";
+        next;
+        close;
 
 L_farewell:
         mes "[Mystic Sword]";

@@ -728,6 +728,9 @@ SPELL hide (target : PC) : "#A13" =
                 THEN CALL default_effect();
                 status_change(target, SC_HIDE, 0, 0, 0, 0, 5000 + (spellpower * 2500));
                 CALL gain_xp(2);
+                message(target, "You are hidden!");
+                message(caster, "You hid someone!");
+          ATEND message(target, "It's over!");
 
 #--------------------------------------------------------------------------------
 # Level 2 spells
@@ -808,7 +811,7 @@ SPELL teleport (destination : STRING) : "#A40" =
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level)
 	=> EFFECT CALL default_effect();
-                  WAIT (100000 / (spellpower + 10));
+                  WAIT 1000 + (200000 / (spellpower + 10));
                   sfx(location(caster), SFX_TELEPORT, 1);
                   warp(caster, random_location(anchor(destination)));
                   sfx(location(caster), SFX_TELEPORT, 100);
@@ -858,7 +861,7 @@ PROCEDURE debug_xmod(name, mask, shift, gain) =
 PROCEDURE debug_mod(name, delta) =
           IF (name = "mexp") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xffff, 0, delta);
           ELSE IF (name = "lastspell") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xff, 16, delta);
-          ELSE IF (name = "lifeexp") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xff, 24, delta);
+          ELSE IF (name = "healexp") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xff, 24, delta);
           ELSE IF (name = "drank") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 0, delta);
           ELSE IF (name = "Kmseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 1, delta);
           ELSE IF (name = "touched-mseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 2, delta);

@@ -6,7 +6,7 @@ function	script	PurificationPotion	{
 
 	if (isat("011-1.gat", 88,67))
 		goto L_correct;
-        announce "This doesn't seem to be the right place.", 7;
+        message strcharinfo(0), "This doesn't seem to be the right place.";
 	getitem @PURIFICATIONPOTION, 1;
         close;
 L_correct:
@@ -19,7 +19,7 @@ L_correct:
         if (@Q_status < @STATUS_PURIFY_ONCE)
 		set @Q_status, @STATUS_PURIFY_ONCE;
 
-        announce "You pour the potion into the pond.", 7;
+        message strcharinfo(0), "You pour the potion into the pond.";
 
 	set QUEST_MAGIC2,
 		(QUEST_MAGIC2 & ~(@Q_MASK)
@@ -39,6 +39,7 @@ L_correct:
         set @STATUS_PURIFY_EXPLAINED, 1;
         set @STATUS_PURIFY_ONCE, 2;
         set @STATUS_PURIFY_TWICE, 3;
+        set @STATUS_PURIFY_OVER, 4;
 
 	set @MAUVE, 680;
 	set @MAGGOTSLIME, 505;
@@ -48,6 +49,10 @@ L_correct:
 
 	set @has_magic, getskilllv(SKILL_MAGIC);
 
+        if (@Q_status == @STATUS_PURIFY_ONCE)
+		goto L_Magic_purify_once;
+        if (@Q_status == @STATUS_PURIFY_TWICE)
+		goto L_Magic_purify_done;
         
         mes "[Wyara the witch]";
         if (!Sex)
@@ -314,9 +319,10 @@ L_Magic_purify_explained:
         next;
 
         menu
-		"I shall get them later.", Magic_main,
-		"Booring.", Magic_main,
-		"Here they are.", -,
+		"I shall get them later.", L_Magic_main,
+		"Booring.", L_Magic_main,
+		"Here they are.", -;
+
 	getinventorylist;
 	if ((@inventorylist_count == 100) && (countitem(@MAUVE) > 20) && (countitem(@MAGGOTSLIME) > 20))
 		goto L_Magic_purify_nospace;
@@ -365,9 +371,9 @@ L_Magic_purify_once:
         next;
 
         menu
-		"I'll get them later.", Magic_main,
-		"No way.", Magic_main,
-		"Here you are.", -,
+		"I'll do that later.", L_Main,
+		"No way.", L_Main,
+		"Here you are.", -;
 	getinventorylist;
 	if ((@inventorylist_count == 100) && (countitem(@MAUVE) > 20) && (countitem(@MAGGOTSLIME) > 20))
 		goto L_Magic_purify_nospace;
@@ -389,14 +395,14 @@ L_Magic_purify_doit2:
         next;
         close;
 
-L_Magic_purify_twice:
+L_Magic_purify_done:
         mes "[Wyara the Witch]";
         mes "Wyara smiles at you.";
         mes "\"A friend told me... you have saved the pond for now.  Perhaps it will need some more attention later, but I'll ask others for this.\"";
         next;
 
         mes "[Wyara the Witch]";
-        mes "\"Please kneel down and touch the ground.\"";
+        mes "\"Please sit down and touch the ground.\"";
         next;
 
         menu
@@ -404,7 +410,7 @@ L_Magic_purify_twice:
                 "No way!", L_Magic_purify_abort;
 
         mes "[Wyara the Witch]";
-        mes "You kneel down and touch the ground, and so does Wyara.";
+        mes "You sit down and touch the ground, and so does Wyara.";
         next;
 
         mes "[Wyara the Witch]";
@@ -426,9 +432,10 @@ L_Magic_purify_twice:
 
         getexp 5000, 0;
         if (getskilllv(SKILL_MAGIC_NATURE) < 2)
-        	skill SKILL_MAGIC_NATURE, 2;
+        	setskill SKILL_MAGIC_NATURE, 2;
+        set @Q_status, @STATUS_PURIFY_OVER;
+        callsub S_update_var;
         close;
-
 
 L_Magic_purify_abort:
         mes "[Wyara the Witch]";
