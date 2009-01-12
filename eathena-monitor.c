@@ -79,7 +79,7 @@ int read_config(char *filename) {
     int errors = 0;
 
     if ( !(input = fopen(filename,"r")) && !(input = fopen (config, "r"))) {
-	fprintf (stderr, "ERROR: Config file doesn't exist (%s and %s), using builtin defaults\n",filename,CONFIG);
+	fprintf (stderr, "ERROR: Config file doesn't exist (%s and %s), using builtin defaults\n", filename, config);
 	return -1;
     }
     
