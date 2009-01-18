@@ -4,31 +4,31 @@
 	if(Scorp == 2) goto L_Done;
 	if(Scorp == 1) goto L_Progress;
 
-	set @TEMP,rand(3);
+	set @TEMP, rand(4);
+	if(@TEMP == 0) goto L_Opening0;
 	if(@TEMP == 1) goto L_Opening1;
 	if(@TEMP == 2) goto L_Opening2;
 	if(@TEMP == 3) goto L_Opening3;
-	if(@TEMP == 0) goto L_Opening4;
+
+L_Opening0:
+	mes "[Sandra]";
+	mes "\"In the outskirts of Tulimshar, there are some scorpions. I need a favor, please help me. Will you?\"";
+	next;
+	goto L_Ask;
 
 L_Opening1:
 	mes "[Sandra]";
-	mes "\"In the outskirts of Tulimshar, there wanders a red scorpion. I need a favor, please help me. Will you?\"";
+	mes "\"When you venture in the outskirts of Tulimshar, you can spot scorpions. Will you help me kill some?\"";
 	next;
 	goto L_Ask;
 
 L_Opening2:
 	mes "[Sandra]";
-	mes "\"When you venture in the outskirts of Tulimshar, you can spot a red scorpion. Will you help me kill one?\"";
+	mes "\"The scorpion stinger carries many properties used in potions. Will you get some for me?\"";
 	next;
 	goto L_Ask;
 
 L_Opening3:
-	mes "[Sandra]";
-	mes "\"The red scorpion stinger carries many properties used in potions. Will you get some for me?\"";
-	next;
-	goto L_Ask;
-
-L_Opening4:
 	mes "[Sandra]";
 	mes "\"You look sturdy enough, will you help me get something?\"";
 	next;
@@ -40,26 +40,26 @@ L_Ask:
 		"No", L_No;
 
 L_Yes:
-	if(@TEMP == 1) goto L_Req1;
-	if(@TEMP == 2) goto L_Req2;
-	if(@TEMP == 3) goto L_Req3;
+	set @TEMP, rand(3);
 	if(@TEMP == 0) goto L_Req1;
+	if(@TEMP == 1) goto L_Req2;
+	if(@TEMP == 2) goto L_Req3;
+
+L_Req0:
+	mes "[Sandra]";
+	mes "\"I need 5 [Scorpion Stingers] and 1 [Red Scoprion Stinger].\"";
+	next;
+	goto L_Set;
 
 L_Req1:
 	mes "[Sandra]";
-	mes "\"I need you to slaughter the red scorpion found outside of Tulimshar and bring me 5 [Red Stingers].\"";
+	mes "\"I heard a while ago that scorpion stingers can be used for medical purposes. I need you to help me get 5 [Scorpion Stingers] and 1 [Red Scoprion Stinger].\"";
 	next;
 	goto L_Set;
 
 L_Req2:
 	mes "[Sandra]";
-	mes "\"I heard a while ago that the stinger of a red scorpion can be used for medical purposes. I need you to help me get 5 [Red Stingers].\"";
-	next;
-	goto L_Set;
-
-L_Req3:
-	mes "[Sandra]";
-	mes "\"Bring me 5 [Red Stingers] and i will reward you greatly.\"";
+	mes "\"Bring me 5 [Scorpion Stingers] and 1 [Red Scoprion Stinger]. I'll give you something if you do.\"";
 	next;
 	goto L_Set;
 
@@ -70,21 +70,23 @@ L_Set:
 	close;
 
 L_Progress:
-	if (countitem(517) >= 5) goto L_Have;
-	mes "[Sandra]";
-	mes "\"Please hurry and bring me 5 [Red Stingers].\"";
-	close;
-
-L_Have:
+	if (countitem(507) < 5) goto L_NotEnough;
+	if (countitem(517) < 1) goto L_NotEnough;
 	mes "[Sandra]";
 	mes "\"Excellent!";
-	mes "You brought me 5 [Red Stingers]!\"";
+	mes "You brought me 5 [Scorpion Stingers] and 1 [Red Scoprion Stinger]!\"";
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(517) > 5) goto L_TooMany;
-	delitem 517, 5;
+	if ((@inventorylist_count - (countitem(507) == 5) - (countitem(517) == 1)) > 99 - (countitem(1199) == 0)) goto L_TooMany;
+	delitem 507, 5;
+	delitem 517, 1;
 	getitem 1200, 1;
 	getitem 1199, 100;
 	set Scorp, 2;
+	close;
+
+L_NotEnough:
+	mes "[Sandra]";
+	mes "\"Please hurry and bring me 5 [Scorpion Stingers] and 1 [Red Scoprion Stinger].\"";
 	close;
 
 L_Done:
