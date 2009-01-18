@@ -1,0 +1,207 @@
+// Katze doesn't like the player at first, needs following:
+//
+// 1. Some milk
+// 2. Some steak or chicken leg
+// 3. Some fur
+//
+// Now the cat starts to speak, still needs:
+//
+// 4. Some wood for scratching
+// 5. Some stuff for making somethings nice for the player:
+//
+//    * 2 Snake skins
+//    * 2 Snake tongues
+//    * 2 Maggot slimes
+//    * 2 White furs
+//    * 2 Hard spikes
+//    * 2 Tiny potions
+
+015-3.gat,32,25,0	script	Katze	172, {
+
+    if (Katze == 1 && KatzeBeenOutside == 1) goto L_NeedsFood;
+    if (Katze == 1) goto L_PreNeedsFood;
+
+    if (Katze == 2 && KatzeBeenOutside == 1) goto L_NeedsFur;
+    if (Katze == 2) goto L_PreNeedsFur;
+
+    if (Katze == 3) goto L_NeedsWood;
+
+    if (Katze == 4 && KatzeBeenOutside == 1) goto L_NeedsStuff;
+    if (Katze == 4) goto L_PreNeedsStuff;
+
+    if (Katze == 5) goto L_NeedsStuff2;
+
+    if (Katze == 6 && KatzeBeenOutside == 1) goto L_GainEars;
+    if (Katze == 6) goto L_PreGainEars;
+
+    if (Katze == 7) goto L_Finished;
+
+L_NeedsMilk:
+    mes "[Katze]";
+    mes "\"Meow.\"";
+    next;
+    menu "Throw a stone at the cat", L_ThrowStone,
+         "Leave the cat alone", -;
+    close;
+
+L_ThrowStone:
+    set Katze, 0;
+    // Maybe make sure not to kill the player, since this has an issue. The
+    // text below will remain in the NPC dialog until it is used again.
+    heal -100,0;
+    warp "015-1.gat", 60, 32;
+    mes "\"GRAAUWL! Hissss...\"";
+    mes "Yikes, the cat attacked you! Your whole body is scratched. Maybe throwing a stone wasn't such a great idea...";
+    next;
+    close;
+
+L_PreNeedsFood:
+L_NeedsFood:
+    mes "[Katze]";
+    mes "\"Meow, prrrr...\"";
+    next;
+    menu "Throw a stone at the cat", L_ThrowStone,
+         "Leave the cat alone", -;
+    close;
+
+L_PreNeedsFur:
+L_NeedsFur:
+    mes "[Katze]";
+    mes "\"Prrr. Meow, prrr...\"";
+    next;
+
+    if (countitem(611) > 0)  // White Fur
+        menu "Make funny movements with the fur near the ground", L_MoveFur,
+             "Throw a stone at the cat", L_ThrowStone,
+             "Leave the cat alone", -;
+    if (countitem(611) == 0)
+        menu "Throw a stone at the cat", L_ThrowStone,
+             "Leave the cat alone", -;
+    close;
+
+L_MoveFur:
+    delitem 611, 1; // Cat takes the white fur
+    set Katze, 3;
+    mes "The cat jumps at the fur! You quickly let go of it. The cat happily returns to its spot, carrying the fur in its mouth.";
+    next;
+    mes "The cat drops the fur and looks at you with half opened eyes. Suddenly she starts talking, and says: \"That was very kind of you.\" She seems to be smiling.";
+    next;
+    close;
+
+L_NeedsWood:
+    mes "[Katze]";
+    mes "\"Prrrr, now I'd like something to sharpen my claws on.\"";
+    next;
+
+    if (countitem(569) > 0)   // Raw log
+        menu "Want this piece of wood?", L_GiveWood,
+             "Ok, see you later", -;
+    close;
+
+L_GiveWood:
+    mes "[Katze]";
+    mes "\"Sure! Please put it next to the pot.\"";
+    next;
+    close;
+
+L_PreNeedsStuff:
+    mes "The cat is still eyeing the piece of wood. She probably needs to be left alone for a bit again.";
+    next;
+    close;
+
+L_NeedsStuff:
+    set Katze, 5;
+    mes "[Katze]";
+    mes "\"You've been really kind to me. I can make you something nice, but I will need";
+    mes "2 snake skins,";
+    mes "2 snake tongues,";
+    mes "2 maggot slimes,";
+    mes "2 white furs,";
+    mes "2 hard spikes and";
+    mes "2 tiny healing potions.\"";
+    next;
+    close;
+
+L_NeedsStuff2:
+    mes "[Katze]";
+    mes "\"Did you bring what I asked you for?\"";
+    next;
+    menu "Look here", L_CatChecksStuff,
+         "What do you need again?", L_WhatsNeeded,
+         "No, I haven't got everything yet", -;
+    close;
+
+L_WhatsNeeded:
+    mes "[Katze]";
+    mes "\"Actually, you should have remembered yourself.\"";
+    next;
+    menu "Please tell me", L_Please,
+         "Never mind", -;
+    close;
+
+L_Please:
+    mes "[Katze]";
+    mes "\"Alright... [the cat glares at you] it was";
+    mes "2 snake skins,";
+    mes "2 snake tongues,";
+    mes "2 maggot slimes,";
+    mes "2 white furs,";
+    mes "2 hard spikes and";
+    mes "2 tiny healing potions.\"";
+    next;
+    close;
+
+L_CatChecksStuff:
+    if (countitem(641) > 1 &&             // Snake skin
+        countitem(710) > 1 &&             // Snake tongue
+        countitem(505) > 1 &&             // Maggot slime
+        countitem(611) > 1 &&             // White fur
+        countitem(613) > 1 &&             // Hard spike
+        countitem(684) > 1)               // Tiny healing potion
+        goto L_GiveStuff;
+    mes "[Katze]";
+    mes "\"You don't seem to have everything yet. Come back later when you do.\"";
+    next;
+    close;
+
+L_GiveStuff:
+    delitem 641, 2;
+    delitem 710, 2;
+    delitem 505, 2;
+    delitem 611, 2;
+    delitem 613, 2;
+    delitem 684, 2;
+    set Katze, 6;
+    set KatzeBeenOutside, 0;
+    mes "[Katze]";
+    mes "\"Nicely done! Now leave me alone for a while, I need some time to prepare your present.\"";
+    next;
+    close;
+
+L_PreGainEars:
+    mes "[Katze]";
+    mes "\"Please leave me alone for a while, so I can prepare your present.\"";
+    next;
+    close;
+
+L_GainEars:
+    getitem 1217, 1;    // Cat ears
+    set @xpval, 5000;
+    getexp @xpval, 0;
+    set Katze, 7;
+    mes "[Katze]";
+    mes "\"Look what I made for you! It makes you look a bit like me! Maybe it will give you a feeling of what it is like to be a cat.\"";
+    mes "The cat winks at you.";
+    mes "[You gain " + @xpval + " experience points]";
+    next;
+    close;
+
+L_Finished:
+    mes "[Katze]";
+    if (getequipid(equip_head) == 1217)  // Cat ears
+        mes "\"Meow, fellow cat.\"";
+    if (getequipid(equip_head) != 1217)
+        mes "\"Meow. Lost your ears?\"";
+    next;
+    close;
+}
