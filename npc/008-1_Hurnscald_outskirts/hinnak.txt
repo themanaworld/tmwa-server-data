@@ -56,19 +56,17 @@ L_Exchange:
 	mes "\"Have you got the 10 antennae?\"";
 	next;
 
-	if (countitem(614) < 10) goto L_Exchange_Notenough;
-
 	menu
 		"Not yet, but I am working on it.", -,
 		"Sure, here they are!", L_Exchange_Exchange;
 	close;
 
 L_Exchange_Exchange:
-	if (countitem(614) < 10) goto L_Exchange_Notenough;
+	if (countitem("PinkAntenna") < 10) goto L_Exchange_Notenough;
 	getinventorylist;
-	if (@inventorylist_count == 100) goto L_Exchange_TooMany;
-	delitem 614, 10;
-	getitem 623, 1;
+	if (@inventorylist_count == 100 && countitem("PinkAntenna") > 10) goto L_Exchange_TooMany;
+	delitem "PinkAntenna", 10;
+	getitem "Scythe", 1;
 	set QUEST_Scythe_state, 2;
 	mes "[Farmer Hinnak]";
 	mes "\"Thank you very much. I've got something for you. My old scythe. Maybe you can use it as a weapon. It is a bit cumbersome but its strikes are deadly.\"";
@@ -87,8 +85,6 @@ L_Exchange_TooMany:
 L_ThanksAgain:
 	mes "[Farmer Hinnak]";
 	mes "\"Good to see you again, and thanks again for helping me with the pinkies!\"";
-
-        set @BEER, 539;
 
         next;
 
@@ -115,8 +111,8 @@ L_ThanksAgain:
                 "I don't have any.", L_NoBeer;
 
 L_GiveBeer:
-        if (countitem(@BEER) < 1) goto L_NoBeer;
-        delitem @BEER, 1;
+        if (countitem("Beer") < 1) goto L_NoBeer;
+        delitem "Beer", 1;
 	mes "[Farmer Hinnak]";
         mes "Hinnak takes a sip.";
         mes "\"Aaah!  Nothing like a well-deserved beer after a long day of tending the crops!\"";
