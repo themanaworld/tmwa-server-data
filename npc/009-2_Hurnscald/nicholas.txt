@@ -13,14 +13,6 @@
 
 009-2.gat,185,55,0	script	Nicholas	135,{
 
-        set @IRON_ORE, 640;
-        set @INFANTRY, 638;
-        set @LEATHER_PATCH, 708;
-        set @SHORT_SWORD, 536;
-        set @MONSTER_OIL, 707;
-        set @SETZER, 571;
-	set @STEEL_SHIELD, 601;
-
         set @SETZER_XP, 100000;
         set @SHIELD_XP, 20000;
 
@@ -59,9 +51,9 @@ L_Check:
 	mes "[Nicholas]";
 	mes "\"Let me take at look at how much you have...\"";
 	next;
-	if(countitem(@IRON_ORE)<5) goto L_NoItem;
-	if(countitem(@IRON_ORE)<10) goto L_StageA;
-	if(countitem(@IRON_ORE)<15) goto L_StageB;
+	if(countitem("IronOre")<5) goto L_NoItem;
+	if(countitem("IronOre")<10) goto L_StageA;
+	if(countitem("IronOre")<15) goto L_StageB;
 	goto L_StageC;
 
 L_Info:
@@ -120,19 +112,19 @@ L_main_menu:
         set @choices_nr, 0;
         setarray @choice_idx, 0, 0, 0, 0, 0;
 
-	if (countitem(@SHORT_SWORD) < 1) goto L_main_menu_post_setzer;
+	if (countitem("ShortSword") < 1) goto L_main_menu_post_setzer;
 	set @choice$[@choices_nr], "Can you make my short sword better?";
 	set @choice_idx[@choices_nr], @CHOICE_SETZER;
 	set @choices_nr, 1 + @choices_nr;
 
 L_main_menu_post_setzer:
 
-	if (countitem(@IRON_ORE)<5) goto L_no_more_helmets;
+	if (countitem("IronOre")<5) goto L_no_more_helmets;
         set @choice$[@choices_nr], "Knight's Helmet. (5 Iron Ores)";
         set @choice_idx[@choices_nr], @CHOICE_KNIGHT;
         set @choices_nr, 1 + @choices_nr;
 
-	if (countitem(@IRON_ORE)<10) goto L_no_more_helmets;
+	if (countitem("IronOre")<10) goto L_no_more_helmets;
 
         set @choice$[@choices_nr], "Crusade Helmet. (10 Iron Ores)";
         set @choice_idx[@choices_nr], @CHOICE_CRUSADE;
@@ -142,7 +134,7 @@ L_main_menu_post_setzer:
         set @choice_idx[@choices_nr], @CHOICE_SHIELD;
         set @choices_nr, 1 + @choices_nr;
 
-	if (countitem(@IRON_ORE)<15) goto L_no_more_helmets;
+	if (countitem("IronOre")<15) goto L_no_more_helmets;
 
         set @choice$[@choices_nr], "Warlord Helmet. (15 Iron Ores)";
         set @choice_idx[@choices_nr], @CHOICE_WARLORD;
@@ -192,8 +184,8 @@ L_YesKnight:
 	getinventorylist;
 	if (@inventorylist_count == 100) goto L_TooMany;
 	set zeny, zeny - 10000;
-	delitem @IRON_ORE, 5;
-	getitem 637, 1;
+	delitem "IronOre", 5;
+	getitem "KnightsHelmet", 1;
 	goto L_Done;
 
 L_YesCrusade:
@@ -201,8 +193,8 @@ L_YesCrusade:
 	getinventorylist;
 	if (@inventorylist_count == 100) goto L_TooMany;
 	set zeny, zeny-10000;
-	delitem @IRON_ORE,10;
-	getitem 639,1;
+	delitem "IronOre", 10;
+	getitem "CrusadeHelmet", 1;
 	goto L_Done;
 
 L_YesWarlord:
@@ -210,8 +202,8 @@ L_YesWarlord:
 	getinventorylist;
 	if (@inventorylist_count == 100) goto L_TooMany;
 	set zeny, zeny-10000;
-	delitem @IRON_ORE,15;
-	getitem 636,1;
+	delitem "IronOre", 15;
+	getitem "WarlordHelmet", 1;
 	goto L_Done;
 
 L_YesShield:
@@ -223,8 +215,8 @@ L_YesShield:
         menu	"Sure, have a look!", -,
 		"No.", L_Pass;
 
-	if (countitem(@INFANTRY) == 1) goto L_MoreInfantry;
-        if (countitem(@INFANTRY) == 0) goto L_NoInfantry;
+	if (countitem("InfantryHelmet") == 1) goto L_MoreInfantry;
+        if (countitem("InfantryHelmet') == 0) goto L_NoInfantry;
 
         mes "[Nicholas]";
         mes "Nicholas pulls out two of your infantry helmets.";
@@ -241,9 +233,9 @@ L_YesShield:
         	"No way.", L_Pass;
 
 	if (zeny < 20000) goto L_ShieldNoZeny;
-	if (countitem(@INFANTRY) < 2) goto L_ShieldNoInfantry;
-	if (countitem(@IRON_ORE) < 10) goto L_ShieldNoOre;
-	if (countitem(@LEATHER_PATCH) < 1) goto L_ShieldNoLeatherPatch;
+	if (countitem("InfantryHelmet") < 2) goto L_ShieldNoInfantry;
+	if (countitem("IronOre") < 10) goto L_ShieldNoOre;
+	if (countitem("LeatherPatch") < 1) goto L_ShieldNoLeatherPatch;
 	// No inventory check needed, as infantry helms are removed, opening two slots
 
         mes "[Nicholas]";
@@ -251,10 +243,10 @@ L_YesShield:
         mes "You watch Nicholas melt the ore and helmets and form a shield out of the resulting iron.  He then cuts your leather patch apart and adds it to the handles.";
         mes "\"Here is your shield!\"";
 
-        delitem @INFANTRY, 1;
-        delitem @INFANTRY, 1;
-        delitem @LEATHER_PATCH, 1;
-        delitem @IRON_ORE, 10;
+        delitem "InfantryHelmet", 1;
+        delitem "InfantryHelmet", 1;
+        delitem "LeatherPatch", 1;
+        delitem "IronOre", 10;
         set zeny, zeny - 20000;
 
         if (@Q_SHIELD_status < @SHIELD_COMPLETED)
@@ -265,7 +257,7 @@ L_YesShield:
         set @Q_SHIELD_status, @SHIELD_COMPLETED; // get XP only once
         callsub L_Update_Var;
 
-        getitem @STEEL_SHIELD, 1;
+        getitem "SteelShield", 1;
         next;
         close;
 
@@ -330,20 +322,20 @@ L_SetzerQuest:
              "HOW much?  Never mind.", L_Pass;
 
 	if (zeny < 50000) goto L_SetzerNoZeny;
-	if (countitem(@IRON_ORE) < 5) goto L_SetzerNoOre;
-	if (countitem(@MONSTER_OIL) < 1) goto L_SetzerNoMonsterOil;
-	if (countitem(@SHORT_SWORD) < 1) goto L_SetzerNoSword;
+	if (countitem("IronOre") < 5) goto L_SetzerNoOre;
+	if (countitem("MonsterOilPotion") < 1) goto L_SetzerNoMonsterOil;
+	if (countitem("ShortSword") < 1) goto L_SetzerNoSword;
 	// No inventory check needed, as the short sword is removed, opening a slot
 
         mes "[Nicholas]";
         mes "Nicholas takes the items, heats up your sword and pounds it with a heavy hammer.  Before your eyes it turns thinner and flatter.  Finally he pours the monster oil over it, heats it up again and douses it in water.";
 
         set zeny, zeny - 50000;
-        delitem @IRON_ORE, 5;
-        delitem @MONSTER_OIL, 1;
-        delitem @SHORT_SWORD, 1;
+        delitem "IronOre", 5;
+        delitem "MonsterOilPotion", 1;
+        delitem "ShortSword", 1;
 
-        getitem @SETZER, 1;
+        getitem "Setzer", 1;
         if (!(@Q_SETZER_status & @SETZER_FLAG_MADE_SETZER))
 		mes "[" + @SETZER_XP + " experience points]";
         if (!(@Q_SETZER_status & @SETZER_FLAG_MADE_SETZER))

@@ -14,20 +14,6 @@
         set @Q_status, (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
         // End of Setzer quest/monster oil quest participation
 
-	set @RED, 683;
-	set @YELLOW, 682;
-	set @BLUE, 681;
-	set @MAUVE, 680;
-	set @PETAL, 565;
-	set @PEARL, 700;
-	set @WATER, 541;
-	set @ASH, 701;
-	set @MANAPOTION, 705;
-	set @ORE, 640;
-	set @MAGGOTSLIME, 505;
-        set @SULPHUR, 703;
-        set @IRONPOWDER, 704;
-
 	set @QUEST_CAN_GET_DYE_HERE, 2;
 	set @QUEST_HAS_SOLVED_DYE_PUZZLE, 3;
 	set @QUEST_GUESS_BASE, 4;
@@ -153,18 +139,18 @@ L_iron_powder:
 		"Never mind.", L_abort,
 		"Here you are!", -;
 
-        if (countitem(@ORE) < 1)
+        if (countitem("IronOre") < 1)
 		goto L_iron_powder_noore;
         if (zeny < 100)
 		goto L_iron_powder_nozeny;
 	getinventorylist;
 	if (@inventorylist_count == 100
-            && countitem(@ORE) > 1
-            && countitem(@IRONPOWDER) < 1)
+            && countitem("IronOre") > 1
+            && countitem("IronPowder") < 1)
 		goto L_iron_powder_full;
-        delitem @ORE, 1;
+        delitem "IronOre", 1;
         set zeny, zeny - 100;
-        getitem @IRONPOWDER, 4;
+        getitem "IronPowder", 4;
 	mes "[Rauk the Alchemist]";
         mes "Rauk places your chunk of ore in a strange glass container, then pours a steaming yellow liquid over it.  Before your eyes, the ore dissolves.";
         next;
@@ -203,18 +189,18 @@ L_sulphur:
 		"No, I won't!", L_abort,
 		"Here you are!", -;
 
-	if (countitem(@ASH) < 3) goto L_sulphur_noash;
-	if (countitem(@MAUVE) < 3) goto L_sulphur_nomauve;
+	if (countitem("PileOfAsh") < 3) goto L_sulphur_noash;
+	if (countitem("MauveHerb") < 3) goto L_sulphur_nomauve;
 	getinventorylist;
 	if (@inventorylist_count == 100
-            && countitem(@SULPHUR) == 0
-            && countitem(@ASH) > 3
-            && countitem(@MAUVE) > 3)
+            && countitem("SulphurPowder") == 0
+            && countitem("PileOfAsh") > 3
+            && countitem("MauveHerb") > 3)
 		goto L_sulphur_nospace;
 
-        delitem @ASH, 3;
-        delitem @MAUVE, 3;
-        getitem @SULPHUR, 12;
+        delitem "PileOfAsh", 3;
+        delitem "MauveHerb", 3;
+        getitem "SulphurPowder", 12;
 	mes "[Rauk the Alchemist]";
         mes "You watch Rauk burn the mauve leaves in the midst of the ashes.  He then dissolves the result and pours it through a filter, finally heating up the residual liquid.";
         next;
@@ -258,26 +244,26 @@ L_mana_potion:
 	goto L_main_menu;
 
 L_get_mana_potion:
-	if(countitem(@MAUVE) < 30) goto L_mana_potion_lacking;
-	if(countitem(@YELLOW) < 20) goto L_mana_potion_lacking;
-	if(countitem(@ASH) < 5) goto L_mana_potion_lacking;
-	if(countitem(@PEARL) < 1) goto L_mana_potion_lacking;
-	if(countitem(@WATER) < 1) goto L_mana_potion_lacking;
+	if(countitem("MauveHerb") < 30) goto L_mana_potion_lacking;
+	if(countitem("GambogeHerb") < 20) goto L_mana_potion_lacking;
+	if(countitem("PileOfAsh") < 5) goto L_mana_potion_lacking;
+	if(countitem("Pearl") < 1) goto L_mana_potion_lacking;
+	if(countitem("BottleOfWater") < 1) goto L_mana_potion_lacking;
 	getinventorylist;
 	if ((@inventorylist_count == 100)
-            && (countitem(@MAUVE) > 30)
-            && (countitem(@ASH) > 5)
-            && (countitem(@PEARL) > 1)
-            && (countitem(@WATER) > 1)
-            && (countitem(@MANAPOTION) < 1))
+            && (countitem("MauveHerb") > 30)
+            && (countitem("PileOfAsh") > 5)
+            && (countitem("Pearl") > 1)
+            && (countitem("BottleOfWater") > 1)
+            && (countitem("ManaPotion") < 1))
         	goto L_mana_potion_toomuch;
 
-        delitem @MAUVE, 30;
-        delitem @YELLOW, 20;
-        delitem @ASH, 5;
-        delitem @PEARL, 1;
-        delitem @WATER, 1;
-        getitem @MANAPOTION, 1;
+        delitem "MauveHerb", 30;
+        delitem "GambogeHerb", 20;
+        delitem "PileOfAsh", 5;
+        delitem "Pearl", 1;
+        delitem "BottleOfWater", 1;
+        getitem "ManaPotion", 1;
 
 	mes "[Rauk the Alchemist]";
         mes "Rauk grinds the leaves, then crushes the pearl.  Taking out a small charcoal oven, he heats up your water bottle and dissolves first the pearl powder, then the ashes.";
@@ -303,38 +289,38 @@ L_mana_potion_toomuch:
 
 L_mana_potion_lacking:
 	mes "[Rauk the Alchemist]";
-        mes "\"Sorry, but I need one pearl, one bottle of water, 30 mauve leaves, 20 gamboge leaves, and five piles of volcanic ash.\"";
+        mes "\"Sorry, but I need one [pearl], one [bottle of water], 30 [mauve leaves], 20 [gamboge leaves], and five piles of [volcanic ash].\"";
         next;
         goto L_main_menu;
 
 L_iron:
-  	if(countitem(566) < 20) goto L_no_iron;
+  	if(countitem("SmallMushroom") < 20) goto L_no_iron;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(566) > 20) goto L_TooMany;
+	if (@inventorylist_count == 100 && countitem("SmallMushroom") > 20) goto L_TooMany;
 	mes "[Rauk the Alchemist]";
 	mes "\"Great! You brought me exactly what I need!";
 	mes "Here is your Iron potion.\"";
-	delitem 566,20;
-	getitem 567,1;
+	delitem "SmallMushroom", 20;
+	getitem "IronPotion", 1;
 	close;
 
 L_concentration:
-	if(countitem(565) < 20) goto L_no_concentration;
+	if(countitem("Petal") < 20) goto L_no_concentration;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(565) > 20) goto L_TooMany;
+	if (@inventorylist_count == 100 && countitem("Petal") > 20) goto L_TooMany;
 	mes "[Rauk the Alchemist]";
 	mes "\"Great! You brought me exactly what I need!";
 	mes "Here is your Concentration potion.\"";
-	delitem 565,20;
-	getitem 568,1;
+	delitem "Petal", 20;
+	getitem "ConcentrationPotion", 1;
 	close;
 
 L_no_iron:
-	mes "\"You have to bring me 20 small mushrooms.\"";
+	mes "\"You have to bring me 20 [small mushrooms].\"";
 	close;
 	
 L_no_concentration:
-	mes "\"You have to bring me 20 petals.\"";
+	mes "\"You have to bring me 20 [petals].\"";
 	close;
 
 L_dyeing_intro:
@@ -464,11 +450,11 @@ L_ok:
 	goto L_pick_colour;
 
 L_red:
-	if (countitem(@RED) < 10) goto L_red_fail;
+	if (countitem("AlizarinHerb") < 10) goto L_red_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@RED) > 10) goto L_TooMany;
-	delitem @RED, 10;
-	getitem 690, 1;
+	if (@inventorylist_count == 100 && countitem("AlizarinHerb") > 10) goto L_TooMany;
+	delitem "AlizarinHerb", 10;
+	getitem "RedDye", 1;
 	goto L_ok;
 
 L_red_fail:
@@ -484,11 +470,11 @@ L_d_red:
 	goto L_intermediate;
 
 L_yellow:
-	if (countitem(@YELLOW) < 10) goto L_yellow_fail;
+	if (countitem("GambogeHerb") < 10) goto L_yellow_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@YELLOW) > 10) goto L_TooMany;
-	delitem @YELLOW, 10;
-	getitem 693, 1;
+	if (@inventorylist_count == 100 && countitem("GambogeHerb") > 10) goto L_TooMany;
+	delitem "GambogeHerb", 10;
+	getitem "YellowDye", 1;
 	goto L_ok;
 
 L_yellow_fail:
@@ -504,11 +490,11 @@ L_d_yellow:
 	goto L_intermediate;
 
 L_light_blue:
-	if (countitem(@BLUE) < 10) goto L_light_blue_fail;
+	if (countitem("CobaltHerb") < 10) goto L_light_blue_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@BLUE) > 10) goto L_TooMany;
-	delitem @BLUE, 10;
-	getitem 694, 1;
+	if (@inventorylist_count == 100 && countitem("CobaltHerb") > 10) goto L_TooMany;
+	delitem "CobaltHerb", 10;
+	getitem "LightBlueDye", 1;
 	goto L_ok;
 
 L_light_blue_fail:
@@ -524,15 +510,15 @@ L_d_light_blue:
 	goto L_intermediate;
 
 L_green:
-	if (countitem(@BLUE) < 20) goto L_green_fail;
-	if (countitem(@YELLOW) < 20) goto L_green_fail;
+	if (countitem("CobaltHerb") < 20) goto L_green_fail;
+	if (countitem("GambogeHerb") < 20) goto L_green_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@BLUE) > 20 && countitem(@YELLOW) > 20) goto L_TooMany;
+	if (@inventorylist_count == 100 && countitem("CobaltHerb") > 20 && countitem("GambogeHerb") > 20) goto L_TooMany;
 	if (zeny < 1000) goto L_green_fail;
-	delitem @BLUE, 20;
-	delitem @YELLOW, 20;
+	delitem "CobaltHerb", 20;
+	delitem "GambogeHerb", 20;
 	set zeny, zeny - 1000;
-	getitem 691, 1;
+	getitem "GreenDye", 1;
 	goto L_ok;
 
 L_green_fail:
@@ -553,17 +539,17 @@ L_d_green:
 	goto L_intermediate;
 
 L_orange:
-	if (countitem(@RED) < 10) goto L_orange_fail;
-	if (countitem(@YELLOW) < 10) goto L_orange_fail;
-	if (countitem(@ORE) < 2) goto L_orange_fail;
+	if (countitem("AlizarinHerb") < 10) goto L_orange_fail;
+	if (countitem("GambogeHerb") < 10) goto L_orange_fail;
+	if (countitem("IronOre") < 2) goto L_orange_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@RED) > 10 && countitem(@YELLOW) > 10 && countitem(@ORE) > 2) goto L_TooMany;
+	if (@inventorylist_count == 100 && countitem("AlizarinHerb") > 10 && countitem("GambogeHerb") > 10 && countitem("IronOre") > 2) goto L_TooMany;
 	if (zeny < 1000) goto L_orange_fail;
-	delitem @RED, 10;
-	delitem @YELLOW, 10;
-	delitem @ORE, 2;
+	delitem "AlizarinHerb", 10;
+	delitem "GambogeHerb", 10;
+	delitem "IronOre", 2;
 	set zeny, zeny - 1000;
-	getitem 697, 1;
+	getitem "OrangeDye", 1;
 	goto L_ok;
 
 L_orange_fail:
@@ -580,15 +566,15 @@ L_d_orange:
 	goto L_intermediate;
 
 L_pink:
-	if (countitem(@RED) < 10) goto L_pink_fail;
-	if (countitem(@PETAL) < 6) goto L_pink_fail;
+	if (countitem("AlizarinHerb") < 10) goto L_pink_fail;
+	if (countitem("Petal") < 6) goto L_pink_fail;
 	if (zeny < 1000) goto L_pink_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@RED) > 10 && countitem(@PETAL) > 6) goto L_TooMany;
-	delitem @RED, 10;
-	delitem @PETAL, 6;
+	if (@inventorylist_count == 100 && countitem("AlizarinHerb") > 10 && countitem("Petal") > 6) goto L_TooMany;
+	delitem "AlizarinHerb", 10;
+	delitem "Petal", 6;
 	set zeny, zeny - 1000;
-	getitem 695, 1;
+	getitem "PinkDye", 1;
 	goto L_ok;
 
 L_pink_fail:
@@ -605,17 +591,17 @@ L_d_pink:
 	goto L_intermediate;
 
 L_dark_blue:
-	if (countitem(@BLUE) < 100) goto L_dark_blue_fail;
-	if (countitem(@MAUVE) < 50) goto L_dark_blue_fail;
-	if (countitem(@PEARL) < 1) goto L_dark_blue_fail;
+	if (countitem("CobaltHerb") < 100) goto L_dark_blue_fail;
+	if (countitem("MauveHerb") < 50) goto L_dark_blue_fail;
+	if (countitem("Pearl") < 1) goto L_dark_blue_fail;
 	if (zeny < 10000) goto L_dark_blue_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@BLUE) > 100 && countitem(@MAUVE) > 50 && countitem(@PEARL) > 1) goto L_TooMany;
-	delitem @BLUE, 100;
-	delitem @MAUVE, 50;
-	delitem @PEARL, 1;
+	if (@inventorylist_count == 100 && countitem("CobaltHerb") > 100 && countitem("MauveHerb") > 50 && countitem("Pearl") > 1) goto L_TooMany;
+	delitem "CobaltHerb", 100;
+	delitem "MauveHerb", 50;
+	delitem "Pearl", 1;
 	set zeny, zeny - 10000;
-	getitem 692, 1;
+	getitem "DarkBlueDye", 1;
 	goto L_ok;
 
 L_dark_blue_fail:
@@ -633,19 +619,19 @@ L_d_dark_blue:
 	goto L_intermediate;
 
 L_purple:
-	if (countitem(@BLUE) < 100) goto L_purple_fail;
-	if (countitem(@RED) < 100) goto L_purple_fail;
-	if (countitem(@MAUVE) < 20) goto L_purple_fail;
-	if (countitem(@PEARL) < 1) goto L_purple_fail;
+	if (countitem("CobaltHerb") < 100) goto L_purple_fail;
+	if (countitem("AlizarinHerb") < 100) goto L_purple_fail;
+	if (countitem("MauveHerb") < 20) goto L_purple_fail;
+	if (countitem("Pearl") < 1) goto L_purple_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@BLUE) > 100 && countitem(@RED) > 100 && countitem(@MAUVE) > 20 && countitem(@PEARL) > 1) goto L_TooMany;
+	if (@inventorylist_count == 100 && countitem("CobaltHerb") > 100 && countitem("AlizarinHerb") > 100 && countitem("MauveHerb") > 20 && countitem("Pearl") > 1) goto L_TooMany;
 	if (zeny < 40000) goto L_purple_fail;
-	delitem @BLUE, 100;
-	delitem @RED, 100;
-	delitem @MAUVE, 20;
-	delitem @PEARL, 1;
+	delitem "CobaltHerb", 100;
+	delitem "AlizarinHerb", 100;
+	delitem "MauveHerb", 20;
+	delitem "Pearl", 1;
 	set zeny, zeny - 40000;
-	getitem 698, 1;
+	getitem "PurpleDye", 1;
 	goto L_ok;
 
 L_purple_fail:
@@ -666,19 +652,19 @@ L_d_purple:
 	goto L_intermediate;
 
 L_black:
-	if (countitem(@BLUE) < 40) goto L_black_fail;
-	if (countitem(@RED) < 40) goto L_black_fail;
-	if (countitem(@YELLOW) < 40) goto L_black_fail;
-	if (countitem(@MAUVE) < 40) goto L_black_fail;
+	if (countitem("CobaltHerb") < 40) goto L_black_fail;
+	if (countitem("AlizarinHerb") < 40) goto L_black_fail;
+	if (countitem("GambogeHerb") < 40) goto L_black_fail;
+	if (countitem("MauveHerb") < 40) goto L_black_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@BLUE) > 40 && countitem(@RED) > 40 && countitem(@YELLOW) > 40 && countitem(@MAUVE) > 40) goto L_TooMany;
+	if (@inventorylist_count == 100 && countitem("CobaltHerb") > 40 && countitem("AlizarinHerb") > 40 && countitem("GambogeHerb") > 40 && countitem("MauveHerb") > 40) goto L_TooMany;
 	if (zeny < 20000) goto L_black_fail;
-	delitem @BLUE, 40;
-	delitem @RED, 40;
-	delitem @YELLOW, 40;
-	delitem @MAUVE, 40;
+	delitem "CobaltHerb", 40;
+	delitem "AlizarinHerb", 40;
+	delitem "GambogeHerb", 40;
+	delitem "MauveHerb", 40;
 	set zeny, zeny - 20000;
-	getitem 696, 1;
+	getitem "BlackDye", 1;
 	goto L_ok;
 
 L_black_fail:
@@ -700,19 +686,19 @@ L_d_black:
 L_dark_green:
 	if (QUEST_clothdyer_knowsdye != @QUEST_HAS_SOLVED_DYE_PUZZLE)
 		goto L_d_dark_green;
-	if (countitem(@BLUE) < 10) goto L_dark_green_fail;
-	if (countitem(@YELLOW) < 10) goto L_dark_green_fail;
-	if (countitem(@MAUVE) < 10) goto L_dark_green_fail;
-	if (countitem(@MAGGOTSLIME) < 1) goto L_dark_green_fail;
+	if (countitem("CobaltHerb") < 10) goto L_dark_green_fail;
+	if (countitem("GambogeHerb") < 10) goto L_dark_green_fail;
+	if (countitem("MauveHerb") < 10) goto L_dark_green_fail;
+	if (countitem("MaggotSlime") < 1) goto L_dark_green_fail;
 	if (zeny < 1000) goto L_dark_green_fail;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem(@BLUE) > 10 && countitem(@YELLOW) > 10 && countitem(@MAUVE) > 10 && countitem(@MAGGOTSLIME) > 1) goto L_TooMany;
-	delitem @BLUE, 10;
-	delitem @MAUVE, 10;
-	delitem @YELLOW, 10;
-	delitem @MAGGOTSLIME, 1;
+	if (@inventorylist_count == 100 && countitem("CobaltHerb") > 10 && countitem("GambogeHerb") > 10 && countitem("MauveHerb") > 10 && countitem("MaggotSlime") > 1) goto L_TooMany;
+	delitem "CobaltHerb", 10;
+	delitem "MauveHerb", 10;
+	delitem "GambogeHerb", 10;
+	delitem "MaggotSlime", 1;
 	set zeny, zeny - 1000;
-	getitem 699, 1;
+	getitem "DarkGreenDye", 1;
 	goto L_ok;
 
 L_dark_green_fail:
@@ -791,9 +777,9 @@ L_dark_green_q_explain:
 		"I don't have time for this.", L_intermediate;
 
 L_dark_green_q_guess_0:
-	if (countitem(@MAGGOTSLIME) < 1)
+	if (countitem("MaggotSlime") < 1)
 		goto L_dark_green_q_noslime;
-	delitem @MAGGOTSLIME, 1;
+	delitem "MaggotSlime", 1;
 
 	mes "[Rauk the Alchemist]";
 	mes "Rauk fills your maggot slime into a small bottle and picks a glass bottle from within his robe.";
