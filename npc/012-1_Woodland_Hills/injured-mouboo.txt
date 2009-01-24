@@ -99,7 +99,7 @@ L_pickup_alive:
 
 L_give:
         set @items_nr, 12;
-        setarray @items, 501, 502, 509, 527, 534, 535, 539, 541, 684, 685, 686, 687;
+        setarray @items$, "CactusDrink", "CactusPotion", "ChocolateBar", "Milk", "OrangeCupcake", "Apple", "Beer", "BottleOfWater", "TinyHealingPotion", "SmallHealingPotion", "MediumHealingPotion", "LargeHealingPotion";
         setarray @itemeat, 0,   0,   1,   0,   1,   1,   0,   1,   0,   0,   0,   0;
 
         setarray @choice$, "", "", "", "", "", "", "", "", "", "", "", "";
@@ -110,13 +110,13 @@ L_give:
         set @n, 0;
         set @ct, 0;
 L_nloop:
-        set @k, @items[@n];
-        if (countitem(@k) == 0)
+        set @k$, @items$[@n];
+        if (countitem(@k$) == 0)
 		goto L_nloop_skip;
 
         set @name$, getitemname(@k);
         set @choice$[@ct], @name$;
-        set @choice_idx[@ct], @k;
+        set @choice_idx$[@ct], @k$;
         set @choice_eat[@ct], @itemeat[@n];
         set @ct, @ct + 1;
 
@@ -140,13 +140,13 @@ L_nloop_skip:
              @choice$[11], -;
 
         set @menu, @menu - 1;
-        set @choice, @choice_idx[@menu];
+        set @choice$, @choice_idx[@menu];
         set @choice_e, @choice_eat[@menu];
         set @verb$, "drinks";
         if (@choice_e)
 		set @verb$, "eats";
 
-        if (@choice && countitem(@choice))
+        if (@choice$ && countitem(@choice$))
 		goto L_consume;
 
 	goto L_menu;
@@ -154,11 +154,11 @@ L_nloop_skip:
 L_consume:
 	mes "[Injured Mouboo]";
 
-        mes "The mouboo " + @verb$ + " your " + getitemname(@choice) + ".";
-        delitem @choice, 1;
+        mes "The mouboo " + @verb$ + " your " + getitemname(@choice$) + ".";
+        delitem @choice$, 1;
         next;
 
-        if (@choice == 687)
+        if (@choice$ == "LargeHealingPotion")
 		goto L_do_heal;
 
 
@@ -198,7 +198,7 @@ L_dead:
 	if (@inventorylist_count == 100)
         	goto L_nopickup;
 
-        getitem 2076, 1;
+        getitem "BlackTNeckSweater", 1;
         mes "You pull out the sweater and stuff it into your backpack.";
 
         set @Q_status, @STATE_TOOK_KILL_REWARD;

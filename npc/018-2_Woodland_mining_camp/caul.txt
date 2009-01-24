@@ -13,21 +13,10 @@
         set @SETZER_KNOWS_STINGER, 2;
         set @SETZER_FLAG_MADE_OIL, 4;
 
-        set @PEARL, 700;
-        set @SNAKE_SKIN, 641;
-        set @BLACK_STINGER, 709;
-        set @ASH_PILE, 701;
-	set @GOLDEN_STINGER, 706;
-        set @MONSTER_OIL, 707;
         set @MONSTER_OIL_XP, 100000;
 
         set @Q_MASK, NIBBLE_3_MASK;
         set @Q_SHIFT, NIBBLE_3_SHIFT;
-
-        set @MAUVE, 680;
-        set @COBALT, 681;
-        set @GAMBOGE, 682;
-        set @ALIZARIN, 683;
 
         set @Q_status, (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
 
@@ -92,10 +81,10 @@ L_brew:
 	mes "\"Now put " + @num + " herbs of each kind into the cauldron, stir, and concentrate all your mental energy on it.\"";
 	next;
 
-	if (countitem(@MAUVE) < @num) goto L_NotEnough;
-	if (countitem(@COBALT) < @num) goto L_NotEnough;
-	if (countitem(@GAMBOGE) < @num) goto L_NotEnough;
-	if (countitem(@ALIZARIN) < @num) goto L_NotEnough;
+	if (countitem("MauveHerb") < @num) goto L_NotEnough;
+	if (countitem("CobaltHerb") < @num) goto L_NotEnough;
+	if (countitem("GambogeHerb") < @num) goto L_NotEnough;
+	if (countitem("AlizarinHerb") < @num) goto L_NotEnough;
 
 	set @a, @num;
 	set @result1, 0;
@@ -118,10 +107,10 @@ L_CraftLoop:
 	set @a, @a - 1;
 	if (@a > 0) goto L_CraftLoop;
 
-	delitem @MAUVE, @num;
-	delitem @COBALT, @num;
-	delitem @GAMBOGE, @num;
-	delitem @ALIZARIN, @num;
+	delitem "MauveHerb", @num;
+	delitem "CobaltHerb", @num;
+	delitem "GambogeHerb", @num;
+	delitem "AlizarinHerb", @num;
 
 	getitem 684, @result1;
 	getitem 685, @result2;
@@ -221,16 +210,16 @@ L_monster_oil_where_gold:
 
 L_monster_oil_start_brew:
         set @main_menu, 0;
-	if (countitem (@PEARL) < 1) goto L_monster_oil_missing;
-	if (countitem (@SNAKE_SKIN) < 2) goto L_monster_oil_missing;
-	if (countitem (@BLACK_STINGER) < 3) goto L_monster_oil_missing;
-	if (countitem (@ASH_PILE) < 2) goto L_monster_oil_missing;
-	if (countitem (@GOLDEN_STINGER) < 1) goto L_monster_oil_missing_gold;
+	if (countitem ("Pearl") < 1) goto L_monster_oil_missing;
+	if (countitem ("SnakeSkin") < 2) goto L_monster_oil_missing;
+	if (countitem ("BlackScorpionStinger") < 3) goto L_monster_oil_missing;
+	if (countitem ("PileOfAsh") < 2) goto L_monster_oil_missing;
+	if (countitem ("GoldenScorpionStinger") < 1) goto L_monster_oil_missing_gold;
 
-	delitem @PEARL, 1;
-	delitem @SNAKE_SKIN, 2;
-	delitem @BLACK_STINGER, 3;
-	delitem @ASH_PILE, 2;
+	delitem "Pearl", 1;
+	delitem "SnakeSkin", 2;
+	delitem "BlackScorpionStinger", 3;
+	delitem "PileOfAsh", 2;
 
         set @bubble_mode, 0;
         setarray @bubble_modes$,
@@ -301,35 +290,35 @@ L_monster_oil_out_of_leaves:
         goto L_monster_oil_loop;
 
 L_monster_oil_alizarin:
-	set @use_leaf, @ALIZARIN;
+	set @use_leaf$, "AlizarinHerb";
 	set @use_color, 1;
         goto L_monster_oil_leaf_color;
 
 L_monster_oil_gamboge:
-	set @use_leaf, @GAMBOGE;
+	set @use_leaf$, "GambogeHerb";
 	set @use_color, 2;
         goto L_monster_oil_leaf_color;
 
 L_monster_oil_cobalt:
-	set @use_leaf, @COBALT;
+	set @use_leaf$, "CobaltHerb";
 	set @use_color, 4;
         goto L_monster_oil_leaf_color;
 
 L_monster_oil_leaf_color:
-        if (countitem (@use_leaf) < 1) goto L_monster_oil_out_of_leaves;
+        if (countitem (@use_leaf$) < 1) goto L_monster_oil_out_of_leaves;
 
 	callsub S_monster_oil_random_move;
 	if (@color & @use_color) goto L_monster_oil_pc_bad;
         set @color, @color | @use_color;
-        delitem @use_leaf, 1;
+        delitem @use_leaf$, 1;
 
         mes "The brew changes its hue as your leaf dissolves.";
         next;
         goto L_monster_oil_loop;
 
 L_monster_oil_mauve:
-	if (countitem(@MAUVE) < 1) goto L_monster_oil_out_of_leaves;
-        delitem @MAUVE, 1;
+	if (countitem("MauveHerb") < 1) goto L_monster_oil_out_of_leaves;
+        delitem "MauveHerb", 1;
 
 	callsub S_monster_oil_random_move;
         if (@intensity == 2 && @color == 7) goto L_monster_oil_done;
@@ -432,12 +421,12 @@ L_monster_oil_done:
 	mes "[Brewing monster oil]";
         mes "As instructed, you toss in your golden scorpion stinger.";
 
-	if (countitem (@GOLDEN_STINGER) < 1) goto L_monster_oil_no_gold_end;
+	if (countitem ("GoldenScorpionStinger") < 1) goto L_monster_oil_no_gold_end;
 
         mes "The brew bubbles once more, then calms completely.";
 
-        delitem @GOLDEN_STINGER, 1;
-        getitem @MONSTER_OIL, 1;
+        delitem "GoldenScorpionStinger", 1;
+        getitem "MonsterOilPotion", 1;
 
         if (!(@Q_status & @SETZER_FLAG_MADE_OIL))
         	getexp @MONSTER_OIL_XP, 0;
