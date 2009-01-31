@@ -63,16 +63,21 @@ PROCEDURE sfx_generic(target) =
 PROCEDURE set_var(name, mask, shift, value) =
           set_script_variable(caster, name, script_int(caster, name) & (neg (mask << shift)) | ((value & mask) << shift));
 
-PROCEDURE gain_heal_xp(value, gain) = # `value' influences the likelihood of an increase
+PROCEDURE gain_heal_xp(value, # How many HP we healed
+                       gain,  # how many life magic experience points we can potentially gain
+                       heal_xp_value_divisor,  # 1 for instaheal, 2 for slow heal
+                       base_exp_factor) =      # factor for how many base experience points (max) the player should be allowed to gain
           last_heal_xp = (script_int(caster, SCRIPT_XP) >> SCRIPT_HEALSPELL_SHIFT) & SCRIPT_HEALSPELL_MASK;
           IF (target <> caster
-              && value > (10 + last_heal_xp + random(last_heal_xp + 1) + random(last_heal_xp + 1)))
+              && (value / heal_xp_value_divisor) > (10 + last_heal_xp + random(last_heal_xp + 1) + random(last_heal_xp + 1)))
           THEN (
              heal_xp = last_heal_xp + gain;
              IF (heal_xp > SCRIPT_HEALSPELL_MASK)
              THEN heal_xp = SCRIPT_HEALSPELL_MASK;
              CALL set_var(SCRIPT_XP, SCRIPT_HEALSPELL_MASK, SCRIPT_HEALSPELL_SHIFT, heal_xp);
           )
+          IF target <> caster
+          THEN gain_experience(caster, base_exp_factor * extract_healer_experience(target, value), 0, 1);
 
 PROCEDURE gain_xp(gain) =
           IF (level + 3 > skill(caster, MAGIC)) # Level 4 and 5 magic users don't gain anything from spell levels 0 resp. 0+1
@@ -232,8 +237,10 @@ SPELL lesser-heal (target : STRING) : "#L00" =
                                  && rdistance(location(caster), location(npc("Mouboo"))) < 2 + (spellpower / 100))
                             THEN { mes "Your spell seems to have no effect on the mouboo."; next; close; }
                             ELSE target = caster;)
-                      ELSE target = pc(target);
-                    CALL gain_heal_xp(min(100, max_hp(target) - hp(target)) / 2, 1); # report half values for non-instaheal
+                      ELSE (target = pc(target);
+                            IF is_dead(target)
+                            THEN ABORT;)
+                    CALL gain_heal_xp(min(200, max_hp(target) - hp(target)), 1, 2, 2); # report half values for non-instaheal
                     CALL heal(target, 200);
                     CALL gain_xp(1);
 
@@ -457,7 +464,7 @@ SPELL lay-on-hands (target : STRING) : "#L10" =
                     ELSE (payment = available;
                           power = (available * 200) / pay_fraction;
                     )
-                    CALL gain_heal_xp(power, 1);
+                    CALL gain_heal_xp(power, 1, 1, 3);
                     CALL quickheal(target, power);
                     status_change(caster, SC_HALT_REGENERATE, 0, 0, 0, 0, 10000);
                     IF ((caster <> target) && (payment >= 100))
