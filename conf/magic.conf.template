@@ -672,13 +672,17 @@ SPELL shear : "#N14" =
                          IF running_status_update(target, SC_SHEARED)
                          THEN ABORT;
                          status_change(target, SC_SHEARED, 1, 1, 1, 1, 600000); # 10 minutes
-                         CALL shear-drop("Fluffy", "WhiteFur", 200);
-                         CALL shear-drop("SpikyMushroom", "HardSpike", 150);
-                         CALL shear-drop("Mouboo", "CottonCloth", 100);
-                         CALL shear-drop("Cobalt Plant", "CobaltHerb", 700);
-                         CALL shear-drop("Alizarin Plant", "AlizarinHerb", 700);
-                         CALL shear-drop("Gamboge Plant", "GambogeHerb", 700);
-                         CALL shear-drop("Mauve Plant", "MauveHerb", 700);
+                         CALL shear-drop("Fluffy", "WhiteFur", 300);
+                         CALL shear-drop("SpikyMushroom", "HardSpike", 250);
+                         CALL shear-drop("Mouboo", "CottonCloth", 175);
+                         CALL shear-drop("Cobalt", "CobaltHerb", 700);
+                         CALL shear-drop("Alizarin", "AlizarinHerb", 700);
+                         CALL shear-drop("Gamboge", "GambogeHerb", 700);
+                         CALL shear-drop("Mauve", "MauveHerb", 700);
+                         CALL shear-drop("SilkWorm", "SilkCocoon", 300);
+                         message(caster, name);
+                         IF ((name = "Fluffy" || name = "Mouboo") && random(2))
+                         THEN { set @value, 1; callfunc "QuestSagathaHappy"; };
                     )
 
       
@@ -702,29 +706,29 @@ SPELL barrier (target : PC) : "#A10" =
                sfx(target, SFX_UNBARRIER, 0);
 
 
-LOCAL SPELL summon-scorps : "#A11" =
+LOCAL SPELL summon-spiky-mushrooms : "#A11" =
       LET level = 1
           school = ASTRAL
       IN (MANA 33, CASTTIME 20000,
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level,
-          COMPONENTS ["ScorpionStinger"])
+          COMPONENTS ["HardSpike"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL gain_xp(1);
-                    CALL summon_spell(1003, 1 + spellpower / 140, 5000 - (spellpower * 9), spellpower * 400, 2);
+                    CALL summon_spell(1019, 1 + spellpower / 120, 5000 - (spellpower * 9), spellpower * 400, 2);
 
-LOCAL SPELL summon-red-scorps : "#A12" =
+LOCAL SPELL summon-fluffies : "#A12" =
       LET level = 1
           school = ASTRAL
       IN (MANA 39, CASTTIME 20000,
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level,
-          COMPONENTS ["RedScorpionStinger"])
+          COMPONENTS ["WhiteFur"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL gain_xp(1);
-                    CALL summon_spell(1004, 1 + spellpower / 230 + spellpower / 430, 5000 - (spellpower * 8), spellpower * 350, 3);
+                    CALL summon_spell(1020, 1 + spellpower / 170 + spellpower / 430, 5000 - (spellpower * 8), spellpower * 350, 3);
 
 
 SPELL detect-players : "#G10" =

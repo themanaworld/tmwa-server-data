@@ -66,12 +66,13 @@ function	script	SagathaStatus	{
         set @Q_SHIFT, NIBBLE_4_SHIFT;
 
         set @STATUS_INITIAL, 0;
-        set @STATUS_STUDENT, 1; // N10
-        set @STATUS_STUDENT_A10, 2;
-        set @STATUS_STUDENT_A11, 3;
-        set @STATUS_STUDENT_A12, 4;
-        set @STATUS_STUDENT_N11, 5;
-        set @STATUS_STUDENT_LEVEL_3, 6;
+        set @STATUS_STUDENT, 1; // N14
+        set @STATUS_STUDENT_N10, 2;
+        set @STATUS_STUDENT_A10, 3;
+        set @STATUS_STUDENT_A11, 4;
+        set @STATUS_STUDENT_A12, 5;
+        set @STATUS_STUDENT_N11, 6;
+        set @STATUS_STUDENT_LEVEL_3, 7;
 
         set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
 
@@ -216,6 +217,8 @@ L_explain_magic:
 
 L_teach:
 	if (@Q_status == @STATUS_STUDENT)
+		goto L_teach_N14;
+	if (@Q_status == @STATUS_STUDENT_N10)
 		goto L_teach_N10;
 	if (@Q_status == @STATUS_STUDENT_A10)
 		goto L_teach_A10;
@@ -242,17 +245,29 @@ L_practice:
         next;
         goto L_main;
 
+L_teach_N14:
+        if (@mexp < 125) goto L_teach_noexp;
+        mes "[Sagatha the Witch]";
+        mes "\"Some forest creatures sometimes overgrow their fur or hide.  That makes them uncomfortable.\"";
+        next;
+        mes "[Sagatha the Witch]";
+        mes "\"You can help them with shearing magic.  Press your hands together and say '" + getspellinvocation("shear") + "'.  Then touch them with your hands, and brush off any excess.\"";
+        next;
+        mes "[Sagatha the Witch]";
+        mes "\"The spell is strong, so you only need to do this once.  Be careful not to cut them.  Some things they shed are useful.  Often they will leave them to you as a thank-you.\"";
+        goto L_practice;
+
 L_teach_N10:
         if (@mexp < 150) goto L_teach_noexp;
         mes "[Sagatha the Witch]";
-        mes "\"First, a nature spell.  Take a cocoon shell.  Hold it in your hand.  Feel its lightness.\"";
+        mes "\"Next, a nature spell.  Take a cocoon shell.  Hold it in your hand.  Feel its lightness.\"";
         next;
         mes "[Sagatha the Witch]";
         mes "\"Now whisper '" + getspellinvocation("flying-backpack") + "', and if your backpack was pressing on you you should no longer feel it now.\"";
         goto L_practice;
 
 L_teach_A10:
-        if (@mexp < 250) goto L_teach_noexp;
+        if (@mexp < 180) goto L_teach_noexp;
         mes "[Sagatha the Witch]";
         mes "\"To protect against others' magic, take a small mushroom from a shady place.  Mushrooms draw things out of the earth.  Rub your mushroom into pieces between your hands.\"";
         next;
@@ -261,19 +276,23 @@ L_teach_A10:
         goto L_practice;
 
 L_teach_A11:
-        if (@mexp < 350) goto L_teach_noexp;
+        if (@mexp < 200) goto L_teach_noexp;
         mes "[Sagatha the Witch]";
-        mes "\"If you must fight, call allies.  You can call scorpions with a scorpion stinger.  Hold up the stinger and call out to them: '" + getspellinvocation("summon-scorps") + "'.\"";
+        mes "\"If you must fight, call allies.  You can call spiky mushrooms out of the ground with a mushroom spike.  Hold up the spike and call out to them: '" + getspellinvocation("summon-spiky-mushrooms") + "'.\"";
+        next;
+        mes "[Sagatha the Witch]";
+        mes "\"Spiky mushrooms often grow too many spikes, so you can shear the spikes off of some.\"";
+        next;
         goto L_practice;
 
 L_teach_A12:
-        if (@mexp < 450) goto L_teach_noexp;
+        if (@mexp < 220) goto L_teach_noexp;
         mes "[Sagatha the Witch]";
-        mes "\"You can call red scorpions, too.  But for them you must call out '" + getspellinvocation("summon-red-scorps") + "' instead.\"";
+        mes "\"You can call fluffies, too.  But for them you must call out '" + getspellinvocation("summon-fluffies") + "' instead, with white fluffy fur.\"";
         goto L_practice;
 
 L_teach_N11:
-        if (@mexp < 550) goto L_teach_noexp;
+        if (@mexp < 250) goto L_teach_noexp;
         mes "[Sagatha the Witch]";
         mes "\"You can harden your skin with a hard spike.  Hold it in your hands and speak '" + getspellinvocation("protect") + "', then draw its hardness into your skin.\"";
         next;
