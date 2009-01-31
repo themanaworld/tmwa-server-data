@@ -23,6 +23,7 @@ CONST ELT_GHOST		= 8
 CONST ELT_UNDEAD	= 9
 
 # Schools of magic
+CONST SC_SHEARED		= 194 # This is the same as SC_HIDE, since mobs can't hide and shearing is only used for mobs.  Feel free to fix!
 CONST SC_HIDE			= 194
 CONST SC_HALT_REGENERATE	= 195
 CONST SC_FLYING_BACKPACK	= 196
@@ -53,7 +54,8 @@ CONST SCRIPT_HEALSPELL_MASK  = 0xff
 CONST SCRIPT_HEALSPELL_SHIFT = 24
 CONST DEBUG = 0
 
-CONST ATTACK_ICON_GENERIC = 2000
+CONST ATTACK_ICON_GENERIC	= 2000
+CONST ATTACK_ICON_SHEARING	= 2001
 
 # Default sfx on caster
 PROCEDURE default_effect() =
@@ -183,7 +185,7 @@ PROCEDURE install_attack_spell(charges, base_delay, range, attack_animation) =
           CALL default_effect();
           attack_range = range;
           override_attack(caster, charges, ((200 - agi(caster)) * base_delay) / 200,
-                          range, ATTACK_ICON_GENERIC, attack_animation);
+                          range, ATTACK_ICON_GENERIC, attack_animation, 0);
 
 PROCEDURE install_melee_spell(charges, base_delay, attack_animation) =
           CALL install_attack_spell(charges, base_delay, 1, attack_animation);
@@ -635,6 +637,51 @@ LOCAL SPELL rain : "#N13" =
                     )
                     WAIT 300 - min(spellpower, 200) + random(100);
                 );
+
+PROCEDURE shear-drop(target, item, prob) =
+                     IF (target = name)
+                     THEN (IF (score < prob)
+                           THEN drop_item_for(place, item, 1, 60000, caster, 5000);)
+
+PROCEDURE shear-drop2(target, item, prob, item2, prob2) =
+                     IF (target = name)
+                     THEN (IF (score < prob)
+                           THEN drop_item_for(place, item, 1, 60000, caster, 5000);
+                           ELSE CALL shear-drop(target, item2, prob2 + prob);)
+          
+PROCEDURE shear-drop3(target, item, prob, item2, prob2, item3, prob3) =
+                     IF (target = name)
+                     THEN (IF (score < prob)
+                           THEN drop_item_for(place, item, 1, 60000, caster, 5000);
+                           ELSE CALL shear-drop2(target, item2, prob2 + prob, item3, prob3 + prob);)
+          
+
+SPELL shear : "#N14" =
+      LET level = 1
+          school = NATURE
+      IN (MANA 23, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level)
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                override_attack (caster, 1, 2000, 1, ATTACK_ICON_SHEARING, 30, 0);
+         ATTRIGGER IF not(is_pc(target))
+                   THEN (score = random (1000 - (random (spellpower))); # lower score -> more valuable item
+                         name = name_of(target);
+                         place = random_location(rbox(location(target), 1));
+                         IF running_status_update(target, SC_SHEARED)
+                         THEN ABORT;
+                         status_change(target, SC_SHEARED, 1, 1, 1, 1, 600000); # 10 minutes
+                         CALL shear-drop("Fluffy", "WhiteFur", 200);
+                         CALL shear-drop("SpikyMushroom", "HardSpike", 150);
+                         CALL shear-drop("Mouboo", "CottonCloth", 100);
+                         CALL shear-drop("Cobalt Plant", "CobaltHerb", 700);
+                         CALL shear-drop("Alizarin Plant", "AlizarinHerb", 700);
+                         CALL shear-drop("Gamboge Plant", "GambogeHerb", 700);
+                         CALL shear-drop("Mauve Plant", "MauveHerb", 700);
+                    )
+
+      
 
 SPELL barrier (target : PC) : "#A10" =
       LET level = 1
