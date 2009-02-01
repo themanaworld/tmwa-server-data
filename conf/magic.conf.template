@@ -643,22 +643,22 @@ LOCAL SPELL rain : "#N13" =
                     WAIT 300 - min(spellpower, 200) + random(100);
                 );
 
-PROCEDURE shear-drop(target, item, prob) =
-                     IF (target = name)
+PROCEDURE shear-drop(target, target2, item, prob) =
+                     IF (target = name || target2 = name)
                      THEN (IF (score < prob)
                            THEN drop_item_for(place, item, 1, 60000, caster, 5000);)
 
-PROCEDURE shear-drop2(target, item, prob, item2, prob2) =
-                     IF (target = name)
+PROCEDURE shear-drop2(target, target2, item, prob, item2, prob2) =
+                     IF (target = name || target2 = name)
                      THEN (IF (score < prob)
                            THEN drop_item_for(place, item, 1, 60000, caster, 5000);
-                           ELSE CALL shear-drop(target, item2, prob2 + prob);)
+                           ELSE CALL shear-drop(target, target2, item2, prob2 + prob);)
           
-PROCEDURE shear-drop3(target, item, prob, item2, prob2, item3, prob3) =
-                     IF (target = name)
+PROCEDURE shear-drop3(target, target2, item, prob, item2, prob2, item3, prob3) =
+                     IF (target = name || target2 = name)
                      THEN (IF (score < prob)
                            THEN drop_item_for(place, item, 1, 60000, caster, 5000);
-                           ELSE CALL shear-drop2(target, item2, prob2 + prob, item3, prob3 + prob);)
+                           ELSE CALL shear-drop2(target, target2, item2, prob2 + prob, item3, prob3 + prob);)
           
 
 SPELL shear : "#N14" =
@@ -677,15 +677,14 @@ SPELL shear : "#N14" =
                          IF running_status_update(target, SC_SHEARED)
                          THEN ABORT;
                          status_change(target, SC_SHEARED, 1, 1, 1, 1, 600000); # 10 minutes
-                         CALL shear-drop("Fluffy", "WhiteFur", 300);
-                         CALL shear-drop("SpikyMushroom", "HardSpike", 250);
-                         CALL shear-drop("Mouboo", "CottonCloth", 175);
-                         CALL shear-drop("Cobalt", "CobaltHerb", 700);
-                         CALL shear-drop("Alizarin", "AlizarinHerb", 700);
-                         CALL shear-drop("Gamboge", "GambogeHerb", 700);
-                         CALL shear-drop("Mauve", "MauveHerb", 700);
-                         CALL shear-drop("SilkWorm", "SilkCocoon", 300);
-                         message(caster, name);
+                         CALL shear-drop("Fluffy", "Fluffy",			"WhiteFur", 300);
+                         CALL shear-drop("SpikyMushroom", "Spiky Mushroom",	"HardSpike", 250);
+                         CALL shear-drop("Mouboo", "Mouboo",			"CottonCloth", 175);
+                         CALL shear-drop("Cobalt", "CobaltPlant",		"CobaltHerb", 700);
+                         CALL shear-drop("Alizarin", "AlizarinPlant",		"AlizarinHerb", 700);
+                         CALL shear-drop("Gamboge", "GambogePlant",		"GambogeHerb", 700);
+                         CALL shear-drop("Mauve", "MauvePlant",			"MauveHerb", 700);
+                         CALL shear-drop("SilkWorm", "Silkworm",		"SilkCocoon", 300);
                          IF ((name = "Fluffy" || name = "Mouboo") && random(2))
                          THEN { set @value, 1; callfunc "QuestSagathaHappy"; };
                     )
