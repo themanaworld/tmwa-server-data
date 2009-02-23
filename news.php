@@ -13,8 +13,8 @@ if (substr($agent, 0, 3) == "TMW")
     file_put_contents($file, '[' . date('H:i') . "] $agent\n", FILE_APPEND);
 }
 
-$old_versions = array("TMW/0.0.23", "TMW/0.0.24", "TMW/0.0.24.1");
-$min_version = '0.0.25';
+$old_versions = array("TMW/0.0.23", "TMW/0.0.24", "TMW/0.0.24.1", "TMW/0.0.25");
+$min_version = '0.0.26';
 
 if (array_search($agent, $old_versions) !== FALSE) // Explicit check for saftey
 {
