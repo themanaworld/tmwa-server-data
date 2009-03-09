@@ -1,6 +1,7 @@
 //
 
 function	script	Banker	{
+	if (BankAccount > 0) callsub S_MoveAccount;
 	mes "[" + @npcName$ + "]";
 	mes "\"Welcome to the bank!";
 	mes "How can I help you?\"";
@@ -71,7 +72,7 @@ D_All:
 L_Deposit:
 	if (zeny < @Amount) goto L_NoMoney;
 	set zeny, zeny - @Amount;
-	set BankAccount, BankAccount + @Amount;
+	set #BankAccount, #BankAccount + @Amount;
 		goto L_Balance;
 	
 L_With:
@@ -92,64 +93,64 @@ L_With:
 		"I've changed my mind", L_Nev;
 
 W_1:
-	if (BankAccount < 1000) goto L_NoMoney;
+	if (#BankAccount < 1000) goto L_NoMoney;
 	set @Amount, 1000;
 	goto L_Withdraw;
 
 W_5:
-	if (BankAccount < 5000) goto L_NoMoney;
+	if (#BankAccount < 5000) goto L_NoMoney;
 	set @Amount, 5000;
 	goto L_Withdraw;
 
 W_10:
-	if (BankAccount < 10000) goto L_NoMoney;
+	if (#BankAccount < 10000) goto L_NoMoney;
 	set @Amount, 10000;
 	goto L_Withdraw;
 
 W_25:
-	if (BankAccount < 25000) goto L_NoMoney;
+	if (#BankAccount < 25000) goto L_NoMoney;
 	set @Amount, 25000;
 	goto L_Withdraw;
 
 W_50:
-	if (BankAccount < 50000) goto L_NoMoney;
+	if (#BankAccount < 50000) goto L_NoMoney;
 	set @Amount, 50000;
 	goto L_Withdraw;
 
 W_100:
-	if (BankAccount < 100000) goto L_NoMoney;
+	if (#BankAccount < 100000) goto L_NoMoney;
 	set @Amount, 100000;
 	goto L_Withdraw;
 
 W_250:
-	if (BankAccount < 250000) goto L_NoMoney;
+	if (#BankAccount < 250000) goto L_NoMoney;
 	set @Amount, 250000;
 	goto L_Withdraw;
 
 W_500:
-	if (BankAccount < 500000) goto L_NoMoney;
+	if (#BankAccount < 500000) goto L_NoMoney;
 	set @Amount, 500000;
 	goto L_Withdraw;
 
 W_1000:
-	if (BankAccount < 1000000) goto L_NoMoney;
+	if (#BankAccount < 1000000) goto L_NoMoney;
 	set @Amount, 1000000;
 	goto L_Withdraw;
 
 W_All:
-	if (BankAccount < 1) goto L_NoMoney;
-	set @Amount, BankAccount;
+	if (#BankAccount < 1) goto L_NoMoney;
+	set @Amount, #BankAccount;
 	goto L_Withdraw;
 
 L_Withdraw:
 	set zeny, zeny + @Amount;
-	set BankAccount, BankAccount - @Amount;
+	set #BankAccount, #BankAccount - @Amount;
 	goto L_Balance;
 	
 L_Balance:
 	mes "[" + @npcName$ + "]";
 	mes "\"Your current bank balance is:";
-	mes BankAccount + " GP\"";
+	mes #BankAccount + " GP\"";
 	return;
 	
 L_Nev:
@@ -160,5 +161,10 @@ L_Nev:
 L_NoMoney:
 	mes "[" + @npcName$ + "]";
 	mes "\"Oh dear, it seems that you don't have enough money.\"";
+	return;
+
+S_MoveAccount:
+	set #BankAccount, #BankAccount + BankAccount;
+	set BankAccount, 0;
 	return;
 }
