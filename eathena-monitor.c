@@ -51,6 +51,7 @@ char *config;
 char *logfile;
 unsigned int interval = 5;
 unsigned int pid_login, pid_map, pid_char;
+char use_login = 1;
 
 void parse_option (char *name, char *value) {
     if (!strcasecmp(name, "login_server")) {
@@ -178,10 +179,15 @@ int main(int argc, char *argv[]) {
 
     chdir(workdir);
 
+    if (strlen(login_server) == 0) use_login = 0;
+
     printf ("Starting:\n");
     printf ("* interval: %d s\n", interval);
     printf ("* workdir: %s\n",  workdir);
-    printf ("* login_server: %s\n", login_server);
+    if (use_login)
+        printf ("* login_server: %s\n", login_server);
+    else
+        printf ("* login_server: (none)\n");
     printf ("* map_server: %s\n", map_server);
     printf ("* char_server: %s\n", char_server);
 
@@ -201,7 +207,7 @@ int main(int argc, char *argv[]) {
     dup2(1, 2);
 
     while (1) {
-        proc_login = 0;
+        if (use_login) proc_login = 0;
         proc_map = 0;
         proc_char = 0;
 
@@ -217,17 +223,17 @@ int main(int argc, char *argv[]) {
 
                 if (l_size != -1) {
                     link[l_size] = '\0';
-                    if (!strcmp(link,login_server)) {
+                    if (use_login && !strcmp(link, login_server)) {
                         proc_login = 1;
                         pid_login = (unsigned int) procdirp->d_name;
                     }
 
-                    if (!strcmp(link,char_server)) {
+                    if (!strcmp(link, char_server)) {
                         proc_char = 1;
                         pid_char = (unsigned int) procdirp->d_name;
                     }
 
-                    if (!strcmp(link,map_server)) {
+                    if (!strcmp(link, map_server)) {
                         proc_map = 1;
                         pid_map = (unsigned int) procdirp->d_name;
                     }
@@ -244,7 +250,7 @@ int main(int argc, char *argv[]) {
         tmp = localtime(&t);
         strftime(timestamp, sizeof(timestamp), "%F %X", tmp);
 
-        if (proc_login == 0) {
+        if (use_login && proc_login == 0) {
             fprintf (log,"[%d][%s] NOTICE: Login server is dead - restarting\n", getpid(), timestamp);
             start_process(login_server);
             sleep(2);
