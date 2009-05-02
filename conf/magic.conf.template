@@ -204,6 +204,24 @@ PROCEDURE summon_spell(mob_id, count, delay, lifetime, control_level) =
 # Level 0 spells
 #--------------------------------------------------------------------------------
 
+SPELL ask-magic-exp : "#G01" =
+      LET level = 0
+          school = MAGIC
+      IN (MANA 1, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level)
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                message(caster, "You have " + (script_int(caster, "MAGIC_EXPERIENCE") & 0xffff) + " Magic Experience points.");
+
+SPELL ask-life-magic-exp : "#G02" =
+      LET level = 0
+          school = MAGIC
+      IN (MANA 1, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level)
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                message(caster, "You have " + ((script_int(caster, "MAGIC_EXPERIENCE") >> 24) & 0xff) + " Life Magic Experience points.");
+
 SPELL transmute-wood-to-mouboo : "#T00" =
       LET level = 0
           school = TRANSMUTE
