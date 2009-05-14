@@ -204,14 +204,42 @@ PROCEDURE summon_spell(mob_id, count, delay, lifetime, control_level) =
 # Level 0 spells
 #--------------------------------------------------------------------------------
 
-# SPELL ask-magic-exp : "#G01" =
-#       LET level = 0
-#           school = MAGIC
-#       IN (MANA 1, CASTTIME 1000,
-#           REQUIRE skill(caster, MAGIC) > level)
-#       => EFFECT CALL adjust_spellpower(school);
-#                 CALL default_effect();
-#                 message(caster, "You have " + (script_int(caster, "MAGIC_EXPERIENCE") & 0xffff) + " Magic Experience points.");
+SPELL ask-magic-exp : "#G01" =
+      LET level = 0
+          school = MAGIC
+      IN (MANA 1, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level)
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                level = skill (caster, MAGIC);
+                IF level > 4
+                THEN message (caster, "You are as proficient as magic as you can possibly be.");
+                ELSE (
+                    experience = script_int(caster, "MAGIC_EXPERIENCE") & 0xffff;
+                    # This duplicates the table in mana-seed.txt
+                    IF level >= 4
+                    THEN max_experience = 40000;
+                    ELSE IF level = 3
+                    THEN max_experience = 8000;
+                    ELSE IF level = 2
+                    THEN max_experience = 1200;
+                    ELSE max_experience = 100;
+
+                    ratio = (10 * experience) / max_experience;
+                    message (caster, "level=" + level + " exp=" + experience + " / " + max_experience + " => " + ratio);
+
+                    IF ratio >= 10
+                    THEN message(caster, "You feel that are ready to advance to the next level of magic.");
+                    ELSE IF ratio >= 9
+                    THEN message(caster, "You feel that are very close to having the prowess needed to advance to the next level of magic.");
+                    ELSE IF ratio >= 7
+                    THEN message(caster, "You feel quite skilled at this level of magic but still need to get used to some more corner cases before you can advance.");
+                    ELSE IF ratio >= 5
+                    THEN message(caster, "You feel competent at this level of magic but realise that you must practice more.");
+                    ELSE IF ratio >= 3
+                    THEN message(caster, "You feel that you have grasped the basics of this level of magic, but still have some way to go.");
+                    ELSE message (caster, "You feel that you are still at the beginning of your quest for mastering this level of magic.");
+                )
 
 # SPELL ask-life-magic-exp : "#G02" =
 #       LET level = 0
