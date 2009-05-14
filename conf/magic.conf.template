@@ -250,16 +250,24 @@ SPELL ask-magic-exp : "#G01" =
 #                 CALL default_effect();
 #                 message(caster, "You have " + ((script_int(caster, "MAGIC_EXPERIENCE") >> 24) & 0xff) + " Life Magic Experience points.");
 
-SPELL transmute-wood-to-mouboo : "#T00" =
+SPELL transmute-wood-to-figurine (name : STRING) : "#T00" =
       LET level = 0
           school = TRANSMUTE
       IN (MANA 5, CASTTIME 4000,
           REQUIRE skill(caster, MAGIC) > level,
           COMPONENTS ["RawLog"])
-          => EFFECT CALL adjust_spellpower(school);
-                    CALL default_effect();
-                    CALL create_item("MoubooFigurine", 1, "WarpedLog", 40);
-                    CALL gain_xp(1);
+          => ( REQUIRE name = "boo" =>
+                            EFFECT CALL adjust_spellpower(school);
+                            CALL default_effect();
+                            CALL create_item("MoubooFigurine", 1, "WarpedLog", 40);
+                            CALL gain_xp(1);
+             | REQUIRE name = "lurk" =>
+                            EFFECT CALL adjust_spellpower(school);
+                            CALL default_effect();
+                            CALL create_item("WarpedLog", 1, "WarpedLog", 40);
+                            message (caster, "You have no idea what a Skrytlurk looks like.");
+             )
+
 
 SPELL make-sulphur : "#T01" =
       LET level = 0
