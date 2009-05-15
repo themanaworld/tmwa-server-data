@@ -678,7 +678,7 @@ LOCAL SPELL rain : "#N13" =
       => EFFECT CALL adjust_spellpower(school);
                 CALL default_effect();
                 CALL gain_xp(1);
-                range = min(MAX_RAIN_SPELL_RADIUS, 3 + spellpower / 30);
+                range = min(MAX_RAIN_SPELL_RADIUS, 3 + min(spellpower, 400) / 30);
                 area = rbox(location(caster), range);
                 IF (is_in(location(npc("#DruidTree0#_M")), area)
                     || is_in(location(npc("#DruidTree1#_M")), area))
@@ -687,7 +687,7 @@ LOCAL SPELL rain : "#N13" =
                     callfunc "QuestTreeTrigger";
                 };
                 FOR i = 0 TO spellpower DO (
-                    FOR j = 0 TO spellpower / 100 DO (
+                    FOR j = 0 TO min(spellpower, 500) / 100 DO (
                         location = random_location(area);
                         sfx(location, SFX_RAIN, 0);
                         FOREACH TARGET target IN rbox(location, 1) DO
