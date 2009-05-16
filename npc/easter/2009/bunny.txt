@@ -1,0 +1,89 @@
+// The Easter Bunny
+
+007-1.gat,32,30, 0	script	Easter Bunny	173,{
+	callfunc "ClearVariables";
+	if (QUEST_Easter09 == 1) goto L_CheckEggs;
+	if (QUEST_Easter09 == 2) goto L_Done;
+	
+	mes "[Easter Bunny]";
+	mes "Oh dear! Oh dear! I shall be too late!";
+	next;
+	
+	menu
+		"What do you mean?", -,
+		"Goodbye then.", close;
+	
+	mes "[Easter Bunny]";
+	mes "It's already Easter and I haven't hid a single Easter egg yet. And the worst part is, they already started searching for the eggs. What am I going to do? I seriously need a miracle. I mean, there are so many people searching and I haven't even begun yet. What am I going to do?";
+	next;
+	
+	menu
+		"Maybe I can help.", -,
+		"I'll leave you to it then.", close;
+	
+	mes "[Easter Bunny]";
+	mes "It's hopeless, you can't help me, it's to late!";
+	next;
+	
+	menu
+		"I'm sure they haven't searched everywhere. What about that stone over there?", -,
+		"You're probably right.", close;
+	
+	mes "[Easter Bunny]";
+	mes "Maybe you're right. Here, go hide these 10 Easter eggs for me.";
+	
+	getitem "EasterEgg", 10;
+	set QUEST_Easter09, 1;
+	
+	close;
+	
+L_CheckEggs:
+	set @count, 0;
+	set @temp, QUEST_Easter09_slots;
+	set @i, 0;
+	
+L_CheckEggs_Loop:
+	if (@temp & 1) set @count, @count + 1;
+	set @i, @i + 1;
+	if (@i == 31) goto L_CheckEggs_Continue;
+	set @temp, @temp >> 1;
+	goto L_CheckEggs_Loop;
+	
+L_CheckEggs_Continue:
+	if (@count > 10) goto L_ManyEggs;
+	if (@count == 10) goto L_EnoughEggs;
+	mes "[Easter Bunny]";
+	mes "Please place " + (10 - @count) + " more eggs!";
+	
+	set @temp, 10 - @count - countitem("EasterEgg");
+	
+	if (@temp > 0) goto L_GiveMoreEggs;
+	close;
+	
+L_GiveMoreEggs:
+	mes "[Easter Bunny]";
+	mes "What happened to " + @temp + " of your eggs?";
+	next;
+	
+	mes "[Easter Bunny]";
+	mes "Never mind that. Take these and get them placed!";
+	getitem "EasterEgg", @temp;
+	close;
+	
+L_ManyEggs:
+	mes "[Easter Bunny]";
+	mes "How did you manage to place more eggs than I gave you?";
+	next;
+	
+L_EnoughEggs:
+	mes "[Easter Bunny]";
+	mes "Thanks! I'm saved. Now I don't need to be scared anymore. And I just came with the great plan to hide myself under a paper bag. Oh well, maybe you can use it.";
+	getitem "PaperBagHelm", 1;
+	set QUEST_Easter09, 2;
+	close;
+	
+L_Done:
+	mes "[Easter Bunny]";
+	mes "Thank you for placing those eggs for me!";
+	close;
+}
