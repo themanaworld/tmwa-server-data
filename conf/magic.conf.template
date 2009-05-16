@@ -52,7 +52,7 @@ CONST SCRIPT_LASTSPELL_MASK  = 0xff
 CONST SCRIPT_LASTSPELL_SHIFT = 16
 CONST SCRIPT_HEALSPELL_MASK  = 0xff
 CONST SCRIPT_HEALSPELL_SHIFT = 24
-CONST DEBUG = 0
+CONST DEBUG = 1
 
 CONST ATTACK_ICON_GENERIC	= 2000
 CONST ATTACK_ICON_SHEARING	= 2001
@@ -489,6 +489,33 @@ SPELL make-iron-powder : "#T14" =
                     CALL default_effect();
                     CALL create_item("IronPowder", 1 + spellpower / 140 + (random(max(1, 900 - spellpower)) / 220), "IronOre", 700);
                     CALL gain_xp(3);
+
+SPELL make-concentration-potion : "#T15" =
+      LET level = 1
+          school = TRANSMUTE
+      IN (MANA 8, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["BottleOfWater", 2 * "CobaltHerb", 2 * "Petal"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item( if_then_else(random(2000 + experience) < experience, "ConcentrationPotion", "DarkConcentrationPotion"), 1,
+                                      if_then_else(random(2), 744, "DarkConcentrationPotion"),
+                                      2000);
+                    CALL gain_xp(4);
+
+SPELL merge-concentration-potions : "#T16" =
+      LET level = 1
+          school = TRANSMUTE
+      IN (MANA 8, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["DarkConcentrationPotion", 744])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item("ConcentrationPotion", 1, 744, 1000);
+                    CALL gain_xp(4);
+
 
 SPELL lay-on-hands (target : STRING) : "#L10" =
       LET level = 1
