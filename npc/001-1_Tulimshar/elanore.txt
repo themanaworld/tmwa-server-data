@@ -14,6 +14,8 @@
         set @STATUS_LEARNED_LIGHT_HEAL, 1;
         set @STATUS_MASTERED_LIGHT_HEAL, 2;
         set @STATUS_LEARNED_LAY_ON_HANDS, 3;
+        set @STATUS_WAITING_FOR_KADIYA, 4;
+        set @STATUS_READY_TO_LEARN_CURE_POISON, 5;
 
         if (sc_check(sc_poison))
         	goto L_CurePoison;
@@ -114,19 +116,22 @@ L_Main:
             menu
         	"Can you heal me?", L_NoHealMessage,
                 "Can you teach me magic?", L_Teach,
-		"What do you know about...", L_Question;
+		"What do you know about...", L_Question,
+                "Goodbye!", L_bye;
 
         if (@has_magic && (@Q_status > @STATUS_INITIAL))
             menu
         	"Can you heal me?", L_NoHealMessage,
                 "Can you teach me more?", L_Teach,
                 "Where can I get more lifestones?", L_Lifestones,
-		"What do you know about...", L_Question;
+		"What do you know about...", L_Question,
+                "Goodbye!", L_bye;
 
         if (!@has_magic)
             menu
         	"Can you heal me?", L_NoHealMessage,
-		"What do you know about...", L_Question;
+		"What do you know about...", L_Question,
+                "Goodbye!", L_bye;
         close;
 
 OnPCKillEvent:
@@ -220,7 +225,9 @@ L_Teach:
         if (@Q_status == @STATUS_INITIAL) goto L_Teach_Initial;
         if (@Q_status == @STATUS_LEARNED_LIGHT_HEAL) goto L_Teach_CheckAdvanceTo2;
         if (@Q_status == @STATUS_MASTERED_LIGHT_HEAL) goto L_Teach_CheckAdvanceToLOH;
-        //if (@Q_status == @STATUS_LEARNED_LAY_ON_HANDS) goto L_Teach_CheckAdvanceTo3; // not done yet. :-)
+        if (@Q_status == @STATUS_LEARNED_LAY_ON_HANDS) goto L_Teach_Explain3;
+        if (@Q_status == @STATUS_WAITING_FOR_KADIYA) goto L_Teach_CheckAdvanceTo3;
+        if (@Q_status == @STATUS_READY_TO_LEARN_CURE_POISON) goto L_Teach_CurePosion;
 
 	mes "[Elanore the Healer]";
         mes "\"You have made good progress, but you lack the magical power to advance further.  Also, I would like to observe you some more to be certain that you will make a good healer.\"";
@@ -354,6 +361,152 @@ L_Teach_LOH_advance_abort1:
         mes "\"I'm sorry, but I am not yet convinced that you are a good enough healer.  Please continue in your endeavours.\"";
         close;
 
+L_Teach_Explain3:
+        if (getskilllv(SKILL_MAGIC) < 3)
+        	goto L_Teach_Explain3_abort;
+        if (@Q_heal_exp < 50)
+		goto L_Teach_Explain3_fail;
+
+	mes "[Elanore the Healer]";
+        mes "Elanore smiles.";
+        mes "\"You seem to be ready to advance as a healer.  There is one favour I must ask of you first, though.\"";
+        set QUEST_MAGIC2, (QUEST_MAGIC2 & ~(NIBBLE_3_MASK)); // Initialise Kadiya quest
+        set @Q_status, @STATUS_WAITING_FOR_KADIYA;
+        callsub S_update_var;
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "\"There is a man here in Tulimshar with a beautiful young daughter; his name is Omar, and his daughter's name is Kadiya.\"";
+        mes "\"Once, when I was a young apprentice, I made a mistake treating Omar.  Ever since, he no longer trusts me.\"";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "\"But his daugher has contracted Mopox, so she needs help.  He doesn't trust me, but perhaps he will trust you; you have been helping quite a few people, after all.\"";
+        next;
+
+L_3_menu:
+        menu
+        	"What should I do?", L_3_what_to_do,
+        	"Where can I find the sick girl?", L_3_where,
+        	"How did you mess up?", L_3_messup,
+                "I will get started right away.", -,
+                "Maybe later.", -;
+
+        goto L_Main;
+
+L_3_what_to_do:
+	mes "[Elanore the Healer]";
+        mes "\"You will have to brew a Mopox cure potion and give it to her.  You should ask Caul to help you, he knows the recipe.\"";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "\"First, you will need a concentration potion and an iron potion-- toghether, they will give her her strength back.  You also need a lifestone, and a gamboge leaf against the toxins in her body.\"";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "\"You then have to add in roots, water, mauve leaves and sulphur powder until the brew is gooey and neither light nor dark.  Caul will explain the details to you.\"";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "\"There is a transmutation spell to make sulphur powder.  If you don't know the magic, perhaps you can ask a transmutation mage to help you with this part.\"";
+        next;
+        goto L_3_menu;
+
+L_3_messup:
+	mes "[Elanore the Healer]";
+        mes "\"Ah... well, Omar is a trader, and a frequent traveler.  One day he came back from a journey with fleas in his beard and asked me to get rid of them.\"";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "\"Unfortunately I used the wrong lotion on the fleas, so instead of being scared away, they grew to enormous proportions and ate up all of his beard.\"";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "Elanore blushes.";
+        mes "\"Ever since then he hasn't been very trusting towards my skills, and I suppose that I can't blame him.  But I don't want poor Kadiya to suffer because of that.\"";
+        next;
+        goto L_3_menu;
+
+L_3_where:
+	mes "[Elanore the Healer]";
+        mes "\"Kadiya and Omar live relatively close by.  See this corner in the inner city wall east of here?  Turn past it, then go north.  It's the second house.\"";
+        next;
+        goto L_3_menu;
+        
+L_Teach_Explain3_abort:
+	mes "[Elanore the Healer]";
+        mes "\"I'm sorry, but you lack the magical power to advance.\"";
+        close;
+
+L_Teach_Explain3_fail:
+	mes "[Elanore the Healer]";
+        if (@Q_heal_exp < 30)
+        	mes "\"You seem to have regressed as a healer.  This is worrisome; please mend your ways or I will not teach you any further.\"";
+        if ((@Q_heal_exp >= 30) && (@Q_heal_exp < 40))
+        	mes "\"You still need more practice in the art of healing.\"";
+        if ((@Q_heal_exp >= 40))
+        	mes "\"You are doing well, but you need some more practice as a healer first.\"";
+        close;
+
+L_Teach_CheckAdvanceTo3:
+        callfunc "KadiyaSubquestConsts";
+
+        if (@Q_kadiya_status >= @Q_STATUS_COMPLETED)
+        	goto L_Teach_AdvanceTo3Ready;
+
+	mes "[Elanore the Healer]";
+	mes "\"Please help Kadiya.\"";
+        next;
+
+        goto L_3_menu;
+
+L_Teach_AdvanceTo3Ready:
+        mes "[Elanore the Healer]";
+        mes "\"I have heard of what you did.  Hiding the potion in her favorite food-- that was clever.\"";
+        mes "She smiles at you.";
+        mes "\"Omar let me have a look at her earlier, and she seems to be recovering.  You did very well.";
+        next;
+
+	mes "[Elanore the Healer]";
+        mes "Elanor turns towards you, rises up on her toes and kisses you on the forehead.";
+        next;
+
+        set @xp, 30000;
+        if (@Q_kadiya_status == @Q_STATUS_COMPLETED_ELANORE)
+		set @xp, 50000;
+
+	mes "[Elanore the Healer]";
+        mes "You feel a strange, tingling kind of warmth spread through your body.";
+        mes "[" + @xp + " experience points]";
+        mes "[Level 3 in Life Magic]";
+
+        set @Q_status, @STATUS_READY_TO_LEARN_CURE_POISON;
+        callsub S_update_var;
+        getexp @xp, 0;
+        if (getskilllv(SKILL_MAGIC_LIFE) < 3)
+        	setskill SKILL_MAGIC_LIFE, 3;
+        next;
+
+
+        if (@Q_kadiya_status != @Q_STATUS_COMPLETED_ELANORE)
+		goto L_Main;
+
+	mes "[Elanore the Healer]";
+        mes "\"Overall I am impressed by your progress.  If you continue as you are doing now, you might become a great healer.\"";
+        mes "She hands you a handful of lifestones.";
+        mes "\"Please come back soon; there is more that I would like to teach you.\"";
+        next;
+        set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_ELANORE_OMAR;
+        getitem "LifeStone", 20;
+
+        goto L_Main;
+
+L_Teach_CurePosion:
+        mes "[Elanore the Healer]";
+        mes "\"Hmm.  I wanted to teach you something, but I've forgotten what it was... please come back later.\"";
+        next;
+        goto L_Main;
+
 L_NoMagicNoTeach:
 	mes "[Elanore the Healer]";
         mes "Elanore shakes her head.";
@@ -427,6 +580,11 @@ L_CurePoison:
 
 	mes "[Elanore the Healer]";
         mes "\"There you are, right as rain!  Now you take care, all right?\"";
+        close;
+
+L_bye:
+	mes "[Elanore the Healer]";
+        mes "\"Goodbye!\"";
         close;
 
 S_update_var:

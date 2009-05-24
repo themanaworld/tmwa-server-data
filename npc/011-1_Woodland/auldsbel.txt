@@ -14,8 +14,12 @@
         set @Q_STATUS_STUDENT2, 6;
         set @Q_STATUS_STUDENT3, 7;
         set @Q_STATUS_STUDENT4, 8;
+        set @Q_STATUS_STUDENT5, 9;
+        set @Q_STATUS_STUDENT6, 10;
+        
 
-        set @wants_sulphur, (QUEST_MAGIC & (NIBBLE_6_MASK | NIBBLE_7_MASK));
+        set @wants_sulphur, (QUEST_MAGIC & (NIBBLE_6_MASK | NIBBLE_7_MASK)) // war quest
+                     || (((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) >= 4); // Elanore's heal-Kadiya quest
         set @wants_ironpowder, (((QUEST_MAGIC & (NIBBLE_6_MASK | NIBBLE_7_MASK)) >> NIBBLE_6_SHIFT) >= 7);
 
         set @Q_MASK, NIBBLE_0_MASK | NIBBLE_1_MASK;
@@ -159,7 +163,7 @@ L_main_menu_magic:
              "Can you make sulphur powder?", L_sulphur,
              "Can you make iron powder?", L_ironpowder,
              "Goodbye.", -;
-        if (@wants_sulphur)
+        if (@wants_sulphur && !@wants_ironpowder)
           menu "How does magic work?", L_about_magic,
              "Can you teach me a spell?", L_learn_spell,
              "Where are you from?", L_about_auldsbel,
@@ -922,6 +926,8 @@ L_learn_spell:
         if (@Q_main_status == @Q_STATUS_STUDENT2) goto LL_student_2;
         if (@Q_main_status == @Q_STATUS_STUDENT3) goto LL_student_3;
         if (@Q_main_status == @Q_STATUS_STUDENT4) goto LL_student_4;
+        if (@Q_main_status == @Q_STATUS_STUDENT5) goto LL_student_5;
+        if (@Q_main_status == @Q_STATUS_STUDENT6) goto LL_student_6;
 
         mes "[Auldsbel the Wizard]";
         mes "\"Wellll.... you do seem to have some magical abilities.  But do you possess the talent and diligence needed for a true wizard?\"";
@@ -1178,7 +1184,90 @@ LL_student_2:
         goto L_main_menu;
 
 LL_student_3:
-        // Future extensions go here
+        if (getskilllv(SKILL_MAGIC) < 3)
+        	goto LL_magic_skill_insufficient;
+        mes "[Auldsbel the Wizard]";
+        mes "\"I believe that you may be ready for the next level of transmutation magic!  Let me teach you one last spell that you can handle before your promotion, and if you can cast this one, I will advance you.\"";
+        next;
+
+LL_student_3_repeat:
+        mes "[Auldsbel the Wizard]";
+        mes "\"This one has the invocation `" + getspellinvocation("make-concentration-potion") + "'.  Put two cobalt leaves and two flower petals into a bottle of water, hold it up, and speak that phrase.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"It is a tricky spell, but if it works out, you will transform the bottle into a concentration potion.\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "\"Hmm.  That reminds me-- there was a similar spell, but I forgot what it was... anyway, try using this, and bring me the potion when you are done.\"";
+        next;
+
+        set @Q_main_status, @Q_STATUS_STUDENT4;
+        callsub S_update_var;
+        goto L_main_menu;
+
+LL_student_4:
+        mes "[Auldsbel the Wizard]";
+        mes "\"Did you manage to transmute into a concentration potion?\"";
+        next;
+
+        menu
+        	"What was the invocation again?", LL_student_3_repeat,
+        	"No, still working on it...", L_main_menu,
+                "Yes.", -;   
+
+        if (countitem("ConcentrationPotion") < 1)
+        	goto LL_student_4_no_potion;
+
+        if (!(MAGIC_FLAGS & MFLAG_MADE_CONC_POTION))
+		goto LL_student_4_wrong_potion;
+
+        mes "[Auldsbel the Wizard]";
+        mes "Auldsbel examines your potion and nods.";
+        mes "\"Good work!  You are ready for a promotion!\"";
+        next;
+
+        mes "[Auldsbel the Wizard]";
+        mes "Auldsbel presses his index and middle finger against your forehead.";
+        mes "\"Accept my blessing!\"";
+        next;
+
+        set @Q_main_status, @Q_STATUS_STUDENT5;
+        callsub S_update_var;
+        getexp 30000, 0;
+        if (getskilllv(SKILL_MAGIC_TRANSMUTE) < 3)
+        	setskill SKILL_MAGIC_TRANSMUTE, 3;
+
+        mes "[Auldsbel the Wizard]";
+        mes "You feel new powers flowing into your body!";
+        mes "[30000 experience points]";
+        mes "[Level 3 in Transmutation Magic]";
+        next;
+
+        goto L_main_menu;
+
+LL_student_4_wrong_potion:
+        mes "[Auldsbel the Wizard]";
+        mes "Auldsbell examines your potion, then shakes his head.";
+        mes "\"This doesn't look quite right, though I can't quite point at what the problem is.  You will have to continue trying.\"";
+        next;
+
+        goto L_main_menu;
+
+LL_student_4_no_potion:
+        mes "[Auldsbel the Wizard]";
+        mes "\"You seem to be rather lacking the concentration potion you need to justify your claim, my dear fellow.\"";
+        next;
+
+        goto L_main_menu;
+
+LL_student_5:
+        mes "[Auldsbel the Wizard]";
+        mes "\"Hmm.  Come back some other time, please; I still haven't figured out what to teach you next.\"";
+        close;
+
+LL_magic_skill_insufficient:
         mes "[Auldsbel the Wizard]";
         mes "\"No, not at this time.  You will have to advance in your overall magic skill before I can teach you more.\"";
         next;

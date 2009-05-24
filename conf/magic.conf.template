@@ -45,6 +45,10 @@ CONST SFX_HEAL		= 3
 
 CONST MAX_RAIN_SPELL_RADIUS = 20
 
+CONST MAGIC_FLAGS = "MAGIC_FLAGS"
+CONST MFLAG_MADE_CONC_POTION = 16384
+CONST MFLAG_MADE_CONC_POTION_SHIFT = 14
+
 CONST SCRIPT_XP = "MAGIC_EXPERIENCE"
 CONST SCRIPT_XP_MASK  = 0xffff
 CONST SCRIPT_XP_SHIFT = 0
@@ -52,7 +56,7 @@ CONST SCRIPT_LASTSPELL_MASK  = 0xff
 CONST SCRIPT_LASTSPELL_SHIFT = 16
 CONST SCRIPT_HEALSPELL_MASK  = 0xff
 CONST SCRIPT_HEALSPELL_SHIFT = 24
-CONST DEBUG = 1
+CONST DEBUG = 0
 
 CONST ATTACK_ICON_GENERIC	= 2000
 CONST ATTACK_ICON_SHEARING	= 2001
@@ -101,10 +105,12 @@ PROCEDURE gain_xp(gain) =
           )
 
 PROCEDURE create_item(good_item, count, bad_item, difficulty) =
+          success = 1;
           score = experience + random(min(spellpower, (experience / 3) + 1));
           IF (score >= difficulty)
           THEN create_item(caster, good_item, count);
           ELSE (
+             success = 0;
              score = score + random(luk(caster)) + random(luk(caster));
              IF (score < difficulty / 3)
              THEN (
@@ -502,6 +508,8 @@ SPELL make-concentration-potion : "#T15" =
                     CALL create_item( if_then_else(random(2000 + experience) < experience, "ConcentrationPotion", "DarkConcentrationPotion"), 1,
                                       if_then_else(random(2), 744, "DarkConcentrationPotion"),
                                       2000);
+                    IF (success)
+                    THEN CALL set_var(MAGIC_FLAGS, 1, MFLAG_MADE_CONC_POTION_SHIFT, 1);
                     CALL gain_xp(4);
 
 SPELL merge-concentration-potions : "#T16" =
@@ -514,6 +522,9 @@ SPELL merge-concentration-potions : "#T16" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL create_item("ConcentrationPotion", 1, 744, 1000);
+                    message (caster, "success = " + success);
+                    IF (success)
+                    THEN CALL set_var(MAGIC_FLAGS, 1, MFLAG_MADE_CONC_POTION_SHIFT, 1);
                     CALL gain_xp(4);
 
 
@@ -1024,7 +1035,9 @@ SPELL debug : "debug" =
                                  + "cut=" + ((script_int(caster, "MAGIC_FLAGS") & 1024) > 0) + ", "
                                  + "Kdruidtree=" + ((script_int(caster, "MAGIC_FLAGS") & 2048) > 0) + ", "
                                  + "Kimp=" + ((script_int(caster, "MAGIC_FLAGS") & 4096) > 0) + ", "
-                                 + "Koldwiz=" + ((script_int(caster, "MAGIC_FLAGS") & 8192) > 0));
+                                 + "Koldwiz=" + ((script_int(caster, "MAGIC_FLAGS") & 8192) > 0) + ", "
+                                 + "made-conc=" + ((script_int(caster, "MAGIC_FLAGS") & 16384) > 0) + ", "
+                                 + "elanore-omar=" + ((script_int(caster, "MAGIC_FLAGS") & 32768) > 0));
                 message (caster, "EXP: " + (script_int(caster, "MAGIC_EXPERIENCE") & 0xffff)
                                  + ", lastspell=" + ((script_int(caster, "MAGIC_EXPERIENCE") >> 16) & 0xff)
                                  + ", healexp=" + ((script_int(caster, "MAGIC_EXPERIENCE") >> 24) & 0xff));
@@ -1036,6 +1049,7 @@ SPELL debug : "debug" =
                                  + "swords:" + ((script_int(caster, "QUEST_MAGIC") >> 24) & 0xff) + ", "
                                  + "imp:" + ((script_int(caster, "QUEST_MAGIC2") >> 0) & 0xf) + ", "
                                  + "elanore:" + ((script_int(caster, "QUEST_MAGIC2") >> 4) & 0xf) + ", "
+                                 + "elanore-sub:" + ((script_int(caster, "QUEST_MAGIC2") >> 12) & 0xf) + ", "
                                  + "wyara:" + ((script_int(caster, "QUEST_MAGIC2") >> 8) & 0xf));
 
 PROCEDURE debug_xmod(name, mask, shift, gain) =
@@ -1064,6 +1078,8 @@ PROCEDURE debug_mod(name, delta) =
           ELSE IF (name = "Kdruidtree") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 11, delta);
           ELSE IF (name = "Kimp") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 12, delta);
           ELSE IF (name = "oldwiz") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 13, delta);
+          ELSE IF (name = "made-conc") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 14, delta);
+          ELSE IF (name = "elanore-omar") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 15, delta);
           ELSE IF (name = "auldsbel") THEN CALL debug_xmod("QUEST_MAGIC", 0x1f, 0, delta);
           ELSE IF (name = "Qauldsbel") THEN CALL debug_xmod("QUEST_MAGIC", 0x7, 5, delta);
           ELSE IF (name = "dt") THEN CALL debug_xmod("QUEST_MAGIC", 0x3, 10, delta);
@@ -1074,6 +1090,7 @@ PROCEDURE debug_mod(name, delta) =
           ELSE IF (name = "imp") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 0, delta);
           ELSE IF (name = "elanore") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 4, delta);
           ELSE IF (name = "wyara") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 8, delta);
+          ELSE IF (name = "elanore-sub") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 12, delta);
           ELSE message(caster, "Unknown");
 
 SPELL debug-up1 (name : STRING) : "debug+1" = 
@@ -1091,6 +1108,14 @@ SPELL debug-up16 (name : STRING) : "debug+16" =
 SPELL debug-down16 (name : STRING) : "debug-16" = 
 	REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 0 - 16);
+
+SPELL debug-up256 (name : STRING) : "debug+256" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 256);
+
+SPELL debug-down256 (name : STRING) : "debug-256" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 0 - 256);
 
 SPELL debug-reset : "debug-reset" =
       REQUIRE DEBUG

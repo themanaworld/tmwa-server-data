@@ -14,67 +14,88 @@
         set @SETZER_FLAG_MADE_OIL, 4;
 
         set @MONSTER_OIL_XP, 100000;
+        set @MOPOX_CURE_XP, 30000;
 
         set @Q_MASK, NIBBLE_3_MASK;
         set @Q_SHIFT, NIBBLE_3_SHIFT;
 
         set @Q_status, (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
 
+        set @Q_knows_mopox_cure, ((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) >= 4; // Elanore's quest for curing Kadiya
+
+        // Can the player get XP for brewing the cure?
+        set @Q_can_score_mopox_cure, (((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) == 4) // Elanore's quest for curing Kadiya
+                                             && (((QUEST_MAGIC2 & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT) < 2); // Haven't brewed it yet
+
 	mes "[Caul]";
 	mes "\"I can help you to brew healing potions out of mauve, cobalt, gamboge and alizarin herbs.";
 	mes "How many potions do you want to brew?\"";
 	next;
 
+        set @C_monster_oil, 20;
+        set @C_mopox_cure, 21;
+        set @C_nohmask, 22;
+        set @C_bye, 23;
 
-	if (@Q_status && Inspector == 10)
-		menu
-			"One", L_1,
-			"Five", L_5,
-			"Ten", L_10,
-			"Fifty", L_50,
-			"I would like to brew monster oil.", L_monster_oil_start,
-			"Actually...", L_NohMask,
-			"Never mind", L_close;
-	if (@Q_status && Inspector != 10)
-		menu
-			"One", L_1,
-			"Five", L_5,
-			"Ten", L_10,
-			"Fifty", L_50,
-			"I would like to brew monster oil.", L_monster_oil_start,
-			"Never mind", L_close;
-	if (!@Q_status && Inspector == 10)
-		menu
-			"One", L_1,
-			"Five", L_5,
-			"Ten", L_10,
-			"Fifty", L_50,
-			"Actually...", L_NohMask,
-			"Never mind", L_close;
-	if (!@Q_status && Inspector != 10)
-		menu
-			"One", L_1,
-			"Five", L_5,
-			"Ten", L_10,
-			"Fifty", L_50,
-			"Never mind", L_close;
-	
-L_1:
-	set @num, 1;
-	goto L_brew;
+        setarray @choice$, "One", "Five", "Ten", "Fifty", "", "", "", "";
+        setarray @choice_idx, 1, 5, 10, 50, 0, 0, 0, 0;
+        set @choices_nr, 4;
 
-L_5:
-	set @num, 5;
-	goto L_brew;
 
-L_10:
-	set @num, 10;
-	goto L_brew;
+        if !(@Q_status)
+		goto L_M_no_monster_oil;
 
-L_50:
-	set @num, 50;
-	goto L_brew;
+        set @choice_idx[@choices_nr], @C_monster_oil;
+        set @choice$[@choices_nr], "I would like to brew monster oil.";
+        set @choices_nr, @choices_nr + 1;
 
+L_M_no_monster_oil:
+
+        if (!@Q_knows_mopox_cure)
+		goto L_M_no_mopox_cure;
+
+        set @choice_idx[@choices_nr], @C_mopox_cure;
+        set @choice$[@choices_nr], "I would like to brew a Mopox cure.";
+        set @choices_nr, @choices_nr + 1;
+
+L_M_no_mopox_cure:
+
+        if (Inspector != 10)
+		goto L_M_no_inspector;
+
+        set @choice_idx[@choices_nr], @C_nohmask;
+        set @choice$[@choices_nr], "Actually...";
+        set @choices_nr, @choices_nr + 1;
+
+L_M_no_inspector:
+
+        set @choice_idx[@choices_nr], @C_bye;
+        set @choice$[@choices_nr], "Never mind";
+        set @choices_nr, @choices_nr + 1;
+
+        menu
+		@choice$[0], -,
+		@choice$[1], -,
+		@choice$[2], -,
+		@choice$[3], -,
+		@choice$[4], -,
+		@choice$[5], -,
+		@choice$[6], -,
+		@choice$[7], -;
+
+	set @choice, @choice_idx[@menu - 1];
+
+        if (@choice == @C_monster_oil)
+		goto L_monster_oil_start;
+        if (@choice == @C_mopox_cure)
+		goto L_mopox_cure_start;
+        if (@choice == @C_nohmask)
+		goto L_NohMask;
+        if (@choice == @C_bye)
+		goto L_close;
+
+        // otherwise the choice is the number of potions-to-brew
+	set @num, @choice;
 
 L_brew:
 	mes "[Caul]";
@@ -450,8 +471,232 @@ L_monster_oil_no_gold_end:
         next;
         close;
 
-L_close:
+L_mopox_cure_start:
+	mes "[Caul]";
+	mes "\"The mopox cure potion?  Certainly, if you have all of the ingredients... oh, and make sure to bring water, roots, sulphur powder and Mauve leaves.\"";
+        mes "\"This is a very easy one, so I think I should let you do this yourself.  It is very good exercise.\"";
+        next;
+
+L_mopox_cure_overview_menu:
+        menu
+		"I'm ready!",	L_mopox_cure_setup,
+                "What are the ingredients?", L_mopox_cure_ingredients,
+                "How does this work?", L_mopox_cure_howto,
+                "I'd rather not try.", -;
 	close;
+
+L_mopox_cure_ingredients:
+	mes "[Caul]";
+	mes "\"You will need one concentration potion, one iron potion, a lifestone, and one gamboge leaf.\"";
+        next;
+        goto L_mopox_cure_overview_menu;
+
+L_mopox_cure_howto:
+	mes "[Caul]";
+	mes "\"When you start brewing, the liquid very rarely has the proper consistency and color.  You need to make it gooey and medium dark.\"";
+        next;
+
+	mes "[Caul]";
+	mes "\"You can affect the consistency by adding ground roots and water, and you can change the color by adding mauve leaves (to darken it) and sulphur powder (to make it brighter).\"";
+        next;
+
+	mes "[Caul]";
+	mes "\"The ingredients have some side effects, though, so you will have to experiment a little.\"";
+        next;
+
+	mes "[Caul]";
+	mes "\"Oh, and be careful:  water will evaporate over time, too.\"";
+        next;
+        goto L_mopox_cure_overview_menu;
+
+L_mopox_cure_no_lifestone:
+	mes "[Caul]";
+	mes "\"You will need a lifestone.\"";
+        goto L_mopox_cure_overview_menu;
+
+L_mopox_cure_no_gamboge:
+	mes "[Caul]";
+	mes "\"You will need a gamboge leaf.\"";
+        goto L_mopox_cure_overview_menu;
+
+L_mopox_cure_no_concentration:
+	mes "[Caul]";
+	mes "\"You will need a concentration potion.\"";
+        goto L_mopox_cure_overview_menu;
+
+L_mopox_cure_no_iron:
+	mes "[Caul]";
+	mes "\"You will need an iron potion.\"";
+        goto L_mopox_cure_overview_menu;
+
+L_mopox_cure_setup:
+        if (countitem("IronPotion") < 1) goto L_mopox_cure_no_iron;
+        if (countitem("ConcentrationPotion") < 1) goto L_mopox_cure_no_concentration;
+        if (countitem("GambogeHerb") < 1) goto L_mopox_cure_no_gamboge;
+        if (countitem("Lifestone") < 1) goto L_mopox_cure_no_lifestone;
+
+        delitem "IronPotion", 1;
+        delitem "ConcentrationPotion", 1;
+        delitem "GambogeHerb", 1;
+        delitem "Lifestone", 1;
+
+        mes "[Brewing Mopox Cure]";
+        mes "You pour your two potions into the cauldron, then add a gamboge herb and a lifestone.  Caul heats up the cauldron and you wait until it begins to boil.";
+
+        setarray @colours$, "white", "almost white", "light", "medium-light", "dark", "very dark", "almost black", "black";
+        setarray @stickinesses$, "watery", "very runny", "runny", "gooey", "sticky", "very sticky", "almost solid";
+        set @stickiness, rand(7);
+        set @colour, 2 + rand(5);
+
+        // Target: (@stickiness, @colour) = (3, 3)
+
+        if (@stickiness == 3 && @colour == 3)
+		set @colour, 4; // don't allow insta-win; it's easy enough.
+        set @rounds, 0;
+
+L_mopox_cure_loop:
+        mes "[Brewing Mopox Cure]";
+        mes "The brew is " + @colours$[@colour] + " and " + @stickinesses$[@stickiness] + ".";
+
+        if (@colour == 3 && @stickiness == 3)
+		goto L_mopox_cure_win;
+        next;
+
+        set @colour, @colour + 10;
+        set @stickiness, @stickiness + 10;
+
+        menu
+        	"Add root", L_mopox_B_root,
+        	"Add water", L_mopox_B_water,
+        	"Add sulphur powder", L_mopox_B_sulphur,
+        	"Add mauve", L_mopox_B_mauve,
+                "...what should I do again?", L_mopox_reexplain,
+                "Wait", -;
+
+L_mopox_cure_next:
+	set @stickiness, @stickiness + @rounds;
+        set @rounds, 1 - @rounds;
+
+        if (@stickiness < 10)
+        	set @stickiness, 10;
+	if (@colour < 10) goto L_mopox_failed_badcolour;
+	if (@colour > 17) goto L_mopox_failed_badcolour;
+	if (@stickiness > 16) goto L_mopox_failed_hard;
+	if (@colour > 17) goto L_mopox_failed_badcolour;
+
+        set @colour, @colour - 10;
+        set @stickiness, @stickiness - 10;
+
+        goto L_mopox_cure_loop;
+
+L_mopox_reexplain:
+        mes "[Caul]";
+        mes "\"Make this brew gooey and medium dark.\"";
+        mes "\"(Gooey is right between runny and sticky.)\"";
+        mes "\"You can add different items that will affect both color and stickiness.\"";
+        next;
+        mes "[Caul]";
+        mes "\"Water and ground roots mostly affect stickiness.\"";
+        mes "\"Mauve and sulphur powder mostly affect color, with Mauve darkening the brew.\"";
+        next;
+        goto L_mopox_cure_next;
+
+L_mopox_B_none:
+        mes "[Brewing Mopox Cure]";
+	mes "You don't have any left!";
+        next;
+        goto L_mopox_cure_next;
+
+L_mopox_B_root:
+        if (countitem ("Root") < 1) goto L_mopox_B_none;
+        delitem "Root", 1;
+
+        mes "[Brewing Mopox Cure]";
+	mes "You grind a root and pour it into the brew.";
+        next;
+        set @colour, @colour + 1;
+        set @stickiness, @stickiness + 3;
+        goto L_mopox_cure_next;
+
+L_mopox_B_water:
+        if (countitem ("BottleOfWater") < 1) goto L_mopox_B_none;
+        delitem "BottleOfWater", 1;
+        getitem "EmptyBottle", 1;
+
+        mes "[Brewing Mopox Cure]";
+	mes "You pour a bottle of water into the brew.";
+        next;
+        set @colour, @colour;
+        set @stickiness, @stickiness - 2;
+        goto L_mopox_cure_next;
+
+L_mopox_B_sulphur:
+        if (countitem ("SulphurPowder") < 1) goto L_mopox_B_none;
+        delitem "SulphurPowder", 1;
+
+        mes "[Brewing Mopox Cure]";
+	mes "You mix some sulphur powder into the brew.";
+        next;
+        set @colour, @colour - 3;
+        set @stickiness, @stickiness + 1;
+        goto L_mopox_cure_next;
+
+L_mopox_B_mauve:
+        if (countitem ("MauveHerb") < 1) goto L_mopox_B_none;
+        delitem "MauveHerb", 1;
+
+        mes "[Brewing Mopox Cure]";
+	mes "You grind a mauve herb and toss it in.";
+        next;
+        set @colour, @colour + 2;
+        set @stickiness, @stickiness + 1;
+        goto L_mopox_cure_next;
+
+L_mopox_failed_badcolour:
+        mes "[Brewing Mopox Cure]";
+        mes "The brew suddenly begins to bubble again, turning green.";
+        mes "\"Oh dear,\" Caul remarks, \"you let the color stray too much.\"";
+        next;
+        mes "[Caul]";
+        mes "\"Better luck next time!\"";
+        close;
+
+L_mopox_failed_hard:
+        mes "[Brewing Mopox Cure]";
+        mes "You find it almost impossible to stir the brew.";
+        mes "Suddenly, the thick mass bends outwards, a huge bubble bursting open right in your face!";
+        next;
+
+        if (rand(readparam(bVit)) < 40)
+        	sc_start sc_poison, 1, 20;
+
+        mes "[Brewing Mopox Cure]";
+        mes "Yeech.  That smelled bad.";
+        mes "\"Don't worry, I'll clean up the cauldron,\", interrupts Caul.  \"You should wipe that off your face and make sure that you didn't get poisoned.\"";
+        next;
+
+        mes "[Caul]";
+        mes "\"Better luck next time!\"";
+        close;
+
+L_mopox_cure_win:
+        mes "Caul looks pleased.  \"Well done!  This looks very good to me.\"";
+        next;
+
+        mes "[Caul]";
+        mes "Caul picks a bottle from a shelf and fills it with your brew.";
+        mes "\"One potion of Mopox cure, here you are.  Good luck!\"";
+        getitem "MopoxCurePotion", 1;
+        if (!@Q_can_score_mopox_cure)
+		goto L_mopox_cure_win_quick;
+        getexp @MOPOX_CURE_XP, 0;
+        mes "[" + @MOPOX_CURE_XP + " experience points]";
+        set QUEST_MAGIC2, (QUEST_MAGIC2 & ~NIBBLE_3_MASK) | (2 << NIBBLE_3_SHIFT); // Make sure we can only get XP for brewing this once
+L_mopox_cure_win_quick:
+	close;
+
+L_close:
+        close;
 
 S_Update_Var:
 	set QUEST_Forestbow_state,
