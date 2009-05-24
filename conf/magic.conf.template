@@ -23,6 +23,7 @@ CONST ELT_GHOST		= 8
 CONST ELT_UNDEAD	= 9
 
 # Schools of magic
+CONST SC_POISON			= 132
 CONST SC_SHEARED		= 194 # This is the same as SC_HIDE, since mobs can't hide and shearing is only used for mobs.  Feel free to fix!
 CONST SC_HIDE			= 194
 CONST SC_HALT_REGENERATE	= 195
@@ -934,6 +935,25 @@ SPELL hide (target : PC) : "#A13" =
 #--------------------------------------------------------------------------------
 # Level 2 spells
 #--------------------------------------------------------------------------------
+
+SPELL cure-poison (target : PC) : "#L20" =
+      LET level = 2
+          school = LIFE
+      IN (MANA 15, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          REQUIRE (rdistance(location(caster),
+                   location(pc(target))) < 1 + (spellpower / 60)),
+          COMPONENTS ["GambogeHerb"])
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                IF (running_status_update (target, SC_POISON))
+                THEN (CALL gain_heal_xp(40, 1, 2, 2);
+                      stop_status_change (target, SC_POISON);
+                      CALL gain_xp(2);
+                      IF caster <> target
+                      THEN sfx(target, SFX_HEAL, 0););
+
 
 SPELL fire-ball : "#W22" =
       LET level = 2

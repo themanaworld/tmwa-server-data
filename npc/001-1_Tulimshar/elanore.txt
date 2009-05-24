@@ -16,6 +16,7 @@
         set @STATUS_LEARNED_LAY_ON_HANDS, 3;
         set @STATUS_WAITING_FOR_KADIYA, 4;
         set @STATUS_READY_TO_LEARN_CURE_POISON, 5;
+        set @STATUS_LEARNED_CURE_POISON, 6;
 
         if (sc_check(sc_poison))
         	goto L_CurePoison;
@@ -228,6 +229,7 @@ L_Teach:
         if (@Q_status == @STATUS_LEARNED_LAY_ON_HANDS) goto L_Teach_Explain3;
         if (@Q_status == @STATUS_WAITING_FOR_KADIYA) goto L_Teach_CheckAdvanceTo3;
         if (@Q_status == @STATUS_READY_TO_LEARN_CURE_POISON) goto L_Teach_CurePosion;
+        if (@Q_status == @STATUS_LEARNED_CURE_POISON) goto L_Teach_dunno;
 
 	mes "[Elanore the Healer]";
         mes "\"You have made good progress, but you lack the magical power to advance further.  Also, I would like to observe you some more to be certain that you will make a good healer.\"";
@@ -502,6 +504,29 @@ L_Teach_AdvanceTo3Ready:
         goto L_Main;
 
 L_Teach_CurePosion:
+        mes "[Elanore the Healer]";
+        mes "\"Thank you again for your help with Kadiya!\"";
+        mes "\"Curing sicknesses is often quite difficult; most of them require complicated potions to be brewed.\"";
+        next;
+        mes "[Elanore the Healer]";
+        mes "\"Fortunately, things are much easier with most poisons.  For those we have a simple spell that only requires a Gamboge leaf.\"";
+        mes "\"This is the next spell that I would like to teach you.\"";
+        next;
+        mes "[Elanore the Healer]";
+        mes "\"If you would like to cure someone who is poisoned, first rub a Gamboge leaf between your hands.  Your hands must be covered in Gamboge liquid for this to work.\"";
+        mes "\"Speak the invocation, `" + getspellinvocation("cure-poison") + "'.\"";
+        mes "\"Next, you either touch the poisoned person with your hands, or speak their name.  You have to be close for this to work, though.\"";
+        next;
+        mes "[Elanore the Healer]";
+        mes "\"Once again, the invocation is `" + getspellinvocation("cure-poison") + "'.\"";
+        mes "\"Come back again soon; there is another spell I would like to teach you.\"";
+        next;
+        set @Q_status, @STATUS_LEARNED_CURE_POISON;
+        callsub S_update_var;
+
+        goto L_Main;
+
+L_Teach_dunno:
         mes "[Elanore the Healer]";
         mes "\"Hmm.  I wanted to teach you something, but I've forgotten what it was... please come back later.\"";
         next;
