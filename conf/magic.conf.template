@@ -44,7 +44,7 @@ CONST SFX_BARRIER	= 10
 CONST SFX_UNBARRIER	= 10
 CONST SFX_HEAL		= 3
 
-CONST MAX_RAIN_SPELL_RADIUS = 20
+CONST MAX_RAIN_SPELL_RADIUS = 15
 
 CONST MAGIC_FLAGS = "MAGIC_FLAGS"
 CONST MFLAG_MADE_CONC_POTION = 16384
@@ -716,8 +716,13 @@ LOCAL SPELL rain : "#N13" =
           (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["BottleOfWater"]))
       => EFFECT CALL adjust_spellpower(school);
                 CALL default_effect();
+                FOREACH SPELL s IN rbox(location(caster), MAX_RAIN_SPELL_RADIUS + 1) DO
+                                IF (s <> self_invocation) && (name_of(s) = "rain")
+                                THEN (message (caster, "A nearby raincloud absorbs your magic.");
+                                      ABORT;)
+
                 CALL gain_xp(1);
-                range = min(MAX_RAIN_SPELL_RADIUS, 3 + min(spellpower, 400) / 30);
+                range = min(MAX_RAIN_SPELL_RADIUS, 3 + min(spellpower, 200) / 30);
                 area = rbox(location(caster), range);
                 IF (is_in(location(npc("#DruidTree0#_M")), area)
                     || is_in(location(npc("#DruidTree1#_M")), area))
@@ -725,15 +730,15 @@ LOCAL SPELL rain : "#N13" =
                     set @flag, 1;
                     callfunc "QuestTreeTrigger";
                 };
-                FOR i = 0 TO spellpower DO (
-                    FOR j = 0 TO min(spellpower, 500) / 100 DO (
+                FOR i = 0 TO (spellpower / 3) DO (
+                    FOR j = 0 TO min(spellpower / 2, 200) / 100 DO (
                         location = random_location(area);
                         sfx(location, SFX_RAIN, 0);
                         FOREACH TARGET target IN rbox(location, 1) DO
                             IF element(target) = ELT_FIRE
                             THEN injure(caster, target, 2 + random(5 + spellpower / 15), 0);
                     )
-                    WAIT 300 - min(spellpower, 200) + random(100);
+                    WAIT 400 + random(100);
                 );
 
 PROCEDURE shear-drop(target, target2, item, prob) =
