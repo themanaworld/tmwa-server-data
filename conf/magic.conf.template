@@ -1,0 +1,1317 @@
+# Special-purpose globals
+obscure_chance = 95
+min_casttime = 200
+
+# Schools of magic
+CONST MAGIC	= 340
+CONST LIFE	= 341
+CONST WAR 	= 342
+CONST TRANSMUTE	= 343
+CONST NATURE	= 344
+CONST ASTRAL	= 345
+
+# Elements
+CONST ELT_NEUTRAL	= 0
+CONST ELT_WATER		= 1
+CONST ELT_EARTH		= 2
+CONST ELT_FIRE		= 3
+CONST ELT_WIND		= 4
+CONST ELT_POISON	= 5
+CONST ELT_SHADOW	= 6
+CONST ELT_HOLY		= 7
+CONST ELT_GHOST		= 8
+CONST ELT_UNDEAD	= 9
+
+# Schools of magic
+CONST SC_POISON			= 132
+CONST SC_SHEARED		= 194 # This is the same as SC_HIDE, since mobs can't hide and shearing is only used for mobs.  Feel free to fix!
+CONST SC_HIDE			= 194
+CONST SC_HALT_REGENERATE	= 195
+CONST SC_FLYING_BACKPACK	= 196
+CONST SC_MBARRIER		= 197
+CONST SC_HASTE			= 198
+CONST SC_PHYS_SHIELD		= 199
+
+# Special effects
+CONST SFX_DEFAULT	= 10
+CONST SFX_SUMMON_START	= 21
+CONST SFX_SUMMON_FIRE	= 22
+CONST SFX_TELEPORT	= 24
+CONST SFX_RAIN		= 25
+CONST SFX_HIT		= 25
+CONST SFX_ARROW_HAIL	= 27
+CONST SFX_BARRIER	= 10
+CONST SFX_UNBARRIER	= 10
+CONST SFX_HEAL		= 3
+
+CONST MAX_RAIN_SPELL_RADIUS = 20
+
+CONST MAGIC_FLAGS = "MAGIC_FLAGS"
+CONST MFLAG_MADE_CONC_POTION = 16384
+CONST MFLAG_MADE_CONC_POTION_SHIFT = 14
+
+CONST SCRIPT_XP = "MAGIC_EXPERIENCE"
+CONST SCRIPT_XP_MASK  = 0xffff
+CONST SCRIPT_XP_SHIFT = 0
+CONST SCRIPT_LASTSPELL_MASK  = 0xff
+CONST SCRIPT_LASTSPELL_SHIFT = 16
+CONST SCRIPT_HEALSPELL_MASK  = 0xff
+CONST SCRIPT_HEALSPELL_SHIFT = 24
+CONST DEBUG = 0
+
+CONST ATTACK_ICON_GENERIC	= 2000
+CONST ATTACK_ICON_SHEARING	= 2001
+
+# Default sfx on caster
+PROCEDURE default_effect() =
+          sfx(caster, school - MAGIC + 2, 0);
+
+PROCEDURE sfx_generic(target) =
+          sfx(target, SFX_DEFAULT, 0);
+
+PROCEDURE set_var(name, mask, shift, value) =
+          set_script_variable(caster, name, script_int(caster, name) & (neg (mask << shift)) | ((value & mask) << shift));
+
+PROCEDURE gain_heal_xp(value, # How many HP we healed
+                       gain,  # how many life magic experience points we can potentially gain
+                       heal_xp_value_divisor,  # 1 for instaheal, 2 for slow heal
+                       base_exp_factor) =      # factor for how many base experience points (max) the player should be allowed to gain
+          last_heal_xp = (script_int(caster, SCRIPT_XP) >> SCRIPT_HEALSPELL_SHIFT) & SCRIPT_HEALSPELL_MASK;
+          IF (target <> caster
+              && (value / heal_xp_value_divisor) > (10 + last_heal_xp + random(last_heal_xp + 1) + random(last_heal_xp + 1)))
+          THEN (
+             heal_xp = last_heal_xp + gain;
+             IF (heal_xp > SCRIPT_HEALSPELL_MASK)
+             THEN heal_xp = SCRIPT_HEALSPELL_MASK;
+             CALL set_var(SCRIPT_XP, SCRIPT_HEALSPELL_MASK, SCRIPT_HEALSPELL_SHIFT, heal_xp);
+          )
+          IF target <> caster
+          THEN gain_experience(caster, base_exp_factor * extract_healer_experience(target, value), 0, 1);
+
+PROCEDURE gain_xp(gain) =
+          IF (level + 3 > skill(caster, MAGIC)) # Level 4 and 5 magic users don't gain anything from spell levels 0 resp. 0+1
+          THEN (
+                index = spell_index(self_spell);
+                last_index = (script_int(caster, SCRIPT_XP) >> SCRIPT_LASTSPELL_SHIFT) & SCRIPT_LASTSPELL_MASK;
+                last_xp = (script_int(caster, SCRIPT_XP) >> SCRIPT_XP_SHIFT) & SCRIPT_XP_MASK;
+                IF (index != last_index)
+                THEN ( # Some variation observed
+                     xp = last_xp + gain;
+                     IF (xp > SCRIPT_XP_MASK)
+                     THEN xp = SCRIPT_XP_MASK;
+                     CALL set_var(SCRIPT_XP, SCRIPT_XP_MASK, SCRIPT_XP_SHIFT, xp);
+                     CALL set_var(SCRIPT_XP, SCRIPT_LASTSPELL_MASK, SCRIPT_LASTSPELL_SHIFT, index);
+                     IF DEBUG THEN message(caster, "Spell xp = " + xp);
+                ) ELSE IF DEBUG THEN message(caster, "Re-cast same spell, xp remain at " + last_xp);
+          )
+
+PROCEDURE create_item(good_item, count, bad_item, difficulty) =
+          success = 1;
+          score = experience + random(min(spellpower, (experience / 3) + 1));
+          IF (score >= difficulty)
+          THEN create_item(caster, good_item, count);
+          ELSE (
+             success = 0;
+             score = score + random(luk(caster)) + random(luk(caster));
+             IF (score < difficulty / 3)
+             THEN (
+               message(caster, "Your spell backfires!");
+               IF (random(110) < (luk(caster)))
+               THEN itemheal(caster, 0 - ((level + 1) * (level + 2) * (3 + random(28))), 0);
+               ELSE itemheal(caster, 0 - (level + 1), 0);
+             ) ELSE IF (score < (difficulty * 2) / 3)
+             THEN (
+               IF random(5) = 0
+               THEN (message(caster, "Your spell solidifies into the shape of a mysterious object!");
+                     create_item(caster, "Iten", 1);)
+               ELSE message(caster, "Your spell escapes!");
+             ) ELSE (
+               message(caster, "Your spell takes on a mind of its own!");
+               IF random(3) = 0
+               THEN create_item(caster, bad_item, 1);
+             )
+          )
+
+# Increase spellpower by school and general magic skill
+PROCEDURE adjust_spellpower(school) =
+          experience = (script_int(caster, SCRIPT_XP) >> SCRIPT_XP_SHIFT) & SCRIPT_XP_MASK;
+          spellpower = spellpower + (skill(caster, MAGIC) + skill(caster, school)) * 10;
+          # Below, we adjust by special items
+          IF (not(failed(target)) && (school = LIFE || school = NATURE))
+          THEN IF (target)
+          THEN IF (pc(target) = partner(caster))
+               THEN (spellpower = spellpower + 200;
+                IF is_equipped(caster, "WeddingRing")
+                THEN spellpower = spellpower + 50;
+                IF is_equipped(pc(target), "WeddingRing")
+                THEN spellpower = spellpower + 50;)
+
+PROCEDURE heal(target, max_heal) =
+          CALL default_effect();
+          IF caster <> target
+          THEN sfx(target, SFX_HEAL, 0);
+          power = spellpower + vit(caster);
+          power = min(max_heal, (max_heal * power) / 250);
+          itemheal(target, power, 0);
+
+# Goes through instaheal instead of itemheal
+PROCEDURE quickheal(target, power) =
+          CALL default_effect();
+          IF caster <> target
+          THEN sfx(target, SFX_HEAL, 0);
+          instaheal(target, power, 0);
+
+# Can attack the target? Imports attack_range from dynamic environment
+PROCEDURE attack_check(target) =
+          IF (not (line_of_sight(location(caster), location(target))))
+            THEN ABORT;
+          IF (not (rdistance(location(caster), location(target)) <= attack_range))
+            THEN ABORT;
+
+# Cause elemental damage.  bonus_elt grants an attack bonus, malus_elt reduces the attack. `effect' is the sfx ID.
+PROCEDURE elt_damage(target, damage, dmgplus, bonus_elt, malus_elt, effect) =
+          d = damage + random(dmgplus);
+          IF (element(target) = malus_elt)
+            THEN d = d / 3;
+          IF (element(target) = bonus_elt)
+            THEN d = (d * (4 + element_level(target))) / 4;
+          #message(caster, "bonus=" + (element(target) = bonus_elt) + " malus=" + (element(target) = malus_elt) + " damage=" + damage + " + r(" + dmgplus + ") -> " + d);
+          sfx(target, effect, 0);
+          injure(caster, target, d, 0);
+
+PROCEDURE melee_damage(target, damage, dmgplus) =
+          CALL attack_check(target);
+          d = damage + random(dmgplus);
+          evade = level(target) + mdef(target);
+          IF (spellpower - random(100) < evade)
+          THEN d = 0;
+          injure(caster, target, d, 0);
+
+
+PROCEDURE install_attack_spell(charges, base_delay, range, attack_animation) =
+          CALL default_effect();
+          attack_range = range;
+          override_attack(caster, charges, ((200 - agi(caster)) * base_delay) / 200,
+                          range, ATTACK_ICON_GENERIC, attack_animation, 0);
+
+PROCEDURE install_melee_spell(charges, base_delay, attack_animation) =
+          CALL install_attack_spell(charges, base_delay, 1, attack_animation);
+
+PROCEDURE summon_spell(mob_id, count, delay, lifetime, control_level) =
+          CALL default_effect();
+          sfx(location, SFX_SUMMON_START, 0);
+          WAIT delay;
+          sfx(location, SFX_SUMMON_FIRE, 0);
+          spawn(rbox(location, 2), caster, mob_id,
+                if_then_else(skill(caster, ASTRAL) >= control_level, 2, 1), # pets when level is high enough
+                count, lifetime);
+
+
+#--------------------------------------------------------------------------------
+# Level 0 spells
+#--------------------------------------------------------------------------------
+
+SPELL ask-magic-exp : "#G01" =
+      LET level = 0
+          school = MAGIC
+      IN (MANA 1, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level)
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                level = skill (caster, MAGIC);
+                IF level > 4
+                THEN message (caster, "You are as proficient as magic as you can possibly be.");
+                ELSE (
+                    experience = script_int(caster, "MAGIC_EXPERIENCE") & 0xffff;
+                    # This duplicates the table in mana-seed.txt
+                    IF level >= 4
+                    THEN max_experience = 40000;
+                    ELSE IF level = 3
+                    THEN max_experience = 8000;
+                    ELSE IF level = 2
+                    THEN max_experience = 1200;
+                    ELSE max_experience = 100;
+
+                    ratio = (10 * experience) / max_experience;
+                    message (caster, "level=" + level + " exp=" + experience + " / " + max_experience + " => " + ratio);
+
+                    IF ratio >= 10
+                    THEN message(caster, "You feel that are ready to advance to the next level of magic.");
+                    ELSE IF ratio >= 9
+                    THEN message(caster, "You feel that are very close to having the prowess needed to advance to the next level of magic.");
+                    ELSE IF ratio >= 7
+                    THEN message(caster, "You feel quite skilled at this level of magic but still need to get used to some more corner cases before you can advance.");
+                    ELSE IF ratio >= 5
+                    THEN message(caster, "You feel competent at this level of magic but realise that you must practice more.");
+                    ELSE IF ratio >= 3
+                    THEN message(caster, "You feel that you have grasped the basics of this level of magic, but still have some way to go.");
+                    ELSE message (caster, "You feel that you are still at the beginning of your quest for mastering this level of magic.");
+                )
+
+# SPELL ask-life-magic-exp : "#G02" =
+#       LET level = 0
+#           school = MAGIC
+#       IN (MANA 1, CASTTIME 1000,
+#           REQUIRE skill(caster, MAGIC) > level)
+#       => EFFECT CALL adjust_spellpower(school);
+#                 CALL default_effect();
+#                 message(caster, "You have " + ((script_int(caster, "MAGIC_EXPERIENCE") >> 24) & 0xff) + " Life Magic Experience points.");
+
+SPELL transmute-wood-to-figurine (name : STRING) : "#T00" =
+      LET level = 0
+          school = TRANSMUTE
+      IN (MANA 5, CASTTIME 4000,
+          REQUIRE skill(caster, MAGIC) > level,
+          COMPONENTS ["RawLog"])
+          => ( REQUIRE name = "boo" =>
+                            EFFECT CALL adjust_spellpower(school);
+                            CALL default_effect();
+                            CALL create_item("MoubooFigurine", 1, "WarpedLog", 40);
+                            CALL gain_xp(1);
+             | REQUIRE name = "lurk" =>
+                            EFFECT CALL adjust_spellpower(school);
+                            CALL default_effect();
+                            CALL create_item("WarpedLog", 1, "WarpedLog", 40);
+                            message (caster, "You have no idea what a Skrytlurk looks like.");
+             )
+
+
+SPELL make-sulphur : "#T01" =
+      LET level = 0
+          school = TRANSMUTE
+      IN (MANA 4, CASTTIME 4000,
+          REQUIRE skill(caster, MAGIC) > level,
+          COMPONENTS ["PileOfAsh"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item("SulphurPowder", 1 + spellpower / 100 + (random(max(1, 800 - spellpower)) / 180), "PileOfAsh", 50);
+                    CALL gain_xp(1);
+
+SPELL lesser-heal (target : STRING) : "#L00" =
+      LET level = 0
+          school = LIFE
+      IN (MANA 6, CASTTIME 500,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE if_then_else(failed(pc(target)), 1,
+                                                  rdistance(location(caster), location(pc(target))) < 2 + (spellpower / 100)),
+          (COMPONENTS ["LifeStone"]))
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    IF failed(pc(target))
+                      THEN (IF ((target = "mouboo" || target = "Mouboo")
+                                 && rdistance(location(caster), location(npc("Mouboo"))) < 2 + (spellpower / 100))
+                            THEN { mes "Your spell seems to have no effect on the mouboo."; next; close; }
+                            ELSE target = caster;)
+                      ELSE (target = pc(target);
+                            IF is_dead(target)
+                            THEN ABORT;)
+                    CALL gain_heal_xp(min(200, max_hp(target) - hp(target)), 1, 2, 2); # report half values for non-instaheal
+                    CALL heal(target, 200);
+                    CALL gain_xp(1);
+
+
+SPELL flare-dart : "#W00" =
+      LET level = 0
+          school = WAR
+      IN (MANA 10, CASTTIME 500,
+          REQUIRE skill(caster, MAGIC) > level,
+          (REQUIRE skill(caster, school) > 2 OR COMPONENTS ["SulphurPowder"]))
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    damage = 5 * sqrt(spellpower);
+                    damage_bonus = 5 + level(caster) / 3;
+                    CALL install_attack_spell(3 + spellpower / 50,
+                                         1200,
+                                         4, 31);
+                    CALL gain_xp(1);
+             ATTRIGGER CALL attack_check(target);
+                       CALL elt_damage (target, damage, damage_bonus, ELT_WATER, ELT_FIRE, 15);
+
+
+SPELL magic-blade : "#W01" =
+      LET level = 0
+          school = WAR
+      IN (MANA 9, CASTTIME 500,
+          REQUIRE skill(caster, MAGIC) > level)
+          => (  COMPONENTS ["SharpKnife"] =>
+                            EFFECT CALL adjust_spellpower(WAR);
+                                   CALL default_effect();
+                                   CALL install_melee_spell(10 + spellpower / 15, 1200, 30);
+                                   CALL gain_xp(1);
+                            ATTRIGGER CALL melee_damage(target, 60, 5 + str(caster));
+              | COMPONENTS ["Knife"] =>
+                            EFFECT CALL adjust_spellpower(WAR);
+                                   CALL default_effect();
+                                   CALL install_melee_spell(10 + spellpower / 15, 1200, 30);
+                                   CALL gain_xp(1);
+                            ATTRIGGER CALL melee_damage(target, 40, 5 + str(caster));
+             )
+
+SPELL aggravate : "#N00" =
+      LET level = 0
+          school = NATURE
+      IN (MANA 3, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level)
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    FOREACH MOB target IN rbox(location(caster), 2 + spellpower / 50) DO
+                            IF line_of_sight(location(caster), location(target))
+			    THEN (CALL sfx_generic(target);
+                                  aggravate(target, 0, caster);)
+
+SPELL grow-mauve : "#N01" =
+      LET level = 0
+          school = NATURE
+      IN (MANA 4, CASTTIME 2000,
+          REQUIRE skill(caster, MAGIC) > level,
+          COMPONENTS ["MauveHerb"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL gain_xp(1);
+                    spawn(rbox(location, 2), caster, 1029, 1, if_then_else(skill(caster, NATURE) < 3, 1, if_then_else(skill(caster, NATURE) < 5, 2, 3)), 10000);
+
+SPELL grow-alizarin : "#N02" =
+      LET level = 0
+          school = NATURE
+      IN (MANA 4, CASTTIME 2000,
+          REQUIRE skill(caster, MAGIC) > level,
+          COMPONENTS ["AlizarinHerb"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL gain_xp(1);
+                    spawn(rbox(location, 2), caster, 1032, 1, if_then_else(skill(caster, NATURE) < 3, 1, if_then_else(skill(caster, NATURE) < 5, 2, 3)), 10000);
+
+SPELL grow-gamboge : "#N03" =
+      LET level = 0
+          school = NATURE
+      IN (MANA 4, CASTTIME 2000,
+          REQUIRE skill(caster, MAGIC) > level,
+          COMPONENTS ["GambogeHerb"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL gain_xp(1);
+                    spawn(rbox(location, 2), caster, 1031, 1, if_then_else(skill(caster, NATURE) < 3, 1, if_then_else(skill(caster, NATURE) < 5, 2, 3)), 10000);
+
+SPELL grow-cobalt : "#N04" =
+      LET level = 0
+          school = NATURE
+      IN (MANA 4, CASTTIME 2000,
+          REQUIRE skill(caster, MAGIC) > level,
+          COMPONENTS ["CobaltHerb"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL gain_xp(1);
+                    spawn(rbox(location, 2), caster, 1030, 1, if_then_else(skill(caster, NATURE) < 3, 1, if_then_else(skill(caster, NATURE) < 5, 2, 3)), 10000);
+
+
+LOCAL SPELL summon-maggots : "#A00" =
+      LET level = 0
+          school = ASTRAL
+      IN (MANA 21, CASTTIME 20000,
+          REQUIRE skill(caster, MAGIC) > level,
+          COMPONENTS ["MaggotSlime"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL gain_xp(1);
+                    CALL summon_spell(1002,
+                                      1 + ((sqrt(spellpower) + (spellpower / 15)) / 5),
+                                      5000 - (spellpower * 5),
+                                      10000 + (spellpower * 50), 1);
+
+SPELL detect-magic : "#G00" =
+      LET level = 0
+          school = MAGIC
+      IN (MANA 3, CASTTIME 6000,
+          REQUIRE skill(caster, MAGIC) > level)
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                range = 1 + spellpower / 50;
+                FOREACH NPC n IN rbox(location(caster), range)
+                DO IF (contains_string(name_of(n), "#MAGIC") || contains_string(name_of(n), "#_M"))
+                   THEN sfx(n, SFX_DEFAULT, 0);
+                FOREACH SPELL s IN rbox(location(caster), range)
+                DO IF (s <> self_invocation)
+                   THEN sfx(s, SFX_DEFAULT, 0);
+
+
+#--------------------------------------------------------------------------------
+# Level 1 spells
+#--------------------------------------------------------------------------------
+
+SPELL make-arrows : "#T10" =
+      LET level = 1
+          school = TRANSMUTE
+      IN (MANA 8, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["RawLog"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item("Arrow", 1 + spellpower / 40 + (random(max(1, 800 - spellpower)) / 80), "WarpedLog", 500);
+                    CALL gain_xp(1);
+
+SPELL make-shirt : "#T11" =
+      LET level = 1
+          school = TRANSMUTE
+      IN (MANA 25, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS [5 * "CottonCloth"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item("CottonShirt", 1, "CottonCloth", 425);
+                    CALL gain_xp(2);
+
+SPELL make-tanktop : "#T12" =
+      LET level = 1
+          school = TRANSMUTE
+      IN (MANA 25, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS [4 * "CottonCloth"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item("WhiteTankTop", 1, "CottonCloth", 350);
+                    CALL gain_xp(2);
+
+SPELL make-short-tanktop : "#T13" =
+      LET level = 1
+          school = TRANSMUTE
+      IN (MANA 25, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS [3 * "CottonCloth"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item("WhiteShortTankTop", 1, "CottonCloth", 250);
+                    CALL gain_xp(2);
+
+SPELL make-iron-powder : "#T14" =
+      LET level = 1
+          school = TRANSMUTE
+      IN (MANA 8, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["IronOre"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item("IronPowder", 1 + spellpower / 140 + (random(max(1, 900 - spellpower)) / 220), "IronOre", 700);
+                    CALL gain_xp(3);
+
+SPELL make-concentration-potion : "#T15" =
+      LET level = 1
+          school = TRANSMUTE
+      IN (MANA 8, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["BottleOfWater", 2 * "CobaltHerb", 2 * "Petal"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item( if_then_else(random(2000 + experience) < experience, "ConcentrationPotion", "DarkConcentrationPotion"), 1,
+                                      if_then_else(random(2), 744, "DarkConcentrationPotion"),
+                                      2000);
+                    IF (success)
+                    THEN CALL set_var(MAGIC_FLAGS, 1, MFLAG_MADE_CONC_POTION_SHIFT, 1);
+                    CALL gain_xp(4);
+
+SPELL merge-concentration-potions : "#T16" =
+      LET level = 1
+          school = TRANSMUTE
+      IN (MANA 8, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["DarkConcentrationPotion", 744])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL create_item("ConcentrationPotion", 1, 744, 1000);
+                    message (caster, "success = " + success);
+                    IF (success)
+                    THEN CALL set_var(MAGIC_FLAGS, 1, MFLAG_MADE_CONC_POTION_SHIFT, 1);
+                    CALL gain_xp(4);
+
+
+SPELL lay-on-hands (target : STRING) : "#L10" =
+      LET level = 1
+          school = LIFE
+      IN (MANA 10, CASTTIME 500,
+          REQUIRE hp(caster) > max_hp(caster) / 20,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          REQUIRE if_then_else(failed(pc(target)), 1,
+                                                  (rdistance(location(caster),
+                                                           location(pc(target))) < 2 + (spellpower / 50))
+                                                  && not (running_status_update(pc(target), SC_HALT_REGENERATE))
+                                                  ))
+          => EFFECT CALL adjust_spellpower(school);
+		    IF (pc (target) == caster) THEN ABORT;
+                    IF failed(pc(target))
+                      THEN (IF ((target = "mouboo" || target = "Mouboo")
+                                 && rdistance(location(caster), location(npc("Mouboo"))) < 2 + (spellpower / 100))
+                            THEN (needed = 1000;
+                                  {
+                                   set @spell, 1;
+                                   callfunc "QuestMoubooHeal";
+                                  })
+                            ELSE (target = caster;
+                                  needed = max_hp(target) - hp(target);
+                                  ))
+                      ELSE (target = pc(target);
+                            needed = max_hp(target) - hp(target);)
+                    
+                    pay_fraction = max(80, 200 - (vit(caster) + (spellpower / 10))); # Pay at least 40%
+                    payment = (needed * pay_fraction) / 200;
+                    available = hp(caster) - (max_hp(caster) / 20);
+
+                    IF payment < available
+                    THEN power = needed;
+                    ELSE (payment = available;
+                          power = (available * 200) / pay_fraction;
+                    )
+                    CALL gain_heal_xp(power, 1, 1, 3);
+                    CALL quickheal(target, power);
+                    status_change(caster, SC_HALT_REGENERATE, 0, 0, 0, 0, 10000);
+                    IF ((caster <> target) && (payment >= 100))
+                    THEN CALL gain_xp(min(4, payment / 100));
+
+SPELL lightning-strike : "#W10" =
+      LET level = 1
+          school = WAR
+      IN (MANA 20, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["IronPowder"]))
+          => EFFECT CALL adjust_spellpower(school);
+                    damage = spellpower;
+                    damage_bonus = 1 + spellpower / 2;
+                    CALL install_attack_spell(1 + spellpower / 90,
+                                              3000,
+                                              8, 31);
+                    CALL gain_xp(2);
+             ATTRIGGER CALL attack_check(target);
+                       in_rain = 0;
+                       area = location(caster);
+                       FOREACH SPELL s IN rbox(location(caster), MAX_RAIN_SPELL_RADIUS + 1) DO
+                               IF name_of(s) = "rain" THEN (
+                                  IF is_in (location(caster), s.area)
+                                  THEN (in_rain = in_rain | 1;
+                                        area = area + s.area;);
+                                  IF is_in (location(target), s.area)
+                                  THEN in_rain = in_rain | 2;
+                               );
+                       IF in_rain & 1
+                       THEN (# caster standing in the rain?  This is going to be fun.
+                            used = 0;
+                            FOREACH TARGET t IN area DO
+                                  IF (random(200) + luk(caster) > 175)
+                                  THEN (used = used + 1;
+                                        CALL elt_damage (t, damage / 6, 1 + (damage_bonus / 3), ELT_EARTH, ELT_WIND, 17 + random(3)););
+                            IF (not(used) || (random(200) + luk(caster) < 150))
+                            THEN (sfx(caster, 17 + random(3), 0);
+                                  itemheal(caster, 0 - damage - (random(damage_bonus)), 0););
+                       ) ELSE
+                       CALL elt_damage (target, damage, damage_bonus, ELT_EARTH, ELT_WIND, 17 + random(3));
+
+LOCAL SPELL arrow-hail : "#W11" =
+      LET level = 1
+          school = WAR
+      IN (MANA 25, CASTTIME 5000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          REQUIRE is_exterior(location(caster)),
+          (COMPONENTS [20 * "Arrow"] OR COMPONENTS [20 * "IronArrow"]),
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["SulphurPowder"]))
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                range = 7;
+                area = rbox(awayfrom(location(caster), dir(caster), 1 + range), range);
+                damage = 100;
+                damage_bonus = spellpower / 5;
+                CALL gain_xp(2);
+                FOR i = 0 TO spellpower / 8 DO (
+                    FOR j = 0 TO 3 DO (
+                        location = random_location(area);
+                        sfx(location, SFX_ARROW_HAIL, 0);
+                        done = 0;
+                        FOREACH TARGET target IN rbox(location, 0) DO (
+                      	        injure(caster, target, damage + random(damage_bonus) + random(damage_bonus), 0);
+                                done = 1;
+                                BREAK;
+                        )
+                        IF location(caster) = location && not(done)
+                        THEN (itemheal(caster, 0 - (damage + random(damage_bonus) + random(damage_bonus)), 0);
+                             sfx(caster, SFX_HIT, 0);
+                        )
+                    );
+                    WAIT (250 - min(spellpower / 3, 180)) + random(50) + random(50);
+                );
+
+SPELL magic-knuckles : "#W12" =
+      LET level = 1
+          school = WAR
+      IN (MANA 20, CASTTIME 500,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["Beer"]))
+          => 
+             EFFECT CALL adjust_spellpower(WAR);
+                    str = str(caster);
+                    CALL install_melee_spell(10 + spellpower / 10, 1300, 34);
+             ATTRIGGER CALL melee_damage(target, 30, 5 + (str * 2));
+
+SPELL flying-backpack (target : PC) : "#N10" =
+      LET level = 1
+          school = NATURE
+      IN (MANA 12, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["SilkCocoon"]),
+          REQUIRE rdistance(location(target), location(caster)) < 2 + spellpower / 30)
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                IF (caster <> target)
+                THEN sfx(caster, 2, 0);
+                status_change(target, SC_FLYING_BACKPACK, 0, 0, 0, 0, 5000 + (spellpower * 500));
+                message (target, "Your backpack is lifted by a mystical force; you no longer feel it pressing on your back.");
+                CALL gain_xp(1);
+         ATEND message (target, "Your backpack is no longer levitating.");
+               sfx(target, 2, 0);
+
+SPELL protect (target : PC) : "#N11" =
+      LET level = 1
+          school = NATURE
+      IN (MANA 14, CASTTIME 1500,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["HardSpike"]),
+          REQUIRE rdistance(location(target), location(caster)) < 2 + spellpower / 30)
+      => EFFECT CALL adjust_spellpower(school);
+                sfx(target, 11, 0);
+                IF (caster <> target)
+                THEN CALL default_effect();
+                status_change(target, SC_PHYS_SHIELD, 5 + max(15, spellpower / 20), 0, 0, 0, 5000 + (spellpower * 1000));
+                message (target, "You feel more protected.");
+                CALL gain_xp(2);
+         ATEND message (target, "You feel less protected.");
+               sfx(target, 111, 0);
+
+SPELL happy-curse (target : PC) : "#N12" =
+      LET level = 1
+          school = NATURE
+      IN (MANA 13, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["GingerBreadMan"]),
+          REQUIRE rdistance(location(target), location(caster)) < 1 + spellpower / 100)
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                FOR i = 0 TO (spellpower / 10) DO (emote(target, 3); WAIT 500;);
+                CALL gain_xp(1);
+
+LOCAL SPELL rain : "#N13" =
+      LET level = 1
+          school = NATURE
+      IN (MANA 17, CASTTIME 3000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          REQUIRE is_exterior(location(caster)),
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["BottleOfWater"]))
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                CALL gain_xp(1);
+                range = min(MAX_RAIN_SPELL_RADIUS, 3 + min(spellpower, 400) / 30);
+                area = rbox(location(caster), range);
+                IF (is_in(location(npc("#DruidTree0#_M")), area)
+                    || is_in(location(npc("#DruidTree1#_M")), area))
+                THEN {
+                    set @flag, 1;
+                    callfunc "QuestTreeTrigger";
+                };
+                FOR i = 0 TO spellpower DO (
+                    FOR j = 0 TO min(spellpower, 500) / 100 DO (
+                        location = random_location(area);
+                        sfx(location, SFX_RAIN, 0);
+                        FOREACH TARGET target IN rbox(location, 1) DO
+                            IF element(target) = ELT_FIRE
+                            THEN injure(caster, target, 2 + random(5 + spellpower / 15), 0);
+                    )
+                    WAIT 300 - min(spellpower, 200) + random(100);
+                );
+
+PROCEDURE shear-drop(target, target2, item, prob) =
+                     IF (target = name || target2 = name)
+                     THEN (IF (score < prob)
+                           THEN drop_item_for(place, item, 1, 60000, caster, 5000);)
+
+PROCEDURE shear-drop2(target, target2, item, prob, item2, prob2) =
+                     IF (target = name || target2 = name)
+                     THEN (IF (score < prob)
+                           THEN drop_item_for(place, item, 1, 60000, caster, 5000);
+                           ELSE CALL shear-drop(target, target2, item2, prob2 + prob);)
+          
+PROCEDURE shear-drop3(target, target2, item, prob, item2, prob2, item3, prob3) =
+                     IF (target = name || target2 = name)
+                     THEN (IF (score < prob)
+                           THEN drop_item_for(place, item, 1, 60000, caster, 5000);
+                           ELSE CALL shear-drop2(target, target2, item2, prob2 + prob, item3, prob3 + prob);)
+          
+
+SPELL shear : "#N14" =
+      LET level = 1
+          school = NATURE
+      IN (MANA 23, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level)
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                override_attack (caster, 1, 2000, 1, ATTACK_ICON_SHEARING, 30, 0);
+         ATTRIGGER IF not(is_pc(target))
+                   THEN (score = random (1000 - (random (spellpower))); # lower score -> more valuable item
+                         name = name_of(target);
+                         place = random_location(rbox(location(target), 1));
+                         IF running_status_update(target, SC_SHEARED)
+                         THEN ABORT;
+                         status_change(target, SC_SHEARED, 1, 1, 1, 1, 600000); # 10 minutes
+                         CALL shear-drop("Fluffy", "Fluffy",			"WhiteFur", 300);
+                         CALL shear-drop("EasterFluffy", "Easter Fluffy",	"WhiteFur", 300);
+                         CALL shear-drop("SpikyMushroom", "Spiky Mushroom",	"HardSpike", 250);
+                         CALL shear-drop("Mouboo", "Mouboo",			"CottonCloth", 175);
+                         CALL shear-drop("Cobalt", "CobaltPlant",		"CobaltHerb", 700);
+                         CALL shear-drop("Alizarin", "AlizarinPlant",		"AlizarinHerb", 700);
+                         CALL shear-drop("Gamboge", "GambogePlant",		"GambogeHerb", 700);
+                         CALL shear-drop("Mauve", "MauvePlant",			"MauveHerb", 700);
+                         CALL shear-drop("SilkWorm", "Silkworm",		"SilkCocoon", 300);
+                         IF ((name = "Fluffy" || name = "Mouboo") && random(2))
+                         THEN { set @value, 1; callfunc "QuestSagathaHappy"; };
+                    )
+
+      
+
+SPELL barrier (target : PC) : "#A10" =
+      LET level = 1
+          school = ASTRAL
+      IN (MANA 16, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["SmallMushroom"]),
+          REQUIRE rdistance(location(target), location(caster)) < 2 + spellpower / 30)
+      => EFFECT CALL adjust_spellpower(school);
+                sfx(target, SFX_BARRIER, 0);
+                IF (caster <> target)
+                THEN CALL default_effect();
+                status_change(target, SC_MBARRIER, 20 + max(30, spellpower / 8), 0, 0, 0, 2000 + (spellpower * 200));
+                message (target, "You are surrounded by a magical barrier.");
+                CALL gain_xp(3);
+         ATEND message (target, "Your magical barrier dissipates.");
+               sfx(target, SFX_UNBARRIER, 0);
+
+
+LOCAL SPELL summon-spiky-mushrooms : "#A11" =
+      LET level = 1
+          school = ASTRAL
+      IN (MANA 33, CASTTIME 20000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["HardSpike"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL gain_xp(1);
+                    CALL summon_spell(1019, 1 + spellpower / 120, 5000 - (spellpower * 9), spellpower * 400, 2);
+
+LOCAL SPELL summon-fluffies : "#A12" =
+      LET level = 1
+          school = ASTRAL
+      IN (MANA 39, CASTTIME 20000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["WhiteFur"])
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    CALL gain_xp(1);
+                    CALL summon_spell(1020, 1 + spellpower / 170 + spellpower / 430, 5000 - (spellpower * 8), spellpower * 350, 3);
+
+
+SPELL detect-players : "#G10" =
+      LET level = 1
+          school = MAGIC
+      IN (MANA 7, CASTTIME 300,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level)
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    message = "";
+                    FOREACH PC target IN rbox(location(caster), spellpower / 2)
+                    DO IF ((target <> caster)
+                           && not (running_status_update(pc(target), SC_HIDE)))
+                       THEN (IF message <> ""
+                             THEN message = message + ", ";
+                             message = message + name_of (target);
+                             IF spellpower > 99
+                             THEN message = message + "(" + level(target) + ")";
+                             )
+                    IF message = ""
+                    THEN message(caster, "You sense no-one else nearby.");
+                    ELSE message(caster, "You sense the following: " + message);
+
+SPELL reveal : "#G11" =
+      LET level = 1
+          school = MAGIC
+      IN (MANA 18, CASTTIME 3000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level)
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+             FOREACH PC target IN rbox(location(caster), 1 + spellpower / 100)
+             DO IF has_shroud(target) && level(caster) * 2 > level(target)
+                THEN (unshroud(target);
+                      sfx(target, SFX_DEFAULT, 500);)
+                      
+
+SPELL enchant-lifestone : "#G12" =
+      LET level = 1
+          school = MAGIC
+      IN (MANA 15, CASTTIME 4000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          (COMPONENTS ["MaggotSlime"] OR COMPONENTS["BugLeg"]
+           OR COMPONENTS ["MauveHerb", "AlizarinHerb", "CobaltHerb", "GambogeHerb"]))
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    create_item(caster, "LifeStone", 1);
+                    CALL gain_xp(1);
+
+SPELL sense-spouse : "#G13" =
+      LET level = 1
+          school = MAGIC
+      IN (MANA 7, CASTTIME 400,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          REQUIRE is_married(caster),
+          REQUIRE is_equipped(caster, "WeddingRing"))
+          => EFFECT CALL adjust_spellpower(school);
+                    CALL default_effect();
+                    IF (failed(partner(caster)) || not(is_equipped(partner(caster), "WeddingRing")))
+                    THEN (message(caster, "You cannot sense your partner.");
+                          ABORT;)
+                    partner = partner(caster);
+                    name = name_of(partner);
+                    IF (is_dead(partner) || (map_nr(location(partner)) <> map_nr(location(caster))))
+                    THEN (message(caster, "You cannot sense " + name + " nearby.");
+                          ABORT;)
+                    IF (map_level(location(partner)) > 2 && map_level(location(caster)) < map_level(location(partner)))
+                    THEN (message(caster, "You sense " + name + " somewhere below.");
+                          ABORT;)
+                    IF (map_level(location(caster)) > 2 && map_level(location(partner)) < map_level(location(caster)))
+                    THEN (message(caster, "You sense " + name + " somewhere above.");
+                          ABORT;)
+                    IF (map_level(location(caster)) <> map_level(location(partner)))
+                    THEN message(caster, "You sense " + name + " somewhere in the vincinity.");
+                    ELSE (distance = rdistance(location(caster), location(partner));
+                          dir = dir_towards(location(caster), location(partner), 1);
+                          IF (distance < 3)
+                          THEN message(caster, "You sense " + name + " right next to you.");
+                          ELSE IF (distance < 30)
+                          THEN message(caster, "You sense " + name + " close by, towards the " + dir + ".");
+                          ELSE IF (distance < 200)
+                          THEN message(caster, "You sense " + name + " nearby, towards the " + dir + ".");
+                          ELSE message(caster, "You sense " + name + " in the " + dir + ".");
+                    )
+
+SPELL hide (target : PC) : "#A13" =
+      LET level = 1
+          school = ASTRAL
+      IN (MANA 11, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["CottonCloth"]),
+          REQUIRE rdistance(location(target), location(caster)) < 2 + spellpower / 30)
+      => EFFECT CALL adjust_spellpower(school);
+                sfx(target, SFX_DEFAULT, 0);
+                IF (caster <> target)
+                THEN CALL default_effect();
+                status_change(target, SC_HIDE, 0, 0, 0, 0, 5000 + (spellpower * 2500));
+                CALL gain_xp(2);
+                message(target, "You are hidden!");
+                IF (caster <> target) THEN message(caster, "You hid someone!");
+          ATEND message(target, "You are no longer hidden.");
+
+#--------------------------------------------------------------------------------
+# Level 2 spells
+#--------------------------------------------------------------------------------
+
+SPELL cure-poison (target : PC) : "#L20" =
+      LET level = 2
+          school = LIFE
+      IN (MANA 15, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          REQUIRE (rdistance(location(caster),
+                   location(pc(target))) < 1 + (spellpower / 60)),
+          COMPONENTS ["GambogeHerb"])
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                IF (running_status_update (target, SC_POISON))
+                THEN (CALL gain_heal_xp(40, 1, 2, 2);
+                      stop_status_change (target, SC_POISON);
+                      CALL gain_xp(2);
+                      IF caster <> target
+                      THEN sfx(target, SFX_HEAL, 0););
+
+
+SPELL fire-ball : "#W22" =
+      LET level = 2
+          school = WAR
+      IN (MANA 30, CASTTIME 1000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["PileOfAsh"])
+          => EFFECT CALL adjust_spellpower(school);
+                    damage = min(50 + skill(caster, school) * 40,
+                                 30 + ((spellpower * 3) / 2));
+                    damage_bonus = level(caster) + spellpower * 2;
+                    radius = 2 + spellpower / 50;
+                    CALL install_attack_spell(1 + spellpower / 60,
+                                              5000,
+                                              10, 31);
+             ATTRIGGER CALL attack_check(target);
+                       loc = location(target);
+                       #WAIT 500;
+                       sfx(loc, 16, 0);
+                       FOREACH TARGET target IN rbox(loc, radius)
+                         DO IF line_of_sight(loc, location(target))
+                            THEN (divisor = (3 + rdistance(loc, location(target)));
+                                  CALL elt_damage (target, (damage * 3) / divisor, (damage_bonus * 3) / divisor, ELT_WATER, ELT_FIRE, 15);
+                            )
+
+SPELL summon-partner : "#A23" = 
+      LET level = 2
+          school = ASTRAL
+      IN (MANA 30, CASTTIME 2000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          REQUIRE is_married(caster),
+          REQUIRE is_equipped(caster, "WeddingRing"))
+	=> EFFECT CALL adjust_spellpower(school);
+                  CALL default_effect();
+                  IF (failed (partner (caster)))
+                  THEN message (caster, "You call out for your partner, but there is no response.");
+                  ELSE (message (caster, "You call out for " + (name_of (partner (caster))) + ".");
+                        message (partner(caster), name_of(caster) + " is calling for your aid!");
+                        sfx(partner(caster), 2, 0);
+                        WAIT (max (5000, 30000 - (spellpower * 60)));
+                        IF (failed (partner (caster)))
+                        THEN message (caster, "Your partner has abandoned you.");
+                        ELSE IF (is_dead (partner (caster)))
+                        THEN message (caster, "Something seems to have happened to " + (name_of(partner(caster))) + ".");
+                        ELSE (sfx(location(partner(caster)), SFX_TELEPORT, 0);
+                              dest = awayfrom(location(caster), random_dir(1), 1);
+                              warp(partner(caster), dest);
+                              sfx(dest, SFX_TELEPORT, 0);
+                             )
+                       )
+
+
+
+#--------------------------------------------------------------------------------
+# Level 4 spells
+#--------------------------------------------------------------------------------
+
+SPELL shroud : "#N40" = 
+      LET level = 4
+          school = NATURE
+      IN (MANA 40, CASTTIME 400,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level)
+	=> EFFECT CALL default_effect();
+                  shroud(caster, 0x04);
+
+SPELL teleport (destination : STRING) : "#A40" = 
+      LET level = 4
+          school = ASTRAL
+      IN (MANA 80, CASTTIME 400,
+          # COMPONENT ["EtherEssence"],
+          # CATALYST ["TeleportCrystal"],
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level)
+	=> EFFECT CALL default_effect();
+                  WAIT 1000 + (200000 / (spellpower + 10));
+                  sfx(location(caster), SFX_TELEPORT, 1);
+                  warp(caster, random_location(anchor(destination)));
+                  sfx(location(caster), SFX_TELEPORT, 100);
+
+#--------------------------------------------------------------------------------
+# Debug keywords
+#--------------------------------------------------------------------------------
+
+SPELL debug : "debug" =
+      REQUIRE DEBUG
+      => EFFECT message (caster, "FLAGS: "
+                                 + "drank=" + ((script_int(caster, "MAGIC_FLAGS") & 1) > 0) + ", "
+                                 + "Kmseed=" + ((script_int(caster, "MAGIC_FLAGS") & 2) > 0) + ", "
+                                 + "touched-mseed=" + ((script_int(caster, "MAGIC_FLAGS") & 4) > 0) + ", "
+                                 + "mseed-max=" + ((script_int(caster, "MAGIC_FLAGS") & 8) > 0) + ", "
+                                 + "Kauldsbel=" + ((script_int(caster, "MAGIC_FLAGS") & 16) > 0) + ", "
+                                 + "Kwyara=" + ((script_int(caster, "MAGIC_FLAGS") & 32) > 0) + ", "
+                                 + "Ksagatha=" + ((script_int(caster, "MAGIC_FLAGS") & 64) > 0) + ", "
+                                 + "Kmpotion=" + ((script_int(caster, "MAGIC_FLAGS") & 128) > 0) + ", "
+                                 + "mseed-rumour=" + ((script_int(caster, "MAGIC_FLAGS") & 256) > 0) + ", "
+                                 + "Kcuttree=" + ((script_int(caster, "MAGIC_FLAGS") & 512) > 0) + ", "
+                                 + "cut=" + ((script_int(caster, "MAGIC_FLAGS") & 1024) > 0) + ", "
+                                 + "Kdruidtree=" + ((script_int(caster, "MAGIC_FLAGS") & 2048) > 0) + ", "
+                                 + "Kimp=" + ((script_int(caster, "MAGIC_FLAGS") & 4096) > 0) + ", "
+                                 + "Koldwiz=" + ((script_int(caster, "MAGIC_FLAGS") & 8192) > 0) + ", "
+                                 + "made-conc=" + ((script_int(caster, "MAGIC_FLAGS") & 16384) > 0) + ", "
+                                 + "elanore-omar=" + ((script_int(caster, "MAGIC_FLAGS") & 32768) > 0));
+                message (caster, "EXP: " + (script_int(caster, "MAGIC_EXPERIENCE") & 0xffff)
+                                 + ", lastspell=" + ((script_int(caster, "MAGIC_EXPERIENCE") >> 16) & 0xff)
+                                 + ", healexp=" + ((script_int(caster, "MAGIC_EXPERIENCE") >> 24) & 0xff));
+                message (caster, "STATUS: "
+                                 + "auldsbel:" + (script_int(caster, "QUEST_MAGIC") & 0x1f) + "," + ((script_int(caster, "QUEST_MAGIC") >> 5) & 0x7) + ", "
+                                 + "dt/mb:" + ((script_int(caster, "QUEST_MAGIC") >> 8) & 0xf) + ", "
+                                 + "s-unhappy:" + ((script_int(caster, "QUEST_MAGIC") >> 12) & 0xf) + ", "
+                                 + "sagatha:" + ((script_int(caster, "QUEST_MAGIC") >> 16) & 0xff) + ", "
+                                 + "swords:" + ((script_int(caster, "QUEST_MAGIC") >> 24) & 0xff) + ", "
+                                 + "imp:" + ((script_int(caster, "QUEST_MAGIC2") >> 0) & 0xf) + ", "
+                                 + "elanore:" + ((script_int(caster, "QUEST_MAGIC2") >> 4) & 0xf) + ", "
+                                 + "elanore-sub:" + ((script_int(caster, "QUEST_MAGIC2") >> 12) & 0xf) + ", "
+                                 + "wyara:" + ((script_int(caster, "QUEST_MAGIC2") >> 8) & 0xf));
+
+PROCEDURE debug_xmod(name, mask, shift, gain) =
+          value = ((script_int(caster, name) >> shift) & mask) + gain;
+          IF (value < 0)
+          THEN value = 0;
+          IF (value > mask)
+          THEN value = mask;
+          CALL set_var(name, mask, shift, value);
+
+PROCEDURE debug_mod(name, delta) =
+          IF (name = "mexp") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xffff, 0, delta);
+          ELSE IF (name = "lastspell") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xff, 16, delta);
+          ELSE IF (name = "healexp") THEN CALL debug_xmod("MAGIC_EXPERIENCE", 0xff, 24, delta);
+          ELSE IF (name = "drank") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 0, delta);
+          ELSE IF (name = "Kmseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 1, delta);
+          ELSE IF (name = "touched-mseed") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 2, delta);
+          ELSE IF (name = "mseed-max") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 3, delta);
+          ELSE IF (name = "Kauldsbel") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 4, delta);
+          ELSE IF (name = "Kwyara") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 5, delta);
+          ELSE IF (name = "Ksagatha") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 6, delta);
+          ELSE IF (name = "Kmpotion") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 7, delta);
+          ELSE IF (name = "mseed-rumour") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 8, delta);
+          ELSE IF (name = "Kcuttree") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 9, delta);
+          ELSE IF (name = "cut") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 10, delta);
+          ELSE IF (name = "Kdruidtree") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 11, delta);
+          ELSE IF (name = "Kimp") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 12, delta);
+          ELSE IF (name = "oldwiz") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 13, delta);
+          ELSE IF (name = "made-conc") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 14, delta);
+          ELSE IF (name = "elanore-omar") THEN CALL debug_xmod("MAGIC_FLAGS", 0x1, 15, delta);
+          ELSE IF (name = "auldsbel") THEN CALL debug_xmod("QUEST_MAGIC", 0x1f, 0, delta);
+          ELSE IF (name = "Qauldsbel") THEN CALL debug_xmod("QUEST_MAGIC", 0x7, 5, delta);
+          ELSE IF (name = "dt") THEN CALL debug_xmod("QUEST_MAGIC", 0x3, 10, delta);
+          ELSE IF (name = "mb") THEN CALL debug_xmod("QUEST_MAGIC", 0x3, 8, delta);
+          ELSE IF (name = "s-unhappy") THEN CALL debug_xmod("QUEST_MAGIC", 0xff, 12, delta);
+          ELSE IF (name = "sagatha") THEN CALL debug_xmod("QUEST_MAGIC", 0xff, 16, delta);
+          ELSE IF (name = "swords") THEN CALL debug_xmod("QUEST_MAGIC", 0xff, 24, delta);
+          ELSE IF (name = "imp") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 0, delta);
+          ELSE IF (name = "elanore") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 4, delta);
+          ELSE IF (name = "wyara") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 8, delta);
+          ELSE IF (name = "elanore-sub") THEN CALL debug_xmod("QUEST_MAGIC2", 0xf, 12, delta);
+          ELSE message(caster, "Unknown");
+
+SPELL debug-up1 (name : STRING) : "debug+1" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 1);
+
+SPELL debug-down1 (name : STRING) : "debug-1" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 0 - 1);
+
+SPELL debug-up16 (name : STRING) : "debug+16" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 16);
+
+SPELL debug-down16 (name : STRING) : "debug-16" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 0 - 16);
+
+SPELL debug-up256 (name : STRING) : "debug+256" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 256);
+
+SPELL debug-down256 (name : STRING) : "debug-256" = 
+	REQUIRE DEBUG
+        => EFFECT CALL debug_mod(name, 0 - 256);
+
+SPELL debug-reset : "debug-reset" =
+      REQUIRE DEBUG
+	=> EFFECT set_script_variable(caster, "QUEST_MAGIC", 0);
+                  set_script_variable(caster, "QUEST_MAGIC2", 0);
+                  set_script_variable(caster, "MAGIC_FLAGS", 0);
+                  set_script_variable(caster, "MAGIC_EXP", 0);
+
+
+#--------------------------------------------------------------------------------
+# Special-purpose quasispells
+#--------------------------------------------------------------------------------
+
+CONST MIN_MARRY_LEVEL = 32;
+
+NONMAGIC SILENT SPELL marriage (target : PC) : "marry" =
+       (REQUIRE is_in(location(caster), @("014-1.gat", 28,39) @+ (8, 6)))=>
+       EFFECT IF target == caster  # no valid target or tried to marry self?
+              THEN ABORT;
+
+              IF (level(caster) < MIN_MARRY_LEVEL)
+              THEN (message(caster, "You must be level " + MIN_MARRY_LEVEL + " or higher to marry!"); ABORT;)
+
+              IF (level(target) < MIN_MARRY_LEVEL)
+              THEN (message(caster, "Your partner must be level " + MIN_MARRY_LEVEL + " or higher to marry!"); ABORT;)
+
+              IF partner(caster) = target
+              THEN (message(caster, "You and " + name_of(target) + " are already married."); ABORT;)
+
+              IF is_married(caster)
+              THEN (message(caster, "You are already married!"); ABORT;)
+
+              IF is_married(target)
+              THEN (message(caster, name_of(target) + " is already married."); ABORT;);
+
+              IF distance(location(caster), location(target)) <> 1
+              THEN (message(caster, "You have to stand next to each other."); ABORT;);
+
+              IF (count_item(caster, "WeddingRing") == 0 || count_item(target, "WeddingRing") == 0)
+              THEN (message(caster, "You must both be wearing your wedding rings!"); ABORT;)
+
+              script_target = target;
+              { 
+                announce @caster_name$ + " is asking " + strcharinfo(0) + " for marriage.", 2;
+                mes @caster_name$ + " wishes to marry you.";
+                mes "Do you accept?";
+                next;
+                menu "Yes, I do!", L_yes,
+                     "No.", -;
+                close;
+
+                L_yes:
+                if marriage(@caster_name$)
+                     announce @caster_name$ + " and " + strcharinfo(0) + " are now married!", 0;
+                close;
+              }
+
+              IF not (is_married(caster))
+              THEN message(caster, name_of(target) + " turned down your marriage offer.");
+
+# SPELL change-hair-colour (colour : STRING) : "trapa" =
+#       (MANA 20) => EFFECT IF colour = "nworbl"
+#                           THEN x = 0; # light brown
+#                           ELSE IF colour = "der"
+#                           THEN x = 1; # red
+#                           ELSE IF colour = "neerg"
+#                           THEN x = 2; # green
+#                           ELSE IF colour = "elprup"
+#                           THEN x = 3; # purple
+#                           ELSE IF colour = "yerg"
+#                           THEN x = 4; # grey
+#                           ELSE IF colour = "wolley"
+#                           THEN x = 5; # yellow
+#                           ELSE IF colour = "eulb"
+#                           THEN x = 6; # blue
+#                           ELSE IF colour = "nwrob"
+#                           THEN x = 7; # brown
+#                           ELSE IF colour = "elpropl"
+#                           THEN x = 8; # light purple
+#                           ELSE IF colour = "elpropd"
+#                           THEN x = 9; # dark purple
+#                           ELSE x = random(10);
+#                           sfx(caster, 2, 0);
+#                           set_hair_colour(caster, x);
+
+
+# SPELL trick-or-treat : "trick-or-treat" =
+#       (CASTTIME 30000, MANA 20,
+#        COMPONENTS [ "BugLeg" ]) => EFFECT              IF (random(2))
+#                                                        THEN (sfx(caster, 2, 0);
+#                                                              FOR i = 0 TO random(10) DO
+#                                                                  drop_item_for (random_location(rbox(location(caster), 5)),
+#                                                                                 "Candy", 1, 10000 + random(10000), caster, 3000);
+#                                                              FOR i = 0 TO random(10) DO
+#                                                                  drop_item_for (random_location(rbox(location(caster), 5)),
+#                                                                                 "ChocolateBar", 1, 10000 + random(10000), caster, 3000);
+#                                                             )
+#                                                        ELSE (sfx(caster, 5, 0);
+#                                                              message(caster, "No treat for you!");
+#                                                              spawn(rbox(location(caster), 3), caster, 1010, 0, 1 + random(3), 10000 + random(20000));
+#                                                              FOREACH MOB target IN rbox(location(caster), 5) DO
+#                                                                      (sfx(target, 5, 0);
+#                                                                       aggravate(target, 0, caster);))
+
+
+LOCAL SPELL mouboo-groan : "#g" =
+      (MANA 1,
+       REQUIRE name_of(caster) = "MOUBOOTAUR") =>
+      	EFFECT FOREACH PC p IN rbox(location(caster), 200) DO
+               distance = rdistance(location(caster), location(p));
+               IF (distance < 15)
+               THEN message(p, "The moubootaur's groaning rings in your ears!");
+               ELSE IF (distance < 70)
+               THEN message(p, "You hear a loud groaning noise, not far away...");
+               ELSE message(p, "You hear an odd groaning noise in the distance...");
+
+
+LOCAL SPELL mouboo-smell : "#s" =
+      (MANA 1,
+       REQUIRE name_of(caster) = "MOUBOOTAUR") =>
+      	EFFECT WAIT 30000;
+               FOREACH PC p IN rbox(location(caster), 30) DO
+               		message(p, "You notice a strange smell all around you.");
+
+
+
+PROCEDURE hug_tree(target) =
+          IF (target = ""
+              || target = "tree" || target = "tree*"
+              || target = "Tree" || target = "Tree*"
+              || target = "druid" || target = "druid*"
+              || target = "Druid" || target = "Druid*")
+          THEN {
+                    set @flag, 2;
+                    callfunc "QuestTreeTrigger";
+                };
+
+NONMAGIC SPELL hug0 (target : STRING) : "hug" = REQUIRE ((rdistance(location(caster), location(npc("#DruidTree0#_M"))) <= 1
+                                                         || rdistance(location(caster), location(npc("#DruidTree1#_M"))) <= 1))
+                                                => EFFECT CALL hug_tree(target);
+
+NONMAGIC SPELL hug1 (target : STRING) : "*hug*" = REQUIRE ((rdistance(location(caster), location(npc("#DruidTree0#_M"))) <= 1
+                                                         || rdistance(location(caster), location(npc("#DruidTree1#_M"))) <= 1))
+                                                => EFFECT CALL hug_tree(target);
+
+NONMAGIC SPELL hug2 (target : STRING) : "*hug" = REQUIRE ((rdistance(location(caster), location(npc("#DruidTree0#_M"))) <= 1
+                                                         || rdistance(location(caster), location(npc("#DruidTree1#_M"))) <= 1))
+                                                => EFFECT CALL hug_tree(target);
+
+NONMAGIC SPELL hug3 (target : STRING) : "hugs" = REQUIRE ((rdistance(location(caster), location(npc("#DruidTree0#_M"))) <= 1
+                                                         || rdistance(location(caster), location(npc("#DruidTree1#_M"))) <= 1))
+                                                => EFFECT CALL hug_tree(target);
+
+NONMAGIC SPELL hug4 (target : STRING) : "*hugs*" = REQUIRE ((rdistance(location(caster), location(npc("#DruidTree0#_M"))) <= 1
+                                                         || rdistance(location(caster), location(npc("#DruidTree1#_M"))) <= 1))
+                                                => EFFECT CALL hug_tree(target);
+
+NONMAGIC SPELL hug5 (target : STRING) : "*hugs" = REQUIRE ((rdistance(location(caster), location(npc("#DruidTree0#_M"))) <= 1
+                                                         || rdistance(location(caster), location(npc("#DruidTree1#_M"))) <= 1))
+                                                => EFFECT CALL hug_tree(target);
+
+
+#--------------------------------------------------------------------------------
+# Teleport anchors
+#--------------------------------------------------------------------------------
+
+TELEPORT-ANCHOR tulimshar : "tulimshar" = @("001-1.gat", 43, 66) @+ (3, 3);
+TELEPORT-ANCHOR hurnscald : "hurnscald" = @("009-1.gat", 55, 37) @+ (3, 3);
+TELEPORT-ANCHOR nivalis : "nivalis" = @("020-1.gat", 75, 63) @+ (19, 12);
+TELEPORT-ANCHOR wizardhut : "##00" = @("013-1.gat", 41, 92) @+ (3, 3);
+TELEPORT-ANCHOR pachua : "##01" = @("006-1.gat", 22, 101) @+ (3, 3);
+TELEPORT-ANCHOR desert : "##02" = @("005-1.gat", 160, 64) @+ (5, 5);
+TELEPORT-ANCHOR forest : "##03" = @("015-1.gat", 35, 35) @+ (40, 40);
+TELEPORT-ANCHOR snakecave : "##04" = @("011-4.gat", 50, 75) @+ (3, 3);
+TELEPORT-ANCHOR dimondscove : "##05" = @("010-2.gat", 23, 79) @+ (3, 3);
+
+
