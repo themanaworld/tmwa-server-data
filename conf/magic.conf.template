@@ -771,6 +771,7 @@ SPELL shear : "#N14" =
                          THEN ABORT;
                          status_change(target, SC_SHEARED, 1, 1, 1, 1, 600000); # 10 minutes
                          CALL shear-drop("Fluffy", "Fluffy",			"WhiteFur", 300);
+                         CALL shear-drop("EasterFluffy", "Easter Fluffy",	"WhiteFur", 300);
                          CALL shear-drop("SpikyMushroom", "Spiky Mushroom",	"HardSpike", 250);
                          CALL shear-drop("Mouboo", "Mouboo",			"CottonCloth", 175);
                          CALL shear-drop("Cobalt", "CobaltPlant",		"CobaltHerb", 700);
@@ -799,7 +800,7 @@ SPELL barrier (target : PC) : "#A10" =
                 status_change(target, SC_MBARRIER, 20 + max(30, spellpower / 8), 0, 0, 0, 2000 + (spellpower * 200));
                 message (target, "You are surrounded by a magical barrier.");
                 CALL gain_xp(3);
-         ATEND message (target, "Your magical barrier disspiates.");
+         ATEND message (target, "Your magical barrier dissipates.");
                sfx(target, SFX_UNBARRIER, 0);
 
 
@@ -986,7 +987,8 @@ SPELL summon-partner : "#A23" =
       IN (MANA 30, CASTTIME 2000,
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level,
-          REQUIRE is_married(caster))
+          REQUIRE is_married(caster),
+          REQUIRE is_equipped(caster, "WeddingRing"))
 	=> EFFECT CALL adjust_spellpower(school);
                   CALL default_effect();
                   IF (failed (partner (caster)))

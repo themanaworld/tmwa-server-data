@@ -201,7 +201,7 @@ L_Magic_main:
 
 L_Magic_explain:
         mes "[Wyara the Witch]";
-        mes "\"Magic is just a name for the force that lives in all plants and animals and emenates from there into all things, living or dead.\"";
+        mes "\"Magic is just a name for the force that lives in all plants and animals and emanates from there into all things, living or dead.\"";
         next;
 
         mes "[Wyara the Witch]";
@@ -249,20 +249,42 @@ L_Magic_train:
         if (getskilllv(SKILL_MAGIC_NATURE) > 1)
 		goto L_Magic_train_no;
         mes "[Wyara the Witch]";
+
+        if (@Q_status >= @STATUS_PURIFY_EXPLAINED)
+		goto L_Magic_train_wb;
+
         mes "\"Train you?  No... you should talk to Sagatha.\"";
         mes "She hesitates.";
         next;
 
 	callfunc "SagathaStatus";
 
-        mes "[Wyara the Witch]";
-        mes "\"It would be difficult to ask her to accept you unless you understand some of the basics already, though.\"";
         if (@evil)
-		mes "\"However, I have heard that you have done something unforgiveable; I doubt that she will train you now, and I refuse to do so, too.\"";
-        next;
-        if (@evil)
-                goto L_Magic_main;
+		goto L_Magic_train_evil;
 
+        mes "[Wyara the Witch]";
+        mes "\"It would be difficult to ask her to accept you unless you understand some of the basics already.\"";
+        next;
+
+        goto L_Magic_train_dispatch;
+
+L_Magic_train_evil:
+      	mes "Wyara looks at you sadly.";
+        mes "\"I have heard that you have done something unforgiveable.  No witch in this land will teach you now.\"";
+        next;
+        goto L_Magic_main;
+
+L_Magic_train_wb:
+	callfunc "SagathaStatus";
+
+        if (@evil)
+		goto L_Magic_train_evil;
+
+        mes "\"Ah, yes, your training...\"";
+        next;
+
+
+L_Magic_train_dispatch:
         if (@Q_status == @STATUS_PURIFY_TWICE)
 		goto L_Magic_purify_done;
         if (@Q_status == @STATUS_PURIFY_ONCE)
@@ -310,7 +332,7 @@ L_Magic_purify_explained:
 	delitem "MaggotSlime", 20;
         getitem "PurificationPotion", 1;
         mes "[Wyara the Witch]";
-        mes "\"Wyara grinds the leaves and mixes them with the slime, boils them, then speaks a brief incantation over them and hands you the result.\"";
+        mes "Wyara grinds the leaves and mixes them with the slime, boils them, then speaks a brief incantation over them and hands you the result.";
         next;
 
 L_Magic_purify_doit:
@@ -361,7 +383,7 @@ L_Magic_purify_once:
 	delitem "MaggotSlime", 20;
         getitem "PurificationPotion", 1;
         mes "[Wyara the Witch]";
-        mes "\"Wyara brews another purification potion.\"";
+        mes "Wyara brews another purification potion.";
         next;
 L_Magic_purify_doit2:
         mes "[Wyara the Witch]";
