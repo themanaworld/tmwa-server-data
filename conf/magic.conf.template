@@ -621,13 +621,20 @@ LOCAL SPELL arrow-hail : "#W11" =
           (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["SulphurPowder"]))
       => EFFECT CALL adjust_spellpower(school);
                 CALL default_effect();
+
                 range = 7;
                 area = rbox(awayfrom(location(caster), dir(caster), 1 + range), range);
-                damage = 100;
+
+                FOREACH SPELL s IN rbox(awayfrom(location(caster), dir(caster), 1 + range), range * 2) DO
+                                IF (s <> self_invocation) && (name_of(s) = "arrow-hail")
+                                THEN (message (caster, "A nearby arrow hail spell absorbs your magic!");
+                                      ABORT;)
+
+                damage = 125;
                 damage_bonus = spellpower / 5;
                 CALL gain_xp(2);
                 FOR i = 0 TO spellpower / 8 DO (
-                    FOR j = 0 TO 3 DO (
+                    FOR j = 0 TO 2 DO (
                         location = random_location(area);
                         sfx(location, SFX_ARROW_HAIL, 0);
                         done = 0;
@@ -641,7 +648,7 @@ LOCAL SPELL arrow-hail : "#W11" =
                              sfx(caster, SFX_HIT, 0);
                         )
                     );
-                    WAIT (250 - min(spellpower / 3, 180)) + random(50) + random(50);
+                    WAIT 250 + random(50) + random(50);
                 );
 
 SPELL magic-knuckles : "#W12" =
