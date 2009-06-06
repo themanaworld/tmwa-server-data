@@ -34,9 +34,28 @@ L_write:
         return;
 }
 
+//----------------------------------------
+function	script	SagathaHatAttack	{
+		mes "She fumes at you shouting: \"I shall avenge my forest friends!\"";
+		next;
+		mes "She mutters a barely audible invocation.";
+		misceffect 4, strcharinfo(0);
+		misceffect 4;
+		heal -300, 0;
+		next;
+        return;
+}
+
+//----------------------------------------
 function	script	SagathaStatus	{
+        if (getequipid(equip_head) != 1216 && getequipid(equip_head) != 752)
+        goto L_next;
+        set @value, 15;
+        callfunc "QuestSagathaAnnoy";
+
+L_next:
         set @mexp, MAGIC_EXPERIENCE & 65535;
-	set @has_magic, getskilllv(SKILL_MAGIC);
+        set @has_magic, getskilllv(SKILL_MAGIC);
         set @evil, 0;
         set @good, 0;
         set @unhappy, (QUEST_MAGIC & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT;
@@ -44,9 +63,9 @@ function	script	SagathaStatus	{
 
         if (@mouboo == 3)
 		set @good, @good + 1;
-	if (@mouboo == 2)
+        if (@mouboo == 2)
 		set @evil, 1;
-	if (@mouboo == 1)
+        if (@mouboo == 1)
 		set @evil, 1;
 
         if (MAGIC_FLAGS & MFLAG_DID_CUTTREE)
@@ -60,7 +79,7 @@ function	script	SagathaStatus	{
 
 //----------------------------------------
 013-1.gat,131,24,0	script	Sagatha#_M	167,{
-	callfunc "SagathaStatus";
+        callfunc "SagathaStatus";
 
         set @Q_MASK, NIBBLE_4_MASK | NIBBLE_5_MASK;
         set @Q_SHIFT, NIBBLE_4_SHIFT;
@@ -80,6 +99,10 @@ function	script	SagathaStatus	{
 		mes "[Sagatha the Witch]";
         if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
 		mes "[Witch]";
+
+		// if fluffyhat
+		if (getequipid(equip_head) == 752)
+		callfunc "SagathaHatAttack";
 
         if (@evil)
 		goto L_evil;
