@@ -12,8 +12,12 @@
 
 008-1.gat,101,30,0	script	Hinnak	142, {
 	if (Inspector == 10) goto L_NohMask;
+
+L_No_NohMask:
 	if (QUEST_Scythe_state == 1) goto L_Exchange;
 	if (QUEST_Scythe_state == 2) goto L_ThanksAgain;
+	if (getequipid(equip_head) == 751) goto L_Intro_Hat;
+	
 	mes "[Farmer Hinnak]";
 	mes "\"Argh! I hate them! I @#$% hate them! I @#$% hate these @#$% pinkies!\"";
 	next;
@@ -22,6 +26,22 @@
 		"You need some anger control therapy.", -,
 		"Why do you hate them?", L_Reason;
 	close;
+
+L_Intro_Hat:
+	mes "The farmer lunges at you with a farming implement.";
+	next;
+	heal -50, 0;
+	
+	menu
+		"I'm out of here.", -,
+		"Whoa, what are you doing?", L_Intro_Hat_Explain;
+	close;
+
+L_Intro_Hat_Explain:
+	mes "[Farmer Hinnak]";
+	mes "\"Sorry, you look like a pinkie. They've been destroying my fields, and I guess I got a bit worked up.\"";
+	next;
+	goto L_Help;
 
 L_Reason:
 	mes "[Farmer Hinnak]";
@@ -52,6 +72,11 @@ L_Reward:
 	close;
 
 L_Exchange:
+	if (getequipid(equip_head) != 751) goto L_Exchange_Start;
+	mes "The farmer glares at your hat.";
+	next;
+
+L_Exchange_Start;
 	mes "[Farmer Hinnak]";
 	mes "\"Have you got the 10 antennae?\"";
 	next;
@@ -83,11 +108,22 @@ L_Exchange_TooMany:
 	close;
 
 L_ThanksAgain:
+	if (getequipid(equip_head) == 751) goto L_ThanksHat;
 	mes "[Farmer Hinnak]";
 	mes "\"Good to see you again, and thanks again for helping me with the pinkies!\"";
+	next;
+	goto L_ThanksMenu;
 
-        next;
+L_ThanksHat:
+	mes "[Farmer Hinnak]";
+	mes "\"That better be a trophy on your head.\"";
+	menu
+		"It is.", -;
+	
+	mes "[Farmer Hinnak]";
+	mes "\"Good then. Thanks for your help with the pinkies.\"";
 
+L_ThanksMenu;
         menu
 		"Sure, any time!", -,
 		"Anything else you want me to do?", -,
@@ -217,7 +253,7 @@ L_NohMask:
 	menu
 		"Did you see anyone in a mask come by here at night?", L_NohMask_Mask,
 		"Did you see anyone with a large satchel come by here at night?", L_NohMask_Satchel,
-		"Nothing...", -;
+		"Hello", L_No_NohMask;
 	close;
 
 L_NohMask_Mask:
