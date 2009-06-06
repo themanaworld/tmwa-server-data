@@ -1,5 +1,20 @@
 //
 
+function	script	ElanoreFix	{
+        set @Q_MASK, NIBBLE_1_MASK;
+        set @Q_SHIFT, NIBBLE_1_SHIFT;
+
+        set @Q_STATUS_MAX, 3; // FIXME once level 3 magic was released
+
+        set @Q_status, (QUEST_MAGIC2 & @Q_MASK) >> @Q_SHIFT;
+        if (@Q_status > @Q_STATUS_MAX)
+		set @Q_status, @STATUS_INITIAL;
+
+	set QUEST_MAGIC2,
+		(QUEST_MAGIC2 & ~(@Q_MASK)
+		| (@Q_status << @Q_SHIFT));
+}
+
 001-1.gat,58,68,0	script	Elanore#_M	108,{
 
 	set @has_magic, getskilllv(SKILL_MAGIC);
@@ -17,6 +32,14 @@
         set @STATUS_WAITING_FOR_KADIYA, 4;
         set @STATUS_READY_TO_LEARN_CURE_POISON, 5;
         set @STATUS_LEARNED_CURE_POISON, 6;
+
+        callfunc "ElanoreFix";
+
+        // This operation works around an earlier possible corruption of this state
+        if (@Q_status > @Q_STATUS_MAX)
+		set @Q_status, @STATUS_INITIAL;
+        callsub S_update_var;
+
 
         if (sc_check(sc_poison))
         	goto L_CurePoison;
