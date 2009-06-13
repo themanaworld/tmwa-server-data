@@ -11,17 +11,12 @@ import tiled.core.*;
 import tiled.plugins.tmw.*;
 
 public class WLKInterface {
-    private File folder;
-    public WLKInterface(File folder) {
+    public WLKInterface() {
+        // See if the writer is available
         WLKWriter.class.getName();
-        this.folder = folder;
-        File f = new File("server-data/data");
-        f.mkdirs();
     }
 
-    public void write(String name, Map map) {
-        File wlk = new File(folder, name + ".wlk");
-
+    public void write(String name, Map map, File wlk) {
         try {
             wlk.createNewFile();
             WLKWriter.writeMap(map, new FileOutputStream(wlk));

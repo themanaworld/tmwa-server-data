@@ -24,12 +24,14 @@ public class Process {
     private static final String mobFile = "_mobs.txt";
     private static final String warpFile = "_warps.txt";
     private static final String importFile = "_import.txt";
+    private static File wlkFolder;
 
     private static WLKInterface wlk = null;
 
     public static void prepWLK(File folder) {
+        wlkFolder = folder;
         try {
-            wlk = new WLKInterface(folder);
+            wlk = new WLKInterface();
         } catch (NoClassDefFoundError ncdfe) {}
     }
 
@@ -129,17 +131,26 @@ public class Process {
         }
     }
 
-    public static String processMap(String name, Map map, PrintWriter summary) {
+    private static void makeInclude(String name, File folder) {
+        File _import = new File(folder, importFile);
+        List<String> output_elements = new ArrayList<String>();
+        processFiles(folder, output_elements);
+        PrintWriter importOut = Main.getWriter(_import);
+        importOut.printf("map: %s.gat\n", name);
+        Collections.sort(output_elements);
+        for (String s : output_elements)
+            importOut.println(s);
+        importOut.flush();
+        importOut.close();
+    }
+
+    public static String processMap(String name, Map map, File mapFile, PrintWriter summary) {
         if (name == null) return null;
         if (map == null) return null;
 
         Properties props = map.getProperties();
         String title = getProp(props, "name", "");
-        if (summary != null) {
-            summary.printf("\tName: '%s'\n", title);
-            summary.printf("\tMusic: '%s'\n", getProp(props, "music", ""));
-            summary.printf("\tMinimap: '%s'\n", getProp(props, "minimap", ""));
-        }
+
         String folderName =  scriptDirectory + name;
         if (title.length() > 0) {
             folderName += "_" + title.replaceAll("\\s", "_").replaceAll("[^A-Za-z0-9\\-_]", "");
@@ -147,13 +158,28 @@ public class Process {
         } else {
             title = name;
         }
+        
+        File folder = new File(baseFolder + folderName);
+        folder.mkdirs();
 
         System.out.println(title);
 
-        if (wlk != null) wlk.write(name, map);
+        File wlkFile = new File(wlkFolder, name + ".wlk");
 
-        File folder = new File(baseFolder + folderName);
-        folder.mkdirs();
+        if (wlkFile.exists() && mapFile.lastModified() < wlkFile.lastModified()) {
+            System.out.println("Up to date, skipping");
+            makeInclude(name, folder);
+            return folderName;
+        }
+
+        if (summary != null) {
+            summary.printf("\tName: '%s'\n", title);
+            summary.printf("\tMusic: '%s'\n", getProp(props, "music", ""));
+            summary.printf("\tMinimap: '%s'\n", getProp(props, "minimap", ""));
+        }
+
+        if (wlk != null) wlk.write(name, map, wlkFile);
+
         PrintWriter warpOut = Main.getWriter(new File(folder, warpFile));
         PrintWriter mobOut = Main.getWriter(new File(folder, mobFile));
 
@@ -182,17 +208,8 @@ public class Process {
 
         mobOut.flush();
         mobOut.close();
-
-        File _import = new File(folder, importFile);
-        List<String> output_elements = new ArrayList<String>();
-        processFiles(folder, output_elements);
-        PrintWriter importOut = Main.getWriter(_import);
-        importOut.printf("map: %s.gat\n", name);
-        Collections.sort(output_elements);
-        for (String s : output_elements)
-                importOut.println(s);
-        importOut.flush();
-        importOut.close();
+        
+        makeInclude(name, folder);
 
         return folderName;
     }

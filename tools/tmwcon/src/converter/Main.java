@@ -81,6 +81,7 @@ public class Main {
         }
 
         File folder = new File("server-data/data/");
+        folder.mkdirs();
         Process.prepWLK(folder);
 
         folder = new File("tmwdata/maps/");
@@ -92,7 +93,7 @@ public class Main {
             name = getName(folder, f);
             System.out.printf("== %s ==\n", name);
             if (summary != null) summary.printf("== %s ==\n", name);
-            folders.add(Process.processMap(name, loadMap(f), summary));
+            folders.add(Process.processMap(name, loadMap(f), f, summary));
         }
 
         if (summary != null) {
