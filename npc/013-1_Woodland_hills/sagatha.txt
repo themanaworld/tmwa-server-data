@@ -35,26 +35,6 @@ L_write:
 }
 
 //----------------------------------------
-function	script	SagathaHatAttack	{
-	mes "The witch seems to be trembling with disgust as she stares at your headgear.";
-        mes "\"Do you think that is funny?\" she snarls.";
-        next;
-        if (MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA)
-		mes "[Sagatha the Witch]";
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
-		mes "[Witch]";
-
-        mes "\"You have no idea what that poor creature felt!\"";
-        mes "She snaps her fingers.";
-        mes "\"Let me show you...\"";
-	misceffect 4, strcharinfo(0);
-	misceffect 4;
-	heal -300, 0;
-	next;
-        return;
-}
-
-//----------------------------------------
 function	script	SagathaStatus	{
         if (getequipid(equip_head) != 1216 && getequipid(equip_head) != 752)
         goto L_next;
@@ -110,7 +90,7 @@ L_next:
 
 		// if fluffyhat
 	if (getequipid(equip_head) == 752)
-		callfunc "SagathaHatAttack";
+		goto L_hat_attack;
 
         if (@evil)
 		goto L_evil;
@@ -144,6 +124,23 @@ L_next:
                 "Hello!  My name is " + strcharinfo(0) + ".", L_intro_givename,
                 "Uh.... goodbye.", L_close;
 
+        close;
+
+L_hat_attack:
+	mes "The witch seems to be trembling with disgust as she stares at your headgear.";
+        mes "\"Do you think that is funny?\" she snarls.";
+        next;
+        if (MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA)
+		mes "[Sagatha the Witch]";
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
+		mes "[Witch]";
+
+        mes "\"You have no idea what that poor creature felt!\"";
+        mes "She snaps her fingers.";
+        mes "\"Let me show you...\"";
+	misceffect sfx_magic_war, strcharinfo(0);
+	misceffect sfx_magic_war;
+	heal -300, 0;
         close;
 
 L_intro_name:
@@ -213,14 +210,12 @@ L_teach_initial:
 
         mes "[Sagatha the Witch]";
         mes "She snaps her fingers, and without warning you begin to acutely sense the magical energies around you, for a brief instant!";
-        mes "[5000 experience points]";
-        mes "[Level 2 in Astral Magic]";
 
         set @Q_status, @STATUS_STUDENT;
         callsub S_update_var;
-        getexp 5000, 0;
-        if (getskilllv(SKILL_MAGIC_ASTRAL) < 2)
-        	setskill SKILL_MAGIC_ASTRAL, 2;
+        set @SUP_xp, 5000;
+        set @SUP_lvl, 2;
+        callsub S_up_astral;
         next;
 
         mes "[Sagatha the Witch]";
@@ -419,6 +414,18 @@ L_Q_auldsbel:
 
 L_close:
 	close;
+
+S_up_astral:
+	set @SUP_id, SKILL_MAGIC_ASTRAL;
+        set @SUP_name$, "Astral Magic";
+        callfunc "SkillUp";
+        return;
+
+S_up_nature:
+	set @SUP_id, SKILL_MAGIC_NATURE;
+        set @SUP_name$, "Nature Magic";
+        callfunc "SkillUp";
+        return;
 
 S_update_var:
 	set QUEST_MAGIC,

@@ -28,6 +28,10 @@ function	script	ElanoreFix	{
         set @Q_status, (QUEST_MAGIC2 & @Q_MASK) >> @Q_SHIFT;
         set @Q_heal_exp, MAGIC_EXPERIENCE >> 24;
 
+        // Set up SkillUp function
+        set @SUP_id, SKILL_MAGIC_LIFE;
+        set @SUP_name$, "Life Magic";
+
         set @STATUS_INITIAL, 0;
         set @STATUS_LEARNED_LIGHT_HEAL, 1;
         set @STATUS_MASTERED_LIGHT_HEAL, 2;
@@ -336,14 +340,12 @@ L_Teach_AdvanceTo2_skip:
 
 	mes "[Elanore the Healer]";
         mes "You feel a strange, tingling kind of warmth spread through your body.";
-        mes "[5000 experience points]";
-        mes "[Level 2 in Life Magic]";
 
         set @Q_status, @STATUS_MASTERED_LIGHT_HEAL;
         callsub S_update_var;
-        getexp 5000, 0;
-        if (getskilllv(SKILL_MAGIC_LIFE) < 2)
-        	setskill SKILL_MAGIC_LIFE, 2;
+        set @SUP_xp, 5000;
+        set @SUP_lvl, 2;
+        callfunc "SkillUp";
         close;
 
 L_Teach_CheckAdvanceTo2_fail:
@@ -628,8 +630,8 @@ L_CurePoison:
         mes "She performs a complicated gesture.";
         sc_end(sc_poison);
         sc_end(sc_slowpoison);
-	misceffect 3, strcharinfo(0);
-	misceffect 3;
+	misceffect sfx_magic_life, strcharinfo(0);
+	misceffect sfx_magic_life;
 
         next;
 

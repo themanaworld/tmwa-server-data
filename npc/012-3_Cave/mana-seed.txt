@@ -45,6 +45,10 @@
         set @drank_potion, MAGIC_FLAGS & MFLAG_DRANK_POTION;
         set @knows_seed, MAGIC_FLAGS & MFLAG_KNOWS_MANASEED;
 
+        // Set up SkillUp function
+        set @SUP_id, SKILL_MAGIC;
+        set @SUP_name$, "Magic";
+
         if (@has_magic)
         	goto L_magic_start;
 
@@ -126,9 +130,9 @@ L_magic_level_1:
         mes "[Mana Seed]";
         mes "It is a light-headed feeling, and you find yourself forced to sit down for a few seconds to recover.";
         mes "Something is different.  A new power has grown within you and is waiting to be understood.";
-        mes "[1000 experience points]";
-        setskill SKILL_MAGIC, 1;
-        getexp 1000, 0;
+        set @SUP_xp, 1000;
+        set @SUP_lvl, 1;
+        callfunc "SkillUp";
         next;
 
         goto L_end;
@@ -230,11 +234,10 @@ L_magic_levelup:
         mes "[Mana Seed]";
         mes "Something has changed... you feel more confident in your magical abilities.";
 
-        setskill SKILL_MAGIC, 1 + getskilllv(SKILL_MAGIC);
-        set @exp, @exp_bonus[getskilllv(SKILL_MAGIC)];
+        set @SUP_xp, @exp_bonus[1 + getskilllv(SKILL_MAGIC)];
+        set @SUP_lvl, 1 + getskilllv(SKILL_MAGIC);
+        callfunc "SkillUp";
         itemheal 0, 10000;
-        getexp @exp, 0;
-        mes "[" + @exp + " experience points]";
         next;
 
 	goto L_end;

@@ -136,3 +136,28 @@ L_Q_post_imp:
         set @c, @choice_idx[@menu];
         return @c;
 }
+
+
+// ------------------------------------------------------------
+// Level up a skill
+// @SUP_id		skill ID to level up
+// @SUP_lvl		skill level to attain
+// @SUP_name$		name of the skill to level up
+// @SUP_xp		# of experience points to award if the level up succeeds
+// ------------------------------------------------------------
+function	script	SkillUp	{
+	if (getskilllv(@SUP_id) >= @SUP_lvl)
+		goto L_shortcut;
+
+	misceffect sfx_skillup, strcharinfo(0);
+        setskill @SUP_id, @SUP_lvl;
+        getexp @SUP_xp, 0;
+        if (@SUP_xp)
+                mes "[" + @SUP_xp + " experience points]";
+        mes "[Level " + @SUP_lvl + " in " + @SUP_name$ + "]";
+        return;
+
+L_shortcut:
+	mes "[You already have level " + getskilllv(@SUP_id) + " in " + @SUP_name$ + "]";
+	return;
+}
