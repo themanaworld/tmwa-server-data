@@ -46,6 +46,8 @@ CONST SFX_HEAL		= 3
 
 CONST MAX_RAIN_SPELL_RADIUS = 15
 
+CONST MAX_MAGIC_LEVEL = 2 # Increase up to 5 as each new magic level is completed.
+
 CONST MAGIC_FLAGS = "MAGIC_FLAGS"
 CONST MFLAG_MADE_CONC_POTION = 16384
 CONST MFLAG_MADE_CONC_POTION_SHIFT = 14
@@ -219,12 +221,14 @@ SPELL ask-magic-exp : "#G01" =
       => EFFECT CALL adjust_spellpower(school);
                 CALL default_effect();
                 level = skill (caster, MAGIC);
-                IF level > 4
-                THEN message (caster, "You are as proficient as magic as you can possibly be.");
+                experience = (script_int(caster, SCRIPT_XP) >> SCRIPT_XP_SHIFT) & SCRIPT_XP_MASK;
+                IF (experience == SCRIPT_XP_MASK && level > 4)
+                THEN message (caster, "You are as proficient at magic as you can possibly be.");
                 ELSE (
-                    experience = script_int(caster, "MAGIC_EXPERIENCE") & 0xffff;
                     # This duplicates the table in mana-seed.txt
-                    IF level >= 4
+                    IF level > 4
+                    THEN max_experience = SCRIPT_XP_MASK;
+                    ELSE IF level = 4
                     THEN max_experience = 40000;
                     ELSE IF level = 3
                     THEN max_experience = 8000;
@@ -234,8 +238,12 @@ SPELL ask-magic-exp : "#G01" =
 
                     ratio = (10 * experience - random(max_experience / 30)) / max_experience; #Randomness:  jitter a bit at the transitions to give more precise information if used frequently
 
-                    IF ratio >= 10
-                    THEN message(caster, "You feel in perfect control of your magic.");
+                    IF ratio >= 45
+                    THEN message(caster, "Magic flows naturally from you, readily and with ease. Your understanding of what you can currently control at present is flawless, far beyond your requirements to cast magic at this level." + if_then_else(level >= MAX_MAGIC_LEVEL,""," Surely the Mana Seed will more than readily offer more magic for such a proficient user."));
+                    ELSE IF ratio >= 20
+                    THEN message(caster, "You have perfect control of what you understand now, but there is now a distinct sensation of something more, something indescribable. If only the Mana Seed would give more magic to you...");
+                    ELSE IF ratio >= 10
+                    THEN message(caster, "You feel in perfect control of your magic" + if_then_else(level >= MAX_MAGIC_LEVEL,".",", and seem on the verge of something more... perhaps you should see the Mana Seed to ask for more magic?"));
                     ELSE IF ratio >= 9
                     THEN message(caster, "You feel in almost perfect control of your magic.");
                     ELSE IF ratio >= 8
@@ -247,9 +255,9 @@ SPELL ask-magic-exp : "#G01" =
                     ELSE IF ratio >= 5
                     THEN message(caster, "You feel somewhat in control of your magic.");
                     ELSE IF ratio >= 4
-                    THEN message(caster, "You feel somewhat uneasy about controlling your magic.");
+                    THEN message(caster, "You feel you still have a few difficulties in controlling your magic.");
                     ELSE IF ratio >= 3
-                    THEN message(caster, "Trying to control your magic makes you quite uncomfortable.");
+                    THEN message(caster, "Trying to control your magic is still rather troublesome.");
                     ELSE IF ratio >= 2
                     THEN message(caster, "You feel that you have only the bare minimum of control over your magic.");
                     ELSE IF ratio >= 1
