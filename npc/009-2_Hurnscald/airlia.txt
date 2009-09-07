@@ -1,0 +1,196 @@
+// ------------------------------------------
+// Airlia, daughter of the cemetary caretaker
+// ------------------------------------------
+
+// TODO:
+//   * General: Location (coordinates) and look (sprite) for Airlia?
+//   * General: Work out quest variables and their states with Jaxad, for now I call them:
+//     - caretaker
+//     - letter
+//     - airlia
+//     > Caretaker and letter replaced as appropriate. -Jaxad
+//   / Subquest 1: Amount of gold as reward for the (maybe repeatable) letter quest? (finished -Jaxad)
+//   / Subquest 1: Will the letter quest be repeatable or not? (finished -Jaxad)
+//   * Subquest 2: Amount of what (undead-drop only) item for Airlia's fetch quest?
+//   * Subquest 2: Amount of experience recieved as reward for Airlia's fetch quest?
+//   * Script the L_Future part (may do for now)
+//   * Maybe flesh out some dialogue
+//     - Especially if repeatable, random replies for letter quest...
+//     - Mounts?
+
+009-2.gat,123,71,0	script	Airlia	108,{
+	// Subquest 1: Caretaker's daughter (once), delivery of letter (once/unlimited)
+	set @LETTER_REWARD_GOLD_INITAL, 1000;
+	set @LETTER_REWARD_EXP_INITAL, 2000;
+	set @LETTER_REWARD_GOLD, 42;
+	set @LETTER_REWARD_EXP, 500;
+
+	// Subquest 2: Fetch those undead drops (once)
+	set @FETCH_ITEM_AMOUNT, 42;
+	set @FETCH_ITEM_LABEL$, "Iten";
+	set @FETCH_ITEM_NAME$, "Iten";
+	set @FETCH_ITEM_REWARD_XP, 42;
+
+	set @QUEST_AIRLIA_ACCEPTED, 1;
+	set @QUEST_AIRLIA_REWARDED, 2;
+
+
+	if (airlia >= @QUEST_AIRLIA_REWARDED) goto L_Future;
+	if (airlia == @QUEST_AIRLIA_ACCEPTED) goto L_Fetch;
+	if (QUEST_Graveyard_Caretaker > 2) goto L_Airlia_intro;
+
+L_Caretaker:
+	mes "[Airlia]";
+	mes "\"Greetings. Do you need a housing permit, or to license your mount?\"";
+	next;
+
+	if (QUEST_Graveyard_Caretaker < 4)
+		menu
+			"Sorry, no.", -,
+			"My what?", L_Caretaker_mount;
+
+	if (QUEST_Graveyard_Caretaker == 4)
+		menu
+			"Sorry, no.", -,
+			"I have a letter from your father.", L_Caretaker_reward2,
+			"My what?", L_Caretaker_mount;
+
+	mes "[Airlia]";
+	mes "\"Nobody ever does...\"";
+	close;
+
+L_Caretaker_mount:
+	close;
+
+L_Caretaker_reward:
+	mes "[Airlia]";
+	mes "\"Oh! Thank you very, very much! Please take this for your trouble.\"";
+	if (@LETTER_REWARD_GOLD_INITAL > 0)
+		mes "[" + @LETTER_REWARD_GOLD_INITAL + " GP]";
+	if (@LETTER_REWARD_EXP_INITAL > 0)
+	        mes "[" + @LETTER_REWARD_EXP_INITAL + " experience points]";
+
+	set zeny, zeny + @LETTER_REWARD_GOLD_INITAL;
+        getexp @LETTER_REWARD_EXP_INITAL, 0;
+	set QUEST_Graveyard_Caretaker, 3;
+	close;
+
+L_Caretaker_reward2:
+	mes "[Airlia]";
+	mes "\"Oh! Thank you very, very much! Please take this for your trouble.\"";
+	if (@LETTER_REWARD_GOLD > 0)
+		mes "[" + @LETTER_REWARD_GOLD + " GP]";
+	if (@LETTER_REWARD_EXP > 0)
+	        mes "[" + @LETTER_REWARD_EXP + " experience points]";
+
+	set zeny, zeny + @LETTER_REWARD_GOLD;
+        getexp @LETTER_REWARD_EXP, 0;
+	set QUEST_Graveyard_Caretaker, 5;
+	close;
+
+L_Airlia_intro:
+	// TODO: Should housing permits and mounts' licensing never be mentioned again?
+
+	mes "[Airlia]";
+	mes "\"My poor father, doomed to that awful cemetery.\"";
+	next;
+
+	// TODO: I put in the repeatable letter quest here for now
+	if (QUEST_Graveyard_Caretaker == 3)
+		menu
+			"...", -;
+
+	if (QUEST_Graveyard_Caretaker == 4)
+		menu
+			"...", -,
+			"Oh, I have a letter from him.", L_Caretaker_reward;
+
+	mes "[Airlia]";
+	mes "\"You know, there are many who believe that each time the undead rise after being killed, they lose mana. Eventually, there will not be enough mana for them to rise again and they can be at rest. Do you believe this is true?\"";
+	next;
+
+	menu
+		"I believe so, yes.", L_Airlia_intro_mana_loss,
+		"Maybe...", L_Airlia_intro_mana_loss,
+		"No, that is not proven.", -;
+
+	mes "[Airlia]";
+	mes "\"Oh...\"";
+	close;
+
+L_Airlia_intro_mana_loss:
+	mes "[Airlia]";
+	mes "\"When I am not working, I recruit help for the esteemed Fighters of the Undead, or FoU. They are an official group effort of the Warriors' Guild and Magicians, you know, a very prestigious group.\"";
+	next;
+
+	menu
+		"...", L_Airlia_intro_fou,
+		"I have heard of them.", L_Airlia_intro_fou,
+		"Keep up the good work. I have to go now, bye.", -;
+	close;
+
+L_Airlia_intro_fou:
+	mes "[Airlia]";
+	mes "\"If we drain those evil creatures of their mana, I can get my father back. He is getting very old. Will you help us?\"";
+	next;
+
+	menu
+		"Of course I will.", L_Airlia_intro_fight,
+		"Sure, I guess.", L_Airlia_intro_fight,
+		"Thanks, but no thanks. I have other business to attend to.", -;
+	close;
+
+L_Airlia_intro_fight:
+	mes "[Airlia]";
+	mes "\"Great, just kill any of the undead creatures you can and bring me proof of your work, and I will put in a word for you with the guild.\"";
+	next;
+
+	menu
+		"I'm on it.", -,
+		"What sort of proof?", L_Airlia_intro_proof;
+
+	set airlia, @QUEST_AIRLIA_ACCEPTED;
+	close;
+
+L_Airlia_intro_proof:
+	mes "[Airlia]";
+	mes "\"Let's say " + @FETCH_ITEM_AMOUNT + " [" + @FETCH_ITEM_NAME$ + "]s. You don't know how much this means to me, thank you.\"";
+	set airlia, @QUEST_AIRLIA_ACCEPTED;
+	close;
+
+L_Fetch:
+	mes "[Airlia]";
+	mes "\"Thank you for helping my father.\"";
+	next;
+
+	menu
+		"You are welcome.", -,
+		"I have collected " + @FETCH_ITEM_AMOUNT + " [" + @FETCH_ITEM_NAME$ + "]s.", L_Fetch_check;
+	close;
+
+L_Fetch_check:
+	if (countitem(@FETCH_ITEM_LABEL$) >= @FETCH_ITEM_AMOUNT) goto L_Fetch_award;
+
+	mes "[Airlia]";
+	mes "\"I'm sorry, I didn't realize you couldn't count. Perhaps when I have some free time, I can help you learn if you'd like.\"";
+	close;
+
+L_Fetch_award:
+	mes "[Airlia]";
+	mes "\"Excellent work. You are definitely a great warrior. I will tell the guild of your deeds.\"";
+	delitem @FETCH_ITEM_LABEL$, @FETCH_ITEM_AMOUNT;
+	getexp @FETCH_ITEM_REWARD_XP, 0;
+	set airlia, @QUEST_AIRLIA_REWARDED;
+	close;
+
+L_Future:
+	// TODO: From http://wiki.themanaworld.org/index.php/User:John_Pyle/Cemetery_Caretaker_Quest:
+	//   * Thats it, Banter - Thanks, Greetings, etc.
+	//   * She can give recurrent gold for x number undead items
+	//   * Airlia quest = 2 unlocks options with Fighters of the Undead NPCs (in Cemetery), such as the 'Kill Sir Truk' quest.
+	//   * Airlia quest = 2 unlocks other options, perhaps with future Warrior Guild prospects (This is long term) 
+
+	mes "[Airlia]";
+	mes "Thank you.";
+	close;
+}
