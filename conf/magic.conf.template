@@ -556,24 +556,24 @@ SPELL lay-on-hands (target : STRING) : "#L10" =
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level,
           REQUIRE if_then_else(failed(pc(target)), 1,
+                                                  (pc(target) <> caster)
+                                                  &&
                                                   (rdistance(location(caster),
                                                            location(pc(target))) < 2 + (spellpower / 50))
                                                   && not (running_status_update(pc(target), SC_HALT_REGENERATE))
                                                   ))
           => EFFECT CALL adjust_spellpower(school);
 		    IF (not (target)) THEN ABORT;
-		    IF (pc (target) == caster) THEN ABORT;
                     IF failed(pc(target))
                       THEN (IF ((target = "mouboo" || target = "Mouboo")
-                                 && rdistance(location(caster), location(npc("Mouboo"))) < 2 + (spellpower / 100))
+                                 && (rdistance(location(caster), location(npc("Mouboo"))) < 2 + (spellpower / 100)))
                             THEN (needed = 1000;
                                   {
                                    set @spell, 1;
                                    callfunc "QuestMoubooHeal";
                                   })
-                            ELSE (target = caster;
-                                  needed = max_hp(target) - hp(target);
-                                  ))
+                            ELSE ABORT;
+                            )
                       ELSE (target = pc(target);
                             needed = max_hp(target) - hp(target);)
                     
@@ -589,8 +589,7 @@ SPELL lay-on-hands (target : STRING) : "#L10" =
                     CALL gain_heal_xp(power, 1, 1, 3);
                     CALL quickheal(target, power);
                     status_change(caster, SC_HALT_REGENERATE, 0, 0, 0, 0, 10000);
-                    IF ((caster <> target) && (payment >= 100))
-                    THEN CALL gain_xp(min(4, payment / 100));
+                    CALL gain_xp(min(4, payment / 100));
 
 SPELL lightning-strike : "#W10" =
       LET level = 1
