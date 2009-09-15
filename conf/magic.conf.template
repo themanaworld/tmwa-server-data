@@ -210,6 +210,13 @@ PROCEDURE summon_spell(mob_id, count, delay, lifetime, control_level) =
                 if_then_else(skill(caster, ASTRAL) >= control_level, 2, 1), # pets when level is high enough
                 count, lifetime);
 
+PROCEDURE abort_on_area_shield(pos) =
+	  IF (is_exterior(pos) = 1 && (map_nr(pos) = 1 # Tulimshar
+                                     ||map_nr(pos) = 9 # Hurnscald
+                                     ||map_nr(pos) = 20)) # Nivalis
+	  THEN (message(caster, "A powerful magic drains your spell just as it is beginning to take shape!");
+                ABORT;)
+
 
 #--------------------------------------------------------------------------------
 # Level 0 spells
@@ -640,6 +647,7 @@ LOCAL SPELL arrow-hail : "#W11" =
           (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["SulphurPowder"]))
       => EFFECT CALL adjust_spellpower(school);
                 CALL default_effect();
+                CALL abort_on_area_shield(location(caster));
 
                 range = 7;
                 area = rbox(awayfrom(location(caster), dir(caster), 1 + range), range);
@@ -742,6 +750,7 @@ LOCAL SPELL rain : "#N13" =
           (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["BottleOfWater"]))
       => EFFECT CALL adjust_spellpower(school);
                 CALL default_effect();
+                CALL abort_on_area_shield(location(caster));
                 FOREACH SPELL s IN rbox(location(caster), MAX_RAIN_SPELL_RADIUS + 1) DO
                                 IF (s <> self_invocation) && (name_of(s) = "rain")
                                 THEN (message (caster, "A nearby raincloud absorbs your magic.");
@@ -1065,9 +1074,9 @@ SPELL teleport (destination : STRING) : "#A40" =
           REQUIRE skill(caster, school) > level)
 	=> EFFECT CALL default_effect();
                   WAIT 1000 + (200000 / (spellpower + 10));
-                  sfx(location(caster), SFX_TELEPORT, 1);
+                  sfx(location(caster), SFX_TELEPORT, 200);
                   warp(caster, random_location(anchor(destination)));
-                  sfx(location(caster), SFX_TELEPORT, 100);
+                  sfx(caster, SFX_TELEPORT, 200);
 
 #--------------------------------------------------------------------------------
 # Debug keywords
