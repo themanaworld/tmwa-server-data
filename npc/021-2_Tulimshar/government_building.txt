@@ -140,13 +140,74 @@ S_give_rings:
 	return;
 }
 
-// A clerk (TODO: give out party skill levels)
 021-2.gat,36,17,0	script	Tathin	107,{
+	set @PARTY_SKILL, 3;
+
 	mes "[Tathin]";
 	mes "\"Hello what Can I do for you?\"";
 	next;
+
+	if (getskilllv(@PARTY_SKILL) == 2 ) goto L_Base_Menu;
+	if (BaseLevel >= 15 && getskilllv(@PARTY_SKILL) == 1) goto L_Can_Make_Party;
+	if (BaseLevel >= 10) goto L_Can_Party;
+
+L_Base_Menu:
 	menu
 		"Nothing, I guess.", -;
+	close;
+
+L_Can_Party:
+	menu
+		"I'd like to get a party permit.", L_Get_Party,
+		"Nothing, I guess.", -;
+	close;
+
+L_Can_Make_Party:
+	menu
+		"I'd like to get a party creator permit.", L_Get_Make_Party,
+		"Nothing, I guess.", -;
+	close;
+
+L_Get_Party:
+	mes "[Tathin]";
+	mes "\"A permit to join parties costs 10 GP.\"";
+	next;
+	menu
+		"OK", L_Give_Party,
+		"No thank you", -;
+	close;
+
+L_Give_Party:
+	if (zeny < 10) L_NotEnoughMoney;
+	set zeny, zeny - 10;
+	setskill @PARTY_SKILL, 1;
+	mes "[Tathin]";
+	mes "\"Here's your permit. You'll need to be invited by an existing member of a party to join it.\"";
+	next;
+	mes "[Tathin]";
+	mes "\"Remember, parties cannot share experience if any members are more than 10 levels apart.\"";
+	close;
+
+L_Get_Make_Party:
+	mes "[Tathin]";
+	mes "\"A permit to create parties costs 50 GP.\"";
+	next;
+	menu
+		"OK", L_Give_Make_Party,
+		"No thank you", -;
+	close;
+
+L_Give_Make_Party:
+	if (zeny < 50) L_NotEnoughMoney;
+	set zeny, zeny - 50;
+	setskill @PARTY_SKILL, 2;
+	mes "[Tathin]";
+	mes "\"Here's your permit. You can create parties with the 'new' or 'create' commands on the Party tab in the client. Parties need to have unique names.\"";
+	close;
+
+L_NotEnoughMoney:
+	mes "[Tathin]";
+	mes "\"You don't have enough GP\"";
 	close;
 }
 
