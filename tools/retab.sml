@@ -1,3 +1,18 @@
+(*
+ *  retab (c) 2009 The Mana World development team
+ *  License: GPL, version 2 or later
+ *
+ *  Compilation, e.g. (depends on SML implementation):
+ *    mlton retab.sml
+ *
+ *  Example usage:
+ *    tools/retab < db/mob_db.txt > db/mob_db.txt.new && mv db/mob_db.txt.new db/mob_db.txt
+ *
+ *  TODO:
+ *    - Commas inside {} need to be seen as just one field when tabified
+ *    - Commented lines should be left untabified
+ *)
+
 fun width (#"\t", i)	= let val m = i mod 8 in if m = 0 then 8 else m end
   | width (c, i)	= 1
 
