@@ -1,6 +1,13 @@
 //
 
 001-1.gat,108,55,0	script	Luca	102,{
+
+	if (BaseLevel >= 45)
+		goto L_teach_soon;
+
+	if (BaseLevel >= 50)
+		goto L_teach;
+
 	mes "[Luca the Hunter]";
 	mes "\"Ouch! It hurts, this wound I got from battle.\"";
 	next;
@@ -8,7 +15,10 @@
 
 L_Exp:
 	mes "[Luca the Hunter]";
-	mes "\"I was fighting scorpions for experience and I bumped into a RED one. I had NEVER seen it before!\"";
+	mes "\"I was just coming back from a long journey.  I ran into a group of scorpions and started fighting them for experience.\"";
+        next;
+	mes "[Luca the Hunter]";
+        mes "\"Then, out of a cave came a BLACK one!  I had NEVER seen it before!\"";
 	next;
 	mes "[Luca the Hunter]";
 	mes "\"Luckily i had a camera with me! Here's a picture of it... Let me find it, I put it in my pocket somewhere...\"";
@@ -21,4 +31,92 @@ L_Nev:
 	mes "[Luca the Hunter]";
 	mes "\"Hmpf!\"";
 	close;
+
+
+L_teach_soon:
+	mes "[Luca the Hunter]";
+	mes "\"Hey, you look like you're quite a hunter yourself!  If you train a little more, maybe I can teach you a special skill or two?\"";
+        close;
+
+L_teach:
+	if (getskilllv(SKILL_POOL))
+		goto L_teachmore;
+
+	mes "[Luca the Hunter]";
+	mes "\"Hey there!  You're quite the adventurer, aren't you?  But if you want to become stronger, you need to learn a skill or two!\"";
+        next;
+	mes "[Luca the Hunter]";
+	mes "\"If you want, I can help you a bit with that!\"";
+        next;
+        menu
+		"Sure, that sounds fun!", -,
+		"I'm not interested.", L_Nev;
+
+	mes "[Luca the Hunter]";
+	mes "\"All right!  It's not all that easy, though.  First I have to teach you teach you how to focus.  That's because you can learn many skills, but you can't focus on all of them all the time.\"";
+        next;
+
+	mes "[Luca the Hunter]";
+	mes "\"Then I can teach you some skills, and you can tell me which ones you want to focus on.  Deal?\"";
+        next;
+
+        menu
+		"Yeah!", L_teach0_follow,
+		"Certainly!", L_teach0_follow,
+		"Wait... what do you mean?", -,
+		"Please explain it first.", -,
+		"No.", L_Nev;
+
+	callsub S_explain;
+L_teach0_follow:
+
+
+S_explain:
+        mes "[Luca the Hunter]";
+        mes "\"Alright, what do you want to know?\"";
+        next;
+S_explain_loop:
+	menu
+        	"What's skill focus?", L_explain_focus,
+        	"What skills are there?", L_explain_skills,
+        	"How do skills work?", L_explain_work,
+        	"Thanks, I think I got it!", -;
+	return;
+
+L_explain_focus:
+        mes "[Luca the Hunter]";
+        mes "\"Well, you can learn many, many skills.  But you can't really use all of them at once, not even old Aulsbels' head is big enough for that!  So you have to focus.\"";
+        next;
+        mes "[Luca the Hunter]";
+        mes "\"But you can change that focus whenever you want.  It works like this:  You come to me, you tell me what you want to focus on, and we do exercises until it's stuck in your head.\"";
+        next;
+        mes "[Luca the Hunter]";
+        mes "\"If there's not enough space in your head, you'll first have to stop thinking about some other thing.  There's an exercise I learned to do that, so when you talk to me you can just let me know what you want to forget.\"";
+        next;
+        mes "[Luca the Hunter]";
+        if (getskilllv(SKILL_POOL) == 0)
+	        mes "\"Right now you can't focus on anything yet, so I'll first have to teach you a simple skill to keep your focus.\"";
+        if (getskilllv(SKILL_POOL) == 1)
+	        mes "\"Right now you can only focus on one thing at a time.  So if you want to change, you have to forget whatever else you've focused on.\"";
+        if (getskilllv(SKILL_POOL) > 1)
+	        mes "\"You can focus on " + getskilllv(SKILL_POOL) " skills right now.\"";
+        next;
+        mes "[Luca the Hunter]";
+        mes "\"You can come back to me to focus or unfocus whenever you want, I'm here all day.\"";
+        next;
+        goto S_explain_loop;
+
+L_explain_skills:
+        mes "[Luca the Hunter]";
+        mes "\"\"";
+        next;
+        goto S_explain_loop;
+
+L_explain_work:
+        mes "[Luca the Hunter]";
+        mes "\"\"";
+        next;
+        goto S_explain_loop;
+
+L_teachmore:
 }
