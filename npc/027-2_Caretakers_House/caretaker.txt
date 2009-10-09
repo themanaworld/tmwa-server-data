@@ -91,11 +91,27 @@ L_Delivered_Letter:
 
 	mes "[Caretaker]";
 	mes "\"Thank you for delivering my letter.\"";
-	next;
+	set QUEST_Graveyard_Caretaker, 4;
 	close;
 
 L_Give_New_Letter:
-	// TODO: Give player a new letter; add time limit
+	mes "[Caretaker]";
+	mes "\"I have another letter, if you want to deliver it.\"";
+	next;
+
+	menu
+		"Sure.", L_Give_New_Letter_Real,
+		"I'm too busy right now.", -;
+
+	close;
+
+L_Give_New_Letter_Real:
+	set QUEST_Graveyard_Caretaker, 5;
+	mes "You receive the letter and put it in a special place so it doesn't get lost among your inventory.";
+	next;
+
+	mes "[Caretaker]";
+	mes "\"Thank you.\"";
 	close;
 
 OnTimer3000:
@@ -105,7 +121,7 @@ OnTimer3000:
 OnWifeDeath:
 	mapannounce "027-2.gat", "NO! YOU KILLED MY WIFE!", 0;
 	gmcommand strcharinfo(0) + " : @l I killed the caretaker's wife!";
-	gmcommand strcharinfo(0) + " : @ban +5m " + strcharinfo(0);
+	gmcommand strcharinfo(0) + " : @ban +5mn " + strcharinfo(0);
 	setnpctimer 0;
 	end;
 
