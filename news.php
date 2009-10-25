@@ -6,7 +6,7 @@ header("Pragma: no-cache");
 
 $agent = $_SERVER['HTTP_USER_AGENT'];
 
-if (substr($agent, 0, 3) == "TMW")
+if (substr($agent, 0, 3) == "TMW" || substr($agent, 0, 4) == "Mana")
 {
     $file = 'versions/' . date('Y-m-d') . '.txt';
     touch($file);
