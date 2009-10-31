@@ -1,0 +1,306 @@
+//#################################################################################
+//#  This script contains files for Halloween 2009.                               #
+//#  Courtesy of: Ceros [scripting], Salmondine [drops], skipy & lien [Candyman], #
+//#  Freeyorp [the real scripting + PvP quest [[I wish I could have his babies]], #
+//#  Beelzebub for the Skull mask, Jaxad [for ... and implementation help]        #
+//#  Remoitnane, for putting up with Freeyorp's mistakes during playtesting       #
+//#  Needed: 50 Candy, 50 Chocolate Bars, 50 Caramel Apples, ~60 of any Lollipop  #
+//#  Reward: Skull Mask                                                           #
+//#################################################################################
+
+// The Candy Man
+009-1.gat,90,27,0	script	The Candy Man	183, {
+
+    set @STATE_KNOWS_CANDYMAN, 1;
+    set @STATE_FETCH_QUEST, 2;
+    set @STATE_FETCH_DONE, 3;
+    set @STATE_PVP_QUEST, 4;
+    set @LAST_KILL_STATE, 10;
+    set @STATE_FINISHED, 11;
+
+    if ((strcharinfo(0) == "xxMOIKANOXX")) goto L_DIE_IN_A_FIRE;
+    if (rand(7) > 4) goto L_Malus_PC;
+    if (Candyman == 0 && BaseLevel <= 30) goto L_Candy_Too_Young;
+    if (Candyman == @STATE_KNOWS_CANDYMAN) goto L_Candy_Mean_Bastard;
+    if (Candyman == @STATE_FETCH_QUEST) goto L_Candy_Check;
+    if (Candyman == @STATE_FETCH_DONE) goto L_Candy_Done;
+    if (Candyman >= @STATE_PVP_QUEST && Candyman < @LAST_KILL_STATE) goto L_Kill_Someone;
+    if (Candyman == @LAST_KILL_STATE) goto L_PvP_Done;
+    if (Candyman == @STATE_FINISHED) goto L_Finished;
+    if (Candyman == 0) goto L_Candy_Start;
+    close;
+
+L_Candy_Start:
+    if (Sex)
+        set @honorific$, "boy";
+    if (!Sex)
+        set @honorific$, "girl";
+    mes "[The Candy Man]";
+    mes "\"Hello little " + @honorific$ + "... want some candy?\"";
+    next;
+    menu
+        "... uh... sure?", L_Candy_Is_A_Girls_Best_Friend,
+        "No way, creepo! My mom told me about people like you!", -;
+    close;
+
+L_Candy_Is_A_Girls_Best_Friend:
+    mes "[The Candy Man]";
+    mes "\"Well too bad! I want it all!\"";
+    set Candyman, @STATE_KNOWS_CANDYMAN;
+    close;
+
+L_Candy_Mean_Bastard:
+    mes "[The Candy Man]";
+    mes "\"What do you wan-- wait. I'm sorry, maybe you could give me a hand, perhaps?  There'd be something in it for you, I promise.\"";
+    next;
+    menu
+        "With what - and what would be in it for me?", L_Candy_More_Info,
+        "Sorry, no time for the likes of you.", close,
+        "[Clap loudly]", L_Candy_Insult;
+    close;
+
+L_Candy_Insult:
+    callsub S_Taunt_PC;
+    itemheal -Hp, 0;
+    misceffect sfx_magic_war;
+    misceffect sfx_magic_war, strcharinfo(0);
+    close;
+
+ L_Candy_More_Info:
+    mes "[The Candy Man]";
+    mes "\"You see.. I need some candy for a.. party that I am going to tonight.  But, alas, I didn't bring enough candy for everyone.  If you bring me the candy I need, I'll give you something to remind you of me and scare others.  How's that sound?\"";
+    next;
+    menu
+        "Sorry, I don't like the sound of this..", -,
+        "Hmm.. OK..", L_Candy_Accept;
+    close;
+
+L_Candy_Accept:
+    set Candyman, @STATE_FETCH_QUEST;
+    close;
+
+L_Candy_Check:
+    mes "[The Candy Man]";
+    mes "\"So what have you brought me, fleshy one?\"";
+    next;
+
+    if (countitem("ChocolateBar") < 50 || countitem("Candy") < 50 || countitem("LollipopColor1") + countitem("LollipopColor2") + countitem("LollipopColor3") < 60 ||  countitem("CaramelApple") < 50 ) goto L_Check_Not_Enough;
+
+//L_Sugar_Daddy: OK, so it isn't needed but it is still funny
+
+    mes "[The Candy Man]";
+    mes "\"Hmm.. yes, yes.. it seems you do have enough candy. And I guess a promise is a promise and all that happy... stuff. Very well, here is this mask.  It's a striking resemblance, isn't it?\"";
+
+    set @LollipopTotal, countItem("LollipopColor1") + countItem("LollipopColor2") + countItem("LollipopColor3");
+
+    delitem "LollipopColor1", 60 * countItem("LollipopColor1") / @LollipopTotal; // FIXME: Rounding errors?
+    delitem "LollipopColor2", 60 * countItem("LollipopColor2") / @LollipopTotal;
+    delitem "LollipopColor3", 60 * countItem("LollipopColor3") / @LollipopTotal;
+    delitem "ChocolateBar", 50;
+    delitem "Candy", 50;
+    delitem "CaramelApple", 50;
+
+    set Candyman, @STATE_FETCH_DONE;
+    mes "[The Candy Man gives you a Skull Mask.]";
+    getitem 1221, 1;
+    mes "[12,000 experience points]";
+    getexp 12000, 0;
+
+    set $CandyOpsComplete, $CandyOpsComplete + 1;
+
+    next;
+
+    mes "[The Candy Man]";
+    mes "\"Oh screw it, this is just no fun.\"";
+    callsub S_Taunt_PC;
+    misceffect sfx_magic_war;
+    misceffect sfx_magic_war, strcharinfo(0);
+    itemheal -Hp, 0;
+    close;
+
+L_Check_Not_Enough:
+    mes "[The Candy Man]";
+    mes "\"No, not enough candy, I need more!\"";
+    mes "\"Yes...\"";
+    if (countItem("ChocolateBar") < 50) mes "\"Chocolate is always delicious, I need some more from you before I will consider your offerings complete...\"";
+    if (countItem("Candy") < 50) mes "\"There is the candy, wrapped up and full of energy so good.\"";
+    if (countItem("CaramelApple") < 50) mes "\"I have seen many caramel apples go by. I will not rest until I have them!\"";
+    if (countitem("LollipopColor1") + countitem("LollipopColor2") + countitem("LollipopColor3") < 60) mes "\"Lollipops. Any combination, I care not about which types you bring.\"";
+    mes "\"Come back when you have enough!\"";
+    close;
+
+L_Candyman_Trick:
+    mes "[The Candy Man]";
+    mapannounce "009-1", "Mwahahahaha!", 0;
+    mapannounce "009-2", "Mwahahahaha!", 0;
+    misceffect sfx_magic_astral;
+    misceffect sfx_magic_war, strcharinfo(0);
+    areamonster "this", 88, 25, 92, 29, "", 1022, 1 + rand($CandyOpsComplete) / (5 + rand(rand($CandyOpsComplete)));
+    close;
+
+L_Candy_Done:
+    mes "[The Candy Man]";
+    mes "\"Sorry chum, you already got your mask and I already got my candy.\"";
+
+    next;
+    menu
+        "Oookay...", -,
+        "You're sure?", L_Asking_For_It;
+    close;
+
+L_Asking_For_It:
+    mes "[The Candy Man]";
+    mes "\"Oooh, we have an eager one here, it seems. Weeeell, I might have something more for you, if you can do something amusing...\"";
+    next;
+    menu
+        "What did you have in mind?", L_PvP_Intro,
+        "[Carefully back away...]", -;
+    close;
+
+L_PvP_Intro:
+    mes "[The Candy Man]";
+    mes "\"Mhm, mhmhmm. Well, there is nothing quite as utterly delightful as watching you little people run around and kill each other. If, say, you manage to kill enough worthy opponents in an amusing manner, I may well have something... special... for you.\"";
+    next;
+    set Candyman, @STATE_PVP_QUEST;
+    menu
+        "Sure. Mhm. Mhm.", L_PvP_Accept,
+        "Oooer. That doesn't sound nice at all!", -;
+
+    mes "[The Candy Man]";
+    mes "\"How unfortunate. Because I wasn't asking!\"";
+    goto L_PvP_Warp;
+
+L_PvP_Accept:
+    mes "[The Candy Man]";
+    mes "\"Good. Because I wasn't asking! Mhm. Mhm. Ahaha, bwuhahahahah!\"";
+    goto L_PvP_Warp;
+
+L_PvP_Warp:
+    misceffect sfx_magic_astral;
+    misceffect 20, strcharinfo(0); // Teleportation cloud;
+    warp "001-3", 0, 0;
+    close;
+
+L_Kill_Someone:
+    mes "[The Candy Man]";
+    mes "\"Mm? What are you doing back here, get into it!\"";
+    goto L_PvP_Warp;
+
+OnPCKilledEvent:
+    if (Candyman >= 4 && Candyman < 10) goto L_kill_target_recruit;
+    message strcharinfo(0), "As everything fades, you hear distant laughter...";
+    attachrid(@killerrid);
+    if (Candyman >= 10) close;
+    if (Candyman >= 4) goto L_killer_check;
+    close;
+
+L_kill_target_recruit:
+    message strcharinfo(0), "Tut tut. Seems you were too hasty.";
+    if (Candyman > 5 && Candyman < 11) set Candyman, Candyman - 1;
+    attachrid(@killerrid);
+    if (Candyman >= 10) close;
+    if (Candyman >= 4) goto L_killer_check;
+    setarray @messages$, "Ouch, I felt that you silly person! That 'weakling' you killed gave me some nice candy... now you will suffer...", "Oooh, a good kill... do you want to work for meee for that? Come and see me...", "Exquisite, a perfect kill... can you do it again? Come see me, I'll make it worth your while...", "Awwwww, that was no fun, you couldn't even see the fool's face. Nevermind, he has failed me, he will pay...", "Hmph, you just _know_ you can do better than that...";
+    set @pos, rand(getarraysize(@messages$));
+    message strcharinfo(0), @messages$[@pos];
+    if (@pos == 0) itemheal -Hp / 2 - 40, -Sp / 2 - 40;
+    close;
+
+L_killer_check:
+    if (BaseLevel > @victimlvl)
+        goto L_kill_boring;
+    goto L_kill_worthy;
+
+L_kill_boring:
+    setarray @messages$, "Bah, not strong enough! Try someone more interesting, and crush them!", "That was no fun. Killing weaklings is only fun when _I_ do it.", "Too fast, that was over just too fast. Kill someone stronger!", "Boooorring. Crush a worthy foe already!";
+    message strcharinfo(0), @messages$[rand(getarraysize(@messages$))];
+    close;
+
+L_kill_worthy:
+    set Candyman, Candyman + 1;
+    if (Candyman == 10) goto L_final_kill;
+    setarray @messages$, "Yes! Yes! More! You must kill more of them!", "Get another one. Destroy them! Make it as good as this one!", "Utterly delightful, go smite another one!", "Mhm, mhm. Yes... simply sublime.";
+    message strcharinfo(0), @messages$[rand(getarraysize(@messages$))];
+    getexp 1000 + rand(@victimlvl, @victimlvl * @victimlvl), 0;
+    close;
+
+L_final_kill:
+    message strcharinfo(0), "Yes! YES! _YES!_ Perfect, just perfect. Well, I think it may well be time for a reward, don't you think? Mhm, mhm. Come to see me, and claim your prize...";
+    getexp 15000, 0;
+    close;
+
+L_PvP_Done:
+    mes "[The Candy Man]";
+    mes "\"Aha, that was good, yes, very good, mhm.\"";
+    mes "\"And now, your reward...\"";
+    mes "\"You have your treat...\"";
+    mes "";
+    mes "[20 000 experience points!]";
+    mes "[20 000 gp!]";
+    getexp 20000, 0;
+    set zeny, zeny + 20000;
+    set Candyman, @STATE_FINISHED;
+
+    mes "";
+    mes "\"Now, your trick! Mhm, mhmmhmhmhehhm!\"";
+    goto L_Candyman_Trick;
+
+
+L_Finished:
+    mes "[The Candy Man]";
+    mes "\"Just you wait to see what happens when someone else gives me all that I need, mhm, mhm.\"";
+    close;
+
+L_Candy_Too_Young:
+
+    mes "[The Candy Man]";
+    mes "\"I don't think you have enough experience to get what I want..\"";
+    close;
+
+L_DIE_IN_A_FIRE:
+
+    mes "[The Candy Man]";
+    mes "Hi "+strcharinfo(0)+", I heard you were buying up all the candy before I got here...";
+    next;
+    menu
+        "Whut?",-,
+        "Uh...",-;
+
+    mes "Very, very bad to steal info out of #tmw-content.  No candy for you!";
+    callsub S_Taunt_PC;
+    misceffect sfx_magic_war;
+    misceffect sfx_magic_war, strcharinfo(0);
+    itemheal -Hp, 0;
+    close;
+
+S_Taunt_PC:
+    setarray @taunts$, "Die, " + strcharinfo(0) + "!", "Ahah. Aheh. Ahehmwahehehah!", strcharinfo(0) + ", you bore me...", "Rocks fall, everybody dies!", "Why so glum, chum? Everybody has to DIE SOMETIME!", "Why so SERIOUS?", "Do you know how I got this smile, " + strcharinfo(0) + "?", "What, you said you wanted an ivory complexion like mine?", "Tick, tock, tick, tock, BOOM", "BOOM HEADSHOT", "Jigga whut?";
+    npctalk @taunts$[rand(getarraysize(@taunts$))];
+    return;
+
+L_Malus_PC:
+    set @effect, rand(6);
+    if (@effect == 0) mes "\"Time for you to visit some of my friends...\"";
+    if (@effect == 0) misceffect sfx_magic_astral;
+    if (@effect == 0) misceffect 20, strcharinfo(0);
+    if (@effect == 0) warp "027-1", 0, 0;
+    if (@effect == 1) mes "\"Misplaced something?\"";
+    if (@effect == 1) unequipbyid rand(11);
+    if (@effect == 1) unequipbyid rand(11);
+    if (@effect == 2) mes "\"Time to cool off, mhm, mhmm.\"";
+    if (@effect == 2) misceffect sfx_magic_astral;
+    if (@effect == 2) misceffect 20, strcharinfo(0);
+    if (@effect == 2) warp "020-1", 0, 0;
+    if (@effect == 3) mes "\"Ahahehah. Is it me, or is it breezy in here? Mhm.\"";
+    if (@effect == 3) nude;
+    if (@effect == 4) mes "\"How delightedly fancy, but I think I can do better for you... aha, aha.\"";
+    if (@effect == 4) misceffect sfx_magic_astral;
+    if (@effect == 4) setlook 1, 1+rand(6);
+    if (@effect == 4) setlook 6, 1+rand(9);
+    if (@effect == 5) mes "\"...are you still here? Well, not for long...\"";
+    if (@effect == 5) misceffect sfx_magic_astral;
+    if (@effect == 5) misceffect 20, strcharinfo(0);
+    if (@effect == 5) warp "005-3", 0, 0;
+    close;
+
+}
