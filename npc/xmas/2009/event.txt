@@ -1,0 +1,131 @@
+020-1.gat,78,85,0	script	Santa	105,{
+    if (QUEST_Christmas09_state > 0) goto L_Finished;
+
+    set @cond, 0;
+    if (countitem(1234) > 0) set @cond, @cond + 1;
+    if (countitem(1235) > 0) set @cond, @cond + 1;
+    if (countitem(1236) > 0) set @cond, @cond + 1;
+    if (countitem(1237) > 0) set @cond, @cond + 1;
+    if (countitem(1238) > 0) set @cond, @cond + 1;
+    if (countitem(1239) > 0) set @cond, @cond + 1;
+    
+    if (@cond == 6) goto L_Give;
+    
+   if ((strcharinfo(0) == "xxDimondXX")) goto L_LUMP_OF_COAL; 
+   if (SANTA == 0 && BaseLevel <= 30) goto L_SANTA_TOO_YOUNG;
+
+L_SANTA_Start:
+    if (Sex)
+        set @honorific$, "Young Hero";
+    if (!Sex)
+        set @honorific$, "Young Heroine";   
+
+    mes "[Santa Claus]";
+    mes "\"ho-hum ho-hum ho-hum, I'm sorry, "  + @honorific$ +  "  Not really in the Christmas spirit.";
+    mes "That Evil Jack Frost has stolen all the Christmas ornaments!";
+    mes "He will never get off the Naughty List!";
+    mes "How can we have Christmas without a proper Christmas tree?\"";
+    mes "\"The Elves are too depressed to work";
+    mes "Christmas will be ruined!\"";
+    next;
+    menu
+        "Christmas is all about money anyway!, Bah-Humbug!.", L_SANTA_DISAPPOINTED,
+        "There must be something that can be done!", L_SANTA_DESCRIBE_QUEST;
+    close;
+
+    
+
+L_Message:
+    mes "[Santa Claus]";
+    mes "\"Say, Why don't you help me?";
+    mes "In fact, You are just the "  + @honorific$ + " I am looking for!\"";
+    mes "\"What do you say, will you help save Christmas?\"";
+    next;
+    menu
+        "No way, you should have had elves guarding the tree!.", L_SANTA_DISAPPOINTED,
+        "Of course I will help save Christmas", L_SANTA_DESCRIBE_QUEST;
+    close;
+
+L_SANTA_DESCRIBE_QUEST:
+    mes "[Santa Claus]";
+    mes "\"Jack Frost hid the ornaments with monsters all over the world.\"";
+    mes "\"When you recover 6 different kinds of ornaments I will";
+    mes "give you some special gifts!\"";
+    if (@cond > 0) mes "You already have found "+@cond+" different ornaments!";
+    close;
+
+L_Give:
+    getinventorylist;
+    set @freeslots, 100 - @inventorylist_count;
+    if (countitem(1234) <= 1) set @freeslots, @freeslots + 1;
+    if (countitem(1235) <= 1) set @freeslots, @freeslots + 1;
+    if (countitem(1236) <= 1) set @freeslots, @freeslots + 1;
+    if (countitem(1237) <= 1) set @freeslots, @freeslots + 1;
+    if (countitem(1238) <= 1) set @freeslots, @freeslots + 1;
+    if (countitem(1239) <= 1) set @freeslots, @freeslots + 1;
+    if (@freeslots < 3) goto L_NoRoom;
+    delitem 1234, 1;
+    delitem 1235, 1;
+    delitem 1236, 1;
+    delitem 1237, 1;
+    delitem 1238, 1;
+    delitem 1239, 1;
+    mes "[Santa Claus]";
+    mes "\"I knew I could count on you!:";
+    mes "Please accept these small gifts:";
+    mes "The official Christmas 2009 headgear!";
+    mes "And a little something from the elves to say Thank You!";
+    mes "Ho Ho Ho Merry Christmas!\"";
+    getitem 1242, 1;
+    setarray @snowglob$, "SantaSnowGlobe", "SnowmanSnowGlobe";
+    getitem @snowglob$[rand(getarraysize(@snowglob$))], 1;
+    setarray @oldstock$, "SantaBeardHat", "ChristmasTreeHat", "Goggles", "LeatherGoggles", "AntlerHat";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    mes "";
+    mes "[You received 20,000 experience points!]";
+    mes "[You received 20,000 gold!]";
+    getexp 20000, 0;
+    set zeny, zeny + 20000;
+    set QUEST_Christmas09_state, 1;
+    close;
+
+L_NoRoom:
+    mes "[Santa Claus]";
+    mes "";
+    mes "\"Oh dear, it seem you don't have enough space for everything. If you can make space for";
+    mes "a few more things, I'll have some goodies for you...\"";
+    close;
+
+L_Finished:
+    mes "[Santa Claus]";
+    mes "\"You already completed the quest.";
+    mes "But maybe you are feeling the Christmas Spirit,";
+    mes "And would like to help others complete it too?\"";
+    close;
+
+L_LUMP_OF_COAL:    
+    mes "[Santa Claus]";
+    mes "\"Hi "+strcharinfo(0)+",You are on the Naughty list.";
+    mes "Maybe you teased developers too much in IRC?,";
+    mes "Maybe at the quests end you will only get a lump of coal?\"";
+    close;
+    next;
+    menu
+        "No way I'm doing this quest for a lump of coal!", close,
+        "I Dimond D. Stone promise to be nice in IRC.", L_SANTA_DESCRIBE_QUEST;
+    close;
+
+L_SANTA_TOO_YOUNG:
+    mes "[Santa Claus]";
+    mes "\"You are just too young for such a heroic quest, off with you now...\"";
+    close;
+
+L_SANTA_DISAPPOINTED:
+    mes "[Santa Claus]";
+    mes "\"Too bad, "  + @honorific$ +  " , you've been on the NICE LIST since you were 3.\"";
+    close;
+
+}
+
+
+
