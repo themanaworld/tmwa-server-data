@@ -13,16 +13,20 @@ if (substr($agent, 0, 3) == "TMW" || substr($agent, 0, 4) == "Mana")
     file_put_contents($file, '[' . date('H:i') . "] $agent\n", FILE_APPEND);
 }
 
-$old_versions = array("TMW/0.0.23", "TMW/0.0.24", "TMW/0.0.24.1", "TMW/0.0.25");
-$min_version = '0.0.26';
+$min_version = '0.0.28.1';
+$cur_version = '0.0.29.1';
 
-if (array_search($agent, $old_versions) !== FALSE) // Explicit check for saftey
+if (substr($agent, 0, 3) == "TMW" and $agent < 'TMW/' . $min_version)
 {
     echo "##1 The client you're using is no longer\n".
          "##1 supported! Please upgrade to $min_version or\n".
          "##1 higher!\n \n".
          "##1     TMW Staff\n \n";
 }
+
+echo "##9 Latest client version: ##6$cur_version\n \n";
+
+echo "##0 New IRC channel: #themanaworld on irc.themanaworld.org\n \n";
 
 print file_get_contents("news.txt");
 ?>
