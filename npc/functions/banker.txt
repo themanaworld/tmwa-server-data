@@ -2,6 +2,8 @@
 
 function	script	Banker	{
 	if (BankAccount > 0) callsub S_MoveAccount;
+
+L_Start:
 	mes "[" + @npcName$ + "]";
 	mes "\"Welcome to the bank!";
 	mes "How can I help you?\"";
@@ -15,7 +17,22 @@ L_Dep:
 	mes "[" + @npcName$ + "]";
 	mes "\"How much would you like to deposit?\"";
 	next;
+	
+L_Dep_Input:
 	input @Amount;
+	if (@Amount >= 0) goto L_Dep_Continue;
+	mes "[" + @npcName$ + "]";
+	mes "\"I need a positive amount. What would you like to do?\"";
+	menu	"Go back", L_Start,
+		"Try again", L_Dep_Input,
+		"Deposit all", L_Dep_All,
+		"Quit", -;
+	goto L_Nev;
+	
+L_Dep_All:
+	set @Amount, zeny;
+	
+L_Dep_Continue:
 	
 	if (zeny < @Amount) goto L_NoMoney;
 	set zeny, zeny - @Amount;
@@ -26,7 +43,22 @@ L_With:
 	mes "[" + @npcName$ + "]";
 	mes "\"How much would you like to withdraw?\"";
 	next;
+	
+L_With_Input:
 	input @Amount;
+	if (@Amount >= 0) goto L_With_Continue;
+	mes "[" + @npcName$ + "]";
+	mes "\"I need a positive amount. What would you like to do?\"";
+	menu	"Go back", L_Start,
+		"Try again", L_With_Input,
+		"Withdraw all", L_With_All,
+		"Quit", -;
+	goto L_Nev;
+	
+L_With_All:
+	set @Amount, zeny;
+	
+L_With_Continue:
 	
 	if (#BankAccount < @Amount) goto L_NoMoney;
 	set zeny, zeny + @Amount;
@@ -37,7 +69,7 @@ L_Balance:
 	mes "[" + @npcName$ + "]";
 	mes "\"Your current bank balance is:";
 	mes #BankAccount + " GP\"";
-	return;
+	goto L_Start;
 	
 L_Nev:
 	mes "[" + @npcName$ + "]";
@@ -47,7 +79,7 @@ L_Nev:
 L_NoMoney:
 	mes "[" + @npcName$ + "]";
 	mes "\"Oh dear, it seems that you don't have enough money.\"";
-	return;
+	goto L_Start;
 	
 S_MoveAccount:
 	set #BankAccount, #BankAccount + BankAccount;
