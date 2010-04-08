@@ -7,9 +7,12 @@
 	mes "\"Hello deary.\"";
 	next;
 
+    if ((Inspector >= 1  && Inspector <= 7) || Inspector == 9) goto L_NohMask;
+    goto L_Easter;
+
 L_Continue:
-	if ((Inspector >= 1  && Inspector <= 7) || Inspector == 9) goto L_NohMask;
-	close;
+    if ((Inspector >= 1  && Inspector <= 7) || Inspector == 9) goto L_NohMask;
+    close;
 
 L_Lower:
 	mes "[Old Woman]";
@@ -63,4 +66,248 @@ L_NohMask_Fake_Satchel:
 	mes "\"I've remembered something else. The night the troupe left, I saw someone with a theater mask take a large satchel out of town. He was heading north.\"";
 	set Inspector, 10;
 	close;
+
+L_Easter:
+    if ((Easter_2010_QuestState >> E10_STATE_ROSE_SHIFT) & E10_STATE_ROSE_MASK == E10_STATE_ROSE_ROSE_COMPLETE) goto L_Easter_Complete;
+    if ((Easter_2010_QuestState >> E10_STATE_ROSE_SHIFT) & E10_STATE_ROSE_MASK == E10_STATE_ROSE_RETURNED) goto L_Easter_Gaveup;
+    if ((Easter_2010_QuestState & E10_STATE_EGG_MASK) == E10_STATE_EGG_COLLECTING) goto L_Easter_Check;
+    if ((Easter_2010_QuestState & E10_STATE_EGG_MASK) == E10_STATE_EGG_COLLECTED) goto L_Easter_Reward;
+    if ((Easter_2010_QuestState & E10_STATE_EGG_MASK) == E10_STATE_EGG_REWARDED) goto L_Easter_Hint;
+
+    mes "[Old Woman]";
+    mes "\"Would you be able to do something for me, dear?\"";
+    next;
+    menu "Sure", L_Easter_Accept_Explain,
+             "What do you need?", L_Easter_Explain,
+             "No.", -;
+    close;
+
+L_Easter_Explain:
+    mes "[Old Woman]";
+    mes "\"Well, my grandchildren are coming to stay for Easter, and I'm afraid I've forgotten to buy any eggs. Now, there're three of them, and the youngest will want... four eggs. And the middle child will want... seven eggs. And the eldest child will want... nine eggs. And the youngest child will want... four eggs. And the middle child will want...\"";
+    next;
+
+L_Easter_Menu:
+    menu "\"Uh... yeah, I can do that.\"", L_Easter_Accept,
+             "What did you need again?", L_Easter_Explain,
+             "No.", -;
+    close;
+
+L_Easter_Accept_Explain:
+    mes "[Old Woman]";
+    mes "\"Oh! Thank you very much, " + strcharinfo(0) + ". Please bring me those Easter eggs as quickly as you can - my grandchildren will be here soon, and if they arrive and there's no chocolate for them they will be most upset!\"";
+    set Easter_2010_QuestState, (Easter_2010_QuestState & ~E10_STATE_EGG_MASK) | E10_STATE_EGG_COLLECTING;
+    close;
+
+L_Easter_Accept:
+    mes "[Old Woman]";
+    mes "\"Thank you, dear. What luck you dropped by here!\"";
+    set Easter_2010_QuestState, (Easter_2010_QuestState & ~E10_STATE_EGG_MASK) | E10_STATE_EGG_COLLECTING;
+    close;
+
+L_Easter_Check:
+    mes "[Old Woman]";
+    if (countitem(E10_COLLECT_EGGS_ID) + ((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK) < 20) goto L_Easter_Check_Not_Enough;
+    mes "\"Thank you, dear; that should be all I need.\"";
+    delitem E10_COLLECT_EGGS_ID, 20 - ((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK);
+    set Easter_2010_QuestState, (Easter_2010_QuestState & ~((E10_STATE_EGGS_COLLECTED_MASK << E10_STATE_EGGS_COLLECTED_SHIFT) | E10_STATE_EGG_MASK)) | (20 << E10_STATE_EGGS_COLLECTED_SHIFT) | E10_STATE_EGG_COLLECTED;
+    close;
+
+L_Easter_Check_Not_Enough:
+    if (countitem(E10_COLLECT_EGGS_ID) + ((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK) == 0) goto L_Easter_Check_None;
+    if (countitem(E10_COLLECT_EGGS_ID) == 0) goto L_Easter_No_More_To_Add;
+    set Easter_2010_QuestState, (Easter_2010_QuestState & ~((E10_STATE_EGGS_COLLECTED_MASK << E10_STATE_EGGS_COLLECTED_SHIFT) | E10_STATE_EGG_MASK)) | ((countitem(E10_COLLECT_EGGS_ID) + ((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK)) << E10_STATE_EGGS_COLLECTED_SHIFT) | E10_STATE_EGG_COLLECTING;
+    delitem E10_COLLECT_EGGS_ID, countitem(E10_COLLECT_EGGS_ID); // In order to reach this point, the player must not have enough eggs to complete the quest anyway
+
+    mes "\"Thank you... that makes " + ((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK) + " eggs from you so far.\"";
+    if (((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK) > 15) mes "\"If you could get just a few more, it would be very much appreciated...\"";
+    if (((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK) <= 15) mes "\"My mind isn't what it used to be, but if you could get somewhere around " + (20 - ((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK) + rand(3) - rand(3)) + " more for us, it would be very much appreciated...\""; // Add some jitter to make her seem more absent-minded. Rand called twice to create a curve
+    close;
+
+L_Easter_No_More_To_Add:
+    if (((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK) > 15) mes "\"Thank you for you help so far... if you could get just a few more, it would be very much appreciated...\"";
+    if (((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK) <= 15) mes "\"Thank you for your help so far. You don't have to, but if you could find " + (20 - ((Easter_2010_QuestState >> E10_STATE_EGGS_COLLECTED_SHIFT) & E10_STATE_EGGS_COLLECTED_MASK)) + " more eggs, it would be very helpful to this old lady, and much appreciated...\"";
+    close;
+
+L_Easter_Check_None:
+    mes "\"My memory isn't what it used to be, dear, but I think I saw some people looking around under rocks and trees outside town... maybe there're some eggs out there you can find?\"";
+    close;
+
+L_Easter_Reward:
+    mes "[Old Woman]";
+    mes "\"Ah, your reward... I was going to give you a hat, as seems to be the tradition around here, but I have a feeling of... something that I have not felt in a long time.\"";
+    mes "She hesitates.";
+    next;
+
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Easter_No_Room;
+
+    mes "[Old Woman]";
+    mes "\"In light of this... you had best take this... rose with you. It might not seem like much, but in the right place, it can do much, much more than you think...\"";
+    mes "She seems restless, and not at all as frail as she was moments before.";
+    next;
+
+    mes "[Old Woman]";
+    mes "\"Take this, and carry it with you wherever you go... even in the darkest of moments, you may yet see the light with this...\"";
+    set Easter_2010_QuestState, (Easter_2010_QuestState & ~E10_STATE_EGG_MASK) | E10_STATE_EGG_REWARDED;
+    getitem E10_TOKEN_ID, 1;
+    close;
+
+L_Easter_No_Room:
+    mes "[Old Woman]";
+    mes "She looks at you briefly with a sudden, fierce searching look.";
+    mes "She mutters, \"Though it doesn't matter right now I suppose... you wouldn't have the room for it anyway...\"";
+    next;
+
+    mes "[Old Woman]";
+    mes "\"Yet you have shown yourself to be kind and good... if you make some room, I will have something very special for you when you return.\"";
+    close;
+
+L_Easter_Hint:
+    mes "[Old Woman]";
+    setarray @hints$, "\"The rose I gave you? To be honest with you, some strange things have been happening...\"", "\"This world knows many perils, and in times of uncertainty we often need something--to hold, dear, to guide us...\"", "\"I can't quite describe it, but if I were you, I'd hold on to that rose, especially when the light seems to fade...\"", "\"A power beyond my understanding seems to be stirring, I'm afraid.\"";
+    mes @hints$[rand(getarraysize(@hints$))];
+    close;
+
+
+L_Easter_Complete:
+    if ((Easter_2010_QuestState >> E10_STATE_REWARDS_SHIFT) & E10_STATE_REWARDS_MASK == 0) goto L_Easter_Complete_New_Rewards;
+    if ((Easter_2010_QuestState >> E10_STATE_REWARDS_SHIFT) & E10_STATE_REWARDS_MASK == E10_STATE_REWARDS_MASK) goto L_Easter_Done_All;
+    
+    // Done some.
+    if ((~(Easter_2010_QuestState >> E10_DOCTOR_HELP_STATES_SHIFT) & E10_DOCTOR_HELP_STATES_MASK) == 0) goto L_Easter_Finish_Reward;
+    // Helped thrice, and has already been rewarded. Hint that there is more to be done, but still thank the player for the help.
+    mes "[Old Woman]";
+    mes "\"I just can't get over how helpful you've been lately. You know, I hear there might be more to do still, if you're interested. Either way, you have my sincerest thanks.\"";
+    close;
+
+L_Easter_Complete_New_Rewards:
+// Player hasn't been rewarded yet. Give them the items and set states accordingly.
+    if ((~(Easter_2010_QuestState >> E10_DOCTOR_HELP_STATES_SHIFT) & E10_DOCTOR_HELP_STATES_MASK) == 0) goto L_Easter_Reward_All;
+    // Player helped thrice. Give one of the two items, and set one of the flags accordingly.
+    if (rand(2) == 0) goto L_Half_Reward_Rabbit_Hat;
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Hats_No_Room;
+    // Reward Eggshell hat here
+    mes "[Old Woman]";
+    mes "\"Oh, it's good to see you again, sweetie! After giving out gifts to all the children I noticed I still had quite a few of them left. I thought you might enjoy one yourself.\"";
+    getitem "EggshellHat", 1;
+    set Easter_2010_QuestState, Easter_2010_QuestState | (E10_STATE_REWARD_EGGSHELL << E10_STATE_REWARDS_SHIFT);
+    close;
+
+L_Half_Reward_Rabbit_Hat:
+    // Reward Rabbit hat here
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Hats_No_Room;
+    mes "[Old Woman]";
+    mes "\"Hehe, oh, I'm glad I ran into you again! Look at these! Aren't they just adorable? You should have seen my grandchildren, bless them. Of course I saved you a pair!\"";
+    getitem "WhiteRabbitEars", 1;
+    set Easter_2010_QuestState, Easter_2010_QuestState | (E10_STATE_REWARD_RABBIT_EARS << E10_STATE_REWARDS_SHIFT);
+    close;
+
+L_Easter_Finish_Reward:
+    // The player has already been rewarded once, but has gone back and helped. Give the other reward here.
+    if ((Easter_2010_QuestState >> E10_STATE_REWARDS_SHIFT) & E10_STATE_REWARDS_MASK == E10_STATE_REWARD_RABBIT_EARS) goto L_Easter_Finish_Reward_Eggshell;
+    
+    // Give the Rabbit ears, as the player already has the eggshell.
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Hats_No_Room;
+    mes "[Old Woman]";
+    mes "The old woman looks upon you as though you had been missing. \"Oh, so wonderful to see your kind face again! Rumour has it that you've been hopping about being more helpful. At least that's what I had heard.\"";
+    getitem "WhiteRabbitEars", 1;
+    set Easter_2010_QuestState, Easter_2010_QuestState | (E10_STATE_REWARD_RABBIT_EARS << E10_STATE_REWARDS_SHIFT);
+    
+    goto L_Easter_All_done;
+
+L_Easter_Finish_Reward_Eggshell:
+    // Give the eggshll, as the player already has the ears.
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Hats_No_Room;
+    mes "[Old Woman]";
+    mes "\"Oh, I knew you could do it! I'm sure it was difficult, but you showed real patience throughout. I was saving this for you, just in case you came back. I think it's... eggsquisite!\" She giggles and gives you a hat.";
+    getitem "EggshellHat", 1;
+    set Easter_2010_QuestState, Easter_2010_QuestState | (E10_STATE_REWARD_EGGSHELL << E10_STATE_REWARDS_SHIFT);
+    goto L_Easter_All_Done;
+
+L_Easter_Reward_All:
+    // The player has not yet been rewarded, but has helped with everything. Give both hats and set flags accordingly.
+    mes "[Old Woman]";
+    mes "\"Oh my, you're safe and sound! I was so worried, but it seems you have done so well.\"";
+    next;
+    mes "[Old Woman]";
+    mes "After a moment, she continues. \"I believe reflecting upon one's actions to be very revealing.\"";
+    next;
+    mes "[Old Woman]";
+    mes "\"You, my dear, are a shining example, demonstrating, among other things, perseverance and compassion.\"";
+    next;
+    mes "[Old Woman]";
+    mes "\"So for that, and for helping me with my grandchildren, I would like to give you these tokens of my appreciation.\"";
+    next;
+    getinventorylist;
+    if (@inventorylist_count > 98) goto L_Hats_No_Room;
+    mes "[Old Woman]";
+    mes "\"Hold out your hands please, sweetie.\" You do so, and receive two very well-crafted hats.";
+    getitem "EggshellHat", 1;
+    getitem "WhiteRabbitEars", 1;
+    set Easter_2010_QuestState, Easter_2010_QuestState | ((E10_STATE_REWARD_EGGSHELL | E10_STATE_REWARD_RABBIT_EARS) << E10_STATE_REWARDS_SHIFT);
+    next;
+
+L_Easter_Done_All:
+    mes "[Old Woman]";
+    mes "\"Hehe, I could tell you were a little confused by my first gift, yes? People really seem to enjoy these sorts of things, so I decided to reconsider my hat policy. And you've earned everything, every step of the way.\"";
+    close;
+
+L_Easter_Gaveup:
+    mes "[Old Woman]";
+    mes "\"Oh no,\" she gasps, extremely disheartened at your early return. \"I was expecting so much more from you once I heard what had happened.\"";
+    next;
+    mes "[Old Woman]";
+    mes "She shakes her head, obviously upset. \"In fact, I had planned on giving you some extra treats for being so helpful and brave.\"";
+    next;
+    mes "[Old Woman]";
+    mes "\"But I guess you did your best, honey. Maybe that's all that matters.\"";
+    close;
+
+L_Hats_No_Room:
+    mes "[Old Woman]";
+    mes "\"Oh, no, no, that won't do. I'll wait until you have some more room for carrying things. I wouldn't want you to lose a gift.\"";
+    mes "\"Please see me again when you are ready, honey.\"";
+    close;
+
+// The all important rose die script. Hooked into the old woman script for now.
+OnPCDieEvent:
+    if (countitem(E10_TOKEN_ID) < 1) end;
+    if ((Easter_2010_QuestState >> E10_STATE_ROSE_SHIFT) & E10_STATE_ROSE_MASK >= E10_STATE_ROSE_ROSE_USED) end;
+    savepoint "028-1", 63, 68;
+    delitem E10_TOKEN_ID, 1;
+    set Easter_2010_QuestState, (Easter_2010_QuestState & ~(E10_STATE_ROSE_MASK << E10_STATE_ROSE_SHIFT)) | (E10_STATE_ROSE_ROSE_USED << E10_STATE_ROSE_SHIFT);
+    getitem "DarkPetal", 1;
+    end;
+
+OnManualStartTimer:
+    initnpctimer;
+    end;
+
+OnManualStopTimer:
+    stopnpctimer;
+    end;
+
+
+OnTimer30000:
+    setnpctimer 0;
+    if ($Easter_2010_Npc_State1 & E10_TIMER_STATE_EGGS_MASK < ($Easter_2010_Npc_State1 >> E10_EGGS_TIMER_OVERTICK_SHIFT) & E10_EGGS_TIMER_OVERTICK_MASK) goto L_timer_increment;
+
+OnResetReplenish:
+    set $Easter_2010_Npc_State1, $Easter_2010_Npc_State1 & ~E10_TIMER_STATE_EGGS_MASK;
+OnReplenish:
+    set $Easter_2010_Egg_Loc_State1, $Easter_2010_Egg_Loc_State1 | (rand(2147483647) & rand(2147483647));
+    set $Easter_2010_Egg_Loc_State2, $Easter_2010_Egg_Loc_State2 | (rand(2147483647) & rand(2147483647));
+    set $Easter_2010_Egg_Loc_State3, $Easter_2010_Egg_Loc_State3 | (rand(2147483647) & rand(2147483647));
+    set $Easter_2010_Egg_Loc_State4, $Easter_2010_Egg_Loc_State4 | (rand(2147483647) & rand(2147483647));
+    set $Easter_2010_Egg_Loc_State5, $Easter_2010_Egg_Loc_State5 | (rand(2147483647) & rand(2147483647));
+    end;
+
+L_timer_increment:
+    set $Easter_2010_Npc_State1, ($Easter_2010_Npc_State1 & ~E10_TIMER_STATE_EGGS_MASK) | (($Easter_2010_Npc_State1 & E10_TIMER_STATE_EGGS_MASK) + 1 );
 }

@@ -1,0 +1,1919 @@
+
+// Yes, it really does start at 0,0.
+028-1.gat,0,0,0	script	Doctor#who	184,{
+    // States here
+    callsub S_Helped_Count;
+    if (@Easter_2010_helper >= 2 && !((Easter_2010_QuestState >> E10_FLAG_MID_REWARD_SHIFT) & E10_FLAG_MID_REWARD_MASK))
+        goto L_MidReward;
+    if (@Easter_2010_helper == 4 && !((Easter_2010_QuestState >> E10_FLAG_RETURN_READY_SHIFT) & E10_FLAG_RETURN_READY_MASK))
+        goto L_Defeat_Invader;
+    set @pos, ($Easter_2010_Npc_State2 >> E10_DOCTOR_POSITION_SHIFT) & E10_DOCTOR_POSITION_MASK;
+    if ((Easter_2010_QuestState >> E10_FLAG_RETURN_READY_SHIFT) & E10_FLAG_RETURN_READY_MASK == E10_FLAG_RETURN_READY && (Easter_2010_QuestState >> E10_STATE_ROSE_SHIFT) & E10_STATE_ROSE_MASK == E10_STATE_ROSE_ROSE_COMPLETE)
+        goto L_Return_Ready_Optional;
+
+L_Choose_Location:
+    if (@pos == E10_DOCTOR_POSITION_BIGTREE) goto L_At_Tree;
+    if (@pos == E10_DOCTOR_POSITION_ISLAND) goto L_At_Island;
+    if (@pos == E10_DOCTOR_POSITION_STONES) goto L_At_Stones;
+    if (@pos == E10_DOCTOR_POSITION_FRUIT) goto L_At_Fruit;
+    if (@pos == E10_DOCTOR_POSITION_CAVE) goto L_At_Cave;
+
+    // Fallthrough. We've handled all the positions we can think of. If this still doesn't catch, then warp.
+    mes "[Doctor]";
+    mes "";
+    mes "\"You shouldn't be here!\"";
+    close2;
+    goto OnDoWarp;
+
+// The player has defeated the invader and helped enough times.
+L_Return_Ready_Optional:
+    // if (@pos == E10_DOCTOR_POSITION_CAVE) goto L_At_Cave;
+    callsub S_Has_Helped_At, @pos;
+    if (!(~(Easter_2010_QuestState >> E10_HELPED_DOCTOR_SHIFT) & E10_HELPED_DOCTOR_MASK) || @Easter_2010_helper)
+        goto L_Return_Ready;
+
+    // Player can help one more time, if so desired.
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well... this has been quite an adventure, hasn't it? I'd say it's about timey--er, time for me to go, but I think I can stick around for a little while longer to tie up some loose ends for myself.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Oh, did you want to help again?\"";
+    next;
+    menu "Sure, that sounds good", L_Choose_Location,
+            "Hm, I can't right now, but maybe later.", L_Return_Ready,
+            "I was looking for a way to go home.", L_At_Stones_Capable,
+            "No, sorry, I don't think so.", L_Return_Ready;
+    close;
+
+// Player has done "everything" to do in this world, just talking to the Doctor.
+L_Return_Ready:
+    set @parting$, "!";
+    if (strcharinfo(0) == "Alonso" || strcharinfo(0) == "AlOnS") set @parting$, ", Alonso!";
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well, you have been absolutely brilliant! Brilliant! Very impressive.\" He smiles kindly and shakes your hand. \"It has been a pleasure. Now for the next adventure. Allons-y" + @parting$ + "\"";
+    close;
+
+L_Defeat_Invader:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Ah-ha! It's nice to see you again. How goes the battle?\"";
+    next;
+    menu "I'm having a hard time, actually. I'd like to go home...", -,
+            "Regrouping now for the next encounter, actually.", L_Encourage;
+    if (($Easter_2010_Npc_State2 >> E10_DOCTOR_POSITION_SHIFT) & E10_DOCTOR_POSITION_MASK == E10_DOCTOR_POSITION_STONES)
+        goto L_At_Stones_Turn_Back;
+
+L_Encourage:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Oh, well, I think you'll prevail in the end! If you'll excuse me, I still have some things to see to.\"";
+    close;
+
+S_Dialogue_Knows:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Oh, hello again... hm...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes @responses$[rand(getarraysize(@responses$))];
+    return;
+
+S_Update_Knows:
+    // Working "name" for when he hasn't introduced himself (can be changed).
+    mes "[Mysterious Man]";
+    mes "";
+    mes @responses$[rand(getarraysize(@responses$))];
+    next;
+    set Easter_2010_QuestState, Easter_2010_QuestState & ~(E10_FLAG_KNOWS_DOCTOR_MASK << E10_FLAG_KNOWS_DOCTOR_SHIFT) | (E10_FLAG_KNOWS_DOCTOR << E10_FLAG_KNOWS_DOCTOR_SHIFT);
+    mes "[Doctor]";
+    mes "";
+    mes "\"Oh, excuse me,\" he gestures. \"I'm the Doctor.\"";
+    return;
+
+S_Update_Helped:
+    if (getarg(0) == E10_DOCTOR_POSITION_BIGTREE)
+        set Easter_2010_QuestState, Easter_2010_QuestState & ~(E10_FLAG_HELPED_DOCTOR_TREE_MASK << E10_FLAG_HELPED_DOCTOR_TREE_SHIFT) | (E10_FLAG_HELPED_DOCTOR_TREE << E10_FLAG_HELPED_DOCTOR_TREE_SHIFT);
+    if (getarg(0) == E10_DOCTOR_POSITION_ISLAND)
+        set Easter_2010_QuestState, Easter_2010_QuestState & ~(E10_FLAG_HELPED_DOCTOR_ISLAND_MASK << E10_FLAG_HELPED_DOCTOR_ISLAND_SHIFT) | (E10_FLAG_HELPED_DOCTOR_ISLAND << E10_FLAG_HELPED_DOCTOR_ISLAND_SHIFT);
+    if (getarg(0) == E10_DOCTOR_POSITION_STONES)
+        set Easter_2010_QuestState, Easter_2010_QuestState & ~(E10_FLAG_HELPED_DOCTOR_STONES_MASK << E10_FLAG_HELPED_DOCTOR_STONES_SHIFT) | (E10_FLAG_HELPED_DOCTOR_STONES << E10_FLAG_HELPED_DOCTOR_STONES_SHIFT);
+    if (getarg(0) == E10_DOCTOR_POSITION_FRUIT)
+        set Easter_2010_QuestState, Easter_2010_QuestState & ~(E10_FLAG_HELPED_DOCTOR_FRUIT_MASK << E10_FLAG_HELPED_DOCTOR_FRUIT_SHIFT) | (E10_FLAG_HELPED_DOCTOR_FRUIT << E10_FLAG_HELPED_DOCTOR_FRUIT_SHIFT);
+    callsub S_Helped_Count;
+    if (@Easter_2010_helper == 3) set Easter_2010_QuestState, (Easter_2010_QuestState & ~(E10_STATE_ROSE_MASK << E10_STATE_ROSE_SHIFT)) | (E10_STATE_ROSE_ROSE_COMPLETE << E10_STATE_ROSE_SHIFT);
+    return;
+
+S_Helped_Count:
+    set @Easter_2010_helper, 0;
+    if ((Easter_2010_QuestState >> E10_FLAG_HELPED_DOCTOR_TREE_SHIFT) & E10_FLAG_HELPED_DOCTOR_TREE_MASK == E10_FLAG_HELPED_DOCTOR_TREE)
+        set @Easter_2010_helper, @Easter_2010_helper + 1;
+    if ((Easter_2010_QuestState >> E10_FLAG_HELPED_DOCTOR_ISLAND_SHIFT) & E10_FLAG_HELPED_DOCTOR_ISLAND_MASK == E10_FLAG_HELPED_DOCTOR_ISLAND)
+        set @Easter_2010_helper, @Easter_2010_helper + 1;
+    if ((Easter_2010_QuestState >> E10_FLAG_HELPED_DOCTOR_STONES_SHIFT) & E10_FLAG_HELPED_DOCTOR_STONES_MASK == E10_FLAG_HELPED_DOCTOR_STONES)
+        set @Easter_2010_helper, @Easter_2010_helper + 1;
+    if ((Easter_2010_QuestState >> E10_FLAG_HELPED_DOCTOR_FRUIT_SHIFT) & E10_FLAG_HELPED_DOCTOR_FRUIT_MASK == E10_FLAG_HELPED_DOCTOR_FRUIT)
+        set @Easter_2010_helper, @Easter_2010_helper + 1;
+    return;
+
+S_Has_Helped_At:
+    set @Easter_2010_helper, 0;
+    if (getarg(0) == E10_DOCTOR_POSITION_BIGTREE)
+        set @Easter_2010_helper, (Easter_2010_QuestState >> E10_HELPED_DOCTOR_TREE_SHIFT) & E10_HELPED_DOCTOR_TREE_MASK;
+    if (getarg(0) == E10_DOCTOR_POSITION_ISLAND)
+        set @Easter_2010_helper, (Easter_2010_QuestState >> E10_HELPED_DOCTOR_ISLAND_SHIFT) & E10_HELPED_DOCTOR_ISLAND_MASK;
+    if (getarg(0) == E10_DOCTOR_POSITION_STONES)
+        set @Easter_2010_helper, (Easter_2010_QuestState >> E10_HELPED_DOCTOR_STONES_SHIFT) & E10_HELPED_DOCTOR_STONES_MASK;
+    if (getarg(0) == E10_DOCTOR_POSITION_FRUIT)
+        set @Easter_2010_helper, (Easter_2010_QuestState >> E10_HELPED_DOCTOR_FRUIT_SHIFT) & E10_HELPED_DOCTOR_FRUIT_MASK;
+    return;
+
+L_MidReward:
+    if (((Easter_2010_QuestState >> E10_FLAG_MID_REWARD_SHIFT) & E10_FLAG_MID_REWARD_MASK)) close;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Fantastic! You have really been quite helpful.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Er, now that I think about it, perhaps I have something you'd be interested in.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"While visiting another dimension--hm, as a matter of fact, it was quite like this one. But their choices in the past seem to have differed from the ones here...\"";
+	next;
+    mes "[Doctor]";
+    mes "";
+    mes "The Doctor reflects on his words. \"Interesting how things turn out. Well, I now have a lot of these Valentine's Glasses, if you'd like a pair.\"";
+    next;
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_MidReward_NoRoom;
+    mes "[Doctor]";
+    mes "";
+    mes "He hands you the glasses.";
+    mes "\"They're not too brainy, or suited for detecting background radiation, but they are charming.\"";
+    set Easter_2010_QuestState, Easter_2010_QuestState & ~(E10_FLAG_MID_REWARD_MASK << E10_FLAG_MID_REWARD_SHIFT) | (E10_FLAG_MID_REWARD << E10_FLAG_MID_REWARD_SHIFT);
+    getitem E10_MIDREWARD_ID, 1;
+    close;
+
+L_MidReward_NoRoom:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Oh, I don't think you have room for these. Well, I suppose I'll hold on to them for now.\"";
+    close;
+
+// ======================
+// === First location ===
+// ======================
+
+L_At_Tree:
+    // Checks for if the player has already helped the doctor, either here or elsewhere, go here.
+    if ((Easter_2010_QuestState >> E10_FLAG_HELPED_DOCTOR_TREE_SHIFT) & E10_FLAG_HELPED_DOCTOR_TREE_MASK == E10_FLAG_HELPED_DOCTOR_TREE)
+        goto L_At_Tree_Helped;
+
+    if ((Easter_2010_QuestState >> E10_FLAG_KNOWS_DOCTOR_SHIFT) & E10_FLAG_KNOWS_DOCTOR_MASK == E10_FLAG_KNOWS_DOCTOR)
+        goto L_At_Tree_Knows_Doctor;
+    // Fallthrough, reaction to a player that is completely new.
+
+    setarray @responses$, "\"This tree, I'm sure it's - \"The man looks up distractedly.\" Oh, hello. Can't talk now, I'm afraid, this world needs my help...\"", "He looks up, confused. \"Withering... why is this world dying? Perhaps--er, who are you? You'll have to excuse me, I'm a little preoccupied with this tree...\"", "\"What-what? I mean, sorry, hello! Can't quite talk, a bit busy trying to save this world.\" He seems to be deep in thought, brandishing what looks to be a small tool near the tree.", "\"You there! Do you realise what's happening here? This world is dying, much like a human would, perhaps. Nevertheless...\""; // Not many responses are needed here, since init only happens one per player.
+    callsub S_Update_Knows;
+    next;
+    if (countitem("LifeStone") > 0)
+        goto L_has_lifestone;
+    close;
+
+L_At_Tree_Knows_Doctor:
+    // More responses than the initial here, and need to be more of a hint.
+    setarray @responses$, "\"I just don't know what's wrong. My analysis tells me this tree is important, but I don't seem to have the right tool...\"", "A distinct... whirring noise sounds from the device the Doctor wields. \"You see this tree? Right here, this one! There's something amiss here, perhaps beyond my expertise.\"", "\"Yes, yes, all evidence points to this tree. \"He leans in for a closer look. \"Brilliant! No! Um... that's not right.\"", "He withdraws what appear to be glasses from his pocket and puts them on, peering intently at the tree.", "\"Mm-hmm, yes! Do you see what's wrong with this tree? No?\" He sounds somewhat dejected, but still determined. \"Well, neither do I, I'm afraid.\"", "The Doctor turns with a look of panic on his face, gesturing for you to stop talking. He turns back to the tree, muttering \"some way to heal...\"";
+    callsub S_Dialogue_Knows;
+    next;
+
+    if (countitem("LifeStone") > 0)
+        goto L_has_lifestone;
+    mes "[Doctor]";
+    mes "";
+    mes "\"I'm trying to understand something, but it's got me quite confused, I'm afraid. I need something to assist me... something to counter the death...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Unfortunately, I really can't think of anything to use. Please leave me alone while I think.\"";
+    close;
+
+L_has_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"I'm busy right now, I'm afraid I - what's that thing you've got there?\"";
+    next;
+    goto L_spotted_lifestone;
+
+L_spotted_lifestone:
+    menu
+            "That? That's just a Life Stone. Basic level one magic item.", L_want_lifestone,
+            "Sorry, I'm not interested in talking right now.", -;
+    close;
+
+L_want_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"A Life Stone? It is not of this world... and it's just what I need! Where did you get it?\"";
+    next;
+    menu
+        "I made it myself!", L_made_lifestone,
+        "Elanore the Healer made it for me.", L_elanore_lifestone,
+        "I bought it off someone.", L_bought_lifestone,
+        "What? You expect me to remember where I get every single lifestone?", L_expect_lifestone;
+    close;
+
+L_made_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"You made it? But then you... you must be from elsewhere as well! How did you get here?\"";
+    next;
+    menu
+        "A mysterious old woman gave me a flower, and then I appeared here.", L_woman_lifestone,
+        "I died.", L_dead_lifestone,
+        "I think I've told you enough for now...", -;
+    close;
+
+L_elanore_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Elanore the Healer... I have not heard of her, but she must be a powerful being indeed. But there are more pressing matters - will you lend me this... 'Life Stone'?\"";
+    next;
+    menu
+        "Yeah, whatever.", L_offer_lifestone,
+        "I'm not giving you my stuff!", -;
+    close;
+
+L_bought_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"And you could afford it? Something as powerful as this must be worth a fortune.\"";
+    next;
+    menu
+        "Actually, it was only 100 GP.", L_cheap_lifestone,
+        "Yeah, well, I got a few million in the bank.", L_rich_lifestone,
+        "Powerful? I thought it just did minor healing.", L_powerful_lifestone;
+    close;
+
+L_expect_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well, I suppose so. I need something like this, however... I must be sure it has not been tainted with darkness. If you don't remember where you got it, it's no use to me.\"";
+    close;
+
+L_woman_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"An old woman gave you - ? Well, never mind that. This 'Life Stone'... I think I need it. Will you lend it to me?\"";
+    next;
+    menu
+        "Sure.", L_offer_lifestone,
+        "Sorry, I need it.", -;
+    close;
+
+L_dead_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"So... you're dead? Then maybe this world is some kind of... afterlife to yours?\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"But if this world is dying, how can it be an afterlife? That doesn't make sense...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Unless you were already dead, and you've been reincarnated...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"But surely you wouldn't be able to make a powerful thing like this... this 'Life Stone' in a world for the dead?\"";
+    mes "\"But since you are here, and you do have this Life Stone - can I borrow it? I think I may need it, and quite soon.\"";
+    next;
+    menu
+        "Yes, take it.", L_offer_lifestone,
+        "No, I need it.", -;
+    close;
+
+L_cheap_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Then that was a bargain, my friend. This must surely be worth thousands! And I'm afraid I'm going to have to ask you if I may borrow it.\"";
+    next;
+    menu
+        "Yeah, you can.", L_offer_lifestone,
+        "Nope, sorry.", -;
+    close;
+
+L_rich_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Ah! I'm afraid I expected you to be poor... being the warrior type, I mean. Well... I'm going to need this Life Stone. It's quite important. Might I purchase it from you?\"";
+    next;
+    menu
+        "Indeed. That will be 50,000 GP, please.", L_expensive_lifestone,
+        "Better. You can have it for free!", L_offer_lifestone,
+        "No. It's mine.", -;
+    close;
+
+L_powerful_lifestone:
+    if (getskilllv(SKILL_MAGIC)) goto L_hasmagic_lifestone;
+    mes "[Doctor]";
+    mes "";
+    mes "\"It contains a strange power which I have never detected before... and I think I can use it. Can I borrow it off you?\"";
+    next;
+    menu
+        "Yeah, if you want.", L_offer_lifestone,
+        "Er... no. My powerful rock! Ha!", -;
+    close;
+
+L_hasmagic_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"It contains a strange power which I have never detected before... except... in you. You have this power in you!\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Anyway... this stone, this Life Stone, can I borrow it?\"";
+    next;
+    menu
+        "Sure. Here you are.", L_offer_lifestone,
+        "Tell me more about this power.", L_power_lifestone,
+        "No.", -;
+    close;
+
+L_power_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"There's nothing I can really tell you. I just know it's there, I don't know what it is. Can I borrow the Stone?\"";
+    next;
+    menu
+        "Yeah, sure.", L_offer_lifestone,
+        "No.", -;
+    close;
+
+L_help_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Just the boost I needed... hm? No, that's all for now, thank you. Is there anything *you* need?\"";
+    next;
+    menu "I might have some questions later, if you'll be here...", -,
+         "Thank you for the offer, really, but I'm fine.", -;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well, I'll still be gathering information myself, so perhaps we'll cross paths again.\"";
+    close;
+
+L_expensive_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Oh, excuse me. I'm not sure about your currency, but I don't think I can cover that right now. Please let me know if you change your mind.\"";
+    close;
+
+L_only_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Yes... uh, well, I suppose if you wanted I could pay you for it. Let me see now...\"";
+    next;
+    mes "\"Here we are! It's all I've got on me at the moment, I'm afraid.\"";
+    getitem "StrangeCoin", 1;
+    next;
+    menu
+        "Is there anything else you need?", L_help_lifestone,
+        "Alright then. Bye!", -;
+    close;
+
+L_offer_lifestone:
+    if (countitem("LifeStone") < 1)
+        goto L_lost_lifestone;
+
+    delitem "LifeStone", 1;
+    callsub S_Update_Helped, E10_DOCTOR_POSITION_BIGTREE;
+
+    if (countitem("LifeStone") == 0)
+        goto L_one_lifestone;
+
+    mes "[Doctor]";
+    mes "";
+    mes "\"Wonderful! What a spot of luck it was you coming here with this. You don't know how much you deserve thanks.\"";
+    mes "He takes your lifestone and places it into a curious device, then waves the device up and down the tree. It makes a number of beeping sounds, and the Doctor seems happy.";
+    next;
+    goto L_given_lifestone;
+
+L_one_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Wonderful! What a spot of luck it was you coming here with this. You don't know how much you deserve thanks.\"";
+    mes "He takes your lifestone and places it into a curious device, then waves the device up and down the tree. It makes a number of beeping sounds, and the Doctor seems happy.";
+    next;
+    menu
+        "Is there anything else you need?", L_help_lifestone,
+        "That was the only one I had, I'm glad it helped.", L_only_lifestone,
+        "Alright then. Bye!", -;
+    close;
+
+L_lost_lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Brilliant! Fantastic! This will surely help... Wait, I thought you had a lifestone for me? Well, maybe you can come by again when you do.\"";
+    close;
+
+L_given_lifestone:
+    menu
+        "Is there anything else you need?", L_help_lifestone,
+        "Alright then. Bye!", -;
+    close;
+
+L_At_Tree_Helped:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Fantastic! Your help with this tree is much appreciated. I believe we are that much closer to solving this mystery.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"I suspect there is still much to do. Please feel free to look around, there might be more information to gather elsewhere.\"";
+    close;
+
+// =======================
+// === Second location ===
+// =======================
+
+L_At_Island:
+    // Checks for if the player has already helped the doctor, either here or elsewhere, go here.
+    if ((Easter_2010_QuestState >> E10_FLAG_HELPED_DOCTOR_ISLAND_SHIFT) & E10_FLAG_HELPED_DOCTOR_ISLAND_MASK == E10_FLAG_HELPED_DOCTOR_ISLAND)
+        goto L_At_Island_Helped;
+
+    if ((Easter_2010_QuestState >> E10_FLAG_KNOWS_DOCTOR_SHIFT) & E10_FLAG_KNOWS_DOCTOR_MASK == E10_FLAG_KNOWS_DOCTOR)
+        goto L_At_Island_Knows_Doctor;
+
+    setarray @responses$, "\"Odd spheres of energy floating about... Interesting. The decay is very severe here...\" He looks over, as if only now noticing your presence. \"Excuse me, how do you do? Don't mean to be rude, just lost in thought...\"", "There's a man in glasses, scanning the area carefully. \"There are more trees affected than I had thought.\" He extends his hand, waving a small device around carefully.", "\"Well, so what does that mea--oh, sorry! Please don't mind me, but right now I'm trying to figure out why this world is dying.\"", "A somewhat oddly dressed man turns about. Suddenly, he speaks up, \"No, no, something's definitely wrong. Explain it? Well... it's complicated.\"";
+    callsub S_Update_Knows;
+    close;
+
+L_At_Island_Knows_Doctor:
+    setarray @responses$, "\"Oi! What killed these trees...\" He takes a moment, studying carefully. \"And this open area--there don't seem to be any creatures around. Interesting.",
+                          "\"Hm, do you know anything about those spheres of energy?\" The device he's holding glows briefly. \"Well, that's what I thought. If you'll excuse me for a moment.\" He adjusts his glasses and continues his work.",
+                          "\"There's the other, big tree... Then there are these trees, and... glowing orbs. Some... force is slowly destroying this world.\" The Doctor finishes his thought and continues pacing.",
+                          "The Doctor takes out the same strange device, anticipating a question and responding. \"Oh, this, it's good for everything. Right now I'm looking for what might be controlling these blobs of light; they don't seem to be moving on their own.\"",
+                         "\"I know there is some other agent at work here. I don't quite know what it is yet, but... Well, if you have any information that could help, please do share.\"";
+
+    callsub S_Dialogue_Knows;
+    next;
+
+L_At_Island_Menu:
+    setarray @menuitems$, "", "", "", "", "";
+    set @c, 0;
+
+    set @menuitems$[@c], "What's going on here? It looks like everything is dying! The trees are dead and decaying, the grass is weak and easily crushed, and the animals are gone!";
+    set @menuid[@c], E10_ISLAND_MENU_DEATH_AWE;
+    set @c, @c + 1;
+
+    set @menuitems$[@c], "There's an eerie sort of silence about this place, don't you think? ... Er, what was that?! ... It doesn't seem all that safe here...";
+    set @menuid[@c], E10_ISLAND_MENU_SCARED;
+    set @c, @c + 1;
+
+    set @menuitems$[@c], "The orbs of light flying about? Wisps. And you know, they do seem to be behaving strangely, or as much is possible given the circumstances. You think there's a reason for that?";
+    set @menuid[@c], E10_ISLAND_MENU_WISPS;
+    set @c, @c + 1;
+
+
+    if (!(Easter_2010_QuestState & (E10_FLAG_HELPED_DOCTOR_TREE << E10_FLAG_HELPED_DOCTOR_TREE_SHIFT))) goto L_post_tree_help;
+    set @menuitems$[@c], "This place looks dead... do you need any more lifestones?";
+    set @menuid[@c], E10_ISLAND_MENU_OFFER_LIFESTONE;
+    set @c, @c + 1;
+
+L_post_tree_help:
+    menu
+        @menuitems$[0], -,
+        @menuitems$[1], -,
+        @menuitems$[2], -,
+        @menuitems$[3], -,
+        @menuitems$[4], -;
+
+    set @menu, @menu -1;
+    if (@menu >= @c) close;
+    if (@menuid[@menu] == E10_ISLAND_MENU_DEATH_AWE) goto L_At_Island_Death_Awe;
+    if (@menuid[@menu] == E10_ISLAND_MENU_SCARED) goto L_At_Island_Scared;
+    if (@menuid[@menu] == E10_ISLAND_MENU_WISPS) goto L_At_Island_Wisps;
+    if (@menuid[@menu] == E10_ISLAND_MENU_OFFER_LIFESTONE) goto L_At_Island_Offer_Lifestone;
+    close;
+
+L_At_Island_Death_Awe:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Yes, yes. For most, death can't be avoided, but this...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"So much death, and so quickly, even. It doesn't seem quite natural, does it?\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Take a look at this, won't you?\"";
+    next;
+    menu "I'm not sure, what am I looking for exactly?", -;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Ah, you don't see it? Well, these glasses of mine--well, here, take a look\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "The Doctor takes off his red-blue glasses and holds them up. You peer through and examine the surroundings.";
+    next;
+    menu "I... don't see anything unusual, sorry.", -,
+            "Oh, something about the grass?", L_At_Island_Grass,
+            "Er, what exactly do these glasses do?", L_At_Island_Glasses,
+            "Oh, so the... the um... that?", -,
+            "Right, of course, that is... very... interesting?", -,
+            "Could you hold that thought? I need to check on something else first.", -;
+    close;
+
+L_At_Island_Grass:
+    mes "[Doctor]";
+    mes "";
+    mes "The Doctor pauses, examining the ground. \"Now that you mention it...\" He holds up a blade of grass between his fingers. \"There is a sort of strange texture about it, perhaps slightly grating.\"";
+    next;
+    menu "Yes, I had noticed that, too. Do you think it's relevant?", L_At_Island_Explain,
+            "Hm, now that I think about it, it doesn't seem all too different from my own world's.", L_At_Island_Explain,
+            "Do you think it's a result of all the death here?", L_At_Island_Explain,
+            "Oh, excuse me for just a second.", -;
+    close;
+
+L_At_Island_Glasses:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well, I had suspected that what may have been causing damage to this world was in fact from another universe.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"So you can think of these glasses as the means to identifying when something or someone has gone through the Void.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Here, let me show you.\" The Doctor turns the glasses so you can view him and moves around.";
+    next;
+    menu "Oh, wow. There's a sort of... grainy effect about you. Like particles?", -;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Yes, stuff from the Void. I saw something earlier, but nothing now. Strange.\"";
+    close;
+
+L_At_Island_Explain:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well, from the other things I've seen here, I wouldn't couldn't say so definitively, but it's possible.\"";
+    next;
+    mes "Your eyes follow the Doctor as he begins to pace. He pauses to continue his thought.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    if ((Easter_2010_QuestState >> E10_HELPED_DOCTOR_SHIFT) & E10_HELPED_DOCTOR_MASK)
+        goto L_At_Island_Theory;
+    mes "\"Well, it's interesting. I'll have to take a closer look.\"";
+    close;
+
+L_At_Island_Theory:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Based on what we had uncovered before, I think some force is exerting its will on those glowing entities.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"How it all ties together is what I'm still trying to figure out.\" He adjusts his glasses again.";
+    next;
+    menu "It is very strange, can't argue there.", -,
+            "I have faith in you.", -,
+            "What if--oh, are you thinking about something?", L_At_Island_Knows_Doctor,
+            "Yes, that is an interesting idea. I will think it over for a bit.", -;
+    close;
+
+L_At_Island_Scared:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Ahh, feeling a bit anxious are we? I don't blame you, chap, it is a bit unnerving here.\" The Doctor continues to analyze the environment with his various instruments, apparently lost in thought.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"It's really quite strange... the levels of electromagnetic energy in the area seem to be spiking regularly, almost in time with the movements of these glowing blobs.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Judging from these readouts, it would seem that either some force is acting upon these orbs of light, or they are in fact creating a sporadic magnetic field.\"";
+    next;
+    menu "What? I'm just really, really scared!", L_At_Island_Terror,
+            "Electromagnetic what now?", L_At_Island_Magnetic,
+            "I've got to get out of here!", L_At_Island_Terror,
+            "Um, uh, I... gotta run... to some place more safe.", L_At_Island_Terror;
+    close;
+
+L_At_Island_Terror:
+    mes "[Doctor]";
+    mes "";
+    if (baselevel == 99)
+        mes "\"Really? Out of those I've detected here, I would have thought you'd be among the most skilled.\"";
+    if (baselevel >= 90 && baselevel <= 98)
+        mes "\"Er, um? I'm so sorry, I had assumed you were more than capable for this sort of thing.";
+    if (baselevel >= 70 && baselevel <= 89)
+        mes "\"Please excuse me, but I had sensed you were stronger than that.\""; 
+    if (baselevel >= 50 && baselevel <= 69)
+        mes "\"Ah... well, I have seen others here, too. Perhaps you could work together?\"";
+    if (baselevel <= 49)
+        mes "\"Don't lose hope, you're not alone in all this. We'll get through it.\"";
+    next;
+    menu "I don't know what to say...", -,
+            "Yes, yes, you're absolutely right!", L_At_Island_Calm,
+            "I-I need a moment to think.", -;
+    close;
+
+L_At_Island_Magnetic:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well, haven't you noticed the strange behaviour of those blobs of light?\"";
+    next;
+    menu "Um, strange doesn't even begin to cover this world.", -,
+            "Sure, I can never find enough stuff after fighting them.", L_At_Island_Loot,
+            "Other than the fact that they wish to kill me?", L_At_Island_Wisps,
+            "Blobs? I hadn't noticed anything.",L_At_Island_Knows_Doctor;
+    close;
+
+L_At_Island_Calm:
+    mes "[Doctor]";
+    mes "";
+    mes "\"There, isn't that better?\" He smiles warmly. \"Now, I was thinking--\"";
+    next;
+    menu "Sorry to interrupt, but...", L_At_Island_Menu,
+            "*I* was thin--oh, thought you were pausing. Sorry, please continue.", L_At_Island_Theory,
+            "Sorry, I need another moment to regain my composure.", -;
+    close;
+
+L_At_Island_Loot:
+    mes "[Doctor]";
+    mes "";
+    mes "He seems confused. \"Find enough stuff? I'm not sure I could help you there, but perhaps someone else can?\"";
+    close;
+
+L_At_Island_Wisps:
+    mes "[Doctor]";
+    mes "";
+    mes "\"I'm glad you asked! You see, the behaviour of these creatures doesn't appear to be very natural at all; the elephant in the room if you will.\" The Doctor pauses temporarily to check his instruments again.";
+    next;
+    menu "Well, they are normally very peaceful; they'll only attack if you attack them.", -;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Interesting! I've seen them attack with no discernable provocation. This is quite ominous. \"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\If it didn't sound so mad, I'd postulate that something is controlling these things... some malevolent force or entity.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Oh, sorry, what do you think?\"";
+    next;
+    menu "That doesn't seem quite right, to be honest.", -,
+            "Now that you mention it, I had some ideas.", L_At_Island_Ideas,
+            "Malevolent? Where did you get that idea?", -,
+            "Instruments? They seem quite versatile.", L_At_Island_Devices,
+            "That's a lot for me to take in right now. Excuse me.", -;
+    close;
+
+L_At_Island_Ideas:
+    menu "Strange behaviour comes up with magic in my world, like agitating creatures to do harm.", L_At_Island_Magic,
+            "Maybe something or someone is summoning them?", L_At_Island_Summon,
+            "Could it be possible they're not from this place, either?", L_At_Island_Void,
+            "Maybe this sounds crazy, but... could these be the remains of all the entities that have died?", L_At_Island_Spirits,
+            "I don't understand time all that well, but perhaps the wisps indicate a rip... in the fabric?", L_At_Island_Time,
+            "Er, how embarrassing. I seem to have forgotten what I was going to say.", -;
+    close;
+
+L_At_Island_Devices:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Hm? Oh, ha-ha, like this?\" The Doctor points out one of the instruments.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"They are very useful, yes! Fantastic, even. Proved invaluable in so many circumstances.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Yes. Well, then.\" He continues his analysis, putting something away, almost in anticipation of your next question.";
+    close;
+
+L_At_Island_Magic:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Magic, you say? Yes, I have been hearing about that from others, too.\"";
+    mes "The Doctor looks off into the distance.";
+    next;
+    menu "Erm? Hello?", -;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Still here, just wondering. So you say it's possible to aggravate creatures where you come from?\"";
+    next;
+    menu "Yes, within a certain radius of the caster, it is possible.", -;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Really? Ha-ha! I knew it. Tell me more, could you? Anything particular about the practice of magic in your world?\"";
+    next;
+    menu "Well... it is possible to follow a darker path, so to speak, when it comes to practicing magic.", L_At_Island_Dark,
+            "Hm. Not sure if it's relevant, but I have often suspected an unknown evil in my own world.", L_At_Island_Dark,
+            "Even the 'good' practicioners seem to exhibit malicious behaviour at times.", L_At_Island_Evil,
+            "I don't know much more than that, I'm afraid.", -;
+    close;
+
+L_At_Island_Summon:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Summoning them? Via some sort of magic, presumably, or do you mean by other means?\"";
+    next;
+    menu "Yes, with magic, I think. The creatures can be aggravated, even.", L_At_Island_Magic,
+            "Other means? I never thought of that. Could you explain?", L_At_Island_Void,
+            "On second thought, I've lost my train of thought.", -;
+    close;
+
+L_At_Island_Void:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Sure, it is a distinct possibility.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"The Void, or otherwise this sort of, empty space between universes.\"";
+    mes "\"It might be easier to think about the universes as being stacked on top of one another, though can't quite say there's an up or a down about the Void.\"";
+    close;
+
+L_At_Island_Spirits:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Sort of like spirits?\" Or are you suggesting that these blobs are the collective energy lost upon death?\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Um, I'm not sure what to make of that.\"";
+    close;
+
+L_At_Island_Time:
+    mes "[Doctor]";
+    mes "\"Time, did you say?\" He takes a moment. \"Well, it's more like a big ball--it's probably not what you think. But you know? I have detected temporal abnormalities here.\"";
+    close;
+
+L_At_Island_Dark:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Your home isn't all that safe? Are there regular patrols, or is there a shortage of help?\"";
+    next;
+    menu "I forgot what we were talking about. Something about the wisps?", L_At_Island_Wisps,
+            "Well, either way, I can't quite compare that to this... sinister atmosphere.", -,
+            "It--wait, a shortage? Well...", L_At_Island_Help;
+    mes "[Doctor]";
+    mes "";
+    mes "\"That feeling does pervade this world. A darkness that wishes to smother and extinguish all in its path.\"";
+    next;
+    menu "Maybe a poison was unleashed, and it's what's causing the death, and the erratic behaviour?", -,
+            "So, could the behaviour of these wisps be explained by magic?", -,
+            "Could we start over? I was trying to recall what you said--hello?", L_At_Island_Knows_Doctor,
+             "Well, the effects, though widespread, seem to be more severe at times.", L_At_Island_Evil;
+    mes "[Doctor]";
+    mes "";
+    mes "\"A very valid idea. Hm...\"";
+    close;
+
+L_At_Island_Evil:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Yes, sadly that does seem to be the case at times. I feel we've almost solved at least this mystery. Just... definitively, what would you say is going on here?\"";
+    next;
+    setarray @menuitems$,
+     "I think the wisps are drawn to those that have died, like... me? And when they become aggravated they end up destroying more of the world.",
+        "In order to escape, the beings that have died and ended up here are forced to... fight?",
+        "An evil force placed a curse on all of us, dooming us to fight here, pitted against one another in pointless battle--for all eternity!",
+        "The trees are dead as a result of the fighting, and the wisps are angry spirits looking for revenge?",
+        "This world is in disarray, subject to chaos, and ultimately, utter destruction. Those, like me, have been given an opportunity, a choice--to put an end to this, to drive out the evil stench that plagues this land.",
+        "Unlike me, the old woman that led me here was not without hidden motives. So, she planted a way to bring me here, and in doing so, eliminated the ones that could foil her plans.",
+        "When I died and came here, my soul was fragmented, and part of it manifested as the tormented wisps here now?",
+        "You do seem rather odd, using those alien devices. I think you're to blame for what's happened here!",
+        "Something, or someone, perhaps, walks this world, appearing from the shadows. With it come misery and pain. But it is up to us to rid this world of its blight.",
+        "There is an intermittent, evil presence in this world. When it arrives it brings about more destruction, resulting in these dead trees. Then, at the whim of its madness, it uses magic to incite the wisps to attack and be unwilling accomplices.";
+    setarray @submenu$, "", "", "", "";
+    setarray @submenuindex, 0, 0, 0, 0;
+    set @c, 0;
+
+L_island_end_menu_loop:
+    set @index, rand(getarraysize(@menuitems$));
+    set @i, 0;
+    if (@c == 0) goto L_island_post_menu_loop_sub;
+L_island_end_menu_loop_sub:
+    if (@submenu$[@c] == @menuitems$[@index]) goto L_island_end_menu_loop;
+    set @i, @i + 1;
+    if (@i < @c) goto L_island_end_menu_loop_sub;
+L_island_post_menu_loop_sub:
+    set @submenu$[@i], @menuitems$[@index];
+    set @submenuindex[@i], @index;
+    set @c, @c + 1;
+    if (@c < 4) goto L_island_end_menu_loop;
+
+    menu @submenu$[0], -,
+         @submenu$[1], -,
+         @submenu$[2], -,
+         @submenu$[3], -;
+    set @menu, @menu - 1;
+    if (@menu >= 4) goto L_island_oo_range;
+    if (@submenuindex[@menu] == 8 || @submenuindex[@menu] == 9)
+        goto L_At_Island_Resolve;
+
+L_island_oo_range:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Ah, I'm sorry, but that doesn't seem to fit with what we know. Perhaps we should give this some more thought.\"";
+    close;
+
+L_At_Island_Help:
+    menu "Yes, help is probably needed, but I hadn't really considered my own role...", -,
+            "Perhaps, but it's not really my problem.", -;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Just as you are helping here, I believe that if it is what you desire, you can find a suitable way to help elsewhere, too.\"";
+    close;
+
+L_At_Island_Resolve:
+    callsub S_Update_Helped, E10_DOCTOR_POSITION_ISLAND;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Ha-ha, that's it! Brilliant!\" He shakes your hand enthusiastically. \"I knew you could do it! You don't know how much your help means!\"";
+    close;
+
+L_At_Island_Offer_Lifestone:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Hm, no, while I appreciate your generosity, I don't think that will be necessary.\"";
+    mes "He looks off into the distance. \"Strange things...\"";
+    close;
+
+L_At_Island_Helped:
+    mes "[Doctor]";
+    mes "";
+    mes "The Doctor smiles. \"A disturbing force is devastating this world. But with your help I think we're well on our way. Indeed.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well, I won't keep you, still rather busy. Should probably survey some other regions, too.\" The Doctor's words trail off as he returns to thought.";
+    close;
+
+// =======================
+// === Third  location ===
+// =======================
+
+L_At_Stones:
+    // Checks for if the player has already helped the doctor, either here or elsewhere, go here.
+    if ((Easter_2010_QuestState >> E10_FLAG_HELPED_DOCTOR_STONES_SHIFT) & E10_FLAG_HELPED_DOCTOR_STONES_MASK == E10_FLAG_HELPED_DOCTOR_STONES)
+        goto L_At_Stones_Helped;
+
+    if ((Easter_2010_QuestState >> E10_FLAG_KNOWS_DOCTOR_SHIFT) & E10_FLAG_KNOWS_DOCTOR_MASK == E10_FLAG_KNOWS_DOCTOR)
+        goto L_At_Stones_Knows_Doctor;
+
+    setarray @responses$, "\"There's something definitely unsettling about this region. Do you sense it, too?\" His acknowledgement comes suddenly and as a surprise. Something whirs and beeps as he continues, \"Oh, yes, this very spot.\"", "\"An abnormality! Yes, yes, here! Here! No, not quite imperceptible, but we must exercise caution, wouldn't you agree?\"", "\"The mysterious man paces from side to side, quickly taking notice. \"Um, I would be careful around here if I were you. I'm detecting something very powerful nearby.\"", "\"Er, that's interesting. Do you see this? It's remarkable, really. Terrifying all the same, but remarkable. Still not quite sure what makes *this* spot special.\"";
+    callsub S_Update_Knows;
+    close;
+
+L_At_Stones_Knows_Doctor:
+    setarray @responses$, "\"So from what I've gathered, this area here is somehow involved. See the stones? Yes, right there. The readings suggest it's something very, very strong.\"", "The Doctor takes a closer look at the stones on the ground. \"Interesting, don't you think?\" He waves the small device about as it beeps. \"Perhaps I'm missing something.\"", "\"If I had a, um... well, I don't know what it is. Yet. But what I do know is that there's a dark, disturbing presence here.\"", "\"Hm. The readings here were the highest.\" You take a second to look around as the Doctor continues. \"Ah, yes! I will likely be needing something... maybe similar in nature to this evil presence?\"", "\"Shouldn't get too close there. Ah, yes, be careful there. An evil consumes the life os this world, and my analysis led me to this area.\"", "\"Well, you don't see that every day, do you? Er, well, it's not that strange for me, I think. If I am correct, some agent is at work here, behind the scenes. For now, if you think of anything that might help, please let me know.\"";
+    callsub S_Dialogue_Knows;
+    next;
+
+L_At_Stones_Menu:
+    mes "[Doctor]";
+    mes "";
+    mes "\"This place... there's something, I'm not sure what. But I know there's something... something dark!\"";
+    next;
+    menu
+        "Wow! How can you tell?", L_stones_light,
+        "Do you need any more help?", L_stones_offer,
+        "Er, pardon me? Did you hear what I said?", L_At_Stones_Pardon,
+        "Actually, I was hoping you could help me leave this world.", L_At_Stones_Warning,
+        "Good luck with that.", -;
+    close;
+
+L_At_Stones_Pardon:
+    mes "[Doctor]";
+    mes "";
+    mes "\"H'm, what? Oh, hello...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"But this...\" - the man waves a strange, beeping device in the air - \"surely that must mean... oh? You're still here?\"";
+    next;
+    menu
+        "What's that thing you've got there?", L_stones_device,
+        "Sure I am. Do you need help with anything?", L_stones_offer,
+        "I was just leaving.", -;
+    close;
+
+L_stones_device:
+    mes "[Doctor]";
+    mes "";
+    mes "\"This? Oh, it's just an ordinary megalectrometer. Good model, though.\"";
+    next;
+    menu
+        "I'm intrigued. Do you need any help?", L_stones_offer,
+        "Megalawhat? I knew you were a crazy!", -;
+    close;
+
+L_stones_light:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well, it's obvious.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"The red light on my megalectrometer's come on.\"";
+    next;
+    menu
+        "Uh, okay. So... you need any more help?", L_stones_offer,
+        "I've got better things to do. Bye.", -;
+    close;
+
+// Now comes the confusing part.
+L_stones_offer:
+    setarray @menuitems$, "", "", "", "", "", "", "", "", "", "", "", "", "", "";
+    set @c, 0;
+
+    if (countitem("WispPowder") < 1) goto L_stones_wisp;
+    set @menuitems$[@c], "Wisp Powder?";
+    set @menuid[@c], E10_STONES_WISP;
+    set @c, @c + 1;
+
+L_stones_wisp:
+    if (countitem("SpectrePowder") < 1) goto L_stones_spectre;
+    set @menuitems$[@c], "Spectre Powder?";
+    set @menuid[@c], E10_STONES_SPECTRE;
+    set @c, @c + 1;
+
+L_stones_spectre:
+    if (countitem("PoltergeistPowder") < 1) goto L_stones_poltergeist;
+    set @menuitems$[@c], "Poltergeist Powder?";
+    set @menuid[@c], E10_STONES_POLTERGEIST;
+    set @c, @c + 1;
+
+L_stones_poltergeist:
+    if (countitem("DiseasedHeart") < 1) goto L_stones_soul;
+    set @menuitems$[@c], "A Diseased Heart?";
+    set @menuid[@c], E10_STONES_HEART;
+    set @c, @c + 1;
+
+L_stones_soul:
+    if (countitem("JackOSoul") < 1) goto L_stones_heart;
+    set @menuitems$[@c], "A Jack O Soul?";
+    set @menuid[@c], E10_STONES_SOUL;
+    set @c, @c + 1;
+
+L_stones_heart:
+    if (countitem("UndeadEar") < 1) goto L_stones_ear;
+    set @menuitems$[@c], "An Undead Ear?";
+    set @menuid[@c], E10_STONES_EAR;
+    set @c, @c + 1;
+
+L_stones_ear:
+    if (countitem("UndeadEye") < 1) goto L_stones_eye;
+    set @menuitems$[@c], "An Undead Eye?";
+    set @menuid[@c], E10_STONES_EYE;
+    set @c, @c + 1;
+
+L_stones_eye:
+    if (countitem("Bone") < 1) goto L_stones_bone;
+    set @menuitems$[@c], "A Bone?";
+    set @menuid[@c], E10_STONES_BONE;
+    set @c, @c + 1;
+
+L_stones_bone:
+    if (countitem("Skull") < 1) goto L_stones_skull;
+    set @menuitems$[@c], "A Skull?";
+    set @menuid[@c], E10_STONES_SKULL;
+    set @c, @c + 1;
+
+L_stones_skull:
+    if (countitem("DarkCrystal") < 1) goto L_stones_crystal;
+    set @menuitems$[@c], "A Dark Crystal?";
+    set @menuid[@c], E10_STONES_CRYSTAL;
+    set @c, @c + 1;
+
+L_stones_crystal:
+    if (countitem("RottenRags") < 1) goto L_stones_rags;
+    set @menuitems$[@c], "Rotten Rags?";
+    set @menuid[@c], E10_STONES_RAGS;
+    set @c, @c +1;
+
+    if (countitem("DarkPetal") < 1) goto L_stones_petal;
+    set @menuitems$[@c], "A Dark Petal?";
+    set @menuid[@c], E10_STONES_PETAL;
+    set @c, @c + 1;
+
+L_stones_petal:
+    set @menuitems$[@c], "No, I don't have anything like that.";
+    set @menuid[@c], E10_STONES_NEVERMIND;
+    set @c, @c + 1;
+
+    mes "[Doctor]";
+    mes "";
+    mes "\"I doubt you could help, since you wouldn't have - actually, you might. Coming from another world and all.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"I need something dark. Something connected with death... a deathly item. Sort of thing. Do you have anything of this kind?\"";
+    next;
+    menu
+        @menuitems$[0], -,
+        @menuitems$[1], -,
+        @menuitems$[2], -,
+        @menuitems$[3], -,
+        @menuitems$[4], -,
+        @menuitems$[5], -,
+        @menuitems$[6], -,
+        @menuitems$[7], -,
+        @menuitems$[8], -,
+        @menuitems$[9], -,
+        @menuitems$[10], -,
+        @menuitems$[11], -,
+        @menuitems$[12], -,
+        @menuitems$[13], -;
+
+    set @menu, @menu -1;
+    if (@menu >= @c) close;
+    if (@menuid[@menu] == E10_STONES_WISP) goto L_stones_offer_wisp;
+    if (@menuid[@menu] == E10_STONES_SPECTRE) goto L_stones_offer_spectre;
+    if (@menuid[@menu] == E10_STONES_POLTERGEIST) goto L_stones_offer_poltergeist;
+    if (@menuid[@menu] == E10_STONES_SOUL) goto L_stones_offer_soul;
+    if (@menuid[@menu] == E10_STONES_HEART) goto L_stones_offer_heart;
+    if (@menuid[@menu] == E10_STONES_EAR) goto L_stones_offer_ear;
+    if (@menuid[@menu] == E10_STONES_EYE) goto L_stones_offer_eye;
+    if (@menuid[@menu] == E10_STONES_BONE) goto L_stones_offer_bone;
+    if (@menuid[@menu] == E10_STONES_SKULL) goto L_stones_offer_skull;
+    if (@menuid[@menu] == E10_STONES_CRYSTAL) goto L_stones_offer_crystal;
+    if (@menuid[@menu] == E10_STONES_RAGS) goto L_stones_offer_rags;
+    if (@menuid[@menu] == E10_STONES_PETAL) goto L_stones_offer_petal;
+    if (@menuid[@menu] == E10_STONES_NEVERMIND) goto L_stones_nevermind;
+    close;
+
+L_stones_offer_wisp:
+    if (countitem("WispPowder") < 1) goto L_stones_noitem;
+    delitem "WispPowder", 1;
+    goto L_stones_thanks;
+
+L_stones_offer_spectre:
+    if (countitem("SpectrePowder") < 1) goto L_stones_noitem;
+    delitem "SpectrePowder", 1;
+    goto L_stones_thanks;
+
+L_stones_offer_poltergeist:
+    if (countitem("PoltergeistPowder") < 1) goto L_stones_noitem;
+    delitem "PoltergeistPowder", 1;
+    goto L_stones_thanks;
+
+L_stones_offer_soul:
+    if (countitem("JackOSoul") < 1) goto L_stones_noitem;
+    delitem "JackOSoul", 1;
+    goto L_stones_nothanks;
+
+L_stones_offer_heart:
+    if (countitem("DiseasedHeart") < 1) goto L_stones_noitem;
+    delitem "DiseasedHeart", 1;
+    goto L_stones_thanks;
+
+L_stones_offer_ear:
+    if (countitem("UndeadEar") < 1) goto L_stones_noitem;
+    delitem "UndeadEar", 1;
+    goto L_stones_thanks;
+
+L_stones_offer_eye:
+    if (countitem("UndeadEye") < 1) goto L_stones_noitem;
+    delitem "UndeadEye", 1;
+    goto L_stones_thanks;
+
+L_stones_offer_bone:
+    if (countitem("Bone") < 1) goto L_stones_noitem;
+    delitem "Bone", 1;
+    goto L_stones_thanks;
+
+L_stones_offer_skull:
+    if (countitem("Skull") < 1) goto L_stones_noitem;
+    delitem "Skull", 1;
+    goto L_stones_thanks;
+
+L_stones_offer_crystal:
+    if (countitem("DarkCrystal") < 1) goto L_stones_noitem;
+    delitem "DarkCrystal", 1;
+    goto L_stones_thanks;
+
+L_stones_offer_rags:
+    if (countitem("RottenRags") < 1) goto L_stones_noitem;
+    delitem "RottenRags", 1;
+    goto L_stones_nothanks;
+
+L_stones_offer_petal:
+    if (countitem("DarkPetal") < 1) goto L_stones_noitem;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Let me examine it... h'm...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well now... this is quite... impressive.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"I think I've figured out how you came here...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"This item will certainly serve my purposes. However, when it comes time for you to go home, you may find it a little more difficult.\"";
+    mes "\"Not impossible, but difficult.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Do you want to give it to me anyway?\"";
+    next;
+    menu
+        "I'm a tough guy, I'll still make it home.", L_stones_tough,
+        "Sorry, I'm a coward. Maybe I've got something else...", L_stones_offer;
+    close;
+
+L_stones_nevermind:
+    mes "[Doctor]";
+    mes "";
+    mes "\"H'm, well, if you come by anything please let me know!\"";
+    close;
+
+L_stones_thanks:
+    callsub S_Update_Helped, E10_DOCTOR_POSITION_STONES;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Let me examine it... h'm...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Yes, that should do perfectly! Thank you very much.\"";
+    next;
+    menu
+        "Is there anything else you need?", L_stones_help,
+        "Yep, that's fine. Bye then!", -;
+    close;
+
+L_stones_nothanks:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Let me examine it... h'm...\"";
+    mes "\"No, I'm afraid that won't work. Do you have anything else?\"";
+    goto L_stones_offer;
+
+L_stones_noitem:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Let me examine it... h'm...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Wait a minute! You don't even have one of those!\"";
+    next;
+    menu
+        "Well, I did, but I dropped it halfway through the dialogue.", L_stones_dropped,
+        "Sorry, I thought I did. Let's see what else I have...", L_stones_offer,
+        "Aha! Got you all excited there!", -;
+    close;
+
+L_stones_tough:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well, if you're sure...\"";
+    next;
+    menu
+        "I am! Just take the petal, okay?", L_give_petal,
+        "Er, actually, I'm not. Maybe I have something else...", L_stones_offer;
+    close;
+
+L_give_petal:
+    if (countitem("DarkPetal") < 1) goto L_stones_noitem;
+    delitem "DarkPetal", 1;
+    goto L_stones_thanks;
+
+L_stones_help:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Hmm, that's all for now, thank you. I'm going to have a look around this area, though, and I might need some assistance later on.\"";
+    close;
+
+// Warning about the potential perils ahead, but the player must still want to abort the quest.
+L_At_Stones_Warning:
+    mes "[Doctor]";
+    mes "";
+    mes "\"There is no doubt in my mind that what awaits us is both powerful and dangerous, to say the least.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"If this... destruction, this disregard for life isn't an indication, what is?\"";
+    mes "He takes a moment, searching your face.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    if (((Easter_2010_QuestState >> E10_HELPED_DOCTOR_SHIFT) & E10_HELPED_DOCTOR_MASK))
+        mes "\"I do appreciate your help thus far, really. And I did look forward to working with you again in putting an end to this devastation.\"";
+    if (!((Easter_2010_QuestState >> E10_HELPED_DOCTOR_SHIFT) & E10_HELPED_DOCTOR_MASK))
+        mes "\"Despite the danger, I think pressing on would certainly be a brave choice.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"But if you were to leave now, I'm afraid it would be impossible to return...\"";
+    mes "He pauses again. \"There is still time for you to turn back now, while it's relatively easy.\"";
+    next;
+    menu "N-no, I-I think I will continue... Yes, I'm ready!", L_At_Stones_Menu,
+            "Now that you mention it, maybe I'd better leave now while I can.", L_At_Stones_Turn_Back,
+            "Um, could I have a minute to think it over?", -;
+    close;
+
+L_At_Stones_Turn_Back:
+    mes "[Doctor]";
+    mes "";
+    mes "\"You really want to turn back now?\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"I don't think there's any shame in going back. Quite the contrary. You're brave for even being here.\"";
+    mes "He hesitates ever so slightly, choosing his words. \"I just wanted to make sure you were certain about your decision.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Once you've left, I don't see how you'll be able to return.\"";
+    next;
+    menu "On second thought, perhaps I will stick around.", -,
+            "No, no, I'm quite sure I want to leave.", L_At_Stones_Really_Return;
+    close;
+
+// The player definitely wants to go back, and there's no returning.
+L_At_Stones_Really_Return:
+    if ((Easter_2010_QuestState >> E10_FLAG_RETURN_READY_SHIFT) & E10_FLAG_RETURN_READY_MASK == E10_FLAG_RETURN_READY && (Easter_2010_QuestState >> E10_STATE_ROSE_SHIFT) & E10_STATE_ROSE_MASK == E10_STATE_ROSE_ROSE_COMPLETE)
+        goto L_At_Stones_Capable;
+    mes "[Doctor]";
+    mes "";
+    mes "\"If that is what you want, then consider it done. And good luck.\"";
+    next;
+    goto L_At_Stones_Return;
+
+L_At_Stones_Return:
+    callsub S_Helped_Count;
+    if (countitem("DarkPetal") == 0 && @Easter_2010_helper < 3) goto L_At_Stones_Difficult_Return;
+    set Easter_2010_QuestState, (Easter_2010_QuestState & ~(E10_STATE_ROSE_MASK << E10_STATE_ROSE_SHIFT)) | (E10_STATE_ROSE_RETURNED << E10_STATE_ROSE_SHIFT);
+    if (@Easter_2010_helper < 3)
+        delitem "DarkPetal", 1;
+    savepoint "009-1", 52, 40;
+    warp "009-1", 0, 0;
+    close;
+
+L_At_Stones_Difficult_Return:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Hm... you don't seem to have the thing that brought you here, that petal, that I could have used to send you back... assuming you really do want to give up.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Others have been able to battle some darkness directly, which might serve as a substitute.\"";
+    mes "\"You could still help me here and elsewhere if you want to try to get this done once and for all, but if you want to go early you will need to fight, somehow.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Though there are others helping, too. No doubt that soon enough, you'll be able to go anyway...\"";
+    close;
+
+L_At_Stones_Capable:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Hm. Oh, it looks like you've learned how to travel between these worlds on your own. Don't you remember the way?\"";
+    next;
+    menu "Oh, you're right! It was a spell, um..." + getspellinvocation("world-shift") + " was the name!", -;
+    close;
+
+L_At_Stones_Helped:
+    mes "[Doctor]";
+    mes "";
+    mes "A smile appears on the Doctor's face. \"You really have done splendidly here.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Will have to see about taking care of these other loose ends, though. Well, I should be getting back to my observations. Please feel free to let me know if you have some new information for me.\"";
+    close;
+
+// =======================
+// === Fourth location ===
+// =======================
+
+//From Freeyorp on IRC:
+//The fourth position is the only position with any serious sign of life - there are quite a lot of living trees there, packed quite densely
+//In the middle of this area, atop cliffs overlooking water, is a fruit tree
+
+L_At_Fruit:
+    if ((Easter_2010_QuestState >> E10_FLAG_HELPED_DOCTOR_FRUIT_SHIFT) & E10_FLAG_HELPED_DOCTOR_FRUIT_MASK == E10_FLAG_HELPED_DOCTOR_FRUIT)
+        goto L_At_Fruit_Helped;
+    if ((Easter_2010_QuestState >> E10_FLAG_KNOWS_DOCTOR_SHIFT) & E10_FLAG_KNOWS_DOCTOR_MASK == E10_FLAG_KNOWS_DOCTOR)
+        goto L_At_Fruit_Known;
+
+    setarray @responses$, "\"This tree... it bears remarkable signs of life for such a dead world...\"", "\"But this red light here in conjunction with the blue... that means it must be...\"", "\"Oh dear! Pressed the wrong dratted button again. I wish they'd make them just a little larger...\"", "\"But why so alive? It's surprising to find something that isn't long dead...\"";
+
+    callsub S_Update_Knows;
+    close;
+
+L_At_Fruit_Known:
+    setarray @responses$, "\"Hmm...\" He pauses. \"Ah, hello there. Could you help with a few things for a bit? Might be a bit dangerous, though...\"",
+                          "\"Hello again. Mind helping out again for a bit?\"",
+                          "He wanders around, apparently lost in thought. \"Hm. Are you able to help with something? Er, but just so that you know, it could be dangerous...\"",
+                          "\"Ah, it's you. Thanks for your help back there, by the way. There is something else, though it might be a bit dangerous, that I need help with if you don't mind?\"";
+    set @i, rand(getarraysize(@responses$) >> 1) << 1;
+    if ((Easter_2010_QuestState >> E10_DOCTOR_HELP_STATES_SHIFT) & E10_DOCTOR_HELP_STATES_MASK) set @i, @i + 1;
+    mes @responses$[@i];
+    next;
+
+L_lens_main_menu:
+    menu "What do I need to do?", L_lens_minigame_explain,
+         "Dangerous?", L_lens_minigame_dangers,
+         "Let's start!", L_lens_loop_init,
+         "Actually, I'd rather not...", -;
+    close;
+
+L_lens_minigame_explain:
+    mes "[Doctor]";
+    mes "";
+    mes "\"I need a special sort of lens, one that might be used to detect what's going on around here.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"To do this, I'll need a special concoction... but I'll need an extra set of hands, and some dark crystal - they seem to match the dark presence here quite nicely.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"We'll probably need other items as well, to get the concoction to the right state. Hm...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    if (countitem("Pearl") < 1) mes "\"If you get some solid, shiny object that could be used in the mix, that would help. A lot.\"";
+    if (countitem("Pearl") > 0) mes "\"Your pearl there would be great in the mix, as such things help in removing color. Though adding too much would make the wrong kind of texture, and also make it difficult to see through...\"";
+    if (countitem("IronPotion") < 1) mes "\"From what I've heard about potions from your world, one of them would be excellent at removing an unwanted presence while we make this. I can't remember the name right now, but I think it was orange...\"";
+    if (countitem("IronPotion") > 0) mes "\"That orange potion there... an Iron Potion, isn't it? It looks like a fairly thick brew, but something that strong should be useful for getting rid of this presence if it gets too much.\"";
+    if (countitem("ConcentrationPotion") < 1) mes "\"If you could find some potion to refine the concoction, that should be quite useful.\"";
+    if (countitem("ConcentrationPotion") > 0) mes "\"That purple potion there... a Concentration Potion, you say? That's closer to the sort of texture we're looking for, but it might draw the attention of that presence...\"";
+    if (countitem("SlowPoisonPotion") < 1) mes "\"And any other potion you can think of, really. I just make it up as I go along, most of the time.\"";
+    if (countitem("SlowPoisonPotion") > 0) mes "\"Ah, a potion to slow the effects of poison? Interesting, interesting, perhaps something like that could also protect our mix from this evil influence.\"";
+    if (countitem("BottleOfWater") < 1) mes "\"Though you don't seem to have any water... there is water all around in this place, but whenever I try to do anything with it, things never work. I think it might be tainted here. Maybe there are other things from your world that could help?\"";
+    if (countitem("BottleOfWater") > 0) mes "\"Ah, water. That will be fantastic for getting rid of unwanted coloration and make the mixture clearer, but of course, too much of it and we'll lose the properties that I was looking for in the first place...\"";
+    next;
+    goto L_lens_main_menu;
+
+L_lens_minigame_dangers:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Well. There's some sort of malign force around here, and the things I want to do will probably draw its attention.\"";
+    next;
+    goto L_lens_main_menu;
+
+// ##### Initialise the minigame. #####
+
+L_lens_loop_init:
+
+    // Insert sanity checks here
+    if (countitem("DarkCrystal") < 1) goto L_lens_no_crystal;
+    
+    set @MAX_LENS_CRYSTAL_ENERGY_INCREASE, 70;
+
+    // Texture:
+    setarray @textures$, "finely powdered", "thick", "slightly thick", "slightly thin", "thin";
+    set @textureID, rand(3);
+
+    // Coloration is more interesting. 1 for red, 2 for blue, 4 for yellow. So 7 has everything, 0 is clear.
+    setarray @tints$, "clear", "red", "blue", "purple", "yellow", "orange", "green", "dark";
+    set @tintID, rand(7);
+
+    // Opacity, final explicitly displayed value
+    setarray @opacities$, "opaque", "moderately opaque", "moderately transparent", "transparent";
+    set @opacityID, rand(2);
+
+    set @crystalEnergy, rand(rand(@MAX_LENS_CRYSTAL_ENERGY_INCREASE) + 1); // Yes, things _can_ go wrong right from the start.
+    set @dilution, 4;
+    set @rounds, 0; // Things go spectacularly wrong as time goes on.
+    set @damage, 0; // When this hits 4, game over.
+
+    mes "The Doctor places the dark crystal in a small metal container. Looking away, and shielding his face with one hand, he uses a small thin metallic device to emit a sharp, piecing sound, shattering the dark crystal.";
+    delitem "DarkCrystal", 1;
+    mes "There is a cloud of smoke, and purple flames leap from the container.";
+    next;
+
+// ----------------------
+// ===== Main loop. =====
+// ----------------------
+
+L_lens_loop_main:
+    set @retloc, 0;
+    set @oldtextureID, @textureID;
+    set @oldtintID, @tintID;
+    set @oldopacityID, @opacityID;
+
+    mes "[Lens concoction]";
+    mes "";
+    mes "The concoction is currently a " + @textures$[@textureID] + ", " + @tints$[@tintID] + " " + @opacities$[@opacityID] + " concoction.";
+    set @mod, 0;
+    if (rand(@crystalEnergy) / 3 + rand(@crystalEnergy >> 1) > 30) set @mod, 1;
+    if (@mod == 1) mes "The Doctor seems uneasy. \"We seem to have drawn the attention of something. Be careful...\"";
+    next;
+
+L_lens_loop_menu:
+    set @LENS_CHOICE_PEARL, 0;
+    set @LENS_CHOICE_IRON_POTION, 1;
+    set @LENS_CHOICE_CONC_POTION, 2;
+    set @LENS_CHOICE_SLOW_POISON_POTION, 3;
+    set @LENS_CHOICE_WATER, 4;
+    set @LENS_CHOICE_WAIT, 5;
+    set @LENS_CHOICE_DISCARD, 6;
+
+    setarray @lensmenu$, "", "", "", "", "", "", "";
+    set @lensmenuiter, 0;
+
+    if (countitem("Pearl") < 1) goto L_lens_loop_post_pearl_choice;
+
+    set @lensmenu$[@lensmenuiter], "Pearl";
+    set @lensmenuID[@lensmenuiter], @LENS_CHOICE_PEARL;
+    set @lensmenuiter, @lensmenuiter + 1;
+
+L_lens_loop_post_pearl_choice:
+    if (countitem("IronPotion") < 1) goto L_lens_loop_post_iron_potion_choice;
+
+    set @lensmenu$[@lensmenuiter], "Iron potion";
+    set @lensmenuID[@lensmenuiter], @LENS_CHOICE_IRON_POTION;
+    set @lensmenuiter, @lensmenuiter + 1;
+
+L_lens_loop_post_iron_potion_choice:
+    if (countitem("ConcentrationPotion") < 1) goto L_lens_loop_post_conc_potion_choice;
+
+    set @lensmenu$[@lensmenuiter], "Concentration potion";
+    set @lensmenuID[@lensmenuiter], @LENS_CHOICE_CONC_POTION;
+    set @lensmenuiter, @lensmenuiter + 1;
+
+L_lens_loop_post_conc_potion_choice:
+    if (countitem("SlowPoisonPotion") < 1) goto L_lens_loop_post_slow_poison_potion_choice;
+
+    set @lensmenu$[@lensmenuiter], "Slow poison potion";
+    set @lensmenuID[@lensmenuiter], @LENS_CHOICE_SLOW_POISON_POTION;
+    set @lensmenuiter, @lensmenuiter + 1;
+
+L_lens_loop_post_slow_poison_potion_choice:
+    if (countitem("BottleOfWater") < 1) goto L_lens_loop_post_water_choice;
+
+    set @lensmenu$[@lensmenuiter], "Bottle of Water";
+    set @lensmenuID[@lensmenuiter], @LENS_CHOICE_WATER;
+    set @lensmenuiter, @lensmenuiter + 1;
+
+L_lens_loop_post_water_choice:
+    set @lensmenu$[@lensmenuiter], "Wait for a moment";
+    set @lensmenuID[@lensmenuiter], @LENS_CHOICE_WAIT;
+    set @lensmenuiter, @lensmenuiter + 1;
+
+    set @lensmenu$[@lensmenuiter], "Discard the brew";
+    set @lensmenuID[@lensmenuiter], @LENS_CHOICE_DISCARD;
+    set @lensmenuiter, @lensmenuiter + 1;
+
+    menu @lensmenu$[0], -,
+         @lensmenu$[1], -,
+         @lensmenu$[2], -,
+         @lensmenu$[3], -,
+         @lensmenu$[4], -,
+         @lensmenu$[5], -,
+         @lensmenu$[6], -;
+
+    set @menu, @menu - 1;
+    set @pcmod, 0;
+    if (@menu >= @lensmenuiter) goto L_lens_loop_menu_invalid;
+
+    if (@lensmenuID[@menu] == @LENS_CHOICE_PEARL) goto L_lens_pc_use_pearl; // set @pcmod, rand(2);
+    if (@lensmenuID[@menu] == @LENS_CHOICE_IRON_POTION) goto L_lens_pc_use_ironpot;
+    if (@lensmenuID[@menu] == @LENS_CHOICE_CONC_POTION) goto L_lens_pc_use_concpot;
+    if (@lensmenuID[@menu] == @LENS_CHOICE_SLOW_POISON_POTION) goto L_lens_pc_use_slowpoisonpot;
+    if (@lensmenuID[@menu] == @LENS_CHOICE_WATER) goto L_lens_pc_use_water;
+    if (@lensmenuID[@menu] == @LENS_CHOICE_WAIT) set @pcmod, 6;
+    if (@lensmenuID[@menu] == @LENS_CHOICE_DISCARD) goto L_lens_discard_confirm;
+
+L_lens_loop_automodify:
+    set @rounds, @rounds + 1;
+    set @inc, rand(rand(@MAX_LENS_CRYSTAL_ENERGY_INCREASE / (1+(@crystalEnergy >> 2))) + 1);
+    if (!(@pcmod & 1)) set @crystalEnergy, @crystalEnergy + @MAX_LENS_CRYSTAL_ENERGY_INCREASE * @inc / (2 + @inc);
+    set @crystalEnergy, @crystalEnergy - rand(rand(@MAX_LENS_CRYSTAL_ENERGY_INCREASE) + 1);
+    if (@crystalEnergy < 0) set @crystalEnergy, 0;
+    set @effects, rand(20 + rand(40 + @crystalEnergy));
+
+    if (!(@effects & 1)) goto L_lens_loop_automodify_post_texture;
+
+// --- Automatically modify the texture ---
+    if (@textureID == 0) set @retloc, 1;
+    if (@textureID == 0) goto L_lens_auto_alter_texture_dry;
+L_lens_loop_automodify_ret:
+    set @mod, rand(3);
+    if (@mod == 1) goto L_lens_loop_post_automods;
+    set @textureID, @textureID - 1 + @mod;
+    goto L_lens_loop_automodify_post_texture;
+
+L_lens_loop_automodify_post_texture:
+    if (@effects & 2) goto L_lens_auto_alter_color;
+L_lens_loop_auto_post_color:
+    if (@effects & 4) goto L_lens_auto_alter_transparency;
+L_lens_loop_auto_post_transparency:
+    if (@effects > 50) goto L_lens_warp_pc_hair;
+L_lens_loop_auto_post_warp_hair:
+    if (@effects > @crystalEnergy) goto L_lens_autofix_texture;
+L_lens_loop_auto_post_fix_texture:
+    set @temp, 0;
+    if (!(@effects > 80 && rand(@dilution) && !(@effects & 1))) set @temp, 1;
+    if (@temp == 1) set @retloc, 2;
+    if (@temp == 1) goto L_lens_drydamage;
+L_lens_loop_auto_post_drydamage:
+    set @temp, 0;
+    if (@effects + @crystalEnergy / 3 > 120 && (!(@pcmod & 1) || @pcmod & 2)) set @temp, 1;
+    if (@temp == 1) set @retloc, 3;
+    if (@temp == 1) goto L_lens_directdamage;
+    set @temp, 0;
+    
+L_lens_loop_post_automods:
+    if (@oldtintID & (@tintID ^ @oldtintID)) mes "The mixture becomes less " + @tints$[@oldtintID & (@tintID ^ @oldtintID)] + ", changing to a " + @tints$[@oldtintID & ~(@oldtintID & (@tintID ^ @oldtintID))] + " tint.";
+    if (@tintID & (@tintID ^ @oldtintID)) mes "The mixture becomes more " + @tints$[@tintID & (@tintID ^ @oldtintID)] + ", changing to a " + @tints$[@tintID] + " tint.";
+    if (@textureID == @oldtextureID) goto L_lens_nochange_texture;
+    if (@textureID < 0) set @textureID, 0;
+    if (@textureID > 4) set @textureID, 4;
+    if (@oldtextureID == 0) mes "The powder becomes more fluid, changing into a " +   @textures$[@textureID] + " concoction.";
+    if (@oldtextureID > @textureID) mes "The concoction thickens, changing into a " + @textures$[@textureID] + " concoction.";
+    if (@oldtextureID < @textureID && !(@oldtextureID == 0)) mes "The concoction thins, changing into a " + @textures$[@textureID] + " concoction.";
+
+L_lens_nochange_texture:
+    if (@oldopacityID > @opacityID) mes "The concoction becomes more opaque.";
+    if (@oldopacityID < @opacityID) mes "The concoction becomes more transparent.";
+
+L_lens_loop_check:
+    // Check to whether you finished here
+    if ((@textureID == 3 || @textureID == 2) && @tintID == 0 && @opacityID == 0 && @rounds < 3) goto L_lens_early;
+    if ((@textureID == 3 || @textureID == 2) && @tintID == 0 && @opacityID == 0) goto L_lens_complete;
+    if (@textureID == 0 && @rounds / @dilution > 4) goto L_lens_dry_destroyed;
+    if ((@damage > 3 && @crystalEnergy > 80) || (@damage > 2 && @crystalEnergy > 80 && @textureID == 0)) goto L_lens_violently_destroyed;
+    next;
+    goto L_lens_loop_main;
+
+L_lens_early:
+    mes "[Doctor]";
+    mes "";
+    mes "\"That's the sort of thing I'm aiming for - too bad that we haven't added enough for it to complete, though.\"";
+    next;
+    goto L_lens_loop_main;
+
+L_lens_discard_confirm:
+    // Make sure that the player really does want to discard the mix.
+    mes "[Doctor]";
+    mes "";
+    if (@mod == 1 && @damage < 2) mes "\"Are you sure? It didn't seem so bad before...\"";
+    if (@mod == 0 || @damage > 1) mes "\"If you are sure... there's a lot of dark energy around, so that might be the best option...\"";
+    next;
+    menu "Yes, get rid of it!", L_lens_really_discard,
+         "No, on second thoughts, better not...", -;
+    goto L_lens_loop_menu;
+
+L_lens_really_discard:
+    mes "The Doctor takes out a curious glass instrument, and carefully moves it over the mixture. The device takes on a sickly purple hue, and the remnants of the mixture crumbles into nothingness as the light fades into the device.";
+    close;
+
+L_lens_loop_menu_invalid:
+    mes "[Lens concoction]";
+    mes "That doesn't seem right, somehow...";
+    next;
+    goto L_lens_loop_menu;
+
+L_lens_pc_use_pearl:
+    if (countitem("Pearl") < 1) goto L_lens_pc_use_missing;
+    delitem "Pearl", 1;
+    mes "You pass the pearl to the Doctor, who awkwardly takes it with one hand, grinds it into powder with another device, all the while keeping the container firmly in place. After he finishes, you sprinkle the powder evenly over the concoction.";
+    if (@textureID > 1) set @textureID, @textureID - 1;
+    if (rand(3 * @rounds / @dilution) > 0) set @tintID, @tintID & ~1; // Remove red
+    if (rand(2) > 0) set @tintID, @tintID & ~2; // Remove blue
+    if (rand(3) > 0) set @tintID, @tintID & ~4; // Remove yellow
+    if (rand(@opacityID) == 0) set @opacityID, @opacityID + 1;
+    goto L_lens_loop_automodify;
+
+L_lens_pc_use_ironpot:
+    if (countitem("IronPotion") < 1) goto L_lens_pc_use_missing;
+    delitem "IronPotion", 1;
+    mes "You pour the iron potion into the mix.";
+    if (@textureID > 2) set @textureID, @textureID - 1;
+    if (@textureID == 1 || (@textureID == 0 && rand(2) == 0)) set @textureID, @textureID + 1;
+    set @tintID, @tintID | 4;
+    if (rand(3) > 0) set @tintID, @tintID | 1;
+    set @crystalEnergy, 10 * (@crystalEnergy + 5) >> 4;
+    goto L_lens_loop_automodify;
+    
+L_lens_pc_use_concpot:
+    if (countitem("ConcentrationPotion") < 1) goto L_lens_pc_use_missing;
+    delitem "ConcentrationPotion", 1;
+    mes "You pour the concentration potion into the mix.";
+    if (@textureID > 1 && rand(5) <= 2) set @textureID, @textureID - 1;
+    if (@textureID == 0 && rand(3) > 0) set @textureID, @textureID + 1;
+    set @pcmod, rand(2);
+    goto L_lens_loop_automodify;
+
+L_lens_pc_use_slowpoisonpot:
+    if (countitem("SlowPoisonPotion") < 1) goto L_lens_pc_use_missing;
+    delitem "SlowPoisonPotion", 1;
+    mes "You pour the slow poison potion into the mix.";
+    if ((@textureID < 4 && @textureID > 0 && rand(5) > 2) || (@textureID == 0 && rand(5))) set @textureID, @textureID + 1;
+    set @crystalEnergy, @crystalEnergy - rand(rand(10 * (@crystalEnergy + 15) >> 4) + 5);
+    set @pcmod, 1;
+    goto L_lens_loop_automodify;
+
+L_lens_pc_use_water:
+    if (countitem("BottleOfWater") < 1) goto L_lens_pc_use_missing;
+    delitem "BottleOfWater", 1;
+    mes "You empty the bottle of water into the mix.";
+    if ((@textureID < 4 && @textureID > 0) || (@textureID == 0 && rand(5) < 2)) set @textureID, @textureID + 1;
+    if (rand(7) < 2) set @tintID, @tintID & ~3;
+    if (rand(7) < 2) set @tintID, @tintID & ~5;
+    if (rand(7) < 2) set @tintID, @tintID & ~6;
+    if (rand(@opacityID + 2) > 1) set @opacityID, @opacityID - 1;
+    set @pcmod, rand(3);
+    set @dilution, @dilution + 1;
+    goto L_lens_loop_automodify;
+
+L_lens_pc_use_missing:
+    mes "Odd, you seemed to have it just moments before. Somewhat confused, you go back to consider what to do next.";
+    next;
+    goto L_lens_loop_menu;
+
+// -----------------------------------------------------------------
+// ##### The various automatic subroutines for various effects #####
+// -----------------------------------------------------------------
+
+L_lens_auto_alter_color:
+    set @mod, 1 << rand(3);
+    if (rand(@crystalEnergy) > 40) set @mod, @mod | 4;
+    if (@crystalEnergy - rand(@crystalEnergy) < 30) set @mod, @mod | rand(3);
+    set @tintID, @tintID | @mod;
+    goto L_lens_loop_auto_post_color;
+
+L_lens_auto_alter_transparency:
+    set @mod, rand(3);
+    if ((@opacityID == 0 && @mod < 1) || (@opacityID == 3 && @mod > 1)) goto L_lens_loop_auto_post_transparency;
+    if (@mod == 1) goto L_lens_loop_auto_post_transparency;
+    set @opacityID, @opacityID - 1 + @mod;
+    if (@mod > 1) mes "The mixture alters, and becomes easier to see through.";
+    if (@opacityID == 3) mes "The mixture is now completely clear.";
+    if (@mod < 1) mes "The mixture alters, and becomes harder to see through.";
+    goto L_lens_loop_auto_post_transparency;
+
+L_lens_warp_pc_hair:
+    mes "You feel something around your head change...";
+    set @style,rand(6);
+    set @color,rand(9);
+    setlook 1,@style+1;
+    setlook 6,@color;
+    goto L_lens_loop_auto_post_warp_hair;
+
+L_lens_autofix_texture:
+    set @textureID, @textureID + rand(3) - 1;
+    if (@textureID > 3) set @textureID, @textureID -1;
+    if (@textureID < 3) set @textureID, @textureID +1;
+    goto L_lens_loop_auto_post_fix_texture;
+
+L_lens_directdamage:
+    mes "A flash of sickly yellow light blinds you, the mixture distorts for a moment, then reappears.";
+    set @textureID, rand(3);
+    set @tintID, @tintID | rand(7);
+    set @opacityID, 0;
+
+    set @mod, 0;
+    if (rand(readparam(bAgi)) > 30) set @mod, 1;
+    if (@mod == 1) mes "You barely manage to dive out of the way as the yellow flash sharply hisses through a space which, until a few moments ago, you had occupied...";
+    if (@mod == 0) mes "The light burns all around you, with a strong sensation as if you were crushed under a great weight...";
+    if (@mod == 0) itemheal readparam(bVit) * readparam(bVit) / 12 - 820, 0;
+    if (hp < 1) close;
+    set @mod, 1;
+
+L_lens_auto_alter_texture_dry:
+    // If the mix dries up, and too much of the mix was water, then the mixture become damaged. However, the chance that it does dry up decreases with the proportion of water used so far
+    if (@mod == 0 && rand(2) == 0 && @dilution > 4) set @dilution, @dilution - 1;
+    if (rand(3) == 0 && @dilution > 5 && rand(@dilution * @dilution) > 12 && (!@pcmod & 1)) goto L_lens_drydamage;
+    goto L_lens_loop_return_fix;
+
+L_lens_drydamage:
+    if (@mod == 0 && @pcmod & 1) goto L_lens_loop_return_fix;
+    if (@mod == 0) mes "With a flash of purple light, the mixture spontaneously becomes very dry.";
+    if (@mod == 0 && rand(2) == 0 && @dilution > 5) set @dilution, @dilution / 2;
+    if (@mod == 0) set @textureID, 0;
+
+L_lens_damagelens:
+    if (rand(@damage * @damage) >= 6) goto L_lens_loop_return_fix;
+    set @damage, @damage + 1;
+    if (@damage == 1) mes "The container starts vibrating slightly.";
+    if (@damage == 2) mes "The container begins to shake unsteadily.";
+    if (@damage == 3 && @textureID == 0) goto L_lens_violently_destroyed;
+    if (@damage == 3) mes "The container is now shaking violently. The concoction gives off an acrid smell, and dark purple sparks occasionally fly out of the container. He watches you uneasily.";
+    if (@damage == 4) goto L_lens_violently_destroyed;
+    goto L_lens_loop_return_fix;
+
+L_lens_loop_return_fix:
+    if (@retloc == 0) mes "FATAL ERROR: @retloc undefined in L_lens_loop_return_fix, closing script.";
+    if (@retloc == 0) close;
+    // Hacky.
+    set @temp, 0;
+    if (@retloc == 1) set @temp, 1;
+    if (@retloc == 2) set @temp, 2;
+    if (@retloc == 3) set @temp, 3;
+    set @retloc, 0;
+    if (@temp == 0) mes "FATAL ERROR: @retloc out of range in L_lens_loop_return_fix, closing script.";
+    if (@temp == 0) close;
+    if (@temp == 1) goto L_lens_loop_automodify_ret;
+    if (@temp == 2) goto L_lens_loop_auto_post_drydamage;
+    if (@temp == 3) goto L_lens_loop_post_automods;
+
+L_lens_no_crystal:
+    mes "[Doctor]";
+    mes "";
+    mes "\"Looks like neither of us have a dark crystal. I'll try something else, but if you want to look around for one in the meantime, we could try again later.\"";
+    close;
+
+// ---------------------------------
+// ##### The possible outcomes #####
+// ---------------------------------
+
+L_lens_violently_destroyed:
+    mes "A high pitched whine echoes around you. A series of blinding flashes force you to cover your eyes as the container is sent flying into the air. The grass around where the concoction landed takes on a sickly yellow hue.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "The Doctor sighs.";
+    mes "\"That could have gone better...\"";
+    next;
+    mes "The Doctor takes out a curious glass device, and carefully moves it over the tainted grass. Purple and black energies are sucked into the device, and the grass gradually returns to its normal color.";
+    close;
+
+L_lens_dry_destroyed:
+    mes "[Doctor]";
+    mes "";
+    mes "The Doctor frowns.";
+    mes "";
+    mes "\"It's has become too dry... I fear that the mix has become damaged beyond repair, at least for the purposes I had in mind...";
+    mes "I'll do what I can to salvage what is there, but it would be unrealistic to be expect that the end result will be anything other than deeply flawed.\"";
+
+L_lens_salvage:
+    mes "[Doctor]";
+    mes "";
+    mes "The Doctor takes out a vial containing a crystal clear fluid, an oddly shaped bowl, and a curious glass device. He then tips the remnants of the concoction into the bowl, then moves the device counterclockwise around the bowl five times, while pouring the clear fluid into the bowl";
+    mes "A weak yellow glow surrounds the device as it moves around the outside of the bowl, and the concoction slowly fuses together as more of the clear fluid is added to it. But the concoction is still very lumpy, and doesn't fit properly within the bowl.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "He mutters distractedly as he moves the device directly over the bowl, then around, twice clockwise then once counterclockwise. \"...all going wrong... shouldn't be yellow...\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "He then holds the device vertically over the bowl, and takes out a vial of bright red fluid, inverts the device, and mixes the red fluid into the dark purple energy that shoots out of the device into the centre of the remnants.";
+    mes "The red fluid darkens the energy it comes into contact with, then spreads out over the remnants of the concoction, giving of copious amounts of smoke.";
+    next;
+
+    mes "[Doctor]";
+    mes "";
+    mes "After a few moments, he steps back and puts away the vial and the glass device, which is now completely devoid of any color.";
+    mes "The smoke gradually clears, leaving a perceptively warped lump of glass in the middle.";
+
+    mes "[Doctor]";
+    mes "";
+    mes "\"You might as well take this.\"";
+    mes "";
+    mes "\"I did what I could, but the lens is still warped beyond use, for me... I'm not sure that there's much that you'll be able to do with that as it is, but perhaps you could find someone that still has a use for it somewhere, or something.\"";
+    getitem "FlawedLens", 1;
+    close;
+
+L_lens_complete:
+    mes "The Doctor grins broadly.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Yes, yes. That's it, that's just what I need!\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "The Doctor takes out an oddly shaped bowl and a curious glass device. He quickly pours the concoction in, then moves the device over the bowl. A faint blue glow surrounds the bowl as he does so.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "He then moves the device around the edges, twice clockwise then once counterclockwise.";
+    mes "After this, he holds the device vertically over the bowl. He takes out a vial of bright red fluid, and inverts the device, sending a stream of pure black energy directly downwards into the concoction. He moves with incredible speed as he pours the red fluid evenly over the concoction as the black energy hits the concoction, giving off a tremendous amount of steam.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "He stares at the bowl with intense concentration, then abruptly cuts off the stream of red fluid, despite no visible change in the mixture that you can see through the steam.";
+    next;
+    mes "As the steam clears, you see that the concoction has hardened into a single solid shape, smoothly curving outwards, but completely opaque.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Nothing to worry about.. it might be opaque now, but give it a moment to cool down first. Ah, there, it's clearing up nicely now.\"";
+    mes "";
+    mes "He waits a moment, as the lens becomes more and more transparent.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "The Doctor carefully picks up the lens and holds it in a small piece of fabric. He turns it over a few times, checking to make sure there aren't any imperfections.";
+    mes "";
+    mes "\"The glass formed perfectly! The lens is done.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"This is just what I needed. You were a great help, thank you!\"";
+    mes "";
+    mes "[You gain 150,000 experience points!]";
+    getexp 150000, 0;
+    callsub S_Update_Helped, E10_DOCTOR_POSITION_FRUIT;
+    close;
+    // Yay!
+
+L_At_Fruit_Helped:
+    mes "As you approach, you see him looking through a collection of devices.";
+    next;
+    mes "There is an odd humming sound, and a blue glow from somewhere.";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Oh, hello.\" You notice the sound has stopped. \"Ah, and thanks for the help back there, I should be able to get this done in no time now.\"";
+    mes "He wanders around, and you can see him do something complicated with yet another of his devices and the lens that you made.";
+    next;
+    mes "You can't be quite sure, but this area feels healthier already...";
+    close;
+
+// ======================
+// === Fifth location ===
+// ======================
+
+// There was no time to complete this to the original plan, so a short easter egg was included here.
+
+L_At_Cave:
+    mes "[Doctor]";
+    mes "";
+    mes "\"It's funny, isn't it? Um, time, that is. Yes...you could say I know a lot about it.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"For all our planning, it gets the better of us at times. And we may not always be able to realise our plans at time's mercy.\"";
+    next;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Alas, what can we do? You seem like the patient sort, perhaps you know something about it?\"";
+    next;
+    menu "Patient, me? Not at all! I've had to wait too much these days!", -,
+            "Yes, I think I can understand that sentiment.", -;
+    mes "[Doctor]";
+    mes "";
+    mes "\"Ah, well. I thought there was something to do here, but it seems there's no time for that.\"";
+    mes "He looks off, quietly upset. \"Well, there's no reason to be down, is there!\" Suddenly he's vibrant again. \"Still much that can be done!\"";
+    close;
+
+
+// =======================
+// === Event functions ===
+// =======================
+
+
+OnTimer30000:
+    setnpctimer 0;
+    if (($Easter_2010_Npc_State1 & E10_TIMER_STATE_DOCTOR_MASK) >> E10_TIMER_STATE_DOCTOR_SHIFT < ($Easter_2010_Npc_State1 >> E10_DOCTOR_TIMER_OVERTICK_SHIFT) & E10_DOCTOR_TIMER_OVERTICK_MASK) goto L_timer_increment;
+
+OnResetWarp:
+    set $Easter_2010_Npc_State1, $Easter_2010_Npc_State1 & (~E10_TIMER_STATE_DOCTOR_MASK << E10_TIMER_STATE_DOCTOR_SHIFT);
+OnDoWarp:
+    setarray $@xcoord, 0, 21,  83, 65, 116, 110;
+    setarray $@ycoord, 0, 105, 34, 95, 69,  124;
+    set $@index, rand(getarraysize($@xcoord) - 1);
+    if (rand(3)) set $@index, $@index + 1;
+    npcwarp $@xcoord[$@index], $@ycoord[$@index], "Doctor#who";
+    message "Freeyorp", "Doctor warped. New location: " + $@index + ".";
+    set $Easter_2010_Npc_State2, $Easter_2010_Npc_State2 & ~(E10_DOCTOR_POSITION_MASK << E10_DOCTOR_POSITION_SHIFT) | ($@index << E10_DOCTOR_POSITION_SHIFT);
+    end;
+
+L_timer_increment:
+    set $Easter_2010_Npc_State1, ($Easter_2010_Npc_State1 & (~E10_TIMER_STATE_DOCTOR_MASK << E10_TIMER_STATE_DOCTOR_SHIFT)) | (((($Easter_2010_Npc_State1 & E10_TIMER_STATE_DOCTOR_MASK) + 1 ) << E10_TIMER_STATE_DOCTOR_SHIFT));
+    end;
+
+OnManualStartTimer:
+    initnpctimer;
+    end;
+
+OnManualStopTimer:
+    stopnpctimer;
+    end;
+
+OnManualDisable:
+    npcwarp 0, 0, "Doctor#who";
+    stopnpctimer;
+    end;
+
+OnInit:
+    set $Easter_2010_Npc_State2, $Easter_2010_Npc_State2 & ~(E10_DOCTOR_POSITION_MASK << E10_DOCTOR_POSITION_SHIFT) | (E10_DOCTOR_POSITION_NULL << E10_DOCTOR_POSITION_SHIFT);
+}
