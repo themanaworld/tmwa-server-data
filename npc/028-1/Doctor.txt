@@ -1,6 +1,7 @@
 
 // Yes, it really does start at 0,0.
 028-1.gat,0,0,0	script	Doctor#who	184,{
+    if ($Easter_2010_Npc_State2 & (1 << E10_PRE_WARP_SHIFT)) goto L_pre_warp;
     // States here
     callsub S_Helped_Count;
     if (@Easter_2010_helper >= 2 && !((Easter_2010_QuestState >> E10_FLAG_MID_REWARD_SHIFT) & E10_FLAG_MID_REWARD_MASK))
@@ -1007,6 +1008,7 @@ L_stones_crystal:
     set @menuid[@c], E10_STONES_RAGS;
     set @c, @c +1;
 
+L_stones_rags:
     if (countitem("DarkPetal") < 1) goto L_stones_petal;
     set @menuitems$[@c], "A Dark Petal?";
     set @menuid[@c], E10_STONES_PETAL;
@@ -1880,13 +1882,19 @@ L_At_Cave:
 // === Event functions ===
 // =======================
 
+L_pre_warp:
+    mes "\"Sorry, no time, have to go!\"";
+    close;
 
-OnTimer30000:
+OnTimer65000:
+    if (!(($Easter_2010_Npc_State1 & E10_TIMER_STATE_DOCTOR_MASK) >> E10_TIMER_STATE_DOCTOR_SHIFT < ($Easter_2010_Npc_State1 >> E10_DOCTOR_TIMER_OVERTICK_SHIFT) & E10_DOCTOR_TIMER_OVERTICK_MASK)) set $Easter_2010_Npc_State2, $Easter_2010_Npc_State2 | (1 << E10_PRE_WARP_SHIFT);
+
+OnTimer120000:
     setnpctimer 0;
     if (($Easter_2010_Npc_State1 & E10_TIMER_STATE_DOCTOR_MASK) >> E10_TIMER_STATE_DOCTOR_SHIFT < ($Easter_2010_Npc_State1 >> E10_DOCTOR_TIMER_OVERTICK_SHIFT) & E10_DOCTOR_TIMER_OVERTICK_MASK) goto L_timer_increment;
-
 OnResetWarp:
     set $Easter_2010_Npc_State1, $Easter_2010_Npc_State1 & (~E10_TIMER_STATE_DOCTOR_MASK << E10_TIMER_STATE_DOCTOR_SHIFT);
+    set $Easter_2010_Npc_State2, $Easter_2010_Npc_State2 & ~(1 << E10_PRE_WARP_SHIFT);
 OnDoWarp:
     setarray $@xcoord, 0, 21,  83, 65, 116, 110;
     setarray $@ycoord, 0, 105, 34, 95, 69,  124;

@@ -1328,6 +1328,16 @@ NONMAGIC SILENT SPELL easter (type : STRING) : "#m" =
             {
                 doevent "Doctor#who::OnManualStopTimer";
             }
+        ) ELSE IF (type == "DOC_SHIFT_OVERTICK_UP") THEN (
+            {
+                    set $Easter_2010_Npc_State1, ($Easter_2010_Npc_State1 & (~E10_DOCTOR_TIMER_OVERTICK_MASK << E10_DOCTOR_TIMER_OVERTICK_SHIFT)) | ((((($Easter_2010_Npc_State1 >> E10_DOCTOR_TIMER_OVERTICK_SHIFT) & E10_DOCTOR_TIMER_OVERTICK_MASK) + 1 ) << E10_DOCTOR_TIMER_OVERTICK_SHIFT));
+                    message strcharinfo(0), "New overtick: '" + (($Easter_2010_Npc_State1 >> E10_DOCTOR_TIMER_OVERTICK_SHIFT) & E10_DOCTOR_TIMER_OVERTICK_MASK) + "'.";
+            }
+        ) ELSE IF (type == "DOC_SHIFT_OVERTICK_DOWN") THEN (
+            {
+                    set $Easter_2010_Npc_State1, ($Easter_2010_Npc_State1 & (~E10_DOCTOR_TIMER_OVERTICK_MASK << E10_DOCTOR_TIMER_OVERTICK_SHIFT)) | ((((($Easter_2010_Npc_State1 >> E10_DOCTOR_TIMER_OVERTICK_SHIFT) & E10_DOCTOR_TIMER_OVERTICK_MASK) - 1 ) << E10_DOCTOR_TIMER_OVERTICK_SHIFT));
+                    message strcharinfo(0), "New overtick: '" + (($Easter_2010_Npc_State1 >> E10_DOCTOR_TIMER_OVERTICK_SHIFT) & E10_DOCTOR_TIMER_OVERTICK_MASK) + "'.";
+            }
         ) ELSE IF (type == "DOC_SHIFT_RESUME") THEN (
             {
                 doevent "Doctor#who::OnManualStartTimer";
@@ -1338,11 +1348,11 @@ NONMAGIC SILENT SPELL easter (type : STRING) : "#m" =
             }
         ) ELSE IF (type == "BLOCKER_DISABLE") THEN (
             {
-                doevent "Control#Helper::OnBarrierDisable";
+                set $Easter_2010_Npc_State2, ($Easter_2010_Npc_State2 & ~(E10_BARRIER_MASK << E10_BARRIER_SHIFT)) | (E10_BARRIER_OPEN << E10_BARRIER_SHIFT);
             }
         ) ELSE IF (type == "BLOCKER_ENABLE") THEN (
             {
-                doevent "Control#Helper::OnBarrierEnable";
+                set $Easter_2010_Npc_State2, ($Easter_2010_Npc_State2 & ~(E10_BARRIER_MASK << E10_BARRIER_SHIFT)) | (E10_BARRIER_ACTIVE << E10_BARRIER_SHIFT);
             }
         ) ELSE message(caster, "Unknown action '" + type + "'!");
 
