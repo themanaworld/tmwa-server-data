@@ -70,6 +70,7 @@ L_NohMask_Fake_Satchel:
 L_Easter:
     if ((Easter_2010_QuestState >> E10_STATE_ROSE_SHIFT) & E10_STATE_ROSE_MASK == E10_STATE_ROSE_ROSE_COMPLETE) goto L_Easter_Complete;
     if ((Easter_2010_QuestState >> E10_STATE_ROSE_SHIFT) & E10_STATE_ROSE_MASK == E10_STATE_ROSE_RETURNED) goto L_Easter_Gaveup;
+    if ((Easter_2010_QuestState >> E10_FLAG_RETURN_READY_SHIFT) & E10_FLAG_RETURN_READY_MASK == E10_FLAG_RETURN_READY) goto L_Defeat_Impossible;
     if ((Easter_2010_QuestState & E10_STATE_EGG_MASK) == E10_STATE_EGG_COLLECTING) goto L_Easter_Check;
     if ((Easter_2010_QuestState & E10_STATE_EGG_MASK) == E10_STATE_EGG_COLLECTED) goto L_Easter_Reward;
     if ((Easter_2010_QuestState & E10_STATE_EGG_MASK) == E10_STATE_EGG_REWARDED) goto L_Easter_Hint;
@@ -172,6 +173,7 @@ L_Easter_Hint:
 
 
 L_Easter_Complete:
+    if ((Easter_2010_QuestState >> E10_FLAG_RETURN_READY_SHIFT) & E10_FLAG_RETURN_READY_MASK != E10_FLAG_RETURN_READY) goto L_Help_Impossible;
     if ((Easter_2010_QuestState >> E10_STATE_REWARDS_SHIFT) & E10_STATE_REWARDS_MASK == 0) goto L_Easter_Complete_New_Rewards;
     if ((Easter_2010_QuestState >> E10_STATE_REWARDS_SHIFT) & E10_STATE_REWARDS_MASK == E10_STATE_REWARDS_MASK) goto L_Easter_Done_All;
     
@@ -273,6 +275,16 @@ L_Hats_No_Room:
     mes "[Old Woman]";
     mes "\"Oh, no, no, that won't do. I'll wait until you have some more room for carrying things. I wouldn't want you to lose a gift.\"";
     mes "\"Please see me again when you are ready, honey.\"";
+    close;
+
+L_Help_Impossible:
+    mes "[Old Woman]";
+    mes "She seems confused. \"How did you get back here without defeating the evil force plaguing that world, and without giving up? That shouldn't be possible...\"";
+    close;
+
+L_Defeat_Impossible:
+    mes "[Old Woman]";
+    mes "She seems confused. \"How did you manage to get back here without helping that nice man to fix things, and without giving up? That shouldn't be possible...\"";
     close;
 
 // The all important rose die script. Hooked into the old woman script for now.

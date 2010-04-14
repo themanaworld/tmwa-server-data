@@ -1468,27 +1468,39 @@ NONMAGIC SILENT SPELL easter-invader-spawn : "#c" =
              spawn(rbox(location(caster), 20), caster, 1047, random(random(5)), 1, 100000);
 
 NONMAGIC SILENT SPELL world-shift : "#S00" =
-    (((REQUIRE (script_int(caster, "Easter_2010_QuestState") >> 7) & 3 == 2)
-     => (REQUIRE rdistance(location(caster), @("028-1.gat", 63, 67)) < 5) =>
+    (REQUIRE (script_int(caster, "Easter_2010_QuestState") >> 16) & 1 == 1 && (script_int(caster, "Easter_2010_QuestState") >> 7) & 3 == 2) => # Travel only works when you have both helped the doctor at least thrice and have defeated the invader - top level requirement.
+     (  (REQUIRE count_item(caster, "DarkPetal")) # Allow unlimited travel with the petal
+     => ((REQUIRE rdistance(location(caster), @("028-1.gat", 63, 67)) < 5) =>
      	         EFFECT sfx(location(caster), SFX_TELEPORT, 200);
                         WAIT 8000;
                         warp(caster, @("009-1.gat", 55, 37));
                         sfx(location(caster), SFX_TELEPORT, 200);
          |
-         (REQUIRE (map_nr(location(caster)) != 28 && count_item(caster, "DarkPetal"))) =>
+         (REQUIRE map_nr(location(caster)) != 28) =>
                  EFFECT inithp = hp(caster); // Store this value.
                         sfx(location(caster), SFX_TELEPORT, 200);
-                        WAIT 8000;
+                        IF (map_nr(location(caster)) == 9 || map_nr(location(caster)) == 1 || map_nr(location(caster)) == 21 || map_nr(location(caster)) == 20) THEN WAIT 8000;
+                        ELSE WAIT 20000;
                         IF (hp(caster) < inithp) THEN ABORT; // Cancel teleport if the player took damage during channel time (hacky, but for most purposes should work.)
                         warp(caster, @("028-1.gat", 63, 67));
                         sfx(location(caster), SFX_TELEPORT, 200);
         )
-     | REQUIRE (rdistance(location(caster), @("028-1.gat", 63, 67)) < 5 && (script_int(caster, "Easter_2010_QuestState") >> 17) & 1 == 0)
-                => EFFECT set_script_variable(caster, Easter_2010_QuestState, script_int(caster, "Easter_2010_QuestState") | (1 << 17));
+     | (REQUIRE (rdistance(location(caster), @("028-1.gat", 63, 67)) < 5 )
+                => EFFECT set_script_variable(caster, "Easter_2010_QuestState", script_int(caster, "Easter_2010_QuestState") | (1 << 17));
                           sfx(location(caster), SFX_TELEPORT, 200);
                           WAIT 8000;
                           warp(caster, @("009-1.gat", 55, 37));
                           sfx(location(caster), SFX_TELEPORT, 200);
+       | (REQUIRE map_nr(location(caster)) != 28 && (script_int(caster, "Easter_2010_QuestState") >> 17) & 1 == 0)  # Allow for one free warp home without the petal
+         => EFFECT inithp = hp(caster); // Store this value.
+                   sfx(location(caster), SFX_TELEPORT, 200);
+                   IF (map_nr(location(caster)) == 9 || map_nr(location(caster)) == 1 || map_nr(location(caster)) == 21 || map_nr(location(caster)) == 20) THEN WAIT 8000;
+                   ELSE WAIT 20000;
+                   IF (hp(caster) < inithp) THEN ABORT; // Cancel teleport if the player took damage during channel time (hacky, but for most purposes should work.)
+                   set_script_variable(caster, "Easter_2010_QuestState", script_int(caster, "Easter_2010_QuestState") | (1 << 17));
+                   warp(caster, @("028-1.gat", 63, 67));
+                   sfx(location(caster), SFX_TELEPORT, 200);
+       )
      )
 
 NONMAGIC SILENT SPELL easter-invader-killer : "#z" =
