@@ -236,12 +236,12 @@ L_lens_loop_auto_post_warp_hair:
     if (@effects > @crystalEnergy) goto L_lens_autofix_texture;
 L_lens_loop_auto_post_fix_texture:
     set @temp, 0;
-    if (!(@effects > 80 && rand(@dilution) && !(@effects & 1))) set @temp, 1;
+    if (!(@effects < 65 && rand(@dilution) < 2 && (@effects & 7))) set @temp, 1;
     if (@temp == 1) set @retloc, 2;
     if (@temp == 1) goto L_lens_drydamage;
 L_lens_loop_auto_post_drydamage:
     set @temp, 0;
-    if (@effects + @crystalEnergy / 3 > 120 && (!(@pcmod & 1) || @pcmod & 2)) set @temp, 1;
+    if ((@effects + @crystalEnergy / 3 > 85 || (@textureID == 0 && rand(@effects + @crystalEnergy) > 30)) && (!(@pcmod & 1) || @pcmod & 2)) set @temp, 1;
     if (@temp == 1) set @retloc, 3;
     if (@temp == 1) goto L_lens_directdamage;
     set @temp, 0;
@@ -264,7 +264,7 @@ L_lens_loop_check:
     // Check to whether you finished here
     if ((@textureID == 3 || @textureID == 2) && @tintID == 0 && @opacityID == 0 && @rounds < 3) goto L_lens_early;
     if ((@textureID == 3 || @textureID == 2) && @tintID == 0 && @opacityID == 0) goto L_lens_complete;
-    if (@textureID == 0 && (@rounds + 2) / (@dilution + 2) > 4) goto L_lens_dry_destroyed;
+    if (@textureID == 0 && (@rounds + 36) / (@dilution + 5) > 4) goto L_lens_dry_destroyed;
     if ((@damage > 3 && @crystalEnergy > 80) || (@damage > 2 && @crystalEnergy > 80 && @textureID == 0)) goto L_lens_violently_destroyed;
     next;
     goto L_lens_loop_main;
@@ -302,7 +302,7 @@ L_lens_pc_use_pearl:
     delitem "Pearl", 1;
     mes "You pass the pearl to the Doctor, who awkwardly takes it with one hand, grinds it into powder with another device, all the while keeping the container firmly in place. After he finishes, you sprinkle the powder evenly over the concoction.";
     if (@textureID > 1) set @textureID, @textureID - 1;
-    if (rand(3 * (@rounds + 2) / (@dilution + 2)) > 0) set @tintID, @tintID & ~1; // Remove red
+    if (rand(3 * (@rounds + 6) / (@dilution + 2)) > 0) set @tintID, @tintID & ~1; // Remove red
     if (rand(2) > 0) set @tintID, @tintID & ~2; // Remove blue
     if (rand(3) > 0) set @tintID, @tintID & ~4; // Remove yellow
     if (rand(@opacityID) == 0) set @opacityID, @opacityID + 1;
