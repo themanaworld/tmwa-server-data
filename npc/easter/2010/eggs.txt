@@ -76,8 +76,20 @@
 	set @obj, 12;
 	callfunc "Easter2010Loc_Check1";
 	if (@result != 0) close;
-	if (rand(100) == 0) getitem "BentNeedle", 1;
+	if ((Easter_2010_QuestState >> E10_LOC_NEEDLE_SHIFT) & E10_LOC_NEEDLE_MASK == ($Easter_2010_Npc_State2 >> E10_NEEDLE_SHIFT) & E10_NEEDLE_MASK && rand(100) == 0) goto L_Needle;
 	close;
+
+L_Needle:
+	getitem "BentNeedle", 1;
+	set Easter_2010_QuestState, Easter_2010_QuestState & ~(E10_LOC_NEEDLE_MASK << E10_LOC_NEEDLE_SHIFT) | (rand(E10_LOC_NEEDLE_MASK) << E10_LOC_NEEDLE_SHIFT);
+	end;
+
+OnInit:
+	initnpctimer;
+
+OnTimer300000:
+	set $Easter_2010_Npc_State2, $Easter_2010_Npc_State2 & ~(E10_NEEDLE_MASK << E10_NEEDLE_SHIFT) | (rand(E10_NEEDLE_MASK) << E10_NEEDLE_SHIFT);
+	setnpctimer 0;
 }
 
 008-1.gat,88,48,0	script	 Target	127,{
