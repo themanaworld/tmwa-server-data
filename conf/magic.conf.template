@@ -1306,166 +1306,166 @@ LOCAL SPELL mouboo-smell : "#s" =
 
 CONST E10_FLAG_USED_FREE_WARP_SHIFT = 17
 
-NONMAGIC SILENT SPELL easter (type : STRING) : "#m" =
-    (REQUIRE name_of(caster) == "Freeyorp") =>
-        EFFECT IF (type == "EE_RF") THEN (
-            {
-                doevent("Old Woman::OnReplenish");
-            }
-        ) ELSE IF (type == "EE_SUS") THEN (
-            {
-                doevent "Old Woman::OnManualStopTimer";
-            }
-        ) ELSE IF (type == "EE_INIT") THEN (
-            {
-                doevent "Old Woman::OnManualStartTimer";
-            }
-        ) ELSE IF (type == "BLOCKER_DISABLE") THEN (
-            {
-                set $Easter_2010_Npc_State2, ($Easter_2010_Npc_State2 & ~(E10_BARRIER_MASK << E10_BARRIER_SHIFT)) | (E10_BARRIER_OPEN << E10_BARRIER_SHIFT);
-            }
-        ) ELSE IF (type == "BLOCKER_ENABLE") THEN (
-            {
-                set $Easter_2010_Npc_State2, ($Easter_2010_Npc_State2 & ~(E10_BARRIER_MASK << E10_BARRIER_SHIFT)) | (E10_BARRIER_ACTIVE << E10_BARRIER_SHIFT);
-            }
-        ) ELSE message(caster, "Unknown action '" + type + "'!");
+#NONMAGIC SILENT SPELL easter (type : STRING) : "#m" =
+#    (REQUIRE name_of(caster) == "Freeyorp") =>
+#        EFFECT IF (type == "EE_RF") THEN (
+#            {
+#                doevent("Old Woman::OnReplenish");
+#            }
+#        ) ELSE IF (type == "EE_SUS") THEN (
+#            {
+#                doevent "Old Woman::OnManualStopTimer";
+#            }
+#        ) ELSE IF (type == "EE_INIT") THEN (
+#            {
+#                doevent "Old Woman::OnManualStartTimer";
+#            }
+#        ) ELSE IF (type == "BLOCKER_DISABLE") THEN (
+#            {
+#                set $Easter_2010_Npc_State2, ($Easter_2010_Npc_State2 & ~(E10_BARRIER_MASK << E10_BARRIER_SHIFT)) | (E10_BARRIER_OPEN << E10_BARRIER_SHIFT);
+#            }
+#        ) ELSE IF (type == "BLOCKER_ENABLE") THEN (
+#            {
+#                set $Easter_2010_Npc_State2, ($Easter_2010_Npc_State2 & ~(E10_BARRIER_MASK << E10_BARRIER_SHIFT)) | (E10_BARRIER_ACTIVE << E10_BARRIER_SHIFT);
+#            }
+#        ) ELSE message(caster, "Unknown action '" + type + "'!");
 
-// Invader spells
+# Invader spells
 
-NONMAGIC SILENT SPELL easter-invader-init : "#i" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT warp(caster, @("028-1.gat", 139, 46));
-             {
-              gmcommand strcharinfo(0)+":@blvl -255";
-              gmcommand strcharinfo(0)+":@blvl 199";
-              gmcommand strcharinfo(0)+":@setmagic all 5 Xakelbael the Dark";
-              gmcommand strcharinfo(0)+":@allstats";
-              savepoint "028-1.gat", 130, 46;
-             }
-             create_item(caster, "DarkTalisman", 1);
+#NONMAGIC SILENT SPELL easter-invader-init : "#i" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT warp(caster, @("028-1.gat", 139, 46));
+#             {
+#              gmcommand strcharinfo(0)+":@blvl -255";
+#              gmcommand strcharinfo(0)+":@blvl 199";
+#              gmcommand strcharinfo(0)+":@setmagic all 5 Xakelbael the Dark";
+#              gmcommand strcharinfo(0)+":@allstats";
+#              savepoint "028-1.gat", 130, 46;
+#             }
+#             create_item(caster, "DarkTalisman", 1);
 
-NONMAGIC SILENT SPELL easter-invader-hide : "#h" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT { if (checkoption(4096)) goto L_toggle;
-               setoption(4096);
-               end;
-               L_toggle:
-               setoption(0);
-               end; };
-               warp(caster, location(caster));
+#NONMAGIC SILENT SPELL easter-invader-hide : "#h" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT { if (checkoption(4096)) goto L_toggle;
+#               setoption(4096);
+#               end;
+#               L_toggle:
+#               setoption(0);
+#               end; };
+#               warp(caster, location(caster));
 
-NONMAGIC SILENT SPELL easter-invader-warp-taunt : "#o" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT warp(caster, @("009-1.gat", 48, 35));
-             WAIT 80;
-             sfx(caster, 32, 0);
-             WAIT 80;
-             FOREACH PC p IN rbox(location(caster), 50)
-                     DO IF (p <> caster) THEN (
-                         message(p, "A powerful explosion " + if_then_else(distance(location(caster), location(p)) < 10, "right around you nearly deafens you!", if_then_else(distance(location(caster), location(p)) < 30, "nearby shocks you!", "in the distance erupts... you're not sure of the source, but it will be something big...")));
-                         itemheal(p, -1 - random(hp(p)), 0-(random(sp(p) >> 2)));
-                     )
-             WAIT 1000;
-             FOREACH PC p IN rbox(location(caster), 15)
-                     DO (
-                         message(p, "As the smoke clears, you hear a distant, sickly laughing ringing in your ears...");
-                     )
+#NONMAGIC SILENT SPELL easter-invader-warp-taunt : "#o" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT warp(caster, @("009-1.gat", 48, 35));
+#             WAIT 80;
+#             sfx(caster, 32, 0);
+#             WAIT 80;
+#             FOREACH PC p IN rbox(location(caster), 50)
+#                     DO IF (p <> caster) THEN (
+#                         message(p, "A powerful explosion " + if_then_else(distance(location(caster), location(p)) < 10, "right around you nearly deafens you!", if_then_else(distance(location(caster), location(p)) < 30, "nearby shocks you!", "in the distance erupts... you're not sure of the source, but it will be something big...")));
+#                         itemheal(p, -1 - random(hp(p)), 0-(random(sp(p) >> 2)));
+#                     )
+#             WAIT 1000;
+#             FOREACH PC p IN rbox(location(caster), 15)
+#                     DO (
+#                         message(p, "As the smoke clears, you hear a distant, sickly laughing ringing in your ears...");
+#                     )
 
-NONMAGIC SILENT SPELL easter-invader-warp-taunt-explosion : "#q" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT sfx(caster, 32, 0);
-             WAIT 100;
-             sfx(caster, 31, 0);
-             WAIT 30;
-             sfx(caster, 30, 0);
-             WAIT 30;
-             sfx(caster, 30, 0);
-             WAIT 20;
-             sfx(caster, 30, 0);
-             WAIT 10;
-             sfx(caster, 30, 0);
-             WAIT 10;
+#NONMAGIC SILENT SPELL easter-invader-warp-taunt-explosion : "#q" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT sfx(caster, 32, 0);
+#             WAIT 100;
+#             sfx(caster, 31, 0);
+#             WAIT 30;
+#             sfx(caster, 30, 0);
+#             WAIT 30;
+#             sfx(caster, 30, 0);
+#             WAIT 20;
+#             sfx(caster, 30, 0);
+#             WAIT 10;
+#             sfx(caster, 30, 0);
+#             WAIT 10;
 
-NONMAGIC SILENT SPELL easter-invader-warp-taunt-end : "#p" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT FOREACH PC p IN rbox(location(caster), 50) DO IF (p <> caster)
-             THEN ( script_target = p;
-                    { gmcommand strcharinfo(0)+":@jump"; }
-                    message(p, "A powerful force sends you flying!");
-                  )
-             warp(caster, @("028-1.gat", 130, 46));
+#NONMAGIC SILENT SPELL easter-invader-warp-taunt-end : "#p" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT FOREACH PC p IN rbox(location(caster), 50) DO IF (p <> caster)
+#             THEN ( script_target = p;
+#                    { gmcommand strcharinfo(0)+":@jump"; }
+#                    message(p, "A powerful force sends you flying!");
+#                  )
+#             warp(caster, @("028-1.gat", 130, 46));
 
 
-NONMAGIC SILENT SPELL easter-invader-attack-pulse : "#a" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT IF (script_int(caster, "InvState") == 1) THEN ( set_script_variable(caster, "InvState", 0); ABORT; );
-             set_script_variable(caster, "InvState", 1);
-             FOR i = 1 TO 500
-             DO ( sfx(caster, 31, 0);
-                  WAIT 80;
-                  FOREACH PC p IN rbox(location(caster), 4)
-                          DO IF (p <> caster) THEN ( injure(caster, p, 30 - random(random(25)) - random(5) + random(i), 0); )
-                  WAIT 420;
-                  IF (script_int(caster, "InvState") == 0) THEN ABORT;
-                )
-             set_script_variable(caster, "InvState", 0);
+#NONMAGIC SILENT SPELL easter-invader-attack-pulse : "#a" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT IF (script_int(caster, "InvState") == 1) THEN ( set_script_variable(caster, "InvState", 0); ABORT; );
+#             set_script_variable(caster, "InvState", 1);
+#             FOR i = 1 TO 500
+#             DO ( sfx(caster, 31, 0);
+#                  WAIT 80;
+#                  FOREACH PC p IN rbox(location(caster), 4)
+#                          DO IF (p <> caster) THEN ( injure(caster, p, 30 - random(random(25)) - random(5) + random(i), 0); )
+#                  WAIT 420;
+#                  IF (script_int(caster, "InvState") == 0) THEN ABORT;
+#                )
+#             set_script_variable(caster, "InvState", 0);
 
-NONMAGIC SILENT SPELL easter-invader-command : "#d" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT override_attack(caster, 3, ((200 - agi(caster)) * 5000) / 200,
-                             8, ATTACK_ICON_GENERIC, 31, 0);
-      ATTRIGGER CALL attack_check(target);
-                area = rbox(location(target), 8);
-                FOREACH MOB m IN area
-                DO (message(caster, "Class Id: " + mob_id(m));
-                    IF (mob_id(m) = 1040 || mob_id(m) == 1042 || mob_id(m) == 1047) THEN (
-                    CALL sfx_generic(m);
-                    aggravate(m, 0, target);
-                    )
-                    )
+#NONMAGIC SILENT SPELL easter-invader-command : "#d" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT override_attack(caster, 3, ((200 - agi(caster)) * 5000) / 200,
+#                             8, ATTACK_ICON_GENERIC, 31, 0);
+#      ATTRIGGER CALL attack_check(target);
+#                area = rbox(location(target), 8);
+#                FOREACH MOB m IN area
+#                DO (message(caster, "Class Id: " + mob_id(m));
+#                    IF (mob_id(m) = 1040 || mob_id(m) == 1042 || mob_id(m) == 1047) THEN (
+#                    CALL sfx_generic(m);
+#                    aggravate(m, 0, target);
+#                    )
+#                    )
 
-NONMAGIC SILENT SPELL easter-invader-spike : "#w" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT FOR i = 1 TO 40
-             DO ( point = random_location(rbox(location(caster), sqrt(i) << 1));
-                  IF (random(3))
-                  THEN (sfx(point, 32, 0);
-                        WAIT 50;
-                        FOREACH PC p IN rbox(point, sqrt(i) >> 1)
-                        DO IF (p <> caster)
-                           THEN (injure(caster, p, i + random(i << 1), random(random(i)));)
-                  ) ELSE (sfx(point, 31, 0);
-                          WAIT 50;
-                          FOREACH PC p IN rbox(point, sqrt(i))
-                          DO IF (p <> caster)
-                             THEN (injure(caster, p, i + random(i << 2), random(random(i)));)
-                  )
-                  WAIT 400 - (i << 3);
-                )
+#NONMAGIC SILENT SPELL easter-invader-spike : "#w" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT FOR i = 1 TO 40
+#             DO ( point = random_location(rbox(location(caster), sqrt(i) << 1));
+#                  IF (random(3))
+#                  THEN (sfx(point, 32, 0);
+#                        WAIT 50;
+#                        FOREACH PC p IN rbox(point, sqrt(i) >> 1)
+#                        DO IF (p <> caster)
+#                           THEN (injure(caster, p, i + random(i << 1), random(random(i)));)
+#                  ) ELSE (sfx(point, 31, 0);
+#                          WAIT 50;
+#                          FOREACH PC p IN rbox(point, sqrt(i))
+#                          DO IF (p <> caster)
+#                             THEN (injure(caster, p, i + random(i << 2), random(random(i)));)
+#                  )
+#                  WAIT 400 - (i << 3);
+#                )
 
-NONMAGIC SILENT SPELL easter-invader-jump (t : STRING) : "#j" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT IF not (status_option(caster, 4096)) THEN ( sfx(caster, 33, 0);
-                                                  WAIT 200; );
-             IF (t == "r") THEN ( warp(caster, @("028-1.gat", 129, 46)); )
-             ELSE IF (t == "s") THEN ( warp(caster, @("028-1.gat", 69, 96)); )
-             ELSE IF (t == "c") THEN ( warp(caster, @("028-3.gat", 50, 58)); )
-             ELSE IF (t == "t") THEN ( warp(caster, @("009-1.gat", 48, 35)); )
-             ELSE { gmcommand strcharinfo(0)+":@jump"; };
+#NONMAGIC SILENT SPELL easter-invader-jump (t : STRING) : "#j" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT IF not (status_option(caster, 4096)) THEN ( sfx(caster, 33, 0);
+#                                                  WAIT 200; );
+#             IF (t == "r") THEN ( warp(caster, @("028-1.gat", 129, 46)); )
+#             ELSE IF (t == "s") THEN ( warp(caster, @("028-1.gat", 69, 96)); )
+#             ELSE IF (t == "c") THEN ( warp(caster, @("028-3.gat", 50, 58)); )
+#             ELSE IF (t == "t") THEN ( warp(caster, @("009-1.gat", 48, 35)); )
+#             ELSE { gmcommand strcharinfo(0)+":@jump"; };
 
-NONMAGIC SILENT SPELL easter-invader-taunt-local (s : STRING) : "#l" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT FOREACH PC p IN rbox(location(caster), 20) DO message(p, s);
+#NONMAGIC SILENT SPELL easter-invader-taunt-local (s : STRING) : "#l" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT FOREACH PC p IN rbox(location(caster), 20) DO message(p, s);
 
-NONMAGIC SILENT SPELL easter-invader-taunt-global (s : STRING) : "#b" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT FOREACH PC p IN rbox(location(caster), 100) DO message(p, s);
+#NONMAGIC SILENT SPELL easter-invader-taunt-global (s : STRING) : "#b" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT FOREACH PC p IN rbox(location(caster), 100) DO message(p, s);
 
-NONMAGIC SILENT SPELL easter-invader-spawn : "#c" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-      EFFECT spawn(rbox(location(caster), 20), caster, 1040, random(random(5)), 1, 100000);
-             spawn(rbox(location(caster), 20), caster, 1042, random(random(5)), 1, 100000);
-             spawn(rbox(location(caster), 20), caster, 1047, random(random(5)), 1, 100000);
+#NONMAGIC SILENT SPELL easter-invader-spawn : "#c" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#      EFFECT spawn(rbox(location(caster), 20), caster, 1040, random(random(5)), 1, 100000);
+#             spawn(rbox(location(caster), 20), caster, 1042, random(random(5)), 1, 100000);
+#             spawn(rbox(location(caster), 20), caster, 1047, random(random(5)), 1, 100000);
 
 NONMAGIC SILENT SPELL world-shift : "#S00" =
     (REQUIRE (script_int(caster, "Easter_2010_QuestState") >> 16) & 1 == 1 && (script_int(caster, "Easter_2010_QuestState") >> 7) & 3 == 2) => # Travel only works when you have both helped the doctor at least thrice and have defeated the invader - top level requirement.
@@ -1507,42 +1507,42 @@ NONMAGIC SILENT SPELL world-shift : "#S00" =
        )
      )
 
-NONMAGIC SILENT SPELL easter-invader-killer : "#z" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-    EFFECT { gmcommand strcharinfo(0)+"@killer"; }
+#NONMAGIC SILENT SPELL easter-invader-killer : "#z" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#    EFFECT { gmcommand strcharinfo(0)+"@killer"; }
 
-NONMAGIC SILENT SPELL easter-invader-killable : "#x" =
-    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
-    EFFECT { gmcommand strcharinfo(0)+"@killable"; }
+#NONMAGIC SILENT SPELL easter-invader-killable : "#x" =
+#    (REQUIRE name_of(caster) == "Xakelbael the Dark") =>
+#    EFFECT { gmcommand strcharinfo(0)+"@killable"; }
 
-NONMAGIC SILENT SPELL easter-debug-reset (s : STRING) : "#r" =
-    (REQUIRE name_of(caster) == "Freeyorp") =>
-    EFFECT set_script_variable(pc(s), "Easter_2010_QuestState", 0);
+#NONMAGIC SILENT SPELL easter-debug-reset (s : STRING) : "#r" =
+#    (REQUIRE name_of(caster) == "Freeyorp") =>
+#    EFFECT set_script_variable(pc(s), "Easter_2010_QuestState", 0);
 
-NONMAGIC SILENT SPELL easter-set-flag (s : PC) : "#k" =
-    (REQUIRE name_of(caster) == "Freeyorp" || name_of(caster) == "Xakelbael the Dark") =>
-    EFFECT IF (s == caster) THEN ABORT;
-           IF ((script_int(s, "Easter_2010_QuestState") >> 16) & 1) THEN ( message(caster, s + " already has the flag set!"); ABORT; )
-           script_target = s;
-           {    set Easter_2010_QuestState, Easter_2010_QuestState | (1 << 16); // RETURN_READY flag
-                mes "As the smoke clears, you feel stronger, vivified.";
-                next;
-                mes "The world seems more vibrant. It looks the same as ever, but you get a sense of something more.";
-                next;
-                mes "You feel something familiar.";
-                next;
-                mes "This sensation... could it be home?";
-                next;
-                mes "A single word comes to your mind - " + getspellinvocation("world-shift") + ". While it sounds magical, you know with certainty that you will not need any magical power to use it.";
-                next;
-                mes "Could this be the way to move to and from the worlds? Either way, the dark petal the rose vanished into seems to be the key.";
-                next;
-                mes "Though you might be able to succeed in one trip without it, returning home.";
-                if ((Easter_2010_QuestState >> E10_STATE_ROSE_SHIFT) & E10_STATE_ROSE_MASK == E10_STATE_ROSE_ROSE_COMPLETE) close;
-                next;
-                mes "But the world is still not quite right. Perhaps there is someone you should help before the world releases its hold on you?";
-                close;
-           }
+#NONMAGIC SILENT SPELL easter-set-flag (s : PC) : "#k" =
+#    (REQUIRE name_of(caster) == "Freeyorp" || name_of(caster) == "Xakelbael the Dark") =>
+#    EFFECT IF (s == caster) THEN ABORT;
+#           IF ((script_int(s, "Easter_2010_QuestState") >> 16) & 1) THEN ( message(caster, s + " already has the flag set!"); ABORT; )
+#           script_target = s;
+#           {    set Easter_2010_QuestState, Easter_2010_QuestState | (1 << 16); // RETURN_READY flag
+#                mes "As the smoke clears, you feel stronger, vivified.";
+#                next;
+#                mes "The world seems more vibrant. It looks the same as ever, but you get a sense of something more.";
+#                next;
+#                mes "You feel something familiar.";
+#                next;
+#                mes "This sensation... could it be home?";
+#                next;
+#                mes "A single word comes to your mind - " + getspellinvocation("world-shift") + ". While it sounds magical, you know with certainty that you will not need any magical power to use it.";
+#                next;
+#                mes "Could this be the way to move to and from the worlds? Either way, the dark petal the rose vanished into seems to be the key.";
+#                next;
+#                mes "Though you might be able to succeed in one trip without it, returning home.";
+#                if ((Easter_2010_QuestState >> E10_STATE_ROSE_SHIFT) & E10_STATE_ROSE_MASK == E10_STATE_ROSE_ROSE_COMPLETE) close;
+#                next;
+#                mes "But the world is still not quite right. Perhaps there is someone you should help before the world releases its hold on you?";
+#                close;
+#           }
 
 NONMAGIC SILENT SPELL easter-get-debug (p : PC) : "#e" =
     (REQUIRE name_of(caster) == "Freeyorp" || name_of(caster) == "Xakelbael the Dark") =>
@@ -1560,10 +1560,10 @@ NONMAGIC SILENT SPELL easter-get-debug (p : PC) : "#e" =
            message(caster, "Local state egg4: " + script_int(p, "Easter_2010_EggState4"));
            message(caster, "Local state egg5: " + script_int(p, "Easter_2010_EggState5"));
            message(caster, "Local state quest: " + script_int(p, "Easter_2010_QuestState"));
-           
-             
-    
-    
+
+
+
+
 PROCEDURE hug_tree(target) =
           IF (target = ""
               || target = "tree" || target = "tree*"
