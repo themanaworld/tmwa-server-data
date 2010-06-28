@@ -13,7 +13,7 @@ if (substr($agent, 0, 3) == "TMW" || substr($agent, 0, 4) == "Mana")
     file_put_contents($file, '[' . date('H:i') . "] $agent\n", FILE_APPEND);
 }
 
-$min_version = '0.0.28.1';
+$min_version = '0.0.29.1';
 $cur_version = '0.0.29.1';
 
 if (substr($agent, 0, 3) == "TMW" and $agent < 'TMW/' . $min_version)
@@ -25,8 +25,6 @@ if (substr($agent, 0, 3) == "TMW" and $agent < 'TMW/' . $min_version)
 }
 
 echo "##9 Latest client version: ##6$cur_version\n \n";
-
-echo "##0 New IRC channel: #themanaworld on irc.themanaworld.org\n \n";
 
 print file_get_contents("news.txt");
 ?>
