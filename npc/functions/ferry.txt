@@ -3,12 +3,25 @@
 function	script	Ferry	{
 	set @cost_tulimshar, 1000;
 	set @cost_hurnscald, 1000;
+	set @cost_candor, 3000;
 	mes "Where would you like to go?";
 	next;
+	if (BaseLevel < 40) goto L_PlainMenu;
+	goto L_MenuWithCandor;
 
+
+L_PlainMenu:
 	menu
 		"Tulimshar (" + @cost_tulimshar + "GP)", L_Tulimshar,
 		"Hurnscald (" + @cost_hurnscald + "GP)", L_Hurnscald,
+		"Nevermind", -;
+	close;
+
+L_MenuWithCandor:
+	menu
+		"Tulimshar (" + @cost_tulimshar + "GP)", L_Tulimshar,
+		"Hurnscald (" + @cost_hurnscald + "GP)", L_Hurnscald,
+		"Candor (" + @cost_candor + "GP)", L_Candor,
 		"Nevermind", -;
 	close;
 
@@ -30,6 +43,16 @@ L_Hurnscald:
 	
 	set zeny, zeny - @cost_hurnscald;
 	warp "008-1.gat", 137, 64;
+	close;
+
+L_Candor:
+	if (@loc == DOCK_candor)
+		goto L_AlreadyThere;
+	if (zeny < @cost_candor)
+		goto L_NotEnoughGP;
+	
+	set zeny, zeny - @cost_candor;
+	warp "029-1.gat", 25, 37;
 	close;
 
 L_AlreadyThere:

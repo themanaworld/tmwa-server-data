@@ -1,0 +1,151 @@
+// Parua's fight
+
+029-3.gat,50,25,0	script	Parua	183,{
+	if ($@FIGHT_CAVE_STATUS != 0) goto L_Enjoy;
+	mes "[Parua]";
+	mes "\"Hello.\"";
+	next;
+	mes "[Parua]";
+	mes "\"Do you dare challenge the powers that sleep here.\"";
+	menu "No, Ill let it sleep", L_Exit,
+	     "Ha! Whats the worst it could do?", -;
+	mes "[Parua]";
+	mes "\"Very well, for a fee of 20,000 gp Ill will awake the power.\"";
+	menu "No, what a ripoff", L_Exit,
+	     "Fine, here you go", -;
+
+	if (zeny < 20000) goto L_NotEnough;
+	if ($@FIGHT_CAVE_STATUS != 0) goto L_AlreadyStarted;
+	if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
+
+	set zeny, zeny - 20000;
+	npctalk "Let the battle begin!";
+	set $@FIGHT_CAVE_STATUS, 1;
+	set $@FIGHT_CAVE_LEVEL, BaseLevel / 2;
+	set $@FIGHT_CAVE_PLAYER_COUNT, getareausers("029-3.gat", 20, 20, 70, 60);
+	goto L_Exit;
+
+L_Enjoy:
+	mes "[Parua]";
+	mes "\"Enjoy the fight\"";
+	goto L_Exit;
+
+L_NotEnough:
+	mes "[Parua]";
+	mes "\"Seems you can't meet my fee\"";
+	goto L_Exit;
+
+L_AlreadyStarted:
+	mes "[Parua]";
+	mes "\"Seems your friend already paid me\"";
+	goto L_Exit;
+
+L_NotEnoughPlayers:
+	mes "[Parua]";
+	mes "\"Maybe you should bring some friends with you, this will get messy\"";
+	goto L_Exit;
+
+L_Exit:
+	close;
+	end;
+
+// Fight logic
+OnTimer5000:
+	setnpctimer 0;
+	if ($@FIGHT_CAVE_STATUS != 0) goto L_CaveLogic;
+L_Return_1:
+	set $@FIGHT_CAVE_PLAYER_COUNT, 0;
+	areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::onTick";
+	end;
+
+L_CaveLogic:
+	if ($@FIGHT_CAVE_PLAYER_COUNT <= 0) goto L_CleanUp;
+	set $@FIGHT_CAVE_ROUND_TIMER, $@FIGHT_CAVE_ROUND_TIMER + 5; // Advance 5 seconds
+	if (mobcount("029-3.gat", "Parua::onPetDeath") <= 0) goto L_NextRound;
+	if ($@FIGHT_CAVE_ROUND_TIMER >= 120) goto L_NextRound;
+	goto L_Return_1;
+
+L_NextRound:
+	set $@FIGHT_CAVE_ROUND_TIMER, 0;
+
+	set $@FIGHT_CAVE_LEVEL, $@FIGHT_CAVE_LEVEL + ($@FIGHT_CAVE_PLAYER_COUNT * 3);
+	if ($@FIGHT_CAVE_LEVEL >= 1200) L_CleanUp;
+	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_LEVEL;
+
+	npctalk "Next round starting, round level is " + $@FIGHT_CAVE_LEVEL;
+
+	set $@MOB_1_SUMMON, 0;
+	set $@MOB_2_SUMMON, 0;
+	set $@MOB_3_SUMMON, 0;
+	set $@MOB_4_SUMMON, 0;
+	set $@MOB_5_SUMMON, 0;
+	set $@MOB_6_SUMMON, 0;
+L_Summon:
+	if ($@FIGHT_CAVE_POINTS >= 100 && $@MOB_1_SUMMON < 3) goto L_MOB1;
+	if ($@FIGHT_CAVE_POINTS >= 50 && $@MOB_2_SUMMON < 5) goto L_MOB2;
+	if ($@FIGHT_CAVE_POINTS >= 30 && $@MOB_3_SUMMON < 10) goto L_MOB3;
+	if ($@FIGHT_CAVE_POINTS >= 20 && $@MOB_4_SUMMON < 10) goto L_MOB4;
+	if ($@FIGHT_CAVE_POINTS >= 5 && $@MOB_5_SUMMON < 20) goto L_MOB5;
+	if ($@FIGHT_CAVE_POINTS >= 1 && $@MOB_6_SUMMON < 25) goto L_MOB6;
+	goto L_Return_1;
+
+
+L_MOB1:
+	set $@MOB_1_SUMMON, $@MOB_1_SUMMON + 1;
+	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 100;
+	areamonster "029-3.gat", 20, 20, 70, 60, "", 1022, 1, "Parua::onPetDeath";
+	goto L_Summon;
+
+L_MOB2:
+	set $@MOB_2_SUMMON, $@MOB_2_SUMMON + 1;
+	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 50;
+	areamonster "029-3.gat", 20, 20, 70, 60, "", 1045, 1, "Parua::onPetDeath";
+	goto L_Summon;
+
+L_MOB3:
+	set $@MOB_3_SUMMON, $@MOB_3_SUMMON + 1;
+	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 30;
+	areamonster "029-3.gat", 20, 20, 70, 60, "", 1024, 1, "Parua::onPetDeath";
+	goto L_Summon;
+
+L_MOB4:
+	set $@MOB_4_SUMMON, $@MOB_4_SUMMON + 1;
+	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 20;
+	areamonster "029-3.gat", 20, 20, 70, 60, "", 1043, 1, "Parua::onPetDeath";
+	goto L_Summon;
+
+L_MOB5:
+	set $@MOB_5_SUMMON, $@MOB_5_SUMMON + 1;
+	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 5;
+	areamonster "029-3.gat", 20, 20, 70, 60, "", 1010, 1, "Parua::onPetDeath";
+	goto L_Summon;
+
+L_MOB6:
+	set $@MOB_6_SUMMON, $@MOB_6_SUMMON + 1;
+	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 1;
+	areamonster "029-3.gat", 20, 20, 70, 60, "", 1008, 1, "Parua::onPetDeath";
+	goto L_Summon;
+
+// Called on each player once every 5 seconds
+onTick:
+	if (isdead(0)) end;
+	set $@FIGHT_CAVE_PLAYER_COUNT, $@FIGHT_CAVE_PLAYER_COUNT + 1;
+	end;
+
+onPetDeath:
+	end;
+
+onInit:
+	initnpctimer;
+	startnpctimer;
+L_CleanUp:
+	npctalk "Game Over";
+	mapannounce "029-1.gat", "Parua: The dungeon is now ready for its next victims.", 0;
+	set $@FIGHT_CAVE_STATUS, 0;
+	set $@FIGHT_CAVE_PLAYER_COUNT, 0;
+	set $@FIGHT_CAVE_LEVEL, 1;
+	set $@FIGHT_CAVE_ROUND_TIMER, 0;
+	killmonster "029-3.gat", "Parua::onPetDeath";
+	end;
+
+}
