@@ -63,17 +63,19 @@ L_Return_1:
 	end;
 
 L_CaveLogic:
+	set $@FIGHT_CAVE_ROUND_PEN, $@FIGHT_CAVE_PLAYER_COUNT;
+	if ($@FIGHT_CAVE_ROUND_PEN > 60) set $@FIGHT_CAVE_ROUND_PEN, 60;
 	if ($@FIGHT_CAVE_PLAYER_COUNT <= 0) goto L_CleanUp;
 	set $@FIGHT_CAVE_ROUND_TIMER, $@FIGHT_CAVE_ROUND_TIMER + 5; // Advance 5 seconds
 	if (mobcount("029-3.gat", "Parua::onPetDeath") <= 0) goto L_NextRound;
-	if ($@FIGHT_CAVE_ROUND_TIMER >= 120) goto L_NextRound;
+	if ($@FIGHT_CAVE_ROUND_TIMER + $@FIGHT_CAVE_ROUND_PEN >= 120) goto L_NextRound;
 	goto L_Return_1;
 
 L_NextRound:
 	set $@FIGHT_CAVE_ROUND_TIMER, 0;
 
-	set $@FIGHT_CAVE_LEVEL, $@FIGHT_CAVE_LEVEL + $@FIGHT_CAVE_PLAYER_COUNT + ($@FIGHT_CAVE_LEVEL / 10);
-	if ($@FIGHT_CAVE_LEVEL >= 1600) goto L_CleanUp;
+	set $@FIGHT_CAVE_LEVEL, $@FIGHT_CAVE_LEVEL + $@FIGHT_CAVE_PLAYER_COUNT + ($@FIGHT_CAVE_LEVEL / 40);
+	if ($@FIGHT_CAVE_LEVEL >= 3000) goto L_CleanUp;
 	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_LEVEL;
 
 	if ($@FIGHT_CAVE_LAST + 30  < $@FIGHT_CAVE_LEVEL) goto L_Announce;
@@ -88,7 +90,7 @@ L_Return_2:
 	set $@MOB_6_SUMMON, 0;
 L_Summon:
 	if ($@FIGHT_CAVE_POINTS >= 243 && $@MOB_1_SUMMON < 3) goto L_MOB1;
-	if ($@FIGHT_CAVE_POINTS >= 81 && $@MOB_2_SUMMON < 5) goto L_MOB2;
+	if ($@FIGHT_CAVE_POINTS >= 81 && $@MOB_2_SUMMON < 10) goto L_MOB2;
 	if ($@FIGHT_CAVE_POINTS >= 27 && $@MOB_3_SUMMON < 10) goto L_MOB3;
 	if ($@FIGHT_CAVE_POINTS >= 9 && $@MOB_4_SUMMON < 10) goto L_MOB4;
 	if ($@FIGHT_CAVE_POINTS >= 3 && $@MOB_5_SUMMON < 20) goto L_MOB5;
