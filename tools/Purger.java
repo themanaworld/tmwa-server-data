@@ -11,7 +11,7 @@ import java.util.*;
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.out.println(
+            System.err.println(
                 "Usage: java Purger <folder> <date>\n" +
                 " - folder: is the path to account.txt and athena.txt files.\n" +
                 " - date: accounts created before this date will be purged (dd/mm/yy or yyyy-mm-dd).");
@@ -26,11 +26,11 @@ import java.util.*;
         File folder = new File(args[0]);
         // Do some sanity checking
         if (!folder.exists()) {
-            System.out.println("Folder does not exist!");
+            System.err.println("Folder does not exist!");
             return;
         }
         if (!folder.isDirectory()) {
-            System.out.println("Folder is not a folder!");
+            System.err.println("Folder is not a folder!");
             return;
         }
 
@@ -52,9 +52,11 @@ import java.util.*;
         }
 
         if (purgeDate == null) {
-            System.out.println("ERROR: Date format not recognized.");
+            System.err.println("ERROR: Date format not recognized.");
             return;
         }
+        
+        System.out.printf("Removing accounts unused since %tF\n", purgeDate);
 
         String line;
 
@@ -75,7 +77,9 @@ import java.util.*;
                 }
                 else {
                     // Server accounts should not be purged
-                    if (!fields[4].equals("S")) {
+                    if (fields[4].equals("S")) {
+                        copy = true;
+                    } else {
                         accounts++;
                         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                         try {
@@ -84,20 +88,26 @@ import java.util.*;
                                 activeAccounts.add(fields[0]);
                                 copy = true;
                             }
+                            else
+                            {
+                                System.out.println("Removing " + fields[1]);
+                            }
                         }
                         catch (ParseException e) {
-                            System.out.println(
-                                "ERROR: Wrong date format in account.txt. ("
-                                + accounts + ": " + line + ")");
-                            //return;
+                            // Ignore accounts that haven't been used yet
+                            if (fields[3].equals("-")) {
+                                activeAccounts.add(fields[0]);
+                                copy = true;
+                            }
+                            else {
+                                System.err.println("ERROR: Wrong date format in account.txt. (" + accounts + ": " + line + ")");
+                                System.out.println("Removing " + fields[1]);
+                            }
                         }
                         catch (Exception e) {
                             e.printStackTrace();
                             return;
                         }
-                    }
-                    else {
-                        copy = true;
                     }
                 }
                 if (copy) {
@@ -113,19 +123,16 @@ import java.util.*;
             output.close();
         }
         catch (FileNotFoundException e ) {
-            System.out.println(
-                "ERROR: file " + oldAccount.getAbsolutePath() + " not found.");
+            System.err.println("ERROR: file " + oldAccount.getAbsolutePath() + " not found.");
             return;
         }
         catch (Exception e) {
-            System.out.println("ERROR: unable to process account.txt");
+            System.err.println("ERROR: unable to process account.txt");
             e.printStackTrace();
             return;
         }
 
-        System.out.println(
-            "Removed " + (accounts - activeAccounts.size()) + "/" +
-            accounts + " accounts.");
+        System.out.println("Removed " + (accounts - activeAccounts.size()) + "/" + accounts + " accounts.");
 
         // Remove characters
         try {
@@ -161,12 +168,11 @@ import java.util.*;
             output.close();
         }
         catch (FileNotFoundException e ) {
-            System.out.println(
-                "ERROR: file " + oldAthena.getAbsolutePath() + " not found.");
+            System.err.println("ERROR: file " + oldAthena.getAbsolutePath() + " not found.");
             return;
         }
         catch (Exception e) {
-            System.out.println("ERROR: unable to process athena.txt");
+            System.err.println("ERROR: unable to process athena.txt");
             e.printStackTrace();
             return;
         }
