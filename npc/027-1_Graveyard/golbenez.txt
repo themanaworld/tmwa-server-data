@@ -1,8 +1,8 @@
 //
 
 027-1.gat,68,89,0	script	#Golbenez#_M	204,{
-
 	if ($Golbenez_Inn_Cost >= 500000000) goto Golbenez_Inn_Enough;
+
 	mes "[Voice]";
 	mes "\"Mortal!  I am Golbenez!  I have broken through the barriers of space and time!\"";
 	next;
@@ -11,62 +11,27 @@
 	mes "\"It is difficult to create portals from my realm to yours.  It is also difficult to create dimensions isolated from the threats that may seek to do you harm.  For this reason I demand a hefty fee.  For 500 million of your gold pieces I will create this place.  This need not come just from you, but it must be delivered from the people of your world to me.\"";
 	next;
 	mes "\"So far, you have brought me " + Golbenez_Inn_Cost + " gold pieces.  The people of your world have brought me " + $Golbenez_Inn_Cost + " gold pieces.  How much would you like to give?\"";
+
+        set @mult, 1;
 	menu
 		"I'd like to give a little.", Golbenez_Little,
 		"I'd like to give thousands.", Golbenez_Thousands,
-		"I'd like to give tens of thousands.", Golbenez_10s_of_Thousands,
-		"I'd like to give hundreds of thousands.", Golbenez_100s_of_Thousands,
-		"I'd like to give millions.", Golbenez_Millions,
 		"Nevermind.", Golbenez_Nevermind;
 
-Golbenez_Little:
-	input @Give_Zeny;
-	
-	if (@Give_Zeny == 0) close;
-	if (zeny < @Give_Zeny) goto Golbenez_Inn_NotEnoughZeny;
-	set Golbenez_Inn_Cost, Golbenez_Inn_Cost + @Give_Zeny;
-	set $Golbenez_Inn_Cost, $Golbenez_Inn_Cost + @Give_Zeny;
-	set zeny, zeny - @Give_Zeny;
-	close;
 
 Golbenez_Thousands:
-	input @Give_Zeny_Thousands;
-	
-	if (@Give_Zeny_Thousands == 0) close;
-	if (zeny < @Give_Zeny_Thousands * 1000) goto Golbenez_Inn_NotEnoughZeny;
-	set Golbenez_Inn_Cost, Golbenez_Inn_Cost + @Give_Zeny_Thousands * 1000;
-	set $Golbenez_Inn_Cost, $Golbenez_Inn_Cost + @Give_Zeny_Thousands * 1000;
-	set zeny, zeny - @Give_Zeny_Thousands * 1000;
-	close;
+        set @mult, 1000;
 
-Golbenez_10s_of_Thousands:
-	input @Give_Zeny_10s_of_Thousands;
-	
-	if (@Give_Zeny_10s_of_Thousands == 0) close;
-	if (zeny < @Give_Zeny_10s_of_Thousands * 10000) goto Golbenez_Inn_NotEnoughZeny;
-	set Golbenez_Inn_Cost, Golbenez_Inn_Cost + @Give_Zeny_10s_of_Thousands * 10000;
-	set $Golbenez_Inn_Cost, $Golbenez_Inn_Cost + @Give_Zeny_10s_of_Thousands * 10000;
-	set zeny, zeny - @Give_Zeny_10s_of_Thousands * 10000;
-	close;
+Golbenez_Little:
+	input @Give;
 
-Golbenez_100s_of_Thousands:
-	input @Give_Zeny_100s_of_Thousands;
+        set @Give, @Give * @mult;
 	
-	if (@Give_Zeny_100s_of_Thousands == 0) close;
-	if (zeny < @Give_Zeny_100s_of_Thousands * 100000) goto Golbenez_Inn_NotEnoughZeny;
-	set Golbenez_Inn_Cost, Golbenez_Inn_Cost + @Give_Zeny_100s_of_Thousands * 100000;
-	set $Golbenez_Inn_Cost, $Golbenez_Inn_Cost + @Give_Zeny_100s_of_Thousands * 100000;
-	set zeny, zeny - @Give_Zeny_100s_of_Thousands * 100000;
-	close;
-
-Golbenez_Millions:
-	input @Give_Zeny_Millions;
-	
-	if (@Give_Zeny_Millions == 0) close;
-	if (zeny < @Give_Zeny_Millions * 1000000) goto Golbenez_Inn_NotEnoughZeny;
-	set Golbenez_Inn_Cost, Golbenez_Inn_Cost + @Give_Zeny_Millions * 1000000;
-	set $Golbenez_Inn_Cost, $Golbenez_Inn_Cost + @Give_Zeny_Millions * 1000000;
-	set zeny, zeny - @Give_Zeny_Millions * 1000000;
+	if (@Give <= 0) close;
+	if (zeny < @Give) goto Golbenez_Inn_NotEnoughZeny;
+	set Golbenez_Inn_Cost, Golbenez_Inn_Cost + @Give;
+	set $Golbenez_Inn_Cost, $Golbenez_Inn_Cost + @Give;
+	set zeny, zeny - @Give;
 	close;
 
 Golbenez_Inn_NotEnoughZeny:
