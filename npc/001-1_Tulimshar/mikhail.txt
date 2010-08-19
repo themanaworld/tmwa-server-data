@@ -1,0 +1,60 @@
+//
+
+001-1.gat,50,46,0	script	Mikhail	120,{
+	if (TMW_Quest == 6) goto L_Done;
+	if (TMW_Quest == 5) goto L_Progress;
+	if (TMW_Quest == 4) goto L_Start;
+	
+	mes "[Mikhail]";
+	mes "\"Hello...\"";
+	close;
+
+L_Start:	
+	mes "[Mikhail]";
+	mes "\"My grandma sent me to get five maggot slimes from the maggots in the desert, but they scare me so bad!\"";
+	next;
+	mes "\"You look like a nice person. Would you go get them for me?\"";	
+	menu
+		"Of course, I'll go get you that.", L_accept,
+		"I got other things to do right now.", L_close;
+	close;
+	
+L_close:
+	close;
+	
+L_accept:
+	mes "[Mikhail]";
+	mes "\"Thank you so much! I'll wait for you here.\"";
+	set TMW_Quest, 5;
+	close;
+	
+L_Progress:
+	mes "[Mikhail]";
+	mes "\"Did you bring me the five maggot slimes i need?\"";
+	next;
+	menu
+		"Yes, here they are boy!", L_try,
+		"Not yet, I'll be back soon.", L_close;
+	close;
+	
+L_try:
+	if countitem("MaggotSlime") >= 5 goto L_get;
+	mes "[Mikhail]";
+	mes "\"It doesn't look like you have them all...\"";
+	close;
+	
+L_get:
+	delitem "MaggotSlime", 5;
+	set TMW_Quest, 6;
+	mes "[Mikhail]";
+	mes "\"Thank you so much! I can get back to my grandma now!\"";
+	next;
+	getexp 100, 0;
+	mes "You get 100 xp.";
+	close;
+	
+L_Done:
+	mes "[Mikhail]";
+	mes "\"Thanks for helping me getting those maggot slimes!\"";
+	close;
+	

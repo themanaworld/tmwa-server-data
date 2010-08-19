@@ -1,8 +1,15 @@
 //
 
 001-1.gat,110,71,0	script	Sandra	114,{
-	if(Scorp == 2) goto L_Done;
-	if(Scorp == 1) goto L_Progress;
+	if (TMW_Quest >= 12) goto L_Done;
+	if (TMW_Quest == 11) goto L_Progress;
+	if (TMW_Quest == 10) goto L_Start;
+
+	mes "[Sandra]";
+	mes "\"Hunting monsters for potion ingredients can sometimes be a difficult task.\"";
+	close;
+
+L_Start:
 
 	set @TEMP, rand(4);
 	if(@TEMP == 0) goto L_Opening0;
@@ -47,46 +54,44 @@ L_Yes:
 
 L_Req0:
 	mes "[Sandra]";
-	mes "\"I need 5 [Scorpion Stinger]s and 1 [Red Scorpion Stinger].\"";
+	mes "\"I need 5 [Scorpion Stinger]s.\"";
 	next;
 	goto L_Set;
 
 L_Req1:
 	mes "[Sandra]";
-	mes "\"I heard a while ago that scorpion stingers can be used for medical purposes. I need you to help me get 5 [Scorpion Stinger]s and 1 [Red Scorpion Stinger].\"";
+	mes "\"I heard a while ago that scorpion stingers can be used for medical purposes. I need you to help me get 5 [Scorpion Stinger]s.\"";
 	next;
 	goto L_Set;
 
 L_Req2:
 	mes "[Sandra]";
-	mes "\"Bring me 5 [Scorpion Stinger]s and 1 [Red Scorpion Stinger]. I'll give you something if you do.\"";
+	mes "\"Bring me 5 [Scorpion Stinger]s. I'll give you something if you do.\"";
 	next;
 	goto L_Set;
 
 L_Set:
-	set Scorp,1;
+	set TMW_Quest,11;
 	mes "[Sandra]";
 	mes "\"Please bring me them!\"";
 	close;
 
 L_Progress:
 	if (countitem("ScorpionStinger") < 5) goto L_NotEnough;
-	if (countitem("RedScorpionStinger") < 1) goto L_NotEnough;
 	mes "[Sandra]";
 	mes "\"Excellent!";
-	mes "You brought me 5 [Scorpion Stinger]s and 1 [Red Scorpion Stinger]!\"";
+	mes "You brought me 5 [Scorpion Stinger]s!\"";
 	getinventorylist;
-	if ((@inventorylist_count - (countitem("ScorpionStinger") == 5) - (countitem("RedScorpionStinger") == 1)) > 99 - (countitem("Arrow") == 0)) goto L_TooMany;
+	if ((@inventorylist_count - (countitem("ScorpionStinger") == 5) > 99) - (countitem("Arrow") == 0)) goto L_TooMany;
 	delitem "ScorpionStinger", 5;
-	delitem "RedScorpionStinger", 1;
 	getitem "Bow", 1;
 	getitem "Arrow", 100;
-	set Scorp, 2;
+	set TMW_Quest, 12;
 	close;
 
 L_NotEnough:
 	mes "[Sandra]";
-	mes "\"Please hurry and bring me 5 [Scorpion Stinger]s and 1 [Red Scorpion Stinger].\"";
+	mes "\"Please hurry and bring me 5 [Scorpion Stinger]s.\"";
 	close;
 
 L_Done:
