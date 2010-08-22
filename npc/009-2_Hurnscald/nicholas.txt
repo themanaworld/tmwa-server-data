@@ -3,7 +3,7 @@
 //# Nicholas the Smith.
 //# Participates in iron ore smithery and the following quests:
 //# - Together with Pachua: Iron Shield quest (repeatable)
-//#    (10 iron ores, 2 infantry helmets, 20000 GP, leather patch) -> iron shield
+//#    (6 iron ingots, 2 infantry helmets, 20000 GP, leather patch) -> iron shield
 //# - Primary participant in the Setzer quest (monster oil/golden stinger subquests)
 //#
 //# Variables used:  @QUEST_Forestbow_state, nibble 3 (setzer quest)
@@ -38,28 +38,29 @@
 	mes "[Nicholas]";
 	mes "\"Hello there,";
 	mes "I'm an expert blacksmith.";
-	mes "If you get me some Iron Ore";
+	mes "If you get me some coal and iron ingots";
 	mes "I could make you a very valuable shield";
         mes "or helmet.\"";
 	next;
 	menu
-		"I have some Iron Ore!", L_Check,
-		"Where can I get this Iron Ore?", L_Info,
+		"I have iron ingots!", L_Check,
+		"Where can I get coal and iron Ingots?", L_Info,
 		"I'm okay, thanks.", L_Pass;
 
 L_Check:
 	mes "[Nicholas]";
 	mes "\"Let me take at look at how much you have...\"";
 	next;
-	if(countitem("IronOre")<5) goto L_NoItem;
-	if(countitem("IronOre")<10) goto L_StageA;
-	if(countitem("IronOre")<15) goto L_StageB;
+	if ( (countitem("IngotIron")<3) | (countitem("Coal") < 6) ) goto L_NoItem;
+	if ( (countitem("IngotIron")<6) | (countitem("Coal") < 12) ) goto L_StageA;
+	if ( (countitem("IngotIron")<9) | (countitem("Coal") < 18) ) goto L_StageB;
 	goto L_StageC;
 
 L_Info:
 	mes "[Nicholas]";
-	mes "\"You can find Iron Ore in mines.";
-	mes "It is quite hard to come by though.\"";
+	mes "\"You can find coal and iron ore in mines."; 
+	mes "\"Once you have coal and iron ore, find a smith that will smelt the iron ore and cast them into iron ingots.";
+	mes "\"Come back here with more coal and the iron ingots and I'll make something nice for you.\"";
 	close;
 
 L_Pass:
@@ -72,14 +73,14 @@ L_StageA:
 	mes "[Nicholas]";
 	mes "\"That's just enough for me to make you";
 	mes "a winged Knight's Helmet.";
-	mes "But it'll cost you 10,000GP";
-	mes "and 5 lumps of Iron Ore.\"";
+	mes "But it'll cost you 10,000GP,";
+	mes "6 Coal and 3 Iron Ingots.\"";
 	next;
         goto L_main_menu;
 
 L_StageB:
 	mes "[Nicholas]";
-	mes "\"Ahh, with that much Iron Ore I can";
+	mes "\"Ahh, with that much coal and iron ingots I can";
 	mes "make you one of two helmets,";
 	mes "for only 10,000GP, or I can";
 	mes "make you a shield, for 20,000GP.\"";
@@ -120,24 +121,24 @@ L_main_menu:
 
 L_main_menu_post_setzer:
 
-	if (countitem("IronOre")<5) goto L_no_more_helmets;
-        set @choice$[@choices_nr], "Knight's Helmet. (5 Iron Ores)";
+	if ( (countitem("IngotIron")<3) | (countitem("Coal") <6) ) goto L_no_more_helmets;
+        set @choice$[@choices_nr], "Knight's Helmet. (3 Iron Ingots & 6 Coal)";
         set @choice_idx[@choices_nr], @CHOICE_KNIGHT;
         set @choices_nr, 1 + @choices_nr;
 
-	if (countitem("IronOre")<10) goto L_no_more_helmets;
+	if ( (countitem("IngotIron")<6) | (countitem("Coal") < 12) ) goto L_no_more_helmets;
 
-        set @choice$[@choices_nr], "Crusade Helmet. (10 Iron Ores)";
+        set @choice$[@choices_nr], "Crusade Helmet. (6 Iron Ingots & 12 Coal)";
         set @choice_idx[@choices_nr], @CHOICE_CRUSADE;
         set @choices_nr, 1 + @choices_nr;
 
-        set @choice$[@choices_nr], "Steel Shield. (10 Iron Ores)";
+        set @choice$[@choices_nr], "Steel Shield. (6 Iron Ingots)";
         set @choice_idx[@choices_nr], @CHOICE_SHIELD;
         set @choices_nr, 1 + @choices_nr;
 
-	if (countitem("IronOre")<15) goto L_no_more_helmets;
+	if ( (countitem("IngotIron")<9) | (countitem("Coal") < 18) ) goto L_no_more_helmets;
 
-        set @choice$[@choices_nr], "Warlord Helmet. (15 Iron Ores)";
+        set @choice$[@choices_nr], "Warlord Helmet. (9 Iron Ingots & 18 Coal)";
         set @choice_idx[@choices_nr], @CHOICE_WARLORD;
         set @choices_nr, 1 + @choices_nr;
 L_no_more_helmets:
@@ -171,7 +172,7 @@ L_no_more_helmets:
 
 L_NoItem:
 	mes "[Nicholas]";
-	mes "\"It appears you don't have enough Iron Ore for me to work with.";
+	mes "\"It appears you don't have enough Coal and Iron Ingots for me to work with.";
 	mes "Please do come back when you have more though.\"";
 	close;
 
@@ -190,7 +191,8 @@ L_YesKnight:
 	getinventorylist;
 	if (@inventorylist_count == 100) goto L_TooMany;
 	set zeny, zeny - 10000;
-	delitem "IronOre", 5;
+	delitem "IngotIron", 3;
+	delitem "Coal", 6;
 	getitem "KnightsHelmet", 1;
 	goto L_Done;
 
@@ -199,7 +201,8 @@ L_YesCrusade:
 	getinventorylist;
 	if (@inventorylist_count == 100) goto L_TooMany;
 	set zeny, zeny-10000;
-	delitem "IronOre", 10;
+	delitem "IngotIron", 6;
+	delitem "Coal", 12;
 	getitem "CrusadeHelmet", 1;
 	goto L_Done;
 
@@ -208,13 +211,14 @@ L_YesWarlord:
 	getinventorylist;
 	if (@inventorylist_count == 100) goto L_TooMany;
 	set zeny, zeny-10000;
-	delitem "IronOre", 15;
+	delitem "IngotIron", 9;
+	delitem "Coal", 18;
 	getitem "WarlordHelmet", 1;
 	goto L_Done;
 
 L_YesShield:
         mes "[Nicholas]";
-        mes "Nicholas examines your iron ore.";
+        mes "Nicholas examines your Iron Ingots.";
         mes "\"No, this iron is too brittle; for something as large as a shield I need to mix in softer iron.  Can I see if you have anything suitable?\"";
         next;
 
@@ -240,19 +244,21 @@ L_YesShield:
 
 	if (zeny < 20000) goto L_ShieldNoZeny;
 	if (countitem("InfantryHelmet") < 2) goto L_ShieldNoInfantry;
-	if (countitem("IronOre") < 10) goto L_ShieldNoOre;
+	if (countitem("IngotIron") < 6) goto L_ShieldNoIngot;
+	if (countitem("Coal") < 12) goto L_ShieldNoCoal;
 	if (countitem("LeatherPatch") < 1) goto L_ShieldNoLeatherPatch;
 	// No inventory check needed, as infantry helms are removed, opening two slots
 
         mes "[Nicholas]";
         mes "\"Yes, it looks as if you have all that is needed!\"";
-        mes "You watch Nicholas melt the ore and helmets and form a shield out of the resulting iron.  He then cuts your leather patch apart and adds it to the handles.";
+        mes "You watch Nicholas melt the ingots and helmets and form a shield out of the resulting iron.  He then cuts your leather patch apart and adds it to the handles.";
         mes "\"Here is your shield!\"";
 
         delitem "InfantryHelmet", 1;
         delitem "InfantryHelmet", 1;
         delitem "LeatherPatch", 1;
-        delitem "IronOre", 10;
+        delitem "IngotIron", 6;
+	delitem "Coal", 12;
         set zeny, zeny - 20000;
 
         if (@Q_SHIELD_status < @SHIELD_COMPLETED)
@@ -276,9 +282,14 @@ L_ShieldNoInfantry:
         mes "\"Now this is strange... I could have sworn that you had two infantry helmets right here.  Well, come back if you have some more!\"";
         close;
 
-L_ShieldNoOre:
+L_ShieldNoIngot:
         mes "[Nicholas]";
-        mes "\"How odd... didn't I put your iron ore on the table right here?  Well, I will need it back to make the shield.\"";
+        mes "\"How odd... didn't I put your iron ingots on the table right here?  Well, I will need it back to make the shield.\"";
+        close;
+
+L_ShieldNoCoal:
+	mes "[Nicholas]";
+        mes "\"How odd... didn't I put your coal on the table right here?  Well, I will need it back to make the shield.\"";
         close;
 
 L_ShieldNoLeatherPatch:
@@ -309,7 +320,7 @@ L_SetzerQuest:
         if (@Q_SETZER_status & @SETZER_FLAG_MADE_SETZER)
         	mes "\"Another one?  Sure, why not.\"";
 	mes "Nicholas examines your short sword, then nods.";
-        mes "\"This is good quality.  I can make something special out of it, for five chunks of iron ore and 50,000 GP-- but I will also need a potion of monster oil.\"";
+        mes "\"This is good quality.  I can make something special out of it, with three ingot bars of iron and 50,000 GP-- but I will also need a potion of monster oil.\"";
         if (@Q_SETZER_status < @SETZER_KNOWS_OIL)
         	set @Q_SETZER_status, @SETZER_KNOWS_OIL;
         callsub L_Update_Var;
@@ -320,7 +331,7 @@ L_SetzerQuest:
              "HOW much?  Never mind.", L_Pass;
 
 	if (zeny < 50000) goto L_SetzerNoZeny;
-	if (countitem("IronOre") < 5) goto L_SetzerNoOre;
+	if ( (countitem("IngotIron") < 3) | (countitem("Coal") < 6) ) goto L_SetzerNoIngot;
 	if (countitem("MonsterOilPotion") < 1) goto L_SetzerNoMonsterOil;
 	if (countitem("ShortSword") < 1) goto L_SetzerNoSword;
 	// No inventory check needed, as the short sword is removed, opening a slot
@@ -329,7 +340,8 @@ L_SetzerQuest:
         mes "Nicholas takes the items, heats up your sword and pounds it with a heavy hammer.  Before your eyes it turns thinner and flatter.  Finally he pours the monster oil over it, heats it up again and douses it in water.";
 
         set zeny, zeny - 50000;
-        delitem "IronOre", 5;
+        delitem "IngotIron", 3;
+	delitem "Coal", 6;
         delitem "MonsterOilPotion", 1;
         delitem "ShortSword", 1;
 
@@ -361,9 +373,9 @@ L_SetzerNoZeny:
         mes "\"I am sorry, but I must ask that you pay 50,000 GP; the kind of weapon I am thinking of is not easy to make.\"";
         close;
 
-L_SetzerNoOre:
+L_SetzerNoIngot:
         mes "[Nicholas]";
-        mes "\"Without five chunks of iron ore I can't improve your sword.\"";
+        mes "\"Without 3 ingots of iron, I can't improve your sword.\"";
         close;
 
 L_SetzerNoMonsterOil:
