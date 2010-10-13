@@ -1,0 +1,53 @@
+//NPC to set the state for killing the bandit lord.
+
+011-6.gat,27,200,0	script	Bryant	126,{
+
+	if (TMW_Quest >= 45) goto L_Bryant_Quiet;
+	if (TMW_Quest == 44) goto L_Bryant_Waits;
+	if (TMW_Quest == 43) goto L_Bryant_Summon;
+
+	mes "[Bryant]";
+	mes "\"I'm looking everywhere for the bandit leader.  I can't seem to find him.\"";
+	close;
+
+L_Bryant_Summon:
+	mes "[Bryant]";
+	mes "\"I ran into that bandit lord and he got me good.  I'm going to stay here for a while and heal.  He dropped this key.  Take it.  You might be able to handle him better than I could.\"";
+	next;
+	mes "Bryant gives you a key, shaped to look like a small silver arrow.";
+	next;
+	mes "\"I believe I saw him run into a cave south and east of here.  There is a red carpet in front of the cave entrance.  Be careful and good luck.\"";
+	set TMW_Quest, 44;
+	monster "011-6.gat",260,250,"BanditLord",1064,1, "Bryant::onBanditLordDead";
+	close;
+
+onBanditLordDead:
+	set TMW_Quest, 45;
+	message strcharinfo(0), "You killed the bandit lord.";
+	end;
+
+L_Bryant_Waits:
+	mes "[Bryant]";
+	mes "\"I think the bandit lord is still around.  I fear this could be dangerous for the people of Hurnscald.  When you went to the cave with the red carpet in front of it, did you find him and kill him?\"";
+	menu
+		"No.", L_Bryant_No,
+		"Yes.", L_Bryant_Yes;
+	close;
+
+L_Bryant_No:
+	mes "[Bryant]";
+	mes "\"Well, maybe he ran off.  I'm pretty sure he should be there now.\"";
+	killmonster "011-6.gat", "Bryant::onBanditLordDead";
+	monster "011-6.gat",260,250,"BanditLord",1064,1, "Bryant::onBanditLordDead";
+	close;
+
+L_Bryant_Yes:
+	mes "[Bryant]";
+	mes "\"I don't think you killed him.  Please try to find and kill him.  He should be in the cave south and east of here with the red carpet in front of it.\"";
+	close;
+
+L_Bryant_Quiet:
+	mes "[Bryant]";
+	mes "\"Glad that bandit leader got what was coming to him.\"";
+	close;
+}
