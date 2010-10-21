@@ -45,8 +45,9 @@
 
 L_Check:
 	mes "[Nicholas]";
-	mes "\"Let me take at look at how much you have...\"";
+	mes "\"Let me take a look at how much you have...\"";
 	next;
+	if ( (countitem("IngotIron")>5) && (countitem("Coal") < 6) ) goto L_StageShield;
 	if ( (countitem("IngotIron")<3) || (countitem("Coal") < 6) ) goto L_NoItem;
 	if ( (countitem("IngotIron")<6) || (countitem("Coal") < 12) ) goto L_StageA;
 	if ( (countitem("IngotIron")<9) || (countitem("Coal") < 18) ) goto L_StageB;
@@ -65,9 +66,16 @@ L_Pass:
 	mes "\"Oh, okay.  Come back any time.\"";
 	close;
 
+L_StageShield:
+	mes "[Nicholas]";
+	mes "\"That's just enough for me to make you a [Steel Shield], but it'll cost you 20,000 GP and 6 [Iron Ingot]s.\"";
+	next;
+	goto L_main_menu;
+	
 L_StageA:
 	mes "[Nicholas]";
-	mes "\"That's just enough for me to make you a winged [Knight's Helmet], but it'll cost you 10,000GP, 6 [Coal] and 3 [Iron Ingot]s.\"";
+	mes "\"That's enough for me to make you a winged [Knight's Helmet], but it'll cost you 10,000GP, 6 [Coal] and 3 [Iron Ingot]s.\"";
+	if ( (countitem("IngotIron")>5) ) mes "\"I can also make you a [Steel Shield] for 20,000 GP and 6 [Iron Ingot]s.\"";
 	next;
         goto L_main_menu;
 
@@ -118,16 +126,19 @@ L_main_menu_post_setzer:
         set @choice_idx[@choices_nr], @CHOICE_CRUSADE;
         set @choices_nr, 1 + @choices_nr;
 
-        set @choice$[@choices_nr], "Steel Shield. (6 Iron Ingots)";
-        set @choice_idx[@choices_nr], @CHOICE_SHIELD;
-        set @choices_nr, 1 + @choices_nr;
-
 	if ( (countitem("IngotIron")<9) || (countitem("Coal") < 18) ) goto L_no_more_helmets;
 
         set @choice$[@choices_nr], "Warlord Helmet. (9 Iron Ingots & 18 Coal)";
         set @choice_idx[@choices_nr], @CHOICE_WARLORD;
         set @choices_nr, 1 + @choices_nr;
+		
 L_no_more_helmets:
+	if ( (countitem("IngotIron")<6) ) goto L_no_more_items;
+        set @choice$[@choices_nr], "Steel Shield. (6 Iron Ingots)";
+        set @choice_idx[@choices_nr], @CHOICE_SHIELD;
+        set @choices_nr, 1 + @choices_nr;
+
+L_no_more_items:
 		set @choice$[@choices_nr], "No thanks.";
 		set @choice_idx[@choices_nr], @CHOICE_CANCEL;
 		set @choices_nr, 1 + @choices_nr;
