@@ -1,8 +1,30 @@
-//**********************************************
-//**    Orum/Waric Quest Part 1 - By Liana    **
-//**********************************************
+//#################################################################################
+//#    Orum/Waric Quest Part 1 - By Liana, reviewed by Stefan Beller              #
+//#    GPL v.2                                                                    #
+//#                                                                               #
+//#	Used variables:                                                           #
+//#                                                                               #
+//#	OrumQuest		stores the progress of the quest                  #
+//#	OrumQuestTorch	In nibble (0,1,2) the color of the torches is stored      #
+//#			In nibble (3,4,5) the intensity of the torches is stored  #
+//#	OrumQuestBarrier	nibble (0,1,2) stores the color of the barriers	  #
+//#################################################################################
 
 009-4.gat,37,115,0	script	Orum	158,{
+	// needed to pass the very first barrier
+	set @B0_WISPPOWDER,		 4;
+	set @B0_POLTERGEISTPOWDER,	 2;
+	set @B0_SPECTREPOWDER,		 1;
+	set @B0_HARDSPIKES,		 1;
+
+	// needed stuff to get colorful powders
+	set @BT_IRONPOWDER, 		10;
+	set @BT_PILESOFASH, 		10;
+	set @BT_HERBS,	 		15;
+	
+	// how many colorful powders each do you get as reward?
+	set @BT_REWARDCOUNT,		10;
+
 	if (OrumQuest > 0) goto L_Started;
 
 	mes "[Orum]";
@@ -108,13 +130,13 @@ L_Offer_Quest:
 	close;
 
 L_Start_Quest:
-	mes "He pulls a crumpled peice of paper from his pocket, smooths it out and writes a list on it before handing it to you..";
+	mes "He pulls a crumpled piece of paper from his pocket, smooths it out and writes a list on it before handing it to you..";
 	next;
 
-	mes "4 Wisp Powders,";
-	mes "2 Poltergeist Powders,";
-	mes "1 Spectre Powders,";
-	mes "2 Hard Spikes";
+	mes "" + @B0_WISPPOWDER + " Wisp Powders,";
+	mes "" + @B0_POLTERGEISTPOWDER + " Poltergeist Powders,";
+	mes "" + @B0_SPECTREPOWDER + " Spectre Powders,";
+	mes "" + @B0_HARDSPIKES + " Hard Spikes";
 	next;
 
 	menu
@@ -161,13 +183,13 @@ L_Gathering:
 	close;
 
 L_List_Materials:
-	mes "He scavenges around in his pocket for another peice of paper then writes a new list..";
+	mes "He scavenges around in his pocket for another piece of paper then writes a new list..";
 	next;
 	
-	mes "4 Wisp Powders,";
-	mes "2 Poltergeist Powders,";
-	mes "1 Spectre Powders,";
-	mes "2 Hard Spikes";
+	mes "" + @B0_WISPPOWDER + " Wisp Powders,";
+	mes "" + @B0_POLTERGEISTPOWDER + " Poltergeist Powders,";
+	mes "" + @B0_SPECTREPOWDER + " Spectre Powders,";
+	mes "" + @B0_HARDSPIKES + " Hard Spikes";
 	next;
 	
 	mes "[Orum]";
@@ -175,10 +197,10 @@ L_List_Materials:
 	close;
 
 L_Check_Materials:
-	if (countitem("WispPowder") < 4 ||
-		countitem("PoltergeistPowder") < 2 ||
-		countitem("SpectrePowder") < 1 ||
-		countitem("HardSpike") < 2) goto L_Missing_Materials;
+	if (countitem("WispPowder") < @B0_WISPPOWDER ||
+		countitem("PoltergeistPowder") < @B0_POLTERGEISTPOWDER ||
+		countitem("SpectrePowder") < @B0_SPECTREPOWDER ||
+		countitem("HardSpike") < @B0_HARDSPIKES) goto L_Missing_Materials;
 
 	mes "Orum carefully looks over all of the items then grins..";
 	next;
@@ -191,10 +213,18 @@ L_Check_Materials:
 	next;
 
 	mes "You watch as they begin mold together glowing brightly. He sprinkles in the powder you gathered and presses his hands together.";
-	delitem "WispPowder", 4;
-	delitem "PoltergeistPowder", 2;
-	delitem "SpectrePowder", 1;
-	delitem "HardSpike", 2;
+
+	//check directly before deleting the objects, the player could have traded the stuff, after the first check.
+	if (countitem("WispPowder") < @B0_WISPPOWDER ||
+		countitem("PoltergeistPowder") < @B0_POLTERGEISTPOWDER ||
+		countitem("SpectrePowder") < @B0_SPECTREPOWDER ||
+		countitem("HardSpike") < @B0_HARDSPIKES) goto L_Missing_Materials;
+
+	delitem "WispPowder", @B0_WISPPOWDER;
+	delitem "PoltergeistPowder", @B0_POLTERGEISTPOWDER;
+	delitem "SpectrePowder", @B0_SPECTREPOWDER;
+	delitem "HardSpike", @B0_HARDSPIKES;
+
 	misceffect sfx_magic_transmute;
 	next;
 
@@ -204,7 +234,7 @@ L_Check_Materials:
 	next;
 	
 	mes "[Orum]";
-	mes "\"Well we are both still in one peice so that is a good sign! Now we'll have to see if I did it right.. mind going first?\"";
+	mes "\"Well we are both still in one piece so that is a good sign! Now we'll have to see if I did it right.. mind going first?\"";
 	goto L_Setup_Lair;
 	close;
 
@@ -387,11 +417,11 @@ L_Gather_More:
 	mes "Orum begins writing down another list of materials..";
 	next;
 
-	mes "10 Piles of Iron Powder,";
-	mes "10 Piles of Sand or Ash,";
-	mes "15 Gamboge Herbs,";
-	mes "15 Alizarin Herbs,";
-	mes "15 Cobalt herbs";
+	mes @BT_IRONPOWDER + " Piles of Iron Powder,";
+	mes @BT_PILESOFASH + " Piles of Sand or Ash,";
+	mes @BT_HERBS + " Gamboge Herbs,";
+	mes @BT_HERBS + " Alizarin Herbs,";
+	mes @BT_HERBS + " Cobalt herbs";
 	next;
 
 	menu
@@ -423,37 +453,42 @@ L_Still_Gathering:
 	close;
 
 L_List_Materials_More:
-	mes "He scavenges around in his pocket for another peice of paper then writes a new list..";
+	mes "He scavenges around in his pocket for another piece of paper then writes a new list..";
 	next;
 	
-	mes "10 Piles of Iron Powder,";
-	mes "10 Piles of Sand or Ash,";
-	mes "15 Gamboge Herbs,";
-	mes "15 Alizarin Herbs,";
-	mes "15 Cobalt herbs";
+	mes @BT_IRONPOWDER + " Piles of Iron Powder,";
+	mes @BT_PILESOFASH + " Piles of Sand or Ash,";
+	mes @BT_HERBS + " Gamboge Herbs,";
+	mes @BT_HERBS + " Alizarin Herbs,";
+	mes @BT_HERBS + " Cobalt herbs";
 	next;
 	
 	mes "[Orum]";
 	mes "\"And try not to lose this one.. I don't have much more to write on!\"";
 	close;
 
-
 L_Finished_Gathering_More:
-	if (countitem("IronPowder") < 10 ||
-		countitem("PileOfAsh") < 10 ||
-		countitem("GambogeHerb") < 15 ||
-		countitem("AlizarinHerb") < 15 ||
-		countitem("CobaltHerb") < 15) goto L_Missing_Materials_More;
+	if (countitem("IronPowder") < @BT_IRONPOWDER ||
+		countitem("PileOfAsh") < @BT_PILESOFASH ||
+		countitem("GambogeHerb") < @BT_HERBS ||
+		countitem("AlizarinHerb") < @BT_HERBS ||
+		countitem("CobaltHerb") < @BT_HERBS) goto L_Missing_Materials_More;
 
 	mes "[Orum]";
 	mes "\"Excellent work! And once again you did not take as long as I was expecting. I guess I will get started..\"";
 	next;
 
-	delitem "IronPowder", 10;
-	delitem "PileOfAsh", 10;
-	delitem "GambogeHerb", 15;
-	delitem "AlizarinHerb", 15;
-	delitem "CobaltHerb", 15;
+	if (countitem("IronPowder") < @BT_IRONPOWDER ||
+		countitem("PileOfAsh") < @BT_PILESOFASH ||
+		countitem("GambogeHerb") < @BT_HERBS ||
+		countitem("AlizarinHerb") < @BT_HERBS ||
+		countitem("CobaltHerb") < @BT_HERBS) goto L_Missing_Materials_More;
+
+	delitem "IronPowder", @BT_IRONPOWDER;
+	delitem "PileOfAsh", @BT_PILESOFASH;
+	delitem "GambogeHerb", @BT_HERBS;
+	delitem "AlizarinHerb", @BT_HERBS;
+	delitem "CobaltHerb", @BT_HERBS;
 
 	mes "You watch as Orum takes the iron powder and ash and begins chanting some words.. The two start to glow and mold together turning into a light metalic looking powder..";
 	next;
@@ -470,9 +505,9 @@ L_Finished_Gathering_More:
 	mes "[Orum]";
 	mes "\"I'm weary, I must take some time to rest. Why don't you go ahead and experiment with these powders on that torch and let me know if you figure what they have to do with it.\"";
 
-	getitem "RedPowder", 10;
-	getitem "YellowPowder", 10;
-	getitem "BluePowder", 10;
+	getitem "RedPowder", @BT_REWARDCOUNT;
+	getitem "YellowPowder", @BT_REWARDCOUNT;
+	getitem "BluePowder", @BT_REWARDCOUNT;
 	set OrumQuest, 8;
 	close;
 
@@ -525,21 +560,27 @@ L_More_Powder:
 	close;
 
 L_More_Powder_Make:
-	if (countitem("IronPowder") < 10 ||
-		countitem("PileOfAsh") < 10 ||
-		countitem("GambogeHerb") < 15 ||
-		countitem("AlizarinHerb") < 15 ||
-		countitem("CobaltHerb") < 15) goto L_Missing_Materials_More;
+	if (countitem("IronPowder") < @BT_IRONPOWDER ||
+		countitem("PileOfAsh") < @BT_PILESOFASH ||
+		countitem("GambogeHerb") < @BT_HERBS ||
+		countitem("AlizarinHerb") < @BT_HERBS ||
+		countitem("CobaltHerb") < @BT_HERBS) goto L_Missing_Materials_More;
 
 	mes "[Orum]";
 	mes "\"Hmm all of the items appear to be here.. Give me a moment to make that powder for you.\"";
 	next;
 
-	delitem "IronPowder", 10;
-	delitem "PileOfAsh", 10;
-	delitem "GambogeHerb", 15;
-	delitem "AlizarinHerb", 15;
-	delitem "CobaltHerb", 15;
+	if (countitem("IronPowder") < @BT_IRONPOWDER ||
+		countitem("PileOfAsh") < @BT_PILESOFASH ||
+		countitem("GambogeHerb") < @BT_HERBS ||
+		countitem("AlizarinHerb") < @BT_HERBS ||
+		countitem("CobaltHerb") < @BT_HERBS) goto L_Missing_Materials_More;
+
+	delitem "IronPowder", @BT_IRONPOWDER;
+	delitem "PileOfAsh", @BT_PILESOFASH;
+	delitem "GambogeHerb", @BT_HERBS;
+	delitem "AlizarinHerb", @BT_HERBS;
+	delitem "CobaltHerb", @BT_HERBS;
 
 	mes "Orum begins chanting the same words as he did when he made the powder before.. He seems to be quicker at it this time..";
 	misceffect sfx_magic_transmute;
@@ -548,9 +589,9 @@ L_More_Powder_Make:
 	mes "[Orum]";
 	mes "\"Here you are. And try to conserve this time! The more powder I have to make the more time and resources we use up that we could be using to save Waric!\"";
 
-	getitem "RedPowder", 10;
-	getitem "YellowPowder", 10;
-	getitem "BluePowder", 10;
+	getitem "RedPowder", @BT_REWARDCOUNT;
+	getitem "YellowPowder", @BT_REWARDCOUNT;
+	getitem "BluePowder", @BT_REWARDCOUNT;
 	close;
 
 L_Finished_Up:
@@ -580,6 +621,9 @@ L_Enter_Cavern:
 	close;
 
 L_Ready_Cavern:
+	// you should not get that twice ;)
+	if (OrumQuest == 12) goto L_Got_Reward;
+
 	mes "Orum heads to the barrier then gives you a look as if he does not believe you before walking forward..";
 	next;
 
@@ -590,7 +634,7 @@ L_Ready_Cavern:
 	mes "\"Very good work you have done! Please take this for your efforts.\"";
 	next;
 
-	mes "[Insirt reward hir]";
+	mes "TODO: [Insirt reward hir]";
 	next;
 
 	mes "\"You've done enough here to help. I will go the rest of the way alone so that your life is not endangered.. You must promise me not to go any further!\"";
@@ -604,4 +648,8 @@ L_Ready_Cavern:
 	mes "\"Well I guess this is farewell!\"";
 	set OrumQuest, 12;
 	close;
+
+L_Got_Reward:
+	mes "\"You've done enough here to help. I will go the rest of the way alone so that your life is not endangered..\"";
+	next;
 }
