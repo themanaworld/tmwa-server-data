@@ -1,6 +1,14 @@
 //#################################################################################
-//#    Orum/Waric Quest Part 1 - By Liana, reviewed by Stefan Beller              #
-//#    GPL v.2                                                                    #
+//#     Orum/Waric Quest Part 1 - By Liana, reviewed by Stefan Beller             #
+//#     GPL v.2                                                                   #
+//#                                                                               #
+//#     The first quest is to find Waric in the Caves with lots of torches.       #
+//#     These torches must be set in the right color to have access to the next   #
+//#     room, guarded by a magical barrier of other torches.                      #
+//#                                                                               #
+//#     The second quest is an easy, but background-story telling quest.          #
+//#     Just visit the cave again, find what is really in there.                  #
+//#                                                                               #
 //#                                                                               #
 //#	Used variables:                                                           #
 //#                                                                               #
@@ -24,6 +32,9 @@
 	
 	// how many colorful powders each do you get as reward?
 	set @BT_REWARDCOUNT,		10;
+
+	// no exp for breaking the barrier ?
+	set @EXP_BREAK_BARRIERS, 0;
 
 	if (OrumQuest > 0) goto L_Started;
 
@@ -186,10 +197,10 @@ L_List_Materials:
 	mes "He scavenges around in his pocket for another piece of paper then writes a new list..";
 	next;
 	
-	mes "" + @B0_WISPPOWDER + " Wisp Powders,";
-	mes "" + @B0_POLTERGEISTPOWDER + " Poltergeist Powders,";
-	mes "" + @B0_SPECTREPOWDER + " Spectre Powders,";
-	mes "" + @B0_HARDSPIKES + " Hard Spikes";
+	mes @B0_WISPPOWDER + " Wisp Powders,";
+	mes @B0_POLTERGEISTPOWDER + " Poltergeist Powders,";
+	mes @B0_SPECTREPOWDER + " Spectre Powders,";
+	mes @B0_HARDSPIKES + " Hard Spikes";
 	next;
 	
 	mes "[Orum]";
@@ -202,6 +213,12 @@ L_Check_Materials:
 		countitem("SpectrePowder") < @B0_SPECTREPOWDER ||
 		countitem("HardSpike") < @B0_HARDSPIKES) goto L_Missing_Materials;
 
+	// check directly before deleting the objects.
+	delitem "WispPowder", @B0_WISPPOWDER;
+	delitem "PoltergeistPowder", @B0_POLTERGEISTPOWDER;
+	delitem "SpectrePowder", @B0_SPECTREPOWDER;
+	delitem "HardSpike", @B0_HARDSPIKES;
+
 	mes "Orum carefully looks over all of the items then grins..";
 	next;
 
@@ -213,17 +230,6 @@ L_Check_Materials:
 	next;
 
 	mes "You watch as they begin mold together glowing brightly. He sprinkles in the powder you gathered and presses his hands together.";
-
-	//check directly before deleting the objects, the player could have traded the stuff, after the first check.
-	if (countitem("WispPowder") < @B0_WISPPOWDER ||
-		countitem("PoltergeistPowder") < @B0_POLTERGEISTPOWDER ||
-		countitem("SpectrePowder") < @B0_SPECTREPOWDER ||
-		countitem("HardSpike") < @B0_HARDSPIKES) goto L_Missing_Materials;
-
-	delitem "WispPowder", @B0_WISPPOWDER;
-	delitem "PoltergeistPowder", @B0_POLTERGEISTPOWDER;
-	delitem "SpectrePowder", @B0_SPECTREPOWDER;
-	delitem "HardSpike", @B0_HARDSPIKES;
 
 	misceffect sfx_magic_transmute;
 	next;
@@ -474,21 +480,15 @@ L_Finished_Gathering_More:
 		countitem("AlizarinHerb") < @BT_HERBS ||
 		countitem("CobaltHerb") < @BT_HERBS) goto L_Missing_Materials_More;
 
-	mes "[Orum]";
-	mes "\"Excellent work! And once again you did not take as long as I was expecting. I guess I will get started..\"";
-	next;
-
-	if (countitem("IronPowder") < @BT_IRONPOWDER ||
-		countitem("PileOfAsh") < @BT_PILESOFASH ||
-		countitem("GambogeHerb") < @BT_HERBS ||
-		countitem("AlizarinHerb") < @BT_HERBS ||
-		countitem("CobaltHerb") < @BT_HERBS) goto L_Missing_Materials_More;
-
 	delitem "IronPowder", @BT_IRONPOWDER;
 	delitem "PileOfAsh", @BT_PILESOFASH;
 	delitem "GambogeHerb", @BT_HERBS;
 	delitem "AlizarinHerb", @BT_HERBS;
 	delitem "CobaltHerb", @BT_HERBS;
+
+	mes "[Orum]";
+	mes "\"Excellent work! And once again you did not take as long as I was expecting. I guess I will get started..\"";
+	next;
 
 	mes "You watch as Orum takes the iron powder and ash and begins chanting some words.. The two start to glow and mold together turning into a light metalic looking powder..";
 	next;
@@ -566,21 +566,15 @@ L_More_Powder_Make:
 		countitem("AlizarinHerb") < @BT_HERBS ||
 		countitem("CobaltHerb") < @BT_HERBS) goto L_Missing_Materials_More;
 
-	mes "[Orum]";
-	mes "\"Hmm all of the items appear to be here.. Give me a moment to make that powder for you.\"";
-	next;
-
-	if (countitem("IronPowder") < @BT_IRONPOWDER ||
-		countitem("PileOfAsh") < @BT_PILESOFASH ||
-		countitem("GambogeHerb") < @BT_HERBS ||
-		countitem("AlizarinHerb") < @BT_HERBS ||
-		countitem("CobaltHerb") < @BT_HERBS) goto L_Missing_Materials_More;
-
 	delitem "IronPowder", @BT_IRONPOWDER;
 	delitem "PileOfAsh", @BT_PILESOFASH;
 	delitem "GambogeHerb", @BT_HERBS;
 	delitem "AlizarinHerb", @BT_HERBS;
 	delitem "CobaltHerb", @BT_HERBS;
+
+	mes "[Orum]";
+	mes "\"Hmm all of the items appear to be here.. Give me a moment to make that powder for you.\"";
+	next;
 
 	mes "Orum begins chanting the same words as he did when he made the powder before.. He seems to be quicker at it this time..";
 	misceffect sfx_magic_transmute;
@@ -634,7 +628,10 @@ L_Ready_Cavern:
 	mes "\"Very good work you have done! Please take this for your efforts.\"";
 	next;
 
-	mes "TODO: [Insirt reward hir]";
+	getexp @EXP_BREAK_BARRIERS, 0;
+	// TODO put item name and remove following line and this line as well!
+	getitem "", 1;
+	mes "[Insert reward here...]";
 	next;
 
 	mes "\"You've done enough here to help. I will go the rest of the way alone so that your life is not endangered.. You must promise me not to go any further!\"";
