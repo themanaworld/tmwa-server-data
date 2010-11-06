@@ -1,0 +1,363 @@
+// # NPC Name: Voltain
+// # LEAD AUTHOR: Pjotr Orial
+// # AUTHORS: MrDudle, tarq, Salmondine, Jenalya, Pjotr Orial
+// # REVIEWERS: Jenalya
+// #
+// # Basic Idea: A Person with lots of dark minds requires different stuff. 
+// # Basically he tries to figure out, how to poison moobous, since he doesn't like the nature at all
+// #
+// # The variables are not attached to a player but to an npc variable, so it is more or less random, which
+// # quest comes up, when a player asks him.
+// # 
+// # used Variables: global variable $state
+// # $state = 0: bring bottles
+// # $state = 1: bring black scorpion stinger
+// # $state = 2: bring bug legs
+// # $state = 3: bring another black scorpion stinger
+// # $state = 4: bring mauve herbs
+// # $state = 5: bring raw logs
+// # $state = 6: bring red apples
+// # $state = 7: bring cobalt herbs
+// # $state = 8: bring snake tongues
+// # $state = 9: bring alizarin herbs
+// # $state = 10:bring steak
+// # $state = 11: bring arrows
+// # $state = 12: bring gamboge herbs
+// # $state = 13 bring chocolate cake
+
+007-1.gat,37,21,0	script	Voltain	103,	{
+
+set @BOTTLE_NEEDED,  3;
+set @BOTTLE_REWARD_XP,  100;
+set @BOTTLE_REWARD_GOLD,  450;
+
+set @BLACK_SC_ST_NEEDED,  5;
+set @BLACK_SC_ST_REWARD_XP,  500;
+set @BLACK_SC_ST_REWARD_GOLD,  250;
+
+set @BUGLEG_NEEDED,  10;
+set @BUGLEG_REWARD_XP,  200;
+set @BUGLEG_REWARD_GOLD,  150;
+
+set @HERBS_NEEDED,  7;
+set @HERBS_REWARD_XP,  200;
+set @HERBS_REWARD_GOLD,  250;
+
+set @RAWLOG_NEEDED,  5;
+set @RAWLOG_REWARD_XP,  330;
+set @RAWLOG_REWARD_GOLD,  300;
+
+set @REDAPPLE_NEEDED,  7;
+set @REDAPPLE_REWARD_XP,  330;
+set @REDAPPLE_REWARD_GOLD,  300;
+
+set @STEAK_NEEDED,  2;
+set @STEAK_REWARD_XP,  330;
+set @STEAK_REWARD_GOLD,  280;
+
+set @ARROW_NEEDED,  25;
+set @ARROW_REWARD_XP,  330;
+set @ARROW_REWARD_GOLD,  100;
+
+set @SNAKETONGUE_NEEDED,  3;
+set @SNAKETONGUE_REWARD_XP,  330;
+set @SNAKETONGUE_REWARD_GOLD,  100;
+
+set @CHOCOLATECAKE_NEEDED,  3;
+set @CHOCOLATECAKE_REWARD_XP,  330;
+set @CHOCOLATECAKE_REWARD_GOLD,  180;
+
+if ($state == 1) goto state1;
+if ($state == 2) goto state2;
+if ($state == 3) goto state3;
+if ($state == 4) goto state4;
+if ($state == 5) goto state5;
+if ($state == 6) goto state6;
+if ($state == 7) goto state7;
+if ($state == 8) goto state8;
+if ($state == 9) goto state9;
+if ($state == 10) goto state10;
+if ($state == 11) goto state11;
+if ($state == 12) goto state12;
+if ($state == 13) goto state13;
+// default: trap through to state0!
+
+state0:
+mes "[Voltain]";
+mes "\"What are you doing bothering me? Can't you see I'm busy! Oh, I'm sorry, I thought you were my assistant. Never mind that... would you care to help me?\"";
+next;
+
+menu 
+    "Sure I do!", -,
+    "No, you creep me out.", L_NOHELP;
+     
+mes "[Voltain]";
+mes "\"I'm working on a very special potion. I need some empty bottles to keep the ingredients in. Care to go find me " + @BOTTLE_NEEDED + " empty bottles?!\"";
+next;
+
+menu
+    "I've got the bottles.", -,
+    "I don't feel like helping you get garbage...", L_CLOSE;
+
+if (countitem("EmptyBottle") < @BOTTLE_NEEDED) goto L_NOT_ENOUGH;
+    delitem "EmptyBottle", @BOTTLE_NEEDED;
+    set zeny, zeny + @BOTTLE_REWARD_GOLD;
+    getexp @BOTTLE_REWARD_XP, 0;
+    set $state, 1;
+    mes "\"Thanks for the bottles. Much easier to carry liquid in them.\"";
+    close;
+
+state1:
+mes "[Voltain]";
+mes "\"I'm making a potion that requires lots of venom. I'm in need of " + @BLACK_SC_ST_NEEDED + " black scorpion stingers.\"";
+next;
+
+menu
+    "I've got the stingers!", -,
+    "I'll go search for the them.", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("BlackScorpionStinger") < @BLACK_SC_ST_NEEDED) goto L_NOT_ENOUGH;
+    delitem "BlackScorpionStinger", @BLACK_SC_ST_NEEDED;
+    set zeny, zeny + @BLACK_SC_ST_REWARD_GOLD;
+    getexp @BLACK_SC_ST_REWARD_XP, 0;
+    set $state, 2;
+    mes "\"Well, since you went to the trouble of getting me these here's a little something for your time...\"";
+    close;
+
+
+state2:
+mes "[Voltain]";
+mes "\"Care to to help me with my potion? I need " + @BUGLEG_NEEDED + " bug legs so that I can thicken the potion.\"";
+next;
+
+menu
+    "I've got the bug legs.", -,
+    "I'd rather not carry around dead bugs for you.", L_NOHELP ;
+
+mes "[Voltain]";
+    if (countitem("BugLeg") < @BUGLEG_NEEDED) goto L_NOT_ENOUGH;
+    delitem "BugLeg", @BUGLEG_NEEDED;
+    set zeny, zeny + @BUGLEG_REWARD_GOLD;
+    getexp @BUGLEG_REWARD_XP, 0;
+    set $state, 3;
+    mes "\"Great! My potion is ready to poison the moub...I mean cure scorpion stings. \"";
+    close;
+
+state3:
+mes "[Voltain]";
+mes "\"I find myself in need of a black scorpion stinger... Damn mouboo are hard to kill...forget you heard that.\"";
+next;
+
+menu
+    "Here's the stinger.", -,
+    "I DID HEAR THAT! I will not help you KILL mouboo!", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("BlackScorpionStinger") < 1) goto L_NOT_ENOUGH;
+    delitem "BlackScorpionStinger", 1;
+    getexp @BLACK_SC_ST_REWARD_XP, 0;
+    set $state, 0;
+    mes "\"Great! Now I can really kill that monster!\"";
+    close;
+
+state4:
+mes "[Voltain]";
+mes "\"I need to thicken a veno.. Oh a potion actually. I want to try mauve herbs for that, so can you bring me " + @HERBS_NEEDED + ", please?\"";
+next;
+
+menu
+    "Here are the herbs.", -,
+    "So you want to do a venom? I will not help you!", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("MauveHerb") < @HERBS_NEEDED) goto L_NOT_ENOUGH;
+    delitem "MauveHerb", @HERBS_NEEDED;
+    getexp @HERBS_REWARD_XP, 0;
+    set zeny, zeny + @HERBS_REWARD_GOLD;    
+    set $state, 5;
+    mes "\"Great! Now I can thicken the potion! I will try directly.\"";
+    close;
+    
+
+state5:
+mes "[Voltain]";
+mes  "\"Hello I am looking for " + @RAWLOG_NEEDED + " raw logs, maybe you could help me, getting some? I want to try if i can build a mouboo trap.. Uhm actually no! I want to build a device to destroy these traps. So can you help me?\"";
+next;
+
+menu
+    "Here are the raw logs.", -,
+    "So you want build traps for mouboos? NO WAY!", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("RawLog") < @RAWLOG_NEEDED) goto L_NOT_ENOUGH;
+    delitem "RawLog", @RAWLOG_NEEDED;
+    getexp @RAWLOG_REWARD_XP, 0;
+    set zeny, zeny + @RAWLOG_REWARD_GOLD;    
+    set $state, 6;
+    mes "\"Great! Now I can thicken the potion! I will try directly.\"";
+    close;
+    
+state6:
+mes "[Voltain]";
+mes   "\"Hello I am looking for " + @REDAPPLE_NEEDED + " red apples, maybe I can inject some venoms.. DOH not this again! Of course I meant a strength potion. Did you hear about the new potions from Caul? He is a pretty good alchimist. He can do strength potions, can't he?\"";
+next;
+
+menu
+    "Here are the red apples.", -,
+    "I am not sure...", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("RedApple") < @REDAPPLE_NEEDED) goto L_NOT_ENOUGH;
+    delitem "RedApple", @REDAPPLE_NEEDED;
+    getexp @REDAPPLE_REWARD_XP, 0;
+    set zeny, zeny + @REDAPPLE_REWARD_GOLD;    
+    set $state,7;
+    mes "\"Very well, this will be useful.\"";
+    close;
+    
+state7:
+mes "[Voltain]";
+mes  "\"I need to thicken a veno.. Oh a potion actually. Cobalt herbs might be good for that, so can you bring me " + @HERBS_NEEDED + ", please?\"";
+next;
+
+menu
+    "Here are the herbs.", -,
+    "So you want to do a venom? I will not help you!", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("CobaltHerb") < @HERBS_NEEDED) goto L_NOT_ENOUGH;
+    delitem "CobaltHerb", @HERBS_NEEDED;
+    getexp @HERBS_REWARD_XP, 0;
+    set zeny, zeny + @HERBS_REWARD_GOLD;    
+    set $state, 8;
+    mes "\"Great! Now I can go on with the ven-  the experiments for the welfare of humanity, i mean.\"";
+    close;
+    
+state8:
+mes "[Voltain]";
+mes   "\"I am in need of snake tongues. They can help me getting very strong venom extracts. So I would like you to bring me " + @SNAKETONGUE_NEEDED + " snake tongues.\"";
+next;
+
+menu
+    "Sure, here you go!", -,
+    "Maybe you will find someone else, I got stuff to do on my own!", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("SnakeTounge") < @SNAKETONGUE_NEEDED) goto L_NOT_ENOUGH;
+    delitem "SnakeTounge", @SNAKETONGUE_NEEDED;
+    getexp @SNAKETONGUE_REWARD_XP, 0;
+    set zeny, zeny + @SNAKETONGUE_REWARD_GOLD;    
+    set $state, 9;
+    mes "\"Excellent, now I can extract the venom to- uhm, nevermind, thanks for your help.\"";
+    close;
+    
+state9:
+mes "[Voltain]";
+mes  "\"I need to thicken a veno.. Oh a potion actually. I want to try alizarin herbs for that, so can you bring me " + @HERBS_NEEDED + ", please?\"";
+next;
+
+menu
+    "Here are the herbs.", -,
+    "So you want to do a venom? I will not help you!", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("AlizarinHerb") < @HERBS_NEEDED) goto L_NOT_ENOUGH;
+    delitem "AlizarinHerb", @HERBS_NEEDED;
+    getexp @HERBS_REWARD_XP, 0;
+    set zeny, zeny + @HERBS_REWARD_GOLD;    
+    set $state, 10;
+    mes "\"Great! Now I can thicken the potion! I will try directly.\"";
+    close;
+
+state10:
+mes "[Voltain]";
+mes   "\"Oh I am hungry. Maybe I can eat some steaks. Could you bring me a steak,  please?\"";
+next;
+mes   "\"Oh, I just wonder, if i can inject some ven... Forget about that! Bring me " + @STEAK_NEEDED + "steaks!\"";
+next;
+
+menu
+    "Here you go.", -,
+    "Help yourself! In the Hurnscald Inn you get some meal for sure!", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("Steak") < @STEAK_NEEDED) goto L_NOT_ENOUGH;
+    delitem "Steak", @STEAK_NEEDED;
+    getexp @STEAK_REWARD_XP, 0;
+    set zeny, zeny + @STEAK_REWARD_GOLD;    
+    set $state, 11;
+    mes "\"Thanks a lot. I will really enjoy my meal.\"";
+    close;
+
+state11:
+mes "[Voltain]";
+mes   "\"Could I have some arrows please? I have lost my hunting equipment when I was in the caves. Some dark creatures were chasing me!\"";
+next;
+mes   "\"Acually I wonder if I can use these arrows for building a mouboo trap.... Oh wait! I need some" + @ARROW_NEEDED + " arrows for my self defence right? So do not talk about it!\"";
+
+menu
+    "Here you go.", -,
+    "Sorry I don't have arrows here!", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("Arrow") < @ARROW_NEEDED) goto L_NOT_ENOUGH;
+    delitem "Arrow", @ARROW_NEEDED;
+    getexp @ARROW_REWARD_XP, 0;
+    set zeny, zeny + @ARROW_REWARD_GOLD;    
+    set $state, 12;
+    mes "\"Thanks a lot. Now I feel more secure here in outdoors.\"";
+    close;
+
+state12:
+mes "[Voltain]";
+mes  "\"I need to thicken a veno.. Oh a potion actually. I want to try gamboge herbs for that, so can you bring me " + @HERBS_NEEDED + ", please?\"";
+next;
+
+menu
+    "Here are the herbs.", -,
+    "So you want to do a venom? I will not help you!", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("GambogeHerb") < @HERBS_NEEDED) goto L_NOT_ENOUGH;
+    delitem "GambogeHerb", @HERBS_NEEDED;
+    getexp @HERBS_REWARD_XP, 0;
+    set zeny, zeny + @HERBS_REWARD_GOLD;    
+    set $state, 13;
+    mes "\"Great! Now I can thicken the potion! I will try directly.\"";
+    close;
+
+state13:
+mes "[Voltain]";
+mes "\"Doing so many ev- good things makes me hungry. I feel in the mood for a Chocolate Cake. Can you bring me " + @CHOCOLATECAKE_NEEDED + " ,  please? \"";
+next;
+
+menu
+    "Here it is.", -,
+    "I don't feel in the mood to bring you a cake.", L_CLOSE;
+
+mes "[Voltain]";
+    if (countitem("ChocolateCake") < @CHOCOLATECAKE_NEEDED) goto L_NOT_ENOUGH;
+    delitem "ChocolateCake", @CHOCOLATECAKE_NEEDED;
+    getexp @CHOCOLATECAKE_REWARD_XP, 0;
+    set zeny, zeny + @CHOCOLATECAKE_REWARD_GOLD;    
+    set $state, 0;
+    mes "\"I love chocolate cakes. I wonder, if I can use my ven- \"";
+    emotion 5;
+    close;
+
+L_NOHELP:
+mes "\"If you don't want to help me, then away with you. Bothering me won't help me get my work done.\"";
+mes "Voltain than mumbles something under his breath that you cannot quite make out"; 
+mes "\"... These damn kids. \"";
+close;
+
+L_CLOSE:
+close;
+
+L_NOT_ENOUGH:
+mes "\"Can't you count!? I need more. \"";
+close;
+}
+
+
