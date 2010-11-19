@@ -1,0 +1,426 @@
+010-1.gat,29,48,0        script        Gak        187,    {
+
+        if (hween10 == 1) goto L_Knows_Gak;
+        if (hween10 == 2) goto L_Gak_Has_Tongue;
+        if (hween10 == 3) goto L_Bones_Check;
+        if (hween10 == 4) goto L_Request_Sweets;
+        if (hween10 == 5) goto L_Collecting_Sweets;
+
+        mes "[Broken Skeleton]";
+        set hween10, 1;
+        mes "";
+        mes "\"Gak... gak, gak! Gak gak gak gak!\"";
+        close;
+
+L_Knows_Gak:
+        if (countitem("Tongue") > 0) goto L_Has_Tongue;
+        mes "[Gak]";
+        mes "";
+        mes "\"Gak gak! Gak gak, gak gak gak!\"";
+        close;
+
+L_Has_Tongue:
+        mes "[Gak]";
+        mes "";
+        mes "The skeleton notices a slimy, dead tongue you have with you, and eyes it eagerly.";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "At least, you assume he is eager. \"Gak gak gak! Gak gak gak gak GAK GAK!\"";
+        next;
+        menu
+                "Give the tongue to him", L_Give_Tongue,
+                "Taunt him by showing him the tongue, but not giving it", L_Give_Tongue_Die,
+                "Walk away", -;
+        close;
+
+L_Give_Tongue:
+        if (countitem("Tongue") < 1) goto L_Tongue_Gone_Die;
+        delitem "Tongue", 1;
+        set hween10, 2;
+        mes "[Gak]";
+        mes "";
+        mes "The skeleton grabs the tongue from you and shoves it into his mouth. After stretching his jaw for some moments, he grins at you unpleasantly.";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Ssso! What bringsss you here, mortal?\"";
+        next;
+        menu
+                "I just chanced upon you here, and figured you could use a tongue.", L_Thanks,
+                "The Hallowe'en event is FINALLY here, of course I'm going to play it.", L_Whut,
+                "Nothing.", -;
+        close;
+
+L_Tongue_Gone_Die:
+        mes "[Gak]";
+        mes "";
+        mes "He reaches out for the tongue, but then realises you don't have it. With an angry a look on his face as a skeleton can have, he slashes at you with his remaining arm.";
+        goto L_Die;
+
+L_Give_Tongue_Die:
+        mes "[Gak]";
+        mes "";
+        mes "Angrily, the skeleton reaches out and claws you with his remaining arm.";
+        if (countitem("Tongue") < 1) goto L_Die;
+        next;
+        delitem "Tongue", 1;
+        mes "[Gak]";
+        mes "";
+        mes "As you fall, he takes the tongue from you anyway.";
+        set hween10, 2;
+        goto L_Die;
+
+L_Die:
+        close2;
+        itemheal -Hp -1, 0;
+        end;
+
+L_Thanks:
+        mes "[Gak]";
+        mes "";
+        mes "\"Well, that wasss mighty thoughtful of you, friend... I wonder if perhapsss you could do me another favour?\"";
+        next;
+        menu
+                "Sure! Anything you want.", L_Sure,
+                "I'll be right, thanks.", -;
+        close;
+
+L_Whut:
+        mes "[Gak]";
+        mes "";
+        mes "\"What?\"";
+        close;
+
+L_Gak_Has_Tongue:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hello again, little friend. Could you posssibly do me another favour?\"";
+        next;
+        menu
+                "I sure can, what is it?", L_Sure,
+                "Uh, no thanks.", -;
+        close;
+
+L_Sure:
+        mes "[Gak]";
+        mes "";
+        mes "\"It wasss nice if you to bring me thisss tongue, but asss you can sssee I still have a few things missing.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Maybe you could bring me a few bonesss so I could patch myssself up?\"";
+        next;
+        menu
+                "I'm on it!", L_Bones,
+                "Nah, that sounds a bit boring.", -;
+        close;
+
+L_Bones:
+        set hween10, 3;
+        mes "[Gak]";
+        mes "";
+        mes "\"Wonderful! I can't wait until I can properly walk around attacking thingsss again.\"";
+        close;
+
+L_Bones_Check:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hallo again. Have you brought me any bonesss?\"";
+        next;
+        setarray @menuitems$, "", "", "", "", "";
+        set @c, 0;
+
+        if (countitem("Bone") < 5) goto L_bones_four;
+        set @menuitems$[@c], "Take five bones.";
+        set @menuid[@c], 0;
+        set @c, @c + 1;
+
+L_bones_four:
+        if (countitem("Bone") < 4) goto L_bones_three;
+        set @menuitems$[@c], "Take four bones.";
+        set @menuid[@c], 1;
+        set @c, @c + 1;
+
+L_bones_three:
+        if (countitem("Bone") < 3) goto L_bones_two;
+        set @menuitems$[@c], "Take three bones.";
+        set @menuid[@c], 2;
+        set @c, @c + 1;
+
+L_bones_two:
+        if (countitem("Bone") < 2) goto L_bones_one;
+        set @menuitems$[@c], "Take two bones.";
+        set @menuid[@c], 3;
+        set @c, @c + 1;
+
+L_bones_one:
+        if (countitem("Bone") < 1) goto L_bones_menu;
+        set @menuitems$[@c], "Take one bone.";
+        set @menuid[@c], 4;
+        set @c, @c + 1;
+
+L_bones_menu:
+        set @menuitems$[@c], "I don't have any bones.";
+        set @menuid[@c], 5;
+        set @c, @c + 1;
+        menu
+                @menuitems$[0], -,
+                @menuitems$[1], -,
+                @menuitems$[2], -,
+                @menuitems$[3], -,
+                @menuitems$[4], -,
+                @menuitems$[5], -,
+                @menuitems$[6], -;
+        set @menu, @menu -1;
+        if (@menu >= @c) close;
+        if (@menuid[@menu] == 5) goto L_offer_no_items;
+        mes "[Gak]";
+        mes "";
+        mes "Ssso many? Jussst what I needed. Let me sssee if they are sssuitable...";
+        next;
+
+        if (@menuid[@menu] == 0) set @bonecount, 5;
+        if (@menuid[@menu] == 1) set @bonecount, 4;
+        if (@menuid[@menu] == 2) set @bonecount, 3;
+        if (@menuid[@menu] == 3) set @bonecount, 2;
+        if (@menuid[@menu] == 4) set @bonecount, 1;
+        if (countitem("Bone") < @bonecount) goto L_Not_Enough_Bones;
+
+        delitem "Bone", @bonecount;
+        set @bonecount, @bonecount + 1;
+        set @hween10_givebones, 0;
+
+// in a rush, raising and then lowering is the best thing I can think of to make the loop work properly.
+
+L_Bone_Loop:
+        set @bonecount, @bonecount - 1;
+        if @bonecount < 1 goto L_Bones_Feedback;
+        set @temp1, rand(@bonecount + 5);
+        if @temp1 > @bonecount goto L_Bone_Loop;
+        set @hween10_givebones, @hween10_givebones + 1;
+        goto L_Bone_Loop;
+
+L_Not_Enough_Bones:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hey... you don't have that many bonesss!\"";
+        close;
+
+L_offer_no_items:
+        mes "[Gak]";
+        mes "";
+        mes "\"Sssucch a pity...\"";
+        close;
+
+L_Bones_Feedback:
+        if (@hween10_givebones == 0) goto L_Bones_Feedback_None;
+        mes "[Gak]";
+        mes "";
+        mes "\"Hmm... I think I can ussse " + @hween10_givebones + " of thessse bonesss.\"";
+        next;
+        set hween10_bonecount, hween10_bonecount + @hween10_givebones;
+        if (hween10_bonecount > 7) goto L_Enough_Bones;
+        mes "[Gak]";
+        mes "";
+        mes "\"But I ssstill need more! Pleassse bring them to me.\"";
+        close;
+
+L_Bones_Feedback_None:
+        mes "[Gak]";
+        mes "";
+        mes "\"I can't ussse any of theesse boness. I need more!\"";
+        close;
+
+L_Enough_Bones:
+        set hween10, 4;
+        mes "[Gak]";
+        mes "";
+        mes "\"And that should be enough for my dark purposssesss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Now... I wonder...\" He flicks his tongue around his dry and ancient teeth. \"I wonder if you could get me sssomething to eat?\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"All thisss hard work gathering bonesss hasss made me...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"HUNGRY!\"";
+        next;
+        menu
+                "Uh, what would you like to eat?", L_Request_Sweets,
+                "This is a burial site, I'm sure there are plenty of worms around.", L_Worms,
+                "Me too, actually. I gotta eat. Bye!", -;
+        close;
+
+L_Worms:
+        mes "[Gak]";
+        mes "";
+        mes "\"True... but they are sssmall, and not asss sssweet asss what I'd like!\"";
+        next;
+
+L_Request_Sweets:
+        mes "[Gak]";
+        mes "";
+        mes "\"Asss I'm sssure you know, it wasss Hallowe'en recently. I'll bet you had great time collecting sssweetsss with your friendsss, hm?\"";
+        next;
+        menu
+                "The guy organising that was too lazy - it never happened.", L_Time_Management,
+                "Well, what's it to you?", L_Leftover_Sweets,
+                "You're creeping me out.", -;
+        close;
+
+L_Time_Management: 
+        mes "[Gak]";
+        mes "";
+        mes "\"That'sss jussst too bad. People with poor time management shouldn't be put in charge of important thingsss like that.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But never mind. Even if you didn't get to go trick-or-treating, there will ssstill be plenty of dropped sssweets lying around.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"People are ssso carelesss! To my benefit, of courssse. Ssso what do you sssay? Can you bring me asss many sssweetsss as you can find?\"";
+        menu
+                "I guess so.", L_Confirm_Sweethunting,
+                "No, I'd rather eat 'em myself.", -;
+        close;
+
+L_Leftover_Sweets:
+        mes "[Gak]";
+        mes "";
+        mes "\"Each year at Hallowe'en, all you little girlsss and boysss run about begging for candy. And each year, ssso much of it is dropped, and wasssted!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But I don't mind eating sssweetsss just becaussse they're a couple of weeksss old! Bring me lotsss, and you shall have a reward.\"";
+        next;
+        menu
+                "Well, okay then.", L_Confirm_Sweethunting,
+                "Wait, free sweets!? Why did no one tell me?", -;
+        close;
+
+L_Confirm_Sweethunting:
+        set hween10, 5;
+        mes "[Gak]";
+        mes "";
+        mes "\"My ssstomach groansss with anticipa - uh, well, my bonesss creak with anticipation. Tell all your little friendsss to bring my any sssweetsss they find, too: I really am VERY hungry!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Remember, though, and thisss isss important: the more sssweetsss YOU PERSSSONALLY bring me, the better YOUR reward will be!\"";
+        close;
+
+L_Collecting_Sweets:
+        mes "[Gak]";
+        mes "";
+        mes "\"Ssso, do you have any sssweetsss for me?\"";
+        next;
+        setarray @menuitems$, "", "", "", "", "";
+        set @c, 0;
+
+        if (countitem("tondel") < 1) goto L_Sweets_Marshmallow;
+        set @menuitems$[@c], "Tonori Delight.";
+        set @menuid[@c], 0;
+        set @c, @c + 1;
+
+L_Sweets_Marshmallow:
+        if (countitem("Marshmallow") < 1) goto L_Sweets_JellySkull;
+        set @menuitems$[@c], "Marshmallow.";
+        set @menuid[@c], 1;
+        set @c, @c + 1;
+
+L_Sweets_JellySkull:
+        if (countitem("JellySkull") < 1) goto L_Sweets_CandyPumpkin;
+        set @menuitems$[@c], "Jelly Skull.";
+        set @menuid[@c], 2;
+        set @c, @c + 1;
+
+L_Sweets_CandyPumpkin:
+        if (countitem("CandyPumpkin") < 1) goto L_Sweets_Menu;
+        set @menuitems$[@c], "Candy Pumpkin.";
+        set @menuid[@c], 3;
+        set @c, @c + 1;
+
+L_Sweets_Menu:
+        set @menuitems$[@c], "I don't have any sweets.";
+        set @menuid[@c], 4;
+        set @c, @c + 1;
+        menu
+                @menuitems$[0], -,
+                @menuitems$[1], -,
+                @menuitems$[2], -,
+                @menuitems$[3], -,
+                @menuitems$[4], -,
+                @menuitems$[5], -;
+        set @menu, @menu -1;
+        if (@menu >= @c) close;
+
+        if (@menuid[@menu] == 0) set @giveitem$, "TonoriDelight";
+        if (@menuid[@menu] == 1) set @giveitem$, "Marshmallow";
+        if (@menuid[@menu] == 2) set @giveitem$, "JellySkull";
+        if (@menuid[@menu] == 3) set @giveitem$, "CandyPumpkin";
+        // We need something to handle what happens when we select that the character does not have any sweets
+        if (@menuid[@menu] == 4) goto L_offer_no_items;
+
+        mes "[Gak]";
+        mes "";
+        mes "\"How many of those do you have for me?\"";
+        next;
+        menu
+                "Take all of them.", -,
+                "One hundred of them.", -,
+                "Fifty of them.", -,
+                "Ten of them.", -,
+                "Five of them.", -,
+                "One of them.", -,
+                "This many...", -;
+        set @menu, @menu - 1;
+
+        if (@menu == 0) set @givecounter, countitem(@giveitem$);
+        if (@menu == 1) set @givecounter, 100;
+        if (@menu == 2) set @givecounter, 50;
+        if (@menu == 3) set @givecounter, 10;
+        if (@menu == 4) set @givecounter, 5;
+        if (@menu == 5) set @givecounter, 1;
+        if (@menu == 6) input @givecounter;
+        if (@menu > 6) close;
+        if (countitem(@giveitem$) < @givecounter) goto L_Not_Enough_Sweeties;
+
+        delitem @giveitem$, @givecounter;
+
+        if (@giveitem$ == "TonoriDelight") set $hween10_tondel, $hween10_tondel + @givecounter;
+        if (@giveitem$ == "Marshmallow") set $hween10_mmallow, $hween10_mmallow + @givecounter;
+        if (@giveitem$ == "JellySkull") set $hween10_jelskul, $hween10_jelskul + @givecounter;
+        if (@giveitem$ == "CandyPumpkin") set $hween10_canpump, $hween10_canpump + @givecounter;
+        if (@giveitem$ == "TonoriDelight") set hween10_collect_tondel, hween10_collect_tondel + @givecounter;
+        if (@giveitem$ == "Marshmallow") set hween10_collect_mmallow, hween10_collect_mmallow + @givecounter;
+        if (@giveitem$ == "JellySkull") set hween10_collect_jelskul, hween10_collect_jelskul + @givecounter;
+        if (@giveitem$ == "CandyPumpkin") set hween10_collect_canpump, hween10_collect_canpump + @givecounter;
+
+        set hween10_collect, hween10_collect + @givecounter;
+
+        mes "[Gak]";
+        mes "";
+        mes "\"Thank you for your generousss donation to my caussse. Ssso far, you and your friendsss have brought me " + $hween10_tondel + " Tonori Delightsss, " + $hween10_mmallow + " Marshmallowsss, " + $hween10_jelskul + " Jelly Ssskullsss, and " + $hween10_canpump + " Candy Pumpkinsss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"You persssonally have brought me " + hween10_collect + " sssweetsss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But I ssstill need more! I'm ssstill HUNGRY!\"";
+        close;
+
+L_Not_Enough_Sweeties:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hey! Don't teassse me; you know very well that you don't have that many sssweetsss.\"";
+        close;
+
+}
