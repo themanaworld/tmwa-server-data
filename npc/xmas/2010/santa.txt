@@ -1,0 +1,160 @@
+//#################################################################################
+//#
+//#    Santa for Christmas 2010
+//#
+//#    Authors: alastrim, PjotrOrial
+//#
+//#    reviewed by:
+//#
+//#    This is Santa Claus.
+//#    He was taken as hostage by golbanez, and now that he is free, he would like to
+//#    give a reward for those who helped him.
+//#    
+//#################################################################################
+                        
+031-3.gat,122,55,0	script	Debug	105,{
+
+        mes "What do you want to do?";
+
+        menu
+                "Change Golbenez_Inn_Cost.",-,
+                "Change Xmas2010.",_xmas,
+                "Nothing.",_end;
+
+        mes "Old Value: " + Golbenez_Inn_Cost;
+        input Golbenez_Inn_Cost;
+        mes "New Value: " + Golbenez_Inn_Cost;
+        close;
+_xmas:
+        mes "Old Value: " + Xmas2010;
+        input Xmas2010;
+        mes "New Value: " + Xmas2010;
+        close;
+_end:
+        close;
+}
+                        
+031-3.gat,122,51,0	script	Santa	105,{
+
+        if (Sex) set @honorific$, "young hero";
+        if (Sex) set @gender$, "boy";
+        if (!Sex) set @honorific$, "young heroine";   
+        if (!Sex) set @gender$, "girl";
+        if (Xmas2010 == 1) goto L_Returning;
+        if (Xmas2010 == 2) goto L_Elfhat_Prize;
+        if (Xmas2010 == 3) goto L_Stocking_Prize;
+        if (Xmas2010 == 4) goto L_Event_Done;
+        if (Golbenez_Inn_Cost < 50000) goto L_No_Prizes;
+
+L_start:
+        mes "The old man's eyes open wide as he sees you.";
+        next;
+        mes "[Santa Claus]";
+        mes "\"Ho-Ho-ho! It is so good to see you here " +@honorific$+ "!\"";
+        next;
+        menu
+                "Im " + strcharinfo(0) + " and I am here to save you from Golbenez.",-;
+        mes "\"I cant believe it... are you really " +strcharinfo(0)+ "? I remember all the comments that... 'Thing' was making about building his way to a 'Leisure Place' and how your donations would really help him.\"";
+        next;
+        mes "\"What is his name again? Erh... Golbinos? Galvanis? Ho-hum... All I know is that it was keeping me and my fellow rendiers as hostages in this cold labyrinth. And you proved yourself a good " +@gender$+ " by helping me with all those donations!\"";
+        next;
+        if (gettime(6) != 12 || gettime(5) >= 25) goto L_Skip_Dialogue;
+        mes "\"Well, we are really late! In a few hours we have to start our usual present giving routine... But not before I give you a special gift for all you did.\"";
+        next;
+L_Skip_Dialogue:
+        mes "\"Let me see... From what I can remember, Galvenio said a " +@gender$+ " called " +strcharinfo(0)+ " donated a total of " +Golbenez_Inn_Cost+ " Golden Pieces!\"";
+        next;
+
+L_Calculate_Prizes:
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_full;        
+        if (Golbenez_Inn_Cost >= 500000 && Golbenez_Inn_Cost < 1000000) goto L_Elfhat_Prize;
+        if (Golbenez_Inn_Cost >= 50000 && Golbenez_Inn_Cost < 500000) goto L_Stocking_Prize;
+        setarray @prizes[1], 1206, 1216, 629, 630, 634, 1214, 633, 628, 627, 621;
+        setarray @prizesnames$[1], "Santa Beard Hat", "Mouboo Head", "Mush Hat", "Shroom Hat", "Face Mask", "Bunny Ears", "Christmas Elf Hat", "Funky Hat", "Top Hat", "Eyepatch";
+        mes "\"You are so generous! I believe I can give you one of the hats from this bag. I know you like these silly hats. Yes, Santa knows this kind of thing... Ho-Ho-Ho! Which one would you like to get?\"";
+
+L_Menu_Choices:
+        menu
+                @prizesnames$[1],-,
+                @prizesnames$[2],-,
+                @prizesnames$[3],-,
+                @prizesnames$[4],-,
+                @prizesnames$[5],-,
+                @prizesnames$[6],-,
+                @prizesnames$[7],-,
+                @prizesnames$[8],-,
+                @prizesnames$[9],-,
+                @prizesnames$[10],-;
+
+        getitem @prizes[@menu], 1;
+        set Xmas2010, 1;
+        set Golbenez_Inn_Cost, 0;
+        next;
+
+L_Returning:
+        mes "[Santa Claus]";
+        mes "\"I hope you liked your gift.\"";
+        next;
+        menu
+                "Yes Santa, you are the best!",L_Close,
+                "Ehh, it is not what I expected.",L_Bad,
+                "I loved it! Can I have one more, please, please?",-;
+
+        mes "[Santa Claus]";
+        mes "\"Hmm... Why not? It would be terrible to deny a request from such a generous person.\"";
+        next;
+        set Xmas2010, 3;
+        goto L_Stocking_Prize;
+
+L_Elfhat_Prize:
+        set Xmas2010, 2;
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_full;        
+        mes "[Santa Claus]";
+        mes "\"You worked really hard to help us... So, here, take this hat. It belongs to one of my assistants. No, no... No problem at all, I am sure he will be happy to know such a great person is going to use it.\"";
+        getitem 633, 1;
+        set Golbenez_Inn_Cost, 0;
+        set Xmas2010, 3;
+        next;
+
+L_Stocking_Prize:
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_full;        
+        mes "[Santa Claus]";
+        mes "\"I would like to give you a personal item. It is not a hat, but something that will always make you remember how grateful I am.\"";
+        next;
+        mes "\"Here, take this. I have been using it for the last three months... It means a lot to me.\"";
+        getitem 1207, 1;
+        set Golbenez_Inn_Cost, 0;
+        set Xmas2010, 4;
+        close2;
+        percentheal -20, 0;
+        message strcharinfo(0), "You suddenly get dizzy... Something is not right with you. Maybe you shouldnt have put the Red Stocking so close to your face!";
+        end; 
+
+L_Full:
+        mes "[Santa Claus]";
+        mes "\"Your backpack seems to be full. You should get rid of some unused stuff before you get my gifts, or maybe try one super resistant red bag, my personal favorite! Hoh-hoh!\"";        
+        close;
+
+L_Close:
+        mes "[Santa Claus]";
+        mes "\"Ho, Ho... Ok, see you later " +@honorific$+ "!\"";        
+        close;
+
+L_Bad:
+        mes "[Santa Claus]";
+        mes "\"Hmm... and I was thinking you were a good " +@gender$+ "! Dont be ungrateful and next time, think before you get a gift.\"";        
+        close;
+
+L_Event_Done:
+        mes "[Santa Claus]";
+        mes "\"Hello again " +strcharinfo(0)+ "! I cant chat with you right now, because we are really late for Christmas, but, when it is over, you will always be welcome in my house for a hot chocolate.\"";        
+        close;
+
+L_No_Prizes:
+        mes "[Santa Claus]";
+        mes "\"Hi " +strcharinfo(0)+ "... Looks like you did not work really hard to set me free...\"";        
+        close;
+}

@@ -1,0 +1,194 @@
+//#################################################################################
+//#
+//#    Golbanez for Christmas 2010
+//#
+//#    Authors: alastrim, PjotrOrial
+//#
+//#    reviewed by:
+//#
+//#    This is Golbanez, he took Santa Claus as a hostage.
+//#    Santa will be freed on Dec24, so players need to pass a labyrinth
+//#    if the players bring Golbanez stuff, santa will donate some other stuff to the players.
+//#    
+//#################################################################################
+019-1.gat,96,41,0	script	Golbenez-Debug	204,{
+
+	mes "What you want to do?";
+	menu
+		"Change $Golbenez_Santa_Free(Date of the Month)",-,
+		"Change Golbenez_Inn_Cost(Your Donations)",_cost,
+		"Clean all variables.",_clean,
+		"Nothing",_end;
+
+	mes "Old Value: " + $Golbenez_Santa_Free;
+	input $Golbenez_Santa_Free;
+	mes "New Value: " + $Golbenez_Santa_Free;
+	close;
+
+_cost:
+	mes "Old Value: " + Golbenez_Inn_Cost;
+	input Golbenez_Inn_Cost;
+	mes "New Value: " + Golbenez_Inn_Cost;
+	close;
+
+_clean:
+	mes "Golbenez_Inn_Cost Old Value: " + Golbenez_Inn_Cost;
+	set Golbenez_Inn_Cost, 0;
+	mes "Golbenez_Inn_Cost New Value: " + Golbenez_Inn_Cost;
+	mes "$Golbenez_Santa_Free Old Value: " + $Golbenez_Santa_Free;
+	set $Golbenez_Santa_Free, 0;
+	mes "$Golbenez_Santa_Free New Value: " + $Golbenez_Santa_Free;
+	close;
+	
+_end:
+	close;
+
+}
+
+019-1.gat,93,41,0	script	#Golbenez#_M	204,{
+	set $Golbenez_Santa_Free, gettime(5);
+	
+	if (gettime(7) > 2010)  set $Golbenez_Santa_Free, 25;
+
+	if ($Golbenez_Santa_Free >= 24 || gettime(7) > 2010) goto Glb_Inn_Enough;
+
+	mes "[Golbenez]";
+	mes "\"Mortal!  I am Golbenez!  I have broken through the barriers of space and time!\"";
+	next;
+	mes "\"Well to let you know, I am taking Santa Claus and rudolph and the fellow rendiers as hostages.\"";
+	next;
+	mes "\"This sounds hard to you maybe... But I need lots of stuff for building the way to the leisure place.";
+	next;
+	mes "\"So if you want to have donations at christmas... we should make a deal: Bring me money or presents.";
+	next;
+	mes "\"Maybe I will release Santa Claus and the rendiers then.\"";
+	next;
+	mes "\"Do you really expect a promise to let him free on christmas?\"";
+	next;
+	mes "\"Uhm well, then you should get away!\"";
+	next;
+	mes "\"So far, you have brought stuff and money in a total value of " + Golbenez_Inn_Cost + " gold pieces.  The people of your world have brought me " + $Golbenez_Inn_Cost + " gold pieces.  What do you like to give?\"";
+
+	menu
+		"I'd like to spend some money.", Glb_money,
+		"I'd like to give some blue presents.", -,
+		"I'd like to give some green presents.", -,
+		"I'd like to give some pink presents.", -,
+		"Why do you want present boxes?",Glb_whypresents,
+		"Can I bring other items?", Glb_otheritems,
+		"Nevermind.", Glb_nvm;
+
+	// in this array the items should be filled in
+	setarray @menuitem[2], 516, 538, 515;
+	setarray @menuvalue[2], 2000, 5000, 1000;
+
+	mes "\"How many presents do you want to give?\"";
+
+	input @count;
+
+	if (countitem(@menuitem[@menu]) < @count ) goto Glb_noitems;
+	delitem @menuitem[@menu], @count;
+	set @Give, (@count * @menuvalue[@menu]);
+	set @Gave_Presents, 1;
+	goto Glb_checkGlAn;
+
+Glb_money:
+	input @Give;
+
+	set @Give, @Give;
+
+	if (@Give <= 0) close;
+	if (zeny < @Give) goto Glb_Inn_NotEnoughZeny;
+
+Glb_checkGlAn:
+
+	// if the @Give amount is below 30% of the players money, just let him pay
+	if( @Give<10000 || ( 100 * @Give / zeny )<30 ) goto Golbenez_pay;
+
+	set @glob_an$ , "Golbenez: " + strcharinfo(0) + " accounted to free santa";
+
+	// depending on the absolute amount setup another global announcement.
+	if( @Give >1000000 ) goto Golbenez_an_5;
+	if( @Give > 500000 ) goto Golbenez_an_4;
+	if( @Give > 100000 ) goto Golbenez_an_3;
+	if( @Give >  72000 ) goto Golbenez_an_2;
+	if( @Give >  35500 ) goto Golbenez_an_1;
+
+	goto Golbenez_an;
+
+Golbenez_an_1:
+	set @glob_an$, @glob_an$ + " with a great effort.";
+	goto Golbenez_an;
+
+Golbenez_an_2:
+	set @glob_an$, @glob_an$ + " with a honest contribution.";
+	goto Golbenez_an;
+
+Golbenez_an_3:
+	set @glob_an$, @glob_an$ + " with a great effort. Such a generous person.";
+	goto Golbenez_an;
+
+Golbenez_an_4:
+	set @glob_an$, @glob_an$ + " with a remarkable effort. Impressive!";
+	goto Golbenez_an;
+
+Golbenez_an_5:
+	set @glob_an$, @glob_an$ + " with a huge effort. What a honorable donation!";
+	goto Golbenez_an;
+
+Golbenez_an:
+	announce @glob_an$, 0;
+
+Golbenez_pay:
+	set Golbenez_Inn_Cost, Golbenez_Inn_Cost + @Give;
+	set $Golbenez_Inn_Cost, $Golbenez_Inn_Cost + @Give;
+	if (@Gave_Presents == 1) close;
+	set zeny, zeny - @Give;
+	close;
+
+Glb_Inn_NotEnoughZeny:
+	mes "[Golbenez]";
+	mes "\"You don't have as much as you say you do.  Come back when you can give the gold pieces you say you can.\"";
+	close;
+
+Glb_noitems:
+	mes "[Golbenez]";
+	mes "\"You don't have as many as you say you do.  Come back when you have enough.\"";
+	close;
+
+Glb_nvm:
+	mes "[Golbenez]";
+	mes "\"That's too bad.\"";
+	close;
+
+Glb_whypresents:
+	mes "[Golbenez]";
+	mes "\"The presents contain some sort of spiritual attachment that aids in the creation of dimensional connections to this plane of existence. The green ones contain the stronger spiritual attachment, followed by the blue and then pink present boxes.\"";
+	next;
+	mes "\"Im willing to consider a conversion of each Present Box donated to an amount in Gold Pieces. So, a Green Present is equivalent to 5000 Gold Pieces, a Blue Present, 2000 Gold Pieces and a Pink Present, 1000 Gold Pieces.\"";
+	close;
+
+Glb_otheritems:
+	mes "[Golbenez]";
+	mes "\"No you cannot!\"";
+	next;
+	mes "\"I will not discuss any further, mortal!\"";
+	next;
+	mes "\"So bring me the needed stuff and maybe you get some stuff as a reward, little coward!\"";
+	close;
+
+Glb_Inn_Enough:
+	mes "[Golbenez]";
+	mes "\"Ok mortal!\"";
+	next;
+	mes "\"I have collected enough for now.\"";
+	next;
+	mes "\"This helps me working on the leisure place.\"";
+	next;
+	mes "\"Although I did not promise I let Santa be free again!\"";
+	next;
+	mes "\"He can be found in some cave around here.\"";
+	close;
+}
+
+
