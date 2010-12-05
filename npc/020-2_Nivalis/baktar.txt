@@ -1,7 +1,7 @@
 //#=========================
 //#== NPC Baktar
 //# Authors: Lien, PjotrOrial
-//# Review: BigCrunch, Mistakes
+//# Review: BigCrunch, Mistakes, Jenalya
 //# This NPC has two stages:
 //#
 //# In the first stage you need to bring 7 different items, but only one of each kind.
@@ -29,7 +29,7 @@
 //# =2 talking, you get the mission to hunt down Scroticular
 //# =3 you get information where Scroticular can be found.
 //# NIBBLE3     a bitmasking nibble for stage 2 again
-//# bit 0  knows the name of the opponent
+//# bit 0  knows the name/location of the opponent
 //# bit 1  killed the ugly opponent
 //#=========================
 020-2.gat,70,61,0	script	Baktar	183,{
@@ -48,6 +48,7 @@
         set @Q_status2_bits, ((QUEST_Nivalis_state) & @Q_MASK2_BITS) >> @Q_SHIFT2_BITS;
 
         // if all bits are set, you brought him everything! Now we continue in Phase 2 of this npc.
+        mes @Q_status;
         if(@Q_status == @Q_MASK) goto L_2_init;
 
         set @BIT_KNOWHIM, 0;
@@ -77,17 +78,17 @@
         set @XP_SNAKESKIN, 350;
 
         set @BIT_BUGLEG,7;
-        set @MONEY_BUGLEG, 20000;
-        set @XP_BUGLEG, 10000;
+        set @MONEY_BUGLEG, 20;
+        set @XP_BUGLEG, 130;
 
         if(sex)
-                set @type$, "Man";
+                set @type$, "man";
         if(!sex)
-                set @type$, "Woman";
+                set @type$, "woman";
 
         if(@Q_status & (1<<@BIT_KNOWHIM)) goto L_KnowAlready;
                 mes @npcname$;
-                mes "\"Hello, " +  @type$ + ",  did you come from Tulimshar? Because you have a nice tan. \"";
+                mes "\"Hello, " +  @type$ + ", did you come from Tulimshar? Because you have a nice tan. \"";
         menu
                 "Yes, I'm from Tulimshar", L_exotic,
                 "Well, I just like sunbathing", -,
@@ -111,7 +112,7 @@ L_exotic:
 L_startitem:
         setarray @exotic_item$, "", "", "", "", "", "", "";
         set @c, 0;
-        set @Q_status, @Q_status & (1<<@BIT_KNOWHIM);
+        set @Q_status, @Q_status | (1<<@BIT_KNOWHIM);
         callsub S_Update_Var;
         if (countitem("DesertHat") < 1 || @Q_status & (1<<@BIT_DESERTHAT) ) goto L_DesertShirt;
         set @exotic_item$[@c], "a Desert Hat ?";
@@ -137,8 +138,8 @@ L_tongue:
         set @c, @c + 1;
 
 L_egg:
-        if (countitem("MoutainSnakeEgg") < 1 || @Q_status & (1<<@BIT_MS_EGG)) goto L_Skin;
-        set @exotic_item$[@c], "a Moutain Snake Egg?";
+        if (countitem("MountainSnakeEgg") < 1 || @Q_status & (1<<@BIT_MS_EGG)) goto L_Skin;
+        set @exotic_item$[@c], "a Mountain Snake Egg?";
         set @menuid[@c], 4;
         set @c, @c + 1;
 
@@ -155,7 +156,7 @@ L_bugleg:
         set @c, @c + 1;
 
 L_NeverMind:
-        set @exotic_item$[@c], "Never Mind";
+        set @exotic_item$[@c], "Nevermind";
         set @menuid[@c], 6;
 //menu for the item
         menu
@@ -178,7 +179,7 @@ L_NeverMind:
         if (@menuid[@menu] == 6) goto L_BugLegItem;
 //if Never mind
                 mes @npcname$;
-                mes "\"ok, GoodBye then\"";
+                mes "\"Ok, goodbye then.\"";
         close;
 L_DesertHat_Item:
         if(@Q_status & (1<<@BIT_DESERTHAT)) goto L_havealready;
@@ -186,7 +187,7 @@ L_DesertHat_Item:
                 delitem "DesertHat", 1;
                 set zeny, zeny + @MONEY_DESERTHAT;
                 getexp @XP_DESERTHAT,0;
-                set @Q_status, @Q_status & (1<<@BIT_DESERTHAT);
+                set @Q_status, @Q_status | (1<<@BIT_DESERTHAT);
                 callsub S_Update_Var;
         close;
 L_DesertShirt_Item:
@@ -195,25 +196,25 @@ L_DesertShirt_Item:
                 delitem "DesertShirt", 1;
                 set zeny, zeny + @MONEY_DESERTSHIRT;
                 getexp @XP_DESERTSHIRT,0;
-                set @Q_status, @Q_status & (1<<@BIT_DESERSHIRT);
+                set @Q_status, @Q_status | (1<<@BIT_DESERTSHIRT);
                 callsub S_Update_Var;
-close;
+		close;
 L_SerfHat_Item:
         if(@Q_status & (1<<@BIT_SERFHAT)) goto L_havealready;
         if (countitem("SerfHat") < 1) goto L_Noitem;
                 delitem "SerfHat", 1;
                 set zeny, zeny + @MONEY_SERFHAT;
                 getexp @XP_SERFHAT,0;
-                set @Q_status, @Q_status & (1<<@BIT_SERFHAT);
+                set @Q_status, @Q_status | (1<<@BIT_SERFHAT);
                 callsub S_Update_Var;
-close;
+		close;
 L_tongue_Item:
         if(@Q_status & (1<<@BIT_MS_TONGUE)) goto L_havealready;
         if (countitem("MountainSnakeTongue") < 1) goto L_Noitem;
                 delitem "MountainSnakeTongue", 1;
                 set zeny, zeny + @MONEY_MS_TONGUE;
                 getexp @XP_MS_TONGUE,0;
-                set @Q_status, @Q_status & (1<<@BIT_MS_TONGUE);
+                set @Q_status, @Q_status | (1<<@BIT_MS_TONGUE);
                 callsub S_Update_Var;
 close;
 L_egg_Item:
@@ -222,7 +223,7 @@ L_egg_Item:
                 delitem "MountainSnakeEgg", 1;
                 set zeny, zeny + @MONEY_MS_EGG;
                 getexp @XP_MS_EGG,0;
-                set @Q_status, @Q_status & (1<<@BIT_MS_EGG);
+                set @Q_status, @Q_status | (1<<@BIT_MS_EGG);
                 callsub S_Update_Var;
 close;
 L_skin_Item:
@@ -231,7 +232,7 @@ L_skin_Item:
                 delitem "SnakeSkin", 1;
                 set zeny, zeny + @MONEY_SNAKESKIN;
                 getexp @XP_SNAKESKIN,0;
-                set @Q_status, @Q_status & (1<<@BIT_SNAKESKIN);
+                set @Q_status, @Q_status | (1<<@BIT_SNAKESKIN);
                 callsub S_Update_Var;
 close;
 L_BugLegItem:
@@ -240,7 +241,7 @@ L_BugLegItem:
                 delitem "BugLeg", 1;
                 set zeny, zeny + @MONEY_BUGLEG;
                 getexp @XP_BUGLEG,0;
-                set @Q_status, @Q_status & (1<<@BIT_BUGLEG);
+                set @Q_status, @Q_status | (1<<@BIT_BUGLEG);
                 callsub S_Update_Var;
 close;
 
@@ -258,12 +259,6 @@ S_Update_Var:
         set QUEST_Nivalis_state,
             (QUEST_Nivalis_state & ~(@Q_MASK)
                 | (@Q_status << @Q_SHIFT));
-        set QUEST_Nivalis_state,
-            (QUEST_Nivalis_state & ~(@Q_MASK2)
-                | (@Q_status2 << @Q_SHIFT2));
-        set QUEST_Nivalis_state,
-            (QUEST_Nivalis_state & ~(@Q_MASK2_BITS)
-                | (@Q_status2_bits << @Q_SHIFT2_BITS));
         return;
 
 
@@ -289,7 +284,7 @@ L_2_init:
         mes @npcname$;
         mes "\"Thanks a lot for bringing me all this nice stuff!\"";
         next;
-        mes "\"That helps me a lot. You see over there is already another set I collected: There are some pieces of the Hurnscald town. That sign there has ben stolen from the inn.\"";
+        mes "\"That helps me a lot. You see over there is already another set I collected: There are some pieces of the Hurnscald town. That sign there has been stolen from the inn.\"";
 	next;
 	mes "\"But do not tell anyone, please! I really like collecting things. And that sign is one of the first things I organized.\"";
 	next;
@@ -377,7 +372,7 @@ L_2_name:
         mes "\"What is your name again?\"";
 
         menu        "I am sorry for the joke... Please forgive me", -,
-                        "They call me Mistakes; I am a professional killer as well. You heard about that business in the terranite cave?", -;
+                        "They call me Mistakes. I am a professional killer as well. You heard about that business in the terranite cave?", -;
         mes @npcname$;
         mes "\"Alright, I see. Ok maybe I really need to calm down. Please let me alone... I will try to calm down, ok?\"";
         close;

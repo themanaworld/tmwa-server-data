@@ -1,0 +1,89 @@
+// author: Lien
+// reviewed by Pjotr Orial and Jenalya
+//#####################################
+//== NPC [Player]                     #
+// anyone want to do a funny bet      #
+//    ------------------------        #
+// Rock-Paper-Scissors can be playing #
+// I hope that'll make fun            #
+//    ------------------------        #
+//#####################################
+
+020-1.gat,74,78,0	script	Gobmel	183,	{
+	//var
+    set @NPC_name$, "[Gobmel]";
+    set @NPC_point, 0;
+    set @PC_point, 0;
+    set @gamblerun, 0;
+    setarray @CHOOSE_PC$, "Scissors", "Paper", "Rock";
+    setarray @CHOSE_ID, 0, 1, 2;
+    //0 : scissors; 1: Paper; 2: Rock;
+	// 0 cut 1 and 1 cover 3 and break 0 ...
+	//var ends
+
+    mes @NPC_name$;
+    mes "\"Hello " + strcharinfo(0) + "! Do you want to do a little party of Rock-Paper-Scissors and bet some gold?\"";
+    menu
+        "Yes, I want.", L_RPS,
+        "Well, maybe later.", -;
+    close;
+
+L_RPS:
+
+    mes @NPC_name$;
+    mes "\"How much money do you want to bet?\"";
+    input @MONEY_BET;
+	if(zeny < @MONEY_BET) goto L_poor;
+    set zeny, zeny - @MONEY_BET;
+
+L_Start:
+    if(@gamblerun == 3) goto L_finish;
+	//what chose the NPC ?
+
+    set @CHOOSE_NPCID, rand(2);
+
+    mes @NPC_name$;
+    mes "[ " + @gamblerun + "/3 ]";
+    mes "\"1... 2... 3...\"";
+    mes"[chose what sign you do]";
+    menu
+        @CHOOSE_PC$[0], -,
+        @CHOOSE_PC$[1], -,
+        @CHOOSE_PC$[2], -;
+
+    set @CHOSEN, @menu -1;
+    mes @CHOOSE_PC$[@CHOOSE_NPCID];
+    mes strcharinfo(0)+" " + strcharinfo(0)+ ":" +@CHOOSE_PC$[@CHOSEN];
+    if(@CHOSEN == @CHOOSE_NPCID) goto L_Start;
+    if(@CHOSEN == 0 && @CHOOSE_NPCID == 2) goto L_Lost;
+    if(@CHOSEN == 1 && @CHOOSE_NPCID == 0) goto L_Lost;
+    if(@CHOSEN == 2 && @CHOOSE_NPCID == 1) goto L_Lost;
+L_Win:
+    set @PC_point, @PC_point + 1;
+    set @gamblerun, @gamblerun + 1;
+    mes "Oh no! I have lost.";
+    goto L_Start;
+
+L_poor:
+    mes @NPC_name$;
+    mes "\"Go away from me...\"";
+    close;
+
+L_Lost:
+    set @NPC_point, @NPC_point + 1;
+    set @gamblerun, @gamblerun + 1;
+    mes "I have won!";
+    goto L_Start;
+
+L_finish:
+    if(@PC_point > @NPC_point ) goto L_Won;
+    mes @NPC_name$;
+    mes "\"Nice ! I have won, give your gp!\"";
+    close;
+L_Won:
+    mes @NPC_name$;
+    mes "\"Here is my money\"";
+    set zeny, zeny + @MONEY_BET*2;
+    close;
+}
+

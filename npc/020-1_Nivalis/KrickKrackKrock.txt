@@ -1,23 +1,6 @@
-//###################################
-//playing game                      #
-// -Kric Krack Krock                #
-// -if you said the same as NPC     #
-// -he give you a redward depending #
-//-of you're betting                #
-//###################################
-// var of this game                 #
-//           =======================#
-// NPCNAME   | name of the NPC      #
-// ITEM_RAND | item you can get     #
-//ITEM_HEALTH| Potion you can get   #
-// kRICK     |array with the tree   #
-// BET       | the betting of PC    #
-//           =======================#
-//###################################
-
-
-
-009-1.gat,82,82,0	script	Criker	127, {
+// author: Lien
+// reviewed by Pjotr Orial and Jenalya
+020-1.gat,82,82,0	script	Criker	183, {
 
 L_Main:
 //Var
@@ -32,14 +15,14 @@ L_Main:
 //ends of var
 
 	mes @NPC_NAME$;
-	mes "\" hello " + strcharinfo(0) + ", you want play Krick-Krack-Krock\"";
-	menu	"let's start !", L_Start,
-			"What's this ?", L_info,
-			"Well not for the moment", -;
+	mes "\"Hello " + strcharinfo(0) + ", do you want to play Krick-Krack-Krock?\"";
+	menu	"Let's start!", L_Start,
+		"What's this?", L_info,
+		"Well, not for the moment.", -;
 	close;
 L_Start:
 	mes @NPC_NAME$;
-	mes "\"Well, how many you want to bet with me ?\"";
+	mes "\"Well, how many do you want to bet?\"";
 	input @BET;
 	if(@BET < 50 ) goto L_poor;
 	if(@BET > 2000) goto L_Too_rich;
@@ -49,33 +32,33 @@ L_Start:
 
 
 	set @NPC_KRICK, rand(2);
-	mes "(Choose Krick, Krack or Krock)";
+	mes "\"Choose Krick, Krack or Krock.\"";
 	menu
 		@KRICK$[0], -,
 		@KRICK$[1], -,
 		@KRICK$[2], -;
 
-//menu = min 1 & not 0 so I change it
+	//menu = min 1 & not 0 so I change it
 	set @menu, @menu - 1;
 
 	mes @NPC_NAME$;
 	mes "\" "+ @KRICK$[@NPC_KRICK] +" !\"";
 	if( @menu == @NPC_KRICK ) goto L_Work;
 	mes @NPC_NAME$;
-	mes "\"well, to bad We were not lucky !\"";
+	mes "\"Too bad! You were not lucky!\"";
 	close;
 L_Work:
 	mes @NPC_NAME$;
-	mes "\"wow that has Work ... what present you want ?\"";
+	mes "\"Wow amazing... What kind of present do you want?\"";
 	menu
-		"Money !", L_Money,
-		"Item !", L_Item,
-		"Health !", L_Health_item;
+		"Money!", L_Money,
+		"An item!", L_Item,
+		"Some healing potions would be cool!", L_Health_item;
 	close;
 
 L_Money:
 	mes @NPC_NAME$;
-	mes "\"Here is your money\"";
+	mes "\"Here is your money.\"";
 	set zeny, zeny + (@BET*2);
 	close;
 L_Item:
@@ -89,7 +72,7 @@ if( @BET > 1200) getitem @ITEM_RAND[4 + rand(1)], 1;
 if( @BET > 1500) getitem @ITEM_RAND[5 + rand(1)], 1;
 if( @BET == 2000) getitem @ITEM_RAND[6 + rand(1)], 1;
 	mes @NPC_NAME$;
-	mes "\"here it is !\"";
+	mes "\"Here it is !\"";
 	close;
 
 L_Health_item:
@@ -102,36 +85,25 @@ if( @BET > 1000) getitem @ITEM_HEALTH[3], 2 + rand(1);
 if( @BET > 1500) getitem @ITEM_HEALTH[3], 3 + rand(2);
 if( @BET == 2000) getitem @ITEM_HEALTH[3], 5 + rand(10);
 	mes @NPC_NAME$;
-	mes "\"here it is !\"";
+	mes "\"Here it is !\"";
 	close;
 
 
 L_poor:
 	mes @NPC_NAME$;
-	mes "\"Erm... if you want to play you HAVE to bet, and you can't bet "+ @BET +" gold piece you need to bet something more of 50gp .\"";
+	mes "\"Erm... if you want to play you HAVE to bet, and you can't bet "+ @BET +" gold pieces. You need at least 50gp.\"";
 	close;
 L_Too_rich:
 	mes @NPC_NAME$;
-	mes "\"Mh... you have bet too for me. How I'll get a present who is "+ @BET +" ?\"";
+	mes "\"Mh... I have to bet too. How I'll get a present which is "+ @BET +"? No, that's too much.\"";
 	close;
 L_No_Money:
 	mes @NPC_NAME$;
-	mes "\"well you don't have "+ @BET +" money\"";
+	mes "\"Oh? You don't have "+ @BET +" gold pieces.\"";
 	close;
 L_info:
 	mes @NPC_NAME$;
-	mes "\"Well, if you want to do Krick Krack Krock with me you need to bet some money if you say the same thing like me (Krack, Krick or Krock) you can win the double of your money you have bet or an item depend of what you bet too. \"";
+	mes "\"Well, if you want to play Krick Krack Krock with me, you need to bet some money. We will both say a word (Krack, Krick or Krock). If we say the same, you can win the double of your money or an item worth of what you bet. \"";
 	goto L_Main;
-
-
-//Do by :
-//=========================================
-//      __	_   _____   _      _     ==
-//	| |    |_| | ____| | \    | |    ==
-//	| |     _  | |___  |   \  | |    ==
-//	| |__  | | | |___  | |\ \_| |    ==
-//	|____| |_| |_____| |_| \____|    ==
-//                                       ==
-//=========================================
 }
 
