@@ -5,7 +5,8 @@
         if (hween10 > 4 && hween10 < 9) goto L_Collecting_Sweets;
         if (hween10 == 9) goto L_Hunger_Sated;
         if (hween10 == 10) goto L_Reward_Returning;
-        if (hween10 == 11) goto L_Gaks_Little_Shop;
+        if (hween10 == 11) goto L_Miscount_Bugfix;
+        if (hween10 == 12) goto L_Gaks_Little_Shop;
 
         if ($hween10 == 1) goto L_Event_Over_2;
 
@@ -494,8 +495,8 @@ L_Reward:
         mes "";
         mes "\"Not to say that I'm sure of your currencccy here... but it sssshould give you an idea, yessss?\"";
         next;
-        set hween10, 11;
-        set hween10_credits, hween10_collect_tondel + hween10_collect_jelskul + hween10_collect_canpum;
+        set hween10, 12;
+        set hween10_credits, hween10_collect_tondel + hween10_collect_jelskul + hween10_collect_canpump;
         set hween10_credits, hween10_credits * 2;
         set hween10_credits, hween10_credits + hween10_collect_mmallow;
         mes "[Gak]";
@@ -1219,6 +1220,37 @@ L_Full_Inventory:
         mes "";
         mes "\"Ssseems you don't have room for thisss.\"";
         close;
+
+L_Miscount_Bugfix:
+        if (hween10_collect_canpump != 0) goto L_Do_Miscount_Bugfix;
+        set hween10, 12;
+        goto L_Gaks_Little_Shop;
+
+L_Do_Miscount_Bugfix:
+
+        mes "[Gak]";
+        mes "";
+        mes "\"Er.\" While his expression is as stony as ever, he sounds quite embarrassed.";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Seems I forgot some thingsss earlier... you should actually have " + (hween10_collect_canpump << 1) + " more creditsss than I calculated before.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Sssorry.\"";
+        next;
+
+        menu
+            "\"Hmph. Well, you can correct that now, right?", -;
+
+        mes "[Gak]";
+        mes "";
+        mes "\"Of courssse. It is done. Sssorry about that\"";
+        set hween10_credits, hween10_credits + (hween10_collect_canpump << 1);
+        set hween10, 12;
+        next;
+        goto L_Gaks_Little_Shop;
 
 }
 
