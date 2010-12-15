@@ -1,6 +1,6 @@
 // author: Lien
 // reviewed by Pjotr Orial and Jenalya
-020-1.gat,82,82,0	script	Criker	183, {
+020-1.gat,82,82,0	script	Criker	192, {
 
 L_Main:
 //Var
@@ -17,7 +17,8 @@ L_Main:
 	mes @NPC_NAME$;
 	mes "\"Hello " + strcharinfo(0) + ", do you want to play Krick-Krack-Krock?\"";
 L_Menu:
-	menu	"Let's start!", L_Start,
+	menu	
+		"Let's start!", L_Start,
 		"What's this?", L_info,
 		"Well, not for the moment.", -;
 	close;
@@ -43,7 +44,7 @@ L_Start:
 	set @menu, @menu - 1;
 
 	mes @NPC_NAME$;
-	mes "\" "+ @KRICK$[@NPC_KRICK] +" !\"";
+	mes "\" "+ @KRICK$[@NPC_KRICK] +"!\"";
 	if( @menu == @NPC_KRICK ) goto L_Work;
 	mes @NPC_NAME$;
 	mes "\"Too bad! You were not lucky!\"";
@@ -64,6 +65,8 @@ L_Money:
 	close;
 L_Item:
 //item
+getinventorylist;
+	if (@inventorylist_count == 100) goto L_Full_Inv;
 
 if( @BET > 50) getitem @ITEM_RAND[rand(1)], 1;
 if( @BET > 200) getitem @ITEM_RAND[1 + rand(1)], 1;
@@ -78,7 +81,9 @@ if( @BET == 2000) getitem @ITEM_RAND[6 + rand(1)], 1;
 
 L_Health_item:
 // health item
-
+getinventorylist;
+	if (@inventorylist_count == 100) goto L_Full_Inv
+	
 if( @BET > 50) getitem @ITEM_HEALTH[rand(1)], 1;
 if( @BET > 200) getitem @ITEM_HEALTH[ 1 +rand(1)], 1 + rand(1);
 if( @BET > 500) getitem @ITEM_HEALTH[2 + rand(1)], 1 + rand(3);
@@ -89,6 +94,10 @@ if( @BET == 2000) getitem @ITEM_HEALTH[3], 5 + rand(10);
 	mes "\"Here it is !\"";
 	close;
 
+L_Full_Inv:
+	mes @NPC_NAME$;
+	mes "\"What are you doing? You have so many stuff with you, you can't carry what you won. Ha, well, then I will keep it!\"";
+	close;
 
 L_poor:
 	mes @NPC_NAME$;
