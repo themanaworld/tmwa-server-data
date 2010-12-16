@@ -11,39 +11,6 @@
 //#    if the players bring Golbanez stuff, santa will donate some other stuff to the players.
 //#    
 //#################################################################################
-019-1.gat,96,41,0	script	Golbenez-Debug	204,{
-
-	mes "What you want to do?";
-	menu
-		"Change $Golbenez_Santa_Free(Date of the Month)",-,
-		"Change Golbenez_Inn_Cost(Your Donations)",_cost,
-		"Clean all variables.",_clean,
-		"Nothing",_end;
-
-	mes "Old Value: " + $Golbenez_Santa_Free;
-	input $Golbenez_Santa_Free;
-	mes "New Value: " + $Golbenez_Santa_Free;
-	close;
-
-_cost:
-	mes "Old Value: " + Golbenez_Inn_Cost;
-	input Golbenez_Inn_Cost;
-	mes "New Value: " + Golbenez_Inn_Cost;
-	close;
-
-_clean:
-	mes "Golbenez_Inn_Cost Old Value: " + Golbenez_Inn_Cost;
-	set Golbenez_Inn_Cost, 0;
-	mes "Golbenez_Inn_Cost New Value: " + Golbenez_Inn_Cost;
-	mes "$Golbenez_Santa_Free Old Value: " + $Golbenez_Santa_Free;
-	set $Golbenez_Santa_Free, 0;
-	mes "$Golbenez_Santa_Free New Value: " + $Golbenez_Santa_Free;
-	close;
-	
-_end:
-	close;
-
-}
 
 019-1.gat,93,41,0	script	#Golbenez#_M	204,{
 	set $Golbenez_Santa_Free, gettime(5);
@@ -67,10 +34,11 @@ _end:
 	next;
 	mes "\"Uhm well, then you should get away!\"";
 	next;
-	mes "\"So far, you have brought stuff and money in a total value of " + Golbenez_Inn_Cost + " gold pieces.  The people of your world have brought me " + $Golbenez_Inn_Cost + " gold pieces.  What do you like to give?\"";
+	mes "\"What do you like to give?\"";
 
 	menu
 		"I'd like to spend some money.", Glb_money,
+		"I'd like to give some yellow presents.", -, 
 		"I'd like to give some blue presents.", -,
 		"I'd like to give some green presents.", -,
 		"I'd like to give some pink presents.", -,
@@ -79,8 +47,8 @@ _end:
 		"Nevermind.", Glb_nvm;
 
 	// in this array the items should be filled in
-	setarray @menuitem[2], 516, 538, 515;
-	setarray @menuvalue[2], 2000, 5000, 1000;
+	setarray @menuitem[2], 4021, 516, 538, 515;
+	setarray @menuvalue[2], 100000, 20000, 50000, 10000;
 
 	mes "\"How many presents do you want to give?\"";
 
@@ -103,16 +71,16 @@ Glb_money:
 Glb_checkGlAn:
 
 	// if the @Give amount is below 30% of the players money, just let him pay
-	if( @Give<10000 || ( 100 * @Give / zeny )<30 ) goto Golbenez_pay;
+	if( @Give<100000 || ( 100 * @Give / zeny )<30 ) goto Golbenez_pay;
 
 	set @glob_an$ , "Golbenez: " + strcharinfo(0) + " accounted to free santa";
 
 	// depending on the absolute amount setup another global announcement.
-	if( @Give >1000000 ) goto Golbenez_an_5;
-	if( @Give > 500000 ) goto Golbenez_an_4;
-	if( @Give > 100000 ) goto Golbenez_an_3;
-	if( @Give >  72000 ) goto Golbenez_an_2;
-	if( @Give >  35500 ) goto Golbenez_an_1;
+	if( @Give >10000000 ) goto Golbenez_an_5;
+	if( @Give > 5000000 ) goto Golbenez_an_4;
+	if( @Give > 1000000 ) goto Golbenez_an_3;
+	if( @Give >  720000 ) goto Golbenez_an_2;
+	if( @Give >  355000 ) goto Golbenez_an_1;
 
 	goto Golbenez_an;
 
@@ -163,9 +131,7 @@ Glb_nvm:
 
 Glb_whypresents:
 	mes "[Golbenez]";
-	mes "\"The presents contain some sort of spiritual attachment that aids in the creation of dimensional connections to this plane of existence. The green ones contain the stronger spiritual attachment, followed by the blue and then pink present boxes.\"";
-	next;
-	mes "\"Im willing to consider a conversion of each Present Box donated to an amount in Gold Pieces. So, a Green Present is equivalent to 5000 Gold Pieces, a Blue Present, 2000 Gold Pieces and a Pink Present, 1000 Gold Pieces.\"";
+	mes "\"The presents contain some sort of spiritual attachment that aids in the creation of dimensional connections to this plane of existence. The green ones contain the stronger spiritual attachment, followed by the blue and then pink present boxes. But the yellow ones, they have amazing spiritual attachment.\"";
 	close;
 
 Glb_otheritems:
