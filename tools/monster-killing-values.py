@@ -37,8 +37,8 @@ def make_mobs():
         if len(array)>6 and not line.startswith("#"):
             id=array[0]
             name=array[1]
-            #print name
-            #print array[29:44]
+            print name
+            print array[29:44]
             sellprize = 0
             #hardcoded -.- fix it !
             sellprize += getvalueof(int(array[29]))*int(array[30])
