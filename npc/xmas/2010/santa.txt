@@ -12,17 +12,16 @@
 //#    
 //#################################################################################
                         
+                        
 031-3.gat,122,51,0	script	Santa	105,{
 
         if (Sex) set @honorific$, "young hero";
         if (Sex) set @gender$, "boy";
         if (!Sex) set @honorific$, "young heroine";   
         if (!Sex) set @gender$, "girl";
-        if (Xmas2010 == 1) goto L_Returning;
-        if (Xmas2010 == 2) goto L_Elfhat_Prize;
+        if (Xmas2010 == 2) goto L_Returning;
         if (Xmas2010 == 3) goto L_Stocking_Prize;
         if (Xmas2010 == 4) goto L_Event_Done;
-        if (Golbenez_Inn_Cost < 50000) goto L_No_Prizes;
 
 L_start:
         mes "The old man's eyes open wide as he sees you.";
@@ -34,39 +33,23 @@ L_start:
                 "Im " + strcharinfo(0) + " and I am here to save you from Golbenez.",-;
         mes "\"I cant believe it... are you really " +strcharinfo(0)+ "? I remember all the comments that... 'Thing' was making about building his way to a 'Leisure Place' and how your donations would really help him.\"";
         next;
-        mes "\"What is his name again? Erh... Golbinos? Galvanis? Ho-hum... All I know is that it was keeping me and my raindeer hostage in this cold labyrinth. And you proved yourself a good " +@gender$+ " by helping me with all those donations!\"";
+        mes "\"What is his name again? Erh... Golbinos? Galvanis? Ho-hum... All I know is that it was keeping me as hostage in this cold labyrinth. And you proved yourself a good " +@gender$+ " by helping me with all those donations!\"";
         next;
         if (gettime(6) != 12 || gettime(5) >= 25) goto L_Skip_Dialogue;
-        mes "\"Well, we are really late! In a few hours we have to start our usual present giving routine... But not before I give you a special gift for all you did.\"";
+        mes "\"Well, I am really late! In a few hours I have to start my usual present giving routine... But not before I give you a special gift for all you did.\"";
         next;
 L_Skip_Dialogue:
-        mes "\"Let me see... From what I can remember, Galvenio said a " +@gender$+ " called " +strcharinfo(0)+ " donated a total of " +Golbenez_Inn_Cost+ " Golden Pieces!\"";
+        mes "\"Let me see... From what I can remember, Galvenio said that the only way someone could enter this cave is by giving him at least 5 Million Gold Pieces! It means you really did a good job!\"";
         next;
 
 L_Calculate_Prizes:
         getinventorylist;
         if (@inventorylist_count == 100) goto L_full;        
-        if (Golbenez_Inn_Cost >= 5000000) goto L_Elfhat_Prize;
-        if (Golbenez_Inn_Cost < 500000) goto L_Stocking_Prize;
-        setarray @prizes[1], 1206, 1216, 629, 630, 634, 1214, 633, 628, 627, 621;
-        setarray @prizesnames$[1], "Santa Beard Hat", "Mouboo Head", "Mush Hat", "Shroom Hat", "Face Mask", "Bunny Ears", "Christmas Elf Hat", "Funky Hat", "Top Hat", "Eyepatch";
-        mes "\"You are so generous! I believe I can give you one of the hats from this bag. I know you like these silly hats. Yes, Santa knows this kind of thing... Ho-Ho-Ho! Which one would you like to get?\"";
-
-L_Menu_Choices:
-        menu
-                @prizesnames$[1],-,
-                @prizesnames$[2],-,
-                @prizesnames$[3],-,
-                @prizesnames$[4],-,
-                @prizesnames$[5],-,
-                @prizesnames$[6],-,
-                @prizesnames$[7],-,
-                @prizesnames$[8],-,
-                @prizesnames$[9],-,
-                @prizesnames$[10],-;
-
-        getitem @prizes[@menu], 1;
-        set Xmas2010, 1;
+        setarray @prizes$[0], "Mouboo Head", "Mush Hat", "Shroom Hat", "Face Mask", "Bunny Ears", "Christmas Elf Hat", "Funky Hat", "Top Hat", "Eyepatch";
+        mes "\"You are so generous! I believe I can give you one of the hats from this bag. I know you like these silly hats. Yes, Santa knows this kind of thing... Ho-Ho-Ho! Put your hand here and pick one hat... No, you cant look, it MUST be a surprise...\"";
+	
+        getitem @prizes$[rand(8)], 1;
+        set Xmas2010, 2;
         set Golbenez_Inn_Cost, 0;
         next;
 
@@ -77,34 +60,20 @@ L_Returning:
         menu
                 "Yes Santa, you are the best!",L_Close,
                 "Ehh, it is not what I expected.",L_Bad,
-                "I loved it! Can I have one more, please, please?",-;
-
-        mes "[Santa Claus]";
-        mes "\"Hmm... Why not? It would be terrible to deny a request from such a generous person.\"";
-        next;
-        set Xmas2010, 3;
-        goto L_Stocking_Prize;
-
-L_Elfhat_Prize:
-        set Xmas2010, 2;
-        getinventorylist;
-        if (@inventorylist_count == 100) goto L_full;        
-        mes "[Santa Claus]";
-        mes "\"You worked really hard to help us... So, here, take this hat. It belongs to one of my assistants. No, no... No problem at all, I am sure he will be happy to know such a great person is going to use it.\"";
-        getitem 633, 1;
-        set Golbenez_Inn_Cost, 0;
-        set Xmas2010, 3;
-        next;
+                "I loved it!",-;
 
 L_Stocking_Prize:
+        set Xmas2010, 3;
         getinventorylist;
         if (@inventorylist_count == 100) goto L_full;        
         mes "[Santa Claus]";
-        mes "\"I would like to give you a personal item. It is not a hat, but something that will always make you remember how grateful I am.\"";
+        mes "\"Good to know you liked it! Now I would like to give you a personal item. It is not a hat, but something that will always make you remember how grateful I am.\"";
         next;
-        mes "\"Here, take this. I have been using it for the last three months... It means a lot to me.\"";
+	menu
+		"Wonderful! Santa, You are great! Is it another hat?",-;
+	next;
+        mes "\"No, not a hat. Here, take this. I have been using it for the last three months... It is my favorite and it means a lot to me.\"";
         getitem 1207, 1;
-        set Golbenez_Inn_Cost, 0;
         set Xmas2010, 4;
         close2;
         percentheal -20, 0;
@@ -131,8 +100,4 @@ L_Event_Done:
         mes "\"Hello again " +strcharinfo(0)+ "! I cant chat with you right now, because we are really late for Christmas, but, when it is over, you will always be welcome in my house for a hot chocolate.\"";        
         close;
 
-L_No_Prizes:
-        mes "[Santa Claus]";
-        mes "\"Hi " +strcharinfo(0)+ "... Looks like you did not work really hard to set me free...\"";        
-        close;
 }
