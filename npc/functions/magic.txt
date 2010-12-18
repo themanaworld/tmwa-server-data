@@ -23,12 +23,13 @@ function	script	MagicGainBasic	{
 function	script	MagicTalkOptionsSetup	{
         set @QQ_ELANORE, 1;
         set @QQ_MANASEED, 2;
-        set @QQ_MANAPOTION, 3;
-        set @QQ_WYARA, 4;
-        set @QQ_SAGATHA, 5;
-        set @QQ_AULDSBEL, 6;
-        set @QQ_IMP, 7;
-        set @QQ_OLDWIZ, 8;
+        set @QQ_MANAPOTION, 4;
+        set @QQ_WYARA, 8;
+        set @QQ_SAGATHA, 16;
+        set @QQ_AULDSBEL, 32;
+        set @QQ_IMP, 64;
+        set @QQ_OLDWIZ, 128;
+        set @QQ_ASTRALSOUL, 256;
         return;
 }
 
@@ -40,11 +41,11 @@ function	script	MagicTalkOptionsSetup	{
 
 
 function	script	MagicTalkMenu	{
-        setarray @choice$, "", "", "", "", "", "", "", "", "";
+        setarray @choice$, "", "", "", "", "", "", "", "", "", "";
         set @choices_nr, 0;
-        setarray @choice_idx, 0, 0, 0, 0, 0, 0, 0, 0, 0;
+        setarray @choice_idx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
-        if (@ignore == @QQ_ELANORE)
+        if (@ignore & @QQ_ELANORE)
 		goto L_Q_post_elanore;
         set @choice$[@choices_nr], "...Elanore the Healer?";
         set @choice_idx[@choices_nr], @QQ_ELANORE;
@@ -60,7 +61,7 @@ L_Q_post_elanore:
         set @choices_nr, @choices_nr + 1;
 L_Q_post_manaseed:
 
-        if (@ignore == @QQ_MANAPOTION)
+        if (@ignore & @QQ_MANAPOTION)
 		goto L_Q_post_manapotion;
         if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANAPOTION))
         	goto L_Q_post_manapotion;
@@ -69,7 +70,7 @@ L_Q_post_manaseed:
         set @choices_nr, @choices_nr + 1;
 L_Q_post_manapotion:
 
-        if (@ignore == @QQ_WYARA)
+        if (@ignore & @QQ_WYARA)
 		goto L_Q_post_wyara;
         if (!(MAGIC_FLAGS & MFLAG_KNOWS_WYARA))
         	goto L_Q_post_wyara;
@@ -78,7 +79,7 @@ L_Q_post_manapotion:
         set @choices_nr, @choices_nr + 1;
 L_Q_post_wyara:
 
-        if (@ignore == @QQ_SAGATHA)
+        if (@ignore & @QQ_SAGATHA)
 		goto L_Q_post_sagatha;
         if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
         	goto L_Q_post_sagatha;
@@ -87,7 +88,7 @@ L_Q_post_wyara:
         set @choices_nr, @choices_nr + 1;
 L_Q_post_sagatha:
 
-        if (@ignore == @QQ_AULDSBEL)
+        if (@ignore & @QQ_AULDSBEL)
 		goto L_Q_post_auldsbel;
         if (!(MAGIC_FLAGS & MFLAG_KNOWS_AULDSBEL))
         	goto L_Q_post_auldsbel;
@@ -96,7 +97,7 @@ L_Q_post_sagatha:
         set @choices_nr, @choices_nr + 1;
 L_Q_post_auldsbel:
 
-        if (@ignore == @QQ_OLDWIZ)
+        if (@ignore & @QQ_OLDWIZ)
 		goto L_Q_post_oldwiz;
         if (!(MAGIC_FLAGS & MFLAG_KNOWS_OLD_WIZARD))
         	goto L_Q_post_oldwiz;
@@ -105,7 +106,7 @@ L_Q_post_auldsbel:
         set @choices_nr, @choices_nr + 1;
 L_Q_post_oldwiz:
 
-        if (@ignore == @QQ_IMP)
+        if (@ignore & @QQ_IMP)
 		goto L_Q_post_imp;
         if (!(MAGIC_FLAGS & MFLAG_KNOWS_IMP))
         	goto L_Q_post_imp;
@@ -113,6 +114,15 @@ L_Q_post_oldwiz:
         set @choice_idx[@choices_nr], @QQ_IMP;
         set @choices_nr, @choices_nr + 1;
 L_Q_post_imp:
+
+		if (@ignore & @QQ_ASTRALSOUL)
+			goto L_Q_post_astralsoul;
+		if (!getskillv(SKILL_MAGIC) || !getskillv(SKILL_FOCUS))
+			goto L_Q_post_astralsoul;
+		set @choice$[@choices_nr], "...ways to improve my magic?";
+        set @choice_idx[@choices_nr], @QQ_IMP;
+        set @choices_nr, @choices_nr + 1;
+L_Q_post_astralsoul:
 
         set @choice$[@choices_nr], "...never mind.";
         set @choice_idx[@choices_nr], 0;
@@ -126,13 +136,14 @@ L_Q_post_imp:
              @choice$[5], -,
              @choice$[6], -,
              @choice$[7], -,
-             @choice$[8], -;
+             @choice$[8], -,
+             @choice$[9], -;
 
         set @menu, @menu - 1;
 
         if (@menu >= @choices_nr)
 		set @menu, 0;
-	
+
         set @c, @choice_idx[@menu];
         return @c;
 }
