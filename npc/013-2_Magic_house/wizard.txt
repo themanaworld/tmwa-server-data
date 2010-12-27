@@ -44,10 +44,19 @@ L_new_student:
         mes "\"Studying is always an excellent use of one's mind! I fear that I can't offer too much assistance to you, however. But if you are interested, I could perhaps teach you a simple spell?\"";
         next;
 
-        menu
-		"That would be very kind of you!", -,
+        // check if the player has the knowledge of any skill
+        if (!getskilllv(SKILL_POOL))
+            menu
+                "That would be very kind of you!", L_teachspell,
                 "No, but thank you!", nothx;
 
+        if (getskilllv(SKILL_POOL))
+            menu
+                "That would be very kind of you!", L_teachspell,
+                "Actually I am looking for someone teaching me some more magic skills.", L_astralsoul,
+                "No, but thank you!", nothx;
+
+L_teachspell:
         mes "[Old Wizard]";
         mes "\"This one may not seem too powerful, but it can be quite handy; it's the 'hide' spell. It will shield you from some forms of detection magic.\"";
         next;
@@ -71,6 +80,46 @@ L_new_student:
         mes "\"I'm not sure if you are experienced enough to cast it yet, though.  You may need to first learn astral magic.\"";
         close;
 
+L_astralsoul:
+        mes "[Old Wizard]";
+        mes "\"Oh yes, there are lots of ways to improve your magic. Skills -some people say mental focus for that- are another way to improve your magic. Of course learning more and more spells is also a need for good mages.\"";
+        next;
+        mes "\"I can teach you the ability to focus on magical stuff.\"";
+        next;
+        mes "\"To do so, I am in need of a pearl and about 100 acorns.\"";
+
+        menu "Here we go.", -,
+             "Ok be right back. I'll get them", nothx;
+
+        if (countitem("Pearl") < 1 || countitem("Acorn") < 100) goto L_NotEnough;
+        delitem "Pearl", 1;
+        delitem "Acorn", 100;
+
+        mes "[Old Wizard]";
+        mes "\"Okay, listen:\"";
+        next;
+        mes "\"Some parts of your brain is still unused. These parts will now get the ability to get focused to magic.\"";
+        next;
+        mes "\"To do so, think of a magic spell!\"";
+        next;
+        mes "The old wizard mumbles some invocations";
+        next;
+        set @SUP_lvl, 1;
+        set @SUP_id, SKILL_ASTRAL_SOUL;
+        set @SUP_name$, "Astral Soul";
+        set @SUP_xp, 2500;
+        callfunc "SkillUp";
+        mes "\"Now go and try to find someone, who can actually activate that focus.\"";
+        next;
+        mes "\"You have the powers to focus on magic, but you need to get magic focussed now.\"";
+        close;
+
+L_NotEnough:
+        mes "[Old Wizard]";
+        mes "\"Please learn to count.\"";
+        next;
+        mes "\"When you are done with that, come back again.\"";
+        close;
 ok:
         mes "[Old Wizard]";
         mes "\"Beware the flying notes though, some of them are really dangerous. I haven't been able to persuade them to get back into their book. And avoid the mirror, it's been acting strange lately.\"";
