@@ -20,7 +20,7 @@
         set @Q_STATUS_STUDENT4, 8;
         set @Q_STATUS_STUDENT5, 9;
         set @Q_STATUS_STUDENT6, 10;
-        
+
 
         set @wants_sulphur, (QUEST_MAGIC & (NIBBLE_6_MASK | NIBBLE_7_MASK)) // war quest
                      || (((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) >= 4); // Elanore's heal-Kadiya quest
@@ -508,10 +508,68 @@ L_question:
         if (@c == @QQ_SAGATHA)	goto L_Q_sagatha;
         if (@c == @QQ_IMP)	goto L_Q_imp;
         if (@c == @QQ_OLDWIZ)	goto L_Q_old_wizard;
+        if (@c == @QQ_ASTRALSOUL)goto L_Q_astralsoul;
 
         mes "[Auldsbel the Wizard]";
         mes "\"Let us talk about something else.\"";
         next;
+        goto L_main_menu;
+
+L_Q_astralsoul:
+        if (!getskillv(SKILL_ASTRAL_SOUL))
+            goto L_Q_astralsoul_L;
+        next;
+        mes "[Auldsbel the Wizard]";
+        mes "\"Oh that is a really useful focus. It will help you doing magic of all kinds.\"";
+        next;
+        mes "\"...uhm...\"";
+        next;
+        mes "\"Didn't I teach you the ability to focus on magic, did I?\"";
+        goto L_main_menu;
+
+L_Q_astralsoul_L:
+        mes "[Auldsbel the Wizard]";
+        mes "\"Oh that is a really useful focus. It will help you doing magic of all kinds.\"";
+        next;
+        mes "\"I can try to teach you this ability.\"";
+        next;
+        mes "\"But I will need some very expensive magical substances to focus your brain onto magic.\"";
+        next;
+        mes "\"It is about... erm 11300 GP. Do you have so much money?\"";
+        menu "Here you are", L_Q_astralsoul_L1,
+             "I will get it.", -;
+        goto L_main_menu;
+
+L_Q_astralsoul_L1:
+        if (zeny < 11300)
+            goto L_Q_astralsoul_nz;
+        set zeny, zeny - 11300;
+        mes "[Auldsbel the Wizard]";
+        mes "\"Okay, listen:\"";
+        next;
+        mes "\"Some parts of your brain is still unused. These parts will now get the ability to get focused to magic.\"";
+        next;
+        mes "\"To do so, think of a magic spell!\"";
+        next;
+        mes "Auldsbel mumbles some invocations";
+        next;
+        set @SUP_lvl, 1;
+        set @SUP_id, SKILL_ASTRAL_SOUL;
+        set @SUP_name$, "Astral Soul";
+        set @SUP_xp, 2500;
+        callfunc "SkillUp";
+        next;
+        mes "[Auldsbel the Wizard]";
+        mes "\"Now go and try to find someone, who can actually activate that focus.\"";
+        next;
+        mes "\"You have the powers to focus on magic, but you need to get magic focussed now.\"";
+        goto L_main_menu;
+
+L_Q_astralsoul_nz:
+        mes "[Auldsbel the Wizard]";
+        mes "\"When learning powerful stuff, you should try to make not so many jokes.\"";
+        next;
+        mes "\"Come back, when you have the money.\"";
         goto L_main_menu;
 
 L_Q_old_wizard:
@@ -955,7 +1013,7 @@ L_learn_spell:
         mes "\"Oh, actually, make sure to write that down.  You should keep track of all spells and spell fragments, really.  I always keep a notebook handy, in fact.\"";
         next;
         set @Q_main_status, @Q_STATUS_INITIATION;
-        callsub S_update_var;        
+        callsub S_update_var;
         goto L_main_menu;
 
 LL_repeat_spell:
@@ -1219,7 +1277,7 @@ LL_student_4:
         menu
         	"What was the invocation again?", LL_student_3_repeat,
         	"No, still working on it...", L_main_menu,
-                "Yes.", -;   
+                "Yes.", -;
 
         if (countitem("ConcentrationPotion") < 1)
         	goto LL_student_4_no_potion;
