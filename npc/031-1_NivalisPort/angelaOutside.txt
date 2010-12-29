@@ -1,0 +1,135 @@
+// author: Jenalya
+// reviewed by: 
+// state0: Angela is to upset to tell you anything, needs a concentration potion
+// state1: got the mission to save Cindy
+// state2 and state3: Cindy is saved Angela invites you to visit them for giving a reward
+// state greater than 3: Angela invites and asks you to bring present boxes 
+
+//TODO: picture
+031-1.gat,79,24,0	script	Angela	154, {
+
+	set @Q_Nivalis_state_MASK, NIBBLE_5_MASK;
+	set @Q_Nivalis_state_SHIFT, NIBBLE_5_SHIFT;
+
+	set @rescue_Cindy, ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
+
+//TODO: remove DEBUG
+	mes "This menu is for debugging and will be removed";
+	menu 
+		"normal", L_normal,
+		"reset quest", -;
+	set @rescue_Cindy, 0;
+	callsub S_Update_Mask;
+	
+L_normal:   
+//////////////////////////////////   
+    if (@rescue_Cindy > 3) goto L_Please_Visit_Again;  
+	if (@rescue_Cindy > 1) goto L_Please_Visit;
+	if (@rescue_Cindy == 1) goto L_Please_Help;
+
+	mes "[Angela]";
+	mes "\"Please, I need help! My little daugther!\"";
+	next;
+	mes "\"It's terrible, oh my dear child!\"";
+	next;
+
+	if (countitem("ConcentrationPotion") > 0) goto L_Menu_Potion;
+	
+	menu
+		"\"Please calm down and tell me what happened.\"", L_Whining,
+		"Leave", -;
+	close; 
+
+L_Whining:	
+	mes "[Angela]";
+//TODO: add more whining, enough to make it annoying to read it all
+	mes "\"My poor little daugther, please! Oh no, oh no...\"";
+	next;
+	mes "\"We need to do something! My poor little Cindy! My cute little girl!\"";
+	next;
+	mes "\"It's so terrible, how could that happen? Please, I need help, it's so terrible.\"";
+	next;
+	mes "\"That awful filthy monsters - terrible!\"";
+	next;
+	mes "\"Oh Cindy, my little Cindy - oh no...\"";
+	next;
+	mes "\"Please help, we need to do something!\"";
+	next;
+	mes "\"It's so terrible, my poor cute little Cindy...\"";
+	next;
+	mes "\"Oh, when I think, what might happen to her right now!\"";
+	next;
+	mes "\"She is crying and sobbing.\"";
+	next;
+	mes "\"It seems, she is too upset to tell you anything helpful. If she would just calm down and concentrate a bit...\"";
+	close;
+	
+L_Menu_Potion:	
+	menu
+		"\"Please calm down and tell me what happened.\"", L_Whining,
+		"Give her a concentration potion.", L_Calm_Down, 
+		"Leave", -;
+	close; 
+
+L_Calm_Down:
+	if (countitem("ConcentrationPotion") == 0) goto L_No_Potion;
+	delitem "ConcentrationPotion", 1;
+	mes "She drinks the concentration potions and calm down.";
+	mes "[Angela]";
+	mes "\"Thank you, this was helpful.\"";
+	next;
+	mes "\"My daughter Cindy and me were on our way to Santa, to bring him some presents. Many people here in Nivalis are helping Santa with his business.\"";
+	next;	
+	mes "\"When we passed the entrance of this cave, a pack of Yetis came out there. It's disturbing, usually, they are very shy.\"";
+	next;	
+	mes "\"We tried to run away, but there were to many of them. They took my poor little Cindy and all the presents with them.\"";
+	next;	
+	mes "\"Oh my poor little girl. I'm so worried - what might they do with her? Oh no!\"";
+	next;	
+	mes "\"You look like an adventurer! Please, can you go in that cave and rescue my little Cindy? I beg you for help!\"";	
+	set @rescue_Cindy, 1;
+	callsub S_Update_Mask;
+	close;
+	
+L_No_Potion:
+	mes "You don't have a concentration potion.";
+	close;
+
+L_Please_Help:
+	mes "[Angela]";
+	mes "\"Please rescue my daughter!\"";
+	close;
+	
+L_Please_Visit:	
+	mes "[Angela]";
+	mes "\"Thank you so much for rescueing my beloved Cindy. Please come to visit us in our house at the beach.\"";
+	next;
+	mes "\"My husband is an adventurer like you, and I want to give you something he got on his travels to show my gratitude.\"";
+	close;
+	
+L_Please_Visit_Again:
+	mes "[Angela]";
+	mes "\"Hello! You are welcome to visit us in our house at the beach everytime. Cindy loves to see you!\"";
+	next;
+	mes "\"If you have found any present boxes, the Yetis took away, please bring them to our house. Usually, the Yetis are very shy... their behavior is a bit odd.\"";
+	close;
+	
+S_Update_Mask:
+        set QUEST_Nivalis_state,
+        	(QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
+                | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
+        return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
