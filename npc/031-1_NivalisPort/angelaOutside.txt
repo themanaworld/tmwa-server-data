@@ -13,16 +13,6 @@
 
 	set @rescue_Cindy, ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
 
-//TODO: remove DEBUG
-	mes "This menu is for debugging and will be removed";
-	menu 
-		"normal", L_normal,
-		"reset quest", -;
-	set @rescue_Cindy, 0;
-	callsub S_Update_Mask;
-	
-L_normal:   
-//////////////////////////////////   
     if (@rescue_Cindy > 3) goto L_Please_Visit_Again;  
 	if (@rescue_Cindy > 1) goto L_Please_Visit;
 	if (@rescue_Cindy == 1) goto L_Please_Help;
@@ -74,7 +64,7 @@ L_Menu_Potion:
 L_Calm_Down:
 	if (countitem("ConcentrationPotion") == 0) goto L_No_Potion;
 	delitem "ConcentrationPotion", 1;
-	mes "She drinks the concentration potions and calm down.";
+	mes "She drinks the concentration potions and calms down.";
 	mes "[Angela]";
 	mes "\"Thank you, this was helpful.\"";
 	next;
@@ -121,11 +111,64 @@ S_Update_Mask:
         return;
 }
 
+031-1.gat,80,25,0	script	Debug	154, {
 
+//TODO: remove DEBUG
 
+	set @Q_Nivalis_state_MASK, NIBBLE_5_MASK;
+	set @Q_Nivalis_state_SHIFT, NIBBLE_5_SHIFT;
 
+	set @rescue_Cindy, ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
+	
+	mes "This menu is for debugging and will be removed";
+	menu 
+		"close", L_close,
+		"reset quest", -,
+		"magic", magic;
+	set @rescue_Cindy, 0;
+	callsub S_Update_Mask;
+	mes "quest variable is now " + @rescue_Cindy;
+	close;
+L_close:
+	close;
 
+magic:
+		// Set up SkillUp function general magic
+        set @SUP_id, SKILL_MAGIC;
+        set @SUP_name$, "Magic";
 
+		set @SUP_xp, 5000;
+        set @SUP_lvl, 2;
+        callfunc "SkillUp";
+        
+        // Set up SkillUp function war magic
+        set @SUP_id, SKILL_MAGIC_WAR;
+        set @SUP_name$, "War Magic";
+
+		set @SUP_xp, 5000;
+        set @SUP_lvl, 2;
+        callfunc "SkillUp";
+        
+        // Set up SkillUp function life magic
+        set @SUP_id, SKILL_MAGIC_LIFE;
+        set @SUP_name$, "Life Magic";
+
+		set @SUP_xp, 5000;
+        set @SUP_lvl, 2;
+        callfunc "SkillUp";
+
+	mes "Lightning invocation: " + getspellinvocation("lightning-strike");
+	mes "Flare-dart invocation: " + getspellinvocation("flare-dart");
+	mes "Lesser-heal invocation: " + getspellinvocation("lesser-heal");
+	mes "Lay-on-hands invocation: " + getspellinvocation("lay-on-hands");
+	close;
+	
+S_Update_Mask:
+        set QUEST_Nivalis_state,
+        	(QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
+                | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
+        return;
+}
 
 
 
