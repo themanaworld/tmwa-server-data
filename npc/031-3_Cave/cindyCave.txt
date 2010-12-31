@@ -59,6 +59,7 @@ L_Try_Cage:
 	// initialize fight
 	set $@FIGHT_YETI_STATUS, 1;
 	set $@FIGHT_YETI_WAVE, 1;
+	set $@YETI_COUNT, 0;
 	set $@FIGHT_YETI_PLAYER_COUNT, getareausers("031-3.gat", 80, 20, 160, 90);
 
 	startnpctimer;
@@ -71,10 +72,8 @@ L_Try_Cage:
 	callsub S_Update_Mask;
 	close;
 
-//TODO: why close and end?
 L_Exit:
 	close;
-	end;
 	
 L_Yeti:
 	mes "[Cindy]";
@@ -125,7 +124,7 @@ L_Full_Inv:
 	mes "\"Oh, it seems you carry so much stuff - I will keep it for you until you can take it.\"";
 	close;
 	
-// Fight logic
+// Fight logic attached to npc
 OnTimer5000:
 	setnpctimer 0;
 	if ($@FIGHT_YETI_STATUS != 0) goto L_CaveLogic;
@@ -147,11 +146,12 @@ L_NextWave:
 	set $@FIGHT_YETI_ROUND_TIMER, 0;
 
 	set $@FIGHT_YETI_WAVE, $@FIGHT_YETI_WAVE + 1;
-	if ($@FIGHT_YETI_WAVE >= 10) goto L_CleanUp;
+	if ($@FIGHT_YETI_WAVE > 10 && $@YETI_COUNT == 0) goto L_CleanUp;
+	if ($@FIGHT_YETI_WAVE > 10) goto L_Return_1;
 //TODO: adjust number of yetis spawned
-	set $@FIGHT_YETI_NUMBER, $@FIGHT_YETI_WAVE + $@FIGHT_YETI_WAVE * $@FIGHT_YETI_PLAYER_COUNT/30;
-
-	set $@YETI_SUMMON, 0;
+//TODO: use yeti count here
+	set $@FIGHT_YETI_NUMBER, $@FIGHT_YETI_WAVE + $@FIGHT_YETI_WAVE * $@FIGHT_YETI_PLAYER_COUNT/10;
+	set $@YETI_COUNT, $@YETI_COUNT + $@FIGHT_YETI_NUMBER;
 
 	areamonster "031-3.gat", 80, 20, 160, 90, "", 1072, $@FIGHT_YETI_NUMBER, "Cindy::onPetDeath";
 	goto L_Return_1;
@@ -163,6 +163,7 @@ onTick:
 	end;
 
 onPetDeath:
+	set $@YETI_COUNT, $@YETI_COUNT - 1;
 	end;
 
 onInit:
