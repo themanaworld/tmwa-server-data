@@ -47,7 +47,6 @@
     if (@Q_poison == 3) goto state3;
     if (@Q_poison == 2) goto state2;
     if (@Q_poison == 1) goto state1;
-    mes "TODO: remove: skill check: " + getskilllv(SKILL_POOL);
     if (getskilllv(SKILL_POOL)) goto state0;
 
 L_Usual:
@@ -237,10 +236,6 @@ L_Game:
     set @vnIndex,  (@vnNeed-@offset) /@divisor;
     set @stIndex,  (@stNeed-@offset) /@divisor;
 
-    //mes "TODO REMOVE: needs" + @hlNeed + " " + @vnNeed + " " + @stNeed;
-    //mes "TODO REMOVE: @count:" + @count + " @offset: " + @offset + " @desc_length" + @desc_length +" @divisor" +@divisor;
-    //mes "TODO REMOVE: Indices" + @hlIndex + " " + @vnIndex + " " + @stIndex;
-
     mes "[Nurse]";
     mes "\"I guess you need " + @desc$[@hlIndex] + " of the healing potion.\"";
     next;
@@ -251,16 +246,17 @@ L_Game:
 
     if(@hlNeed/@vnNeed > 1 ) mes "\"I see that the healing potions are needed at least " + @hlNeed/@vnNeed + " times as much as the venom.\"";
     if(@vnNeed/@hlNeed > 1 ) mes "\"I see that the venom extracts are needed at least " + @vnNeed/@hlNeed + " times as much as the healing potions.\"";
-    next;
+    if ( (@hlNeed/@vnNeed > 1 ) || (@vnNeed/@hlNeed > 1 )) next;
 
     if(@stNeed/@vnNeed > 1 ) mes "\"I see that the stabilizer is needed at least " + @stNeed/@vnNeed + " times as much as the venom extracts.\"";
     if(@vnNeed/@stNeed > 1 ) mes "\"I see that the venom extracts are needed at least " + @vnNeed/@stNeed + " times as much as the stabilizer.\"";
-    next;
+    if ((@vnNeed/@stNeed > 1 ) || (@stNeed/@vnNeed > 1 )) next;
 
     if(@stNeed/@hlNeed > 1 ) mes "\"I see that the stabilizer is needed at least " + @stNeed/@hlNeed + " times as much as the healing potions.\"";
     if(@hlNeed/@stNeed > 1 ) mes "\"I see that the healing potions are needed at least " + @hlNeed/@stNeed + " times as much as the stabilizer.\"";
-    next;
+    if ((@hlNeed/@stNeed > 1 ) || (@stNeed/@hlNeed > 1 )) next;
 
+L_choosePut:
     set @max, @count+@offset-1;
     set @min, @offset;
     mes "\"My scale goes up to " + @max + ". I suggest to put at least " + @min +" drops on the scale.\"";
@@ -292,7 +288,7 @@ L_Game:
     next;
     mes "The nurse take a scary looking syringe out of a drawer and swabs your arm with disinfection dabber.";
     next;
-    mes "Then she stings the syringe in your vein and pushs it down. After a few seconds, your heart starts pounding quicker and you began to sweat all over your body";
+    mes "Then she stings the syringe in your vein and pushs it down. After a few seconds, your heart starts pounding quicker and you began to sweat all over your body.";
     next;
     mes "[Nurse]";
     mes "\"Drink the antidote!\"";
@@ -398,9 +394,9 @@ allcorrect:
     next;
     getexp @ANTIDOTE, 0;
     setskill TMW_POISON_RESISTANCE, 1;
-    mes "TODO: set @Q_poison, 7";
-    mes "TODO: make close here:";
-    //close;
+    set @Q_poison, 7;
+        callsub S_Update_Var;
+    close;
 
 notallcorrect:
     mes "[Nurse]";
@@ -512,11 +508,14 @@ L_Load_Need:
     return;
 
 L_Game_tooless:
-   //TODO
-   mes "";
+   mes "[Nurse]";
+   mes "\"That is nothing! So you need to put in there at least a small amount.";
+   goto L_choosePut;
+
 L_Game_toomuch:
-   //TODO
-   mes "";
+   mes "[Nurse]";
+   mes "\"This would be way too much for my scale. I don't want to break it.\"";
+   goto L_choosePut;
 }
 
 
