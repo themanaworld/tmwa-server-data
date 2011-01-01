@@ -35,10 +35,11 @@
         set @C_monster_oil, 20;
         set @C_mopox_cure, 21;
         set @C_nohmask, 22;
-        set @C_bye, 23;
+        set @C_dementiapotion, 23;
+        set @C_bye, 24;
 
-        setarray @choice$, "One", "Five", "Ten", "Fifty", "", "", "", "";
-        setarray @choice_idx, 1, 5, 10, 50, 0, 0, 0, 0;
+        setarray @choice$, "One", "Five", "Ten", "Fifty", "", "", "", "", "";
+        setarray @choice_idx, 1, 5, 10, 50, 0, 0, 0, 0, 0;
         set @choices_nr, 4;
 
 
@@ -69,6 +70,15 @@ L_M_no_mopox_cure:
 
 L_M_no_inspector:
 
+        if (!(MAGIC_FLAGS & MFLAG_KNOWS_UNFOCUS_RECIPE))
+		goto L_M_no_dempo;
+
+        set @choice_idx[@choices_nr], @C_dementiapotion;
+        set @choice$[@choices_nr], "I would like to brew Dementia Potion";
+        set @choices_nr, @choices_nr + 1;
+
+L_M_no_dempo:
+
         set @choice_idx[@choices_nr], @C_bye;
         set @choice$[@choices_nr], "Never mind";
         set @choices_nr, @choices_nr + 1;
@@ -91,6 +101,8 @@ L_M_no_inspector:
 		goto L_mopox_cure_start;
         if (@choice == @C_nohmask)
 		goto L_NohMask;
+        if (@choice == @C_dementiapotion)
+		goto L_DemPotion;
         if (@choice == @C_bye)
 		goto L_close;
 
@@ -121,12 +133,12 @@ L_CraftLoop:
 	if (@throw >= 5) set @result, 2;
 	if (@throw >= 15) set @result, 3;
 	if (@throw >= 35) set @result, 4;
-	
+
 	if (@result == 1) set @result1, @result1 + 1;
 	if (@result == 2) set @result2, @result2 + 1;
 	if (@result == 3) set @result3, @result3 + 1;
 	if (@result == 4) set @result4, @result4 + 1;
-	
+
 	set @a, @a - 1;
 	if (@a > 0) goto L_CraftLoop;
 
@@ -259,7 +271,7 @@ L_monster_oil_start_brew:
 		"blue",
 		"purple",
 		"green",
-		"gray"; 
+		"gray";
 
 	set @intensity, 1;
 	setarray @intensities$,
@@ -691,6 +703,314 @@ L_mopox_cure_win:
 L_mopox_cure_win_quick:
 	close;
 
+L_DemPotion:
+        mes "[Caul]";
+        mes "\"Ok, you do know this potion is one of the most dangerous potions brewed? My cauldron is empty, you can try it yourself.\"";
+        next;
+        mes "Caul goes three steps away and watches your actions carefully.";
+        menu
+            "Please explain me what you know about that potion.", L_explain_dempo,
+            "Ok, I will start brewing.", L_brew_dempo_init,
+            "Nevermind", -;
+        close;
+L_explain_dempo:
+        mes "[Caul]";
+        mes "\"Hrrm. I have heard of that potion. I hope I can remember all the stuff needed.\"";
+        next;
+        mes "\"Basically this potion is a balancing between death and life. You see a balance between knowlegde and forgetting.\"";
+        next;
+        mes "\"So to get it balanced, we need ingredients for both sides.\"";
+        next;
+        mes "\"For the death and forgetting side we can use bones. Although bones do not work good. Best results we would get with a diseased heart of zombies. Of course we can use undead ears and skulls as well.\"";
+        next;
+        mes "\"For the life side we can use fresh mauve herbs. But life stones would be even better. Roots will do as well. Although these must be really fresh to show effect.\"";
+        next;
+        mes "\"Brewing such a powerful potion is dangerous. That is why you will need to do it yourself. I will try to assist you as best as I can.\"";
+        next;
+        mes "\"I don't know exactly, but there is a slight chance of exploding all time.\"";
+        next;
+        mes "\"The color of the mixture will give you a quite good impression what you need to do.\"";
+        mes "\"And to get that potion working, we need to stabilize it with a pearl at the end\"";
+        next;
+        mes "\"Ah yes the color will be in a range of really dark black to bright shining white. In between it is grey in different nuances.\"";
+        mes "\"When it is calm grey, the finalisation with a pearl will work best, so I have heard.\"";
+        next;
+        goto L_DemPotion;
+
+L_brew_dempo_init:
+        if ((countitem("BottleOfWater") == 0) || (countitem("Bone") == 0) || (countitem("Lifestone") == 0) || (countitem("Pearl") == 0))
+            goto L_dempo_noinit;
+        delitem "BottleOfWater", 1;
+        delitem "Bone", 1;
+        delitem "Lifestone", 1;
+
+        set @finish_dempo, 0;
+        // color can be either black or white at the beginning.
+        // with a slight randomness in there.
+        set @dempo_color, rand(10);
+        if (rand(2)==0)
+            set @dempo_color, @dempo_color + 90 ;
+        mes "To start with that potion you put in the cauldron a bone, a bottle of water and a lifestone.";
+        next;
+        goto L_brew_dempo;
+
+L_dempo_noinit:
+        mes "[Caul]";
+        mes "\"Hrrm. Usually you start that potion with a bone, a bottle of water and a lifestone.\"";
+        mes "\"I'd propose you do it exactly that way. You see maybe it would even work with a skull and a healing potion, but since we don't know, and I don't want to repair my cauldron again, please don't try other solutions.\"";
+        next;
+        mes "\"Please use only this way to start the recipe: a bone, a bottle of water and a lifestone. In this order!\"";
+        mes "\"Ah, and of course you will need at least one pearl with you. This pearl is needed to finalize the potion.\"";
+        close;
+
+L_brew_dempo:
+        callsub L_check_explosion;
+
+        callsub L_calc_dempo_color;
+        mes "After a little while of cooking you see its color turning into " + @dempo_color_S$+ ".";
+        next;
+
+        setarray @choice_idx, 0,0,0,0,0,0,0,0,0,0,0;
+        setarray @choice$, "","","","","","","","","","","";
+
+        set @C_root, 12;
+        set @C_mauve, 13;
+        set @C_lifestone, 14;
+        set @C_diseasedheart, 15;
+        set @C_bone, 16;
+        set @C_skull, 17;
+        set @C_undeadear, 18;
+        set @C_pearl, 19;
+        set @C_nevermind, 20;
+
+        // counter of avalable answers
+        set @choices_nr, 0;
+
+        if (countitem("Root") == 0) goto L_noroots;
+        set @choice_idx[@choices_nr], @C_root;
+        set @choice$[@choices_nr], "Add a root";
+        set @choices_nr, @choices_nr + 1;
+L_noroots:
+        if (countitem("MauveHerb") == 0) goto L_nomauve;
+        set @choice_idx[@choices_nr], @C_mauve;
+        set @choice$[@choices_nr], "Add a mauve herb";
+        set @choices_nr, @choices_nr + 1;
+L_nomauve:
+        if (countitem("Lifestone") == 0) goto L_nolifestone;
+        set @choice_idx[@choices_nr], @C_lifestone;
+        set @choice$[@choices_nr], "Add a lifestone";
+        set @choices_nr, @choices_nr + 1;
+L_nolifestone:
+        if (countitem("DiseasedHeart") == 0) goto L_noheart;
+        set @choice_idx[@choices_nr], @C_diseasedheart;
+        set @choice$[@choices_nr], "Add a diseased heart";
+        set @choices_nr, @choices_nr + 1;
+L_noheart:
+        if (countitem("Bone") == 0) goto L_nobone;
+        set @choice_idx[@choices_nr], @C_bone;
+        set @choice$[@choices_nr], "Add a bone";
+        set @choices_nr, @choices_nr + 1;
+L_nobone:
+        if (countitem("DiseasedHeart") == 0) goto L_noskull;
+        set @choice_idx[@choices_nr], @C_skull;
+        set @choice$[@choices_nr], "Add a skull";
+        set @choices_nr, @choices_nr + 1;
+L_noskull:
+        if (countitem("UndeadEar") == 0) goto L_noear;
+        set @choice_idx[@choices_nr], @C_undeadear;
+        set @choice$[@choices_nr], "Add an undead ear";
+        set @choices_nr, @choices_nr + 1;
+L_noear:
+        if (countitem("Pearl") == 0) goto L_nopearl;
+        set @choice_idx[@choices_nr], @C_pearl;
+        set @choice$[@choices_nr], "Finalize with a pearl.";
+        set @choices_nr, @choices_nr + 1;
+L_nopearl:
+        set @choice_idx[@choices_nr], @C_nevermind;
+        set @choice$[@choices_nr], "Nevermind and leave";
+
+        menu
+            @choice$[0],-,
+            @choice$[1],-,
+            @choice$[2],-,
+            @choice$[3],-,
+            @choice$[4],-,
+            @choice$[5],-,
+            @choice$[6],-,
+            @choice$[7],-,
+            @choice$[8],-,
+            @choice$[9],-,
+            @choice$[10],-;
+
+        set @menu, @menu - 1;
+        if (@choice_idx[@menu] == 0)
+            goto L_brew_dempo;
+        if ((countitem("Root") != 0) && (@choice_idx[@menu] == @C_root))
+            goto L_useroot;
+        if ((countitem("MauveHerb") != 0) && (@choice_idx[@menu] == @C_mauve))
+            goto L_usemauve;
+        if ((countitem("Lifestone") != 0) && (@choice_idx[@menu] == @C_lifestone))
+            goto L_uselifestone;
+        if ((countitem("DiseasedHeart") != 0) && (@choice_idx[@menu] == @C_diseasedheart))
+            goto L_usediseasedheart;
+        if ((countitem("Bone") != 0) && (@choice_idx[@menu] == @C_bone))
+            goto L_usebone;
+        if ((countitem("Skull") != 0) && (@choice_idx[@menu] == @C_skull))
+            goto L_useskull;
+        if ((countitem("UndeadEar") != 0) && (@choice_idx[@menu] == @C_undeadear))
+            goto L_useear;
+        if ((countitem("Pearl") != 0) && (@choice_idx[@menu] == @C_pearl))
+            goto L_usepearl;
+        if ((@choice_idx[@menu] == @C_nevermind))
+            goto L_ask_quit;
+
+        // fallthrough only when player remove the items while in menu, trying to cheat
+        // the potion will be lost then
+        mes "\"Do not try to betray me. Come back when you have a better morale.\"";
+        close;
+
+L_useroot:
+        delitem "Root", 1;
+        set @dempo_color, @dempo_color + 9 + rand(9);
+        goto L_brew_dempo;
+
+L_usemauve:
+        delitem "MauveHerb", 1;
+        set @dempo_color, @dempo_color + 1 + rand(2);
+        goto L_brew_dempo;
+
+L_uselifestone:
+        delitem "Lifestone", 1;
+        set @dempo_color, @dempo_color + 3 + rand(4);
+        goto L_brew_dempo;
+
+L_usediseasedheart:
+        delitem "DiseasedHeart", 1;
+        set @dempo_color, @dempo_color - 35 - rand(25);
+        goto L_brew_dempo;
+
+L_usebone:
+        delitem "Bone", 1;
+        set @dempo_color, @dempo_color - 3 - rand(3);
+        goto L_brew_dempo;
+
+L_useskull:
+        delitem "Skull", 1;
+        set @dempo_color, @dempo_color - 9 - rand(9);
+        goto L_brew_dempo;
+
+L_useear:
+        delitem "UndeadEar", 1;
+        set @dempo_color, @dempo_color - 15 - rand(13);
+        goto L_brew_dempo;
+
+L_usepearl:
+        delitem "Pearl", 1;
+        //ending it is a little dangerous as well,
+        // stay calm, when it smashes your fine tuned well done potion.
+        set @finish_dempo, 1;
+        callsub L_check_explosion;
+        // ok now you really did it. Here is your potion:
+        getitem "DementiaPotion",1;
+
+        mes "[Caul]";
+        mes "\"The potion is now ready. It seems as if it worked fine.\"";
+        next;
+        mes "\"Ok here is a flask of that potion. I'll care for the rest.\"";
+        mes "\"I mean it is a very dangerous fluid.\"";
+        next;
+        mes "\"See you later, alligator!\"";
+        close;
+
+L_ask_quit:
+        mes "[Caul]";
+        mes "\"The potion is not ready. You can't just leave now!\"";
+        menu
+            "Please throw away that stupid potion, I'm in a hurry!", -,
+            "Oh you are right, let me finish it.", L_brew_dempo;
+        close;
+
+L_check_explosion:
+        // set to range [-50 50];
+        set @prob, @dempo_color - 50;
+
+        set @prob, ((@prob * @prob) / 80) + 4;
+        if (@finish_dempo == 0)
+            goto L_check_exp_nof;
+
+        // square again, so you must be in the middle to get it work there;
+        // and multiply with 3 so there is definitly no chance to get it directly after starting
+        set @prob, (@prob * @prob) * 2;
+L_check_exp_nof:
+
+        //TODO remove next message:
+        mes "check explosion: + " +@prob +" / 1000";
+
+        // in about 95% of the cases anything is fine, so return.
+        if (rand(1000) > @prob) return;
+        // in some cases it is not:
+        // kabooom!
+        close2;
+        heal -(Hp/2), 0;
+        misceffect 5;
+        misceffect 16;
+        heal -Hp, 0;
+        end;
+
+L_calc_dempo_color:
+        // @dempo_color_S$ is set in here:
+
+        //really dark black						0-11
+        if (@dempo_color < 12)
+            set @dempo_color_S$, "really dark black";
+
+        //dark black							12-23
+        if ((@dempo_color > 11) && (@dempo_color < 24))
+            set @dempo_color_S$, "dark black";
+
+        //black								24-34
+        if ((@dempo_color > 23) && (@dempo_color < 35))
+            set @dempo_color_S$, "black";
+
+        //dark grey with little dark spots	35-41
+        if ((@dempo_color > 34) && (@dempo_color < 42))
+            set @dempo_color_S$, "dark grey with little dark spots";
+
+        //dark grey							42-47
+        if ((@dempo_color > 41) && (@dempo_color < 48))
+            set @dempo_color_S$, "dark grey";
+
+        //calm grey 							48-52
+        if ((@dempo_color > 47) && (@dempo_color < 53))
+            set @dempo_color_S$, "calm grey";
+
+        //light grey							53-58
+        if ((@dempo_color > 52) && (@dempo_color < 59))
+            set @dempo_color_S$, "light grey";
+
+        //light grey with little light spots	59-65
+        if ((@dempo_color > 58) && (@dempo_color < 66))
+            set @dempo_color_S$, "light grey with little light spots";
+
+        //white								66-76
+        if ((@dempo_color > 65) && (@dempo_color < 77))
+            set @dempo_color_S$, "white";
+
+        //shining white						77-88
+        if ((@dempo_color > 76) && (@dempo_color < 89))
+            set @dempo_color_S$, "shining white";
+
+        //bright shining white				77-100
+        if (@dempo_color > 88)
+            set @dempo_color_S$, "bright shining white";
+
+        return;
+
+L_NohMask:
+	mes "[Caul]";
+	mes "\"I'm sorry, but I didn't. I'm staying in town. Try asking one of the miners.\"";
+	close;
+
 L_close:
         close;
 
@@ -699,9 +1019,4 @@ S_Update_Var:
 		(QUEST_Forestbow_state & ~(@Q_MASK)
 		| (@Q_status << @Q_SHIFT));
 	return;
-
-L_NohMask:
-	mes "[Caul]";
-	mes "\"I'm sorry, but I didn't. I'm staying in town. Try asking one of the miners.\"";
-	close;
 }
