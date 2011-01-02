@@ -2,6 +2,8 @@
 
 001-1.gat,108,55,0	script	Luca	102,{
 
+	set @EXP_BRAWLING, 2000;
+
 	if (BaseLevel >= 35)
 		goto L_teach;
 
@@ -237,20 +239,71 @@ L_teachmore:
     next;
 
 L_teachmore2:
+    setarray @choices, 0,0,0,0,0;
+    setarray @choice$, "", "", "", "", "";
+    set @choice_nr, 0;
+
+    set @C_focus, 1;
+    set @C_unfocus, 2;
+    set @C_teachbrawling, 3;
+    set @C_teachnothing, 4;
+    set @C_explainagain, 5;
+    set @C_nvm, 6;
+
+    getactivatedpoolskilllist;
+    if (!((getskilllv(SKILL_POOL) - @skilllist_count) > 0)) goto L_teachmore2_nof;
+    getunactivatedpoolskilllist;
+    if (@skilllist_count == 0) goto L_teachmore2_nof;
+    set @choices[@choice_nr], @C_focus;
+    set @choice$[@choice_nr], "I would like to focus.";
+    set @choice_nr, @choice_nr + 1;
+L_teachmore2_nof:
+
+    getactivatedpoolskilllist;
+    if (@skilllist_count == 0) goto L_teachmore2_nounf;
+    set @choices[@choice_nr], @C_unfocus;
+    set @choice$[@choice_nr], "I would like to unfocus.";
+    set @choice_nr, @choice_nr + 1;
+L_teachmore2_nounf:
+
+    if (!(getskilllv(SKILL_BRAWLING)))
+        set @choices[@choice_nr], @C_teachbrawling;
+    if (getskilllv(SKILL_BRAWLING))
+        set @choices[@choice_nr], @C_teachnothing;
+    set @choice$[@choice_nr], "Can you teach me a skill?";
+    set @choice_nr, @choice_nr + 1;
+
+    set @choices[@choice_nr], @C_explainagain;
+    set @choice$[@choice_nr], "Can you explain skills again?";
+    set @choice_nr, @choice_nr + 1;
+
+    set @choices[@choice_nr], @C_nvm;
+    set @choice$[@choice_nr], "I'm done for now, thanks!";
+    set @choice_nr, @choice_nr + 1;
+
     menu
-    	"I would like to focus.", L_focus,
-    	"I would like to unfocus.", L_unfocus,
-        "Can you teach me a skill?", L_teach_brawling,
-        "Can you explain skills again?", L_teachmore_explain,
-        "I'm done for now, thanks!",-;
-	close;
+            @choice$[0],-,
+            @choice$[1],-,
+            @choice$[2],-,
+            @choice$[3],-,
+            @choice$[4],-;
+
+    set @menu, @menu - 1;
+    if (@choices[@menu] == 0) close;
+    if (@choices[@menu] == @C_focus)         goto L_focus;
+    if (@choices[@menu] == @C_unfocus)       goto L_unfocus;
+    if (@choices[@menu] == @C_teachbrawling) goto L_teach_brawling;
+    if (@choices[@menu] == @C_teachnothing)  goto L_teach_nothing;
+    if (@choices[@menu] == @C_explainagain)  goto L_teachmore_explain;
+    if (@choices[@menu] == @C_nvm)           close;
+    close;
 
 L_teachmore_explain:
 	callsub S_explain;
     goto L_teachmore2;
 
 L_focus:
-    getpoolskilllist;
+    getunactivatedpoolskilllist;
     set @skilllist_id[@skilllist_count], 0;
     set @skilllist_name$[@skilllist_count], "Nevermind";
     menu
@@ -277,7 +330,6 @@ L_unfocus:
     if (MAGIG_FLAGS & MFLAG_KNOWS_UNFOCUS_RECIPE)
         goto L_nopotion;
 
-    set MAGIG_FLAGS, MAGIG_FLAGS | MFLAG_HEARD_OF_UNFOCUS_RECIPE;
     mes "[Luca the Hunter]";
     mes "\"Unfocussing is one of the harder parts though, because it is sunk in. You see?\"";
     next;
@@ -308,6 +360,9 @@ L_unfocus_menu:
     next;
     mes "\"What focus would you like to unfocus?\"";
 
+    if (countitem("DementiaPotion") == 0) goto L_nopotion;
+    delitem "DementiaPotion", 1;
+
     getactivatedpoolskilllist;
 
     set @skilllist_id[@skilllist_count], 0;
@@ -330,7 +385,32 @@ L_unfocus_menu:
     close;
 
 L_teach_brawling:
-//TODO
+    mes "[Luca the Hunter]";
+    mes "\"Well, yes, I can teach you brawling. It's a nice thing, if you have nothing left but your hands to defend yourself.\"";
+    next;
+    mes "He is laughing.";
+    mes "\"And is handy, if some sapling starts getting naughty.\"";
+    next;
+    mes "He rises his hand in front of his face and clenches his fists.";
+    mes "\"Ok, let's go! Hold your hands like this.\"";
+    next;
+    mes ".......";
+    next;
+    mes "Some bruises later.";
+    mes "\"Great! I think, you got it.\"";
+    next;
+    set @SUP_id, SKILL_BRAWLING;
+    set @SUP_lvl, 1;
+    set @SUP_name$, "Brawling";
+    set @SUP_xp, @EXP_BRAWLING;
+    callfunc "SkillUp";
     close;
 
+L_teach_nothing:
+    mes "[Luca the Hunter]";
+    mes "\"I was able to teach you brawling. For other professions you should visit someone else.\"";
+    next;
+    mes "\"You see, I am an adventurer. Everybody has his tricks. But you really should visit someone, who is a teacher, not an adventurer now.\"";
+    next;
+    goto L_teachmore2;
 }
