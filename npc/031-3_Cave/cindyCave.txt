@@ -47,6 +47,7 @@ L_Please_Help:
 	close;
 
 L_Try_Cage:
+	if (baselevel < 65) goto L_To_Weak;
 	if (countitem("TreasureKey") < @KEYS_AMOUNT) goto L_Not_Enough_Keys;
 	delitem "TreasureKey", @KEYS_AMOUNT;
 	mes "As you try to open the door of the cage, there is a loudly squeaking noise.";
@@ -66,7 +67,6 @@ L_Try_Cage:
 	goto L_Exit;
 
 //TODO: remove	
-//TODO: start the battle and set state2 in case of success
 	mes "DEBUG: ADD YETIFIGHT HERE, QUEST VARIABLE INCREASED";
 	set @rescue_Cindy, 2;
 	callsub S_Update_Mask;
@@ -115,6 +115,10 @@ L_Please_Visit:
 	mes "[Cindy]";
 	mes "\"Thank you, thank you! You're a hero! Please come home with me to our house at the beach!\"";
 	close;
+	
+L_To_Weak:
+	mes "You try to open the cage, but it's stuck. It seems, you're too weak!";
+	close;
 
 L_Not_Enough_Keys:
 	mes "You don't have enough keys to open the cage.";
@@ -149,12 +153,11 @@ L_NextWave:
 	if ($@FIGHT_YETI_WAVE > 10 && $@YETI_COUNT == 0) goto L_CleanUp;
 	if ($@FIGHT_YETI_WAVE > 10) goto L_Return_1;
 //TODO: adjust number of yetis spawned
-//TODO: use yeti count here
 	set $@FIGHT_YETI_NUMBER, (1 + (1 * $@FIGHT_YETI_WAVE) + (2 * $@FIGHT_YETI_PLAYER_COUNT))/4;
 	set $@YETI_COUNT, $@YETI_COUNT + $@FIGHT_YETI_NUMBER;
 
 	areamonster "031-3.gat", 80, 20, 160, 90, "", 1072, $@FIGHT_YETI_NUMBER, "Cindy::onPetDeath";
-	mapannounce "031-3.gat", "WAVE: " + $@FIGHT_YETI_WAVE + " NUMBER OF YETIS SPAWNED: " + $@FIGHT_YETI_NUMBER + "TOTAL YETIS: " + $@YETI_COUNT, 0;
+//	mapannounce "031-3.gat", "WAVE: " + $@FIGHT_YETI_WAVE + " NUMBER OF YETIS SPAWNED: " + $@FIGHT_YETI_NUMBER + " TOTAL YETIS: " + $@YETI_COUNT, 0;
 	goto L_Return_1;
 
 // Called on each player once every 5 seconds
@@ -184,8 +187,8 @@ L_CleanUp:
 onReward:
 	if (isdead(0)) end;
 //TODO: determine, if and how many boss points should be added
-	set BOSS_POINTS, BOSS_POINTS + 100;
-	message strcharinfo(0), "You gain 100 Boss Points giving you a total of " + BOSS_POINTS;
+	set BOSS_POINTS, BOSS_POINTS + 10;
+	message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS;
 	if (@rescue_Cindy < 1) goto L_No_Progress;
 	set @rescue_Cindy, 2;
 	callsub S_Update_Mask;
