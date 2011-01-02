@@ -1,0 +1,141 @@
+// NPC place is provisory
+006-1.gat,74,95,0	script	Miriam	175,{
+
+	if (getskilllv(SKILL_SPEED)) goto L_fast;
+	if (getequipid(equip_torso) < 0) goto L_naked;
+	if (QUEST_MIRIAM_run != 0) goto L_checktime;
+	if (QUEST_MIRIAM_start != 0) goto L_wasting;
+
+L_teach:
+	mes "[Miriam]";
+	mes "\"Hey, what is your problem? Why were you running like that? Are you hurt? Why so slow? I have seen slimes way faster than this!\"";
+	next;
+	menu
+		"What? Slow down! One question per time...", -,
+		"It seems like you need a rest.", L_rest;
+
+	set @agi, readparam(bAgi);
+	set @torso$, getitemname(getequipid(equip_torso));
+	set @weight, MaxWeight/Weight;
+	if (@weight < 3) L_heavyweight;
+	if (@agi < 90) goto L_slow;
+	if (countitem("SteelShield") > 0 || countitem("WarlordHelmet") > 0 || countitem("CrusadeHelmet") > 0 || countitem("WarlordPlate") > 0 || countitem("KnightsHelmet") > 0 || countitem("InfantryHelmet") > 0 || countitem("ChainmailShirt") > 0) goto L_heavymetal;
+	goto L_offer;
+
+L_heavyweight:
+	mes "[Miriam]";
+	mes "\"Wow... Why do you carry so many things with you? You must be carrying more than one third of your own weight! I can't understand it... \"";
+	close;
+
+L_heavymetal:
+	mes "[Miriam]";
+	mes "\"Hmm... I see... Another lazy slow warrior wasting his strenght carrying kilos of metal clothes... You people are very popular these days... \"";
+	next;
+	mes "\"Why no one sees the great advantages of a beautiful, flexible, lightweight armor nowadays? \"";
+	close;
+
+L_slow:
+	mes "[Miriam]";
+	mes "Oh, wait, wait... " +@agi+ " Agility? Are you serious? What do you do with all your Character points? Put them all to 'Strenght'? Really... I dont even want to know... \"";
+	close;
+
+L_offer:
+	mes "[Miriam]";
+	mes "\"Hmm! Even though you move like a snail, you look great on these clothes! They look very confortable too... And it seems like you are not carrying too much weight.\"";
+	next;
+	if (!(getskilllv(SKILL_POOL))) goto L_noskill;
+	menu
+		"Yes, I really like this " +@torso$+ ".",-;
+	next;
+	mes "[Miriam]";
+	mes "\"I see. I like the way you distributed your Character Points... " +@agi+ " points to Agility! You really know how to prepare yourself to a good fight!\"";
+	next;
+	mes "\"Well... I do not do this very often, but you really have a potential to be a good fighter and moving the way you do will not help! \"";
+	next;
+	mes "\"So, if you pass a small test I can teach you a skill! It will be very useful for you, since it can increase your running speed.\"";
+	next;
+	menu
+		"I'm in! What kind of test is it?",-,
+		"I dont think I need more speed right now",L_giveup;
+	next;
+	mes "[Miriam]";
+	mes "\"Great! The test is simple. You need to run as fast as you can from the place where I am sitting to the mountains and talk to Pachua, the chief. When you get there and talk to Pachua, he will send a special smoke signal to me, so I can know how much time it took for you to go there.\"";
+	next;
+	mes "\"If you make it in a good time, I will teach you the special speeding skill, if not, you can always try again. So, are you ready?\"";
+	next;
+	menu
+		"Yes, let's do it!",-,
+		"No, I need to stretch my muscles first!",L_stretch;
+
+	close2;
+	message strcharinfo(0), "Miriam quickly grabs your arm and pull you to the place where she is sitting.";
+	// Warp the player to the place where the NPC is defined, so he can't cheat.
+	warp "006-1.gat",75,101;
+	npctalk "Run " +strcharinfo(0)+ ", run!";
+	set QUEST_MIRIAM_start, gettimetick(1);
+	end;
+
+L_naked:
+	mes "[Miriam]";
+	mes "\"Hmmm?! Please put on some clothes before talking to me.\"";
+	close;
+
+L_rest:
+	mes "[Miriam]";
+	mes "\"I don't need to rest. In fact, it seems like you need some serious workout sessions to improve your physical skills!\"";
+	close;
+
+L_noskill:
+	mes "[Miriam]";
+	mes "\"For a person like you, I could even teach a useful skill! Too bad you don't have the basic abillities to learn it...\"";
+	close;
+
+L_giveup:
+	mes "[Miriam]";
+	mes "\"Oh, that is bad... But if you change your mind, come back!\"";
+	close;
+
+L_stretch:
+	mes "[Miriam]";
+	mes "\"Ok. Good idea... Stretching exercises can increase your flexibility and even prevent injuries!\"";
+	close;
+
+L_wasting:
+	mes "[Miriam]";
+	mes "\"Don't waste your time talking to me! RUN and talk to Pachua!\"";
+	close;
+
+L_checktime:
+	if (QUEST_MIRIAM_run > 60) goto L_tryagain;
+	if (QUEST_MIRIAM_run <= 60) goto L_goodjob;
+
+L_tryagain:
+	mes "[Miriam]";
+	mes "\"You needed " + QUEST_MIRIAM_run + " seconds to reach Pachua. It is not enough.\"";
+	set QUEST_MIRIAM_run, 0;
+	close;
+
+L_goodjob:
+	mes "[Miriam]";
+	mes "\"Great job! You needed " + QUEST_MIRIAM_run + " seconds to reach Pachua. Very impressive for a person like you.\"";
+	next;
+	mes "\"Now I need you to relax. Do NOT move. This teaching process can be painful sometimes.\"";
+	next;
+	mes "Miriam stares into your eyes and starts to scream some strange words very close to your ears.";
+	next;
+	mes "You feel dizzy and as soon as you move your head and look to the ground, Miriam pushes you hard, sending you meters away from her.";
+	close2;
+//	warp player a few tiles back - Write it when the NPC place is defined
+	set QUEST_MIRIAM_run, 0;
+	message strcharinfo(0), "[You gain 2500 experience points]";
+	message strcharinfo(0), "[You learned Speed Skill]";
+	setskill SKILL_SPEED, 1;
+	getexp 2500, 0;
+	close;
+
+L_fast:
+	mes "[Miriam]";
+	mes "\"I hope you make a good use of your new skill... Take care!\"";
+	close;
+
+}
