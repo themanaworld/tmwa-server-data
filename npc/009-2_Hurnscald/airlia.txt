@@ -99,9 +99,15 @@ L_Airlia_intro:
 	mes "\"My poor father, doomed to that awful cemetery.\"";
 	next;
 
-	if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NO_NEW_LETTER)
-		menu
-			"...", -;
+	// CASE REMOVED:
+	// This step is pointless and just forces the player to make a selection that doesn't effect anything.
+	// ALSO it misses the case where QUEST_Graveyard_Caretaker == 3, in this case it proceeds to the message without wasting player clicks
+	// Removing this check will make execution the same for QUEST_Graveyard_Caretaker == 3 and QUEST_Graveyard_Caretaker == 4
+	// If for some reason this is desireable, uncomment it and make sure to catch the extra case mentioned
+	//
+	//if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NO_NEW_LETTER)
+	//	menu
+	//		"...", -;
 
 	if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
 		menu
@@ -166,17 +172,40 @@ L_Airlia_intro_proof:
 L_Fetch:
 	mes "[Airlia]";
 	mes "\"Thank you for helping my father.\"";
-	next;
-
-	if (QUEST_Airlia < @Q_STATUS_INITIAL_FETCH_REWARDED)
+	next;	
+	
+	// Make sure to check if the player has a letter to deliver.
+	// If the check is not made then there is a bug, where the player
+	// has a letter but has not completed the initial fetch
+	// and is prevented from turing in the letter until the fetch is completed.
+	// 
+	if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
 		menu
 			"You are welcome.", -,
 			"I have collected the " + @FETCH_AMOUNT_INITIAL + " [" + getitemname(@FETCH_LABEL_INITIAL$) + "]s.", L_Fetch_initial_reward;
 
-	if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED)
+	if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
 		menu
 			"You are welcome.", -,
-			"I have collected the " + @FETCH_AMOUNT + " [" + getitemname(@FETCH_LABEL$) + "]s.", L_Fetch_later_rewards;
+			"I have another letter from your father.", L_Caretaker_later_rewards,
+			"I have collected the " + @FETCH_AMOUNT_INITIAL + " [" + getitemname(@FETCH_LABEL_INITIAL$) + "]s.", L_Fetch_initial_reward;
+
+	// The following checks are REDUNDANT
+	// The only way to get to this lable is after a check for QUEST_Airlia == @Q_STATUS_HELP_AIRLIA
+	// Incase you weren't paying attention: @Q_STATUS_HELP_AIRLIA = 1 < @Q_STATUS_INITIAL_FETCH_REWARDED
+	// Note: proper handling of the first case is done above.
+	//       The second case never gets executed anyway and not handled.
+	//
+	//if (QUEST_Airlia < @Q_STATUS_INITIAL_FETCH_REWARDED)
+	//	menu
+	//		"You are welcome.", -,
+	//		"I have collected the " + @FETCH_AMOUNT_INITIAL + " [" + getitemname(@FETCH_LABEL_INITIAL$) + "]s.", L_Fetch_initial_reward;
+	//
+	//if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED)
+	//	menu
+	//		"You are welcome.", -,
+	//		"I have collected the " + @FETCH_AMOUNT + " [" + getitemname(@FETCH_LABEL$) + "]s.", L_Fetch_later_rewards;
+	
 	close;
 
 L_Fetch_initial_reward:
@@ -226,10 +255,12 @@ L_Rewarded:
 
 	if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
 		menu
+			"You are welcome.", -,
 			"I have collected the " + @FETCH_AMOUNT + " [" + getitemname(@FETCH_LABEL$) + "]s.", L_Fetch_later_rewards;
 
 	if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
 		menu
+			"You are welcome.", -,
 			"I have another letter from your father.", L_Caretaker_later_rewards,
 			"I have collected the " + @FETCH_AMOUNT + " [" + getitemname(@FETCH_LABEL$) + "]s.", L_Fetch_later_rewards;
 

@@ -1,117 +1,40 @@
 // Starts the reaper quest
-// NOTE: just a copy paste of kastor's script. It hasnt been tested and needs a major reworking.
-
 
 027-2.gat,104,39,0	script	Alacrius	313,{
-	if ($@FIGHT_ALACRIUS_STATUS != 0) goto L_Enjoy;
+    // if started, go to started
+    // if fail go to failed
+    // if complete go to complete
+    // if cooldown go to cooldown
 
+// start quest section
+    mes "hi want to fight the reaper?";
+    menu   
+    "Let's go",L_START,
+    "No thank you",-;
+    close;
 
-   mes "[ALACRIUS]";
-   mes "\"Hello, I'm Alacrius. \"";
-   next;
-   mes "[ALACRIUS]";
-   mes "\"Very long time ago, i figured a way to cheat the death and the limits of time and space. You may think it actually is evil, but I made it because of true love... \"";
-   next;
-   mes "[ALACRIUS]";
-   mes "\"The reaper kidnapped my beloved wife, and took her to the underworld, so I had to find a way to stop him, and as time went by, I became what you can see now... But if you dare to cheat death, time and space you'll have to pay a high price... \"";
-   next;
+L_START:
+    monster "027-4.gat",40,55,"Reaper Quest",1111,1,"Reaper::OnDead";
+	enablenpc "#gatecontrol";
+    enablenpc "#closedgate";
+    disablenpc "#opengate";
+// Open doors to reaper level
+    warp "027-3.gat",41,70;
+    initnpctimer;
+    close;
 
-   mes "[ALACRIUS]";
-   mes "\"Being away from the time and space doesn't allow me to try to save my beloved wife... I need your help, do you think you have what it takes to handle the most powerful monsters over the world of Mana? \"";
-   next;
+// 5 min mark for testing purposes, up it when finished.
+OnTimer300000:
+    mapwarp "027-3.gat", "027-2.gat",104,41;
+    mapwarp "027-4.gat", "027-2.gat",104,41;
+    killmonsterall "027-4.gat";
+    end;
+OnTimer301000:
+    npctalk "You have failed the mission";
+    end;
 
-   menu   
-      "Let's go",L_PLAY_OK,
-      "No thank you",-;
-   close;
-
-
-L_PLAY_OK:
-
-   if ($@FIGHT_ALACRIUS_STATUS != 0) goto L_AlreadyStarted;
-   set $@FIGHT_ALACRIUS_STATUS, 1;
-   set $@MO_REAPER, 0;
-   startnpctimer;
-   set @PRIZE, 1;
-
-   goto L_Exit;
-
-L_Enjoy:
-   if ($@MO_REAPER == 1) goto L_AllDead;
-   mes "[ALACRIUS]";
-   mes "\"...Please hurry up, the time is running...\"";
-   goto L_Exit;
-
-L_AlreadyStarted:
-   mes "[ALACRIUS]";
-   mes "\"The Reaper is alive.\"";
-   goto L_Exit;
-
-L_Exit:
-   close;
-   end;
-
-
-// Time to fight
-OnTimer10000:
-
-        monster "027-2.gat",0,0,"Hunter Quest1",1003,1,"Alacrius::OnDeadReaper";
-        monster "027-2.gat",0,0,"Hunter Quest2",1002,6,"Alacrius::OnDeadLost";
-   
-   end;
-
-OnDeadReaper:
-        set $@MO_REAPER, $@MO_REAPER + 1;
-   killmonster "027-2.gat","All";
-        end;
-
-OnDeadLost:
-   set $@MO_LOST, $@MO_LOST + 1;
-        end;
-
-
-OnTimer120000:
-
-        set $@MO_REAPER,0;
-   set $@FIGHT_ALACRIUS_STATUS, 0;
-   killmonster "027-2.gat","All";
-   stopnpctimer;
-   setnpctimer 0;
-   set @PRIZE, 0;
-   npctalk "Oh my beloved wife, you could not have been rescued! I will have to purge my mistakes again...";
-   npctalk "Please, help my beloved wife!!";
-
-   end;
-
-OnDead:
-   end;
-
-
-L_AllDead:
-   if(@PRIZE == 0) goto L_NOHERO;
-
-   getinventorylist;
-   if (@inventorylist_count == 100) goto L_TooMany;
-   getitem "CasinoCoins", 1;
-
-        mes "[ALACRIUS]";
-   mes "Thank you very much, you saved my love!! Here you are, a prize according to the dangers you've been exposed to.";
-   set @PRIZE , 0;
-        set $@MO_REAPER,0;
-   close;
-        end;
-
-L_TooMany:
-        mes "[ALACRIUS]";
-   mes "You have no room for the reward.";
-   close;
-
-L_NOHERO:
-        mes "[ALACRIUS]";
-   mes "Sorry, but you didn't save my love... Try it again when you're ready...";
-   close;
-        end;
-OnInit:
-   		initnpctimer;
-   stopnpctimer;
+// cooldown before the quest can be restarted
+OnTimer360000:
+    // set quest var
+    end;
 }
