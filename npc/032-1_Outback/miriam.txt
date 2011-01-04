@@ -1,4 +1,23 @@
-//
+//#############################################
+// author: alastrim, PjotrOrial
+//#############################################
+// This npc teaches you the speed skill.
+// used variables:
+// QUEST_MIRIAM:
+// 	0  either fully completed the quests in here, or not started.
+// 	1  you said the wrong words, she is insulted. (so you excuse and goto 2)
+// 	2  waiting for the ingredients
+// 	3  you brought the needed stuff. if you meet other criteria (baselevel, agi) you will be taught the skill 
+// 	4  you have met the criteria of 3, but declined to take the speed test. 
+// 	5  while being tested, take this state. there are not any conditional jumps for this state, it should be met by QUEST_MIRIAM_run or QUEST_MIRIAM_start
+// QUEST_MIRIAM_start 
+//	a time in ticks. This is only !=0 if you started running to pachua.
+// QUEST_MIRIAM_run
+//	when you reach pachua, he stores the difference of start and arrival in here. 
+//#############################################
+// after you gained the speed skill, all variables are reset to zero.
+//#############################################
+
 032-1.gat,55,20,0	script	Miriam	175,{
 
 	if (getskilllv(SKILL_SPEED)) goto L_fast;
@@ -255,8 +274,9 @@ L_goodjob:
 	next;
 	mes "You feel dizzy and as soon as you move your head and look to the ground, Miriam pushes you hard, sending you meters away from her.";
 	close2;
-//	warp player a few tiles back - Write it when the NPC place is defined
 	warp "032-1.gat",55,22;
+	// free all used player variables. This can be done, since there is a conditional on the speedskill at the beginning.
+	set QUEST_MIRIAM_start, 0;
 	set QUEST_MIRIAM_run, 0;
 	set QUEST_MIRIAM, 0;
 	message strcharinfo(0), "[You gain 2500 experience points]";
