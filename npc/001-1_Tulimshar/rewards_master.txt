@@ -5,16 +5,16 @@
 	if (tvis == 0) set tvis, 1;
 	if (Mobpt < tvis) goto L_NotEnough;
 
-	setarray @Items$, "AppleCake", "Arrow", "Beer", "Boots", "BugLeg", "CactusDrink", "CactusPotion", "Cake", "Candy", "CasinoCoins", "CherryCake", "ChickenLeg", "ChocolateBar", "ChocolateCake", "CottonBoots", "CottonCloth", "CottonShirt", "CottonShorts", "FancyHat", "GreenApple", "HardSpike", "IronOre", "Lifestone", "LightBlueDye", "MaggotSlime", "Milk", "Orange", "OrangeCake", "OrangeCupcake", "PinkPetal", "PileOfAsh", "PinkAntenna", "PoltergeistPowder", "RawLog", "RedApple", "RedDye", "ScorpionStinger", "SerfHat", "SmallHealingPotion", "SmallMushroom", "SnakeSkin", "SpectrePowder", "Steak", "TinyHealingPotion", "WhiteCake", "WhiteFur", "WispPowder", "YellowDye";
+	setarray @Items$, "AppleCake", "Arrow", "Beer", "Boots", "BugLeg", "CactusDrink", "CactusPotion", "Cake", "Candy", "CasinoCoins", "CherryCake", "ChickenLeg", "ChocolateBar", "ChocolateCake", "CottonBoots", "CottonCloth", "CottonShirt", "CottonShorts", "FancyHat", "GreenApple", "HardSpike", "IronOre", "Lifestone", "LightBlueDye", "MaggotSlime", "Milk", "Orange", "OrangeCake", "OrangeCupcake", "PinkPetal", "PileOfAsh", "PinkAntenna", "PoltergeistPowder", "RawLog", "RedApple", "RedDye", "ScorpionStinger", "SerfHat", "SmallHealingPotion", "SmallMushroom", "SnakeSkin", "SpectrePowder", "Steak", "TinyHealingPotion", "WhiteCake", "WhiteFur", "WispPowder", "YellowDye", "Coal";
 
 	mes "[Ishi the Rewards Master]";
 	mes "\"Welcome! I see you have " + Mobpt + " Monster Points. Would you like to exchange some of those for items?\"";
 	next;
-	
+
 	set @i, 0;
 	setarray @Menu$, "", "", "", "", "", "", "", "", "", "", "";
 	callsub SUB_prep_menu;
-	
+
 	menu
 		@Menu$[0], -,
 		@Menu$[1], -,
@@ -26,20 +26,24 @@
 		@Menu$[7], -,
 		@Menu$[8], -,
 		@Menu$[9], -,
-		@Menu$[10], -;
+		@Menu$[10], -,
+		@Menu$[11], -;
 
+	// this is for the last entry "No thanks":
 	if (@menu > @i) close;
-	
+	// this is for the "Give all" entry:
+	if (@menu == @i) goto L_Give_all;
+
 	set @req, @menu;
 	set @rec, 0;
-	
+
 L_Item_Loop:
 	if (@rec == @req || Mobpt < tvis) goto L_Item_Done;
-	
+
 	callsub SUB_give_item;
 	set @rec, @rec + 1;
 	goto L_Item_Loop;
-	
+
 L_Item_Done:
 	if (@rec < @req) mes "It looks like your Monster Points were over estimated.";
 	close;
@@ -54,6 +58,34 @@ L_NotEnough:
 	mes "\"You don't have enough Monster Points for a reward. You'll need to kill some more monsters first.\"";
 	close;
 
+
+
+L_Give_all:
+	// we need to count how many loop iterations are done there,
+	// since the server complains about more than 250 (70 according to Jaxad0127)
+	// gotos without interrupting next statement.
+	set @gotocounter, 50;
+
+L_Give_all_loop:
+	set @gotocounter, @gotocounter - 1;
+	if (@gotocounter < 1) goto L_Give_all_next;
+	set @itemgiveerror, 0;
+	callsub SUB_give_item;
+	if (@itemgiveerror != 0) goto L_Give_all_done;
+	goto L_Give_all_loop;
+
+L_Give_all_next:
+	next;
+	mes "[Ishi the Rewards Master]";
+	mes "\"You have brought lots of items now. You have still " + Mobpt + " monster points. Shall we continue?\"";
+	menu
+		"yes", L_Give_all,
+		"no", L_Give_all_done;
+	close;
+
+L_Give_all_done:
+	close;
+
 //////////////////////////////////////////////////
 // Subroutines
 //////////////////////////////////////////////////
@@ -61,29 +93,49 @@ L_NotEnough:
 SUB_prep_menu:
 	set @pts, Mobpt;
 	set @dif, tvis;
-	
+
 L_Menu_Loop:
-	if (@pts < @dif || @i == 10) goto L_Menu_Done;
-	
+	if (@pts < @dif || @i == 10) goto L_Menu_Check;
+
 	set @Menu$[@i], @i + 1;
-	
+
 	set @i, @i + 1;
 	set @pts, @pts - @dif;
 	set @dif, @dif + 1;
-	
+
 	goto L_Menu_Loop;
+
+L_Menu_Check:
+	// if we are able to give 10, we can enable the option to give all we can have
+	if (@i != 10) goto L_Menu_Done;
+		set @Menu$[@i], "Please give me as many as I deserve!";
+		set @i, @i + 1;
+
 L_Menu_Done:
 	set @Menu$[@i], "No thanks";
 	return;
 
 SUB_give_item:
+	set @itemgiveerror, 0;
+	getinventorylist;
+	if (@inventorylist_count == 100) goto SUB_give_noinv;
+	if (Mobpt < tvis) goto SUB_give_nomobpts;
 	set Mobpt, Mobpt - tvis;
 	set tvis, tvis + 1;
 	set @item$, @Items$[rand(getarraysize(@Items$))];
-	
+
 	getitem @item$, 1;
-	
+
 	mes "You received one " + getitemname(@item$) + "!";
-	
+	return;
+
+SUB_give_noinv:
+	mes "Your inventory is full!";
+	set @itemgiveerror, 1;
+	return;
+
+SUB_give_nomobpts:
+	mes "It looks like your Monster Points were over estimated.";
+	set @itemgiveerror, 1;
 	return;
 }

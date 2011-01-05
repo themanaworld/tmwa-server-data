@@ -1,0 +1,119 @@
+//############################################
+//#    NPC Well & Miler
+//# Authors: Lien, PjotrOrial
+//# Review:
+//#
+//# There is someone in the well. This can be found out by throwing some stuff
+//# in there.
+//#
+//# When the npc in the well is detected they can be rescued by asking Miler
+//# for help.
+//#
+//# The experience reward given by Miler is 111 * Baselevel
+//#
+//# used variables: QUEST_Nivalis_state Nibble4
+//############################################
+
+020-1.gat,99,83,0	script	#Well	127, {
+
+	set @Q_MASK, NIBBLE_4_MASK;
+	set @Q_SHIFT, NIBBLE_4_SHIFT;
+    set @Q_status, ((QUEST_Nivalis_state) & @Q_MASK) >> @Q_SHIFT;
+
+if(@Q_status == 2) goto L_Finished;
+	set @item_ID, 0;
+	setarray @quote_item$, "Yuck! Who has thrown that on me?","Ouch! Who hurts me?","White powder!? What's going on up there?","Ahw! It's raining ","","","";
+
+	mes 	"...";
+	menu	"Throw something in the well.", L_trew,
+			"Leave it alone.", -;
+	close;
+
+L_trew:
+	mes "What do you want to throw?";
+	menu	"Maggot slime", -,
+		"A raw log", -,
+		"Pile of ash", -,
+		"Bottle of water", -,
+		"Leave it alone", L_Close;
+
+	set @menu, @menu - 1;
+
+	// little IF to do @quote$ & @Item_ID
+	set @quote$, @quote_item$[@menu];
+	if(@menu == 0) set @item_ID, 505;
+	if(@menu == 1) set @item_ID, 569;
+	if(@menu == 2) set @item_ID, 701;
+	if(@menu == 3) set @item_ID, 541;
+
+	if(countitem(@item_ID) < 1) goto L_NO_ITEM;
+	if(@menu == 3) getitem 540, 1;
+		delitem @item_ID, 1;
+
+	mes "[Mysterious voice inside the well]";
+	mes "\" "+ @quote$ +"\"";
+	next;
+	menu	
+		"Who are you?", -,
+		"How did you get there?", -,
+		"Do you need help?", -;
+
+	set @menu, @menu - 1;
+		if(@menu == 0) set @quote$, "I'll talk about who I am after leaving the well.";
+		if(@menu == 1) set @quote$, "Well, someone has pushed me in the well, I don't know who did that.";
+		if(@menu == 2) set @quote$, "";
+	mes "[Mysterious voice inside the well]";
+	mes "\" "+ @quote$ +". So if you can call help for me... please do so!\"";
+	set @Q_status, 1;
+	callsub S_Update_Var;
+	close;
+
+L_NO_ITEM:
+	mes "You don't have such an item... Come back when you have it.";
+	close;
+
+L_Finished:
+	mes "This is a well.";
+	close;
+
+L_Close:
+	close;
+
+S_Update_Var:
+    set QUEST_Nivalis_state,
+      	(QUEST_Nivalis_state & ~(@Q_MASK)
+        | (@Q_status << @Q_SHIFT));
+    return;
+}
+
+020-2.gat,100,28,0	script	Miler	100, {
+		set @Q_MASK, NIBBLE_4_MASK;
+		set @Q_SHIFT, NIBBLE_4_SHIFT;
+        set @Q_status, ((QUEST_Nivalis_state) & @Q_MASK) >> @Q_SHIFT;
+
+	mes "[Miler]";
+	mes "\"Hello!\"";
+	if(@Q_status == 2) close;
+	if(@Q_status == 1)
+		menu	
+			"Hello.", -,
+			"Hello, Can you help me?", L_HELP;
+	close;
+L_HELP:
+	mes "[Miler]";
+	mes "\"What's the problem?\"";
+	menu "Someone has fallen in the well.", -;
+	mes "[Miler]";
+	mes "\"Ho! I'll help him!\"";
+	getexp (BaseLevel * 111), 0;
+	set @Q_status, 2;
+	callsub S_Update_Var;
+	close;
+
+S_Update_Var:
+    set QUEST_Nivalis_state,
+    	(QUEST_Nivalis_state & ~(@Q_MASK)
+      | (@Q_status << @Q_SHIFT));
+    return;
+}
+

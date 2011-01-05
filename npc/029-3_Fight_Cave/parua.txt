@@ -75,8 +75,11 @@ L_CaveLogic:
 L_NextRound:
 	set $@FIGHT_CAVE_ROUND_TIMER, 0;
 
-	set $@FIGHT_CAVE_LEVEL, $@FIGHT_CAVE_LEVEL + $@FIGHT_CAVE_PLAYER_COUNT + ($@FIGHT_CAVE_LEVEL / 40);
-	if ($@FIGHT_CAVE_LEVEL >= 3000) goto L_CleanUp;
+	set $@FIGHT_CAVE_TEMP_UP, ($@FIGHT_CAVE_LEVEL / 10);
+	if ($@FIGHT_CAVE_TEMP_UP > 100) set $@FIGHT_CAVE_TEMP_UP, 100;
+
+	set $@FIGHT_CAVE_LEVEL, $@FIGHT_CAVE_LEVEL + $@FIGHT_CAVE_PLAYER_COUNT + $@FIGHT_CAVE_TEMP_UP;
+	if ($@FIGHT_CAVE_LEVEL >= 2200) goto L_CleanUp;
 	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_LEVEL;
 
 	if ($@FIGHT_CAVE_LAST + 30  < $@FIGHT_CAVE_LEVEL) goto L_Announce;
@@ -90,12 +93,12 @@ L_Return_2:
 	set $@MOB_5_SUMMON, 0;
 	set $@MOB_6_SUMMON, 0;
 L_Summon:
-	if ($@FIGHT_CAVE_POINTS >= 243 && $@MOB_1_SUMMON < 3) goto L_MOB1;
-	if ($@FIGHT_CAVE_POINTS >= 81 && $@MOB_2_SUMMON < 10) goto L_MOB2;
-	if ($@FIGHT_CAVE_POINTS >= 27 && $@MOB_3_SUMMON < 10) goto L_MOB3;
-	if ($@FIGHT_CAVE_POINTS >= 9 && $@MOB_4_SUMMON < 10) goto L_MOB4;
-	if ($@FIGHT_CAVE_POINTS >= 3 && $@MOB_5_SUMMON < 20) goto L_MOB5;
-	if ($@FIGHT_CAVE_POINTS >= 1 && $@MOB_6_SUMMON < 25) goto L_MOB6;
+	if ($@FIGHT_CAVE_POINTS >= 243 && $@MOB_1_SUMMON < 2) goto L_MOB1;
+	if ($@FIGHT_CAVE_POINTS >= 81 && $@MOB_2_SUMMON < 6) goto L_MOB2;
+	if ($@FIGHT_CAVE_POINTS >= 27 && $@MOB_3_SUMMON < 5) goto L_MOB3;
+	if ($@FIGHT_CAVE_POINTS >= 9 && $@MOB_4_SUMMON < 7) goto L_MOB4;
+	if ($@FIGHT_CAVE_POINTS >= 3 && $@MOB_5_SUMMON < 10) goto L_MOB5;
+	if ($@FIGHT_CAVE_POINTS >= 1 && $@MOB_6_SUMMON < 12) goto L_MOB6;
 	goto L_Return_1;
 
 L_Announce:
@@ -154,6 +157,7 @@ onInit:
 L_CleanUp:
 	npctalk "Game Over";
 	mapannounce "029-1.gat", "Parua: The dungeon is now ready for its next victims.", 0;
+	areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::onReward";
 	set $@FIGHT_CAVE_STATUS, 0;
 	set $@FIGHT_CAVE_PLAYER_COUNT, 0;
 	set $@FIGHT_CAVE_LEVEL, 1;
@@ -161,6 +165,12 @@ L_CleanUp:
 	killmonster "029-3.gat", "Parua::onPetDeath";
 	stopnpctimer;
 	setnpctimer 0;
+	end;
+
+onReward:
+	if (isdead(0)) end;
+	set BOSS_POINTS, BOSS_POINTS + 100;
+	message strcharinfo(0), "You gain 100 Boss Points giving you a total of " + BOSS_POINTS;
 	end;
 
 }

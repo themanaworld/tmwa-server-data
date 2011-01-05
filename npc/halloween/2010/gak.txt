@@ -1,0 +1,1256 @@
+010-1.gat,29,48,0	script	Gak	188,	{
+
+        if ($hween10 == 2) goto L_Event_Over;
+
+        if (hween10 > 4 && hween10 < 9) goto L_Collecting_Sweets;
+        if (hween10 == 9) goto L_Hunger_Sated;
+        if (hween10 == 10) goto L_Reward_Returning;
+        if (hween10 == 11) goto L_Miscount_Bugfix;
+        if (hween10 == 12) goto L_Gaks_Little_Shop;
+
+        if ($hween10 == 1) goto L_Event_Over_2;
+
+        if (hween10 == 1) goto L_Knows_Gak;
+        if (hween10 == 2) goto L_Gak_Has_Tongue;
+        if (hween10 == 3) goto L_Bones_Check;
+        if (hween10 == 4) goto L_Request_Sweets;
+
+        mes "[Broken Skeleton]";
+        set hween10, 1;
+        mes "";
+        mes "\"Gak... gak, gak! Gak gak gak gak!\"";
+        close;
+
+L_Knows_Gak:
+        if (countitem("Tongue") > 0) goto L_Has_Tongue;
+        mes "[Gak]";
+        mes "";
+        mes "\"Gak gak! Gak gak, gak gak gak!\"";
+        close;
+
+L_Has_Tongue:
+        mes "[Gak]";
+        mes "";
+        mes "The skeleton notices a slimy, dead tongue you have with you, and eyes it eagerly.";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "At least, you assume he is eager. \"Gak gak gak! Gak gak gak gak GAK GAK!\"";
+        next;
+        menu
+                "Give the tongue to him", L_Give_Tongue,
+                "Taunt him by showing him the tongue, but not giving it", L_Give_Tongue_Die,
+                "Walk away", -;
+        close;
+
+L_Give_Tongue:
+        if (countitem("Tongue") < 1) goto L_Tongue_Gone_Die;
+        delitem "Tongue", 1;
+        set hween10, 2;
+        mes "[Gak]";
+        mes "";
+        mes "The skeleton grabs the tongue from you and shoves it into his mouth. After stretching his jaw for some moments, he grins at you unpleasantly.";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Ssso! What bringsss you here, mortal?\"";
+        next;
+        menu
+                "I just chanced upon you here, and figured you could use a tongue.", L_Thanks,
+                "The Hallowe'en event is FINALLY here, of course I'm going to play it.", L_Whut,
+                "Nothing.", -;
+        close;
+
+L_Tongue_Gone_Die:
+        mes "[Gak]";
+        mes "";
+        mes "He reaches out for the tongue, but then realises you don't have it. With an angry a look on his face as a skeleton can have, he slashes at you with his remaining arm.";
+        goto L_Die;
+
+L_Give_Tongue_Die:
+        mes "[Gak]";
+        mes "";
+        mes "Angrily, the skeleton reaches out and claws you with his remaining arm.";
+        if (countitem("Tongue") < 1) goto L_Die;
+        next;
+        delitem "Tongue", 1;
+        mes "[Gak]";
+        mes "";
+        mes "As you fall, he takes the tongue from you anyway.";
+        set hween10, 2;
+        goto L_Die;
+
+L_Die:
+        close2;
+        itemheal -Hp -1, 0;
+        end;
+
+L_Thanks:
+        mes "[Gak]";
+        mes "";
+        mes "\"Well, that wasss mighty thoughtful of you, friend... I wonder if perhapsss you could do me another favour?\"";
+        next;
+        menu
+                "Sure! Anything you want.", L_Sure,
+                "I'll be right, thanks.", -;
+        close;
+
+L_Whut:
+        mes "[Gak]";
+        mes "";
+        mes "\"What?\"";
+        close;
+
+L_Gak_Has_Tongue:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hello again, little friend. Could you posssibly do me another favour?\"";
+        next;
+        menu
+                "I sure can, what is it?", L_Sure,
+                "Uh, no thanks.", -;
+        close;
+
+L_Sure:
+        mes "[Gak]";
+        mes "";
+        mes "\"It wasss nice if you to bring me thisss tongue, but asss you can sssee I still have a few things missing.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Maybe you could bring me a few bonesss so I could patch myssself up?\"";
+        next;
+        menu
+                "I'm on it!", L_Bones,
+                "Nah, that sounds a bit boring.", -;
+        close;
+
+L_Bones:
+        set hween10, 3;
+        mes "[Gak]";
+        mes "";
+        mes "\"Wonderful! I can't wait until I can properly walk around attacking thingsss again.\"";
+        close;
+
+L_Bones_Check:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hallo again. Have you brought me any bonesss?\"";
+        next;
+        setarray @menuitems$, "", "", "", "", "";
+        set @c, 0;
+
+        if (countitem("Bone") < 5) goto L_bones_four;
+        set @menuitems$[@c], "Take five bones.";
+        set @menuid[@c], 0;
+        set @c, @c + 1;
+
+L_bones_four:
+        if (countitem("Bone") < 4) goto L_bones_three;
+        set @menuitems$[@c], "Take four bones.";
+        set @menuid[@c], 1;
+        set @c, @c + 1;
+
+L_bones_three:
+        if (countitem("Bone") < 3) goto L_bones_two;
+        set @menuitems$[@c], "Take three bones.";
+        set @menuid[@c], 2;
+        set @c, @c + 1;
+
+L_bones_two:
+        if (countitem("Bone") < 2) goto L_bones_one;
+        set @menuitems$[@c], "Take two bones.";
+        set @menuid[@c], 3;
+        set @c, @c + 1;
+
+L_bones_one:
+        if (countitem("Bone") < 1) goto L_bones_menu;
+        set @menuitems$[@c], "Take one bone.";
+        set @menuid[@c], 4;
+        set @c, @c + 1;
+
+L_bones_menu:
+        set @menuitems$[@c], "I don't have any bones.";
+        set @menuid[@c], 5;
+        set @c, @c + 1;
+        menu
+                @menuitems$[0], -,
+                @menuitems$[1], -,
+                @menuitems$[2], -,
+                @menuitems$[3], -,
+                @menuitems$[4], -,
+                @menuitems$[5], -,
+                @menuitems$[6], -;
+        set @menu, @menu -1;
+        if (@menu >= @c) close;
+        if (@menuid[@menu] == 5) goto L_offer_no_items;
+        mes "[Gak]";
+        mes "";
+        mes "Ssso many? Jussst what I needed. Let me sssee if they are sssuitable...";
+        next;
+
+        if (@menuid[@menu] == 0) set @bonecount, 5;
+        if (@menuid[@menu] == 1) set @bonecount, 4;
+        if (@menuid[@menu] == 2) set @bonecount, 3;
+        if (@menuid[@menu] == 3) set @bonecount, 2;
+        if (@menuid[@menu] == 4) set @bonecount, 1;
+        if (countitem("Bone") < @bonecount) goto L_Not_Enough_Bones;
+
+        delitem "Bone", @bonecount;
+        set @bonecount, @bonecount + 1;
+        set @hween10_givebones, 0;
+
+// in a rush, raising and then lowering is the best thing I can think of to make the loop work properly.
+
+L_Bone_Loop:
+        set @bonecount, @bonecount - 1;
+        if @bonecount < 1 goto L_Bones_Feedback;
+        set @temp1, rand(@bonecount + 5);
+        if @temp1 > @bonecount goto L_Bone_Loop;
+        set @hween10_givebones, @hween10_givebones + 1;
+        goto L_Bone_Loop;
+
+L_Not_Enough_Bones:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hey... you don't have that many bonesss!\"";
+        close;
+
+L_offer_no_items:
+        mes "[Gak]";
+        mes "";
+        mes "\"Sssucch a pity...\"";
+        close;
+
+L_Bones_Feedback:
+        if (@hween10_givebones == 0) goto L_Bones_Feedback_None;
+        mes "[Gak]";
+        mes "";
+        mes "\"Hmm... I think I can ussse " + @hween10_givebones + " of thessse bonesss.\"";
+        next;
+        set hween10_bonecount, hween10_bonecount + @hween10_givebones;
+        if (hween10_bonecount > 7) goto L_Enough_Bones;
+        mes "[Gak]";
+        mes "";
+        mes "\"But I ssstill need more! Pleassse bring them to me.\"";
+        close;
+
+L_Bones_Feedback_None:
+        mes "[Gak]";
+        mes "";
+        mes "\"I can't ussse any of theesse boness. I need more!\"";
+        close;
+
+L_Enough_Bones:
+        set hween10, 4;
+        mes "[Gak]";
+        mes "";
+        mes "\"And that should be enough for my dark purposssesss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Now... I wonder...\" He flicks his tongue around his dry and ancient teeth. \"I wonder if you could get me sssomething to eat?\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"All thisss hard work gathering bonesss hasss made me...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"HUNGRY!\"";
+        next;
+        menu
+                "Uh, what would you like to eat?", L_Request_Sweets,
+                "This is a burial site, I'm sure there are plenty of worms around.", L_Worms,
+                "Me too, actually. I gotta eat. Bye!", -;
+        close;
+
+L_Worms:
+        mes "[Gak]";
+        mes "";
+        mes "\"True... but they are sssmall, and not asss sssweet asss what I'd like!\"";
+        next;
+
+L_Request_Sweets:
+        mes "[Gak]";
+        mes "";
+        mes "\"Asss I'm sssure you know, it wasss Hallowe'en recently. I'll bet you had great time collecting sssweetsss with your friendsss, hm?\"";
+        next;
+        menu
+                "The guy organising that was too lazy - it never happened.", L_Time_Management,
+                "Well, what's it to you?", L_Leftover_Sweets,
+                "You're creeping me out.", -;
+        close;
+
+L_Time_Management:
+        mes "[Gak]";
+        mes "";
+        mes "\"That'sss jussst too bad. People with poor time management shouldn't be put in charge of important thingsss like that.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But never mind. Even if you didn't get to go trick-or-treating, there will ssstill be plenty of dropped sssweets lying around.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"People are ssso carelesss! To my benefit, of courssse. Ssso what do you sssay? Can you bring me asss many sssweetsss as you can find?\"";
+        menu
+                "I guess so.", L_Confirm_Sweethunting,
+                "No, I'd rather eat 'em myself.", -;
+        close;
+
+L_Leftover_Sweets:
+        mes "[Gak]";
+        mes "";
+        mes "\"Each year at Hallowe'en, all you little girlsss and boysss run about begging for candy. And each year, ssso much of it is dropped, and wasssted!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But I don't mind eating sssweetsss just becaussse they're a couple of weeksss old! Bring me lotsss, and you shall have a reward.\"";
+        next;
+        menu
+                "Well, okay then.", L_Confirm_Sweethunting,
+                "Wait, free sweets!? Why did no one tell me?", -;
+        close;
+
+L_Confirm_Sweethunting:
+        set hween10, 5;
+        mes "[Gak]";
+        mes "";
+        mes "\"My ssstomach groansss with anticipa - uh, well, my bonesss creak with anticipation. Tell all your little friendsss to bring my any sssweetsss they find, too: I really am VERY hungry!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Remember, though, and thisss isss important: the more sssweetsss YOU PERSSSONALLY bring me, the better YOUR reward will be!\"";
+        close;
+
+L_Collecting_Sweets:
+        mes "[Gak]";
+        mes "";
+        mes "\"Ssso, do you have any sssweetsss for me?\"";
+        next;
+        setarray @menuitems$, "", "", "", "", "";
+        set @c, 0;
+
+        if (countitem("TonoriDelight") < 1) goto L_Sweets_Marshmallow;
+        set @menuitems$[@c], "Tonori Delight.";
+        set @menuid[@c], 0;
+        set @c, @c + 1;
+
+L_Sweets_Marshmallow:
+        if (countitem("Marshmallow") < 1) goto L_Sweets_JellySkull;
+        set @menuitems$[@c], "Marshmallow.";
+        set @menuid[@c], 1;
+        set @c, @c + 1;
+
+L_Sweets_JellySkull:
+        if (countitem("JellySkull") < 1) goto L_Sweets_CandyPumpkin;
+        set @menuitems$[@c], "Jelly Skull.";
+        set @menuid[@c], 2;
+        set @c, @c + 1;
+
+L_Sweets_CandyPumpkin:
+        if (countitem("CandyPumpkin") < 1) goto L_Sweets_Menu;
+        set @menuitems$[@c], "Candy Pumpkin.";
+        set @menuid[@c], 3;
+        set @c, @c + 1;
+
+L_Sweets_Menu:
+        set @menuitems$[@c], "I don't have any sweets.";
+        set @menuid[@c], 4;
+        set @c, @c + 1;
+        menu
+                @menuitems$[0], -,
+                @menuitems$[1], -,
+                @menuitems$[2], -,
+                @menuitems$[3], -,
+                @menuitems$[4], -,
+                @menuitems$[5], -;
+        set @menu, @menu -1;
+        if (@menu >= @c) close;
+
+        if (@menuid[@menu] == 0) set @giveitem$, "TonoriDelight";
+        if (@menuid[@menu] == 1) set @giveitem$, "Marshmallow";
+        if (@menuid[@menu] == 2) set @giveitem$, "JellySkull";
+        if (@menuid[@menu] == 3) set @giveitem$, "CandyPumpkin";
+        // We need something to handle what happens when we select that the character does not have any sweets
+        if (@menuid[@menu] == 4) goto L_offer_no_items;
+
+        mes "[Gak]";
+        mes "";
+        mes "\"How many of those do you have for me?\"";
+        next;
+        menu
+                "Take all of them.", -,
+                "One hundred of them.", -,
+                "Fifty of them.", -,
+                "Ten of them.", -,
+                "Five of them.", -,
+                "One of them.", -,
+                "This many...", -;
+        set @menu, @menu - 1;
+
+        if (@menu == 0) set @givecounter, countitem(@giveitem$);
+        if (@menu == 1) set @givecounter, 100;
+        if (@menu == 2) set @givecounter, 50;
+        if (@menu == 3) set @givecounter, 10;
+        if (@menu == 4) set @givecounter, 5;
+        if (@menu == 5) set @givecounter, 1;
+        if (@menu == 6) input @givecounter;
+        if (@menu > 6) close;
+        if (countitem(@giveitem$) < @givecounter) goto L_Not_Enough_Sweeties;
+        delitem @giveitem$, @givecounter;
+        if ($hween10 == 1) set hween10, hween10 + 1;
+        if (@giveitem$ == "TonoriDelight") set $hween10_tondel, $hween10_tondel + @givecounter;
+        if (@giveitem$ == "Marshmallow") set $hween10_mmallow, $hween10_mmallow + @givecounter;
+        if (@giveitem$ == "JellySkull") set $hween10_jelskul, $hween10_jelskul + @givecounter;
+        if (@giveitem$ == "CandyPumpkin") set $hween10_canpump, $hween10_canpump + @givecounter;
+        if (@giveitem$ == "TonoriDelight") set hween10_collect_tondel, hween10_collect_tondel + @givecounter;
+        if (@giveitem$ == "Marshmallow") set hween10_collect_mmallow, hween10_collect_mmallow + @givecounter;
+        if (@giveitem$ == "JellySkull") set hween10_collect_jelskul, hween10_collect_jelskul + @givecounter;
+        if (@giveitem$ == "CandyPumpkin") set hween10_collect_canpump, hween10_collect_canpump + @givecounter;
+
+        set hween10_collect, hween10_collect + @givecounter;
+
+        mes "[Gak]";
+        mes "";
+        mes "\"Thank you for your generousss donation to my caussse. Ssso far, you and your friendsss have brought me " + $hween10_tondel + " Tonori Delightsss, " + $hween10_mmallow + " Marshmallowsss, " + $hween10_jelskul + " Jelly Ssskullsss, and " + $hween10_canpump + " Candy Pumpkinsss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"You persssonally have brought me " + hween10_collect + " sssweetsss.\"";
+        next;
+        if (hween10 > 8) goto L_Hunger_Sated;
+        mes "[Gak]";
+        mes "";
+        if (hween10 == 5) mes "\"But I ssstill need more! I'm ssstill HUNGRY!\"";
+        if (hween10 == 6) mes "\"I ssstill need a few more, however... I'm ssstill HUNGRY!\"";
+        if (hween10 == 7) mes "\"I'd like more, though. I'm ssstill hungry.\"";
+        if (hween10 == 8) mes "\"Hmm... what a meal! Although, jussst a couple more sssweetsss wouldn't hurt. I'm ssstill a bit peckish.\"";
+        close;
+
+L_Not_Enough_Sweeties:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hey! Don't teassse me; you know very well that you don't have that many sssweetsss.\"";
+        close;
+
+L_Hunger_Sated:
+        set hween10, 10;
+        mes "[Gak]";
+        mes "";
+        mes "The last of the sweets falls out the bottom of the skeleton's skull, bouncing down between his ribs before tumbling out to join the countless thousands that lie in a vast mound of them beside him.";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Buuurp!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Now that, my friend, was a DELICIOUSSS meal, if I do sssay ssso myssself. It'sss not every day I get to feassst upon sssuch delectable treatsss.\"";
+        next;
+        menu
+                "Okay, whatever. Now how about my reward?", L_Reward,
+                "I'm pleased to hear it. Now... a reward, perhaps?", L_Polite_Request,
+                "It was my pleasure.", L_My_Pleasure;
+        close;
+
+L_Reward_Returning:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hello again, friend.\"";
+        next;
+        menu
+                "Can I have a reward now?", L_Reward,
+                "Hello.", -;
+        close;
+
+L_Polite_Request:
+        mes "[Gak]";
+        mes "\"Of courssse a reward! Jussst who do you think I am, not to giving rewardsss to people who were kind enough to give me a bit of a hand?\"";
+        next;
+        goto L_Reward;
+
+L_My_Pleasure:
+        mes "[Gak]";
+        mes "";
+        mes "\"Good, good!\"";
+        close;
+
+L_Reward:
+        mes "[Gak]";
+        mes "";
+        // took out here a lot
+        mes "\"Well, you DID bring me an awful lot of sssweetsss. I have with me a sssmall collection of preciousss itemsss, thingsss I've acquired in variousss waysss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I can let you have sssome thingsss out of thisss collection. You brought me " + hween10_collect + " sssweetsss, ssso I will give you itemsss worth twice that amount of gold piecesss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"For example, if you had given me 1,000 sssweetsss I would give you 2,000GP worth of itemsss. Except actually, I don't like marshmallowsss that much. Thossse are equivalent to jussst 1GP each.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Not to say that I'm sure of your currencccy here... but it sssshould give you an idea, yessss?\"";
+        next;
+        set hween10, 12;
+        set hween10_credits, hween10_collect_tondel + hween10_collect_jelskul + hween10_collect_canpump;
+        set hween10_credits, hween10_credits * 2;
+        set hween10_credits, hween10_credits + hween10_collect_mmallow;
+        mes "[Gak]";
+        mes "";
+        mes "\"Looksss like you have " + hween10_credits + " ... 'creditsss', shall we call them? Now, let'ss have a look at my waresss.\"";
+        next;
+        goto L_Shop_Inventory;
+
+L_Gaks_Little_Shop:
+        mes "[Gak]";
+        mes "";
+        mes "\"You have " + hween10_credits + " creditsss. Tell me what you'd like to buy - or asssk me about it. Sssome of thessse itemsss have very interesssting ssstories attached to them.\"";
+        next;
+
+L_Shop_Inventory:
+        menu
+                "Opera Mask (9,000 credits)", L_Buy_OperaMask,
+                "Tell me about the Opera Mask.", L_Info_OperaMask,
+                "Jester Mask (7,000 credits)", L_Buy_JesterMask,
+                "Tell me about the Jester Mask.", L_Info_JesterMask,
+                "Witch's Hat (4,500 credits)", L_Buy_WitchsHat,
+                "Tell me about the Witch's Hat.", L_Info_WitchsHat,
+                "Goblin Mask (2,500 credits)", L_Buy_GoblinMask,
+                "Tell me about the Goblin Mask.", L_Info_GoblinMask,
+                "Guy Fawkes Mask (800 credits)", L_Buy_GuyFawkesMask,
+                "Tell me about the Guy Fawkes Mask.", L_Info_GuyFawkesMask,
+                "Scissors (500 credits)", L_Buy_Scissors,
+                "Tell me about the Scissors.", L_Info_Scissors,
+                "Shock Sweet (200 credits)", L_Buy_ShockSweet,
+                "Tell me about Shock Sweets.", L_Info_ShockSweet,
+                "Bone Arrow (1 credit)", L_Buy_BoneArrow,
+                "Tell me about Bone Arrows.", L_Info_BoneArrow,
+                "Nothing today, thanks.", -;
+        close;
+
+L_Buy_OperaMask:
+        if (hween10_credits < 9000) goto L_Too_Few_Credits;
+        mes "[Gak]";
+        mes "";
+        mes "\"Ah, yesss! A friend of mine usssed to wear that masssk. He wasss very famousss in hisss time - had quite a fandom.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Are you sssure you want to buy the Opera Masssk?\"";
+        next;
+        menu
+                "Yes.", -,
+                "No.", L_Gaks_Little_Shop;
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_Full_Inventory;
+        if (hween10_credits < 9000) goto L_Too_Few_Credits;
+        set hween10_credits, hween10_credits - 9000;
+        set hween10_paid, hween10_paid + 9000;
+        getitem "OperaMask", 1;
+        mes "[Gak]";
+        mes "";
+        mes "\"Enjoy it!\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Buy_JesterMask:
+        if (hween10_credits < 7000) goto L_Too_Few_Credits;
+        mes "[Gak]";
+        mes "";
+        mes "\"I'm sssure you'll have fun with thisss masssk. 'Fun', get it?\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Are you sssure you want to buy the Jessster Masssk?\"";
+        next;
+        menu
+                "Yes.", -,
+                "No.", L_Gaks_Little_Shop;
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_Full_Inventory;
+        if (hween10_credits < 7000) goto L_Too_Few_Credits;
+        set hween10_credits, hween10_credits - 7000;
+        set hween10_paid, hween10_paid + 7000;
+        getitem "JesterMask", 1;
+        mes "[Gak]";
+        mes "";
+        mes "\"Enjoy it!\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Buy_WitchsHat:
+        if (hween10_credits < 4500) goto L_Too_Few_Credits;
+        mes "[Gak]";
+        mes "";
+        mes "\"I was wondering witch one you would take.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Are you sssure you want to buy the Witch'sss Hat?\"";
+        next;
+        menu
+                "Yes.", -,
+                "No.", L_Gaks_Little_Shop;
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_Full_Inventory;
+        if (hween10_credits < 4500) goto L_Too_Few_Credits;
+        set hween10_credits, hween10_credits - 4500;
+        set hween10_paid, hween10_paid + 4500;
+        getitem "WitchHat", 1;
+        mes "[Gak]";
+        mes "";
+        mes "\"Enjoy it!\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Buy_GoblinMask:
+        if (hween10_credits < 2500) goto L_Too_Few_Credits;
+        mes "[Gak]";
+        mes "";
+        mes "\"Hmm, I never much liked that one myssself.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Are you sssure you want to buy the Goblin Masssk?\"";
+        next;
+        menu
+                "Yes.", -,
+                "No.", L_Gaks_Little_Shop;
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_Full_Inventory;
+        if (hween10_credits < 2500) goto L_Too_Few_Credits;
+        set hween10_credits, hween10_credits - 2500;
+        set hween10_paid, hween10_paid + 2500;
+        getitem "GoblinMask", 1;
+        mes "[Gak]";
+        mes "";
+        mes "\"Enjoy it!\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Buy_GuyFawkesMask:
+        if (hween10_credits < 800) goto L_Too_Few_Credits;
+        mes "[Gak]";
+        mes "";
+        mes "\"Cheap, huh? Barely more than a penny for thisss guy.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Are you sssure you want to buy the Guy Fawkesss Masssk?\"";
+        next;
+        menu
+                "Yes.", -,
+                "No.", L_Gaks_Little_Shop;
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_Full_Inventory;
+        if (hween10_credits < 800) goto L_Too_Few_Credits;
+        set hween10_credits, hween10_credits - 800;
+        set hween10_paid, hween10_paid + 800;
+        getitem "GuyFawkesMask", 1;
+        mes "[Gak]";
+        mes "";
+        mes "\"Enjoy it!\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Buy_Scissors:
+        if (hween10_credits < 500) goto L_Too_Few_Credits;
+        mes "[Gak]";
+        mes "";
+        mes "\"My own pair of ssscissssorsss! But I haven't been needing them lately asss much asss I usssed to.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Are you sssure you want to buy the Scissors?\"";
+        next;
+        menu
+                "Yes.", -,
+                "No.", L_Gaks_Little_Shop;
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_Full_Inventory;
+        if (hween10_credits < 500) goto L_Too_Few_Credits;
+        set hween10_credits, hween10_credits - 500;
+        set hween10_paid, hween10_paid + 500;
+        getitem "Scissors", 1;
+        mes "[Gak]";
+        mes "";
+        mes "\"Enjoy it!\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Buy_ShockSweet:
+        if (hween10_credits < 200) goto L_Too_Few_Credits;
+        mes "[Gak]";
+        mes "";
+        mes "\"I'll be glad to be rid of sssome of thessse terrifying sssweetsss...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"How many would you like to buy?\"";
+        next;
+        menu
+                "1", -,
+                "2", -,
+                "3", -,
+                "4", -,
+                "5", -,
+                "None", -;
+
+        if (@menu < 0 || @menu > 6) close;
+        if (@menu == 6) goto L_Gaks_Little_Shop;
+        set @shocksweets, @menu;
+        set @cost, @shocksweets * 200;
+        if (hween10_credits < @cost) goto L_Too_Few_Credits;
+        getinventorylist;
+        if (@inventorylist_count == 100 && countitem("ShockSweet") < 1) goto L_Full_Inventory;
+        set hween10_credits, hween10_credits - @cost;
+        set hween10_paid, hween10_paid + @cost;
+        getitem "ShockSweet", @shocksweets;
+        mes "[Gak]";
+        mes "";
+        mes "\"I would sssay 'enjoy them', but I doubt you will.\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Buy_BoneArrow:
+        if (hween10_credits < 1) goto L_Too_Few_Credits;
+        mes "[Gak]";
+        mes "";
+        mes "\"Deadly, but nearly weightlessss. A good choice!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"How many would you like to buy?\"";
+        next;
+        menu
+                "1", -,
+                "5", -,
+                "10", -,
+                "50", -,
+                "100", -,
+                "500", -,
+                "1000", -,
+                "None", -;
+
+        if (@menu < 1 || @menu > 8) close;
+        if (@menu == 1) set @bonearrows, 1;
+        if (@menu == 2) set @bonearrows, 5;
+        if (@menu == 3) set @bonearrows, 10;
+        if (@menu == 4) set @bonearrows, 50;
+        if (@menu == 5) set @bonearrows, 100;
+        if (@menu == 6) set @bonearrows, 500;
+        if (@menu == 7) set @bonearrows, 1000;
+        if (@menu == 8) goto L_Gaks_Little_Shop;
+        if (hween10_credits < @bonearrows) goto L_Too_Few_Credits;
+        getinventorylist;
+        if (@inventorylist_count == 100 && countitem("BoneArrows") < 1) goto L_Full_Inventory;
+        set hween10_credits, hween10_credits - @bonearrows;
+        set hween10_paid, hween10_paid + @bonearrows;
+        getitem "BoneArrows", @bonearrows;
+        mes "[Gak]";
+        mes "";
+        mes "\"Usse them wisssely. They're hard to come by.\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Too_Few_Credits:
+        mes "[Gak]";
+        mes "";
+        mes "\"Are you trying to kid me? You haven't enough creditsss for that!\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Info_OperaMask:
+        mes "[Gak]";
+        mes "";
+        mes "\"Ah, yesss. My Opera Masssk. There'sss quite a ssstory sssurrounding thisss one...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"One day in Tonori, many yearsss ago, the Princessss Azura mysssteriousssly vanished. The King'sss men sssearched high and low, but found no trace of her.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"It wasss assssumed - correctly - that she mussst have been kidnapped. Ssso the King put a hefty reward on her safe return - a hundred thousssand gold piecesss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"However, the Princessss wasss not returned. One year after she had disssappeared, the King raisssed the reward by fifty thousssand gold - and each year after, too, for ssstill the Princessss wasss not returned.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Asss time went by, the King became more and more sssure that hisss daughter mussst be dead. He wasss, however, wrong...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"At that very moment, a pirate galleon wasss sssailing merrily along the Rivalry Coassst. Itsss crew sssang ssea-shantiesss and bounced around the rigging.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Sssuddenly, though, the pirate captain ssspied sssomething terrible ahead of them. Water ssswirled around and around like a giant bathtub being emptied....\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"A maelssstrom!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The captain tried to tell hisss crew to turn the ship around, but they couldn't hear him over their sssinging. They were ssswept, ssspiraling, into the cavernousss hole in the sssea.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The piratesss realisssed, then, what was happening, and ssstopped sssinging at once. The captain ordered them to remove the sssailsss and tie them down like parachutesss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The plan worked. Asss they fell, the air caught under the sssailsss and ssslowed the falling of the ship. Sssoon they landed gently on the bottom of the ocean.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Peering around in the gloom, the pirate captain sssaw a prone figure on a rock nearby. He climbed out of the ship and hurried over.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But before he could reach them, a jet of flame ssstreaked passst above him, and a great ssslimy creature emerged from the sssea in front of him...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"A dragon!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The captain jumped out of the way asss the dragon once again breathed fire. The captain turned to sssee hisss ship in flamesss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The dragon sssmiled evilly and opened itsss mouth to eat the captain. But when it had ssset the ship on fire it had accidentally lit the fusssesss of the cannonsss, and at thisss moment they fired.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Cannonball after cannonball thudded into the dragon, sssending it reeling back into the sssea. The captain picked up the figure from the rock, and looked about to sssee how he might essscape.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"And asss he did, it grew very dark; looking above him, he sssaw that the maelssstorm wasss collapsssing. He held the figure tightly to keep them sssafe, and braced himssself.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The water hit them from either ssside asss though Triton, the god of the sssea, had clapped hisss handsss upon them. They were lifted from the bottom and carried with great ssspeed to the sssurface.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"They rossse bessside a ship of the King'sss navy, aboard it a mage - who had closssed the maelssstorm - and the King himssself, who had come to watch.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"And asss both he and the pirate captain looked down to the figure whom the latter had found on the bottom of the sssea, they gasssped at who it wasss...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The Princessss!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"In return for finding her, the pirate captain was given sssix hundred thousssand gold piecesss, a Royal Pardon for Piracy, a Pirate Permit and the Princessss'sss hand in marriage.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "The skeleton pausssesss for a moment to sssigh in rememberance. \"It wasss a very good opera,\" he continues.";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"After it had ended, I went backssstage and bought an opera masssk sssigned by the lead actor, and alssso a nice cossstume that I needed for work.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Thisss isss, of courssse, that very masssk. It'sss worth a lot becausssse of the autograph.\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Info_JesterMask:
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Ah, yesss. Quite a ssscary little thing, isssn't it? And it hasss quite a hissstory, too.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Back in the lassst daysss of the Tonorian King Efeniunkanduiti Khan there were many plotsss to remove him from the throne, and the biggessst sssource of thessse plotsss wasss the Bell Sssociety.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The King wasss quite worried about all thisss, asss you would imagine, ssso he hired a jessster to make light of any misssfortune.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The jessster wasss undoubtedly funny, and the ssscary yet sssilly cossstume he wore ssseemed to emphasssissse the hilarity of him. The King cheered consssiderably with the jessster juggling, doing sssomersssaults and telling punsss in hisss court.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But there wasss one man who didn't like the jessster at all: Prince Akhendo-Al Mosssesssmuchasssdad Khan. The jessster'sss masssk concealed hisss experessssion, which disssconcerted Akhendo-Al greatly.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"He tried to explain hisss feelingsss to hisss father, but the King wasssn't paying attention. He wasss too busssy laughing at the joke the jessster had jussst made about Akhendo-Al'sss sssour face.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But the King should have lissstened before it wasss too late. One night a piercing ssscream woke the palace, and ssservants came hurrying to the King'sss chamber: but he wasss already dead. A long, wicked knife had been thrussst into hisss heart.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Akhendo-Al looked around at the gathered ssservantsss and guardsss, and ssaw what he had sssussspected from the firssst: the jessster wasss gone!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"He raced back the way he had come, and down to the entrance hall. Asss he reached the main doorsss, a voice behind him laughed. He turned to sssee the jessster at the top of the ssstairsss he had jussst dessscended!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The chassse wasss on. Akhendo-Al ran asss fassst asss he could back up the ssstairsss, and down a passssage which the jessster had disssappeared down. Laughter echoed around him asss he ran through the palace, occassssionally catching a glimpssse of the jessster ahead.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Sssoon, Akhendo-Al found himssself at the top of the palace'sss bell tower. On the other ssside of the great bellsss he sssaw the jessster, sssilhouetted againssst the moon, and sssmiling cruelly.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"'There's no escape for you now,' Akhendo-Al told him, and drew hisss sssabre. 'Try to run, and I shall cut you down.'\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But the jessster sssmiled, and turned to ssstand at the edge of the tower, looking down at the moat that lay far below.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Akhendo-Al ssstared asss the jessster opened hisss armsss wide...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Then the jessster turned, and shrugged. 'But I've already accomplished my tasssk. The tyrant king isss dead.'\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The Prince tied the jessster'sss handsss with sssome ssspare bell-rope, and took him down to a group of palace guards. Together, they led the jessster to the dungeonsss and sssecured him. Angrily, the Prince removed the man'sss masssk. Then he and the guardsss gasssped in sssurprissse.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The man wasss Gorrik, captain of the palace guard!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Gorrik gave a mossst long-winded explanation of why he wasss dressssed asss a jessster, and assssurred Akhendo-Al that he had certainly not killed the king. But the prince wasss now king, and he knew that Gorrik wasss the murderer. He sssentenced the man to execution.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"To hisss disssapointment, the old guard captain essscaped and fled the country. He came here, and thisss isss the very jessster masssk he wore.\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Info_WitchsHat:
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Which? Ah, yesss, that one. Hmm. Well, many yearsss ago thessse foressstsss usssed to be home to witchesss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I came upon one myssself sssoon after I arrived in Argaes, many yearsss ago, while I wasss alive. I had recently been forced to leave my mother country, where we had not many treesss - the vassst foressstsss were very ssstrange to me.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I wasss ssstranded far to the Sssouth of here - that area isss ssstill wildernesss today. For daysss I travelled through the thick foressstsss, looking for civilation or - at leassst - sssomething to eat.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Eventually I came upon a sssmall cottage in a clearing. Overcome with hunger, I thought I might knock and asssk if they had anything to eat. But asss I approached, I noticed sssomething very ssstrange...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The entire houssse wasss made of sssweeetsss! The walls were bricksss of tonori delight, the wallsss were translucent jelly ssskullsss sssquished into a pane, the roof wasss thatched with marshmallow and the ground wasss paved with flattened candy pumpkinsss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I quickly forgot about asssking for food and ssset about eating the houssse. I took great handfulsss from the wallsss and jammed them into my mouth. It lessss than a minute my face wasss sssmeared all over, and my handsss ssso covered in sssticky sssweetsss that you couldn't sssee any ssskin.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Then the door sssuddenly opened, and out ssstepped what I knew at once wasss a witch. The long black cloak, the pointy black hat, and the broomssstick she clutched in one hand aided me in thisss deduction.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Well, there'sss really only one thing you can do when a witch catchesss you eating her wallsss. You run for it. But I barely had time to move before she cassst an evil ssspell. I fell forward on my face, and felt myssself being dragged back toward her by invisssible forcesss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Thessse sssame forcesss then flipped me over onto my back. The witch looked furiousssly angry. 'Why,' she sssaid, 'are you eating my wall?'\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The anssswer 'Becaussse I wasss hungry' ssseemed a fairly obviousss one to me, but you don't act sssmart to a witch. I told her I had been unaware that the cottage wasss inhabited.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Well, that ssset her glaring even more. 'You didn't see the smoke coming from the chimney? You didn't stop to consider that sweets left lying around in a wood are hardly likely to be so clean and fresh and... well... there?'\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I complimented her on how fine her sssweetsss were. She sssighed wearily.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"'But you've no idea,' she told me, 'how tiresome it is to keep them looking like that. I'm always cooking up more sweets for repairs, which I need to do constantly because my walls are always getting eaten by vermin.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"'I have a large store of sweets underneath my house, to which I add and from which I take every morning. Patching holes, shaving away layers of sweets that have grown mouldy and replacing with a thin layer of new sweets... and when it rains! You wouldn't believe!'\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"She glanced up at the roof of her houssse. 'I have a huge big sheet of waterproof canvas,' she went on. 'And as soon as it looks like rain I have to rush out here and tie it over my roof - if this house gets rained on, that's the end of it, I tell you. I'd have to rebuild from scratch.'\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I hadn't realisssed what hard work the upkeep for a houssse made from sssweetsss wasss. I wasss now very sssorry for eating ssso much of her houssse without even asssking, and I told her ssso. But she glared again.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"'Never you mind MY worries,' she told me. 'You should be more concerned about your own!'\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I remember ssswallowing nervousssly. 'My worriesss?'\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"'I hope you don't think you're leaving here,' sssaid the witch. 'You're staying and working for me until you've repaid what you ate.'\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Thisss wasssn't ssso bad asss I'd firssst thought it would be. I had three mealssss a day of the witch'sss cooking - not sssweetsss, but real mealsss and they were ever ssso much nicer. The work wasss hard, but I had many interesssting conversssationsss with the witch.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"It took sssome time to repay my debt, but finally I had worked enough. The witch - whossse name wasss Alissssa - gave me a bag of sssweetsss to take with me when I left. But I didn't want to go - what wasss there for me in the North?\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Ssso I ssstayed, in fact. We ate that bag of sssweetsss together, and from then on we did half the choresss each. Thossse were great daysss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But it wasss dangerousss, living down there in the Sssouth, back then. One night were were attacked by a tribe of goblinsss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I tried to protect Alissssa, but I wasss killed. I don't know what happened to her, becaussse it wasss many yearsss before I returned from the dead.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"When I did, I found myssself lying in a clearing in the foressst. The bracken wasss thickly growing and there were many young treesss, but sssearching around I dissscovered a trapdoor leading into a cellar. I wasss in the remainsss of our houssse.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"When I returned from the cellar, I ssspotted sssomething black lying in the grassss. It wasss Alissssa's pointy hat - unharmed by the yearsss becaussse of itsss magic.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "The skeleton sighs as well as he can without lungs. \"Thisss witch'sss hat isss, of courssse, that very one. I've hung on to it for sssuch a long time - you couldn't imagine how long. I think it'sss time to let it go. If you truly want it, you can have it.\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Info_GoblinMask:
+        mes "[Gak]";
+        mes "";
+        mes "\"Aha, yesss. There usssed to be a village far to the Sssouth where they wore thossse.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"In thossse daysss there were many goblin tribesss down there, who would regularly attack human villagesss. No one really knew why, it wasss jussst what goblinsss did.\" He looks sad for a moment. \"Well, in thisss village - which wasss called Turnap - they devisssed a clever ssscheme to protect themssselvesss from the goblinsss...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"They made themssselvesss masssksss, like thisss one, to look like goblinsss. They figured the goblinsss wouldn't attack them if they did thisss.\" He grins like only a skeleton can. ";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Of courssse, thossse goblinsss jussst thought the people of Turnap were another tribe that wasss invading there territory. They attacked and killed everyone.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I had lived nearby for sssome time, and had been given thisss masssk to protect myssself on one of my visssitsss there. It did me asss much good asss it did them...\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"You can have it, if you want, but jussst remember: it won't protect you from the goblinsss!\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Info_GuyFawkesMask:
+        mes "[Gak]";
+        mes "";
+        mes "\"Over in Tonori there isss a traditional celebration known asss 'Guy Fawkesss Day'. Sssee, many yearsss ago there wasss a guy named Fawkesss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"He wasss a member of a sssecret sssociety. The Bell Sssociety, it wasss called. Their aim wasss to rid Tonori of itsss king, Efeniunkanduiti Khan.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Now, Fawkesss was a pretty exciteable guy. He had thessse visssionsss of blowing up the entire palace. The other membersss of the sssociety thought thisss wasss unnecessssary, but would neverthelessss be pretty cool.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Ssso, over time, they acquired enough explosssivesss to put Fawkesss' plansss into action. One dark night in late Autumn they gained entry to the palace, and placed great barrelsss of explosssivesss in ssstrategic locationsss.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Then came the time to light the fussse. The othersss went outssside to watch the show, and Fawkesss crept back down the cellarsss, where the ten-minute fussse lay waiting to be lit.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Unfortunately, it wasss at that moment that sssome of the Palace Guard showed up. They were a disssobient pair - they rarely lissstened to the commandsss of their ssseniorsss, and were currently sssneaking down to the cellarsss to sssteal themssselves sssome wine.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Of courssse, when they sssaw Fawkesss about to light the fussse they quickly ssseized him and tied him to a possst. After they had poured themssselvesss a drink, they ssstarted to interrogate him.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But dessspite their tauntsss and no matter how many timesss they hit him, Fawkesss sssaid nothing. He wasss a brave guy.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Eventually, the guardsss told him that even if he didn't ssspeak, they could sssee that he had been trying to blow up the palace. They were completely drunk by thisss time, and sssaid that once they had gone to relieve themssselvesss they would hang him right there in the cellar.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Asss it isss tradional to do before executing sssomeone, the guardsss gave Fawkesss a pipe for hisss lassst sssmoke. They then left to ussse the toilet.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"It'sss rather obviousss what happened next. Once he wasss sssure they had gone, Fawkesss rolled himssself over in hisss bondsss and pressssed the sssmoking pipe againssst the fussse.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The ressst of the Bell Sssociety, ssstanding outssside the palace, had a magnificent view asss the centre of the palace was blown into the sssky and the wallsss crumpled outwardsss. Asss Fawkesss had not returned, they guessssed that he mussst not have been able to essscape.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The two palace guardsss, unfortunately, sssurvived. Asss the wall collapsssed they crashed into the moat along with the ressst of the rubble, but managed to free themssselves.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The Bell Sssociety essscaped, sssad for their lossss of Fawkesss but jubilant that they had sssuccesssfully killed the King. Unfortunately, the newssspaper next day revealed that he had not even been in the palace at the time! He wasss not even hurt!\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"The people of Tulimshar thought it very funny that sssuch a lot of effort had come to nothing. The palace was of courssse dessstroyed, but the Bell Sssociety had failed. Now we celebrate Guy Fawkesss day, in a lasssting jessst at the wasssted effort of the Bell Society.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Thisss masssk is meant to look like Fawkesss, but it doesssn't really. He wasssn't sssuch a smiley guy.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"I don't like Guy Fawkesss Day myssself, ssso I'm ssselling it cheaply.\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Info_Scissors:
+        mes "[Gak]";
+        mes "";
+        mes "\"Yesss, my old ssscissssorsss. I had to cut my own hair with them once, to disssguissse myssself - which I had to do to essscape the country unnoticed.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"It'sss rather a long ssstory, but... well, I wasss in fact running from my execution. I came to Argaesss ssso that I didn't have to lossse my head.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"But that'sss long in the passst. Here and now, they're very good for changing your hairssstyle without bothering to go all the way to the barber.\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Info_ShockSweet:
+        mes "[Gak]";
+        mes "";
+        mes "\"Thossse? Shocking thingsss...\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+
+L_Info_BoneArrow:
+        mes "[Gak]";
+        mes "";
+        mes "\"Ahh, yessss. I happen to have sssso many leftover bonesss from what people have been giving me. I couldn't take them all, of courssse... there were very few that were responsssive enough for I needed, and now, I have the bessst.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Would be ssssssuch a pity to wassste the leftoverss though... I've been enchanting the ressst for usse as weaponssss. Nothing too ssspecial, but they are verry light.\"";
+        next;
+        goto L_Gaks_Little_Shop;
+
+L_Event_Over:
+        if (hween10 < 5) goto L_Event_Over_1;
+        if (hween10 < 13) goto L_Event_Over_2;
+        mes "[Gak]";
+        mes "";
+        mes "\"Well, it'sss been very nice meeting you, friend, but I think I'll be heading off sssoon. I hear the Northern farmsss are pleasssant at this time of year.\"";
+        close;
+
+L_Event_Over_1:
+        mes "[Gak]";
+        mes "";
+        mes "\"Hmm, hello. And goodbye.\"";
+        close;
+
+L_Event_Over_2:
+        mes "[Gak]";
+        mes "";
+        mes "\"Thank you for thossse sssweetsss, they were quite deliciousss. But I think I'll be leaving sssoon.\"";
+        close;
+
+L_Full_Inventory:
+        mes "[Gak]";
+        mes "";
+        mes "\"Ssseems you don't have room for thisss.\"";
+        close;
+
+L_Miscount_Bugfix:
+        if (hween10_collect_canpump != 0) goto L_Do_Miscount_Bugfix;
+        set hween10, 12;
+        goto L_Gaks_Little_Shop;
+
+L_Do_Miscount_Bugfix:
+
+        mes "[Gak]";
+        mes "";
+        mes "\"Er.\" While his expression is as stony as ever, he sounds quite embarrassed.";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Seems I forgot some thingsss earlier... you should actually have " + (hween10_collect_canpump << 1) + " more creditsss than I calculated before.\"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Sssorry.\"";
+        next;
+
+        menu
+            "\"Hmph. Well, you can correct that now, right?", -;
+
+        mes "[Gak]";
+        mes "";
+        mes "\"Of courssse. It is done. Sssorry about that\"";
+        set hween10_credits, hween10_credits + (hween10_collect_canpump << 1);
+        set hween10, 12;
+        next;
+        goto L_Gaks_Little_Shop;
+
+}
+

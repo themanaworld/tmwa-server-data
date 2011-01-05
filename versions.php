@@ -18,7 +18,7 @@ arsort($verinfo);
 $total = count($versions);
 print '<table border="1px" cellspacing="0px" cellpadding="1px"><tr><th>Client</th><th title="Count">n</th><th title="Percent of total">%</th></tr>';
 foreach($verinfo as $vi=>$vc) {
-    echo '<tr><td>' . $vi . '</td><td>' . $vc . '</td><td>' . round((100 / $total) * $vc, 2) . '</td></tr>';
+    echo '<tr><td>' . htmlspecialchars($vi) . '</td><td>' . $vc . '</td><td>' . round((100 / $total) * $vc, 2) . '</td></tr>';
 }
 print '</table><br />Total number of connections: ' . $total . '<br />Number of different clients reported: '
      . count($verinfo) . '<br /><br />Data retrieved: ' . date('D M d y, g:i a T', filemtime($file));
