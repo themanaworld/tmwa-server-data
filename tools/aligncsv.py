@@ -4,7 +4,8 @@
 import os
 import sys
 
-tabs=not True
+tabs=True
+additionalspaces = 5
 
 fname = sys.argv[1]
 if not os.path.exists(fname):
@@ -20,7 +21,7 @@ for line in lines:
 	length=max(length, len(line.split(",")))
 
 print "# number of entries =",length
-additionalspaces = 5
+
 
 #setup text array
 textarray=range(len(lines)+1)
@@ -34,14 +35,14 @@ for x in range(length):
 for lineno in range(len(lines)):
 	sp=lines[lineno].split(",")
 	for pieceno in range(len(sp)):
-		sp[pieceno] = sp[pieceno].strip()
+		sp[pieceno] = sp[pieceno].strip() + "," #for the comma add a char
 		textarray[-1][pieceno] = max(len(sp[pieceno]),textarray[-1][pieceno])
 
 if tabs:
 	#make it divisable by 8 (tabs work then)
 	for pieceno in range(length):
-		if textarray[-1][pieceno] %8:
-			textarray[-1][pieceno] = ((textarray[-1][pieceno]/8) *8) +8
+		if (textarray[-1][pieceno] %8) !=0:
+			textarray[-1][pieceno] = (((textarray[-1][pieceno])/8)*8)+8
 
 for lineno in range(len(lines)):
 	sp=lines[lineno].split(",")
@@ -51,11 +52,16 @@ for lineno in range(len(lines)):
 			sp[pieceno]= sp[pieceno].strip()
 			if pieceno<len(sp)-1:
 				sp[pieceno]= sp[pieceno] + ","
-			n=(textarray[-1][pieceno]-len(sp[pieceno])+additionalspaces)
+
 			if (tabs):
+				n=(textarray[-1][pieceno]-len(sp[pieceno]))
 				textarray[lineno][pieceno] = sp[pieceno]
-				textarray[lineno][pieceno] += "\t" *(n/8)
+				if (n%8) != 0:
+					textarray[lineno][pieceno] += "\t"*((n/8)+1)
+				else:
+					textarray[lineno][pieceno] += "\t"*((n/8))
 			else:
+				n=(textarray[-1][pieceno]-len(sp[pieceno])+additionalspaces)
 				textarray[lineno][pieceno] = " "*(n) + sp[pieceno]
 
 
