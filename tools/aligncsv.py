@@ -33,10 +33,11 @@ for x in range(length):
 
 #find the longest entry in each line in each position
 for lineno in range(len(lines)):
-	sp=lines[lineno].split(",")
-	for pieceno in range(len(sp)):
-		sp[pieceno] = sp[pieceno].strip() + "," #for the comma add a char
-		textarray[-1][pieceno] = max(len(sp[pieceno]),textarray[-1][pieceno])
+	if not lines[lineno].strip().startswith("//") or lines[lineno].strip().startswith("//id"):
+		sp=lines[lineno].split(",")
+		for pieceno in range(len(sp)):
+			sp[pieceno] = sp[pieceno].strip() + "," #for the comma add a char
+			textarray[-1][pieceno] = max(len(sp[pieceno]),textarray[-1][pieceno])
 
 if tabs:
 	#make it divisable by 8 (tabs work then)
@@ -45,24 +46,29 @@ if tabs:
 			textarray[-1][pieceno] = (((textarray[-1][pieceno])/8)*8)+8
 
 for lineno in range(len(lines)):
-	sp=lines[lineno].split(",")
-	for pieceno in range(length):
-		textarray[lineno][pieceno] = ""
-		if pieceno<len(sp):
-			sp[pieceno]= sp[pieceno].strip()
-			if pieceno<len(sp)-1:
-				sp[pieceno]= sp[pieceno] + ","
+	if not lines[lineno].strip().startswith("//") or lines[lineno].strip().startswith("//id"):
+		sp=lines[lineno].split(",")
+		for pieceno in range(length):
+			textarray[lineno][pieceno] = ""
+			if pieceno<len(sp):
+				sp[pieceno]= sp[pieceno].strip()
+				if pieceno<len(sp)-1:
+					sp[pieceno]= sp[pieceno] + ","
 
-			if (tabs):
-				n=(textarray[-1][pieceno]-len(sp[pieceno]))
-				textarray[lineno][pieceno] = sp[pieceno]
-				if (n%8) != 0:
-					textarray[lineno][pieceno] += "\t"*((n/8)+1)
+				if (tabs):
+					n=(textarray[-1][pieceno]-len(sp[pieceno]))
+					textarray[lineno][pieceno] = sp[pieceno]
+					if (n%8) != 0:
+						textarray[lineno][pieceno] += "\t"*((n/8)+1)
+					else:
+						textarray[lineno][pieceno] += "\t"*((n/8))
 				else:
-					textarray[lineno][pieceno] += "\t"*((n/8))
-			else:
-				n=(textarray[-1][pieceno]-len(sp[pieceno])+additionalspaces)
-				textarray[lineno][pieceno] = " "*(n) + sp[pieceno]
+					n=(textarray[-1][pieceno]-len(sp[pieceno])+additionalspaces)
+					textarray[lineno][pieceno] = " "*(n) + sp[pieceno]
+	else:
+		for pieceno in range(length):
+			textarray[lineno][pieceno] = ""
+		textarray[lineno][0]=lines[lineno].strip()
 
 
 fname = sys.argv[2]
