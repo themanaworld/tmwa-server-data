@@ -59,8 +59,10 @@ L_Try_Cage:
 	// initialize fight
 	set $@FIGHT_YETI_STATUS, 1;
 	set $@FIGHT_YETI_WAVE, 0;
-	set $@YETI_COUNT, 0;
+	set $@YETI_COUNT, 1;
 	set $@FIGHT_YETI_PLAYER_COUNT, getareausers("031-3.gat", 80, 20, 160, 90);
+	// this yeti is spawned because of some timing problems
+	// without it, the first and second wave start nearly the same time
 	areamonster "031-3.gat", 80, 20, 160, 90, "", 1072, 1, "Cindy::onPetDeath";
 
 	startnpctimer;
@@ -140,10 +142,13 @@ L_CaveLogic:
 
 L_NextWave:
 	set $@FIGHT_YETI_ROUND_TIMER, 0;
-
 	set $@FIGHT_YETI_WAVE, $@FIGHT_YETI_WAVE + 1;
 	if ($@FIGHT_YETI_WAVE > 10 && $@YETI_COUNT == 0) goto L_CleanUp;
-	if ($@FIGHT_YETI_WAVE > 10) goto L_Return_1;
+	if ($@FIGHT_YETI_WAVE > 10 && $@FIGHT_YETI_WAVE < 22) goto L_Return_1;
+	if ($@FIGHT_YETI_WAVE > 22)
+		areamonster "031-3.gat", 80, 20, 160, 90, "", 1072, $@FIGHT_YETI_WAVE*2 + $@FIGHT_YETI_PLAYER_COUNT*5, "Cindy::onPetDeath";
+	if ($@FIGHT_YETI_WAVE > 22)
+		set $@YETI_COUNT, $@YETI_COUNT + $@FIGHT_YETI_WAVE*2 + $@FIGHT_YETI_PLAYER_COUNT*5;
 	set $@FIGHT_YETI_NUMBER, (1 + (1 * $@FIGHT_YETI_WAVE) + (2 * $@FIGHT_YETI_PLAYER_COUNT))/4;
 	set $@YETI_COUNT, $@YETI_COUNT + $@FIGHT_YETI_NUMBER;
 
@@ -170,7 +175,6 @@ L_NextWave:
 	if ($@FIGHT_YETI_WAVE == 10)
 		mapannounce "031-3.gat", "Cindy: This seems to be their final attack! I believe in you!", 0;
 
-//	mapannounce "031-3.gat", "WAVE: " + $@FIGHT_YETI_WAVE + " NUMBER OF YETIS SPAWNED: " + $@FIGHT_YETI_NUMBER + " TOTAL YETIS: " + $@YETI_COUNT, 0;
 	goto L_Return_1;
 
 // Called on each player once every 5 seconds
