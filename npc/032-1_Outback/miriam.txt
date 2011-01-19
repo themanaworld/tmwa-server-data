@@ -9,7 +9,7 @@
 // 	2  waiting for the ingredients
 // 	3  you brought the needed stuff. if you meet other criteria (baselevel, agi) you will be taught the skill
 // 	4  you have met the criteria of 3, but declined to take the speed test.
-// 	5  while being tested, take this state. there are not any conditional jumps for this state, it should be met by QUEST_MIRIAM_run or QUEST_MIRIAM_start
+// 	5  you tried the quest but you failed
 // QUEST_MIRIAM_start
 //	a time in ticks. This is only !=0 if you started running to pachua.
 // QUEST_MIRIAM_run
@@ -29,6 +29,7 @@
 	if (QUEST_MIRIAM == 4) goto L_testoffer;
 	if (QUEST_MIRIAM_run != 0) goto L_checktime;
 	if (QUEST_MIRIAM_start != 0) goto L_wasting;
+	if (QUEST_MIRIAM == 5) goto L_testoffer;
 
 L_intro:
 	mes "You see a woman sitting in the hot sand with eyes wide open... But she does not seem to be looking at something in particular...";
@@ -211,6 +212,7 @@ L_test:
 	npctalk "Run " +strcharinfo(0)+ ", run!";
 	set QUEST_MIRIAM, 5;
 	set QUEST_MIRIAM_start, gettimetick(1);
+	set QUEST_MIRIAM_cheat, 0;
 	end;
 
 L_naked:
@@ -243,6 +245,12 @@ L_testoffer:
 		"Not yet.",-;
 	close;
 
+L_warning:
+	mes "[Miriam]";
+	mes "\"I know very well what you tried to do. I will not teach you the speed skill if you keep trying this kind of trick!\"";
+	next;
+	goto L_testoffer;
+
 L_stretch:
 	mes "[Miriam]";
 	mes "\"Ok. Good idea... Stretching exercises can increase your flexibility and even prevent injuries!\"";
@@ -255,6 +263,7 @@ L_wasting:
 	close;
 
 L_checktime:
+	if (QUEST_MIRIAM_cheat != 0) goto L_warning;
 	if (QUEST_MIRIAM_run > 210) goto L_tryagain;
 	if (QUEST_MIRIAM_run <= 210) goto L_goodjob;
 
