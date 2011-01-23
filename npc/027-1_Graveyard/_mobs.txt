@@ -42,6 +42,7 @@ On1024:
 
 On1036:
 	set @mobID, 1036;
+	callsub _MOBCOUNT_ZOMBIES;
 	callfunc "MobPoints";
 	break;
 
@@ -67,6 +68,7 @@ On1044:
 
 On1045:
 	set @mobID, 1045;
+	callsub _MOBCOUNT_FALLENS;
 	callfunc "MobPoints";
 	break;
 
@@ -74,6 +76,28 @@ On1047:
 	set @mobID, 1047;
 	callfunc "MobPoints";
 	break;
+
+_MOBCOUNT_ZOMBIES:
+	if (QUEST_GYINN != 1) return;
+// You have to kill 50?(or more?) zombies OR 50?(or more?) fallens. If you close the client, the @zombies count go back to zero.
+	set @zombies, @zombies + 1;
+// This is in DEBUG mode. That is the reason for the message.
+	message strcharinfo(0), "I killed " +@zombies+ " zombies. Now I need to kill only " +(50-@zombies)+ ".";
+	if (@zombies < 50) return;
+	message strcharinfo(0), "You found a strange bracelet hidden in the zombie's rotten rags. Maybe this is what the Crying child was looking for...";
+	set QUEST_GYINN, 2;
+	return;
+
+_MOBCOUNT_FALLENS:
+	if (QUEST_GYINN != 1) return;
+// You have to kill 50?(or more?) fallens OR 50?(or more?) zombies. If you close the client, the @fallens count go back to zero.
+	set @fallens, @fallens + 1;
+// This is in DEBUG mode. That is the reason for the message.
+	message strcharinfo(0), "I killed " +@fallens+ " fallens. Now I need to kill only " +(50-@fallens)+ ".";
+	if (@fallens < 50) return;
+	message strcharinfo(0), "You found a strange bracelet inside the fallen's broken helmet. Maybe this is what the Crying child was looking for...";
+	set QUEST_GYINN, 2;
+	return;
 
 	end;
 }

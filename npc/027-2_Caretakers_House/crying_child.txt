@@ -1,0 +1,208 @@
+027-2.gat,50,92,0	script	Crying Child	314,{
+	end;
+
+
+// Crying Child subquest (Still need to change it to Bitmask)
+// Variable states:
+// 1 = You agree to help the child to find the bracelet outside
+// 2 = You found the bracelet (see _mobs.txt)
+// 3 = You gave the bracelet to the child
+// 4 = You decided to help the child again, by investigating what the bracelet means to them.
+// 5 = The father/husband told you what he thinks of the bracelet
+// 6 = The mother/wife told you what he thinks of the bracelet
+// 7 = The kid decided that the bracelet has no value to their parents, so you can have it.
+
+	if (Sex == 0) set @madamsir$, "Madam";
+	if (Sex == 1) set @madamsir$, "Sir";
+	if (QUEST_GYINN == 7) goto L_return5;
+	if (QUEST_GYINN == 6) goto L_return4;
+	if (QUEST_GYINN == 4 || QUEST_GYINN == 5) goto L_return3;
+	if (QUEST_GYINN == 3) goto L_return2;
+	if (QUEST_GYINN == 2) goto L_return1;
+	if (QUEST_GYINN == 1) goto L_return;
+	if (BaseLevel >= 80) goto L_intro;
+
+
+L_cry:
+	mes "[Crying Child]";
+	mes "\"Waaahhhhh! (Sniffle)\"";
+	close;
+
+L_intro:
+	mes "[Crying Child]";
+	mes "\"Waaah!\"";
+	next;
+	mes "\"(Sniffle)\"";
+	next;
+	menu
+		"Calm down kid, what happened?",-,
+		"Leave the kid alone",L_close;
+	mes "[Crying Child]";
+	mes "\"Oh, what? Who are you "+@madamsir$+", what are you doing here?\"";
+	next;
+	menu 
+		"My name is "+strcharinfo(0)+", I heard you cry and decided to ask if you need help.",-;
+	next;
+	mes "[Crying Child]";
+	mes "\"You look like a good person... Maybe I can trust you... My name is Aldred and I live here with my parents. They own this place.\"";
+	next;
+	mes "[Aldred]";
+	mes "\"My problem is... I don't know what to do... My dad will be so angry with me... He is very nice, but when you do something wrong... he... WAAAAAAH!\"";
+	next;
+	menu 
+		"Here, here, don't cry... What did you do?",-;
+	next;
+	mes "[Aldred]";
+	mes "\"Err.. I was looking at my parents stuff and I found this funny thing! It looks like a big blue beetle... I thought it would be funny to play with it for a while, so I took it with me. But I... sniffle... I lost it...\"";
+	next;
+	mes "\"I don't know what happened. It was outside and... maybe it fell on the ground! I am so scared! What if someone picked it up? It could be anyone!\"";
+	next;
+	menu 
+		"Don't worry, I will look around. Maybe I can find it for you...",-,
+		"Hey, you messed up, now you deal with this.",L_close;
+
+	mes "[Aldred]";
+	mes "\"Thank you " +strcharinfo(0)+"! I hope you find it soon! It is not like it is worth a lot of money... It looks like a simple thing, but I really don't know what would be my dad's reaction when he finds out I lost something that belongs to him!\"";
+	set QUEST_GYINN, 1;
+	close;
+
+L_return:
+	mes "[Aldred]";
+	mes "\"Please, help me, find the bracelet. If my father asks me why I'm crying I don't think I can come up with an excuse... Oh no...\"";
+	close;
+
+
+L_return1:
+	mes "[Aldred]";
+	mes "\"Great! You are the best! Where did you find it?\"";
+	next;
+	menu
+		"It was easy, it was with one of the monsters outside.",-;
+	next;
+	mes "[Aldred]";
+	mes "\"Ohh.. a monster? He must be a fine monster since he returned it so easily to you!\"";
+	next;
+	menu
+		"Err... kind of...",-;
+	next;
+	mes "[Aldred]";
+	mes "\"Now I will put this thing in its right place... Thank you!\"";
+	set QUEST_GYINN, 3;
+	close;
+
+
+L_return2:
+	mes "[Aldred]";
+	mes "\"Hi "+strcharinfo(0)+ "! I was thinking about something... you are such a nice person and you helped me a lot, but I didn't give you anything in exchange. It was really rude, I know, but I am only a child, I have nothing to give you!\"";
+	next;
+	menu
+		"Don't worry, you don't need to give me anything...",-;
+	next;	
+	mes "[Aldred]";
+	mes "\"I know! That is why you are so great! But hey, I have an idea. What if you talk to my father and my mother about this item? If it is not important or valuable to them, I think there is no problem to let you keep it.\"";
+	next;
+	menu
+		"Sounds interesting... But who are your parents?",-,
+		"Bad idea, it will only bring more problems...",L_close;
+	next;
+	set QUEST_GYINN, 4;
+	mes "[Aldred]";
+	mes "\"Ok, great... But please, try to be discrete about it. I don't want my parents to know I was playing with their stuff. My Father owns this place. He is always carying a lantern... I guess he is still afraid of the dark. My mother is the Innkeeper. She is very beautiful and today is using a red dress.\"";
+	close;
+
+L_return3:
+	mes "[Aldred]";
+	mes "\"I hope this bracelet doesn't mean a lot to my parents, this way you can keep it as a gift.\"";
+	close;
+
+L_return4:
+	menu
+		"Hi, I talked to your parents.",-;
+	mes "[Aldred]";
+	mes "\"Really? What did my father say about the bracelet?\"";
+	menu
+		"He said it is just a cheap bracelet. And it does not belong to him.",-;
+	mes "[Aldred]";
+	mes "\"And what did my mother say?\"";
+	menu
+		"She said it was a gift to her, but she wanted to throw it away.",-;
+	mes "[Aldred]";
+	mes "\"Really? A gift? I bet it was not my father who gave her this gift. She wouldn't throw it away if it was a gift from him.\"";
+	next;
+	mes "\"Well, I guess you can keep it. But now I am really curious, who would give a gift to my mother? There are so many strange things happening lately...\"";
+	getinventorylist;
+	if (@inventorylist_count == 100) goto L_full;
+	getitem "ScarabArmlet", 1;
+	set QUEST_GYINN, 7;
+	mes "\"I will tell my parents how good and helpfull you are... Maybe they can even offer you a discount in your expenses here at Reid's Inn...\"";
+	close;
+
+L_return5:
+	mes "[Aldred]";
+	mes "\"Thank you for all your help.\"";
+	close;
+
+L_full:
+	mes "[Aldred]";
+	mes "\"I dont think you can carry this bracelet... Your backpack is full! Throw something away and come back to get the bracelet.\"";
+	close;
+
+
+L_close:
+	close;
+
+}
+
+
+
+// Participation of the Wife/Mother in the crying child subquest. Merge later with the apropriate NPC
+
+//	if (QUEST_GYINN == 5) goto L_asking_child;
+//	end;
+
+//L_asking_child:
+//	menu
+//		"Hi. I found this in the main hall. Do you know to whom it belongs?",-;
+//	next;
+//	mes "[Innkeeper's Ghost]";
+//	mes "\"What?! In the main hall? Let me take a look at this bracelet.\"";
+//	next;
+//	mes "[Innkeeper's Ghost]";
+//	mes "\"Oh, I recognize this bracelet. Someone gave it to me a few weeks ago. But I don't want to keep it. I thought I have thrown it in the garbage.\"";
+//	next;
+//	menu
+//		"Garbage? Is this bracelet so ugly?",-;
+//	next;
+//	mes "[Innkeeper's Ghost]";
+//	mes "\"No, no. It is not that I don't like it. I just don't like the feelings it causes on me... It is... Complicated. Please, take this bracelet away. I don't want it... You can have it, or just give to someone else.\"";
+//	set QUEST_GYINN, 6;
+//	close; 
+
+
+// Participation of the Husband/Father in the crying child subquest. Merge later with the apropriate NPC
+
+//	if (QUEST_GYINN == 4) goto L_asking_child;
+//	end;
+
+//L_asking_child:
+//	menu
+//		"Hello sir. Can I ask you a question?",-;
+//	mes "[Lantern Man]";
+//	mes "\"Just ask!\"";
+//	next;
+//	menu
+//		"Ok... Ehh, I found this in the main hall. Do you know to whom it belongs?",-;
+//	next;
+//	mes "[Lantern Man]";
+//	mes "\"Hmm! Let me see.\"";
+//	next;
+//	mes "\"Well.. this is just a cheap bracelet, it is very popular with the young kids these days, specially the magic students. They call it 'Scarab Armlet'. Fancy name, huh? But for me it is just a cheap bracelet.\"";
+//	next;
+//	mes "\"They also say it increases 'magic atack'. But, in fact, I think these kids are delusional. There is no such thing as magic, everyone knows it.\""; 
+//	next;
+//	mes "\"Anyway, you can easily find one of these in a lot of small shops in this town. I am pretty sure that whoever lost it won't bother coming all the way back to get it. \"";
+//	menu
+//		"Thank you sir, that is all I wanted to ask.",-;
+//	set QUEST_GYINN, 5;
+//	close;
+
