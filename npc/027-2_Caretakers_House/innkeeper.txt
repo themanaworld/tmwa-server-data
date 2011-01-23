@@ -1,0 +1,231 @@
+027-2.gat,104,39,0	script	Reid's Ghost	315,{
+	
+	set @Graveyard_Inn_MASK, NIBBLE_0_MASK;
+	set @Graveyard_Inn_SHIFT, NIBBLE_0_SHIFT;
+
+	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+	
+	//TODO: determine correct nibble
+	set @Graveyard_Inn_Kid_MASK, NIBBLE_2_MASK;
+	set @Graveyard_Inn_Kid_SHIFT, NIBBLE_2_SHIFT;
+
+	set @kidstate, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Kid_MASK) >> @Graveyard_Inn_Kid_SHIFT);
+	
+	//TODO: determine sane values
+	set @YETI_TEAR_AMOUNT, 10;
+	set @YETI_TEAR_EXP, 60000; // maybe about 1% for a level 80?
+	
+	if (@state == 6) goto L_Read_Diary;
+	if ((@state == 5) && (sex == 1) && (@kidstate >= 5)) goto L_Helped_Kid; //TODO: determine right value of kidstate
+	if (@state == 4) goto L_Ask_Life;
+	if (@state == 3) goto L_Bring_Tears;
+	if (@state == 2) goto L_Offer_Help2;
+	if (@state == 1) goto L_After_Welcome;
+	
+	mes "You see a dead women lying on the floor, something that appears to be her ghost floating above her dead body.";
+	next;
+	mes "[Ghost]";
+	mes "\"He- I - What - Oh -\"";
+	mes "The womens ghost seems to be confused.";
+	next;
+	mes "[Ghost]";
+	mes "Oh, I'm sorry. Welcome to Reid's Inn. My name is Reid, I am the innkeeper of this wonderful place of leisure. Please enjoy your visit here!";
+	next;
+
+	set @state, 1;
+	callsub S_Update_Mask;
+
+	goto L_Ask_Dead;
+
+L_After_Welcome:
+	mes "[Reid's Ghost]";
+	mes "\"Please enjoy yourself!\"";
+	if (baselevel < 85) goto L_Close;
+	
+L_Ask_Dead:
+	if (baselevel < 85) goto L_Close;
+	menu
+		"What happened to you?", - , 
+		"Thank you, I'll surely enjoy my visit.", L_Close;
+	
+	mes "[Reid's Ghost]";
+	mes "\"What happened to me? What do you mean?\"";
+	//TODO: add more possible answers
+	menu
+		"Ahm, you don't look very well - actually, you look dead.",-,
+		"You don't seem to be in the best condition.",-,
+		"You are dead!",-;
+	
+	mes "Reid looks down at her body and turns even more pale, if this is possible.";	
+	next;
+	mes "[Reid's Ghost]";
+	mes "\"OH?\"";
+	next;
+	
+	menu
+		"I'm sorry. I didn't know you weren't aware of that.",-,
+		"Yes - do you understand my question now?",-,
+		"Shall I help you to find out what happened with you?", L_Offer_Help1;
+
+	mes "[Reid's Ghost]";
+	mes "\"I'm dead? But why? And why am I still here?\"";
+	next;
+	mes "She stares into space and doesn't seem to notice you anymore.";
+	set @state, 2;
+	callsub S_Update_Mask;
+	close;
+	
+L_Offer_Help2:
+	mes "Reid's Ghost is still staring into space.";
+	menu
+		"Shall I help you to find out what happened with you?", -,
+		"I don't want to bother you.", L_Close;
+
+L_Offer_Help1:	
+	mes "\"I.. I don't know you. Why should you help me?\"";
+	next;
+	mes "\"Bring me a proof, you are serious. My life seems to have ended sadly, bring me something which represents the sadness I am feeling!\"";
+
+	set @state, 3;
+	callsub S_Update_Mask;
+	close;
+	
+L_Bring_Tears:
+	mes "[Reid's Ghost]";
+	mes "\"Did you find something, which can represent my sadness?\"";
+	next;
+
+	if (countitem("FrozenYetiTear") > 0)
+		menu
+			"I found this frozen tear to represent your sadness.", L_Check_Tears, 
+			"I'm still searching.", L_Close;
+	
+	mes "\"You didn't? It seems, you're not serious with your offer to help me.\"";
+	close;
+	
+L_Check_Tears:
+	if (countitem("FrozenYetiTear") < @YETI_TEAR_AMOUNT)
+		goto L_Not_Enough_Tears;
+	delitem "FrozenYetiTear", @YETI_TEAR_AMOUNT;
+	
+	set @state, 4;
+	callsub S_Update_Mask;
+	
+	mes "[Reid's Ghost]";
+	mes "\"This tears.. how they shimmer in the candle light. Yes, it seems you are serious with your offer.\"";
+	next;
+L_Ask_Life:
+	mes "[Reid's Ghost]";
+	mes "\"How do you plan to help me?\"";
+	next;
+	
+	menu
+		"Please tell me about your life. Maybe this gives a clue what happened.",-,
+		"I need to think about that.", L_Close;
+		
+	mes "[Reid's Ghost]";
+	mes "\"About my life? Well ok.\"";
+	next;
+	mes "\"I'm the owner of this inn. I inherited it from my parents, who ran it while I was a child.\"";
+	next;
+	mes "\"My father - he was a very joyful man. But one day, I was just ten years old, he had an accident while carrying a barrel of beer.\"";
+	next;
+	mes "\"The barrel smashed his legs and he wasn't able to walk anymore. He got very desperate about that and started to drink.\"";
+	next;
+	mes "\"My mother and me didn't know, how to cheer him up, he wouldn't have listened to us. My mother tried her best to keep the inn running and I tried my best to help her, even if I was a still a child.\"";
+	next;
+	mes "\"But with the years going on, my mother lost her will to go on and the inn went down the drain slowly. Everything was dirty and we had less and less patrons.\"";
+	next;
+	mes "\"I don't blame my mother. She loved my father so much, she couldn't stand to see, what was happening to him. When he died because of his drinking, she totally lost her will to live and just lay in bed and followed him.\"";
+	next;
+	mes "Reid seems to be tortured by her memories.";
+	next;
+	mes "\"That was very hard time.\"";
+	
+	menu
+		"Yes, yes, but that what about your life shortly before you died?",-,
+		"I can imagine. I'm very sorry for you",-;
+	
+	mes "She doesn't seem to pay much attention on what you say.";
+	next;
+	mes "\"But Hamond, my friend since I was a child, helped me in that bad times. We built up the inn again and we - we married.\"";
+	next;
+	mes "\"He was so kind and my only light in that dark times. And our little son Aldred gave me back my joy in life.\"";
+	next;
+	mes "\"Everything was peaceful and I thought, I had found my place. But one day -\"";
+	next;
+	
+	set @state, 5;
+	callsub S_Update_Mask;
+	
+	if (Sex == 0) goto L_Woman;
+	//TODO: think, if gender change should be checked
+	//TODO: determine correct value for kidstate
+	if ((Sex == 1) && (@kidstate < 5)) goto L_Man;
+	
+	mes "\"What I'm going to tell you is very personal, but you showed me you're a sensitive person with helping my child.\"";
+
+L_Lovestory:
+	mes "[Reid's Ghost]";
+	mes "\"It began as a completely normal day. We were taking care of our overnight guests and prepared the inn for the evenings rush.\"";
+	next;
+	mes "\"But that day, a very special patron checked in. His name was Savaric, and he was a student of magic. He came from far away to check some rumours about a legendary mana seed.\"";
+	next;
+	mes "Reid's ghost has a completely enchanted look on her face.";
+	next;
+	mes "\"He really made me feel alive - when he was near, I was feeling like I never felt before. I started to search for reasons to be near him - I told myself that I just like him because he was interesting, coming from so far away and being a mage.\"";
+	next;
+	mes "\"But I was lying to myself.\"";
+	next;
+	mes "\"I - oh, it is really hard to talk about this. Maybe - yes, I could let you read my diary. I'll give you the key to our rooms.\"";
+	next;
+	mes "She pulls a key out of her pocket as transparent as she is herself. As you try to grab it, your fingers go just through it.";
+	next;
+	mes "[Reid's Ghost]";
+	mes "\"I keep forgetting! Please take the key out of my pocket.\"";
+	mes "She is pointing at her dead body with a sad look on her face. You take the key.";
+	next;
+	mes "[Reid's Ghost]";
+	mes "\"Me and my husbands rooms are at the very end of the corridor upstairs. You will find my dairy in the bookshelf, hidden behind a book with poems. Hamond didn't like poems.\"";
+	next;
+	mes "\"Please go and read it.\"";
+	
+	set @state, 6;
+	callsub S_Update_Mask;
+	close;
+
+L_Read_Diary:
+	//TODO
+	close;
+
+L_Not_Enough_Tears:
+	mes "[Reid's Ghost]";
+	mes "\"This is beautiful! But this are not enough to represent my sadness.\"";
+	close;
+
+L_Man:
+	mes "[Reid's Ghost]";
+	mes "\"What I am about to tell is very personal. You're a man - I'm not sure, if I want to tell you. Maybe you kann show me you are sensitive someway.\"";
+	close;
+	
+L_Woman:
+	mes "[Reid's Ghost]";
+	mes "\"I'm going to tell you something very personal. But you are a woman like me - I'm sure you will understand.\"";	
+	next;
+	goto L_Lovestory;
+	
+L_Helped_Kid:
+	mes "[Reid's Ghost]";
+	mes "\"You showed me you're a sensitive person with helping my child.\"";	
+	next;
+	goto L_Lovestory;
+	
+L_Close:
+	close;
+	
+S_Update_Mask:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+                | (@state << @Graveyard_Inn_SHIFT);
+        return;
+}
