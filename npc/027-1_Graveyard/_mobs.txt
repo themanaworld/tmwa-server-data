@@ -78,26 +78,46 @@ On1047:
 	break;
 
 _MOBCOUNT_ZOMBIES:
-	if (QUEST_GYINN != 1) return;
+
+	set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
+	set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
+
+	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+	
+	if (@state != 1) return;
 // You have to kill 50?(or more?) zombies OR 50?(or more?) fallens. If you close the client, the @zombies count go back to zero.
 	set @zombies, @zombies + 1;
 // This is in DEBUG mode. That is the reason for the message.
 	message strcharinfo(0), "I killed " +@zombies+ " zombies. Now I need to kill only " +(50-@zombies)+ ".";
 	if (@zombies < 50) return;
 	message strcharinfo(0), "You found a strange bracelet hidden in the zombie's rotten rags. Maybe this is what the Crying child was looking for...";
-	set QUEST_GYINN, 2;
+	set @state, 2;
+	callsub S_Update_Mask;
 	return;
 
 _MOBCOUNT_FALLENS:
-	if (QUEST_GYINN != 1) return;
+
+	set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
+	set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
+
+	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+	
+	if (@state != 1) return;
 // You have to kill 50?(or more?) fallens OR 50?(or more?) zombies. If you close the client, the @fallens count go back to zero.
 	set @fallens, @fallens + 1;
 // This is in DEBUG mode. That is the reason for the message.
 	message strcharinfo(0), "I killed " +@fallens+ " fallens. Now I need to kill only " +(50-@fallens)+ ".";
 	if (@fallens < 50) return;
 	message strcharinfo(0), "You found a strange bracelet inside the fallen's broken helmet. Maybe this is what the Crying child was looking for...";
-	set QUEST_GYINN, 2;
+	set @state, 2;
+	callsub S_Update_Mask;
 	return;
+	
+S_Update_Mask:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+                | (@state << @Graveyard_Inn_SHIFT);
+        return;
 
 	end;
 }
