@@ -5,13 +5,11 @@
 
 	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
 	
-	//TODO: find out, why this don't work
 	set @Graveyard_Inn_Woman_MASK, NIBBLE_0_MASK;
 	set @Graveyard_Inn_Woman_SHIFT, NIBBLE_0_SHIFT;
 
-	set @woman, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK_Woman) >> @Graveyard_Inn_SHIFT_Woman);
-	
-	//TODO: determine correct nibble
+	set @woman, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Woman_MASK) >> @Graveyard_Inn_Woman_SHIFT);
+
 	set @Graveyard_Inn_Kid_MASK, NIBBLE_2_MASK;
 	set @Graveyard_Inn_Kid_SHIFT, NIBBLE_2_SHIFT;
 
@@ -25,7 +23,7 @@
 	set @SKULL_AMOUNT, 50;
 	set @BONE_EXP, 30000;
 	
-	if ((@state == 4) && (sex == 0) && (@kidstate >= 5)) goto L_Helped_Kid; //TODO: determine right value of kidstate
+	if ((@state == 4) && (sex == 0) && (@kidstate >= 7)) goto L_Helped_Kid;
 	if (@state == 3) goto L_Brought_Bones;
 	if (@state == 2) goto L_Check_Bones;
 	if (@state == 1) goto L_Ice_Cube;
@@ -70,6 +68,17 @@ L_Ice_Cube:
 	mes "[Hamond]";
 	mes "\"Hello my friend! Good to see you again. Did you find something to cool the drinks?\"";
 	next;
+	
+	if ((@kidstate == 4) && countitem("IceCube") > 0)
+		menu
+			"Maybe this never melting Ice Cubes?", L_Check_Ice, 
+			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"I'm still searching.", L_Close;
+	
+	if (@kidstate == 4)
+		menu
+			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
+			"I'm still searching.", L_Close;
 
 	if (countitem("IceCube") > 0)
 		menu
@@ -83,6 +92,8 @@ L_Check_Ice:
 	if (countitem("IceCube") < @ICE_CUBE_AMOUNT)
 		goto L_Not_Enough_Cubes;
 	delitem "IceCube", @ICE_CUBE_AMOUNT;
+	
+	getexp @ICE_CUBE_EXP, 0;
 	
 	set @state, 2;
 	callsub S_Update_Mask;
@@ -122,6 +133,8 @@ L_Check_Bones:
 	delitem "Bone", @BONE_AMOUNT;
 	delitem "Skull", @SKULL_AMOUNT;
 	
+	getexp @BONE_EXP, 0;
+	
 	set @state, 3;
 	callsub S_Update_Mask;
 
@@ -130,7 +143,16 @@ L_Brought_Bones:
 	mes "\"Thanks for your help! Now I'll be able to satisfy our patrons wishes.\"";
 	next;
 	
-	mes "TODO: remove, debug: @woman =" + @woman; 
+	if ((@kidstate == 4) && (@woman > 5))
+		menu
+			"Would you tell me about this mage named Savaric?", L_Savaric,
+			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"Your welcome.", L_Close;
+	
+	if (@kidstate == 4)
+		menu
+			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
+			"Your welcome.", L_Close;
 	
 	if (@woman > 5)	
 		menu
@@ -174,8 +196,19 @@ L_Woman:
 
 L_Helped_Kid:
 	mes "[Hamond]";
-	mes "\"It was very nice of you to help my son. I think, I can tell you about Savaric.\"";
+	mes "\"It was very nice of you to help my son. He told me, you found something he lost. I think, I can tell you about Savaric.\"";
 	goto L_Jealousy;
+	
+L_Bracelet:
+	mes "[Hamond]";
+	mes "\"Well.. this is just a cheap bracelet, it is very popular with the young kids these days, specially the magic students. They call it 'Scarab Armlet'. Fancy name, huh? But for me it is just a cheap bracelet.\"";
+	next;
+	mes "\"They also say it increases 'magic atack'. But, in fact, I think these kids are delusional. Magic, pah.\"";
+	next;
+	mes "\"Anyway, you can easily find one of these in a lot of small shops in this town. I am pretty sure that whoever lost it won't bother coming all the way back to get it.\"";
+	set @kidstate, 5;
+	callsub S_Update_Mask_Kid;
+	close;
 		
 L_Not_Enough_B:
 	if (countitem("Bone") < @BONE_AMOUNT)
@@ -190,7 +223,13 @@ L_Not_Enough_Cubes:
 	close;
 
 L_Close:
-	close;
+	close;	
+
+S_Update_Mask_Kid:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Kid_MASK))
+                | (@kidstate << @Graveyard_Inn_Kid_SHIFT);
+        return;
 
 S_Update_Mask:
         set QUEST_Graveyard_Inn,

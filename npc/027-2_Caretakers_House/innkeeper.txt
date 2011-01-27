@@ -6,8 +6,7 @@
 	set @Graveyard_Inn_SHIFT, NIBBLE_0_SHIFT;
 
 	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
-	
-	//TODO: determine correct nibble
+
 	set @Graveyard_Inn_Kid_MASK, NIBBLE_2_MASK;
 	set @Graveyard_Inn_Kid_SHIFT, NIBBLE_2_SHIFT;
 
@@ -23,7 +22,7 @@
 	if (@state == 3) goto L_Bring_Tears;
 	if (@state == 2) goto L_Offer_Help2;
 	if (@state == 1) goto L_After_Welcome;
-	
+
 	mes "You see a dead women lying on the floor, something that appears to be her ghost floating above her dead body.";
 	next;
 	mes "[Ghost]";
@@ -46,10 +45,11 @@ L_After_Welcome:
 	
 L_Ask_Dead:
 	if (baselevel < 85) goto L_Close;
+	
 	menu
 		"What happened to you?", - ,
 		"Thank you, I'll surely enjoy my visit.", L_Close;
-	
+			
 	mes "[Reids Ghost]";
 	mes "\"What happened to me? What do you mean?\"";
 	//TODO: add more possible answers
@@ -79,6 +79,13 @@ L_Ask_Dead:
 	
 L_Offer_Help2:
 	mes "Reids Ghost is still staring into space.";
+	
+	if (@kidstate == 5)
+		menu
+			"Shall I help you to find out what happened with you?", L_Skip1,
+			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"I don't want to bother you.", L_Close;
+L_Skip1:	
 	menu
 		"Shall I help you to find out what happened with you?", -,
 		"I don't want to bother you.", L_Close;
@@ -96,6 +103,17 @@ L_Bring_Tears:
 	mes "[Reids Ghost]";
 	mes "\"Did you find something, which can represent my sadness?\"";
 	next;
+	
+	if ((@kidstate == 5) && countitem("FrozenYetiTear") > 0)
+		menu
+			"I found this frozen tear to represent your sadness.", L_Check_Tears, 
+			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"I'm still searching.", L_Close;
+	
+	if (@kidstate == 5)
+		menu
+			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"I'm still searching.", L_Close;
 
 	if (countitem("FrozenYetiTear") > 0)
 		menu
@@ -110,6 +128,8 @@ L_Check_Tears:
 		goto L_Not_Enough_Tears;
 	delitem "FrozenYetiTear", @YETI_TEAR_AMOUNT;
 	
+	getexp @YETI_TEAR_EXP, 0;
+	
 	set @state, 4;
 	callsub S_Update_Mask;
 	
@@ -121,6 +141,12 @@ L_Ask_Life:
 	mes "\"How do you plan to help me?\"";
 	next;
 	
+	if (@kidstate == 5)
+		menu
+			"Please tell me about your life. Maybe this gives a clue what happened.",L_Skip2,
+			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"I need to think about that.", L_Close;
+L_Skip2:	
 	menu
 		"Please tell me about your life. Maybe this gives a clue what happened.",-,
 		"I need to think about that.", L_Close;
@@ -162,10 +188,9 @@ L_Ask_Life:
 	
 	if (Sex == 0) goto L_Woman;
 	//TODO: think, if gender change should be checked
-	//TODO: determine correct value for kidstate
 	if ((Sex == 1) && (@kidstate < 5)) goto L_Man;
 	
-	mes "\"What I'm going to tell you is very personal, but you showed me you're a sensitive person with helping my child.\"";
+	mes "\"What I'm going to tell you is very personal, but you showed me you're a sensitive person with bringing me the bracelet.\"";
 
 L_Lovestory:
 	mes "[Reids Ghost]";
@@ -225,14 +250,31 @@ L_Woman:
 	next;
 	goto L_Lovestory;
 	
+L_Bracelet:
+	mes "[Reids Ghost]";
+	mes "\"Oh, this - I - it's mine. It was a present from a very precious person.\"";
+	next;
+	mes "She reaches out to take the bracelet, but her fingers go just through it. She looks sad.";
+	next;
+	mes "\"Ah, I forgot again. It pains me not being able to hold it. Please, take it with you, I don't want it anymore. It hurts too much.\"";
+	set @kidstate, 6;
+	callsub S_Update_Mask_Kid;
+	close;
+	
 L_Helped_Kid:
 	mes "[Reids Ghost]";
-	mes "\"You showed me you're a sensitive person with helping my child.\"";
+	mes "\"You showed me you're a sensitive person with bringing me the bracelet.\"";
 	next;
 	goto L_Lovestory;
 	
 L_Close:
 	close;
+
+S_Update_Mask_Kid:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Kid_MASK))
+                | (@kidstate << @Graveyard_Inn_Kid_SHIFT);
+        return;
 	
 S_Update_Mask:
         set QUEST_Graveyard_Inn,
