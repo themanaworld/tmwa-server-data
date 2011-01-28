@@ -4,7 +4,7 @@
 	set @Graveyard_Inn_SHIFT, NIBBLE_3_SHIFT;
 
 	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
-	
+
 	set @Graveyard_Inn_Woman_MASK, NIBBLE_0_MASK;
 	set @Graveyard_Inn_Woman_SHIFT, NIBBLE_0_SHIFT;
 
@@ -14,7 +14,7 @@
 	set @Graveyard_Inn_Kid_SHIFT, NIBBLE_2_SHIFT;
 
 	set @kidstate, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Kid_MASK) >> @Graveyard_Inn_Kid_SHIFT);
-	
+
 	//TODO: determine sane values
 	set @ICE_CUBE_AMOUNT, 100;
 	set @ICE_CUBE_EXP, 10000;
@@ -22,11 +22,11 @@
 	set @BONE_AMOUNT, 100;
 	set @SKULL_AMOUNT, 50;
 	set @BONE_EXP, 30000;
-	
-	if (@state >= 3) goto L_Brought_Bones;
+
+	if (@state == 3) goto L_Brought_Bones;
 	if (@state == 2) goto L_Check_Bones;
 	if (@state == 1) goto L_Ice_Cube;
-	
+
 	mes "[Pale Man]";
 	mes "\"Hello, I hope you're enjoying your time in Reid's Inn. My name is Hamond, and I'm running this inn together with my beautiful wife Reid. If there is anything I can do for you, please let me know.\"";
 	if (baselevel < 85) goto L_Close;
@@ -35,7 +35,7 @@
 		"I'd like to know why all the people in here are dead.",-,
 		"Are you feeling well? You look very pale... In fact, deathly pale.",-,
 		"Thank you, but I'm fine.", L_Close;
-	
+
 	mes "Hamond seems very confused. Then he notices the grey color of his hands and begins to shake his head in panic.";
 	mes "[Hamond]";
 	mes "\"WHAT IS THIS?\"";
@@ -52,28 +52,28 @@
 	mes "\"How can I be dead, if I am walking around and talking? This is very strange. \"";
 	next;
 	mes "\"But nevertheless, I will continue to run this inn and do my best to make all our patrons happy and satisfied - be they alive or dead.\"";
-	next;	
+	next;
 	menu
 		"Can I help with that?", -;
 	mes "[Hamond]";
 	mes "\"Help me? I would never ask you for this, but actually, I need something to cool the drinks. Maybe you can find something.\"";
-	
+
 	set @state, 1;
 	callsub S_Update_Mask;
-	
-	close;	
+
+	close;
 
 L_Ice_Cube:
 	mes "[Hamond]";
 	mes "\"Hello my friend! Good to see you again. Did you find something to cool the drinks?\"";
 	next;
-	
+
 	if ((@kidstate == 4) && countitem("IceCube") > 0)
 		menu
-			"Maybe this never melting Ice Cubes?", L_Check_Ice, 
-			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"Maybe this never melting Ice Cubes?", L_Check_Ice,
+			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
 			"I'm still searching.", L_Close;
-	
+
 	if (@kidstate == 4)
 		menu
 			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
@@ -81,22 +81,22 @@ L_Ice_Cube:
 
 	if (countitem("IceCube") > 0)
 		menu
-			"Maybe this never melting Ice Cubes?", L_Check_Ice, 
+			"Maybe this never melting Ice Cubes?", L_Check_Ice,
 			"I'm still searching.", L_Close;
-	
+
 	mes "\"You didn't? Too bad.\"";
 	close;
-	
+
 L_Check_Ice:
 	if (countitem("IceCube") < @ICE_CUBE_AMOUNT)
 		goto L_Not_Enough_Cubes;
 	delitem "IceCube", @ICE_CUBE_AMOUNT;
-	
+
 	getexp @ICE_CUBE_EXP, 0;
-	
+
 	set @state, 2;
 	callsub S_Update_Mask;
-	
+
 	mes "[Hamond]";
 	mes "\"Yes, wonderfull! That's exactly what I need.\"";
 	next;
@@ -123,7 +123,7 @@ L_Check_Ice:
 	next;
 	mes "\"Can you bring me a huge amount of bones and skulls? This way I can fulfill that peculilar wish and make another patron very happy!\"";
 	close;
-	
+
 L_Check_Bones:
 	mes "[Hamond]";
 	mes "\"Welcome back! Let me see what you have.\"";
@@ -131,9 +131,9 @@ L_Check_Bones:
 		goto L_Not_Enough_B;
 	delitem "Bone", @BONE_AMOUNT;
 	delitem "Skull", @SKULL_AMOUNT;
-	
+
 	getexp @BONE_EXP, 0;
-	
+
 	set @state, 3;
 	callsub S_Update_Mask;
 
@@ -141,41 +141,38 @@ L_Brought_Bones:
 	mes "[Hamond]";
 	mes "\"Thanks for your help! Now I'll be able to satisfy another strange request from one of our patrons.\"";
 	next;
-	
+
 	if ((@kidstate == 4) && (@woman > 5))
 		menu
 			"Would you tell me about this mage named Savaric?", L_Savaric,
-			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
 			"You're welcome.", L_Close;
-	
+
 	if (@kidstate == 4)
 		menu
 			"I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
 			"You're welcome.", L_Close;
-	
-	if (@woman > 5)	
+
+	if (@woman > 5)
 		menu
 			"Would you tell me about this mage named Savaric?", L_Savaric,
 			"You're welcome.",-;
 	mes "[Hamond]";
 	mes "\"Please make yourself at home.\"";
-	
+
 	close;
-	
+
 L_Savaric:
 	mes "Hamond's face turns into an ugly grimace.";
 	mes "[Hamond]";
 	mes "\"This egomaniac cheekily - \"";
 	next;
-	
-	//TODO: think, if gender change should be checked
-	//TODO: determine correct value for kidstate
+
 	if ((Sex == 0) && (@kidstate < 7)) goto L_Woman;
-	if ((Sex == 1) && (@kidstate < 7)) goto L_Man;	
-	mes "\"Well, I have been thinking about you. You seem to be a very helpful and wise person. Even my son told me good things about you, making a long speech about how great you are and your ability to comprehend and deal with delicate matters. I wonder how he reached that conclusion... But anyway, I'll tell you about savaric.\"";
+	if ((Sex == 1) && (@kidstate < 7)) goto L_Man;
+	mes "\"Well, I have been thinking about you. You seem to be a very helpful and wise person. Even my son told me good things about you, making a long speech about how great you are and your ability to comprehend and deal with delicate matters. I wonder how he reached that conclusion... But anyway, I'll tell you about Savaric.\"";
 
 L_Jealousy:
-//TODO: go on here
 	mes "TODO: add story :P";
 	close;
 L_Man:
@@ -195,7 +192,7 @@ L_Woman:
 //	mes "[Hamond]";
 //	mes "\"It was very nice of you to help my son. He told me, you found something he lost. I think, I can tell you about Savaric.\"";
 //	goto L_Jealousy;
-	
+
 L_Bracelet:
 	mes "[Hamond]";
 	mes "\"Well.. this is just a cheap bracelet, it is very popular with the young kids these days, specially the magic students. They call it 'Scarab Armlet'. Fancy name, huh? But for me it is just a cheap bracelet.\"";
@@ -206,7 +203,7 @@ L_Bracelet:
 	set @kidstate, 5;
 	callsub S_Update_Mask_Kid;
 	close;
-		
+
 L_Not_Enough_B:
 	if (countitem("Bone") < @BONE_AMOUNT)
 		mes "\"I'm not sure, but I think more bones will be better.\"";
@@ -220,7 +217,7 @@ L_Not_Enough_Cubes:
 	close;
 
 L_Close:
-	close;	
+	close;
 
 S_Update_Mask_Kid:
         set QUEST_Graveyard_Inn,

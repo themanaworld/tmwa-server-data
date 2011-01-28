@@ -1,7 +1,7 @@
 // Temporary placing of all non shop npcs
 // A proper break down of files will need to be done later
 
-// drunk lover: quest, 
+// drunk lover: quest,
 // werewolf: gambling,
 // chef's helper: simple dialog,
 // horn mage: golbenez,
@@ -22,26 +22,99 @@
 }
 
 027-2.gat,118,23,0	script	Werewolf	305,{
+	end;
+}
+
+027-2.gat,110,30,0	script	Debug	305,{
+	set @Graveyard_Inn_Woman_MASK, NIBBLE_0_MASK;
+	set @Graveyard_Inn_Woman_SHIFT, NIBBLE_0_SHIFT;
+
+	set @woman, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Woman_MASK) >> @Graveyard_Inn_Woman_SHIFT);
+
+	set @Graveyard_Inn_Lover_MASK, NIBBLE_1_MASK;
+	set @Graveyard_Inn_Lover_SHIFT, NIBBLE_1_SHIFT;
+
+	set @Lover, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Lover_MASK) >> @Graveyard_Inn_Lover_SHIFT);
+
+	set @Graveyard_Inn_Child_MASK, NIBBLE_2_MASK;
+	set @Graveyard_Inn_Child_SHIFT, NIBBLE_2_SHIFT;
+
+	set @Child, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Child_MASK) >> @Graveyard_Inn_Child_SHIFT);
+
+	set @Graveyard_Inn_Husband_MASK, NIBBLE_3_MASK;
+	set @Graveyard_Inn_Husband_SHIFT, NIBBLE_3_SHIFT;
+
+	set @Husband, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Husband_MASK) >> @Graveyard_Inn_Husband_SHIFT);
+
+	set @Graveyard_Inn_Golb_MASK, NIBBLE_4_MASK;
+	set @Graveyard_Inn_Golb_SHIFT, NIBBLE_4_SHIFT;
+
+	set @Golb, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Golb_MASK) >> @Graveyard_Inn_Golb_SHIFT);
+
 	mes "debug for the lovetriangle quest";
+	mes "there seems to be a bug in the debug somewhere - choose reset all, if the other stuff don't work.";
 	menu
-		"reset reid", -,
+		"reset all",-,
+		"reset reid " + @woman,L_Reid,
+		"reset lover " + @Lover,L_Lover,
+		"reset child " + @Child,L_Child,
+		"reset husband " + @Husband,L_Husband,
+		"reset golbanez " + @Golb,L_Golb,
 		"leave", L_Close;
 
-	set @Graveyard_Inn_MASK, NIBBLE_0_MASK;
-	set @Graveyard_Inn_SHIFT, NIBBLE_0_SHIFT;
+set QUEST_Graveyard_Inn, 0;
 
-	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
-	set @state, 0;
-	callsub S_Update_Mask;
+L_Reid:
+	set @woman, 0;
+	callsub S_Update_Mask_Woman;
 	close;
-
+L_Lover:
+	set @Lover, 0;
+	callsub S_Update_Mask_Lover;
+	close;
+L_Child:
+	set @Child, 0;
+	callsub S_Update_Mask_Child;
+	close;
+L_Husband:
+	set @Husband, 0;
+	callsub S_Update_Mask_Husband;
+	close;
+L_Golb:
+	set @Golb, 0;
+	callsub S_Update_Mask_Golb;
+	close;
 L_Close:
 	close;
 
-S_Update_Mask:
+S_Update_Mask_Golb:
         set QUEST_Graveyard_Inn,
-        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
-                | (@state << @Graveyard_Inn_SHIFT);
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Golb_MASK))
+                | (@state << @Graveyard_Inn_Golb_SHIFT);
+        return;
+
+S_Update_Mask_Husband:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Husband_MASK))
+                | (@state << @Graveyard_Inn_Husband_SHIFT);
+        return;
+
+S_Update_Mask_Child:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Child_MASK))
+                | (@state << @Graveyard_Inn_Child_SHIFT);
+        return;
+
+S_Update_Mask_Lover:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Lover_MASK))
+                | (@state << @Graveyard_Inn_Lover_SHIFT);
+        return;
+
+S_Update_Mask_Woman:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Woman_MASK))
+                | (@state << @Graveyard_Inn_Woman_SHIFT);
         return;
 }
 
@@ -62,11 +135,11 @@ L_0:
 	close;
 L_1:
 	mes "[Ghost Drunker]";
-	mes "\"Ish that a Zzombee?...\"";	
+	mes "\"Ish that a Zzombee?...\"";
 	close;
 L_2:
 	mes "[Ghost Drunker]";
-	mes "\"Auuu... Hiccup... Don't byte mee... \"";	
+	mes "\"Auuu... Hiccup... Don't byte mee... \"";
 	close;
 L_3:
 	mes "[Ghost Drunker]";
@@ -90,15 +163,7 @@ L_3:
 	close;
 }
 
-027-2.gat,39,91,0	script	Golbenez	307,{
-	end;
-}
-
 027-2.gat,100,43,0	script	Evil Guard	316,{
-	end;
-}
-
-027-2.gat,43,73,0	script	Hanged Lover	317,{
 	end;
 }
 

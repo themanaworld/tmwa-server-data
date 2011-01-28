@@ -1,0 +1,142 @@
+027-2.gat,43,73,0	script	Savaric	317,{
+
+	set @Graveyard_Inn_MASK, NIBBLE_1_MASK;
+	set @Graveyard_Inn_SHIFT, NIBBLE_1_SHIFT;
+
+	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+
+	set @Graveyard_Inn_Woman_MASK, NIBBLE_0_MASK;
+	set @Graveyard_Inn_Woman_SHIFT, NIBBLE_0_SHIFT;
+
+	set @woman, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Woman_MASK) >> @Graveyard_Inn_Woman_SHIFT);
+
+	set @Graveyard_Inn_Golbanez_MASK, NIBBLE_4_MASK;
+	set @Graveyard_Inn_Golbanez_SHIFT, NIBBLE_4_SHIFT;
+
+	set @golbanez, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Golbanez_MASK) >> @Graveyard_Inn_Golbanez_SHIFT);
+
+	//TODO: determine sane values
+	set @CRYSTAL_AMOUNT, 500;
+	set @CRYSTAL_EXP, 100000;
+
+	if (@state == 2) goto L_News;
+	if (@state == 1) goto L_Crystals;
+
+	mes "You see a dead man hanging. This place is creepy!";
+	next;
+	mes "Suddenly the man opens his eyes and look at you.";
+	next;
+	mes "[Hanged Man]";
+	mes "\"Oh, hello. Nice to see you - I seem to be dead, but I don't know why and why I'm still consciousness. This is very interesting.\"";
+	menu
+		"INTERESTING? Are you crazy?",-;
+	mes "[Hanged Man]";
+	mes "\"Well, as you mention it, it is quite annyoing and uncomfortable. Would you mind to help me coming down on the floor?\"";
+	next;
+	mes "You take a step towards him, but some invisible force holds you back.";
+	next;
+	mes "[Hanged Man]";
+	mes "\"Oh, someone is holding you back with magic! I sense a really dark and mighty power. What has happened!?\"";
+	next;
+	mes "\"Can I ask you for a favor? Can you bring me lots of dark crystals? You might need to ask a dark mage for it. I want to try to break the barrier.\"";
+	set @state, 1;
+	callsub S_Update_Mask;
+	close;
+
+L_Crystals:
+	mes "[Hanged Man]";
+	mes "\"Ah, you're back! Did you get the dark crystals?\"";
+
+	if (countitem("DarkCrystal") == 0)
+		menu
+			"Not yet.", L_Close;
+
+	if (countitem("DarkCrystal") < @CRYSTAL_AMOUNT)
+		goto L_Not_Enough_Crystals;
+
+	delitem "DarkCrystal", countitem("DarkCrystal");
+	getexp @CRYSTAL_EXP, 0;
+	next;
+	mes "\"Oh, I can feel them! Please lay them down on the floor.\"";
+	next;
+	mes "You lay your dark crystals down on the floor and step back, nervously expecting the coming.";
+	next;
+	mes "The hanged man seems very concentrated now, which looks absurdly with him hanging there.";
+	next;
+	mes "The dark crystals start to glow and buzz. You take another step back.";
+	next;
+	mes "The buzzing turns louder and louder, so you can't hear the word, the hanged man is calling now.";
+	next;
+	heal -300, 0;
+	mes "The crystals explode and hit you!";
+	//TODO: try this!
+	if (hp <= 0)
+		close;
+	next;
+	mes "You fall down on the floor and blink hectically to regain your eyesight again.";
+	next;
+	mes "[Hanged Man]";
+	mes "\"Hello? You're ok? I'm sorry, something went wrong. It seems, not only there is a magical barrier, but also my manaflow is blocked. I don't know, if this is because I'm dead or part of the barrier spell.\"";
+	next;
+	mes "\"I never was dead before, so I can't be sure. But I was able to access my magic - it just got out of control in the critical moment.\"";
+	next;
+	mes "\"This is fascinating!\"";
+	menu
+		"Ok, you are crazy!",-,
+		"Yes, it is very fascinating to be blown up!",-,
+		"I NEARLY DIED! AND YOU THINK, THIS IS FASCINATING?!",-;
+	mes "[Hanged Man]";
+	mes "\"I sometimes forget the fact, not everybody is fascinated by the riddles of magic. Please forgive me.\"";
+	next;
+	mes "\"And I even didn't introduced myself! I am very sorry for my rude behaviour!\"";
+	next;
+	mes "\"My name is Savaric, first apprentice of the Great Demon Summoner Ymbert.\"";
+	next;
+	mes "\"If you can forgive me my behaviour, may I ask you for another favor? Can you please search for someone or something in this inn, that could be the source of this dark magic?\"";
+	set @state, 2;
+	callsub S_Update_Mask;
+	close;
+
+L_News:
+	mes "[Savaric]";
+	mes "\"Welcome back. Did you find a possible source for the dark magic?\"";
+	if ((@woman < 6) && (@golbanez == 0))
+		menu
+			"Not yet, I'm still searching.",L_Close;
+
+	if ((@woman < 6) && (@golbanez > 0))
+		menu
+			"Yes, let me tell you.",L_Golbanez,
+			"I don't think so",L_Close;
+
+	if ((@woman >=  6) && (@golbanez == 0))
+		menu
+			"Can you tell me about your relationship to Reid?",L_Reid,
+			"Not yet, I'm still searching.",L_Close;
+
+	if ((@woman >=  6) && (@golbanez >= 0))
+		menu
+			"Can you tell me about your relationship to Reid?",L_Reid,
+			"Yes, let me tell you.",L_Golbanez,
+			"I don't think so",L_Close;
+
+L_Golbanez:
+	mes "TODO: add story";
+	close;
+
+L_Reid:
+	mes "TODO: add story";
+	close;
+
+L_Not_Enough_Crystals:
+	mes "It seems, you managed to get some, but not enough. Can you bring me more?";
+	close;
+L_Close:
+	close;
+
+S_Update_Mask:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+                | (@state << @Graveyard_Inn_SHIFT);
+        return;
+}

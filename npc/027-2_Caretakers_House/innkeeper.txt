@@ -1,7 +1,7 @@
-027-2.gat,104,39,0	script	Reid's Ghost	315,{
+027-2.gat,104,39,0	script	Reids Ghost	315,{
 
 //TODO: add child quest context another way: not helping her child, but finding the bracelet
-	
+
 	set @Graveyard_Inn_MASK, NIBBLE_0_MASK;
 	set @Graveyard_Inn_SHIFT, NIBBLE_0_SHIFT;
 
@@ -11,11 +11,11 @@
 	set @Graveyard_Inn_Kid_SHIFT, NIBBLE_2_SHIFT;
 
 	set @kidstate, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Kid_MASK) >> @Graveyard_Inn_Kid_SHIFT);
-	
+
 	//TODO: determine sane values
 	set @YETI_TEAR_AMOUNT, 10;
 	set @YETI_TEAR_EXP, 60000; // maybe about 1% for a level 80?
-	
+
 	if (@state == 6) goto L_Read_Diary;
 	if (@state == 5) goto L_Check_Kid;
 	if (@state == 4) goto L_Ask_Life;
@@ -27,10 +27,10 @@
 	next;
 	mes "[Ghost]";
 	mes "\"He- I - What - Oh -\"";
-	mes "The woman's ghost seems to be confused.";
+	mes "The womans ghost seems to be confused.";
 	next;
 	mes "[Ghost]";
-	mes "Oh, I'm sorry. Welcome to Reid's Inn. My name is Reid, I am the innkeeper of this wonderful place of leisure. Please enjoy your visit here!";
+	mes "Oh, I'm sorry. Welcome to Reids Inn. My name is Reid, I am the innkeeper of this wonderful place of leisure. Please enjoy your visit here!";
 	next;
 
 	set @state, 1;
@@ -39,58 +39,58 @@
 	goto L_Ask_Dead;
 
 L_After_Welcome:
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"Please enjoy yourself!\"";
 	if (baselevel < 85) goto L_Close;
-	
+
 L_Ask_Dead:
 	if (baselevel < 85) goto L_Close;
-	
+
 	menu
 		"What happened to you?", - ,
 		"Thank you, I'll surely enjoy my visit.", L_Close;
-			
-	mes "[Reid's Ghost]";
+
+	mes "[Reids Ghost]";
 	mes "\"What happened to me? What do you mean?\"";
 	//TODO: add more possible answers
 	menu
 		"Ahm, you don't look very well - actually, you look dead.",-,
 		"You don't seem to be in the best condition.",-,
 		"You are dead!",-;
-	
+
 	mes "Reid looks down at her body and turns even more pale, if this is possible.";
 	next;
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"OH?\"";
 	next;
-	
+
 	menu
 		"I'm sorry. I didn't know you weren't aware of that.",-,
 		"Yes - do you understand my question now?",-,
 		"Shall I help you to find out what happened to you?", L_Offer_Help1;
 
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"I'm dead? But why? And why am I still here?\"";
 	next;
 	mes "She stares into space and doesn't seem to notice you anymore.";
 	set @state, 2;
 	callsub S_Update_Mask;
 	close;
-	
+
 L_Offer_Help2:
-	mes "Reid's Ghost is still staring into space.";
-	
+	mes "Reids Ghost is still staring into space.";
+
 	if (@kidstate == 5)
 		menu
 			"Shall I help you to find out what happened to you?", L_Skip1,
-			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
 			"I don't want to bother you.", L_Close;
-L_Skip1:	
+L_Skip1:
 	menu
 		"Shall I help you to find out what happened to you?", -,
 		"I don't want to bother you.", L_Close;
 
-L_Offer_Help1:	
+L_Offer_Help1:
 	mes "\"I.. I don't know you. Why should you help me?\"";
 	next;
 	mes "\"Bring me a proof you are serious. My life seems to have ended in a terrible and sad way, I can feel it very clearly. If you want to help me, please bring me something that represents this immeasurable sadness I am feeling!\"";
@@ -98,60 +98,60 @@ L_Offer_Help1:
 	set @state, 3;
 	callsub S_Update_Mask;
 	close;
-	
+
 L_Bring_Tears:
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"Did you find something that can represent my sadness?\"";
 	next;
-	
+
 	if ((@kidstate == 5) && countitem("FrozenYetiTear") > 0)
 		menu
-			"I found this frozen tear to represent your sadness.", L_Check_Tears, 
-			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"I found this frozen tear to represent your sadness.", L_Check_Tears,
+			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
 			"I'm still searching.", L_Close;
-	
+
 	if (@kidstate == 5)
 		menu
-			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
 			"I'm still searching.", L_Close;
 
 	if (countitem("FrozenYetiTear") > 0)
 		menu
-			"I found this frozen tear to represent your sadness.", L_Check_Tears, 
+			"I found this frozen tear to represent your sadness.", L_Check_Tears,
 			"I'm still searching.", L_Close;
-	
+
 	mes "\"You didn't? It seems you're not serious with your offer to help me.\"";
 	close;
-	
+
 L_Check_Tears:
 	if (countitem("FrozenYetiTear") < @YETI_TEAR_AMOUNT)
 		goto L_Not_Enough_Tears;
 	delitem "FrozenYetiTear", @YETI_TEAR_AMOUNT;
-	
+
 	getexp @YETI_TEAR_EXP, 0;
-	
+
 	set @state, 4;
 	callsub S_Update_Mask;
-	
-	mes "[Reid's Ghost]";
+
+	mes "[Reids Ghost]";
 	mes "\"These tears.. how they shimmer in the candle light. Yes, it seems you are serious about your offer. I think you have the sensibility to help me find out the real meaning of this terrible feeling.\"";
 	next;
 L_Ask_Life:
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"But how do you plan to help me?\"";
 	next;
-	
+
 	if (@kidstate == 5)
 		menu
 			"Please tell me about your life. Maybe this gives a clue what happened.",L_Skip2,
-			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet, 
+			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet,
 			"I need to think about that.", L_Close;
-L_Skip2:	
+L_Skip2:
 	menu
 		"Please tell me about your life. Maybe this gives a clue what happened.",-,
 		"I need to think about that.", L_Close;
-		
-	mes "[Reid's Ghost]";
+
+	mes "[Reids Ghost]";
 	mes "\"About my life? Well ok.\"";
 	next;
 	mes "\"I'm the owner of this inn. I inherited it from my parents, who ran it while I was a child.\"";
@@ -169,11 +169,11 @@ L_Skip2:
 	mes "Reid seems to be tortured by her memories.";
 	next;
 	mes "\"That was a very hard time.\"";
-	
+
 	menu
 		"Yes, yes, but what about your life shortly before you died?",-,
 		"I can imagine. I'm very sorry for you",-;
-	
+
 	mes "She doesn't seem to pay much attention on what you say.";
 	next;
 	mes "\"But Hamond, my friend since I was a child, helped me in those bad times. We built up the inn again and we - we married.\"";
@@ -182,29 +182,29 @@ L_Skip2:
 	next;
 	mes "\"Everything was peaceful and I thought I had found my place. But one day -\"";
 	next;
-	
+
 	set @state, 5;
 	callsub S_Update_Mask;
 
-L_Check_Kid:	
-	
+L_Check_Kid:
+
 	if (@kidstate == 5)
 		menu
-			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet; 
+			"Hi. I found this in the main hall. Do you know to whom it belongs?", L_Bracelet;
 
 	if ((Sex == 1) && (@kidstate < 7)) goto L_Man;
 	if ((Sex == 0) && (@kidstate < 7)) goto L_Woman;
-	
+
 	mes "\"What I'm going to tell you is very personal, but your acts showed me you're a person I can trust. You kindly asked me about that bracelet you have found... and also, even my son, who is always so reserved with strangers, came to me and spent a long time telling me a lot of nice things about you.\"";
 	next;
 
 L_Lovestory:
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"It began as a completely normal day. We were taking care of our overnight guests and prepared the inn for the evening rush.\"";
 	next;
 	mes "\"But that day, a very special patron checked in. His name was Savaric, and he was a student of magic. He came from far away to check some rumours about a legendary mana seed.\"";
 	next;
-	mes "Reid's Ghost has a completely enchanted look on her face.";
+	mes "Reids Ghost has a completely enchanted look on her face.";
 	next;
 	mes "\"He really made me feel alive - when he was near, I was feeling like I never felt before. I started to search for reasons to be near him - I told myself that I liked him just because he was interesting, coming from so far away and being a mage.\"";
 	next;
@@ -214,25 +214,25 @@ L_Lovestory:
 	next;
 	mes "She pulls a key out of her pocket as transparent as herself. As you try to grab it, your fingers just go through it.";
 	next;
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"I keep forgetting! Please take the key out of my pocket.\"";
 	mes "She is pointing at her dead body with a sad look on her face. You take the key.";
 	next;
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"This is the key to our personal room, it is located at the very end of the corridor upstairs. You will find my dairy in the bookshelf, hidden behind a book with poems. Hamond don't like poems.\"";
 	next;
 	mes "\"Please go and read it.\"";
-	
+
 	set @state, 6;
 	callsub S_Update_Mask;
 	close;
 
 L_Read_Diary:
-	//TODO
+	mes "TODO: add story";
 	close;
 
 L_Not_Enough_Tears:
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	set @tears, countitem("FrozenYetiTear");
 	if (@tears == 1)
 		mes "\"This is beautiful! But one of them isn't enough to represent my sadness.\"";
@@ -241,7 +241,7 @@ L_Not_Enough_Tears:
 	close;
 
 L_Man:
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"What I have to tell is very personal. You're a man - I'm not sure if I want to tell you. I know you helped me already and showed me you are a sensitive man, but I barely know you. I am sorry, but I have to think a little bit more. Maybe later, when I know you better, I can tell you more about it. \"";
 	//TODO: REMOVE!!!
 	mes "Skip that for debugging?";
@@ -249,9 +249,9 @@ L_Man:
 		"yes",L_Lovestory,
 		"no",-;
 	close;
-	
+
 L_Woman:
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"What I have to tell you something very personal. You are a woman like me - I'm sure you would understand.\"";
 	next;
 	mes "\"But I'm not sure if I want to tell you. I know you helped me already and showed me you are a sensitive woman, but I barely know you. I am sorry, but I have to think a little bit more. Maybe later, when I know you better, I can tell you more about it. \"";
@@ -261,9 +261,9 @@ L_Woman:
 		"yes",L_Lovestory,
 		"no",-;
 	close;
-	
+
 L_Bracelet:
-	mes "[Reid's Ghost]";
+	mes "[Reids Ghost]";
 	mes "\"Oh, this - I - it's mine. It was a present from a very precious person.\"";
 	next;
 	mes "She reaches out to take the bracelet, but her fingers go just through it. She looks sad.";
@@ -272,13 +272,13 @@ L_Bracelet:
 	set @kidstate, 6;
 	callsub S_Update_Mask_Kid;
 	close;
-	
+
 //L_Helped_Kid:
-//	mes "[Reid's Ghost]";
+//	mes "[Reids Ghost]";
 //	mes "\"You showed me you're a sensitive person with bringing me the bracelet.\"";
 //	next;
 //	goto L_Lovestory;
-	
+
 L_Close:
 	close;
 
@@ -287,7 +287,7 @@ S_Update_Mask_Kid:
         	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Kid_MASK))
                 | (@kidstate << @Graveyard_Inn_Kid_SHIFT);
         return;
-	
+
 S_Update_Mask:
         set QUEST_Graveyard_Inn,
         	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
