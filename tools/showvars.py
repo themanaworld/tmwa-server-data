@@ -16,6 +16,7 @@ def handleFile(fname):
 	f = open(fname)
 	lines = f.readlines();
 	f.close()
+	rm=[]
 	for l in lines:
 		#remove comments
 		line = l.split(r"//")[0]
@@ -39,43 +40,67 @@ def handleFile(fname):
 		if endpos>0:
 			#ok its a oneliner, the comma is in the same line:
 			varname = line[0:endpos].strip()
-			if varname.startswith("@"):
-				continue
-			if varname.startswith("$"):
-				continue
-			if varname in allvars:
-				if not fname in allvars[varname]:
-					allvars[varname] += [fname]
+			assignment = line[endpos+1:].strip()[:-1] # remove semicolon
+			if assignment != "0":
+				if varname.startswith("@"):
+					continue
+				if varname.startswith("$"):
+					continue
+				if varname in allvars:
+					if not fname in allvars[varname]:
+						allvars[varname] += [fname]
+				else:
+					allvars[varname] = [fname]
 			else:
-				allvars[varname] = [fname]
+				#print fname
+				if fname == "." + os.sep + "functions" + os.sep + "clear_vars.txt":
+					rm += [varname]
+
 		else:
 			# ok error, you need to check manually:
 			print "\tline:\t",line
+	return rm
 
 allvars = {}
-
+rmvars = []
 print "please check manully for vars in here:"
 os.chdir(".."+os.sep+"npc")
+
 for tpl in os.walk("."):
 	for fname in tpl[2]:
-		handleFile(tpl[0]+os.sep+fname)
+		rmvars += handleFile(tpl[0]+os.sep+fname)
 
 # now check if the variable is not in npc/functions/clear_vars.txt, if so remove it
-checkstring = "." + os.sep + "functions" + os.sep + "clear_vars.txt"
-rm = []
-for var in allvars:
-	if checkstring in allvars[var]:
-		rm += [var]
+#~ checkstring = "." + os.sep + "functions" + os.sep + "clear_vars.txt"
+#~ rm = []
+#~ for var in allvars:
+	#~ if checkstring in allvars[var]:
+		#~ rm += [var]
 
-#now really remove these vars
-for var in rm:
-	del allvars[var]
-
-print "These variables are valid variables of the scripts:"
+unusedcounter=0
+usedcounter=0
+print "These variables are found in the scripts, which are deleted in clear_vars"
 for var in allvars:
+	if not var in rmvars:
+		continue
+
+	unusedcounter+=1
 	print "\t",var
 	if options.verbose:
 		for fname in allvars[var]:
 			print "\t","\t", fname
 
-print "number of vars:", len(allvars)
+
+print "These variables are valid variables of the scripts:"
+for var in allvars:
+	if var in rmvars:
+		continue
+
+	usedcounter+=1
+	print "\t",var
+	if options.verbose:
+		for fname in allvars[var]:
+			print "\t","\t", fname
+
+print "number of vars used:", usedcounter
+print "number of vars cleared:", unusedcounter
