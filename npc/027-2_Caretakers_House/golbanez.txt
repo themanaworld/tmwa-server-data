@@ -5,12 +5,34 @@
 
 	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
 
+	set @Graveyard_Inn_Woman_MASK, NIBBLE_0_MASK;
+	set @Graveyard_Inn_Woman_SHIFT, NIBBLE_0_SHIFT;
+
+	set @woman, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Woman_MASK) >> @Graveyard_Inn_Woman_SHIFT);
+
 	set @Graveyard_Inn_Lover_MASK, NIBBLE_1_MASK;
 	set @Graveyard_Inn_Lover_SHIFT, NIBBLE_1_SHIFT;
 
 	set @lover, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Lover_MASK) >> @Graveyard_Inn_Lover_SHIFT);
 
-	if (@state ==1) goto L_Back;
+	set @Graveyard_Inn_Husband_MASK, NIBBLE_3_MASK;
+	set @Graveyard_Inn_Husband_SHIFT, NIBBLE_3_SHIFT;
+
+	set @husband, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Husband_MASK) >> @Graveyard_Inn_Husband_SHIFT);
+
+	//TODO: determine sane values
+	set @ROTTENRAGS_AMOUNT, 50;
+	set @ROTTENRAGS_EXP, 30000;
+	set @UNDEADEAR_AMOUNT, 50;
+	set @UNDEADEAR_EXP, 50000;
+	set @UNDEADEYE_AMOUNT, 50;
+	set @UNDEADEYE_EXP, 50000;
+
+	if (@state == 5) goto L_All;
+	if (@state == 4) goto L_Savaric;
+	if (@state == 3) goto L_Hamond;
+	if (@state == 2) goto L_Reid;
+	if (@state == 1) goto L_Back;
 
 	mes "[Golbanez]";
 	mes "\"How do you like my place of leisure, mortal?\"";
@@ -50,7 +72,172 @@
 	close;
 
 L_Back:
-	//TODO: continue here
+	if (@lover >= 3)
+		goto L_Memory;
+	mes "Golbanez decides to ignore your presence.";
+	close;
+
+L_Memory:
+	mes "[Golbanez]";
+	mes "\"Mortal, you're back. Are you going to bore me with other stupid questions?\"";
+	menu
+		"I want to know what happened in the inn before it was destroyed.",-,
+		"Nevermind.",L_Close;
+	if ((@woman >= 7) && (@lover >= 3) && (@husband >= 4))
+		goto L_Detective;
+	mes "[Golbanez]";
+	mes "\"I was watching you playing detective. It is amusing. Play it a little longer and I may show you some of the memories from that time.\"";
+	close;
+
+L_Detective:
+	mes "[Golbanez]";
+	mes "\"Watching you digging in this dirty little love story of that foolish humans was certainly amusing so far.\"";
+	next;
+	mes "\"I can show you all their memories, would you like that?\"";
+	next;
+	mes "\"The only thing you'd have to do is promise me your soul.\"";
+	menu
+		"No!",-,
+		"That's too expensive. Make another offer.",-,
+		"My soul?!",-;
+	mes "Golbanez giggles, which looks strange at an intimidating being as he is.";
+	mes "[Golbanez]";
+	mes "\"You should have seen your face. Really, mortals can be so funny.\"";
+	next;
+	mes "\"Ok, I'll show you the birdbrained womens memories, if you bring me " + @ROTTENRAGS_AMOUNT + " rotten rags. And an orange cake.\"";
+	set @state, 2;
+	callsub S_Update_Mask;
+	close;
+
+L_Reid:
+	mes "[Golbanez]";
+	mes "\"So, do you have the " + @ROTTENRAGS_AMOUNT + " rotten rags I want?\"";
+	if (countitem("RottenRags") < @ROTTENRAGS_AMOUNT)
+		menu
+			"What do you need that for?",L_Why_Stuff,
+			"I'm working on that.",L_Close;
+	menu
+		"Here you go.",-,
+		"I'm working on that.",L_Close;
+	if (countitem("OrangeCake") < 1)
+		goto L_No_Cake;
+	if (countitem("RottenRags") < @ROTTENRAGS_AMOUNT)
+		goto L_Betray;
+	delitem "RottenRags", @ROTTENRAGS_AMOUNT;
+	delitem "OrangeCake", 1;
+	getexp @ROTTENRAGS_EXP, 0;
+
+	mes "[Golbanez]";
+	mes "\"Very nice. I will show you the womans memories of that night. Come closer.\"";
+	next;
+	mes "\"You're hesitating but then take a step towards Golbanez. He grabs your head with his claw like fingers.\"";
+	next;
+	callsub S_Reidsmem;
+	set @state, 3;
+	callsub S_Update_Mask;
+	menu
+		"Can I see it again?",-,
+		"Wow, that was interesting.",-,
+		"Why do you collect such personal memories?",-;
+	mes "Golbanez takes an amused look at you.";
+	next;
+	mes "[Golbanez]";
+	mes "\"I'll explain the deal to you. Once you paid for a memory, you can come and see it again as often as you like. And I collect whatever memory I want to. Mortals can be very amusing.\"";
+	next;
+	mes "\"I have more memories you might want to see. Bring me "+ @UNDEADEAR_AMOUNT + " undead ears. And a chocolate cake.\"";
+	close;
+
+L_Hamond:
+	mes "[Golbanez]";
+	mes "\"Ah, mortal. Do you have the " + @UNDEADEAR_AMOUNT + " undead ears I want?\"";
+	if (countitem("UndeadEar") < @UNDEADEAR_AMOUNT)
+		menu
+			"I want to see Reids memory again.",L_R_Again,
+			"What will you do with it?",L_Why_Stuff,
+			"Not yet.",L_Close;
+	menu
+		"I want to see Reids memory again.",L_R_Again,
+		"I have what you want.",-,
+		"I'm working on that.",L_Close;
+	if (countitem("ChocolateCake") < 1)
+		goto L_No_Cake;
+	if (countitem("UndeadEar") < @UNDEADEAR_AMOUNT)
+		goto L_Betray;
+	delitem "UndeadEar", @UNDEADEAR_AMOUNT;
+	delitem "ChocolateCake", 1;
+	getexp @UNDEADEAR_EXP, 0;
+	mes "[Golbanez]";
+	mes "\"Good. I'll show you the memories of the dumb husband now. Come to me.\"";
+	next;
+	mes "You step closer to Golbanez and he holds your head again.";
+	callsub S_Hamondsmem;
+	set @state, 4;
+	callsub S_Update_Mask;
+	mes "[Golbanez]";
+	mes "It's really interesting how illogical humans behave.";
+	next;
+	mes "\"And how predictable they are. I can see in your eyes that you want to know how this drama went on.\"";
+	next;
+	mes "\"Bring me " + @UNDEADEYE_AMOUNT + " undead eyes and an apple cake.\"";
+	close;
+
+L_Savaric:
+	mes "[Golbanez]";
+	mes "\"I hope you bring me the " + @UNDEADEYE_AMOUNT + " undead eyes I want.\"";
+	if (countitem("UndeadEye") < @UNDEADEYE_AMOUNT)
+		menu
+			"I want to see Reids memory again.",L_R_Again,
+			"I want to see Hamonds memory again.",L_H_Again,
+			"I really wonder what you do with the stuff I bring you.",L_Why_Stuff,
+			"It's hard to get. I'm still working on that.",L_Close;
+	menu
+		"I want to see Reids memory again.",L_R_Again,
+		"I want to see Hamonds memory again.",L_H_Again,
+		"I got what you want.",-,
+		"I'm working on that.",L_Close;
+	if (countitem("AppleCake") < 1)
+		goto L_No_Cake;
+	if (countitem("UndeadEye") < @UNDEADEYE_AMOUNT)
+		goto L_Betray;
+	delitem "UndeadEye", @UNDEADEYE_AMOUNT;
+	delitem "AppleCake", 1;
+	getexp @UNDEADEYE_EXP, 0;
+	mes "[Golbanez]";
+	mes "\"Very Good. Now I'll show you the pitiful mages memory.\"";
+	next;
+	mes "He holds your head and everything grows black again.";
+	callsub S_Savaricsmem;
+	set @state, 5;
+	callsub S_Update_Mask;
+	mes "[Golbanez]";
+	mes "\"TODO: add comment from golbanez\"";
+	close;
+
+L_All:
+	mes "[Golbanez]";
+	mes "\"Did you come back to see the memories again?\"";
+	menu
+		"I want to see Reids memory again.",L_R_Again,
+		"I want to see Hamonds memory again.",L_H_Again,
+		"I want to see Savarics memory again.",L_S_Again,
+		"Nevermind.",L_Close;
+	close;
+
+L_S_Again:
+	callsub S_Savaricsmem;
+	//TODO: check, it [Golbanez] is needed
+	mes "\"What a fool he was even for a human.\"";
+	close;
+
+L_R_Again:
+	callsub S_Reidsmem;
+	mes "\"This memory seems to be exciting for you. Interesting.\"";
+	close;
+
+L_H_Again:
+	callsub S_Hamondsmem;
+	mes "[Golbanez]";
+	mes "\"Humans can be so stupid, can't they?\"";
 	close;
 
 L_Horns:
@@ -60,8 +247,147 @@ L_Horns:
 	mes "\"Mortals! They never stop surprising me.\"";
 	close;
 
+L_Why_Stuff:
+	mes "[Golbanez]";
+	mes "\"That is not for your concern.\"";
+	close;
+
+L_Betray:
+	mes "[Golbanez]";
+	mes "\"I'm warning you, mortal. Don't try to betray me!\"";
+	close;
+
+L_No_Cake:
+	mes "[Golbanez]";
+	mes "\"Fool! You forgot my cake!\"";
+	close;
+
 L_Close:
 	close;
+
+S_Reidsmem:
+	mes "[Golbanez]";
+	mes "\"I'll send her memories into your brain now. Don't collapse or do something similar foolish.\"";
+	next;
+	mes "Everything turns black. Then, slowly, you see something. You're standing outside and watch a alive-looking Hamond ride away on a carriage drawn by a mouboo.\"";
+	next;
+	mes "\"You turn back and enter a nice looking building. It seems to be the inn.";
+	next;
+	mes "Obviously you are watching Reids memories out of her eyes. You're getting excited. Or is it Reid who feels excited? You're not sure.";
+	next;
+	mes "You-Reid walks up the stairs and stops in front of the door you recognize as Savarics room. You get a twisted feeling, something between desire, guilt and despair.";
+	next;
+	mes "It seems, you're not only seeing Reids memories but also feel them!";
+	next;
+	mes "Reid turns away from Savarics door and walks to her rooms quickly. It seems, she is shivering. You feel her heart pounding.";
+	next;
+	mes "She enters the room and pulls the red dress you already know from her ghost out of a chest and changes her clothes. Her heart is pounding even faster.";
+	next;
+	mes "She sits down on the bed holding her head in her hands.";
+	next;
+	mes "[Reid]";
+	mes "\"This is wrong...\"";
+	next;
+	mes "Then she stands up and returns to Savarics door. She is hesitating again. Suddenly the door opens, Savaric standing there, smiling.";
+	next;
+	mes "[Savaric]";
+	mes "\"I was hoping you would come.\"";
+	next;
+	mes "He reaches out his hands and you feel Reid getting dizzy.";
+	next;
+	mes "You enter his room together. There is only one candle on the table, so the light is dimmed.";
+	next;
+	mes "[Reid]";
+	mes "\"I- we- Savaric- this is not right- we shouldn't do this.\"";
+	next;
+	mes "[Savaric]";
+	mes "\"But you came. Sh, don't worry. Let me hold you.\"";
+	next;
+	mes "Savaric puts his arms around Reid and lead her to the bed. You feel a flush of sexual arousal.";
+	next;
+	mes "He starts to stroke Reids face with his lips while his hands streak her dress from her shoulders.";
+	next;
+	mes "Reids feelings are like a firestorm and it's hard for you to concentrate on what is happening.";
+	next;
+	mes "Savaric touches her body and - you suddenly stand in front of Golbanez again, wobbling around and then fall to the ground.";
+	next;
+	mes "[Golbanez]";
+	mes "\"I told you not to collapse!\"";
+	next;
+	mes "\"It seems, Reids feelings were to strong for you to stand against it.\"";
+	next;
+	mes "Golbanez grins.";
+	next;
+	mes "[Golbanez]";
+	mes "\"But I guess you can imagine the following.\"";
+	next;
+	return;
+
+S_Hamondsmem:
+	mes "The darkness vanishes and you see the back of a mouboo pulling the carriage you're sitting on. Or better to say, Hamond was sitting on.";
+	next;
+	mes "You feel very very nervous and worried.";
+	next;
+	mes "[Hamond]";
+	mes "\"I shouln't leave her alone with that debaucher. But she loves me. She won't give in to such a dandy. I believe in her. I trust her.\"";
+	next;
+	mes "The carriage reaches a river, but it seems the bridge is damaged. A group of people is standing at the riverside. There is one little boat, taking over the persons one after another.";
+	next;
+	mes "You feel a great relieve growing in Hamonds chest.";
+	next;
+	mes "He shakes his and let his carriage turn around. Obviously this is a great excuse for him to return to Reid at once.";
+	next;
+	mes "When he returns to the inn the sunset is already near. He tells some menial to take care of the mouboo and the carriage and hasts up the stairs heading to his and Reids rooms, you feel his heart pounding.";
+	next;
+	mes "He rips the door open and the room is empty. A cold feeling grows in his chest. He turn around and sees Reid standing in front of him, wearing her best dress. The red one which makes her look so beautiful - you feel a sting in Hamonds heart.";
+	next;
+	mes "The dress is crumpled and seems to be put on in a haste, her hair is a total chaos on her head.";
+	next;
+	mes "[Reid]";
+	mes "\"Hamond! What are you doing here? Why are you already back?\"";
+	next;
+	mes "You feel rage growing in Hamond.";
+	mes "[Hamond]";
+	mes "\"You're not happy to see me, are you? Do you prefer me running this inn for you but but not bother you with your cockish behavior?!\"";
+	next;
+	mes "The shocked and painful but guilty look on Reids face fills Hamond with a strange mixture of pain and gratisfication.";
+	next;
+	mes "He grabs her arm, pulls her into the room and thunk the door shut behind them. You see a fearful look on Reids face.";
+	next;
+	mes "[Reid]";
+	mes "\"Hamond! Please, calm down!\"";
+	next;
+	mes "The feeling of broken trust and disappoinment seems to drive you crazy.";
+	next;
+	mes "\"Hamond slaps her face.\"";
+	next;
+	mes "[Hamond]";
+	mes "\"You are MY WIFE! I'll teach you what this means!\"";
+	next;
+	mes "As Hamond grabs Reid rudely and hold her tight, you can smell her sweat and fear, but under that smell of another man! Hamonds sight does red.";
+	next;
+	mes "[Hamond]";
+	mes "\"You dirty slut! I did everything for you!\"";
+	next;
+	mes "Reid is struggling wild to get rid of Hamonds hold. She is surprisingly strong and both are falling against the table.";
+	next;
+	mes "The next you see is a teapot smashing in Hamonds face. He stumbles back.";
+	next;
+	mes "You see Reid running to the door, where she has a look back. Then she runs out of the room.";
+	next;
+	mes "\"Her face was drowned with tears, her lips bloody and her eye was already turning black.\"";
+	next;
+	mes "You feel shock and regret.";
+	mes "[Hamond]";
+	mes "\"What did I do? Reid... How could I ever hurt you?\"";
+	next;
+	mes "Your sight turns black and with your next blink you're standing in front of Golbanez again.";
+	next;
+	return;
+
+S_Savaricsmem:
+	mes "TODO: add savarics story here";
+	return;
 
 S_Update_Mask:
         set QUEST_Graveyard_Inn,
