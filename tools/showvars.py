@@ -8,7 +8,10 @@ import re
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False,
-                  help="show the occurrences of that var", metavar="FILE")
+                  help="show the occurrences of that var")
+
+parser.add_option("-f", "--file", dest="fname", default="",
+                  help="inspect that file", metavar="FILE")
 
 (options, args) = parser.parse_args()
 
@@ -61,21 +64,19 @@ def handleFile(fname):
 			print "\tline:\t",line
 	return rm
 
+if options.fname:
+	path=options.fname
+else:
+	path=".."+os.sep+"npc"
+
 allvars = {}
 rmvars = []
 print "please check manully for vars in here:"
-os.chdir(".."+os.sep+"npc")
+os.chdir(path)
 
 for tpl in os.walk("."):
 	for fname in tpl[2]:
 		rmvars += handleFile(tpl[0]+os.sep+fname)
-
-# now check if the variable is not in npc/functions/clear_vars.txt, if so remove it
-#~ checkstring = "." + os.sep + "functions" + os.sep + "clear_vars.txt"
-#~ rm = []
-#~ for var in allvars:
-	#~ if checkstring in allvars[var]:
-		#~ rm += [var]
 
 unusedcounter=0
 usedcounter=0
