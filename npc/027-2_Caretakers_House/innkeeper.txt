@@ -5,10 +5,20 @@
 
 	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
 
+	set @Graveyard_Inn_Lover_MASK, NIBBLE_1_MASK;
+	set @Graveyard_Inn_Lover_SHIFT, NIBBLE_1_SHIFT;
+
+	set @lover, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Lover_MASK) >> @Graveyard_Inn_Lover_SHIFT);
+
 	set @Graveyard_Inn_Kid_MASK, NIBBLE_2_MASK;
 	set @Graveyard_Inn_Kid_SHIFT, NIBBLE_2_SHIFT;
 
 	set @kidstate, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Kid_MASK) >> @Graveyard_Inn_Kid_SHIFT);
+
+	set @Graveyard_Inn_Husband_MASK, NIBBLE_3_MASK;
+	set @Graveyard_Inn_Husband_SHIFT, NIBBLE_3_SHIFT;
+
+	set @husband, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Husband_MASK) >> @Graveyard_Inn_Husband_SHIFT);
 
 	set @Graveyard_Inn_Golbanez_MASK, NIBBLE_4_MASK;
 	set @Graveyard_Inn_Golbanez_SHIFT, NIBBLE_4_SHIFT;
@@ -17,8 +27,13 @@
 
 	//TODO: determine sane values
 	set @YETI_TEAR_AMOUNT, 10;
-	set @YETI_TEAR_EXP, 60000; // maybe about 1% for a level 80?
+	set @YETI_TEAR_EXP, 60000;
+	set @DIAMOND_AMOUNT, 10; // caution, this value needs to be the same as in the lovers script!
+	set @RUBY_AMOUNT, 20; // caution, this value needs to be the same as in the husbands script!
 
+	if (@state == 11) goto L_Happy;
+	if (@state == 10) goto L_Thanks;
+	if ((@state == 8) || (@state == 9)) goto L_Sorry;
 	if (@state == 7) goto L_Savaric;
 	if (@state == 6) goto L_Read_Diary;
 	if (@state == 5) goto L_Check_Kid;
@@ -248,12 +263,87 @@ L_Savaric:
 	if (@golbanez < 5)
 		menu
 			"But I still didn't find out, what happened. I'll return when I have news.",L_Close;
-	//TODO: add news here
+	menu
+		"But I still didn't find out, what happened. I'll return when I have news.",L_Close,
+		"I found out what happened to you and this place. I'll tell you.",-;
+
+	mes "You explain her about Golbanez, Savaric and the memories you have seen.";
+	next;
+	mes "[Reid's Ghost]";
+	mes "\"Oh, I always knew we weren't doing the right thing! But how should we have known it would end like this?\"";
+	next;
+	mes "\"I would never have expected Hamond to beat me - and Savaric... I trusted him with my life... And he uncarefully wasted it. Mine and that from everyone else in the inn.\"";
+	next;
+	mes "\"I'm feeling hurt. And confused. Both Hamond and Savaric turned out not to be the person I believed them to be.\"";
+	set @state, 8;
+	callsub S_Update_Mask;
+	if (@lover < 4) close;
 	close;
+
+L_Sorry:
+	mes "[Reid's Ghost]";
+	mes "\"Welcome back.\"";
+	if ((@lover == 4) && (countitem("GemRawWhite") >= @DIAMOND_AMOUNT) && (countitem("GemRawRed") >= @RUBY_AMOUNT) && (@husband == 5))
+		menu
+			"Savaric asked me to give you something.",L_Diamond,
+			"Hamond sent me to bring you this.",L_Ruby,
+			"Nevermind.",-;
+	if (@lover == 4 && (countitem("GemRawWhite") >= @DIAMOND_AMOUNT))
+		menu
+			"Savaric asked me to give you something.",L_Diamond,
+			"Nevermind.",-;
+	if (@husband == 5 && (countitem("GemRawRed") >= @RUBY_AMOUNT))
+		menu
+			"Hamond sent me to bring you this.",L_Ruby,
+			"Nevermind.",-;
+	close;
+
+L_Diamond:
+	if (countitem("GemRawWhite") < @DIAMOND_AMOUNT) goto L_Kidding;
+	delitem "GemRawWhite", @DIAMOND_AMOUNT;
+	mes "You explain how Savaric feels and what the diamonds mean.";
+	next;
+	mes "[Reid's Ghost]";
+	mes "\"Oh Savaric. I just can't be angry at him. Thanks for your help. I'll go to talk with him.\"";
+	set @lover, 5;
+	callsub S_Update_Mask_Lover;
+	set @state, @state + 1;
+	callsub S_Update_Mask;
+	close;
+
+L_Ruby:
+	if (countitem("GemRawRed") < @RUBY_AMOUNT) goto L_Kidding;
+	delitem "GemRawRed", @RUBY_AMOUNT;
+	mes "You tell her about Hamonds feelings.";
+	next;
+	mes "[Reid's Ghost]";
+	mes "\"I need to talk to him. Thanks for bringing me this.\"";
+	set @husband, 6;
+	callsub S_Update_Mask_Husband;
+	set @state, @state + 1;
+	callsub S_Update_Mask;
+	close;
+
+L_Kidding:
+	mes "[Reid's Ghost]";
+	mes "\"Are you kidding? You don't have the items you are talking about. This is not funny.\"";
 
 L_Tease:
 	mes "[Reid's Ghost]";
 	mes "\"Don't be mean! I never feeled like that before.\"";
+	close;
+
+L_Thanks:
+	mes "[Reid's Ghost]";
+	mes "\"I'm so glad, now I know what happened and spoke to Savaric and Hamond. Thank you so much. Please take this.\"";
+	//TODO: determine reward and give it
+	set @state, 11;
+	callsub S_Update_Mask;
+	close;
+
+L_Happy:
+	mes "[Reid's Ghost]";
+	mes "\"Thank you for all you've done.\"";
 	close;
 
 L_Not_Enough_Tears:
@@ -295,6 +385,18 @@ S_Update_Mask_Kid:
         set QUEST_Graveyard_Inn,
         	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Kid_MASK))
                 | (@kidstate << @Graveyard_Inn_Kid_SHIFT);
+        return;
+
+S_Update_Mask_Husband:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Husband_MASK))
+                | (@husband << @Graveyard_Inn_Husband_SHIFT);
+        return;
+
+S_Update_Mask_Lover:
+        set QUEST_Graveyard_Inn,
+        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Lover_MASK))
+                | (@lover << @Graveyard_Inn_Lover_SHIFT);
         return;
 
 S_Update_Mask:

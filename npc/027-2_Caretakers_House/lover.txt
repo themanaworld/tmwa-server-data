@@ -18,7 +18,12 @@
 	//TODO: determine sane values
 	set @CRYSTAL_AMOUNT, 300; //200?
 	set @CRYSTAL_EXP, 100000;
+	set @DIAMOND_AMOUNT, 10; // caution, this value needs to be the same as in the innkeepers script!
 
+	if (@state == 7) goto L_Have_Soul;
+	if (@state == 6) goto L_Want_Soul;
+	if (@state == 5) goto L_Apologize;
+	if (@state == 4) goto L_Waiting;
 	if (@state == 3) goto L_Golb;
 	if (@state == 2) goto L_News;
 	if (@state == 1) goto L_Crystals;
@@ -153,7 +158,52 @@ L_Golbanez:
 	close;
 
 L_Golb:
-	mes "TODO: add story";
+	mes "[Savaric]";
+	mes "\"Good to see you back my friend. What did you find out?\"";
+	if (@golbanez < 5)
+		menu
+			"I'm still working on getting all the stuff he wants.",L_Close;
+	menu
+		"Now I know what happened. I'll tell you.",-,
+		"I'm sorry to tell you, but this was all your fault.",-;
+
+	mes "You tell about what Golbanez showed to you.";
+	next;
+	mes "[Savaric]";
+	mes "\"I.. I can't believe.. My master told me, I need to be careful because of my temper - but I never thought, it would lead me to do such a terrible mistake. Oh, Reid - and all the people in the inn! What have I done?!\"";
+	next;
+	mes "He seems pained by his guilt.";
+	next;
+	mes "[Savaric]";
+	mes "\"" + strcharinfo(0) + ", please, can you go to Reid and tell her about what I've done? And then ask her if she will ever be able to forgive me?\"";
+	next;
+	mes "\"But wait. It is not enough just to ask for forgiveness. Please, can you bring her " + @DIAMOND_AMOUNT + " diamonds? They symbolize my pure feelings for her even.\"";
+	set @state, 4;
+	callsub S_Update_Mask;
+	close;
+
+L_Waiting:
+	mes "[Savaric]";
+	mes "\"Have you already brought the diamonds to Reid?\"";
+	close;
+
+L_Apologize:
+	mes "[Savaric]";
+	mes "\"Oh thank you! I thank you so much! Reid came here to talk to me.\"";
+	next;
+	mes "\"She forgave me! I'm so happy!\"";
+	next;
+	mes "\"You did so much for me, can I ask you for one last favor?\"";
+	next;
+	mes "\"Golbanez took my soul and I want it back. You were very clever how you negotiated with him so far. Could you get my soul back for me?\"";
+	set @state, 6;
+	callsub S_Update_Mask;
+	close;
+
+L_Want_Soul:
+	close;
+
+L_Have_Soul:
 	close;
 
 L_Reid:
