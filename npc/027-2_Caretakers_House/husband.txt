@@ -23,7 +23,7 @@
 	set @BONE_EXP, 30000;
 	set @RUBY_AMOUNT, 20; // caution, this value needs to be the same as in the innkeepers script!
 
-	if (@state == 7) goto L_Thanks;
+	if (@state >= 7) goto L_Thanks;
 	if (@state == 6) goto L_Apologize;
 	if (@state == 5) goto L_Waiting;
 	if (@state == 4) goto L_News;
@@ -271,7 +271,10 @@ L_Apologize:
 	mes "\"And frankly, it gives me a bitter satisfaction that they long for each other but can't touch each other.\"";
 	next;
 	mes "\"However, you are a great friend and did a lot for me. I want you to have this.\"";
+	getinventorylist;
+	if (@inventorylist_count == 100) goto L_Full_Inv;
 	//TODO: determine reward and give it, idea: different bowler hat?
+	getitem "Acorn", 1;
 	set @state, 7;
 	callsub S_Update_Mask;
 	close;
@@ -291,6 +294,11 @@ L_Not_Enough_B:
 L_Not_Enough_Cubes:
 	mes "[Hamond]";
 	mes "\"Yes, they look good! But I think I need more of them. Maybe " + @ICE_CUBE_AMOUNT + "?\"";
+	close;
+
+L_Full_Inv:
+	mes "[Hamond]";
+	mes "\"You have a really full backpack, haven't you? Come back when you have some room in there.\"";
 	close;
 
 L_Close:

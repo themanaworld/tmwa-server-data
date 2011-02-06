@@ -20,7 +20,7 @@
 	set @CRYSTAL_EXP, 100000;
 	set @DIAMOND_AMOUNT, 10; // caution, this value needs to be the same as in the innkeepers script!
 
-	if (@state == 7) goto L_Have_Soul;
+	if (@state >= 7) goto L_Have_Soul;
 	if (@state == 6) goto L_Want_Soul;
 	if (@state == 5) goto L_Apologize;
 	if (@state == 4) goto L_Waiting;
@@ -201,19 +201,49 @@ L_Apologize:
 	close;
 
 L_Want_Soul:
+	if (@golbanez >= 7) goto L_Soul;
+	mes "[Savaric]";
+	mes "\"Welcome back! Are you still working on getting my soul back?\"";
+	menu
+		"I'm doing my best",-,
+		"Yes, but it isn't easy.",-;
+
+	mes "[Savaric]";
+	mes "\"Thank you so much! I'm counting on you!\"";
+	close;
+
+L_Soul:
+	mes "[Savaric]";
+	mes "\"My soul came back! Oh thank you!\"";
+	next;
+	mes "\"Please take this as a symbol of my gratitude.\"";
+	getinventorylist;
+	if (@inventorylist_count == 100) goto L_Full_Inv;
+	//TODO: determine and give reward
+	getitem "Acorn", 1;
+	set @state, 7;
+	callsub S_Update_Mask;
 	close;
 
 L_Have_Soul:
+	mes "[Savaric]";
+	mes "\"I'll be in your debt forever. Thank you so much.\"";
 	close;
 
 L_Reid:
 	mes "[Savaric]";
-	mes "\"Relationship? Well, she the innkeeper of this inn and I'm a patron. There is nothing more about this to say.\"";
+	mes "\"Relationship? Well, she is the innkeeper of this inn and I'm a patron. There is nothing more about this to say.\"";
 	close;
 
 L_Not_Enough_Crystals:
 	mes "It seems, you managed to get some, but not enough. Can you bring me more?";
 	close;
+
+L_Full_Inv:
+	mes "[Savaric]";
+	mes "\"Oh, you can't carry anything more. Come back when you can take it.\"";
+	close;
+
 L_Close:
 	close;
 

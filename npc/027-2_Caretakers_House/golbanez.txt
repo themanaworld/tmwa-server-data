@@ -28,6 +28,8 @@
 	set @UNDEADEYE_AMOUNT, 50;
 	set @UNDEADEYE_EXP, 50000;
 
+	if (@state >= 7) goto L_Done;
+	if (@state == 6) goto L_Soul;
 	if (@state == 5) goto L_All;
 	if (@state == 4) goto L_Savaric;
 	if (@state == 3) goto L_Hamond;
@@ -220,7 +222,7 @@ L_Savaric:
 	close;
 
 L_All:
-	//TODO: add asking for Savarics soul
+	if (@lover == 6) goto L_Negotiate;
 	mes "[Golbanez]";
 	mes "\"Did you come back to see the memories again?\"";
 	menu
@@ -228,6 +230,73 @@ L_All:
 		"I want to see Hamonds memory again.",L_H_Again,
 		"I want to see Savarics memory again.",L_S_Again,
 		"Nevermind.",L_Close;
+	close;
+
+L_Negotiate:
+	mes "Golbanez eyes are glowing greedily";
+	mes "[Golbanez]";
+	mes "\"Did you come back to see the memories again? Or are you going to offer me another deal?\"";
+	menu
+		"I want Savarics soul back.",-,
+		"I want to see Reids memory again.",L_R_Again,
+		"I want to see Hamonds memory again.",L_H_Again,
+		"I want to see Savarics memory again.",L_S_Again,
+		"Nevermind.",L_Close;
+
+	mes "[Golbanez]";
+	mes "\"Savarics soul, yes. It is a pretty nice soul, you know. From a mage, no, even better, from a loving mage. It is valuable.\"";
+	next;
+	mes "\"Why do you think it would be easy to get it back? Do you have anything of equal worth to offer?\"";
+	next;
+	menu
+		"What about another cake?",L_Cake,
+		"I'm not sure. What do you want?",-,
+		"No.",L_Close;
+
+	mes "[Golbanez]";
+	mes "\"Bring me a soul of at least equal power as the mages one. I don't care where you get it.\"";
+	set @state, 6;
+	callsub S_Update_Mask;
+	close;
+
+L_Soul:
+	mes "[Golbanez]";
+	mes "\"So, did you get a soul for me?\"";
+L_Soul_Try:
+	if (countitem("JackOSoul") < 1)
+		menu
+			"I'll go and get one.",L_Close;
+	menu
+		"What about this Jack O Soul?",-,
+		"I'll go and try to find a soul.",L_Close;
+
+	if (countitem("JackOSoul") < 1) goto L_Betray;
+	delitem "JackOSoul", 1;
+	set @soul, rand(50);
+	if (@soul == 0) goto L_Soul_Success;
+	mes "[Golbanez]";
+	mes "\"No, this one isn't as powerful as the mage ones. Bring me another.\"";
+	goto L_Soul_Try;
+
+L_Soul_Success:
+	mes "Golbanez suddenly gets excited.";
+	mes "[Golbanez]";
+	mes "\"Yes! This one is full of energy.\"";
+	next;
+	mes "\"So be it, mortal. I'll release Savarics soul in exchange for this one.\"";
+	set @state, 7;
+	callsub S_Update_Mask;
+	close;
+
+L_Done:
+	mes "[Golbanez]";
+	mes "\"I hope you enjoyed your little detective game. I certainly did.\"";
+	close;
+
+L_Cake:
+	mes "Golbanez laughs.";
+	mes "[Golbanez]";
+	mes "\"That's why I like you - also you're a human, you have a nice sense of humor.\"";
 	close;
 
 L_S_Again:
