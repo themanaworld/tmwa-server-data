@@ -31,7 +31,7 @@
 	set @DIAMOND_AMOUNT, 10; // caution, this value needs to be the same as in the lovers script!
 	set @RUBY_AMOUNT, 20; // caution, this value needs to be the same as in the husbands script!
 
-	if (@state == 11) goto L_Happy;
+	if (@state >= 11) goto L_Happy;
 	if (@state == 10) goto L_Thanks;
 	if ((@state == 8) || (@state == 9)) goto L_Sorry;
 	if (@state == 7) goto L_Savaric;
@@ -336,7 +336,10 @@ L_Tease:
 L_Thanks:
 	mes "[Reid's Ghost]";
 	mes "\"I'm so glad, now I know what happened and spoke to Savaric and Hamond. Thank you so much. Please take this.\"";
+	getinventorylist;
+	if (@inventorylist_count == 100) goto L_Full_Inv;
 	//TODO: determine reward and give it
+	getitem "Acorn", 1;
 	set @state, 11;
 	callsub S_Update_Mask;
 	close;
@@ -376,6 +379,11 @@ L_Bracelet:
 	mes "\"Ah, I forgot again. It pains me not being able to hold it. Please, take it with you, I don't want it anymore. It hurts too much.\"";
 	set @kidstate, 6;
 	callsub S_Update_Mask_Kid;
+	close;
+
+L_Full_Inv:
+	mes "[Reid's Ghost]";
+	mes "\"Dear, you're carrying so much stuff, you can't take my present. Come back later to take it.\"";
 	close;
 
 L_Close:
