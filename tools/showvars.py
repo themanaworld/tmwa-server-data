@@ -13,6 +13,9 @@ parser.add_option("-v", "--verbose", dest="verbose", action="store_true", defaul
 parser.add_option("-f", "--file", dest="fname", default="",
                   help="inspect that file", metavar="FILE")
 
+parser.add_option("-l", "--localvariables", dest="localvars", action="store_true", default=False,
+                  help="show local variables as well")
+
 (options, args) = parser.parse_args()
 
 def handleFile(fname):
@@ -45,7 +48,7 @@ def handleFile(fname):
 			varname = line[0:endpos].strip()
 			assignment = line[endpos+1:].strip()[:-1] # remove semicolon
 			if assignment != "0":
-				if varname.startswith("@"):
+				if varname.startswith("@") and not options.localvars:
 					continue
 				if varname.startswith("$"):
 					continue
