@@ -1,3 +1,14 @@
+// author: Jenalya
+// love triangle quest, involved npcs: Reid's Ghost, Hamond, Savaric, Aldred, Golbenez
+// state 0: if baselevel >= 85, tells he want dark crystals
+// state 1: needs @CRYSTAL_AMOUNT dark crystals to go on, tells the player to search the inn for source of magic (Golbanez)
+// state 2: if the player has talked to Golbanez, he tells you to negotiate with him to find out what happened
+// state 3: when player has seen all memories (@golbanez < 5), telling Savaric what happened. he asks the player to bring reid @DIAMOND_AMOUNT diamonds
+// state 4: waiting for reid
+// state 5: is set in reid, he thanks for help and asks to negotiate with golbanez for his soul
+// state 6: waiting for youl, if @golbanez >= 7 got it, giving sorcerer robe
+// state 7: done
+
 027-2.gat,43,73,0	script	Savaric	317,{
 
 	set @Graveyard_Inn_MASK, NIBBLE_1_MASK;
@@ -29,6 +40,7 @@
 
 	mes "You see a dead man hanging. This place is creepy!";
 	next;
+	if (baselevel < 85) goto L_Close;
 	mes "Suddenly the man opens his eyes and look at you.";
 	next;
 	mes "[Hanged Man]";
@@ -218,10 +230,12 @@ L_Soul:
 	mes "\"Please take this as a symbol of my gratitude.\"";
 	getinventorylist;
 	if (@inventorylist_count == 100) goto L_Full_Inv;
-	//TODO: determine and give reward
-	getitem "Acorn", 1;
+	getitem "SorcererRobeRed", 1;
 	set @state, 7;
 	callsub S_Update_Mask;
+	mes "\"This is what mages and their apprentices weared when I lived. It is white because I wasn't a master yet.\"";
+	next;
+	mes "\"But I guess the old traditions have changed since then.\"";
 	close;
 
 L_Have_Soul:
