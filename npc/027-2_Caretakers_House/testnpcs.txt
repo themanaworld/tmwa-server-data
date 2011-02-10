@@ -1,22 +1,3 @@
-// Temporary placing of all non shop npcs
-// A proper break down of files will need to be done later
-
-// drunk lover: quest,
-// werewolf: gambling,
-// chef's helper: simple dialog,
-// horn mage: golbenez,
-// drunker: simple dialog,
-// barman: crafting related,
-// swordguy: weapon master,
-// ghost from dead drunk: simple dialog,
-// crying child: I don't know,
-// Innkeeper's ghost: quest,
-// evil guard: simple dialog,
-// hangman: quest,
-// headless: quest or simple dialog,
-// lightman: quest,
-
-
 027-2.gat,80,34,0	script	Drunk Lover	303,{
 	mes "You see a man and a woman holding each other very tight.";
 	next;
@@ -26,91 +7,6 @@
 	next;
 	mes "Maybe it's better not to bother them.";
 	close;
-}
-
-027-2.gat,118,23,0	script	Werewolf	305,{
-	set @Graveyard_Inn_MASK, NIBBLE_5_MASK;
-	set @Graveyard_Inn_SHIFT, NIBBLE_5_SHIFT;
-
-	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
-
-	set @ANIMALBONES_AMOUNT, 30;
-	set @ANIMALBONES_EXP, 75000;
-
-	if (@state > 1) goto L_Happy;
-	if (@state == 1) goto L_Bones;
-
-	mes "[Werewolf]";
-	mes "\"What a nice place here, isn't it?\"";
-	next;
-	mes "\"Just the stuff they call 'food' in here is awful, bah.\"";
-	if (baselevel < 80) goto L_Close;
-	next;
-	mes "\"I like bones from big animals, the best would be with some raw flesh at it. But only the bones are fine too.\"";
-	next;
-	mes "\"Can you bring me " + @ANIMALBONES_AMOUNT + " of them?\"";
-	set @state, 1;
-	callsub S_Update_Mask;
-	close;
-
-L_Bones:
-	mes "[Werewolf]";
-	mes "\"Do you have " + @ANIMALBONES_AMOUNT + " bones of an animal for me?\"";
-	next;
-	if ((countitem("Bone") > 0) && (countitem("AnimalBones") >= @ANIMALBONES_AMOUNT))
-		menu
-			"Yes, here they are.",L_Bring,
-			"What about this normal bone?",L_Human,
-			"Not yet.",L_Close;
-	if (countitem("Bone") > 0)
-		menu
-			"What about this normal bone?",L_Human,
-			"Not yet.",L_Close;
-	if (countitem("AnimalBones") >= @ANIMALBONES_AMOUNT)
-		menu
-			"Yes, here they are.",L_Bring,
-			"Not yet.",L_Close;
-	menu
-		"Not yet.",-;
-	close;
-
-L_Bring:
-	if (countitem("AnimalBones") < @ANIMALBONES_AMOUNT)
-		goto L_Not_Enough;
-	delitem "AnimalBones", @ANIMALBONES_AMOUNT;
-	getexp @ANIMALBONES_EXP, 0;
-	mes "[Werewolf]";
-	mes "\"Ah! Wonderful! Thank you.\"";
-	set @state, 2;
-	callsub S_Update_Mask;
-	close;
-
-L_Human:
-	mes "[Werewolf]";
-	mes "\"What?! That's a humans bone! I don't eat humans. That brings only trouble.\"";
-	next;
-	mes "\"Beside of that I heard, they taste is bad.\"";
-	close;
-
-L_Not_Enough:
-	mes "[Werewolf]";
-	mes "\"Are you trying to kid me? I do can count.\"";
-	close;
-
-L_Happy:
-	mes "You see the werewolf happily crunching the bones you brought him.";
-	mes "[Werewolf]";
-	mes "\"Delicious. Thanks again.\"";
-	close;
-
-L_Close:
-	close;
-
-S_Update_Mask:
-        set QUEST_Graveyard_Inn,
-        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
-                | (@state << @Graveyard_Inn_SHIFT);
-        return;
 }
 
 027-2.gat,110,30,0	script	Debug	305,{
@@ -206,7 +102,12 @@ S_Update_Mask_Woman:
 }
 
 027-2.gat,75,29,0	script	Archibald	306,{
-	end;
+// the broken grammar is intentional
+	mes "[Archibald]";
+	mes "\"Me need to prepare the food. Me helping the chef cook.\"";
+	next;
+	mes "\"Person doesn't disturb me when me is making the food\"";
+	close;
 }
 
 027-2.gat,77,40,0	script	Drunker	308,{
@@ -235,10 +136,6 @@ L_3:
 }
 
 027-2.gat,103,22,0	script	Barman	310,{
-	end;
-}
-
-027-2.gat,70,77,0	script	Cerhan	311,{
 	end;
 }
 
