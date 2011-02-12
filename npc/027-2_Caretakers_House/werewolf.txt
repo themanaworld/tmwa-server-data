@@ -5,7 +5,8 @@
 	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
 
 	set @ANIMALBONES_AMOUNT, 30;
-	set @ANIMALBONES_EXP, 75000;
+	set @ANIMALBONES_EXP, 40000;
+	set @money, 1000;
 
 	if (@state > 1) goto L_Happy;
 	if (@state == 1) goto L_Bones;
@@ -76,14 +77,74 @@ L_Happy:
 	mes "He pulls a card game out of his pocket.";
 	next;
 	mes "[Werewolf]";
-	mes "\"You will need TODO: how much? GP.\"";
+	mes "\"You will need " + @money + " GP.\"";
 	menu
 		"Sure, why not?",L_Game,
 		"No, thanks.",-;
 	close;
 
+//The game mechanics is copied from casino.txt
 L_Game:
-//TODO: add
+	if(zeny < @money) goto L_No_Money;
+	mes "[Werewolf]";
+	mes "\"Very nice. Let's start.\"";
+	mes "He shuffles the cards.";
+	next;
+	set zeny, zeny - @money;
+	set @croupier, rand(0, 4);
+	set @croupier, @croupier + 17;
+	set @player, rand(4, 21);
+	mes "\"You got " + @player + " with your cards.";
+	if(@player == 21) goto L_End;
+	mes "Do you want another card?\"";
+	next;
+
+	menu
+		"Yes.", L_Another,
+		"No.", L_End;
+
+L_Another:
+	set @tempace, rand(2, 11);
+	if (@tempace == 11) goto L_Ace;
+	set @player, @player + @tempace;
+	if (@player > 21) goto L_Lost;
+	if (@player == 21) goto L_End;
+	mes "\"You got " + @player + " with your cards.";
+	mes "Do you want another card?\"";
+	next;
+
+	menu
+		"Yes", L_Another,
+		"No", L_End;
+L_End:
+	if (@player <= @croupier) goto L_Lost;
+	mes "\"You won! Hrm, here is your money.\"";
+	set zeny, zeny + (3 * @money);
+	close;
+
+L_No_Money:
+	mes "\"You need at least " + @money + " GP.\"";
+	close;
+
+L_Lost:
+	mes "[Werewolf]";
+	mes "\"Fine! I won!";
+	mes "You got " + @player + " with your cards.";
+	mes "I had " + @croupier + ".\"";
+	close;
+
+L_Ace:
+	set @player, @player + 11;
+	if (@player > 21) set @player, @player - 10;
+	if (@player > 21) goto L_Lost;
+	if (@player == 21) goto L_End;
+	mes "You got " + @player + " with your cards.";
+	mes "Do you want another card?";
+	next;
+
+	menu
+		"Yes", L_Another,
+		"No", L_End;
 	close;
 
 L_Close:
