@@ -1,7 +1,12 @@
 //
 
 001-1.gat,32,27,0	script	Ian	102,4,4,{
-	if (TUT_var & 1 == 1 && TUT_var & 2 == 0 && BaseLevel >= 10) callsub S_Grad;
+	// This line is only relevant for players, who started before the timestamp was introduced.
+	// Set the graduation cap flag at the right position.
+	// It is a bugfix
+	if ((TUT_var < 4) && (TUT_var & 2)) set FLAGS, FLAGS|FLAG_GOT_GRADUATIONCAP;
+
+	if ((TUT_var != 0) && !(FLAGS & FLAG_GOT_GRADUATIONCAP) && BaseLevel >= 10) callsub S_Grad;
 	mes "[Ian the Guide]";
 	mes "\"Would you like to know about something?\"";
 	next;
@@ -42,7 +47,7 @@ L_Items:
 	mes "After use, they will disappear from your inventory.\"";
 	next;
 	mes "[Ian the Guide]";
-	mes "\"Equipment items like Armors, Weapons, Accessories"; 
+	mes "\"Equipment items like Armors, Weapons, Accessories";
 	mes "can be equipped for fashionable purposes or to raise your status.\"";
 	next;
 	mes "[Ian the Guide]";
@@ -146,7 +151,7 @@ L_Laws:
         mes "\"The constable can help you with them.\"";
         next;
 	goto L_Menu_A;
-        
+
 L_Know:
 	mes "[Ian the Guide]";
         mes "\"Lost? Confused? Want to know why you can't get past a quest, overcome an NPC or find an item?  Check http://wiki.themanaworld.org for player hints, walkthroughs, item lists and more!\"";
@@ -161,7 +166,7 @@ S_Grad:
 	mes "\"Hey, you've been doing good, let me give you this.\"";
 
 	getitem "GraduationCap", 1;
-	set TUT_var, TUT_var | 2;
+	set FLAGS, FLAGS | FLAG_GOT_GRADUATIONCAP;
 	next;
 
 	return;
@@ -171,7 +176,7 @@ L_TooMany:
 	mes "\"I wanted to give you something, but you don't have room for it.\"";
 	next;
 	return;
-    
+
 OnTouch:
     if (TUT_var != 0) close;
 	callfunc "GameRules";
