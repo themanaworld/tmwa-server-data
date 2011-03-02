@@ -251,6 +251,7 @@ L_teachmore2:
     set @C_teachnothing, 4;
     set @C_explainagain, 5;
     set @C_nvm, 6;
+    set @C_focusoverview, 7;
 
     getactivatedpoolskilllist;
     if (!((getskilllv(SKILL_POOL) - @skilllist_count) > 0)) goto L_teachmore2_nof;
@@ -279,6 +280,12 @@ L_teachmore2_nounf:
     set @choice$[@choice_nr], "Can you explain skills again?";
     set @choice_nr, @choice_nr + 1;
 
+    if (!(getskilllv(SKILL_POOL))) goto L_teachmore2_noovv;
+    set @choices[@choice_nr], @C_focusoverview;
+    set @choice$[@choice_nr], "Can you tell me what skills I'm currently focused on?";
+    set @choice_nr, @choice_nr + 1;
+L_teachmore2_noovv:
+
     set @choices[@choice_nr], @C_nvm;
     set @choice$[@choice_nr], "I'm done for now, thanks!";
     set @choice_nr, @choice_nr + 1;
@@ -297,6 +304,7 @@ L_teachmore2_nounf:
     if (@choices[@menu] == @C_teachbrawling) goto L_teach_brawling;
     if (@choices[@menu] == @C_teachnothing)  goto L_teach_nothing;
     if (@choices[@menu] == @C_explainagain)  goto L_teachmore_explain;
+    if (@choices[@menu] == @C_focusoverview) goto L_focus_overview;
     if (@choices[@menu] == @C_nvm)           close;
     close;
 
@@ -350,7 +358,7 @@ L_unfocus:
 
 L_nopotion:
     mes "[Luca the Hunter]";
-    mes "\"Hey, You really need that dementia potion for unfocusing.\"";
+    mes "\"Hey, you really need that dementia potion for unfocusing.\"";
     next;
     mes "\"Come back when you've found a suitable alchemist who can mix such a potion.\"";
     next;
@@ -379,12 +387,37 @@ L_unfocus_menu:
     set @menu, @menu - 1;
     if (@skilllist_id[@menu] == 0)
         goto L_teachmore2;
-    
+
     if (countitem("DementiaPotion") == 0) goto L_nopotion;
     delitem "DementiaPotion", 1;
 
     unpoolskill @skilllist_id[@menu];
     close;
+
+L_focus_overview:
+    getactivatedpoolskilllist;
+
+    if (@skilllist_count != 0)
+        goto L_focus_overview1;
+    mes "[Luca the Hunter]";
+    mes "\"You aren't focused on a skill at the moment.\"";
+    next;
+    goto L_teachmore2;
+L_focus_overview1:
+    mes "[Luca the Hunter]";
+    set @message$, "\"At the moment you are focused on ";
+L_focus_overview2:
+    set @skilllist_count, @skilllist_count-1;
+    set @message$, @message$ + @skilllist_name$[@skilllist_count];
+    if (@skilllist_count == 0)
+        goto L_focus_overview3;
+    set @message$, @message$ + ", ";
+    goto L_focus_overview2;
+L_focus_overview3:
+    set @message$, @message$ + ".\"";
+    mes @message$;
+    next;
+    goto L_teachmore2;
 
 L_teach_brawling:
     mes "[Luca the Hunter]";
