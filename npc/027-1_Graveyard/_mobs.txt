@@ -7,20 +7,16 @@
 027-1.gat,54,53,66,46	monster	PoisonSkull	1024,1,60000,20000,Mob027-1::On1024
 027-1.gat,54,53,66,46	monster	Skeleton	1043,2,60000,8000,Mob027-1::On1043
 027-1.gat,54,53,66,46	monster	LadySkeleton	1044,2,60000,8000,Mob027-1::On1044
-027-1.gat,71,41,31,22	monster	Zombie	1036,2,300000,120000,Mob027-1::On1036
 027-1.gat,71,41,31,22	monster	Skeleton	1043,2,175000,20000,Mob027-1::On1043
 027-1.gat,71,41,31,22	monster	LadySkeleton	1044,2,175000,20000,Mob027-1::On1044
 027-1.gat,37,41,33,22	monster	FireSkull	1023,2,200000,10000,Mob027-1::On1023
 027-1.gat,37,41,33,22	monster	PoisonSkull	1024,2,200000,10000,Mob027-1::On1024
-027-1.gat,37,41,33,22	monster	Zombie	1036,2,200000,10000,Mob027-1::On1036
 027-1.gat,37,41,33,22	monster	Skeleton	1043,4,180000,20000,Mob027-1::On1043
 027-1.gat,37,41,33,22	monster	LadySkeleton	1044,4,180000,20000,Mob027-1::On1044
 027-1.gat,105,40,32,21	monster	Fire skull	1023,1,28000,25000,Mob027-1::On1023
 027-1.gat,105,40,32,21	monster	Poison skull	1024,1,30000,20000,Mob027-1::On1024
 027-1.gat,105,40,32,21	monster	Skeleton	1043,2,35000,20000,Mob027-1::On1043
 027-1.gat,105,40,32,21	monster	LadySkeleton	1044,3,33000,25000,Mob027-1::On1044
-027-1.gat,37,65,33,22	monster	Zombie	1036,3,140000,30000,Mob027-1::On1036
-027-1.gat,37,65,33,22	monster	Fallen	1045,3,120000,30000,Mob027-1::On1045
 027-1.gat,28,67,2,1	monster	Jack O	1022,1,265000,200000,Mob027-1::On1022
 
 
@@ -37,12 +33,6 @@ On1023:
 
 On1024:
 	set @mobID, 1024;
-	callfunc "MobPoints";
-	break;
-
-On1036:
-	set @mobID, 1036;
-	callsub _MOBCOUNT_ZOMBIES;
 	callfunc "MobPoints";
 	break;
 
@@ -66,56 +56,10 @@ On1044:
 	callfunc "MobPoints";
 	break;
 
-On1045:
-	set @mobID, 1045;
-	callsub _MOBCOUNT_FALLENS;
-	callfunc "MobPoints";
-	break;
-
 On1047:
 	set @mobID, 1047;
 	callfunc "MobPoints";
 	break;
-
-_MOBCOUNT_ZOMBIES:
-
-	set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
-	set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
-
-	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
-
-	if (@state != 1) return;
-	set @bracelet, @bracelet + 1;
-// TODO: set 1 to 10
-	if (@bracelet < 1) return;
-//	if (rand(8) != 0) return;
-	message strcharinfo(0), "You found a strange bracelet hidden in the zombie's rotten rags. Maybe this is what Aldred was looking for...";
-	set @state, 2;
-	callsub S_Update_Mask;
-	return;
-
-_MOBCOUNT_FALLENS:
-
-	set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
-	set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
-
-	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
-
-	if (@state != 1) return;
-	set @bracelet, @bracelet + 1;
-// TODO: set 1 to 10
-	if (@bracelet < 1) return;
-//	if (rand(8) != 0) return;
-	message strcharinfo(0), "You found a strange bracelet inside the fallen's broken helmet. Maybe this is what Aldred was looking for...";
-	set @state, 2;
-	callsub S_Update_Mask;
-	return;
-
-S_Update_Mask:
-        set QUEST_Graveyard_Inn,
-        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
-                | (@state << @Graveyard_Inn_SHIFT);
-        return;
 
 	end;
 }
