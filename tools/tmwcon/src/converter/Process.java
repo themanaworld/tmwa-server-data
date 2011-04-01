@@ -136,7 +136,7 @@ public class Process {
         List<String> output_elements = new ArrayList<String>();
         processFiles(folder, output_elements);
         PrintWriter importOut = Main.getWriter(_import);
-        importOut.printf("map: %s.gat\n", name);
+        importOut.printf("// This file is generated automatically. All manually changes will be removed when running the Converter.\nmap: %s.gat\n", name);
         Collections.sort(output_elements);
         for (String s : output_elements)
             importOut.println(s);
@@ -158,7 +158,7 @@ public class Process {
         } else {
             title = name;
         }
-        
+
         File folder = new File(baseFolder + folderName);
         folder.mkdirs();
 
@@ -183,8 +183,8 @@ public class Process {
         PrintWriter warpOut = Main.getWriter(new File(folder, warpFile));
         PrintWriter mobOut = Main.getWriter(new File(folder, mobFile));
 
-        warpOut.printf("// %s warps\n\n", title);
-        mobOut.printf("// %s mobs\n\n", title);
+        warpOut.printf("// This file is generated automatically. All manually changes will be removed when running the Converter.\n// %s warps\n\n", title);
+        mobOut.printf("// This file is generated automatically. All manually changes will be removed when running the Converter.\n// %s mobs\n\n", title);
 
         TreeSet<Integer> mobs = new TreeSet<Integer>();
         processObjects(map.getObjects(), name, warpOut, mobOut, mobs);
@@ -208,7 +208,7 @@ public class Process {
 
         mobOut.flush();
         mobOut.close();
-        
+
         makeInclude(name, folder);
 
         return folderName;
@@ -221,6 +221,7 @@ public class Process {
 
         List<String> output_elements = new ArrayList<String>();
 
+        output_elements.add("// This file is generated automatically. All manually changes will be removed when running the Converter.\n");
         for (String folder : folders) {
             if (folder == null) continue;
             output_elements.add("import: " + folder + "/_import.txt");
