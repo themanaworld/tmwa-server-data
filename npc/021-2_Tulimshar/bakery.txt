@@ -2,97 +2,186 @@
 
 // The chef
 021-2.gat,95,21,0	script	Riskim	148,{
-	mes "[Riskim]";
-	mes "\"Welcome to our bakery!\"";
-	callfunc "KadiyaSubquestConsts";
-        if ((@Q_kadiya_status == @Q_STATUS_WANTS_CHOCOCAKE) && (countitem ("MopoxCurePotion") > 0))
-        	goto L_lace_chococake;
 
-        if ((@Q_kadiya_status == @Q_STATUS_WANTS_ORANGECUPCAKE) && (countitem ("MopoxCurePotion") > 0))
-        	goto L_lace_cupcake;
+	set @month, 4;
+	set @start_day, 15;
+	set @end_day, 30;
+
+	if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 10) goto L_ChocMouboo;
+	if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 11) goto L_MakeChocMouboo;
+	if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 12) goto L_SeeBunny;
+
+L_Begin:
+	mes "[Riskim]";
+	mes "";
+	mes "\"Welcome to our bakery!\"";
+
+	callfunc "KadiyaSubquestConsts";
+	if ((@Q_kadiya_status == @Q_STATUS_WANTS_CHOCOCAKE) && (countitem ("MopoxCurePotion") > 0))
+		goto L_lace_chococake;
+
+	if ((@Q_kadiya_status == @Q_STATUS_WANTS_ORANGECUPCAKE) && (countitem ("MopoxCurePotion") > 0))
+		goto L_lace_cupcake;
 
 	close;
 
 L_lace_chococake:
-        next;
+	next;
 
-        menu
+	menu
 		"Thanks!  Let me have a look around...", L_end,
-                "Can you put this potion into a [Chocolate Cake]?", -,
+		"Can you put this potion into a [Chocolate Cake]?", -,
 		"Goodbye!", L_end;
 
 	mes "[Riskim]";
-        mes "As you show Riskim the potion, he leans back, away from it.";
-        mes "\"Ooooh, I remember that smell...\"";
-        mes "\"Elanore's Mopox potion, right?  She made me drink that, too...\"";
-        mes "He chuckles.";
-        mes "\"Yes, well, you do want to hide that somehow.\"";
-        next;
+	mes "";
+	mes "As you show Riskim the potion, he leans back, away from it.";
+	mes "\"Ooooh, I remember that smell...\"";
+	mes "\"Elanore's Mopox potion, right?  She made me drink that, too...\"";
+	mes "He chuckles.";
+	mes "\"Yes, well, you do want to hide that somehow.\"";
+	next;
 
 	mes "[Riskim]";
-        mes "\"We'll need extra chocolate for that one.  If you can give me ten pieces of chocolate and that potion, plus 400 GP, I will bake you a special [Chocolate Cake] that hides the taste.\"";
-        next;
+	mes "";
+	mes "\"We'll need extra chocolate for that one.  If you can give me ten pieces of chocolate and that potion, plus 400 GP, I will bake you a special [Chocolate Cake] that hides the taste.\"";
+	next;
 
-        menu
+	menu
 		"I will get them for you.", L_end,
-                "Here you are!", -,
-                "Maybe later.", L_end;
+		"Here you are!", -,
+		"Maybe later.", L_end;
 
-        if (countitem("ChocolateBar") < 10)
+	if (countitem("ChocolateBar") < 10)
 		goto L_lacking_ingredients;
-        if (countitem("MopoxCurePotion") < 1)
+	if (countitem("MopoxCurePotion") < 1)
 		goto L_lacking_ingredients;
-        if (zeny < 400)
+	if (zeny < 400)
 		goto L_lacking_zeny;
-        delitem "MopoxCurePotion", 1;
-        delitem "ChocolateBar", 10;
-        getitem "LacedChocolateCake", 1;
-        set zeny, zeny - 400;
+	delitem "MopoxCurePotion", 1;
+	delitem "ChocolateBar", 10;
+	getitem "LacedChocolateCake", 1;
+	set zeny, zeny - 400;
 
 	mes "[Riskim]";
-        mes "\"Please have a seat!\"";
-        mes "You watch as Riskim melts the chocolate and stirs in the potion, then glazes a cake with the mixture.";
-        mes "\"It's a bit more chocolatey than your average chocolate cake, of course...\"";
-        next;
+	mes "";
+	mes "\"Please have a seat!\"";
+	mes "You watch as Riskim melts the chocolate and stirs in the potion, then glazes a cake with the mixture.";
+	mes "\"It's a bit more chocolatey than your average chocolate cake, of course...\"";
+	next;
 
 	mes "[Riskim]";
-        mes "Riskim hands you the cake.";
-        mes "\"Here you are.  I hope that this works.\"";
-        close;
+	mes "";
+	mes "Riskim hands you the cake.";
+	mes "\"Here you are.  I hope that this works.\"";
+	close;
 
 L_lacking_zeny:
 	mes "[Riskim]";
-        mes "\"I'm sorry, but I have to charge 400 GP.\"";
-        close;
+	mes "";
+	mes "\"I'm sorry, but I have to charge 400 GP.\"";
+	close;
 
 L_lacking_ingredients:
 	mes "[Riskim]";
-        mes "\"Sorry, but I need ten [Chocolate Bar]s AND your cure potion for this.  Please come back later when you have everything.\"";
-        close;
+	mes "";
+	mes "\"Sorry, but I need ten [Chocolate Bar]s AND your cure potion for this.  Please come back later when you have everything.\"";
+	close;
 
 L_lace_cupcake:
-        next;
+	next;
 
-        menu
+	menu
 		"Thanks!  Let me have a look around...", L_end,
-                "Can you put this potion into an [Orange Cupcake]?", -,
+		"Can you put this potion into an [Orange Cupcake]?", -,
 		"Goodbye!", L_end;
 
 	mes "[Riskim]";
-        mes "\"[Orange Cupcake]s?  Oh dear... I'm sorry, but I have a very bad orange allergy.\"";
-        next;
+	mes "";
+	mes "\"[Orange Cupcake]s?  Oh dear... I'm sorry, but I have a very bad orange allergy.\"";
+	next;
 	mes "[Riskim]";
-        mes "\"Perhaps the Chef at Dimond's Cove can help you?  We get all our cupcakes from him.\"";
-        next;
+	mes "";
+	mes "\"Perhaps the Chef at Dimond's Cove can help you?  We get all our cupcakes from him.\"";
+	next;
 
-L_end:
-        close;
+L_End:
+	close;
 
+L_ChocMouboo:
+	mes "[Riskim]";
+	mes "";
+	mes "\"Welcome to our bakery! Here you will find the best cakes in Tulimshar. And don't leave before you try one of our delicious Chocolate Pinkies!\"";
+	next;
+	menu
+		"Excuse me, sir? Did you say Chocolate Pinkies?", -;
+	mes "\"Yes! But there is no need to be alarmed, it is just plain chocolate molded in the shape of a small pinkie...\"";
+	next;
+	menu
+		"Do you have one in the shape of a mouboo? The Easter Bunny needs one.", -;
+	mes "\"The Easter Bunny? Interesting... I think I can help you make a [Chocolate Mouboo].\"";
+	menu
+		"Nah, I decided not to do that stupid quest.", L_End,
+		"I would really appreciate that!", -;
+	set QUEST_Easter11, 11;
+
+L_MakeChocMouboo:
+	mes "[Riskim]";
+	mes "";
+	mes "\"I will need you to bring me some [Chocolate Bar]s.\"";
+	mes "\"I think 5 bars should be enough.\"";
+	mes "\"Red slimes seem to have those, so try there.\"";
+	mes "\"I will also need a [Mouboo Figurine] to hollow out and use as a mold.\"";
+	mes "\"Any mage should be able to make you one out of a log, if you ask.\"";
+	menu
+		"I have everything you need.", -,
+		"Ok, I will be back soon.", L_End,
+		"I changed my mind, forget about it.", L_End;
+
+	if(countitem("ChocolateBar") < 5 || countitem("MoubooFigurine") < 1) goto L_EasterNotEnough;
+
+L_EasterEnough:
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem("ChocolateBar") > 5 && countitem("MoubooFigurine") > 1) goto L_EasterTooMany;
+	if(countitem("ChocolateBar") < 5 || countitem("MoubooFigurine") < 1) goto L_EasterNotEnough;
+	delitem "ChocolateBar", 5;
+	delitem "MoubooFigurine", 1;
+	getitem "ChocolateMouboo", 1;
+	set QUEST_Easter11, 12;
+	mes "[Riskim]";
+	mes "";
+	mes "\"Excellent.  You have brought me the chocolate and the mold.\"";
+	mes "He places the chocolate in a pan to melt.";
+	mes "Next, he pours the melted chocolate into the mold.";
+	mes "Finally, he dips the mold in cold water for a moment to solidify the chocolate before skillfully cracking it open and handing you the finished product.";
+	mes "\"Here is your [Chocolate Mouboo].\"";
+	close;
+
+L_EasterNotEnough:
+	mes "[Riskim]";
+	mes "";
+	if(countitem("ChocolateBar") < 5) mes "\"You do not have enough [Chocolate Bar]s for me to work with yet.\"";
+	if(countitem("MoubooFigurine") < 1) mes "\"You do not have the [Mouboo Figurine] to use as a mold.\"";
+	mes "\"Please go get what I asked.\"";
+	close;
+
+L_EasterTooMany:
+	mes "[Riskim]";
+	mes "";
+	mes "\"You don't have enough room for the [Chocolate Mouboo]. Come back later.\"";
+	close;
+
+L_SeeBunny:
+	mes "[Riskim]";
+	mes "";
+	mes "\"You need to return to the Easter Bunny now.\"";
+	close;
 }
 
 // Server?
 021-2.gat,82,23,0	script	Sara	108,{
 	mes "[Sara]";
+	mes "";
 	mes "\"Hello!\"";
 	close;
 }
@@ -103,6 +192,7 @@ L_end:
 // Stockroom boy
 021-2.gat,133,21,0	script	Iormo	160,{
 	mes "[Iormo]";
+	mes "";
 	mes "\"This stock room can get messy.\"";
 	close;
 }
@@ -110,12 +200,14 @@ L_end:
 // An old couple eating at the bakery
 021-2.gat,71,22,0	script	Rynoh	159,{
 	mes "[Rynoh]";
+	mes "";
 	mes "\"The cakes may be expensive, but they sure are delicious!\"";
 	close;
 }
 
 021-2.gat,73,22,0	script	Ontas	154,{
 	mes "[Ontas]";
+	mes "";
 	mes "\"We come here every week.  This place has some of the best bread I've ever eaten!\"";
 	close;
 }

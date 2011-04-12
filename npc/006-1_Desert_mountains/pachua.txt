@@ -1,14 +1,23 @@
 006-1.gat,23,100,0	script	Pachua	143,{
 
 	set @LEATHER_PATCH_PRICE, 300;
-
 	set @wants_leather_patch, QUEST_Forestbow_state & NIBBLE_4_MASK;
 
+	set @month, 4;
+	set @start_day, 15;
+	set @end_day, 30;
+
+	if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 1) goto L_Basket;
+	if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 2) goto L_MakeBasket;
+	if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 3) goto L_SeeBunny;
+
+L_Miriam_Check:
 	if (QUEST_MIRIAM_cheat != 0) goto L_warp_cheat;
 	if (QUEST_MIRIAM_start != 0) goto L_smoke;
 
 L_Begin:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"How!\"";
 	next;
 
@@ -16,6 +25,7 @@ L_Begin:
 	if (getequipid(equip_legs) == 642) goto L_WearingChaps;
 
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"For generations my tribe has been crafting special clothes out of different items.\"";
 	next;
 
@@ -25,6 +35,7 @@ L_Check_Shops:
 	if(countitem("FancyHat") > 0 && countitem("SnakeSkin") > 1) goto L_Cowboy_store;
 
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Maybe if you bring me the right materials I can make something for you.\"";
         next;
 
@@ -36,6 +47,7 @@ L_Check_Shops:
 
 L_CheckStuff:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Let me see what you have there.\"";
 	next;
 	return;
@@ -43,6 +55,7 @@ L_CheckStuff:
 L_Super_store:
 	callsub L_CheckStuff;
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Ahh you have lots of good items to work with.\"";
 	mes "";
 	mes "\"With them I can make you either";
@@ -63,6 +76,7 @@ L_Super_store:
 L_Cowboy_store:
 	callsub L_CheckStuff;
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"To make you a Cowboy hat I will need:";
 	mes "1 Fancy hat";
 	mes "2 Snake skins";
@@ -83,6 +97,7 @@ L_Cowboy_store:
 L_Chaps_store:
 	callsub L_CheckStuff;
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"To make you a pair of Snake Skin Chaps I will need:";
 	mes "1 Jeans Shorts";
 	mes "10 Snake skins";
@@ -131,6 +146,7 @@ L_Cowboy_black:
 
 L_leather_patch:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"If you just want a piece of leather, then yes, I can make that.  Bring me a snake skin and " + @LEATHER_PATCH_PRICE + " GP.\"";
         next;
 
@@ -150,6 +166,7 @@ L_leather_patch:
 
 L_DealDone:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Here you are!\"";
 	mes "";
 	mes "\"Come back any time.\"";
@@ -157,37 +174,44 @@ L_DealDone:
 
 L_NoDeal:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Alright, but you won't get a better deal anywhere else!\"";
 	close;
 
 L_NoMoney:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Oh dear, it seems you don't have enough money.\"";
 	close;
 
 L_NoJeans:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Oh dear, it seems you don't have enough jeans shorts.\"";
 	close;
 
 L_NoFancy:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Oh dear, it seems you don't have enough fancy hats.\"";
 	close;
 
 L_NoSkins:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Oh dear, it seems you don't have enough snake skins.\"";
 	close;
 
 L_WearingCowboy:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Ah, I see that you are wearing a hat made with the ancient methods of my tribe.\"";
 	next;
 	goto L_Check_Shops;
 
 L_WearingChaps:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"Ah, I see that you are wearing pants made by my tribe.\"";
 	next;
 	goto L_Check_Shops;
@@ -197,6 +221,7 @@ L_End:
 
 L_TooMany:
 	mes "[Chief Pachua]";
+	mes "";
 	mes "\"You don't have room for a leather patch. Come back later.\"";
 	close;
 
@@ -211,4 +236,75 @@ L_warp_cheat:
 	message strcharinfo(0), "Pachua releases a ring of smoke towards the sky! But, by the look on his face, you can tell he is suspicious about your methods...";
 	set @warp_cheat, 1;
 	end;
+
+L_Basket:
+	mes "[Chief Pachua]";
+	mes "";
+	mes "\"For generations my tribe has been crafting special clothes out of different items.\"";
+	mes "\"Maybe if you bring me the right materials I can make something for you.\"";
+        next;
+	menu
+		"Do you work only with clothes? Because I was looking for a basket.", -;
+	mes "\"A basket? In our tribe, we craft baskets of all kinds using only reeds. This basket, you need it to carry your items?\"";
+	menu
+		"No. It is for the Easter Bunny. I offered to get him one.", -;
+	mes "\"I appreciate your attitude. Maybe I can help you with that.\"";
+	menu
+		"I would be really grateful if you could do that!", -,
+		"Nah, I decided not to do that stupid quest.", L_End,
+		"I would prefer to talk to you about other stuff.", L_Miriam_Check; //should go to pachuas's regular chat
+	set QUEST_Easter11, 2;
+
+L_MakeBasket:
+	mes "[Chief Pachua]";
+	mes "";
+	mes "\"I will need you to gather reeds for me.\"";
+	mes "\"5 bundles should do it.\"";
+	mes "\"You should be able to get those from mouboos as they graze.\"";
+	menu
+		"I have the Reeds!", -,
+		"Ok, I will be back soon", L_End,
+		"I changed my mind, forget about it", L_End,
+		"Can I talk to you about another stuff?", L_Miriam_Check; //should go to pachuas's regular chat
+
+	if(countitem("ReedBundle") < 5) goto L_EasterNotEnough;
+	if(countitem("ReedBundle") >= 5) goto L_EasterEnough;
+	close;
+
+L_EasterNotEnough:
+	mes "[Chief Pachua]";
+	mes "";
+	mes "\"You do not have enough [Reed Bundle]s for me to work with.\"";
+	mes "\"Go gather more.\"";
+	close;
+
+L_EasterEnough:
+	getinventorylist;
+	if (@inventorylist_count == 100 && countitem("ReedBundle") > 5) goto L_EasterTooMany;
+	if(countitem("ReedBundle") < 5) goto L_EasterNotEnough;
+        delitem "ReedBundle", 5;
+	getitem "EasterBasket", 1;
+	set QUEST_Easter11, 3;
+	mes "[Chief Pachua]";
+	mes "";
+	mes "\"You have gathered enough reeds for me to make the basket.\"";
+	mes "He skillfully soaks the reeds you brought him,";
+	mes "then swiftly weaves them into a basket shape.";
+	mes "Next, he places the damp basket in the sun to dry for a minute before handing it over to you.";
+	mes "\"Here is your [Easter Basket].\"";
+	close;
+
+L_EasterTooMany:
+	mes "[Chief Pachua]";
+	mes "";
+	mes "\"You don't have room for the [Easter Basket]. Come back later.\"";
+	close;
+
+L_SeeBunny:
+	mes "[Chief Pachua]";
+	mes "";
+	mes "\"You need to return to the Easter Bunny now.\"";
+	next;
+	goto L_Miriam_Check;
+
 }
