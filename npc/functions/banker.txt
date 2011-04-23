@@ -1,6 +1,7 @@
 //
 
 function	script	Banker	{
+
 	if (BankAccount > 0) callsub S_MoveAccount;
 
 L_Start:
@@ -13,13 +14,16 @@ L_Start:
 		"Withdraw", L_With,
 		"Check my balance", L_Balance,
 		"Open my storage", L_Storage,
+		"Change Bank Options", L_Change,
 		"Nevermind", L_Nev;
 	
 	close;
 	
 // need to close window before opening storage.
 L_Storage:
+	if (#BankOptions & OPT_STORAGE_CLOSE) close2;
 	openstorage;
+	if (#BankOptions & OPT_STORAGE_CLOSE) end;
 	goto L_Start;
 
 L_Dep:
@@ -187,6 +191,7 @@ L_Balance:
 	mes "[" + @npcname$ + "]";
 	mes "\"Your current bank balance is:";
 	mes #BankAccount + " GP\"";
+	if (#BankOptions & OPT_BANK_CLOSE) close;
 	goto L_Start;
 	
 L_Nev:
@@ -203,4 +208,21 @@ S_MoveAccount:
 	set #BankAccount, #BankAccount + BankAccount;
 	set BankAccount, 0;
 	return;
+
+L_Change:
+	setarray @menuitems$, "Keep the current settings", "Close NPC dialog after selecting storage option", "Close NPC dialog after using bank";
+	if (#BankOptions & OPT_STORAGE_CLOSE) set @menuitems$[1], "Return to main menu after leaving storage";
+	if (#BankOptions & OPT_BANK_CLOSE) set @menuitems$[2], "Return to main menu after leaving bank";
+	menu
+		@menuitems$[0], L_Start,
+		@menuitems$[1], L_Change_Storage,
+		@menuitems$[2], L_Change_Bank;
+
+L_Change_Storage:
+	set #BankOptions, (#BankOptions ^ OPT_STORAGE_CLOSE);
+	goto L_Start;
+
+L_Change_Bank:
+	set #BankOptions, (#BankOptions ^ OPT_BANK_CLOSE);
+	goto L_Start;
 }
