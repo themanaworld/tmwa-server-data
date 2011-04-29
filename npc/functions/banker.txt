@@ -16,9 +16,9 @@ L_Start:
 		"Open my storage", L_Storage,
 		"Change Bank Options", L_Change,
 		"Nevermind", L_Nev;
-	
+
 	close;
-	
+
 // need to close window before opening storage.
 L_Storage:
 	if (#BankOptions & OPT_STORAGE_CLOSE) close2;
@@ -44,7 +44,7 @@ L_Dep:
 		"I've changed my mind", L_Start,
 		"Quit", -;
 	return;
-	
+
 L_Dep_Input:
 	input @Amount;
 	if (@Amount >= 0) goto L_Dep_Continue;
@@ -100,13 +100,13 @@ L_Dep_1kk:
 L_Dep_All:
 	if (zeny<1) goto L_NoMoney;
 	set @Amount, zeny;
-	
+
 L_Dep_Continue:
 	if (zeny < @Amount) goto L_NoMoney;
 	set zeny, zeny - @Amount;
 	set #BankAccount, #BankAccount + @Amount;
 	goto L_Balance;
-	
+
 L_With:
 	mes "[" + @npcname$ + "]";
 	mes "\"How much would you like to withdraw?\"";
@@ -186,31 +186,31 @@ L_With_Continue:
 	set zeny, zeny + @Amount;
 	set #BankAccount, #BankAccount - @Amount;
 	goto L_Balance;
-	
+
 L_Balance:
 	mes "[" + @npcname$ + "]";
 	mes "\"Your current bank balance is:";
 	mes #BankAccount + " GP\"";
 	if (#BankOptions & OPT_BANK_CLOSE) close;
 	goto L_Start;
-	
+
 L_Nev:
 	mes "[" + @npcname$ + "]";
 	mes "\"Goodbye then.\"";
 	return;
-	
+
 L_NoMoney:
 	mes "[" + @npcname$ + "]";
 	mes "\"Oh dear, it seems that you don't have enough money.\"";
 	goto L_Start;
-	
+
 S_MoveAccount:
 	set #BankAccount, #BankAccount + BankAccount;
 	set BankAccount, 0;
 	return;
 
 L_Change:
-	setarray @menuitems$, "Keep the current settings", "Close NPC dialog after selecting storage option", "Close NPC dialog after using bank";
+	setarray @menuitems$, "Keep the current settings", "Close NPC dialog after selecting storage option", "Close NPC dialog after checking your balance";
 	if (#BankOptions & OPT_STORAGE_CLOSE) set @menuitems$[1], "Return to main menu after leaving storage";
 	if (#BankOptions & OPT_BANK_CLOSE) set @menuitems$[2], "Return to main menu after leaving bank";
 	menu
