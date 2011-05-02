@@ -28,6 +28,8 @@
 
 	set @CRYSTAL_AMOUNT, 500;
 	set @CRYSTAL_EXP, 200000;
+	set @CRYSTAL_EXTRA_EXP, 100;
+	set @CRYSTAL_MAX, 2000;
 	set @DIAMOND_AMOUNT, 20; // caution, this value needs to be the same as in the innkeepers script!
 
 	if (@state >= 7) goto L_Have_Soul;
@@ -56,6 +58,8 @@
 	mes "\"Oh, someone is holding you back with magic! I sense a really dark and mighty power. What has happened!?\"";
 	next;
 	mes "\"Can I ask you for a favor? Can you bring me lots of [Dark Crystal]s? You might need to ask a dark mage for it. I want to try to break the barrier.\"";
+	next;
+	mes "\"I'll need... well, at least " + @CRYSTAL_AMOUNT + ". But if you have more, I can use extras!\"";
 	set @state, 1;
 	callsub S_Update_Mask;
 	close;
@@ -76,7 +80,22 @@ L_Crystals:
 	next;
 	mes "\"Oh, I can feel them! Please lay them down on the floor.\"";
 	next;
-	mes "You lay your dark crystals down on the floor and step back, nervously expecting the coming.";
+	mes "You lay "+ @CRYSTAL_AMOUNT + " dark crystals down on the floor and step back, nervously expecting the coming.";
+	next;
+	if (countitem("DarkCrystal") == 0) goto L_Skip;
+	mes "[Hanged Man]";
+	mes "\"You have more of them, haven't you? It will work better if you give them to me too.\"";
+	menu
+		"Ok, here you go.",-,
+		"I prefer to keep them.",L_Skip;
+	set @crystal, countitem("DarkCrystal");
+	if (@crystal > @CRYSTAL_MAX)
+		set @crystal, @CRYSTAL_MAX;
+	delitem "DarkCrystal", @crystal;
+	getexp @crystal*@CRYSTAL_EXTRA_EXP, 0;
+L_Skip:
+	mes "[Hanged Man]";
+	mes "\"Well, let's start now.\"";
 	next;
 	mes "The hanged man seems very concentrated now, which looks absurd with him hanging there.";
 	next;
