@@ -1,0 +1,134 @@
+//TODO: remove knife from beginning items
+042-2.gat,37,90,0	script	Tanisha	114,{
+
+	if (tutorial >= 4) goto L_Again;
+	if (tutorial == 4) goto L_Stats;
+
+	mes "[Tanisha]";
+	mes "\"Hey! You're up again!\"";
+	emotion 3;
+	next;
+	mes "\"Are you feeling better?\"";
+	menu
+		"Yes, thank you.",-,
+		"Yeah, but all my stuff is gone.",-;
+	mes "[Tanisha]";
+	mes "\"I see. It was really bad luck what happened to you.";
+	mes "Hey, I have an idea.\"";
+	next;
+L_Maggots:
+	set tutorial, 3;
+	mes "\"There are some maggots eating the goods and I shall get rid of them.";
+	mes "But they're so yucky!\"";
+	next;
+	mes "\"If you kill them, I'll give you my knife.";
+	mes "What do you say?\"";
+	menu
+		"Sure!",-,
+		"That's your job.",L_Close;
+	mes "[Tanisha]";
+	mes "\"Wonderful!\"";
+	if ($@TUT_MAGGOT) goto L_Blocked;
+	set $@TUT_MAGGOT, 1;
+	set $@TUT_COUNTER, 0;
+	getitem "knife", 1;
+	next;
+	mes "\"Ok, listen what to do.";
+	mes "Equip the knife and kill the maggots.\"";
+	next;
+	mes "\"Press A to focus on a monster. With X you can focus and attack.";
+	mes "But it also works to click on the monster with your mouse.\"";
+	next;
+	mes "\"If you press Shift, you can abort your attack.\"";
+	next;
+	mes "\"Maggots aren't aggressive, so they won't attack you until you attacked. Take them out one by one.";
+	mes "Sometimes dead monsters leave some useful things. You can pick them up with pressing Z.\"";
+	close2;
+	warp "042-2.gat", 33, 87;
+	areamonster "042-2.gat", 31, 85, 35, 89, "", 1002, 5, "Tanisha::onMaggotDeath";
+	startnpctimer;
+	end;
+
+L_Stats:
+	mes "[Tanisha]";
+	mes "\"That was great! Like a professional exterminator!\"";
+	next;
+	mes "\"And it seems you became stronger and more experienced.";
+	mes "That means you got some status points which you can use to increase your abilities.\"";
+	next;
+	mes "\"Press F2 to see your status window. There you can distribute your points on six different properties.\"";
+	next;
+L_StatsRe:
+	mes "\"Strength makes you hit harder and you can carry more weight.\"";
+	next;
+	mes "\"Agility increases your attack speed and your ability to dodge attacks.\"";
+	next;
+	mes "\"Vitality gives you more Hit Points and more defense against physical attacks.\"";
+	next;
+	mes "\"Intelligence is useful for magic attack and defense.\"";
+	next;
+	mes "\"Dexterity is needed to hit a monster. It's also very important for the damage if you use a ranged weapon.\"";
+	next;
+	mes "\"Luck gives you the chance to do critical hits and lowers the chance to receive a critical hit from your opponent.\"";
+	next;
+	mes "\"Think about how you want to play before putting the points.";
+	mes "Also I heard rumors about a strange guy lurking around in the desert south of Tulimshar, who can help you to forget your abilites!\"";
+	mes "Tanisha looks at you with wide opened eyes.";
+	next;
+	mes "[Tanisha]";
+	mes "\"But I don't think he'd do that without a service in return.\"";
+
+	if (tutorial == 4) goto L_Advice;
+	close;
+
+L_Advice:
+	mes "[Tanisha]";
+	mes "\"Hey, when you go to main Tulmishar, you could see Bernard. He can make a delicious soup!";
+	mes "Good luck!\"";
+	emotion 3;
+	close;
+
+L_Again:
+	mes "\"TODO: menu for fighting and stats explain again\"";
+
+L_Blocked:
+	mes "[Tanisha]";
+	//TODO: make this more plausible
+	mes "\"Oh, someone else is already in there. Let's wait a short while.\"";
+	close;
+
+OnTimer1000:
+	setnpctimer 0;
+	if (getareausers("042-2.gat", 29, 85, 36, 90) < 1)
+		goto L_CleanUp;
+	areatimer "042-2.gat", 29, 85, 36, 90, 10, "Tanisha::onTick";
+	end;
+
+L_CleanUp:
+	set $@TUT_MAGGOT, 0;
+	killmonster "042-2.gat", "Tanisha::onMaggotDeath";
+	stopnpctimer;
+	setnpctimer 0;
+	end;
+
+onTick:
+	if (isdead(0)) end;
+	if (hp > 20)
+		goto L_NoHeal;
+	heal MaxHp, 0;
+	message strcharinfo(0), "Tanisha: You're doing good!";
+L_NoHeal:
+	if ($@TUT_COUNTER < 5)
+		end;
+	warp "042-2.gat", 36, 90;
+	set tutorial, 4;
+	goto L_CleanUp;
+	close;
+
+onMaggotDeath:
+	set $@TUT_COUNTER, $@TUT_COUNTER + 1;
+	end;
+
+L_Close:
+	close;
+}

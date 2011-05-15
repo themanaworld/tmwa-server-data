@@ -1,183 +1,19 @@
 //TODO: put npcs in different files and give names
 
-042-2.gat,28,26,0	script	Granny	154,{
-
-	if (tutorial > 2) goto L_Again;
-	if (tutorial == 1) goto L_Clothes;
-
-	mes "[Granny]";
-	mes "\"Ah, you're waking up. It seems you collapsed after you left the boat that brought you to Tulimshar.";
-	mes "A group of ragtags immediatly took advantage of that and stole all your stuff!\"";
-	next;
-//TODO: add name of granddaughter
-	mes "\"My little granddaughter saw that, but couldn't do something to stop them.";
-	mes "She brought someone to help. It was too late to catch the thieves, but at least they brought you here to recover.\"";
-	next;
-	mes "\"This area of the town is full of shady poeple, so I don't think there's a chance to get back your stuff.\"";
-	mes "She has a sad look on her face, but then she shakes her head and smiles.";
-	next;
-	mes "[Granny]";
-	mes "\"I'm glad you're feeling better now. You're not used to the hot weather, right?";
-	mes "Are you here to look for some work? Many young people come to our Tulimshar for this reason.\"";
-	next;
-	mes "\"I can tell you some useful things, if you to hear.\"";
+042-1.gat,18,80,0	script	Man	156,{
+	mes "reset?";
 	menu
-		"That would be great!",L_Tut,
-		"No, thanks. I already know how things are going.",L_SkipTut;
-
-L_Tut:
-	mes "[Server]";
-	mes "The explanations in this tutorial are based on the official client version 0.5.2";
-	mes "If you're using another client, settings and controls may be different.";
-
-	mes "She smiles at you.";
-	mes "[Granny]";
-	mes "\"A wise decision.\"";
-	next;
-	mes "\"Ok, I hope you didn't forget how to walk. Just use the arrow keys or click at the place you want to go to.\"";
-	next;
-	mes "\"And you really should get dressed again. I gave you an old shirt of my son.\"";
-	next;
-	set tutorial, 1;
-L_Naked:
-	mes "\"Press F3 or click at the button for your equipment in the bar at the upper right corner to open your inventory.\"";
-	next;
-	mes "\"Then click on the shirt and press the equip button.\"";
-	next;
-	mes "\"Talk to me again when you got dressed. You can either click on me, or press N to focus on me and T to talk.\"";
-	close;
-
-L_Clothes:
-	if (getequipid(equip_torso) < 0) goto L_Naked;
-	mes "[Granny]";
-	mes "\"That's much better, don't you think so?\"";
-	next;
-	mes "\"You know, there are different kind of items. You can also use usable items in your inventory.\"";
-	next;
-	mes "\"But you might find it more useful to put them on a shortcut. Press F8 to open your shortcut window.\"";
-	next;
-	mes "\"You can select the item you want to put on a shortcut with your mouse and then click on the position in the shortcut window you want to place it.\"";
-	next;
-	mes "\"I think this will help you a bit. To get more informations, press the button settings and look at the controls. You can also change them as you like.\"";
-	next;
-	mes "\"Now you should go to see my granddaughter, she is very worried. She's in the storehouse, that's the building just a few steps southeast from here.\"";
-	next;
-	mes "\"Oh, and if you're looking for work, you should talk to Aidan when you go to main Tulimshar. They're giving rewards for monster hunting.";
-	mes "You can find him near the south gate. Well, good luck.\"";
-	set tutorial, 2;
-	close;
-
-L_Again:
-	mes "[Granny]";
-	mes "\"TODO: put here a menu for explaining things again\"";
-	close;
-
-L_SkipTut:
-	mes "[Granny]";
-	mes "\"Really? You seem quite unexperienced. Listening to some advices won't hurt.\"";
-	menu
-		"Thinking about it twice... please tell me.",L_Tut,
-		"Yeah, but thanks for the offer. Bye",-;
-	mes "[Granny]";
-	mes "\"If you think so. Good luck.\"";
-	//TODO:set flag
-close;
-}
-
-042-2.gat,37,89,0	script	YoungGirl	114,{
-	mes "[YoungGirl]";
-	mes "\"Hey! You're up again!\"";
-	emotion 3;
-	next;
-	mes "\"Are you feeling better?\"";
-	menu
-		"Yes, thank you.",-,
-		"Yeah, but all my stuff is gone.",-;
-	mes "[YoungGirl]";
-	mes "\"I see. It was really bad luck how you \"";
-
-	//TODO: remove knife from beginning items
-	mes "\"TODO: find some transition\"";
-	next;
-L_Maggots:
-	set tutorial, 3;
-	mes "\"There are some maggots eating the goods and I shall get rid of them.";
-	mes "But they're so yucky!\"";
-	next;
-	mes "\"If you kill them, I'll give you my knife.";
-	mes "What do you say?\"";
-	menu
-		"Sure!",-,
-		"That's your job.",L_Close;
-	mes "[YoungGirl]";
-	mes "\"Wonderful!\"";
-	if ($@TUT_MAGGOT) goto L_Blocked;
-	set $@TUT_MAGGOT, 1;
-	set $@TUT_COUNTER, 0;
-	getitem "knife", 1;
-	next;
-	mes "\"Ok, listen what to do.";
-	mes "Equip the knife and kill the maggots.\"";
-	next;
-	mes "\"Press A to focus on a monster. With X you can focus and attack.";
-	mes "But it also works to click on the monster with your mouse.\"";
-	next;
-	mes "\"If you press Shift, you can abort your attack.\"";
-	next;
-	mes "\"Maggots aren't aggressive, so they won't attack you until you attacked. Take them out one by one.";
-	mes "Sometimes dead monsters leave some useful things. You can pick them up with pressing Z.\"";
-	close2;
-	warp "042-2.gat", 33, 87;
-	areamonster "042-2.gat", 31, 85, 35, 89, "", 1002, 5, "YoungGirl::onMaggotDeath";
-	startnpctimer;
-	end;
-
-L_Blocked:
-	mes "[YoungGirl]";
-	//TODO: make this more plausible
-	mes "\"Oh, someone else is already in there. Let's wait a short while.\"";
-	close;
-
-OnTimer1000:
-	setnpctimer 0;
-	if (getareausers("042-2.gat", 29, 85, 36, 90) < 1)
-		goto L_CleanUp;
-	areatimer "042-2.gat", 29, 85, 36, 90, 10, "YoungGirl::onTick";
-	end;
-
-L_CleanUp:
-	set $@TUT_MAGGOT, 0;
-	killmonster "042-2.gat", "YoungGirl::onMaggotDeath";
-	stopnpctimer;
-	setnpctimer 0;
-	end;
-
-onTick:
-	if (isdead(0)) end;
-	if (hp > 20)
-		goto L_NoHeal;
-	heal MaxHp, 0;
-	message strcharinfo(0), "YoungGirl: You're doing good!";
-L_NoHeal:
-	if ($@TUT_COUNTER < 5)
-		end;
-	warp "042-2.gat", 36, 90;
-	set tutorial, 4;
-	goto L_CleanUp;
-	close;
-
-onMaggotDeath:
-	set $@TUT_COUNTER, $@TUT_COUNTER + 1;
-	end;
-
+		"yes",-,
+		"no",L_Close;
+	set tutorial, 0;
 L_Close:
 	close;
-}
 
-042-1.gat,18,80,0	script	Man	156,{
+}
+042-1.gat,105,60,0	script	SomeGuy	162,{
 end;
 }
-042-1.gat,105,72,0	script	YoungMan	162,{
+042-1.gat,105,72,0	script	YoungMan	160,{
 end;
 }
 042-1.gat,110,74,0	script	ManWithShabbyClothes	189,{
