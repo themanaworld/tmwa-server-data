@@ -1,4 +1,60 @@
 042-1.gat,110,74,0	script	Hasan	189,{
-//block the way to town
-end;
+
+	set @toll, 10000;
+
+	mes "[Unfriendly Guy]";
+	mes "\"Hey! You can't pass here.\"";
+	menu
+		"Why not?",-,
+		"Who says that?",-;
+	mes "[Unfriendly Guy]";
+	mes "\"Me, Hasan the mighty, decided to put a toll on this way.\"";
+	next;
+	mes "\"Give me " + @toll + "GP, and I may let you pass.\"";
+	set hasan, 1;
+	if (zeny >= @toll)
+		menu
+			"Ok, here you go.",L_Pay,
+			"What? I don't have so much money!",L_NoPay,
+			"We'll see if you can stop me!",L_Fight;
+	menu
+		"What? I don't have so much money!",L_NoPay,
+		"We'll see if you can stop me!",L_Fight;
+	close;
+
+L_NoPay:
+	mes "[Hasan]";
+	mes "\"That's not my problem. You have to stay here then.\"";
+	close;
+
+L_Fight:
+	mes "He laughs derisively.";
+	mes "[Hasan]";
+	mes "\"Do you really think you can beat me?\"";
+	mes "He pulls out a nasty looking dagger and stabs it in your direction.";
+	set hp, 1;
+	mes "That hurt! You begin to think searching for a different solution might be healthier.";
+	close;
+
+L_Pay:
+	if (zeny < @toll)
+		goto L_Cheat;
+	set zeny, zeny - @toll;
+	mes "He grins gloatingly.";
+	mes "[Hasan]";
+	mes "\"Very well. You may pass.\"";
+	//TODO: set variables
+	close;
+
+L_Cheat:
+	mes "[Hasan]";
+	mes "\"Don't dare to cheat on me!\"";
+	close;
+}
+
+042-1.gat,117,76,0	script	#barrier	127,2,2{
+	//TODO: check variable
+	warp "042-1.gat", 110, 73;
+	message strcharinfo(0), "Hasan: \"Stop!\"";
+	end;
 }
