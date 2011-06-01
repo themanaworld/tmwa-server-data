@@ -1,5 +1,5 @@
 /*
- * TMWServ to eAthena Converter (c) 2008 Jared Adams
+ * TMWServ to eAthena Converter (c) 2008, 2011 Jared Adams
  * License: GPL, v2 or later
  */
 
@@ -131,11 +131,12 @@ public class Process {
         }
     }
 
-    private static void makeInclude(String name, File folder) {
+    private static void makeInclude(String name, String title, File folder) {
         File _import = new File(folder, importFile);
         List<String> output_elements = new ArrayList<String>();
         processFiles(folder, output_elements);
         PrintWriter importOut = Main.getWriter(_import);
+        importOut.printf("// Map %s: %s\n", name, title);
         importOut.printf("// This file is generated automatically. All manually changes will be removed when running the Converter.\nmap: %s.gat\n", name);
         Collections.sort(output_elements);
         for (String s : output_elements)
@@ -152,12 +153,6 @@ public class Process {
         String title = getProp(props, "name", "");
 
         String folderName =  scriptDirectory + name;
-        if (title.length() > 0) {
-            folderName += "_" + title.replaceAll("\\s", "_").replaceAll("[^A-Za-z0-9\\-_]", "");
-            title = name + " " + title;
-        } else {
-            title = name;
-        }
 
         File folder = new File(baseFolder + folderName);
         folder.mkdirs();
@@ -168,12 +163,12 @@ public class Process {
 
         if (wlkFile.exists() && mapFile.lastModified() < wlkFile.lastModified()) {
             System.out.println("Up to date, skipping");
-            makeInclude(name, folder);
+            makeInclude(name, title, folder);
             return folderName;
         }
 
         if (summary != null) {
-            summary.printf("\tName: '%s'\n", title);
+            summary.printf("\tName: %s: '%s'\n", name, title);
             summary.printf("\tMusic: '%s'\n", getProp(props, "music", ""));
             summary.printf("\tMinimap: '%s'\n", getProp(props, "minimap", ""));
         }
@@ -209,7 +204,7 @@ public class Process {
         mobOut.flush();
         mobOut.close();
 
-        makeInclude(name, folder);
+        makeInclude(name, title, folder);
 
         return folderName;
     }
