@@ -2,10 +2,15 @@
 
 	set @toll, 10000;
 
-	if (hasan == 1) goto L_Toll;
+	if ($scorp) goto L_Fear;
+
+	if (hasan == 4) goto L_Thank;
+	if (hasan == 3) goto L_Trick;
+	if (hasan > 0) goto L_Toll;
 
 	mes "[Unfriendly Guy]";
 	mes "\"Hey! You can't pass here.\"";
+	next;
 	menu
 		"Why not?",-,
 		"Who says that?",-;
@@ -15,7 +20,9 @@
 L_Toll:
 	mes "[Hasan]";
 	mes "\"Give me " + @toll + "GP, and I may let you pass.\"";
-	set hasan, 1;
+	if (hasan == 0)
+		set hasan, 1;
+	next;
 	if (zeny >= @toll)
 		menu
 			"Ok, here you go.",L_Pay,
@@ -54,13 +61,54 @@ L_Cheat:
 	mes "[Hasan]";
 	mes "\"Don't dare to cheat on me!\"";
 	close;
+
+L_Trick:
+	mes "[Hasan]";
+	mes "\"Are you going to pay now? " + @toll + "GP, and I may let you pass.\"";
+	next;
+	menu
+		"I don't have so much money!",L_NoPay,
+		"No. (Scratch your head.)",-;
+	mes "While you're scratching your head, you see Kaan coming nearer to the cliff above you.";
+	monster "042-1.gat",110,74,"Scorpion",1003,1, "Hasan::onScorpionDeath";
+	set $scorp, 1;
+	close;
+
+L_Thank:
+	mes "[Hasan]";
+	mes "\"You - you saved me!";
+	mes "I tried to get your money and you saved me!\"";
+	next;
+	mes "\"Hey, you're a really cool person.";
+	mes "I mean, how you finished that ghastly scorpion!";
+	mes "Amazing!\"";
+	next;
+	mes "\"I tell you something: Cool persons are allowed to pass for free.";
+	mes "And you can have this.\"";
+	getitem "SharpKnife", 1;
+	//TODO: clear all vars and set flag
+	close;
+
+L_Fear:
+	mes "[Hasan]";
+	mes "\"Sc-sc-sco-scorpion! Pl-please k-kill it.\"";
+	mes "He seems close to tears.";
+	close;
+
+onScorpionDeath:
+	set $scorp, 0;
+	if (hasan != 3)
+		close;
+	set hasan, 4;
+	message strcharinfo(0), "You saved Hasan.";
+	end;
 }
 
 042-1.gat,117,76,0	script	#barrier	127,2,2{
 	//TODO: check variable
 	warp "042-1.gat", 110, 73;
+	if ($scorp)
+		message strcharinfo(0), "Hasan: \"Please help me!\"";
 	message strcharinfo(0), "Hasan: \"Stop!\"";
-	// when scorpion is spawned:
-	// message strcharinfo(0), "Hasan: \"Please help me!\"";
 	end;
 }
