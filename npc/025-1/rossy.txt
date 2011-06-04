@@ -1,5 +1,7 @@
 025-1.gat,80,88,0	script	Rossy	114,{ 
 
+  if (Rossy_Quest == 18) goto L_FinalEnd;
+  if (Rossy_Quest == 17) goto L_End;
   if (Rossy_Quest == 14) goto L_Julia;
   if (Rossy_Quest >= 13) goto L_Best;
   if (Rossy_Quest >= 11) goto L_Allergic;
@@ -11,7 +13,7 @@
   if (Rossy_Quest == 1) goto L_Check;
 
   mes "[Rossy]";
-  mes "The young girl looks at you in tears.";
+  mes "*The young girl looks at you in tears.*";
   menu
     "Please stop crying and tell me what's wrong.", -,
     "I don't like people who cry. Bye.", L_No;
@@ -32,7 +34,7 @@ L_No:
 
 L_Set:
   mes "[Rossy]";
-  mes "\"Really? Can you get 20 Cherries for me? These are the fruits I like best.\"";
+  mes "\"Really? Can you get 5 Cherries for me? These are the fruits I like best.\"";
   next;
   menu
     "Sure, I'll be back with your cherries.", L_Get,
@@ -41,14 +43,14 @@ L_Set:
 L_Get:
   mes "[Rossy]";
   set Rossy_Quest, 1;
-  mes "\"Please, get 20 Cherries for me.\"";
+  mes "\"Please, get 5 Cherries for me.\"";
   close;
 
 L_Check:
-  if(countitem("Cherry") < 20) goto L_Get;
+  if(countitem("Cherry") < 5) goto L_Get;
   mes "[Rossy]";
   set Rossy_Quest, 2;
-  delitem "Candy", 20;
+  delitem "Cherry", 5;
   getexp 2000, 0;
   mes "\"I can't believe my eyes, you got them! Thanks a lot!\"";
   next;
@@ -167,5 +169,26 @@ L_Julia:
   mes "[Rossy]";
   mes "\"I saw my twin, Julia! She was forced to enter a cave not far from here. I heard her scream. Please find her now!\"";
   close;
-  
+
+L_End:
+  mes "[Rossy]";
+  mes "\"I saw my twin, Julia! She was forced to enter a cave not far from here. I heard her scream. Please find her now!\"";
+  menu
+    "She'll be back soon, trust me, I saved her.", L_Found,
+    "I didn't saw her yet, sorry.", L_No;
+
+L_Found:
+  mes "[Rossy]";
+  set Rossy_Quest, 18;
+  mes "\"Thank you "+ strcharinfo(0) +", thank you! Here is a reward for you.\"";
+  getexp 5000, 0;
+  set zeny, zeny + 5000;
+  close;
+
+L_FinalEnd:
+  mes "[Rossy]";
+  mes "\"Julia and I are playing hide and seek right now, it is funny in the forest!\"";
+  mes "*The young girl laughs quietly.*";
+  close;
+
 }
