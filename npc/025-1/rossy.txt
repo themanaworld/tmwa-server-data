@@ -1,0 +1,171 @@
+025-1.gat,80,88,0	script	Rossy	114,{ 
+
+  if (Rossy_Quest == 14) goto L_Julia;
+  if (Rossy_Quest >= 13) goto L_Best;
+  if (Rossy_Quest >= 11) goto L_Allergic;
+  if (Rossy_Quest >= 8 && Rossy_Quest < 11) goto L_Donet;
+  if (Rossy_Quest == 7) goto L_BT;
+  if (Rossy_Quest == 6) goto L_Check2;
+  if (Rossy_Quest == 5) goto L_Let;
+  if (Rossy_Quest >= 2 && Rossy_Quest < 5) goto L_Done;
+  if (Rossy_Quest == 1) goto L_Check;
+
+  mes "[Rossy]";
+  mes "The young girl looks at you in tears.";
+  menu
+    "Please stop crying and tell me what's wrong.", -,
+    "I don't like people who cry. Bye.", L_No;
+  next;
+  mes "[Rossy]";
+  mes "\"I dropped a basket of fruits and these snails ate every fruit in it!\"";
+  if (baselevel < 50) goto L_LowLevel;
+  menu
+    "Oh, I presume that you want some. Would you like me to get some fruits for you?", L_Set,
+    "Oh well, life isn't fair.", L_No;
+
+L_LowLevel:
+  menu
+    "I can't do anything about it, sorry.", L_No;
+
+L_No:
+  close;
+
+L_Set:
+  mes "[Rossy]";
+  mes "\"Really? Can you get 20 Cherries for me? These are the fruits I like best.\"";
+  next;
+  menu
+    "Sure, I'll be back with your cherries.", L_Get,
+    "No.", L_No;
+
+L_Get:
+  mes "[Rossy]";
+  set Rossy_Quest, 1;
+  mes "\"Please, get 20 Cherries for me.\"";
+  close;
+
+L_Check:
+  if(countitem("Cherry") < 20) goto L_Get;
+  mes "[Rossy]";
+  set Rossy_Quest, 2;
+  delitem "Candy", 20;
+  getexp 2000, 0;
+  mes "\"I can't believe my eyes, you got them! Thanks a lot!\"";
+  next;
+  mes "\"Could you go and talk to my mother? She is in one of the buildings in the town north east from here.\"";
+  close;
+
+L_Done:
+  mes "[Rossy]";
+  mes "\"Thank you "+ strcharinfo(0) +"! Please go and see my mum. She might need help.\"";
+  close;
+
+L_Let:
+  mes "[Rossy]";
+  mes "\"Hello "+ strcharinfo(0) +", nice to see you again. What are you holding behind in your hands? Is that a letter?\"";
+  menu
+    "Your mother asked me to hand you this letter. She told me it was from your teacher.", L_Let2,
+    "Not at all... I need to go now, see you next time.", L_No;
+    
+L_Let2:
+  mes "[Rossy]";
+  mes "\"Oh, let me read it...\"";
+  next;
+  mes "*The little girl grabs the piece of paper and reads it. Her face turns pale.*";
+  menu
+    "What does it say?", -;
+  mes "[Rossy]";
+  mes "\"Oh no, I completely forgot! I need to make a potion for my exam but I don't have any of the ingredients required. Could you get them for me?\"";
+  menu
+    "Of course I can, what do you need?", L_Sett,
+    "Well, I'm already really busy right now, sorry. Bye.", L_No;
+    
+L_Sett:
+  mes "[Rossy]";
+  set Rossy_Quest, 6;
+  mes "\"Great! I need 24 [Cactus Drink]s, 32 [Maggot Slime]s, 50 [Gamboge Herb]s, 43 [Alizarin Herb]s and 30 [Bug Leg]s.\"";
+  mes "\"If I don't get them soon enough, I will fail my exam...\"";
+  close;
+  
+L_NE:
+  mes "[Rossy]";
+  mes "\"Please bring me 24 [Cactus Drink]s, 32 [Maggot Slime]s, 50 [Gamboge Herb]s, 43 [Alizarin Herb]s and 30 [Bug Leg]s.\"";
+  mes "\"It seems you miss some of the ingredients I've asked you. Please hurry!\"";
+  close;
+  
+L_Check2:
+  if(countitem("CactusDrink") < 24) goto L_NE;
+  if(countitem("MaggotSlime") < 32) goto L_NE;
+  if(countitem("GambogeHerb") < 50) goto L_NE;
+  if(countitem("AlizarinHerb") < 43) goto L_NE;
+  if(countitem("BugLeg") < 30) goto L_NE;
+  mes "[Rossy]";
+  set Rossy_Quest, 7;
+  mes "\"Oh, thanks you "+ strcharinfo(0) +" so much! If you don't mind, please bring this potion to my teacher and don't lose it!\"";
+  delitem "CactusDrink", 24;
+  delitem "MaggotSlime", 32;
+  delitem "GambogeHerb", 50;
+  delitem "AlizarinHerb", 43;
+  delitem "BugLeg", 30;
+  getexp 3000, 0;
+  next;
+  mes "\"His name is David, he is a magician and lives near magic school in Tulimshar.\"";
+  mes "\"Please, give it to him!\"";
+  close;
+  
+L_BT:
+  mes "[Rossy]";
+  mes "\"Great. Now you just should bring it to my teacher. His name is David, he is my magic teacher and lives near the magic school in the north of Tulimshar.\"";
+  mes "\"You should take the ferry, that will be faster.\"";
+  close;
+  
+L_Donet:
+  mes "[Rossy]";
+  mes "\"Cool, I've passed my exam! Hurray!!!\"";
+  if (Rossy_Quest == 10 && countitem("redrose") == 15) goto L_RG;
+  close;
+  
+L_RG:
+  menu
+    "Your mother asked me to bring you these flowers.", -;
+  mes "[Rossy]";
+  set Rossy_Quest, 11;
+  mes "\"Let me see...\"";
+  next;
+  mes "*Rossy takes the flowers from your hands and suddenly throws them on the ground. She begins sneezing.*";
+  delitem "redrose", 15;
+  menu
+    "I presume that you don't like roses, right?", -;
+  mes "[Rossy]";
+  mes "\"I am allergic to roses, my mother should already know that!\"";
+  close;
+  
+L_Allergic:
+  mes "*Girl sneezes a lot*";
+  if (Rossy_Quest == 12 && countitem("redtulip") == 15) goto L_Sorry;
+  close;
+  
+L_Sorry:
+  menu
+    "Your mother is really sorry about the roses. Here are some beautiful red tulips instead.", L_See;
+    
+L_See:
+  mes "[Rossy]";
+  set Rossy_Quest, 13;
+  delitem "redtulip", 15;
+  mes "\"How nice, thank you "+ strcharinfo(0) +"! Tell my mother that she is the nicest mother in the world. You are the best gentleman I've ever met!\"";
+  getexp 2500, 0;
+  close;
+  
+L_Best:
+  mes "[Rossy]";
+  set Rossy_Quest, 14;
+  mes "\"Thank you "+ strcharinfo(0) +", you helped me so much! I now need to find my sister before my mum gets worried...\"";
+  close;
+
+L_Julia:
+  mes "[Rossy]";
+  mes "\"I saw my twin, Julia! She was forced to enter a cave not far from here. I heard her scream. Please find her now!\"";
+  close;
+  
+}
