@@ -1,9 +1,9 @@
-//TODO: remove knife from beginning items
 042-2.gat,37,90,0	script	Tanisha	114,{
 
-	if ((FLAGS & FLAG_TUTORIAL_DONE) || ($@TUT_MAGGOT)) goto L_Maggot_Fight;
-	if (tanisha == 3) goto L_Again;
-	if (tanisha == 2) goto L_Stats;
+	if (FLAGS & FLAG_TUTORIAL_DONE)  goto L_Tut_Done;
+	if (tanisha == 4) goto L_Again;
+	if (tanisha == 3) goto L_Stats;
+	if (tanisha == 2) goto L_Fail;
 	if (tanisha == 1) goto L_Maggots;
 
 	mes "[Tanisha]";
@@ -32,11 +32,11 @@ L_Maggots:
 		"That's your job.",L_Close;
 	mes "[Tanisha]";
 	mes "\"Wonderful!\"";
-	if ($@TUT_MAGGOT) goto L_Blocked;
-	set $@TUT_MAGGOT, 1;
-	set $@TUT_COUNTER, 0;
+	set $@TUT_MAGGOT, $@TUT_MAGGOT + 1;
+	set maggot, 0;
 	getitem "knife", 1;
 	next;
+L_Fight_Again:
 	mes "\"Ok, listen what to do.";
 	mes "Equip the knife and kill the maggots.\"";
 	next;
@@ -48,6 +48,7 @@ L_Maggots:
 	mes "\"Maggots aren't aggressive, so they won't harm you until you attacked them first. Take them out one by one.\"";
 	next;
 	mes "\"Sometimes dead monsters leave some useful things. You can pick them up with pressing Z or clicking with your mouse.\"";
+	set tanisha, 2;
 	close2;
 	warp "042-2.gat", 33, 87;
 	areamonster "042-2.gat", 31, 85, 35, 89, "", 1002, 5, "Tanisha::onMaggotDeath";
@@ -84,7 +85,7 @@ L_StatsRe:
 	mes "[Tanisha]";
 	mes "\"But I don't think he'd do that without a service in return.\"";
 
-	if (tanisha == 2) goto L_Advice;
+	if (tanisha == 3) goto L_Advice;
 	close;
 
 L_Advice:
@@ -93,8 +94,8 @@ L_Advice:
 	mes "\"When you go to main Tulimshar, you could see Bernard. He can make a delicious soup!";
 	mes "Good luck!\"";
 	emotion 3;
-	if (tanisha == 2)
-		set tanisha, 3;
+	if (tanisha == 3)
+		set tanisha, 4;
 	close;
 
 L_Again:
@@ -152,14 +153,11 @@ L_Hasan:
 		set hasan, 2;
 	close;
 
-L_Blocked:
+L_Tut_Done:
 	mes "[Tanisha]";
-	mes "\"Oh, someone else is already in there. Let's wait a short while.\"";
-	close;
-
-L_Maggot_Fight:
-	mes "[Tanisha]";
-	mes "\"This yucky maggots! They're eating our goods!\"";
+	mes "\"This yucky maggots! They're eating our goods!";
+	mes "No matter how many of them you kill, they always come back.\"";
+	mes "She sighs.";
 	close;
 
 OnTimer1000:
@@ -170,8 +168,8 @@ OnTimer1000:
 	end;
 
 L_CleanUp:
-	set $@TUT_MAGGOT, 0;
 	killmonster "042-2.gat", "Tanisha::onMaggotDeath";
+	set $@TUT_MAGGOT, 0;
 	stopnpctimer;
 	setnpctimer 0;
 	end;
@@ -183,16 +181,33 @@ onTick:
 	heal MaxHp, 0;
 	message strcharinfo(0), "Tanisha: You're doing good!";
 L_NoHeal:
-	if ($@TUT_COUNTER < 5)
+	if (maggot < 5)
 		end;
 	warp "042-2.gat", 36, 90;
-	set tanisha, 2;
-	goto L_CleanUp;
+	set tanisha, 3;
+	set maggot, 0;
+	if ($@TUT_MAGGOT > 0)
+		set $@TUT_MAGGOT, $@TUT_MAGGOT - 1;
 	close;
 
 onMaggotDeath:
-	set $@TUT_COUNTER, $@TUT_COUNTER + 1;
+	set maggot, maggot + 1;
 	end;
+
+L_Fail:
+	mes "Tanisha seems to try hard to supress laughter.";
+	mes "[Tanisha]";
+	mes "\"The maggots defeated you.\"";
+	next;
+	mes "She bursts out with laughter.";
+	mes "[Tanisha]";
+	mes "\"Oups, I'm sorry. It's just too funny.";
+	mes "Do you want to try it again?\"";
+	next;
+	menu
+		"Sure!",L_Fight_Again,
+		"No, I need a rest.",L_Close;
+	close;
 
 L_Close:
 	close;
