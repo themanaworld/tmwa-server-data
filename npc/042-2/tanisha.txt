@@ -1,7 +1,6 @@
 042-2.gat,37,90,0	script	Tanisha	114,{
 
-//TODO: fix the mapflag in 042-2
-//TODO: limit number of players for maggot fight
+	set @playerlimit, 4;
 
 	if ((getx(0) > 29) && (getx(0) < 37) && (gety(0) > 84) && (gety(0) < 90)) goto L_Fighting;
 
@@ -37,6 +36,8 @@ L_Maggots:
 		"That's your job.",L_Close;
 	mes "[Tanisha]";
 	mes "\"Wonderful!\"";
+	if ($@TUT_MAGGOT >= @playerlimit)
+		goto L_Crowded;
 	set $@TUT_MAGGOT, $@TUT_MAGGOT + 1;
 	set maggot, 0;
 	getitem "knife", 1;
@@ -133,6 +134,8 @@ L_Fight:
 	mes "\"If you press Shift, you can abort your attack.\"";
 	next;
 	mes "\"Sometimes dead monsters leave some useful things. You can pick them up with pressing Z or clicking with your mouse.\"";
+	next;
+	mes "\"If you feel exhausted from battle you can sit down with pressing S to recover faster.\"";
 	close;
 
 L_Mob:
@@ -165,6 +168,41 @@ L_Tut_Done:
 	mes "She sighs.";
 	close;
 
+L_Crowded:
+	mes "[Tanisha]";
+	mes "\"That's great! But...";
+	mes "it seems it's crowded in there.\"";
+	next;
+	mes "\"Let's wait a short while.\"";
+	close;
+
+L_Sleep:
+	warp "042-2.gat", 36, 90;
+	mes "[Tanisha]";
+	mes "\"What are you doing in there?";
+	mes "Sleeping?";
+	mes "Come back when you're serious.\"";
+	close;
+
+L_Fail:
+	mes "Tanisha seems to try hard to supress laughter.";
+	mes "[Tanisha]";
+	mes "\"The maggots defeated you.\"";
+	next;
+	mes "She bursts out with laughter.";
+	mes "[Tanisha]";
+	mes "\"Oups, I'm sorry. It's just too funny.";
+	mes "Do you want to try it again?\"";
+	next;
+	menu
+		"Sure!",-,
+		"No, I need a rest.",L_Close;
+	if ($@TUT_MAGGOT >= @playerlimit)
+		goto L_Crowded;
+	goto L_Fight_Again;
+	set $@TUT_MAGGOT, $@TUT_MAGGOT + 1;
+	close;
+
 L_Fighting:
 	message strcharinfo(0), "Tanisha: I believe in you!";
 	end;
@@ -173,7 +211,7 @@ OnTimer1000:
 	setnpctimer 0;
 	if (getareausers("042-2.gat", 29, 85, 36, 90) < 1)
 		goto L_CleanUp;
-	areatimer "042-2.gat", 29, 85, 36, 90, 10, "Tanisha::onTick";
+	areatimer "042-2.gat", 30, 85, 36, 89, 10, "Tanisha::onTick";
 	end;
 
 L_CleanUp:
@@ -184,6 +222,9 @@ L_CleanUp:
 	end;
 
 onTick:
+	set @time, @time + 1;
+	if (@time > 300)
+		goto L_Sleep;
 	if (isdead(0)) end;
 	if (hp > 20)
 		goto L_NoHeal;
@@ -202,21 +243,6 @@ L_NoHeal:
 onMaggotDeath:
 	set maggot, maggot + 1;
 	end;
-
-L_Fail:
-	mes "Tanisha seems to try hard to supress laughter.";
-	mes "[Tanisha]";
-	mes "\"The maggots defeated you.\"";
-	next;
-	mes "She bursts out with laughter.";
-	mes "[Tanisha]";
-	mes "\"Oups, I'm sorry. It's just too funny.";
-	mes "Do you want to try it again?\"";
-	next;
-	menu
-		"Sure!",L_Fight_Again,
-		"No, I need a rest.",L_Close;
-	close;
 
 L_Close:
 	close;
