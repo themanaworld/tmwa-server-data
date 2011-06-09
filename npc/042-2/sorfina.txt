@@ -1,21 +1,24 @@
 042-2.gat,28,26,0	script	Sorfina	154,4,4{
 
 	if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Again;
-	if (sorfina == 2) goto L_Again;
-	if (sorfina == 1) goto L_Clothes;
+	if (sorfina == 3) goto L_Again;
+	if (sorfina == 2) goto L_Clothes;
+	if (sorfina == 1) goto L_Carpet;
 
+L_Start:
+	mes "You open your eyes.";
+	mes "";
 	mes "[Old Woman]";
 	mes "\"Ah, you woke up. It seems you collapsed after you left the boat that brought you to Tulimshar.\"";
 	next;
 	mes "\"My little granddaughter Tanisha found you lying next to the road, with all your clothes gone.";
-	mes "It seems you were robbed!";
+	mes "It seems you were robbed!\"";
 	next;
 	mes "\"This area of the town is full of shady people, so I don't think there's a chance to get back your stuff.\"";
 	mes "She has a sad look on her face, but then she shakes her head and smiles.";
 	next;
 	mes "[Old Woman]";
-	mes "\"I'm glad you're feeling better now. You're not used to the hot weather, right?";
-	mes "Are you here to look for a job? Many young people come to Tulimshar for this reason.\"";
+	mes "\"Did you come here to look for a job? Many young people come to Tulimshar for this reason.\"";
 	next;
 	mes "\"I can tell you some useful things, if you want to hear.";
 	mes "Oh, and by the way my name is Sorfina.\"";
@@ -33,11 +36,28 @@ L_Tut:
 	mes "[Sorfina]";
 	mes "\"A wise decision.\"";
 	next;
-	mes "\"Ok, I hope you didn't forget how to walk. Just use the arrow keys or click at the place you want to go to.\"";
+	mes "\"You still look rather shaky.";
+	mes "You're not used to the hot weather, right?\"";
 	next;
-	mes "\"And you really should get dressed again. I gave you an old shirt from my son.\"";
+L_Carpet:
+	if ((getx(0) > 31) && (getx(0) < 35) && (gety(0) > 25) && (gety(0) < 29)) goto L_Shirt;
+	mes "\"Try to do some steps and walk to that carpet over there.";
+	mes "Just use the arrow keys or click at the place you want to go to.\"";
 	next;
+	mes "\"Talk to me again when you're on the carpet. You can either click on me, or press N to focus on me and T to talk.\"";
 	set sorfina, 1;
+	close;
+
+L_Shirt:
+	mes "\"Very good! I'm glad you're recovering.";
+	mes "Now you should get dressed again. I gave you an old shirt from my son.\"";
+	next;
+	mes "\"Press F3 or click at the button for your equipment in the bar at the upper right corner to open your inventory.\"";
+	next;
+	mes "\"After we finished talking click on the shirt and press the equip button.\"";
+	set sorfina, 2;
+	close;
+
 L_Naked:
 	mes "\"Press F3 or click at the button for your equipment in the bar at the upper right corner to open your inventory.\"";
 	next;
@@ -58,7 +78,7 @@ L_Clothes:
 	next;
 	mes "\"Oh, and if you're looking for work, you should talk to Aidan when you go to main Tulimshar. They're giving rewards for monster hunting.";
 	mes "You can find him near the south gate. Well, good luck.\"";
-	set sorfina, 2;
+	set sorfina, 3;
 	close;
 
 L_Again:
@@ -185,13 +205,15 @@ L_SkipTut:
 		"Thinking about it twice... please tell me.",L_Tut,
 		"Yeah, but thanks for the offer. Bye.",-;
 	mes "[Sorfina]";
-	mes "\"If you think so. Good luck.\"";
+	mes "\"If you think so. But take at least this.";
 	set hasan, 0;
 	set kaan, 0;
 	set sorfina, 0;
 	set tanisha, 0;
 	set maggot, 0;
 	set FLAGS, FLAGS | FLAG_TUTORIAL_DONE;
+	getitem "knife", 1;
+	mes "Good luck.\"";
 	close;
 
 L_Close:
@@ -200,11 +222,12 @@ L_Close:
 OnTouch:
     if (TUT_var != 0) close;
 	callfunc "GameRules";
+	goto L_Start;
 	close;
 }
 
 042-2.gat,44,31,0	script	#DoorOut	127,0,0{
-	if ((sorfina < 2) && !(FLAGS & FLAG_TUTORIAL_DONE)) goto L_Block;
+	if ((sorfina < 3) && !(FLAGS & FLAG_TUTORIAL_DONE)) goto L_Block;
 	warp "042-1.gat", 37, 57;
 	end;
 L_Block:
