@@ -1,10 +1,13 @@
-042-1.gat,110,74,0	script	Hasan	189,{
+042-1.gat,111,68,0	script	Hasan	189,{
 
 	set @toll, 10000;
+	set @x, getx(0);
+	set @y, gety(0);
 
-	if ($scorp) goto L_Fear;
+	if ($@scorp) goto L_Fear;
 
 	if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Tut_Done;
+	if ( (@y < 64)&&(@x < 110) || (@x < 107) ) goto L_Cliff_Up;
 	if (hasan == 4) goto L_Thank;
 	if (hasan == 3) goto L_Trick;
 	if (hasan > 0) goto L_Toll;
@@ -76,8 +79,8 @@ L_Trick:
 		"I don't have so much money!",L_NoPay,
 		"No. (Scratch your head.)",-;
 	mes "While you're scratching your head, you see Kaan coming nearer to the cliff above you.";
-	monster "042-1.gat",110,74,"Scorpion",1003,1, "Hasan::onScorpionDeath";
-	set $scorp, 1;
+	monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
+	set $@scorp, 1;
 	close;
 
 L_Thank:
@@ -92,12 +95,34 @@ L_Thank:
 	mes "\"I tell you something: Cool persons are allowed to pass for free.";
 	mes "And you can have this.\"";
 	getitem "SharpKnife", 1;
+	next;
 	set hasan, 0;
 	set kaan, 0;
 	set sorfina, 0;
 	set tanisha, 0;
 	set maggot, 0;
 	set FLAGS, FLAGS | FLAG_TUTORIAL_DONE;
+	mes "\"You want to go to the bazaar, right? Shall I bring you there?\"";
+	next;
+	menu
+		"Sure, thanks.",-,
+		"I'll try to find the way myself.",L_Explore,
+		"Could you just explain me the way?",L_Directions;
+	warp "001-1.gat", 44, 40;
+	close;
+
+L_Explore:
+	mes "[Hasan]";
+	mes "\"Alright. Take care!\"";
+	close;
+
+L_Directions:
+	mes "[Hasan]";
+	mes "\"Ok, when you leave here follow the road past the docks until you reach the old city gates.\"";
+	next;
+	mes "\"Pass through them and at the crossway, just go west and then south until you reach some other gateway.\"";
+	next;
+	mes "\"Behind it there is the bazaar of Tulimshar.\"";
 	close;
 
 L_Fear:
@@ -114,8 +139,16 @@ L_Tut_Done:
 		mes "\"Bah, nothing interesting is happening here.\"";
 	close;
 
+L_Distance:
+	mes "There is a person in some distance. He doesn't seem to notice you, maybe you should go closer.";
+	close;
+
+L_Cliff_Up:
+	mes "You see a guy in shaby clothes when you look down the cliff.";
+	close;
+
 onScorpionDeath:
-	set $scorp, 0;
+	set $@scorp, 0;
 	if (hasan != 3)
 		close;
 	set hasan, 4;
@@ -123,14 +156,23 @@ onScorpionDeath:
 	end;
 }
 
+042-1.gat,112,66,0	script	#barrier	127,1,0{
+	if ((FLAGS & FLAG_TUTORIAL_DONE) || $@scorp)
+		end;
+	warp "042-1.gat", 112, 64;
+	if (!$@scorp)
+		message strcharinfo(0), "Hasan: \"Stop!\"";
+	end;
+}
+
 042-1.gat,117,76,0	script	#barrier	127,0,2{
 	if (FLAGS & FLAG_TUTORIAL_DONE)
 		goto L_Tut;
-	warp "042-1.gat", 110, 73;
-	if ($scorp)
+	warp "042-1.gat", 115, 76;
+	if ($@scorp)
 		message strcharinfo(0), "Hasan: \"Please help me!\"";
-	if (!$scorp)
-		message strcharinfo(0), "Hasan: \"Stop!\"";
+	if (!$@scorp)
+		message strcharinfo(0), "Hasan: \"Please wait a moment!\"";
 	end;
 L_Tut:
 	warp "022-1.gat", 23, 38;
