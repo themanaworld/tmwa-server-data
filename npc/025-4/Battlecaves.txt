@@ -1,0 +1,759 @@
+
+// -----------------------------------------------    Cave 1    ---------------------------------------------------------
+
+025-4.gat,41,90,0	script	#StartCaveFight1	111,{
+    if (@battlecave1 == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlecave1, 0;
+    set $@cave1start, gettimetick(2);
+    set $@cave1fighter$, strcharinfo(0);
+    set $@cave1fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave1_loop, $@cave1_loop + 1;
+    areamonster "025-4.gat",26,63,60,97,"",$@CAVE1_MONSTERS_IDS[$@cave1_loop],$@CAVE1_MONSTERS_QTY[$@cave1_loop],"#StartCaveFight1::OnMonsterDeath";
+    if ($@cave1_loop <= getarraysize($@CAVE1_MONSTERS_IDS)) goto L_Summon;
+    set $@cave1_loop, 0;
+    set $@wave_cave1, $@wave_cave1 + 1;
+    end;
+
+L_Done:
+    set $@cave1_kills, 0;
+    attachrid(getcharid(3,$@cave1fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave1 == 1) message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave1 == 2) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave1 == 3) message strcharinfo(0), "You feel strange, your feet starts trembling and some kind of force pulls you with an amazing force!";
+
+    if ($@wave_cave1 != $@CAVE1_WAVES) goto L_Summon;
+    set cavefights, (cavefights ^ BATTLE_CAVE1);
+    warp "025-3.gat", 78, 129;
+    goto L_Cleaning;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave1fighter$));
+    set $@wave_cave1, 0;
+    set $@cave1_kills, 0;
+    set $@cave1start, 0;
+    set $@cave1fighter$, "";
+    set $@cave1fighterDeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave1_kills, $@cave1_kills + 1;
+    if ($@cave1_kills >= $@CAVE1_MONSTERS_QTY[1] + $@CAVE1_MONSTERS_QTY[2] + $@CAVE1_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned
+    setarray $@CAVE1_MONSTERS_IDS[1], 1002, 1003, 1004;
+// Number of monsters of each ID
+    setarray $@CAVE1_MONSTERS_QTY[1], 3, 2, 1;
+// Number of Waves
+    set $@CAVE1_WAVES, 3;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE1_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave1fighter$));
+    if (gettimetick(2) - $@cave1start >= $@CAVE1_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave1fighterdeaths) goto L_Cleaning;
+    setnpctimer 0;
+    end;
+}
+
+// -----------------------------------------------    Cave 2    ---------------------------------------------------------
+
+
+025-4.gat,110,89,0	script	#StartCaveFight2	111,{
+    if (@battlecave2 == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlecave2, 0;
+    set $@cave2start, gettimetick(2);
+    set $@cave2fighter$, strcharinfo(0);
+    set $@cave2fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave2_loop, $@cave2_loop + 1;
+    areamonster "025-4.gat",97, 62, 126, 96,"",$@CAVE2_MONSTERS_IDS[$@cave2_loop],$@CAVE2_MONSTERS_QTY[$@cave2_loop],"#StartCaveFight2::OnMonsterDeath";
+    if ($@cave2_loop <= getarraysize($@CAVE2_MONSTERS_IDS)) goto L_Summon;
+    set $@cave2_loop, 0;
+    set $@wave_cave2, $@wave_cave2 + 1;
+    end;
+
+L_Done:
+    set $@cave2_kills, 0;
+    attachrid(getcharid(3,$@cave2fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave2 == 1) message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave2 == 2) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave2 == 3) message strcharinfo(0), "You feel strange, your feet starts trembling and some kind of force pulls you with an amazing force!";
+
+    if ($@wave_cave2 != $@CAVE2_WAVES) goto L_Summon;
+    set cavefights, (cavefights ^ BATTLE_CAVE2);
+    warp "025-3.gat", 53, 109;
+    goto L_Cleaning;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave2fighter$));
+    set $@wave_cave2, 0;
+    set $@cave2_kills, 0;
+    set $@cave2start, 0;
+    set $@cave2fighter$, "";
+    set $@cave2fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave2_kills, $@cave2_kills + 1;
+    if ($@cave2_kills >= $@CAVE2_MONSTERS_QTY[1] + $@CAVE2_MONSTERS_QTY[2] + $@CAVE2_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned
+    setarray $@CAVE2_MONSTERS_IDS[1], 1002, 1003, 1004;
+// Number of monsters of each ID
+    setarray $@CAVE2_MONSTERS_QTY[1], 5, 3, 2;
+// Number of Waves
+    set $@CAVE2_WAVES, 3;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE2_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave2fighter$));
+    if (gettimetick(2) - $@cave2start >= $@CAVE2_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave2fighterdeaths) goto L_Cleaning;
+    setnpctimer 0;
+    end;
+}
+
+// -----------------------------------------------    Cave 3    ---------------------------------------------------------
+025-4.gat,168,111,0	script	#StartCaveFight3	111,{
+    if (@battlecave3 == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlecave3, 0;
+    set $@cave3start, gettimetick(2);
+    set $@cave3fighter$, strcharinfo(0);
+    set $@cave3fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave3_loop, $@cave3_loop + 1;
+    areamonster "025-4.gat",150, 84, 177, 117,"",$@CAVE3_MONSTERS_IDS[$@cave3_loop],$@CAVE3_MONSTERS_QTY[$@cave3_loop],"#StartCaveFight3::OnMonsterDeath";
+    if ($@cave3_loop <= getarraysize($@CAVE3_MONSTERS_IDS)) goto L_Summon;
+    set $@cave3_loop, 0;
+    set $@wave_cave3, $@wave_cave3 + 1;
+    end;
+
+L_Done:
+    set $@cave3_kills, 0;
+    attachrid(getcharid(3,$@cave3fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave3 == 1) message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave3 == 2) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave3 == 3) message strcharinfo(0), "You feel strange, your feet starts trembling and some kind of force pulls you with an amazing force!";
+
+    if ($@wave_cave3 != $@CAVE3_WAVES) goto L_Summon;
+    set cavefights, (cavefights ^ BATTLE_CAVE3);
+    warp "025-3.gat", 71, 85;
+    goto L_Cleaning;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave3fighter$));
+    set $@wave_cave3, 0;
+    set $@cave3_kills, 0;
+    set $@cave3start, 0;
+    set $@cave3fighter$, "";
+    set $@cave3fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave3_kills, $@cave3_kills + 1;
+    if ($@cave3_kills >= $@CAVE3_MONSTERS_QTY[1] + $@CAVE3_MONSTERS_QTY[2] + $@CAVE3_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned
+    setarray $@CAVE3_MONSTERS_IDS[1], 1002, 1003, 1004;
+// Number of monsters of each ID
+    setarray $@CAVE3_MONSTERS_QTY[1], 5, 3, 2;
+// Number of Waves
+    set $@CAVE3_WAVES, 3;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE3_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave3fighter$));
+    if (gettimetick(2) - $@cave3start >= $@CAVE3_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave3fighterdeaths) goto L_Cleaning;
+    setnpctimer 0;
+    end;
+}
+// -----------------------------------------------    Cave 4    ---------------------------------------------------------
+025-4.gat,32,150,0	script	#StartCaveFight4	111,{
+    if (@battlecave4 == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlecave4, 0;
+    set $@cave4start, gettimetick(2);
+    set $@cave4fighter$, strcharinfo(0);
+    set $@cave4fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave4_loop, $@cave4_loop + 1;
+    areamonster "025-4.gat",28, 124, 57, 156,"",$@CAVE4_MONSTERS_IDS[$@cave4_loop],$@CAVE4_MONSTERS_QTY[$@cave4_loop],"#StartCaveFight4::OnMonsterDeath";
+    if ($@cave4_loop <= getarraysize($@CAVE4_MONSTERS_IDS)) goto L_Summon;
+    set $@cave4_loop, 0;
+    set $@wave_cave4, $@wave_cave4 + 1;
+    end;
+
+L_Done:
+    set $@cave4_kills, 0;
+    attachrid(getcharid(3,$@cave4fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave4 == 1) message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave4 == 2) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave4 == 3) message strcharinfo(0), "You feel strange, your feet starts trembling and some kind of force pulls you with an amazing force!";
+
+    if ($@wave_cave4 != $@CAVE4_WAVES) goto L_Summon;
+    set cavefights, (cavefights ^ BATTLE_CAVE4);
+    warp "025-3.gat", 80, 85;
+    goto L_Cleaning;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave4fighter$));
+    set $@wave_cave4, 0;
+    set $@cave4_kills, 0;
+    set $@cave4start, 0;
+    set $@cave4fighter$, "";
+    set $@cave4fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave4_kills, $@cave4_kills + 1;
+    if ($@cave4_kills >= $@CAVE4_MONSTERS_QTY[1] + $@CAVE4_MONSTERS_QTY[2] + $@CAVE4_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned
+    setarray $@CAVE4_MONSTERS_IDS[1], 1002, 1003, 1004;
+// Number of monsters of each ID
+    setarray $@CAVE4_MONSTERS_QTY[1], 5, 3, 2;
+// Number of Waves
+    set $@CAVE4_WAVES, 3;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE4_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave4fighter$));
+    if (gettimetick(2) - $@cave4start >= $@CAVE4_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave4fighterdeaths) goto L_Cleaning;
+    setnpctimer 0;
+    end;
+}
+// -----------------------------------------------    Cave 5    ---------------------------------------------------------
+025-4.gat,100,152,0	script	#StartCaveFight5	111,{
+    if (@battlecave5 == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlecave5, 0;
+    set $@cave5start, gettimetick(2);
+    set $@cave5fighter$, strcharinfo(0);
+    set $@cave5fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave5_loop, $@cave5_loop + 1;
+    areamonster "025-4.gat",91, 131, 124, 160,"",$@CAVE5_MONSTERS_IDS[$@cave5_loop],$@CAVE5_MONSTERS_QTY[$@cave5_loop],"#StartCaveFight5::OnMonsterDeath";
+    if ($@cave5_loop <= getarraysize($@CAVE5_MONSTERS_IDS)) goto L_Summon;
+    set $@cave5_loop, 0;
+    set $@wave_cave5, $@wave_cave5 + 1;
+    end;
+
+L_Done:
+    set $@cave5_kills, 0;
+    attachrid(getcharid(3,$@cave5fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave5 == 1) message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave5 == 2) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave5 == 3) message strcharinfo(0), "You feel strange, your feet starts trembling and some kind of force pulls you with an amazing force!";
+
+    if ($@wave_cave5 != $@CAVE5_WAVES) goto L_Summon;
+    set cavefights, (cavefights ^ BATTLE_CAVE5);
+    warp "025-3.gat", 71, 32;
+    goto L_Cleaning;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave5fighter$));
+    set $@wave_cave5, 0;
+    set $@cave5_kills, 0;
+    set $@cave5start, 0;
+    set $@cave5fighter$, "";
+    set $@cave5fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave5_kills, $@cave5_kills + 1;
+    if ($@cave5_kills >= $@CAVE5_MONSTERS_QTY[1] + $@CAVE5_MONSTERS_QTY[2] + $@CAVE5_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned
+    setarray $@CAVE5_MONSTERS_IDS[1], 1002, 1003, 1004;
+// Number of monsters of each ID
+    setarray $@CAVE5_MONSTERS_QTY[1], 5, 3, 2;
+// Number of Waves
+    set $@CAVE5_WAVES, 3;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE5_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave5fighter$));
+    if (gettimetick(2) - $@cave5start >= $@CAVE5_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave5fighterdeaths) goto L_Cleaning;
+    setnpctimer 0;
+    end;
+}
+// -----------------------------------------------    Cave 6    ---------------------------------------------------------
+025-4.gat,159,168,0	script	#StartCaveFight6	111,{
+    if (@battlecave6 == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlecave6, 0;
+    set $@cave6start, gettimetick(2);
+    set $@cave6fighter$, strcharinfo(0);
+    set $@cave6fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave6_loop, $@cave6_loop + 1;
+    areamonster "025-4.gat",153, 143, 178, 174,"",$@CAVE6_MONSTERS_IDS[$@cave6_loop],$@CAVE6_MONSTERS_QTY[$@cave6_loop],"#StartCaveFight6::OnMonsterDeath";
+    if ($@cave6_loop <= getarraysize($@CAVE6_MONSTERS_IDS)) goto L_Summon;
+    set $@cave6_loop, 0;
+    set $@wave_cave6, $@wave_cave6 + 1;
+    end;
+
+L_Done:
+    set $@cave6_kills, 0;
+    attachrid(getcharid(3,$@cave6fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave6 == 1) message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave6 == 2) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave6 == 3) message strcharinfo(0), "You feel strange, your feet starts trembling and some kind of force pulls you with an amazing force!";
+
+    if ($@wave_cave6 != $@CAVE6_WAVES) goto L_Summon;
+    set cavefights, (cavefights ^ BATTLE_CAVE6);
+    warp "025-3.gat", 128, 37;
+    goto L_Cleaning;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave6fighter$));
+    set $@wave_cave6, 0;
+    set $@cave6_kills, 0;
+    set $@cave6start, 0;
+    set $@cave6fighter$, "";
+    set $@cave6fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave6_kills, $@cave6_kills + 1;
+    if ($@cave6_kills >= $@CAVE6_MONSTERS_QTY[1] + $@CAVE6_MONSTERS_QTY[2] + $@CAVE6_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned
+    setarray $@CAVE6_MONSTERS_IDS[1], 1002, 1003, 1004;
+// Number of monsters of each ID
+    setarray $@CAVE6_MONSTERS_QTY[1], 5, 3, 2;
+// Number of Waves
+    set $@CAVE6_WAVES, 3;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE6_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave6fighter$));
+    if (gettimetick(2) - $@cave6start >= $@CAVE6_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave6fighterdeaths) goto L_Cleaning;
+    setnpctimer 0;
+    end;
+}
+// -----------------------------------------------    Cave 7    ---------------------------------------------------------
+025-4.gat,45,215,0	script	#StartCaveFight7	111,{
+    if (@battlecave7 == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlecave7, 0;
+    set $@cave7start, gettimetick(2);
+    set $@cave7fighter$, strcharinfo(0);
+    set $@cave7fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave7_loop, $@cave7_loop + 1;
+    areamonster "025-4.gat",27, 185, 61, 219,"",$@CAVE7_MONSTERS_IDS[$@cave7_loop],$@CAVE7_MONSTERS_QTY[$@cave7_loop],"#StartCaveFight7::OnMonsterDeath";
+    if ($@cave7_loop <= getarraysize($@CAVE7_MONSTERS_IDS)) goto L_Summon;
+    set $@cave7_loop, 0;
+    set $@wave_cave7, $@wave_cave7 + 1;
+    end;
+
+L_Done:
+    set $@cave7_kills, 0;
+    attachrid(getcharid(3,$@cave7fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave7 == 1) message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave7 == 2) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave7 == 3) message strcharinfo(0), "You feel strange, your feet starts trembling and some kind of force pulls you with an amazing force!";
+
+    if ($@wave_cave7 != $@CAVE7_WAVES) goto L_Summon;
+    set cavefights, (cavefights ^ BATTLE_CAVE7);
+    warp "025-3.gat", 70, 59;
+    goto L_Cleaning;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave7fighter$));
+    set $@wave_cave7, 0;
+    set $@cave7_kills, 0;
+    set $@cave7start, 0;
+    set $@cave7fighter$, "";
+    set $@cave7fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave7_kills, $@cave7_kills + 1;
+    if ($@cave7_kills >= $@CAVE7_MONSTERS_QTY[1] + $@CAVE7_MONSTERS_QTY[2] + $@CAVE7_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned
+    setarray $@CAVE7_MONSTERS_IDS[1], 1002, 1003, 1004;
+// Number of monsters of each ID
+    setarray $@CAVE7_MONSTERS_QTY[1], 5, 3, 2;
+// Number of Waves
+    set $@CAVE7_WAVES, 3;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE7_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave7fighter$));
+    if (gettimetick(2) - $@cave7start >= $@CAVE7_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave7fighterdeaths) goto L_Cleaning;
+    setnpctimer 0;
+    end;
+}
+// -----------------------------------------------    Cave 8    ---------------------------------------------------------
+025-4.gat,103,210,0	script	#StartCaveFight8	111,{
+    if (@battlecave8 == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlecave8, 0;
+    set $@cave8start, gettimetick(2);
+    set $@cave8fighter$, strcharinfo(0);
+    set $@cave8fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave8_loop, $@cave8_loop + 1;
+    areamonster "025-4.gat",90, 193, 119, 216,"",$@CAVE8_MONSTERS_IDS[$@cave8_loop],$@CAVE8_MONSTERS_QTY[$@cave8_loop],"#StartCaveFight8::OnMonsterDeath";
+    if ($@cave8_loop <= getarraysize($@CAVE8_MONSTERS_IDS)) goto L_Summon;
+    set $@cave8_loop, 0;
+    set $@wave_cave8, $@wave_cave8 + 1;
+    end;
+
+L_Done:
+    set $@cave8_kills, 0;
+    attachrid(getcharid(3,$@cave8fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave8 == 1) message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave8 == 2) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave8 == 3) message strcharinfo(0), "You feel strange, your feet starts trembling and some kind of force pulls you with an amazing force!";
+
+    if ($@wave_cave8 != $@CAVE8_WAVES) goto L_Summon;
+    set cavefights, (cavefights ^ BATTLE_CAVE8);
+    warp "025-3.gat", 138, 94;
+    goto L_Cleaning;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave8fighter$));
+    set $@wave_cave8, 0;
+    set $@cave8_kills, 0;
+    set $@cave8start, 0;
+    set $@cave8fighter$, "";
+    set $@cave8fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave8_kills, $@cave8_kills + 1;
+    if ($@cave8_kills >= $@CAVE8_MONSTERS_QTY[1] + $@CAVE8_MONSTERS_QTY[2] + $@CAVE8_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned
+    setarray $@CAVE8_MONSTERS_IDS[1], 1002, 1003, 1004;
+// Number of monsters of each ID
+    setarray $@CAVE8_MONSTERS_QTY[1], 5, 3, 2;
+// Number of Waves
+    set $@CAVE8_WAVES, 3;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE8_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave8fighter$));
+    if (gettimetick(2) - $@cave8start >= $@CAVE8_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave8fighterdeaths) goto L_Cleaning;
+    setnpctimer 0;
+    end;
+}
+// -----------------------------------------------    Cave 9    ---------------------------------------------------------
+025-4.gat,157,220,0	script	#StartCaveFight9	111,{
+    if (@battlecave9 == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlecave9, 0;
+    set $@cave9start, gettimetick(2);
+    set $@cave9fighter$, strcharinfo(0);
+    set $@cave9fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave9_loop, $@cave9_loop + 1;
+    areamonster "025-4.gat",144, 192, 173, 226,"",$@CAVE9_MONSTERS_IDS[$@cave9_loop],$@CAVE9_MONSTERS_QTY[$@cave9_loop],"#StartCaveFight9::OnMonsterDeath";
+    if ($@cave9_loop <= getarraysize($@CAVE9_MONSTERS_IDS)) goto L_Summon;
+    set $@cave9_loop, 0;
+    set $@wave_cave9, $@wave_cave9 + 1;
+    end;
+
+L_Done:
+    set $@cave9_kills, 0;
+    attachrid(getcharid(3,$@cave9fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave9 == 1) message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave9 == 2) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave9 == 3) message strcharinfo(0), "You feel strange, your feet starts trembling and some kind of force pulls you with an amazing force!";
+
+    if ($@wave_cave9 != $@CAVE9_WAVES) goto L_Summon;
+    set cavefights, (cavefights ^ BATTLE_CAVE9);
+    warp "025-3.gat", 138, 158;
+    goto L_Cleaning;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave9fighter$));
+    set $@wave_cave9, 0;
+    set $@cave9_kills, 0;
+    set $@cave9start, 0;
+    set $@cave9fighter$, "";
+    set $@cave9fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave9_kills, $@cave9_kills + 1;
+    if ($@cave9_kills >= $@CAVE9_MONSTERS_QTY[1] + $@CAVE9_MONSTERS_QTY[2] + $@CAVE9_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned
+    setarray $@CAVE9_MONSTERS_IDS[1], 1002, 1003, 1004;
+// Number of monsters of each ID
+    setarray $@CAVE9_MONSTERS_QTY[1], 5, 3, 2;
+// Number of Waves
+    set $@CAVE9_WAVES, 3;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE9_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave9fighter$));
+    if (gettimetick(2) - $@cave9start >= $@CAVE9_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave9fighterdeaths) goto L_Cleaning;
+    setnpctimer 0;
+    end;
+}
+// -----------------------------------------------    Boss Cave    ---------------------------------------------------------
+
+025-4.gat,157,42,0	script	#StartBossCaveFight	111,{
+    if (@battlebosscave == 1) goto L_StartFight;
+    end;
+
+L_StartFight:
+    set @battlebosscave, 0;
+    set $@cave10start, gettimetick(2);
+    set $@cave10fighter$, strcharinfo(0);
+    set $@cave10fighterdeaths, PC_DIE_COUNTER;
+    startnpctimer;
+
+L_Summon:
+    set $@cave10_loop, $@cave10_loop + 1;
+    areamonster "025-4.gat",142, 24, 172, 48,"",$@CAVE10_MONSTERS_IDS[$@cave10_loop],$@CAVE10_MONSTERS_QTY[$@cave10_loop],"#StartBossCaveFight::OnMonsterDeath";
+    if ($@cave10_loop <= getarraysize($@CAVE10_MONSTERS_IDS)) goto L_Summon;
+    set $@cave10_loop, 0;
+    set $@wave_cave10, $@wave_cave10 + 1;
+    end;
+
+L_SummonBoss:
+    attachrid(getcharid(3,$@cave10fighter$));
+    message strcharinfo(0), "WHaaat? What is this?!";
+    areamonster "025-4.gat",142, 24, 172, 48,"",$@BOSS,1,"#StartBossCaveFight::OnBossDeath";
+    end;
+
+L_Done:
+    set $@cave10_kills, 0;
+    attachrid(getcharid(3,$@cave10fighter$));
+
+// Here you can define the messages to be shown for the players on the beginning of each wave.
+// Remember to adjust the number of conditionals according to the number of waves
+
+    if ($@wave_cave10 == 1) message strcharinfo(0), "I can't give up!";
+    if ($@wave_cave10 == 3) message strcharinfo(0), "This is harder than I imagined!";
+    if ($@wave_cave10 == 4) message strcharinfo(0), "Finally! It seems I have defeated all of them!";
+
+    if ($@wave_cave10 != $@CAVE10_WAVES) goto L_Summon;
+    set $@wave_cave10, 5;
+    setnpctimer 0;
+    end;
+
+L_Cleaning:
+    attachrid(getcharid(3,$@cave10fighter$));
+    set $@wave_cave10, 0;
+    set $@cave10_kills, 0;
+    set $@cave10start, 0;
+    set $@cave10fighter$, "";
+    set $@cave10fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    set $@cave10_kills, $@cave10_kills + 1;
+    if ($@cave10_kills >= $@CAVE10_MONSTERS_QTY[1] + $@CAVE10_MONSTERS_QTY[2] + $@CAVE10_MONSTERS_QTY[3]) goto L_Done;
+    end;
+
+OnBossDeath:
+    attachrid(getcharid(3,$@cave10fighter$));
+    set $@wave_cave10, 0;
+    set $@cave10_kills, 0;
+    set $@cave10start, 0;
+    set $@cave10fighter$, "";
+    set $@cave10fighterdeaths$, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    message strcharinfo(0), "Now I am sure I defeated all the monsters! Julia must be in a room acessible from this place...";
+    set Rossy_Quest, 16;
+    end;
+
+onInit:
+// Here you can define the specifics of each Cave Battle
+// Monsters IDs to be spawned before the boss
+    setarray $@CAVE10_MONSTERS_IDS[1], 1002, 1003, 1004, 1036;
+// Number of monsters of each ID
+    setarray $@CAVE10_MONSTERS_QTY[1], 5, 3, 2, 1;
+// ID of the boss monster
+    set $@BOSS, 1067;
+// Number of Waves before the boss
+    set $@CAVE10_WAVES, 4;
+// Maximum time (in seconds) for the player to finish the fight
+    set $@CAVE10_TIME, 120;
+    initnpctimer;
+    stopnpctimer;
+
+OnTimer5000:
+    attachrid(getcharid(3,$@cave10fighter$));
+    if (gettimetick(2) - $@cave10start >= $@CAVE10_TIME) goto L_Cleaning;
+    if (PC_DIE_COUNTER > $@cave10fighterdeaths) goto L_Cleaning;
+    if ($@wave_cave10 == 5) goto L_SummonBoss;
+    setnpctimer 0;
+    end;
+}
+
