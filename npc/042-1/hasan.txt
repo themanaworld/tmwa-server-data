@@ -1,12 +1,10 @@
-//TODO: first barrier into hasan
-042-1.gat,111,68,0	script	Hasan	189,{
+042-1.gat,111,68,0	script	Hasan	189,2,2{
 
 	set @toll, 10000;
 	set @x, getx(0);
 	set @y, gety(0);
 
 	if ($@scorp) goto L_Fear;
-
 	if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Tut_Done;
 	if ( (@y < 64)&&(@x < 110) || (@x < 107) ) goto L_Cliff_Up;
 	if (hasan == 4) goto L_Thank;
@@ -80,9 +78,10 @@ L_Trick:
 		"I don't have so much money!",L_NoPay,
 		"No. (Scratch your head.)",-;
 	mes "While you're scratching your head, you see Kaan coming nearer to the cliff above you.";
+	close2;
 	monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
 	set $@scorp, 1;
-	close;
+	end;
 
 L_Thank:
 	mes "[Hasan]";
@@ -148,21 +147,19 @@ L_Cliff_Up:
 	mes "You see a guy in shaby clothes when you look down the cliff.";
 	close;
 
+OnTouch:
+	if ((FLAGS & FLAG_TUTORIAL_DONE) || $@scorp)
+		end;
+	warp "042-1.gat", 112, 64;
+	message strcharinfo(0), "Hasan: \"Stop!\"";
+	end;
+
 onScorpionDeath:
 	set $@scorp, 0;
 	if (hasan != 3)
 		close;
 	set hasan, 4;
 	message strcharinfo(0), "You saved Hasan.";
-	end;
-}
-
-042-1.gat,112,66,0	script	#barrier	127,1,0{
-	if ((FLAGS & FLAG_TUTORIAL_DONE) || $@scorp)
-		end;
-	warp "042-1.gat", 112, 64;
-	if (!$@scorp)
-		message strcharinfo(0), "Hasan: \"Stop!\"";
 	end;
 }
 
