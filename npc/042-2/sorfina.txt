@@ -42,22 +42,10 @@ L_Tut:
 	mes "You're not used to the hot weather, right?\"";
 	next;
 L_Carpet:
-	if ((getx(0) > 31) && (getx(0) < 35) && (gety(0) > 25) && (gety(0) < 29)) goto L_Shirt;
 	mes "\"Try to do some steps and walk to that red carpet over there.";
 	mes "Just use the arrow keys or click at the place you want to go to.\"";
-	next;
-	mes "\"Talk to me again when you're on the red carpet. You can either click on me, or press N to focus on me and T to talk.\"";
-	set sorfina, 1;
-	close;
-
-L_Shirt:
-	mes "\"Very good! I'm glad you're recovering.";
-	mes "Now you should get dressed again. I gave you an old shirt from my son.\"";
-	next;
-	mes "\"You can open your inventory with pressing F3 or clicking at the button 'Inventory' in the bar at the upper right corner.\"";
-	next;
-	mes "\"After we finished talking click on the shirt and press the equip button.\"";
-	set sorfina, 2;
+	if (!sorfina)
+		set sorfina, 1;
 	close;
 
 L_Naked:
@@ -214,7 +202,8 @@ L_SkipTut:
 	set tanisha, 0;
 	set maggot, 0;
 	set FLAGS, FLAGS | FLAG_TUTORIAL_DONE;
-	getitem "knife", 1;
+	getitem "Knife", 1;
+	getitem "CottonShirt", 1;
 	mes "Good luck.\"";
 	close;
 
@@ -228,7 +217,28 @@ OnTouch:
 	close;
 }
 
-042-2.gat,44,31,0	script	#DoorOut	127,0,0{
+042-2.gat,33,27,0	script	#Carpet	45,1,1{
+	end;
+OnTouch:
+	if (sorfina != 1)
+		end;
+	mes "[Sorfina]";
+	mes "\"Very good! I'm glad you're recovering.";
+	mes "Now you should get dressed again. Here is an old shirt from my son.\"";
+	getitem "CottonShirt", 1;
+	next;
+	mes "\"You can open your inventory with pressing F3 or clicking at the button 'Inventory' in the bar at the upper right corner.\"";
+	next;
+	mes "\"After we finished talking click on the shirt and press the equip button.\"";
+	next;
+	mes "\"Talk to me again when you got dressed. You can either click on me, or press N to focus on me and T to talk.\"";
+	set sorfina, 2;
+	close;
+}
+
+042-2.gat,44,31,0	script	#DoorOut	45,0,0{
+	end;
+OnTouch:
 	if ((sorfina < 3) && !(FLAGS & FLAG_TUTORIAL_DONE)) goto L_Block;
 	warp "042-1.gat", 37, 57;
 	end;
