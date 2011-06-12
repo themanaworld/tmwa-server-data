@@ -1,8 +1,9 @@
 042-2.gat,28,26,0	script	Sorfina	154,4,4{
 
 	if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Again;
-	if (sorfina == 3) goto L_Again;
-	if (sorfina == 2) goto L_Clothes;
+	if (sorfina == 4) goto L_Again;
+	if (sorfina == 3) goto L_Clothes;
+	if (sorfina == 2) goto L_Chest;
 	if (sorfina == 1) goto L_Carpet;
 
 	callfunc "GameRules";
@@ -48,6 +49,15 @@ L_Carpet:
 		set sorfina, 1;
 	close;
 
+L_Chest:
+	mes "[Sorfina]";
+	mes "\"In that chest there is a shirt you can have.\"";
+	next;
+	mes "\"To interact with things in your environment or talk to NPCs you can either click on it or press N to focus and T to talk/activate.\"";
+	next;
+	mes "\"Now get the shirt out of the chest.\"";
+	close;
+
 L_Naked:
 	mes "\"Press F3 or click at the button for your equipment in the bar at the upper right corner to open your inventory.\"";
 	next;
@@ -68,7 +78,7 @@ L_Clothes:
 	next;
 	mes "\"Oh, and if you're looking for work, you should talk to Aidan when you go to main Tulimshar. They're giving rewards for monster hunting.";
 	mes "You can find him near the south gate. Well, good luck.\"";
-	set sorfina, 3;
+	set sorfina, 4;
 	close;
 
 L_Again:
@@ -224,22 +234,49 @@ OnTouch:
 		end;
 	mes "[Sorfina]";
 	mes "\"Very good! I'm glad you're recovering.";
-	mes "Now you should get dressed again. Here is an old shirt from my son.\"";
+	mes "Now you should get dressed again.\"";
+	next;
+	mes "Sorfina unlocks the chest behind her.";
+	next;
+	mes "[Sorfina]";
+	mes "\"In that chest there is a shirt you can have.\"";
+	next;
+	mes "\"To interact with things in your environment or talk to NPCs you can either click on it or press N to focus and T to talk/activate.\"";
+	next;
+	mes "\"Now get the shirt out of the chest.\"";
+	set sorfina, 2;
+	close;
+}
+
+042-2.gat,27,23,0	script	Chest	111,{
+
+	if (sorfina > 2) goto L_Empty;
+	if (sorfina == 2) goto L_Shirt;
+
+	mes "The chest is locked.";
+	close;
+L_Shirt:
+	mes "You take a simple Cotton Shirt out of the chest.";
 	getitem "CottonShirt", 1;
+	next;
+	mes "[Sorfina]";
+	mes "\"Great! Now you can equip it.\"";
 	next;
 	mes "\"You can open your inventory with pressing F3 or clicking at the button 'Inventory' in the bar at the upper right corner.\"";
 	next;
 	mes "\"After we finished talking click on the shirt and press the equip button.\"";
-	next;
-	mes "\"Talk to me again when you got dressed. You can either click on me, or press N to focus on me and T to talk.\"";
-	set sorfina, 2;
+	set sorfina, 3;
+	close;
+
+L_Empty:
+	mes "The chest is empty.";
 	close;
 }
 
 042-2.gat,44,31,0	script	#DoorOut	45,0,0{
 	end;
 OnTouch:
-	if ((sorfina < 3) && !(FLAGS & FLAG_TUTORIAL_DONE)) goto L_Block;
+	if ((sorfina < 4) && !(FLAGS & FLAG_TUTORIAL_DONE)) goto L_Block;
 	warp "042-1.gat", 37, 57;
 	end;
 L_Block:
