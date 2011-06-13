@@ -1,5 +1,21 @@
 042-2.gat,37,90,0	script	Tanisha	114,{
 
+// Comments(Remove it later): 
+
+// 1) I used a temporary variable to count the kills, so if the player relog he will have to 
+// kill the 5 maggots in a single fight. 
+
+// 2) Changed the maggots spawn to one by one, at the exact place the player is standing, so
+// there is less chances of someone getting your kills from outside (It is possible when the
+// maggots are in the corner). And if someone insists in killing your maggots during the fight,
+// all that will happen is this person will finish the fight quickly leaving you alone with your maggots.
+
+// 3) Also, in the L_noheal label, I put a check so when there is no one fighting the npc timer
+// is stopped and set to zero.
+
+// 4) And I put a message in the middle of the fight, with tanisha commenting about the way the
+// maggots just keep popping out from nowhere.
+
 	set @playerlimit, 4;
 
 	if ((getx(0) > 29) && (getx(0) < 37) && (gety(0) > 84) && (gety(0) < 90)) goto L_Fighting;
@@ -39,7 +55,6 @@ L_Maggots:
 	if ($@TUT_MAGGOT >= @playerlimit)
 		goto L_Crowded;
 	set $@TUT_MAGGOT, $@TUT_MAGGOT + 1;
-	set maggot, 0;
 	getitem "Knife", 1;
 	next;
 L_Fight_Again:
@@ -55,9 +70,13 @@ L_Fight_Again:
 	next;
 	mes "\"Sometimes dead monsters leave some useful things. You can pick them up with pressing Z or clicking with your mouse.\"";
 	set tanisha, 2;
+	set @maggot, 0;
+	set @time, 0;
 	close2;
 	warp "042-2.gat", 33, 87;
-	areamonster "042-2.gat", 31, 85, 35, 89, "", 1002, 5, "Tanisha::onMaggotDeath";
+
+L_Summon:
+	monster "042-2.gat", getx(0), gety(0), "", 1002, 1, "Tanisha::onMaggotDeath";
 	startnpctimer;
 	end;
 
@@ -188,6 +207,12 @@ L_Sleep:
 	mes "\"What are you doing in there?";
 	mes "Sleeping?";
 	mes "Come back when you're serious.\"";
+	set @maggot, 0;
+	set @time, 0;
+	if ($@TUT_MAGGOT > 0)
+		set $@TUT_MAGGOT, $@TUT_MAGGOT - 1;
+	if ($@TUT_MAGGOT == 0) stopnpctimer;
+	if ($@TUT_MAGGOT == 0) setnpctimer 0;
 	close;
 
 L_Fail:
@@ -237,17 +262,23 @@ onTick:
 	heal MaxHp, 0;
 	message strcharinfo(0), "Tanisha: You're doing good!";
 L_NoHeal:
-	if (maggot < 5)
+	if (@maggot < 5)
 		end;
 	warp "042-2.gat", 36, 90;
 	set tanisha, 3;
-	set maggot, 0;
+	set @maggot, 0;
+	set @time, 0;
 	if ($@TUT_MAGGOT > 0)
 		set $@TUT_MAGGOT, $@TUT_MAGGOT - 1;
+	if ($@TUT_MAGGOT == 0) stopnpctimer;
+	if ($@TUT_MAGGOT == 0) setnpctimer 0;
 	close;
 
 onMaggotDeath:
-	set maggot, maggot + 1;
+	if (@maggot == 2) message strcharinfo(0), "Tanisha: Ohh... Irrhk... Eeeeww... They just appear from nowhere!";
+	if ((getx(0) > 29) && (getx(0) < 37) && (gety(0) > 84) && (gety(0) < 90)) set @maggot, @maggot + 1;
+	if (@maggot < 5 && (getx(0) <= 29) || (getx(0) >= 37) || (gety(0) <= 84) || (gety(0) >= 90)) monster "042-2.gat", 33, 87, "", 1002, 1, "Tanisha::onMaggotDeath";
+	if (@maggot < 5 && (getx(0) > 29) && (getx(0) < 37) && (gety(0) > 84) && (gety(0) < 90)) monster "042-2.gat", getx(0), gety(0), "", 1002, 1, "Tanisha::onMaggotDeath";
 	end;
 
 L_Close:
