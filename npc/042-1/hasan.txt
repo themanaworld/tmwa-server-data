@@ -1,4 +1,4 @@
-042-1.gat,111,68,0	script	Hasan	189,2,2{
+042-1.gat,111,68,0	script	Hasan	189,{
 
 	set @toll, 10000;
 	set @x, getx(0);
@@ -80,7 +80,9 @@ L_Trick:
 	mes "While you're scratching your head, you see Kaan coming nearer to the cliff above you.";
 	close2;
 	monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
+	set $@ScorpionFighter$, strcharinfo(0);
 	set $@scorp, 1;
+	startnpctimer;
 	end;
 
 L_Thank:
@@ -147,19 +149,57 @@ L_Cliff_Up:
 	mes "You see a guy in shaby clothes when you look down the cliff.";
 	close;
 
-OnTouch:
-	if ((FLAGS & FLAG_TUTORIAL_DONE) || $@scorp)
-		end;
+L_SummonAgain:
+	message strcharinfo(0), "Kaan is mad with your interference! He comes near the cliff and throws a rock on the top of your head, and let another scorpion run just near Hasan!";
+	percentheal -100, 0;
+	attachrid(getcharid(3,$@ScorpionFighter$));	
+	message strcharinfo(0), "Kaan: \"Just go while he is distracted and no one is interfering!\"";
+	monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
+	end;
+
+L_Clean:
+	killmonster "042-1.gat", "Hasan::onScorpionDeath";
+	set $@ScorpionTimer, 0;
+	set $@ScorpionFighter$, "";
+	set $@scorp, 0;
+	attachrid(getcharid(3,$@ScorpionFighter$));
+	message strcharinfo(0), "Hasan, with his eyes almost closed, trembling with fear, runs toward the scorpion and stabs it with all his strenght! Seems like it took too long and the plan didn't work this time.";
 	warp "042-1.gat", 112, 64;
-	message strcharinfo(0), "Hasan: \"Stop!\"";
+	message strcharinfo(0), "Hasan: \"Hey you! I told you you cannot pass!\"";
+	end;
+
+OnTimer5000:
+	set $@ScorpionTimer, $@ScorpionTimer + 5;
+	if ($@ScorpionTimer >= 300) goto L_Clean;
+	setnpctimer 0;
 	end;
 
 onScorpionDeath:
+	if (strcharinfo(0) != $@ScorpionFighter$) goto L_SummonAgain;
 	set $@scorp, 0;
 	if (hasan != 3)
 		close;
 	set hasan, 4;
 	message strcharinfo(0), "You saved Hasan.";
+	set $@ScorpionTimer, 0;
+	set $@ScorpionFighter$, "";
+	end;
+
+OnInit:
+	initnpctimer;
+	stopnpctimer;
+
+}
+
+042-1.gat,111,68,0	script	#Toll	127,2,2,{
+
+	end;
+
+OnTouch:
+	if ((FLAGS & FLAG_TUTORIAL_DONE) || $@scorp || (hasan == 4))
+		end;
+	warp "042-1.gat", 112, 64;
+	message strcharinfo(0), "Hasan: \"Stop!\"";
 	end;
 }
 
@@ -177,4 +217,6 @@ OnTouch:
 L_Tut:
 	warp "022-1.gat", 23, 38;
 	end;
+
+
 }
