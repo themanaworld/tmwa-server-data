@@ -823,12 +823,19 @@ L_Done:
 // -----------------------------------------------    Boss Cave    ---------------------------------------------------------
 
 025-4.gat,157,42,0	script	#StartBossCaveFight	111,{
+    if (Rossy_Quest == 16) goto L_Found;
     if (@battlebosscave == 1 && cavefights & BATTLE_CAVE1 && cavefights & BATTLE_CAVE2 && cavefights & BATTLE_CAVE3 && cavefights & BATTLE_CAVE4 && cavefights & BATTLE_CAVE5 && cavefights & BATTLE_CAVE6 && cavefights & BATTLE_CAVE7 && cavefights & BATTLE_CAVE8 && cavefights & BATTLE_CAVE9 && Rossy_Quest == 15) goto L_StartFight;
     message strcharinfo(0), "You shouldn't be here, you cheater.";
     heal -Hp,0;
     end;
 
+L_Found:
+    message strcharinfo(0), "You found a golden key.";
+    set Killed_Boss, 1;
+    end;
+    
 L_StartFight:
+    message strcharinfo(0), "The chest is locked. As you try to open it, monsters come from each corners of the cave.";
     set @battlebosscave, 0;
     set $@cave10start, gettimetick(2);
     set $@cave10fighter$, strcharinfo(0);
@@ -893,7 +900,7 @@ OnBossDeath:
     setnpctimer 0;
     message strcharinfo(0), "I am now sure I defeated all the monsters of these spooky caves! Julia must be in a room accessible from this place...";
     set Rossy_Quest, 16;
-    set Killed_Boss, 1;
+    message strcharinfo(0), "You find a gold key on the corpse on which you currently stand. That might open the chest.";
     end;
 
 onInit:
