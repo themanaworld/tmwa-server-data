@@ -82,6 +82,7 @@ L_Trick:
 	monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
 	set $@ScorpionFighter$, strcharinfo(0);
 	set $@scorp, 1;
+	set $@ScorpDeath, PC_DIE_COUNTER;
 	startnpctimer;
 	end;
 
@@ -160,17 +161,28 @@ L_SummonAgain:
 L_Clean:
 	killmonster "042-1.gat", "Hasan::onScorpionDeath";
 	set $@ScorpionTimer, 0;
-	set $@ScorpionFighter$, "";
 	set $@scorp, 0;
+	stopnpctimer;
+	setnpctimer 0;
+	if (isloggedin(getcharid(3,$@ScorpionFighter$))==0) end;
 	attachrid(getcharid(3,$@ScorpionFighter$));
+	if (PC_DIE_COUNTER > $@ScorpDeath) goto L_MessageDeath;
 	message strcharinfo(0), "Hasan, with his eyes almost closed, trembling with fear, runs toward the scorpion and stabs it with all his strenght! Seems like it took too long and the plan didn't work this time.";
 	warp "042-1.gat", 112, 64;
 	message strcharinfo(0), "Hasan: \"Hey you! I told you you cannot pass!\"";
+	set $@ScorpionFighter$, "";
+	end;
+
+L_MessageDeath:
+	message strcharinfo(0), "Ouch... I should be more careful when fighting these monsters.";
 	end;
 
 OnTimer5000:
+	if(isloggedin(getcharid(3,$@ScorpionFighter$))==0) goto L_Clean;
 	set $@ScorpionTimer, $@ScorpionTimer + 5;
 	if ($@ScorpionTimer >= 300) goto L_Clean;
+	attachrid(getcharid(3,$@ScorpionFighter$));
+	if (PC_DIE_COUNTER > $@ScorpDeath) goto L_Clean;
 	setnpctimer 0;
 	end;
 
