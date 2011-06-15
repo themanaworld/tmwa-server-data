@@ -52,9 +52,6 @@ L_post_mana_potion_c:
 	mes "[Rauk the Alchemist]";
 	mes "\"I'm learning the ancient science of the alchemy.";
 	mes "I already know how to create a couple of potions!!\"";
-	next;
-
-	mes "[Rauk the Alchemist]";
 	mes "\"Do you want me to create one for you?\"";
 	next;
 
@@ -285,33 +282,45 @@ L_mana_potion_lacking:
         goto L_main_menu;
 
 L_iron:
-  	if(countitem("SmallMushroom") < 2) goto L_no_iron;
+	set @COST_PER_IRON_POTION, 2;
+
+	mes "\" To make them, I'm going to need " + @COST_PER_IRON_POTION + " Small Mushrooms per Iron Potion.  How many Iron Potions would you like?\"";
+	input @count;
+
+	if (@count == 0) close;
+	set @empty, countitem("SmallMushroom");
+
+	if (@empty < @count * @COST_PER_IRON_POTION) goto L_no_iron;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem("SmallMushroom") > 2) goto L_TooMany;
-	mes "[Rauk the Alchemist]";
-	mes "\"Great! You brought me exactly what I need!";
-	mes "Here is your Iron potion.\"";
-	delitem "SmallMushroom", 2;
-	getitem "IronPotion", 1;
+	if (@inventorylist_count == 100 && countitem("SmallMushroom") == 0 && @empty > @count) goto L_TooMany;
+
+	delitem "SmallMushroom", @COST_PER_IRON_POTION * @count;
+	getitem "IronPotion", @count;
 	close;
 
 L_concentration:
-	if(countitem("PinkPetal") < 2) goto L_no_concentration;
+	set @COST_PER_CONCENTRATION_POTION, 2;
+
+	mes "\" To make them, I'm going to need " + @COST_PER_CONCENTRATION_POTION + " Pink Petals per Concentration Potion.  How many Concentration Potions would you like?\"";
+	input @count;
+
+	if (@count == 0) close;
+	set @empty, countitem("PinkPetal");
+
+	if (@empty < @count * @COST_PER_CONCENTRATION_POTION) goto L_no_concentration;
 	getinventorylist;
-	if (@inventorylist_count == 100 && countitem("PinkPetal") > 2) goto L_TooMany;
-	mes "[Rauk the Alchemist]";
-	mes "\"Great! You brought me exactly what I need!";
-	mes "Here is your Concentration potion.\"";
-	delitem "PinkPetal", 2;
-	getitem "ConcentrationPotion", 1;
+	if (@inventorylist_count == 100 && countitem("PinkPetal") == 0 && @empty > @count) goto L_TooMany;
+
+	delitem "PinkPetal", @COST_PER_CONCENTRATION_POTION * @count;
+	getitem "ConcentrationPotion", @count;
 	close;
 
 L_no_iron:
-	mes "\"You have to bring me 2 Small Mushrooms.\"";
+	mes "\"You have to bring me 2 Small Mushrooms for each Iron Potion.\"";
 	close;
 	
 L_no_concentration:
-	mes "\"You have to bring me 2 Pink Petals.\"";
+	mes "\"You have to bring me 2 Pink Petals for each Concentration Potion.\"";
 	close;
 
 L_dyeing_intro:
