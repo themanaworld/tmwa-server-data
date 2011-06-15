@@ -134,7 +134,7 @@ L_Directions:
 
 L_Fear:
 	mes "[Hasan]";
-	mes "\"Sc-sc-sco-scorpion! Pl-please k-kill it.\"";
+	mes "\"Sc-sc-sco-scorpion!\"";
 	mes "He seems close to tears.";
 	close;
 
@@ -218,11 +218,24 @@ OnInit:
 	end;
 
 OnTouch:
-	if ((FLAGS & FLAG_TUTORIAL_DONE) || $@scorp || (hasan == 4))
+	if ($@scorp && $@ScorpionFighter$ == strcharinfo(0)) 
 		end;
+	if ((FLAGS & FLAG_TUTORIAL_DONE) || (hasan == 4))
+		end;
+	if ($@scorp && $@ScorpionFighter$ != strcharinfo(0)) 
+		goto L_Scared;
+
+L_Normal:
 	warp "042-1.gat", 112, 64;
 	message strcharinfo(0), "Hasan: \"Stop!\"";
 	end;
+
+L_Scared:
+	warp "042-1.gat", 112, 64;
+	message strcharinfo(0), "Hasan seems to be completely irrational. He waves his sharp knife in the air with his eyes closed and hits you. Maybe you shoudn't get too close or you are going to get hurt.";
+	percentheal -10, 0;
+	end;
+
 }
 
 042-1.gat,117,76,0	script	#barrier	45,0,2{
@@ -231,9 +244,11 @@ OnTouch:
 	if (FLAGS & FLAG_TUTORIAL_DONE)
 		goto L_Tut;
 	warp "042-1.gat", 115, 76;
-	if ($@scorp)
-		message strcharinfo(0), "Hasan: \"Please help me!\"";
-	if (!$@scorp)
+	if ($@scorp && $@ScorpionFighter$ == strcharinfo(0))
+		message strcharinfo(0), "Hasan: \" " + strcharinfo(0) + "! Please help me!\"";
+	if ($@scorp && $@ScorpionFighter$ != strcharinfo(0))
+		message strcharinfo(0), "Hasan: \"Hey! Stop right there!\"";
+	if (!$@scorp && hasan == 4)
 		message strcharinfo(0), "Hasan: \"Please wait a moment!\"";
 	end;
 L_Tut:
