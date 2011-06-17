@@ -1,0 +1,275 @@
+// This file is part of the Tutorial
+// Authors: Jenalya, alastrim
+
+042-2.gat,37,90,0	script	Tanisha	114,{
+
+	set @playerlimit, 4;
+
+	if ((getx(0) > 29) && (getx(0) < 37) && (gety(0) > 84) && (gety(0) < 90)) goto L_Fighting;
+
+	if (FLAGS & FLAG_TUTORIAL_DONE)  goto L_Tut_Done;
+	if (tanisha == 4) goto L_Again;
+	if (tanisha == 3) goto L_Stats;
+	if (tanisha == 2) goto L_Fail;
+	if (tanisha == 1) goto L_Maggots;
+
+	mes "[Tanisha]";
+	mes "\"Hey! You're up again!\"";
+	emotion 3;
+	next;
+	mes "\"Are you feeling better?\"";
+	next;
+	menu
+		"Yes, thank you.",-,
+		"Yeah, but all my stuff is gone.",-;
+	mes "[Tanisha]";
+	mes "\"I see. It was really bad luck what happened to you.";
+	mes "Hey, I have an idea.\"";
+	next;
+L_Maggots:
+	set tanisha, 1;
+	mes "\"There are some maggots eating the goods and I shall get rid of them.";
+	mes "But they're so yucky!\"";
+	next;
+	mes "\"If you kill them, I'll give you my knife.";
+	mes "What do you say?\"";
+	next;
+	menu
+		"Sure!",-,
+		"That's your job.",L_Close;
+	mes "[Tanisha]";
+	mes "\"Wonderful!\"";
+	if ($@TUT_MAGGOT >= @playerlimit)
+		goto L_Crowded;
+	set $@TUT_MAGGOT, $@TUT_MAGGOT + 1;
+	getitem "Knife", 1;
+	next;
+L_Fight_Again:
+	mes "\"Ok, listen what to do.";
+	mes "Equip the knife and kill the maggots.\"";
+	next;
+	mes "\"Press A to focus on a monster. With X you can focus and start attacking the same time.";
+	mes "But it also works to click on the monster with your mouse.\"";
+	next;
+	mes "\"If you press Shift, you can abort your attack.\"";
+	next;
+	mes "\"Maggots aren't aggressive, so they won't harm you until you attacked them first. Take them out one by one.\"";
+	next;
+	mes "\"Sometimes dead monsters leave some useful things. You can pick them up with pressing Z or clicking with your mouse.\"";
+	set tanisha, 2;
+	set @maggot, 0;
+	set @time, 0;
+	close2;
+	warp "042-2.gat", 33, 87;
+
+L_Summon:
+	monster "042-2.gat", getx(0), gety(0), "", 1002, 1, "Tanisha::onMaggotDeath";
+	startnpctimer;
+	end;
+
+L_Stats:
+	mes "[Tanisha]";
+	mes "\"That was great! Like a professional exterminator!\"";
+	next;
+	mes "\"And it seems you became stronger and more experienced.";
+	mes "That means you got some status points which you can use to increase your abilities.\"";
+	next;
+	mes "\"Press F2 to see your status window. There you can distribute your points on six different properties.\"";
+	next;
+L_StatsRe:
+	mes "\"Strength makes you hit harder and you can carry more weight.\"";
+	next;
+	mes "\"Agility increases your attack speed and your ability to dodge attacks.\"";
+	next;
+	mes "\"Vitality gives you more hit points and more defense against physical attacks.\"";
+	next;
+	mes "\"Intelligence is useful for magic attack and defense.\"";
+	next;
+	mes "\"Dexterity is needed to hit a monster. It's also very important for the damage if you use a ranged weapon.\"";
+	next;
+	mes "\"Luck gives you the chance to do critical hits and lowers the chance to receive a critical hit from your opponent.\"";
+	next;
+	mes "\"Think about how you want to play before putting the points.\"";
+	next;
+	mes "Also I heard rumors about a strange guy lurking around in the desert south of Tulimshar who can help you to forget your abilites!\"";
+	mes "Tanisha looks at you with wide opened eyes.";
+	next;
+	mes "[Tanisha]";
+	mes "\"But I don't think he'd do that without a service in return.\"";
+
+	if (tanisha == 3) goto L_Advice;
+	close;
+
+L_Advice:
+	next;
+	mes "[Tanisha]";
+	mes "\"When you go to main Tulimshar, you could see Bernard. He can make a delicious soup!";
+	mes "Good luck!\"";
+	emotion 3;
+	if (tanisha == 3)
+		set tanisha, 4;
+	close;
+
+L_Again:
+	mes "[Tanisha]";
+	mes "\"Hi there! Is everything alright? Do you have questions?\"";
+	next;
+	if (hasan)
+		menu
+			"A guy named Hasan doesn't let me enter main Tulimshar.",L_Hasan,
+			"Yes, could you explain again about...",L_Explain,
+			"No, thanks.",L_Close;
+	menu
+		"Yes, could you explain again about...",L_Explain,
+		"No, thanks.",L_Close;
+	close;
+
+L_Explain:
+	menu
+		"... how to fight?",L_Fight,
+		"... monsters?",L_Mob,
+		"... status points?",L_StatsRe,
+		"... what to do in main Tulimshar?",L_Advice,
+		"... nevermind.",L_Close;
+
+L_Fight:
+	mes "[Tanisha]";
+	mes "\"Press A to focus on a monster. With X you can focus and attack.";
+	mes "But it also works to click on the monster with your mouse.\"";
+	next;
+	mes "\"If you press Shift, you can abort your attack.\"";
+	next;
+	mes "\"Sometimes dead monsters leave some useful things. You can pick them up with pressing Z or clicking with your mouse.\"";
+	next;
+	mes "\"If you feel exhausted from battle you can sit down with pressing S to recover faster.\"";
+	close;
+
+L_Mob:
+	mes "[Tanisha]";
+	mes "\"I don't know much about monsters, I'm just a little girl. But I know a few things.";
+	mes "There a several types of monsters, Aggressive, Neutral, and Assistants.\"";
+	next;
+	mes "\"Aggressive monsters will attack you as soon as they see you.\"";
+	next;
+	mes "\"Neutral monsters are peacefully until they get attacked.\"";
+	next;
+	mes "\"Assistants are monsters who help each other.\"";
+	close;
+
+L_Hasan:
+	mes "[Tanisha]";
+	mes "\"Bah, Hasan. He's a jerk. But he's very strong.\"";
+	next;
+	mes "\"The only thing he's afraid of are scorpions.";
+	mes "I'm not sure why, some bad experience when he was a child.";
+	mes "That was before I was born.\"";
+	if (hasan == 1)
+		set hasan, 2;
+	close;
+
+L_Tut_Done:
+	mes "[Tanisha]";
+	mes "\"This yucky maggots! They're eating our goods!";
+	mes "No matter how many of them you kill, they always come back.\"";
+	mes "She sighs.";
+	next;
+	mes "[Tanisha]";
+	mes "\"Do you have any questions?\"";
+		menu
+		"Yes, could you explain about...",L_Explain,
+		"No, thanks.",L_Close;
+	close;
+
+L_Crowded:
+	mes "[Tanisha]";
+	mes "\"That's great! But...";
+	mes "it seems it's crowded in there.\"";
+	next;
+	mes "\"Let's wait a short while.\"";
+	close;
+
+L_Sleep:
+	warp "042-2.gat", 36, 90;
+	mes "[Tanisha]";
+	mes "\"What are you doing in there?";
+	mes "Sleeping?";
+	mes "Come back when you're serious.\"";
+	set @maggot, 0;
+	set @time, 0;
+	if ($@TUT_MAGGOT > 0)
+		set $@TUT_MAGGOT, $@TUT_MAGGOT - 1;
+	if ($@TUT_MAGGOT == 0) stopnpctimer;
+	if ($@TUT_MAGGOT == 0) setnpctimer 0;
+	close;
+
+L_Fail:
+	mes "Tanisha seems to try hard to supress laughter.";
+	mes "[Tanisha]";
+	mes "\"The maggots defeated you.\"";
+	next;
+	mes "She bursts out with laughter.";
+	mes "[Tanisha]";
+	mes "\"Oups, I'm sorry. It's just too funny.";
+	mes "Do you want to try it again?\"";
+	next;
+	menu
+		"Sure!",-,
+		"No, I need a rest.",L_Close;
+	if ($@TUT_MAGGOT >= @playerlimit)
+		goto L_Crowded;
+	goto L_Fight_Again;
+	set $@TUT_MAGGOT, $@TUT_MAGGOT + 1;
+	close;
+
+L_Fighting:
+	message strcharinfo(0), "Tanisha: I believe in you!";
+	end;
+
+OnTimer1000:
+	setnpctimer 0;
+	if (getareausers("042-2.gat", 29, 85, 36, 90) < 1)
+		goto L_CleanUp;
+	areatimer "042-2.gat", 30, 85, 36, 89, 10, "Tanisha::onTick";
+	end;
+
+L_CleanUp:
+	killmonster "042-2.gat", "Tanisha::onMaggotDeath";
+	set $@TUT_MAGGOT, 0;
+	stopnpctimer;
+	setnpctimer 0;
+	end;
+
+onTick:
+	set @time, @time + 1;
+	if (@time > 300)
+		goto L_Sleep;
+	if (isdead(0)) end;
+	if (hp > 20)
+		goto L_NoHeal;
+	heal MaxHp, 0;
+	message strcharinfo(0), "Tanisha: You're doing good!";
+L_NoHeal:
+	if (@maggot < 5)
+		end;
+	warp "042-2.gat", 36, 90;
+	set tanisha, 3;
+	set @maggot, 0;
+	set @time, 0;
+	if ($@TUT_MAGGOT > 0)
+		set $@TUT_MAGGOT, $@TUT_MAGGOT - 1;
+	if ($@TUT_MAGGOT == 0) stopnpctimer;
+	if ($@TUT_MAGGOT == 0) setnpctimer 0;
+	close;
+
+onMaggotDeath:
+	if (@maggot == 1) message strcharinfo(0), "Tanisha: Aaahhhh... another one! It will crawl up your legs!";
+	if (@maggot == 2) message strcharinfo(0), "Tanisha: Ohh... Irrhk... Eeeeww... They just appear from nowhere!";
+	if (@maggot == 3) message strcharinfo(0), "Tanisha: Yuck... I think I am getting sick.";
+	if ((getx(0) > 29) && (getx(0) < 37) && (gety(0) > 84) && (gety(0) < 90)) set @maggot, @maggot + 1;
+	if (@maggot < 5 && (getx(0) <= 29) || (getx(0) >= 37) || (gety(0) <= 84) || (gety(0) >= 90)) monster "042-2.gat", 33, 87, "", 1002, 1, "Tanisha::onMaggotDeath";
+	if (@maggot < 5 && (getx(0) > 29) && (getx(0) < 37) && (gety(0) > 84) && (gety(0) < 90)) monster "042-2.gat", getx(0), gety(0), "", 1002, 1, "Tanisha::onMaggotDeath";
+	end;
+
+L_Close:
+	close;
+}

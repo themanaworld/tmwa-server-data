@@ -1,0 +1,259 @@
+// This file is part of the Tutorial
+// Authors: Jenalya, alastrim
+
+042-1.gat,111,68,0	script	Hasan	189,{
+
+	set @toll, 10000;
+	set @x, getx(0);
+	set @y, gety(0);
+
+	if ($@scorp) goto L_Fear;
+	if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Tut_Done;
+	if ( (@y < 64)&&(@x < 110) || (@x < 107) ) goto L_Cliff_Up;
+	if (hasan == 4) goto L_Thank;
+	if (hasan == 3) goto L_Trick;
+	if (hasan > 0) goto L_Toll;
+
+	mes "[Unfriendly Guy]";
+	mes "\"Hey! You can't pass here.\"";
+	next;
+	menu
+		"Why not?",-,
+		"Who says that?",-;
+	mes "[Unfriendly Guy]";
+	mes "\"Me, Hasan the mighty, decided to put a toll on this way.\"";
+	next;
+L_Toll:
+	mes "[Hasan]";
+	mes "\"Give me " + @toll + "GP, and I may let you pass.\"";
+	if (hasan == 0)
+		set hasan, 1;
+	next;
+	if (zeny >= @toll)
+		menu
+			"Ok, here you go.",L_Pay,
+			"What? I don't have so much money!",L_NoPay,
+			"We'll see if you can stop me!",L_Fight;
+	menu
+		"What? I don't have so much money!",L_NoPay,
+		"We'll see if you can stop me!",L_Fight;
+	close;
+
+L_NoPay:
+	mes "[Hasan]";
+	mes "\"That's not my problem. You have to stay here then.\"";
+	close;
+
+L_Fight:
+	mes "He laughs derisively.";
+	mes "[Hasan]";
+	mes "\"Do you really think you can beat me?\"";
+	mes "He pulls out a nasty looking dagger and stabs it in your direction.";
+	set hp, 1;
+	mes "That hurt! You begin to think searching for a different solution might be healthier.";
+	close;
+
+L_Pay:
+	if (zeny < @toll)
+		goto L_Cheat;
+	set zeny, zeny - @toll;
+	mes "He grins gloatingly.";
+	mes "[Hasan]";
+	mes "\"Very well. You may pass.\"";
+	set hasan, 0;
+	set kaan, 0;
+	set sorfina, 0;
+	set tanisha, 0;
+	set maggot, 0;
+	set FLAGS, FLAGS | FLAG_TUTORIAL_DONE;
+	close;
+
+L_Cheat:
+	mes "[Hasan]";
+	mes "\"Don't dare to cheat on me!\"";
+	close;
+
+L_Trick:
+	mes "[Hasan]";
+	mes "\"Are you going to pay now? " + @toll + "GP, and I may let you pass.\"";
+	next;
+	menu
+		"I don't have so much money!",L_NoPay,
+		"No. (Scratch your head.)",-;
+	if ($@scorp == 1) goto L_Wait;
+	mes "While you're scratching your head, you see Kaan coming nearer to the cliff above you.";
+	close2;
+	monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
+	set $@ScorpionFighter$, strcharinfo(0);
+	set $@scorp, 1;
+	set $@ScorpDeath, PC_DIE_COUNTER;
+	startnpctimer;
+	end;
+
+L_Thank:
+	mes "[Hasan]";
+	mes "\"You - you saved me!";
+	mes "I tried to get your money and you saved me!\"";
+	next;
+	mes "\"Hey, you're a really cool person.";
+	mes "I mean, how you finished that ghastly scorpion!";
+	mes "Amazing!\"";
+	next;
+	mes "\"I tell you something: Cool persons are allowed to pass for free.";
+	mes "And you can have my Sharp Knife.\"";
+	getitem "SharpKnife", 1;
+	next;
+	set hasan, 0;
+	set kaan, 0;
+	set sorfina, 0;
+	set tanisha, 0;
+	set maggot, 0;
+	set FLAGS, FLAGS | FLAG_TUTORIAL_DONE;
+	mes "\"You want to go to the bazaar, right? Shall I bring you there?\"";
+	next;
+	menu
+		"Sure, thanks.",-,
+		"I'll try to find the way myself.",L_Explore,
+		"Could you just explain me the way?",L_Directions;
+	warp "001-1.gat", 44, 40;
+	close;
+
+L_Explore:
+	mes "[Hasan]";
+	mes "\"Alright. Take care!\"";
+	close;
+
+L_Directions:
+	mes "[Hasan]";
+	mes "\"Ok, when you leave here follow the road past the docks until you reach the old city gates.\"";
+	next;
+	mes "\"Pass through them and at the crossway, just go west and then south until you reach some other gateway.\"";
+	next;
+	mes "\"Behind it there is the bazaar of Tulimshar.\"";
+	close;
+
+L_Fear:
+	mes "[Hasan]";
+	mes "\"Sc-sc-sco-scorpion!\"";
+	mes "He seems close to tears.";
+	close;
+
+L_Tut_Done:
+	mes "[Hasan]";
+	if (baselevel >= 40)
+		mes "\"Welcome to the suburbs of Tulimshar. I wonder what an experienced adventurer like you is doing here.\"";
+	if (baselevel < 40)
+		mes "\"Bah, nothing interesting is happening here.\"";
+	close;
+
+L_Distance:
+	mes "There is a person in some distance. He doesn't seem to notice you, maybe you should go closer.";
+	close;
+
+L_Cliff_Up:
+	mes "You see a guy in shaby clothes when you look down the cliff.";
+	close;
+
+L_SummonAgain:
+	message strcharinfo(0), "Kaan is mad with your interference! He comes near the cliff and throws a rock on the top of your head, and let another scorpion run just near Hasan!";
+	percentheal -100, 0;
+	attachrid(getcharid(3,$@ScorpionFighter$));
+	message strcharinfo(0), "Kaan: \"Just go while he is distracted and no one is interfering!\"";
+	monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
+	end;
+
+L_Clean:
+	killmonster "042-1.gat", "Hasan::onScorpionDeath";
+	set $@ScorpionTimer, 0;
+	set $@scorp, 0;
+	stopnpctimer;
+	setnpctimer 0;
+	if (isloggedin(getcharid(3,$@ScorpionFighter$))==0) end;
+	attachrid(getcharid(3,$@ScorpionFighter$));
+	if (PC_DIE_COUNTER > $@ScorpDeath) goto L_MessageDeath;
+	message strcharinfo(0), "Hasan, with his eyes almost closed, trembling with fear, runs toward the scorpion and stabs it with all his strenght! Seems like it took too long and the plan didn't work this time.";
+	warp "042-1.gat", 112, 64;
+	message strcharinfo(0), "Hasan: \"Hey you! I told you you cannot pass!\"";
+	set $@ScorpionFighter$, "";
+	end;
+
+L_MessageDeath:
+	message strcharinfo(0), "Ouch... I should be more careful when fighting these monsters.";
+	end;
+
+L_Wait:
+	mes "There is a scorpion near Hasan already. I think Kaan is helping someone else... Maybe I should try the plan later.";
+	close;
+
+OnTimer5000:
+	if(isloggedin(getcharid(3,$@ScorpionFighter$))==0) goto L_Clean;
+	set $@ScorpionTimer, $@ScorpionTimer + 5;
+	if ($@ScorpionTimer >= 300) goto L_Clean;
+	attachrid(getcharid(3,$@ScorpionFighter$));
+	if (PC_DIE_COUNTER > $@ScorpDeath) goto L_Clean;
+	setnpctimer 0;
+	end;
+
+onScorpionDeath:
+	if (strcharinfo(0) != $@ScorpionFighter$) goto L_SummonAgain;
+	set $@scorp, 0;
+	if (hasan != 3)
+		close;
+	set hasan, 4;
+	message strcharinfo(0), "You saved Hasan.";
+	set $@ScorpionTimer, 0;
+	set $@ScorpionFighter$, "";
+	stopnpctimer;
+	setnpctimer 0;
+	end;
+
+OnInit:
+	initnpctimer;
+	stopnpctimer;
+
+}
+
+042-1.gat,111,68,0	script	#Toll	45,2,2,{
+
+	end;
+
+OnTouch:
+	if ($@scorp && $@ScorpionFighter$ == strcharinfo(0)) 
+		end;
+	if ((FLAGS & FLAG_TUTORIAL_DONE) || (hasan == 4))
+		end;
+	if ($@scorp && $@ScorpionFighter$ != strcharinfo(0)) 
+		goto L_Scared;
+
+L_Normal:
+	warp "042-1.gat", 112, 64;
+	message strcharinfo(0), "Hasan: \"Stop!\"";
+	end;
+
+L_Scared:
+	warp "042-1.gat", 112, 64;
+	message strcharinfo(0), "Hasan seems to be completely irrational. He waves his sharp knife in the air with his eyes closed and hits you. Maybe you shoudn't get too close or you are going to get hurt.";
+	percentheal -10, 0;
+	end;
+
+}
+
+042-1.gat,117,76,0	script	#barrier	45,0,2{
+	end;
+OnTouch:
+	if (FLAGS & FLAG_TUTORIAL_DONE)
+		goto L_Tut;
+	warp "042-1.gat", 115, 76;
+	if ($@scorp && $@ScorpionFighter$ == strcharinfo(0))
+		message strcharinfo(0), "Hasan: \" " + strcharinfo(0) + "! Please help me!\"";
+	if ($@scorp && $@ScorpionFighter$ != strcharinfo(0))
+		message strcharinfo(0), "Hasan: \"Hey! Stop right there!\"";
+	if (!$@scorp && hasan == 4)
+		message strcharinfo(0), "Hasan: \"Please wait a moment!\"";
+	end;
+L_Tut:
+	warp "022-1.gat", 23, 38;
+	end;
+
+
+}
