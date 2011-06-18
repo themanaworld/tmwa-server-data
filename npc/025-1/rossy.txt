@@ -2,6 +2,7 @@
 
   if (FLAGS & FLAG_ROSSI_COMPLETED) goto L_FinalEnd;
   if (Rossy_Quest == 17 || Rossy_Quest == 18) goto L_End;
+
   if (Rossy_Quest >= 14 && Rossy_Quest <= 16) goto L_Julia;
   if (Rossy_Quest >= 13) goto L_Best;
   if (Rossy_Quest >= 11) goto L_Allergic;
@@ -9,59 +10,76 @@
   if (Rossy_Quest == 7) goto L_BT;
   if (Rossy_Quest == 6) goto L_Check2;
   if (Rossy_Quest == 5) goto L_Let;
-  if (Rossy_Quest >= 2 && Rossy_Quest < 5) goto L_Done;
-  if (Rossy_Quest == 1) goto L_Check;
+  if (Rossy_Quest == 4 || Rossy_Quest == 5) goto L_Cherry_Done;
+  if (Rossy_Quest == 3) goto L_Check;
+  if (Rossy_Quest == 2) goto L_Mother;
 
-  mes "[Rossy]";
-  mes "*The young girl looks at you in tears.*";
+  mes "*A young girl looks at you in tears.*";
+  if (baselevel < 50) close;
+  if (Rossy_Quest < 1) close;
+  next;
   menu
-    "Please stop crying and tell me what's wrong.", -,
-    "I don't like people who cry. Bye.", L_No;
+    "Hey, hey... Why are you crying? Are you hurt?", -,
+    "Sorry kid, I don't have time to play with children.", L_No;
+  mes "[Young Girl]";
+  mes "\"No. I am crying because I lost all my fruits. My sister and I were collecting some near Dimond's Cove, but then I stumbled on a giant snail and it attacked us!";
+  next;
+  mes "But we were lucky, because the snail is really slow and we ran away from it. Julia ran to the left and I ran to the right. The snail got pretty confused, because we are identical twins... But the problem is that I dropped the basket full of fruits on the ground and that evil snail ate them all! And I can't find Julia to help me collect more fruits.\"";
+  next;
+  menu
+    "Did you say Julia? I talked to you mother. She is very worried about you.", -;
+  mes "[Rossy]";
+  mes "\"Really? But she let us play in the woods... There is no reason to be worried. Unless...\"";
+  next;
+  mes "*Rossy suddenly looks strange, mumbling something about Julia...*";
   next;
   mes "[Rossy]";
-  mes "\"I dropped a basket of fruits on the ground and these evil snails ate them all!\"";
-  if (baselevel < 50) goto L_LowLevel;
+  mes "\"Could you do me a favor? Please, tell my mother we are OK... There is.. erh... there is no reason to worry about us.\"";
+  next;
   menu
-    "Oh, I presume that you want some. Would you like me to get some fruits for you?", L_Set,
-    "Oh well, life isn't fair.", L_No;
-
-L_LowLevel:
-  menu
-    "I can't do anything about it, sorry.", L_No;
+    "Ok, if you say so", -,
+    "Sorry, I have no time for this", L_No;
+  mes "[Rossy]";
+  mes "\"Thank you very much!\"";
+  set Rossy_Quest, 2;
+  close;
 
 L_No:
   close;
 
-L_Set:
+L_Mother:
   mes "[Rossy]";
-  mes "\"That would be great! Can you get 10 Cherries for me? These are the fruits I like best.\"";
-  next;
-  menu
-    "Sure, I'll be back with your cherries.", L_Get,
-    "No, get some yourself.", L_No;
+  mes "\"Please, tell my mother we are OK... If you feel like helping, come back after you talk to my mother. Maybe you could help us find some fruits.\"";
+  close;
 
-L_Get:
-  mes "[Rossy]";
-  set Rossy_Quest, 1;
-  mes "\"Please, get 10 Cherries for me.\"";
+L_Get_Cherry:
+  mes "[Young Girl]";
+  mes "\"No, you don't have 10 cherries. I know how to count. I hope you get them soon.\"";
   close;
 
 L_Check:
-  if(countitem("Cherry") < 10) goto L_Get;
   mes "[Rossy]";
-  set Rossy_Quest, 2;
-  getexp 2000, 0;
-  mes "\"I can't believe my eyes, you got them all! Please give them to my mother when she will ask for them.\"";
+  mes "\"Hey, that is nice of you to come back. I was thinking about giving a basket full of cherries to my mother, to make her happy, you know... But I can't get so many cherries alone. I would need at least 10 cherries, and It would take too much time!\"";
   next;
   menu
-    "No problem, I'm in a hurry, bye.", -,
-    "Certainly, I'm always here to help, do you need anything else?", L_Done;
+    "That is no problem for me. Just wait and I will come back with the cherries", L_No,
+    "Hey, I have some cherries in my backpack!", -,
+    "You should get them yourself.", L_No;
+  if(countitem("Cherry") < 10) goto L_Get_Cherry;
   mes "[Rossy]";
-  mes "\"I might need your help later. Bye.\"";
+  set Rossy_Quest, 4;
+  getexp 2000, 0;
+  mes "\"I can't believe it, you got them all! Please give them to my mother, she is in one of the buildings in the town north east from here. Tell her it is a gift from me and Julia and there is no reason to worry about us.\"";
+  next;
+  mes "(Rossy mumbles to herself)   *I hope*   ";
+  next;
+  mes "[Rossy]";
+  mes "\"Oh, after you give the cherries to my mother, please come back here. If you have some free time, of course.\"";
+  close;
 
-L_Done:
+L_Cherry_Done:
   mes "[Rossy]";
-  mes "\"My mother might need help. She is in one of the buildings in the town north east from here.\"";
+  mes "\"Please, try to distract my mother... I don't want her to be worried about us. While you do this, I will try to find Julia.\"";
   close;
 
 L_Let:
@@ -74,11 +92,11 @@ L_Let:
     
 L_Let2:
   mes "[Rossy]";
-  mes "*The little girl grabs the piece of paper and reads it with an authomatic gesture. Her face turns pale.*";
+  mes "*The little girl grabs the piece of paper and reads it with an automatic gesture. Her face turns pale.*";
   menu
     "What does it say?", -;
   mes "[Rossy]";
-  mes "\"Oh no, I completely forgot! I need to make a potion but don't have any of the ingredients required. Could you get them for me?\"";
+  mes "\"Oh no, I completely forgot! My magic scholl exam! I need to make a potion and give it to my teacher today! But I didn't find Julia yet and I don't even have any of the ingredients required. Could you get them for me, please?\"";
   next;
   menu
     "Of course I can, what do you need?", L_Sett,
@@ -89,14 +107,14 @@ L_Sett:
   set Rossy_Quest, 6;
   mes "\"I need 24 [Cactus Drink]s, 32 [Maggot Slime]s, 50 [Gamboge Herb]s, 43 [Alizarin Herb]s and 30 [Bug Leg]s.\"";
   next;
-  mes "\"Please collect all of that and come back to see me. I know the recipe by heart.\"";
+  mes "\"Please come back to see me when you have the ingredients. I know the recipe by heart.\"";
   close;
   
 L_NE:
   mes "[Rossy]";
   mes "\"Please bring me 24 [Cactus Drink]s, 32 [Maggot Slime]s, 50 [Gamboge Herb]s, 43 [Alizarin Herb]s and 30 [Bug Leg]s.\"";
   next;
-  mes "\"It seems you miss some of the ingredients I've asked you. Please hurry!\"";
+  mes "\"Please hurry!\"";
   close;
   
 L_Check2:
@@ -107,7 +125,7 @@ L_Check2:
   if(countitem("BugLeg") < 30) goto L_NE;
   mes "[Rossy]";
   set Rossy_Quest, 7;
-  mes "\"Oh, thank you "+ strcharinfo(0) +" so much! If you don't mind, please bring this potion to my teacher and don't lose it!\"";
+  mes "\"Oh, thank you "+ strcharinfo(0) +" ! If you don't mind, please give this potion to my teacher.\"";
   delitem "CactusDrink", 24;
   delitem "MaggotSlime", 32;
   delitem "GambogeHerb", 50;
@@ -115,14 +133,14 @@ L_Check2:
   delitem "BugLeg", 30;
   getexp 3000, 0;
   next;
-  mes "\"His name is David, he is a very young magician and lives near the magic school in the north of Tulimshar.\"";
+  mes "\"My teacher's name is David, he is a very young magician and lives near the magic school in the north of Tulimshar.\"";
   next;
   mes "\"Please, give it to him as soon as you can!\"";
   close;
   
 L_BT:
   mes "[Rossy]";
-  mes "\"Great. Now you just should bring it to my teacher. His name is David, he is a very young magician and lives near the magic school in the north of Tulimshar.\"";
+  mes "\"Great. Now if you could just give it to my teacher. His name is David, he is a very young magician and lives near the magic school in the north of Tulimshar.\"";
   next;
   mes "\"You should take the ferry, that'll be faster than swimming!\"";
   close;
@@ -130,22 +148,22 @@ L_BT:
 L_Donet:
   if (Rossy_Quest == 10 && countitem("redrose") >= 15) goto L_RG;
   menu
-    "David took your potion and he tested it in front of me. It perfectly worked!", -;
+    "David took your potion and he tested it in front of me. It worked perfectly!", -;
   mes "[Rossy]";
-  mes "\"Hurray! You might want to tell that to my mother now.\"";
+  mes "\"Yay! Phew... That was close, I almost forgot about my exam. Please, tell my mother about it. I am sure she will be proud of me.\"";
   close;
   
 L_RG:
   menu
-    "Your mother asked me to bring you these flowers because you succesfully made your potion.", -;
+    "Your mother was so happy that she asked me to bring you these flowers.", -;
   mes "[Rossy]";
-  set Rossy_Quest, 11;
   mes "\"How nice!\"";
   next;
   mes "*Rossy takes the flowers from your hands and suddenly throws them on the ground. She begins sneezing.*";
+  set Rossy_Quest, 11;
   delitem "redrose", 15;
   menu
-    "I presume that you don't like roses, right?", -;
+    "I presume you don't like roses, right?", -;
   mes "[Rossy]";
   mes "\"I am allergic to roses, my mother should already know that!\"";
   close;
@@ -165,29 +183,31 @@ L_See:
   delitem "redtulip", 15;
   mes "\"That's better! Go and tell my mother that she is the nicest mother in the world.\"";
   next;
-  mes "\"Come back and see me afterwards.\"";
+  mes "\"Now I should really find my sister... Come back later.\"";
   getexp 2500, 0;
   close;
   
 L_Best:
   mes "[Rossy]";
-  set Rossy_Quest, 14;
   mes "\"Thank you "+ strcharinfo(0) +", you helped me so much!\"";
   next;
-  mes "\"I now need to find my sister before my mum gets worried... Please find her!\"";
+  menu
+    "Did you find your sister? I am starting to get worried too.", -;
+  mes "\"I think I have an idea where she might be... Come back in a few minutes, I will tell you if she is OK.\"";
+  set Rossy_Quest, 14;
   close;
 
 L_Julia:
   mes "[Rossy]";
-  mes "\"I saw my twin, Julia! She was forced to enter a cave not far from here. I heard her scream. Please enter that cave and save her now!\"";
+  mes "\"I saw Julia! She was running away from something and entered in a cave not far from here. I heard her scream. Please can you enter that cave and save her? Im so scared!\"";
   close;
 
 L_End:
   mes "[Rossy]";
-  mes "\"I saw my twin, Julia! She was forced to enter a cave not far from here. I heard her scream. Did you saved her yet?\"";
+  mes "\"Oh no, Julia... Why would you go to that scary place? Have you seen her yet?\"";
   menu
     "She'll be back soon, trust me, I saved her.", L_Found,
-    "I didn't saw her yet, sorry.", L_No;
+    "I didn't see her yet, sorry.", L_No;
 
 L_Found:
   mes "[Rossy]";

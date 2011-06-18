@@ -694,15 +694,14 @@ L_Done:
 
 025-4.gat,157,42,0	script	#StartBossCaveFight	111,{
     if (Rossy_Quest == 16) goto L_Found;
-    if ($@battlebosscave == 1 && cavefights & BATTLE_CAVE1 && cavefights & BATTLE_CAVE2 && cavefights & BATTLE_CAVE3 && cavefights & BATTLE_CAVE4 && cavefights & BATTLE_CAVE5 && cavefights & BATTLE_CAVE6 && cavefights & BATTLE_CAVE7 && cavefights & BATTLE_CAVE8 && cavefights & BATTLE_CAVE9 && Rossy_Quest == 15) goto L_Summon;
+    if ($@battlebosscave == 1 && cavefights & BATTLE_CAVE1 && cavefights & BATTLE_CAVE2 && cavefights & BATTLE_CAVE3 && cavefights & BATTLE_CAVE4 && cavefights & BATTLE_CAVE5 && cavefights & BATTLE_CAVE6 && cavefights & BATTLE_CAVE7 && cavefights & BATTLE_CAVE8 && cavefights & BATTLE_CAVE9 && Rossy_Quest == 15) goto L_Found;
     message strcharinfo(0), "You shouldn't be here, you cheater.";
     percentheal -100, 0;
     end;
 
 L_Found:
-    message strcharinfo(0), "You found a golden key.";
-    set Killed_Boss, 1;
-    end;
+    message strcharinfo(0), "You found a golden key inside the chest.";
+    goto L_Summon;
 
 L_Summon:
     set $@cave10_loop, $@cave10_loop + 1;
@@ -769,7 +768,7 @@ OnBossDeath:
     set $@cave10start, 0;
     set $@cave10fighter$, "";
     set $@cave10fighterdeaths$, 0;
-    message strcharinfo(0), "What a harsh battle! Oh, a golden key, it might open the chest!";
+    message strcharinfo(0), "What a harsh battle! I should have peace to use that golden key now.";
     set Rossy_Quest, 16;
     end;
 
@@ -791,12 +790,12 @@ onInit:
 
 025-4.gat,157,48,0	script	#CheckCaveFightBoss	127,1,1,{
     if (Rossy_Quest >= 17) goto L_Done;
-    if (Killed_Boss == 1) goto L_Done;
+    if (Rossy_Quest == 17) goto L_Julia;
     message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
     end;
 
-L_Killed:
-    message strcharinfo(0), "The little girl seems so close, you can't let her stay here.";
+L_Julia:
+    message strcharinfo(0), "I shoudn't get out. Julia is still in danger.";
     end;
 
 L_Done:
@@ -807,8 +806,12 @@ L_Done:
 // ---------------------  Julia Cave Checker Outside  ----------------------------
 
 025-4.gat,157,24,0	script	#CheckJuliaCaveOutside	127,1,1,{
-    if (Killed_Boss == 1) goto L_Done;
+    if ($@wave_cave10 != 0) goto L_Focus;
     message strcharinfo(0), "As you try to walk through, you bump into an invisible door. You might need a key to open it.";
+    end;
+
+L_Focus:
+    message strcharinfo(0), "I can't use the key while there are monsters around... I should defeat them first.";
     end;
 
 L_Done:
@@ -819,25 +822,13 @@ L_Done:
 // ---------------------  Julia Cave Checker Inside  ----------------------------
 
 025-4.gat,93,35,0	script	#CheckJuliaCaveInside	127,1,1,{
-    if (Rossy_Quest >= 17 && Killed_Boss == 1) goto L_Done;
-    if (Rossy_Quest >= 17 && Killed_Boss == 0) goto L_Cheat2;
-    if (Rossy_Quest == 16 && Killed_Boss == 1) goto L_Save;
-    if (Rossy_Quest == 16 && Killed_Boss == 0) goto L_Cheat3;
+    if (Rossy_Quest >= 17) goto L_Done;
+    if (Rossy_Quest == 16) goto L_Save;
     if (Rossy_Quest <= 15) goto L_Cheat;
     end;
 
 L_Cheat:
     message strcharinfo(0), "You shouldn't be here, you cheater.";
-    percentheal -100, 0;
-    end;
-
-L_Cheat2:
-    message strcharinfo(0), "You saved Julia without having killed the boss? Is that even possible?";
-    percentheal -100, 0;
-    end;
-
-L_Cheat3:
-    message strcharinfo(0), "You can save Julia without killing the boss? Cheating isn't fair.";
     percentheal -100, 0;
     end;
 

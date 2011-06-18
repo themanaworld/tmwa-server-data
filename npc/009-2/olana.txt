@@ -2,81 +2,84 @@
 
   if (FLAGS & FLAG_ROSSI_COMPLETED) goto L_FinalEnd;
   if (Rossy_Quest == 17 || Rossy_Quest == 18) goto L_End;
+
+
   if (Rossy_Quest >= 14 && Rossy_Quest <= 16) goto L_Julia;
   if (Rossy_Quest == 13) goto L_Best;
   if (Rossy_Quest == 12) goto L_Give;
   if (Rossy_Quest == 11) goto L_Allergic;
   if (Rossy_Quest == 10) goto L_BringRose;
   if (Rossy_Quest == 9) goto L_RC;
-  if (Rossy_Quest == 8) goto L_RL;
+  if (Rossy_Quest == 8) goto L_Rose;
   if (Rossy_Quest >= 6 && Rossy_Quest < 8) goto L_BL;
   if (Rossy_Quest == 5) goto L_Bring;
-  if (Rossy_Quest == 4) goto L_Cont;
-  if (Rossy_Quest == 3) goto L_See;
-  if (Rossy_Quest == 2) goto L_Daughter;
+  if (Rossy_Quest == 4) goto L_See;
+  if (Rossy_Quest == 3) goto L_Worried;
+  if (Rossy_Quest == 1 || Rossy_Quest == 2) goto L_Daughter;
 
   mes "[Olana]";
-  mes "\"I come from Tulimshar to Hurnscald for vacation with my two young daughters, Rossy and Julia. I already have been to Hurnscald once and felt quite safe in ths area.\"";
+  mes "\"I came from Tulimshar to Hurnscald on vacation with my two young daughters, Rossy and Julia. I have already been to Hurnscald once and felt quite safe in this area.\"";
+  if (baselevel < 50) close;
   next;
-  mes "\"I let my two lovely girls play in the woods near by but they still didn't came back!\"";
+  mes "\"I let my two lovely girls play in the woods nearby but they didn't come back yet!\"";
   next;
-  mes "\"Please go and have a look in the forest near the swamps and come back to see me when you'll find them.\"";
+  mes "Olana suddenly looks very pale and starts to shiver.";
+  next;
+  mes "\"Oh, I have a bad feeling about this whole situation... If you go to the forest near the swamps, can you see if you find my daughters? I need to know if they are safe.\"";
+  menu
+    "Sure, I can do that.", -,
+    "I am sorry, I don't usually go to this area", L_No;
+  set Rossy_Quest, 1;
   close;
 
 L_Daughter:
-  mes "[Olana]";
-  mes "\"I come from Tulimshar to Hurnscald for vacation with my two young daughters, Rossy and Julia. I already have been to Hurnscald once and felt quite safe in ths area.\"";
-  mes "\"I let my two lovely girls play in the woods near by but they still didn't came back!\"";
-  next;
-  mes "*Olana begins to sobb...*";
+  mes "*Olana looks really worried... she seems about to burst into tears...*";
+  if (Rossy_Quest == 1) close;
   next;
   menu
     "Wait, I saw Rossy, she is fine.", L_Help,
-    "Wait a bit, I'm sure they'll both get back soon.", L_No;
+    "Hey, don't worry, I'm sure they'll be back soon.", L_No;
 
 L_No:
   close;
 
 L_Help:
   mes "[Olana]";
-  mes "\"Oh yes? Is Rossy alright? That's good. I'm relieved. I hope she'll find Julia soon.\"";
+  mes "\"Oh yes? Is Rossy alright? That's good. I'm relieved. But what about Julia?\"";
   next;
-  mes "\"Oh by the way, I would need your help myself too. I think Rossy colected some cherries while she was in the woods, could you bring me them please?.\"";
   menu
-    "Sure, I'll be back with cherries.", L_Set,
-    "Sorry, I'm too busy.", L_No;
-
-L_Set:
-  mes "[Olana]";
+    "I didn't find Julia yet, sorry", -;
+  mes "\"Ok. They must be playing hide and seek. Thanks again... I can't express how grateful I am.\"";
   set Rossy_Quest, 3;
-  mes "\"I'd like 10 Cherries.\"";
   close;
 
-L_Get:
-  mes "[Olana]";
-  mes "\"Please, get 10 cherries for me.\"";
+L_Worried:
+  mes "*Olana smiles at you, trying to show some happiness, but her facial expression only conveys tension and preoccupation*";
   close;
 
 L_See:
-  if(countitem("cherry") < 10) goto L_Get;
+  if (gotcherry == 1) goto L_Task;
+  if (countitem("cherry") < 10) goto L_Worried;
+  menu
+    "Hi, Rossy asked me to give you this. She says it is a gift from her and from Julia", -;
   mes "[Olana]";
-  set Rossy_Quest, 4;
-  mes "\"You got them for me! Thank you! Here you are... a small reward from me for your precious help!\"";
+  mes "\"Ohhh... How sweet... Sometimes Rossy impress me with her kindness. Here. You are spending so much time helping us, and we give nothing back. Take this as a small reward. \"";
   delitem "cherry", 10;
   getexp 1000, 0;
   set zeny, zeny + 1000;
+  set gotcherry, 1;
   goto L_Task;
 
 L_Task:
   mes "[Olana]";
-  mes "\"It seems I have another task for you, would you like to help me again?\"";
+  mes "\"I know I barely know you, but can I ask you for a small favor?\"";
   menu
     "Sure, tell me about it.", L_Cont,
     "No, sorry, I'm busy.", L_No;
 
 L_Cont:
   mes "[Olana]";
-  mes "\"Can you give this letter to my little daughter please? Her teacher asked me to do it, but I can't walk, my knees...\"";
+  mes "\"Would you mind giving this letter to my little Rossy? Today is the last day for her final exam, and I know my daughter. If I don't remind her, she will surely forget about it and flunk the exam. I would deliver it myself, but I can't walk, my knees...\"";
   menu
     "Of course I can. Hand me the letter, I'll give it to Rossy as soon as I see her.", L_Let,
     "No, sorry, I'm not interested in that sort of task. Hand it to her yourself.", L_No;
@@ -84,40 +87,36 @@ L_Cont:
 L_Let:
   mes "[Olana]";
   set Rossy_Quest, 5;
-  mes "\"Please bring it to her as fast as you can, she really needs to know this news!\"";
+  set gotcherry, 0;
+  mes "\"Thank you again. Please, bring it to her as fast as you can.\"";
   close;
   
 L_Bring:
   mes "[Olana]";
-  mes "\"Bring this letter to my daughter as fast as you can, please!\"";
+  mes "\"Please, bring this letter to my daughter as fast as you can.\"";
   close;
   
 L_BL:
   mes "[Olana]";
-  mes "\"Good, now she remembers that she needs to craft a potion! Please, "+ strcharinfo(0) +", help Rossy, she will tell you what to do.\"";
+  mes "\"Good, now she won't forget her final exam.\"";
   close;
   
-L_Done:
-  mes "[Olana]";
-  mes "\"Thanks you "+ strcharinfo(0) +", I and Rossy will never forget what you did for us!\"";
-  goto L_Rose;
-  
 L_Rose:
-  mes "[Olana]";
-  mes "\"I would like congratulate my daughter, Rossy, would you help me?\"";
   menu
-    "Just tell me what to do.", L_RL,
+    "Hi, Rossy did great in the exam. David told me her potion was flawless.", -;
+  mes "[Olana]";
+  mes "\"Wow! Really? That is great! I would like to congratulate my little Rossy, would you help me?\"";
+  menu
+    "Just tell me what to do.", -,
     "No, I'm busy, maybe later.", L_No;
-    
-L_RL:
   mes "[Olana]";
-  set Rossy_Quest, 9;
-  mes "\"Can you bring me 15 [Red Rose]s? I would like to give them to my daughter because she succesfully made her potion!\"";
+  mes "\"Can you bring me 15 [Red Rose]s? I would like to give them to Rossy. I am sure she will love it!\"";
   menu
-    "Ok, I will be back with these.", L_RG,
+    "Ok, I will be back with the roses.", L_RG,
     "I'm allergic to roses, can't even touch them. Sorry.", L_No;
     
 L_RG:
+  if (Rossy_Quest == 8) set Rossy_Quest, 9;
   mes "[Olana]";
   mes "\"Please, bring me 15 [Red Rose]s as soon as you can.\"";
   close;
@@ -136,25 +135,25 @@ L_BringRose:
   
 L_Allergic:
   mes "[Olana]";
-  set Rossy_Quest, 12;
   mes "\"Did she like my present?\"";
   menu
     "Sure she did...", L_No,
-    "Well, you should of known that your daughter is allergic to roses.", -;
+    "Well, you should known that your daughter is allergic to roses.", -;
+  set Rossy_Quest, 12;
   mes "[Olana]";
-  mes "\"How stupid I am! Here, take some of my money and buy [Red Tulip]s instead, about the same amount. Keep the flowers.\"";
+  mes "\"How stupid I am! Here, take some of my money and buy [Red Tulip]s instead, the same amount. Keep the flowers.\"";
   set zeny, zeny + 1500;
   next;
-  mes "\"I want Rossy to be happy and to forgive me for my stupidity.\"";
+  mes "\"Please, tell Rossy I am really sorry. My mind was in Julia when I asked you to bring the red roses, they are her favorite.\"";
   menu
-    "I will give her the tulips when I'll see her.", -;
+    "I will give her the tulips when I see her.", -;
   mes "[Olana]";
   mes "\"And don't forget to tell her that I'm really sorry.\"";
   close;
   
 L_Give:
   mes "[Olana]";
-  mes "\""+ strcharinfo(0) +", please, get 15 [Red Tulip]s and hand them to Rossy. Don't forget to tell her that I'm really sorry for the mistake I did.\"";
+  mes "\""+ strcharinfo(0) +", please, get 15 [Red Tulip]s and hand them to Rossy. Don't forget to tell her that I'm really sorry.\"";
   close;
   
 L_Best:
@@ -164,15 +163,15 @@ L_Best:
 
 L_Julia:
   mes "[Olana]";
-  mes "\"Where is Julia? I want to know where she is! Go and find her please "+ strcharinfo(0) +"!\"";
+  mes "\"Oh no, I can't take this anymore. Something must have happened... Where is Julia? I want to know where she is! Please, find her "+ strcharinfo(0) +"!\"";
   close;
 
 L_End:
   mes "[Olana]";
-  mes "\"Where is Julia? I want to know where she is! Go and find her please "+ strcharinfo(0) +"!\"";
+  mes "\"Where is Julia? I want to know where she is! Please, find her "+ strcharinfo(0) +"!\"";
   menu
     "She'll be back soon, trust me, I saved her from an evil spirit.", L_Found,
-    "I didn't saw her yet, sorry.", L_No;
+    "I didn't see her yet, sorry.", L_No;
 
 L_Found:
   mes "[Olana]";
@@ -192,7 +191,7 @@ L_Clear:
 
 L_FinalEnd:
   mes "[Olana]";
-  mes "*The mother is calmly waiting her daughters to come back for diner.*";
+  mes "*The mother is calmly waiting her daughters to come back for dinner.*";
   close;
   
 }
