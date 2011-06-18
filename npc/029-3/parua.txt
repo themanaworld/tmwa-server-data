@@ -47,6 +47,7 @@ L_CallPlayers:
 	     "In 30 minutes.", -,
 	     "I don't want to wait. Let's start it now!", L_Paying;
 
+	if ($@FIGHT_CAVE_STATUS >= 2) close;	
 	if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
 	if (zeny < 20000 + 3000) goto L_NotEnough_Announce;
 	set zeny, zeny - (20000 + 3000);
@@ -54,7 +55,7 @@ L_CallPlayers:
 	set $@FIGHT_CAVE_STATUS, $@FIGHT_CAVE_STATUS + (@menu + 2);
 	if ($@FIGHT_CAVE_STATUS == 3) set $@ANNOUNCE_TIME, gettimetick(2) + 300;
 	if ($@FIGHT_CAVE_STATUS == 4) set $@ANNOUNCE_TIME, gettimetick(2) + 900;
-	if ($@FIGHT_CAVE_STATUS == 5) set $@ANNOUNCE_TIME, gettimetick(2) + 1800;
+	if ($@FIGHT_CAVE_STATUS >= 5) set $@ANNOUNCE_TIME, gettimetick(2) + 1800;
 	startnpctimer;
 	close;
 
@@ -153,7 +154,7 @@ L_Announce:
 L_GlobalAnnounce:
 	if ($@FIGHT_CAVE_STATUS == 3) goto L_Five_Minutes;
 	if ($@FIGHT_CAVE_STATUS == 4) goto L_Fifteen_Minutes;
-	if ($@FIGHT_CAVE_STATUS == 5) goto L_Thirty_Minutes;
+	if ($@FIGHT_CAVE_STATUS >= 5) goto L_Thirty_Minutes;
 	if (gettimetick(2) >= $@ANNOUNCE_TIME) goto L_StartFight;
 	end;
 
