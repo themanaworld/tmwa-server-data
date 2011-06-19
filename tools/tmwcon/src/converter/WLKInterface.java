@@ -22,7 +22,7 @@ public class WLKInterface {
             WLKWriter.writeMap(map, new FileOutputStream(wlk));
             System.out.println("WLK written");
         } catch (Exception e) {
-            System.out.println("Prolem writing WLK file:");
+            System.out.println("Problem writing WLK file:");
             e.printStackTrace();
         }
     }

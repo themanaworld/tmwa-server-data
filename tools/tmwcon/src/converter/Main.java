@@ -66,45 +66,35 @@ public class Main {
         return name;
     }
 
-    public static void run(String[] args, int unused) {
-        reader = new XMLMapTransformer();
-
-        PrintWriter summary = null;
-
-        try {
-            File temp = new File("summary.txt");
-            temp.createNewFile();
-            summary = new PrintWriter(temp);
-        } catch (Exception e) {
-            System.out.println("Problem opening summary file for writing:");
-            e.printStackTrace();
+    public static void main(String[] args) throws IOException {
+        if (args.length != 2) {
+            System.out.println("Usage: java Converter client-data-dir server-data-dir");
+            System.exit(1);
         }
 
-        File folder = new File("server-data/data/");
-        folder.mkdirs();
-        Process.prepWLK(folder);
+        File client_data = new File(args[0]);
+        File server_data = new File(args[1]);
 
-        folder = new File("tmwdata/maps/");
+        reader = new XMLMapTransformer();
+
+        PrintWriter summary = new PrintWriter("converter.txt");
+
+        Process.setServerData(server_data);
+
+        File folder = new File(client_data, "maps/");
 
         Collection<File> tmxs = getTMXFiles(folder);
-        Vector<String> folders = new Vector<String>();
+        ArrayList<String> folders = new ArrayList<String>();
         String name;
         for (File f : tmxs) {
             name = getName(folder, f);
             System.out.printf("== %s ==\n", name);
-            if (summary != null) summary.printf("== %s ==\n", name);
             folders.add(Process.processMap(name, loadMap(f), f, summary));
         }
 
-        if (summary != null) {
-            summary.flush();
-            summary.close();
-        }
+        summary.flush();
+        summary.close();
 
-        Process.writeMasterImport(folders.toArray(new String[0]));
-    }
-
-    public static void main(String[] args) {
-        run(args, 0);
+        Process.writeMasterImport(folders);
     }
 }
