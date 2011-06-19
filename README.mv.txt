@@ -24,7 +24,7 @@ git submodule update            lose changes in submodule and reset to upstream
 git submodule update --merge    merge changes in submodule from upstream
 git submodule update --rebase   rebase local changes on top of upstream
         (use this, for the same reason you should use git pull --rebase instead of just git pull - but remember that it's dangerous)
-git submodules sync             change the url of the submodule (when testing is deleted)
+git submodule sync              change the url of the submodule (when testing is deleted)
 git config --global url.git@gitorious.org:.pushInsteadOf git://gitorious.org
                                 for people with push access: don't pull via ssh (which is slower anyway), required for submodules to work properly
 git checkout HEAD^ -B master    completely roll back the latest commit
