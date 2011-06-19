@@ -8,6 +8,7 @@ mv save/storage.txt world/save/
 mv save/party.txt world/save/
 mv save/castle.txt world/save/
 mv save/guild.txt world/save/
+mv save/g_storage.txt world/save/
 
 mv save/mapreg.txt world/map/save/
 
