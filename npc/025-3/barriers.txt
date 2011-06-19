@@ -124,6 +124,10 @@ L_Wait:
     message strcharinfo(0), "Someone just got out of the cave, but it is still blocked. I should try to enter again.";
     end;
 
+L_AlreadyDone:
+    message strcharinfo(0), "I already defeated the monsters in this cave.";
+    end;
+
 L_AlreadyHelped:
     if (@juliadone2 == 1) end;
     message strcharinfo(0), "There are nothing more than dead monster corpses in this cave.";
@@ -871,18 +875,18 @@ L_AlreadyClean:
 // ----------------------------- Warp to Boss Cave -------------------------------
 
 025-3.gat,77,170,0	script	#WarpBossCave	45,1,1,{
-
-    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED) goto L_AlreadyHelped;
-    set @barrier_force, 0;
-    if (cavefights & ~BATTLE_CAVE1) set @barrier_force, @barrier_force - 1;
-    if (cavefights & ~BATTLE_CAVE2) set @barrier_force, @barrier_force - 1;
-    if (cavefights & ~BATTLE_CAVE3) set @barrier_force, @barrier_force - 1;
-    if (cavefights & ~BATTLE_CAVE4) set @barrier_force, @barrier_force - 1;
-    if (cavefights & ~BATTLE_CAVE5) set @barrier_force, @barrier_force - 1;
-    if (cavefights & ~BATTLE_CAVE6) set @barrier_force, @barrier_force - 1;
-    if (cavefights & ~BATTLE_CAVE7) set @barrier_force, @barrier_force - 1;
-    if (cavefights & ~BATTLE_CAVE8) set @barrier_force, @barrier_force - 1;
-    if (cavefights & ~BATTLE_CAVE9) set @barrier_force, @barrier_force - 1;
+    if (Rossy_Quest > 16 || FLAGS & FLAG_ROSSI_COMPLETED) end; 
+    if (Rossy_Quest == 16) goto L_AlreadyHelped;
+    set @barrier_force, -9;
+    if (cavefights & BATTLE_CAVE1) set @barrier_force, @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE2) set @barrier_force, @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE3) set @barrier_force, @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE4) set @barrier_force, @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE5) set @barrier_force, @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE6) set @barrier_force, @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE7) set @barrier_force, @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE8) set @barrier_force, @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE9) set @barrier_force, @barrier_force + 1;
     if (@barrier_force != 0) goto L_Hurt;
     if (getareausers("025-4.gat", 142, 24, 172, 48) >= 1) goto L_SomeoneInside;
     if ($@timercontrol10 != 0) goto L_Wait;
@@ -901,7 +905,7 @@ L_Wait:
     end;
 
 L_StartFight:
-    message strcharinfo(0), "You insert the nine tiny keys you collected but as you enter, you hear screams that seem to be very close.";
+    message strcharinfo(0), "You go through the magic barrier without problems... you can hear screams that seem to be very close.";
     set $@battlebosscave, 1;
     warp "025-4.gat", 157, 46;
     set $@cave10fighter$, strcharinfo(0);
@@ -915,9 +919,8 @@ L_SomeoneInside:
     end;
 
 L_AlreadyHelped:
-    if (@juliadone10 == 1) end;
-    message strcharinfo(0), "There are nothing more than dead monster corpses in this cave.";
-    set @juliadone10, 1;
+    message strcharinfo(0), "There are nothing more than corpses in this cave. You close your eyes and go straight to the place where Julia is hidden.";
+    warp "025-4.gat", 93, 33;
     end;
 
 OnTimer5000:
