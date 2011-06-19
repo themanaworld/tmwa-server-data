@@ -1,6 +1,6 @@
 // ---------------------------------    Cave 1    -----------------------------------
 
-025-4.gat,41,91,0	script	#StartCaveFight1	111,{
+025-4.gat,41,91,0	script	#StartCaveFight1	324,{
     if (Rossy_Quest < 15) goto L_Cheat;
     if ($@battlecave1 == 1) goto L_Start;
     end;
@@ -11,7 +11,13 @@ L_Cheat:
     end;
 
 L_Start:
-    message strcharinfo(0), "You opened the chest and found a tiny key. At the same time, some monsters appear from nowhere.";    
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
     
 L_Summon:
     set $@cave1_loop, $@cave1_loop + 1;
@@ -30,7 +36,7 @@ L_Done:
 
     if ($@wave_cave1 == 1) message strcharinfo(0), "Oh no, more monsters?!";
     if ($@wave_cave1 == 2) message strcharinfo(0), "I can't give up now!";
-    if ($@wave_cave1 == 3) message strcharinfo(0), "As you killed all the monsters, you opened the chest. It was empty.";
+    if ($@wave_cave1 == 3) message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation, as if you were being lifted from the ground... When you open your eyes, you are outside of the cave.";
 
     if ($@wave_cave1 != $@CAVE1_WAVES) goto L_Summon;
     set cavefights, (cavefights ^ BATTLE_CAVE1);
@@ -54,6 +60,13 @@ OnMonsterDeath:
     if ($@cave1_kills >= $@CAVE1_MONSTERS_QTY[1] + $@CAVE1_MONSTERS_QTY[2] + $@CAVE1_MONSTERS_QTY[3]) goto L_Done;
     end;
 
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
+
 onInit:
 // Here you can define the specifics of each battle cave.
 // Monsters IDs to be spawned.
@@ -68,20 +81,25 @@ onInit:
 
 // ---------------------  Cave 1 Checker  ----------------------------
 
-025-4.gat,41,97,0	script	#CheckCaveFight1	127,1,1,{
-    if (cavefight & BATTLE_CAVE1) goto L_Done;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+025-4.gat,41,97,0	script	#CheckCaveFight1	45,1,1,{
+    if ($@wave_cave1 != 0) message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    if ($@wave_cave1 == 0) goto L_Done;
     end;
 
 L_Done:
     warp "025-3.gat", 78, 130;
+    set $@battlecave1, 0;
+    set $@cave1fighter$, "";
+    set $@cave1fighterdeaths, 0;
+    set $@cave1start, 0;
+    set $@timercontrol1, 1;
     end;
 }
 
 // ---------------------------------    Cave 2   ---------------------------------------
 
 
-025-4.gat,110,90,0	script	#StartCaveFight2	111,{
+025-4.gat,110,90,0	script	#StartCaveFight2	324,{
     if (Rossy_Quest < 15) goto L_Cheat;
     if ($@battlecave2 == 1) goto L_Start;
     end;
@@ -92,7 +110,14 @@ L_Cheat:
     end;
 
 L_Start:
-    message strcharinfo(0), "You opened the chest and found a tiny key. At the same time, some monsters appear from nowhere.";   
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
+ 
 
 L_Summon:
     set $@cave2_loop, $@cave2_loop + 1;
@@ -111,7 +136,7 @@ L_Done:
 
     if ($@wave_cave2 == 1) message strcharinfo(0), "Oh no, more monsters?!";
     if ($@wave_cave2 == 2) message strcharinfo(0), "I can't give up now!";
-    if ($@wave_cave2 == 3) message strcharinfo(0), "As you killed all the monsters, you opened the chest. It was empty.";
+    if ($@wave_cave2 == 3) message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation, as if you were being lifted from the ground... When you open your eyes, you are outside of the cave.";
 
     if ($@wave_cave2 != $@CAVE2_WAVES) goto L_Summon;
     set cavefights, (cavefights ^ BATTLE_CAVE2);
@@ -135,6 +160,13 @@ OnMonsterDeath:
     if ($@cave2_kills >= $@CAVE2_MONSTERS_QTY[1] + $@CAVE2_MONSTERS_QTY[2] + $@CAVE2_MONSTERS_QTY[3]) goto L_Done;
     end;
 
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
+
 onInit:
 // Here you can define the specifics of each battle cave.
 // Monsters IDs to be spawned.
@@ -149,18 +181,23 @@ onInit:
 
 // ---------------------  Cave 2 Checker  ----------------------------
 
-025-4.gat,110,96,0	script	#CheckCaveFight2	127,1,1,{
-    if (cavefight & BATTLE_CAVE2) goto L_Done;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+025-4.gat,110,96,0	script	#CheckCaveFight2	45,1,1,{
+    if ($@wave_cave2 != 0) message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    if ($@wave_cave2 == 0) goto L_Done;
     end;
 
 L_Done:
     warp "025-3.gat", 53, 110;
+    set $@battlecave2, 0;
+    set $@cave2fighter$, "";
+    set $@cave2fighterdeaths, 0;
+    set $@cave2start, 0;
+    set $@timercontrol2, 1;
     end;
 }
 
 // ------------------------------------    Cave 3    --------------------------------------
-025-4.gat,168,111,0	script	#StartCaveFight3	111,{
+025-4.gat,168,111,0	script	#StartCaveFight3	324,{
     if (Rossy_Quest < 15) goto L_Cheat;
     if ($@battlecave3 == 1) goto L_Start;
     end;
@@ -171,7 +208,14 @@ L_Cheat:
     end;
 
 L_Start:
-    message strcharinfo(0), "You opened the chest and found a tiny key. At the same time, some monsters appear from nowhere.";   
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
+ 
 
 L_Summon:
     set $@cave3_loop, $@cave3_loop + 1;
@@ -190,7 +234,7 @@ L_Done:
 
     if ($@wave_cave3 == 1) message strcharinfo(0), "Oh no, more monsters?!";
     if ($@wave_cave3 == 2) message strcharinfo(0), "I can't give up now!";
-    if ($@wave_cave3 == 3) message strcharinfo(0), "As you killed all the monsters, you opened the chest. It was empty.";
+    if ($@wave_cave3 == 3) message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation, as if you were being lifted from the ground... When you open your eyes, you are outside of the cave.";
 
     if ($@wave_cave3 != $@CAVE3_WAVES) goto L_Summon;
     set cavefights, (cavefights ^ BATTLE_CAVE3);
@@ -214,6 +258,13 @@ OnMonsterDeath:
     if ($@cave3_kills >= $@CAVE3_MONSTERS_QTY[1] + $@CAVE3_MONSTERS_QTY[2] + $@CAVE3_MONSTERS_QTY[3]) goto L_Done;
     end;
 
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
+
 onInit:
 // Here you can define the specifics of each battle cave.
 // Monsters IDs to be spawned.
@@ -228,18 +279,23 @@ onInit:
 
 // ---------------------  Cave 3 Checker  ----------------------------
 
-025-4.gat,168,117,0	script	#CheckCaveFight3	127,1,1,{
-    if (cavefight & BATTLE_CAVE3) goto L_Done;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+025-4.gat,168,117,0	script	#CheckCaveFight3	45,1,1,{
+    if ($@wave_cave3 != 0) message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    if ($@wave_cave3 == 0) goto L_Done;
     end;
 
 L_Done:
     warp "025-3.gat", 71, 85;
+    set $@battlecave3, 0;
+    set $@cave3fighter$, "";
+    set $@cave3fighterdeaths, 0;
+    set $@cave3start, 0;
+    set $@timercontrol3, 1;
     end;
 }
 
 // ---------------------------    Cave 4    --------------------------------
-025-4.gat,32,150,0	script	#StartCaveFight4	111,{
+025-4.gat,32,150,0	script	#StartCaveFight4	324,{
     if (Rossy_Quest < 15) goto L_Cheat;
     if ($@battlecave4 == 1) goto L_Start;
     end;
@@ -250,7 +306,13 @@ L_Cheat:
     end;
 
 L_Start:
-    message strcharinfo(0), "You opened the chest and found a tiny key. At the same time, some monsters appear from nowhere.";   
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
 
 L_Summon:
     set $@cave4_loop, $@cave4_loop + 1;
@@ -269,7 +331,7 @@ L_Done:
 
     if ($@wave_cave4 == 1) message strcharinfo(0), "Oh no, more monsters?!";
     if ($@wave_cave4 == 2) message strcharinfo(0), "I can't give up now!";
-    if ($@wave_cave4 == 3) message strcharinfo(0), "As you killed all the monsters, you opened the chest. It was empty.";
+    if ($@wave_cave4 == 3) message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation, as if you were being lifted from the ground... When you open your eyes, you are outside of the cave.";
 
     if ($@wave_cave4 != $@CAVE4_WAVES) goto L_Summon;
     set cavefights, (cavefights ^ BATTLE_CAVE4);
@@ -293,6 +355,13 @@ OnMonsterDeath:
     if ($@cave4_kills >= $@CAVE4_MONSTERS_QTY[1] + $@CAVE4_MONSTERS_QTY[2] + $@CAVE4_MONSTERS_QTY[3]) goto L_Done;
     end;
 
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
+
 onInit:
 // Here you can define the specifics of each battle cave.
 // Monsters IDs to be spawned.
@@ -307,19 +376,24 @@ onInit:
 
 // ---------------------  Cave 4 Checker  ----------------------------
 
-025-4.gat,32,156,0	script	#CheckCaveFight4	127,1,1,{
-    if (cavefight & BATTLE_CAVE4) goto L_Done;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+025-4.gat,32,156,0	script	#CheckCaveFight4	45,1,1,{
+    if ($@wave_cave4 != 0) message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    if ($@wave_cave4 == 0) goto L_Done;
     end;
 
 L_Done:
     warp "025-3.gat", 80, 85;
+    set $@battlecave4, 0;
+    set $@cave4fighter$, "";
+    set $@cave4fighterdeaths, 0;
+    set $@cave4start, 0;
+    set $@timercontrol4, 1;
     end;
 }
 
 // ----------------------------    Cave 5    ------------------------------
 
-025-4.gat,100,154,0	script	#StartCaveFight5	111,{
+025-4.gat,100,154,0	script	#StartCaveFight5	324,{
     if (Rossy_Quest < 15) goto L_Cheat;
     if ($@battlecave5 == 1) goto L_Start;
     end;
@@ -330,7 +404,13 @@ L_Cheat:
     end;
 
 L_Start:
-    message strcharinfo(0), "You opened the chest and found a tiny key. At the same time, some monsters appear from nowhere.";   
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
 
 L_Summon:
     set $@cave5_loop, $@cave5_loop + 1;
@@ -349,7 +429,7 @@ L_Done:
 
     if ($@wave_cave5 == 1) message strcharinfo(0), "Oh no, more monsters?!";
     if ($@wave_cave5 == 2) message strcharinfo(0), "I can't give up now!";
-    if ($@wave_cave5 == 3) message strcharinfo(0), "As you killed all the monsters, you opened the chest. It was empty.";
+    if ($@wave_cave5 == 3) message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation, as if you were being lifted from the ground... When you open your eyes, you are outside of the cave.";
 
     if ($@wave_cave5 != $@CAVE5_WAVES) goto L_Summon;
     set cavefights, (cavefights ^ BATTLE_CAVE5);
@@ -373,6 +453,13 @@ OnMonsterDeath:
     if ($@cave5_kills >= $@CAVE5_MONSTERS_QTY[1] + $@CAVE5_MONSTERS_QTY[2] + $@CAVE5_MONSTERS_QTY[3]) goto L_Done;
     end;
 
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
+
 onInit:
 // Here you can define the specifics of each battle cave.
 // Monsters IDs to be spawned.
@@ -387,19 +474,24 @@ onInit:
 
 // ---------------------  Cave 5 Checker  ----------------------------
 
-025-4.gat,100,160,0	script	#CheckCaveFight5	127,1,1,{
-    if (cavefight & BATTLE_CAVE5) goto L_Done;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+025-4.gat,100,160,0	script	#CheckCaveFight5	45,1,1,{
+    if ($@wave_cave5 != 0) message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    if ($@wave_cave5 == 0) goto L_Done;
     end;
 
 L_Done:
     warp "025-3.gat", 71, 33;
+    set $@battlecave5, 0;
+    set $@cave5fighter$, "";
+    set $@cave5fighterdeaths, 0;
+    set $@cave5start, 0;
+    set $@timercontrol5, 1;
     end;
 }
 
 // --------------------------------    Cave 6    -----------------------------------------
 
-025-4.gat,159,168,0	script	#StartCaveFight6	111,{
+025-4.gat,159,168,0	script	#StartCaveFight6	324,{
     if (Rossy_Quest < 15) goto L_Cheat;
     if ($@battlecave6 == 1) goto L_Start;
     end;
@@ -410,7 +502,13 @@ L_Cheat:
     end;
 
 L_Start:
-    message strcharinfo(0), "You opened the chest and found a tiny key. At the same time, some monsters appear from nowhere.";   
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
 
 L_Summon:
     set $@cave6_loop, $@cave6_loop + 1;
@@ -429,7 +527,7 @@ L_Done:
 
     if ($@wave_cave6 == 1) message strcharinfo(0), "Oh no, more monsters?!";
     if ($@wave_cave6 == 2) message strcharinfo(0), "I can't give up now!";
-    if ($@wave_cave6 == 3) message strcharinfo(0), "As you killed all the monsters, you opened the chest. It was empty.";
+    if ($@wave_cave6 == 3) message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation, as if you were being lifted from the ground... When you open your eyes, you are outside of the cave.";
 
     if ($@wave_cave6 != $@CAVE6_WAVES) goto L_Summon;
     set cavefights, (cavefights ^ BATTLE_CAVE6);
@@ -453,6 +551,13 @@ OnMonsterDeath:
     if ($@cave6_kills >= $@CAVE6_MONSTERS_QTY[1] + $@CAVE6_MONSTERS_QTY[2] + $@CAVE6_MONSTERS_QTY[3]) goto L_Done;
     end;
 
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
+
 onInit:
 // Here you can define the specifics of each battle cave.
 // Monsters IDs to be spawned.
@@ -467,19 +572,24 @@ onInit:
 
 // ---------------------  Cave 6 Checker  ----------------------------
 
-025-4.gat,159,174,0	script	#CheckCaveFight6	127,1,1,{
-    if (cavefight & BATTLE_CAVE6) goto L_Done;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+025-4.gat,159,174,0	script	#CheckCaveFight6	45,1,1,{
+    if ($@wave_cave6 != 0) message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    if ($@wave_cave6 == 0) goto L_Done;
     end;
 
 L_Done:
     warp "025-3.gat", 128, 38;
+    set $@battlecave6, 0;
+    set $@cave6fighter$, "";
+    set $@cave6fighterdeaths, 0;
+    set $@cave6start, 0;
+    set $@timercontrol6, 1;
     end;
 }
 
 // --------------------------------    Cave 7    -----------------------------------
 
-025-4.gat,39,215,0	script	#StartCaveFight7	111,{
+025-4.gat,39,215,0	script	#StartCaveFight7	324,{
     if (Rossy_Quest < 15) goto L_Cheat;
     if ($@battlecave7 == 1) goto L_Start;
     end;
@@ -490,7 +600,14 @@ L_Cheat:
     end;
 
 L_Start:
-    message strcharinfo(0), "You opened the chest and found a tiny key. At the same time, some monsters appear from nowhere.";   
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
+  
     
 L_Summon:
     set $@cave7_loop, $@cave7_loop + 1;
@@ -509,7 +626,7 @@ L_Done:
 
     if ($@wave_cave7 == 1) message strcharinfo(0), "Oh no, more monsters?!";
     if ($@wave_cave7 == 2) message strcharinfo(0), "I can't give up now!";
-    if ($@wave_cave7 == 3) message strcharinfo(0), "As you killed all the monsters, you opened the chest. It was empty.";
+    if ($@wave_cave7 == 3) message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation, as if you were being lifted from the ground... When you open your eyes, you are outside of the cave.";
 
     if ($@wave_cave7 != $@CAVE7_WAVES) goto L_Summon;
     set cavefights, (cavefights ^ BATTLE_CAVE7);
@@ -533,6 +650,13 @@ OnMonsterDeath:
     if ($@cave7_kills >= $@CAVE7_MONSTERS_QTY[1] + $@CAVE7_MONSTERS_QTY[2] + $@CAVE7_MONSTERS_QTY[3]) goto L_Done;
     end;
 
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
+
 onInit:
 // Here you can define the specifics of each battle cave.
 // Monsters IDs to be spawned.
@@ -547,19 +671,24 @@ onInit:
 
 // ---------------------  Cave 7 Checker  ----------------------------
 
-025-4.gat,42,219,0	script	#CheckCaveFight7	127,1,1,{
-    if (cavefight & BATTLE_CAVE7) goto L_Done;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+025-4.gat,42,219,0	script	#CheckCaveFight7	45,1,1,{
+    if ($@wave_cave7 != 0) message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    if ($@wave_cave7 == 0) goto L_Done;
     end;
 
 L_Done:
     warp "025-3.gat", 70, 60;
+    set $@battlecave7, 0;
+    set $@cave7fighter$, "";
+    set $@cave7fighterdeaths, 0;
+    set $@cave7start, 0;
+    set $@timercontrol7, 1;
     end;
 }
 
 // ---------------------------    Cave 8    -------------------------------
 
-025-4.gat,105,210,0	script	#StartCaveFight8	111,{
+025-4.gat,105,210,0	script	#StartCaveFight8	324,{
     if (Rossy_Quest < 15) goto L_Cheat;
     if ($@battlecave8 == 1) goto L_Start;
     end;
@@ -570,7 +699,14 @@ L_Cheat:
     end;
 
 L_Start:
-    message strcharinfo(0), "You opened the chest and found a tiny key. At the same time, some monsters appear from nowhere.";   
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
+  
 
 L_Summon:
     set $@cave8_loop, $@cave8_loop + 1;
@@ -589,7 +725,7 @@ L_Done:
 
     if ($@wave_cave8 == 1) message strcharinfo(0), "Oh no, more monsters?!";
     if ($@wave_cave8 == 2) message strcharinfo(0), "I can't give up now!";
-    if ($@wave_cave8 == 3) message strcharinfo(0), "As you killed all the monsters, you opened the chest. It was empty.";
+    if ($@wave_cave8 == 3) message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation, as if you were being lifted from the ground... When you open your eyes, you are outside of the cave.";
 
     if ($@wave_cave8 != $@CAVE8_WAVES) goto L_Summon;
     set cavefights, (cavefights ^ BATTLE_CAVE8);
@@ -613,6 +749,13 @@ OnMonsterDeath:
     if ($@cave8_kills >= $@CAVE8_MONSTERS_QTY[1] + $@CAVE8_MONSTERS_QTY[2] + $@CAVE8_MONSTERS_QTY[3]) goto L_Done;
     end;
 
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
+
 onInit:
 // Here you can define the specifics of each battle cave.
 // Monsters IDs to be spawned.
@@ -627,19 +770,24 @@ onInit:
 
 // ---------------------  Cave 8 Checker  ----------------------------
 
-025-4.gat,105,216,0	script	#CheckCaveFight8	127,1,1,{
-    if (cavefight & BATTLE_CAVE8) goto L_Done;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+025-4.gat,105,216,0	script	#CheckCaveFight8	45,1,1,{
+    if ($@wave_cave8 != 0) message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    if ($@wave_cave8 == 0) goto L_Done;
     end;
 
 L_Done:
     warp "025-3.gat", 138, 95;
+    set $@battlecave8, 0;
+    set $@cave8fighter$, "";
+    set $@cave8fighterdeaths, 0;
+    set $@cave8start, 0;
+    set $@timercontrol8, 1;
     end;
 }
 
 // ---------------------------    Cave 9    -------------------------------
 
-025-4.gat,157,220,0	script	#StartCaveFight9	111,{
+025-4.gat,157,220,0	script	#StartCaveFight9	324,{
     if (Rossy_Quest < 15) goto L_Cheat;
     if ($@battlecave9 == 1) goto L_Start;
     end;
@@ -650,7 +798,13 @@ L_Cheat:
     end;
 
 L_Start:
-    message strcharinfo(0), "You opened the chest and found a tiny key. At the same time, some monsters appear from nowhere.";   
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
 
 L_Summon:
     set $@cave9_loop, $@cave9_loop + 1;
@@ -669,7 +823,7 @@ L_Done:
 
     if ($@wave_cave9 == 1) message strcharinfo(0), "Oh no, more monsters?!";
     if ($@wave_cave9 == 2) message strcharinfo(0), "I can't give up now!";
-    if ($@wave_cave9 == 3) message strcharinfo(0), "As you killed all the monsters, you opened the chest. You found a strange key into the chest.";
+    if ($@wave_cave9 == 3) message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation, as if you were being lifted from the ground... When you open your eyes, you are outside of the cave.";
 
     if ($@wave_cave9 != $@CAVE9_WAVES) goto L_Summon;
     set cavefights, (cavefights ^ BATTLE_CAVE9);
@@ -693,6 +847,13 @@ OnMonsterDeath:
     if ($@cave9_kills >= $@CAVE9_MONSTERS_QTY[1] + $@CAVE9_MONSTERS_QTY[2] + $@CAVE9_MONSTERS_QTY[3]) goto L_Done;
     end;
 
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
+
 onInit:
 // Here you can define the specifics of each battle cave.
 // Monsters IDs to be spawned.
@@ -707,27 +868,37 @@ onInit:
 
 // ---------------------  Cave 9 Checker  ----------------------------
 
-025-4.gat,157,226,0	script	#CheckCaveFight9	127,1,1,{
-    if (cavefight & BATTLE_CAVE9) goto L_Done;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+025-4.gat,157,226,0	script	#CheckCaveFight9	45,1,1,{
+    if ($@wave_cave9 != 0) message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    if ($@wave_cave9 == 0) goto L_Done;
     end;
 
 L_Done:
     warp "025-3.gat", 138, 158;
+    set $@battlecave9, 0;
+    set $@cave9fighter$, "";
+    set $@cave9fighterdeaths, 0;
+    set $@cave9start, 0;
+    set $@timercontrol9, 1;
     end;
 }
 
 // ---------------------  Boss Cave  ----------------------------
 
-025-4.gat,157,42,0	script	#StartBossCaveFight	111,{
+025-4.gat,157,42,0	script	#StartBossCaveFight	324,{
     if (Rossy_Quest == 16) goto L_Found;
-    if ($@battlebosscave == 1 && cavefights & BATTLE_CAVE1 && cavefights & BATTLE_CAVE2 && cavefights & BATTLE_CAVE3 && cavefights & BATTLE_CAVE4 && cavefights & BATTLE_CAVE5 && cavefights & BATTLE_CAVE6 && cavefights & BATTLE_CAVE7 && cavefights & BATTLE_CAVE8 && cavefights & BATTLE_CAVE9 && Rossy_Quest == 15) goto L_Found;
+    if ($@battlebosscave == 1 && cavefights & BATTLE_CAVE1 && cavefights & BATTLE_CAVE2 && cavefights & BATTLE_CAVE3 && cavefights & BATTLE_CAVE4 && cavefights & BATTLE_CAVE5 && cavefights & BATTLE_CAVE6 && cavefights & BATTLE_CAVE7 && cavefights & BATTLE_CAVE8 && cavefights & BATTLE_CAVE9 && Rossy_Quest == 15) goto L_Start;
     message strcharinfo(0), "You shouldn't be here, you cheater.";
     percentheal -100, 0;
     end;
 
-L_Found:
-    message strcharinfo(0), "You found a golden key inside the chest.";
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", -,
+        "I am not prepared yet!", L_Close;
+    if ((countitem("Root")<1)) goto L_no_root;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";    
 
 L_Summon:
     set $@cave10_loop, $@cave10_loop + 1;
@@ -739,7 +910,6 @@ L_Summon:
 
 L_SummonBoss:
     attachrid(getcharid(3,$@cave10fighter$));
-    message strcharinfo(0), "WHaaat? What is this?!";
     areamonster "025-4.gat",142, 24, 172, 48,"",$@BOSS,1,"#StartBossCaveFight::OnBossDeath";
     stopnpctimer;
     setnpctimer 0;    
@@ -755,7 +925,7 @@ L_Done:
     if ($@wave_cave10 == 1) message strcharinfo(0), "I can't give up now!";
     if ($@wave_cave10 == 2) message strcharinfo(0), "I feel I'm getting close to the end...";
     if ($@wave_cave10 == 3) message strcharinfo(0), "What? This is harder than I imagined!";
-    if ($@wave_cave10 == 4) message strcharinfo(0), "Finally! It seems I have defeated all of them! Wait... what is that?!";
+    if ($@wave_cave10 == 4) message strcharinfo(0), "Finally! It seems I have defeated all of them!";
 
     if ($@wave_cave10 != $@CAVE10_WAVES) goto L_Summon;
     set $@wave_cave10, 5;
@@ -777,7 +947,7 @@ L_Cleaning:
 OnTimer4000:
     attachrid(getcharid(3,$@cave10fighter$));
     set @boss, @boss + 1;
-    if (@boss == 1) message strcharinfo(0), "Due to the number of monsters in this cave, you feel you have more time to kill them all before other monsters come.";
+    if (@boss == 1) message strcharinfo(0), "You feel something strange... Looks like something terrible is about to show up in this cave.";
     if (@boss == 2) goto L_SummonBoss;
     setnpctimer 0;
     end;
@@ -794,9 +964,16 @@ OnBossDeath:
     set $@cave10start, 0;
     set $@cave10fighter$, "";
     set $@cave10fighterdeaths$, 0;
-    message strcharinfo(0), "What a harsh battle! I should have peace to use that golden key now.";
+    message strcharinfo(0), "What a harsh battle! I should save Julia now.";
     set Rossy_Quest, 16;
     end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any root in my inventory!";
+    close;
 
 onInit:
 // Here you can define the specifics of each battle cave.
@@ -814,10 +991,10 @@ onInit:
 
 // ---------------------  Boss Cave Checker  ----------------------------
 
-025-4.gat,157,48,0	script	#CheckCaveFightBoss	127,1,1,{
+025-4.gat,157,48,0	script	#CheckCaveFightBoss	45,1,1,{
     if (Rossy_Quest >= 17) goto L_Done;
-    if (Rossy_Quest == 17) goto L_Julia;
-    message strcharinfo(0), "Evil forces make you stop, you need to defeat them first before getting out.";
+    if (Rossy_Quest == 16) goto L_Julia;
+    if (Rossy_Quest < 16) goto L_Out;
     end;
 
 L_Julia:
@@ -827,17 +1004,22 @@ L_Julia:
 L_Done:
     warp "025-3.gat", 77, 168;
     end;
+
+L_Out:
+    set $@battlebosscave, 0;
+    set $@cave10fighter$, "";
+    set $@cave10fighterdeaths, 0;
+    set $@cave10start, 0;
+    set $@timercontrol10, 1;
+    end;
 }
 
 // ---------------------  Julia Cave Checker Outside  ----------------------------
 
-025-4.gat,157,24,0	script	#CheckJuliaCaveOutside	127,1,1,{
-    if ($@wave_cave10 != 0) goto L_Focus;
-    message strcharinfo(0), "As you try to walk through, you bump into an invisible door. You might need a key to open it.";
-    end;
-
-L_Focus:
-    message strcharinfo(0), "I can't use the key while there are monsters around... I should defeat them first.";
+025-4.gat,157,24,0	script	#CheckJuliaCaveOutside	45,1,1,{
+    if (Rossy_Quest > 15) goto L_Done;
+    message strcharinfo(0), "As you try to walk through, you bump into a strong magical barrier.";
+    percentheal 10, 0;
     end;
 
 L_Done:
@@ -847,7 +1029,7 @@ L_Done:
 
 // ---------------------  Julia Cave Checker Inside  ----------------------------
 
-025-4.gat,93,35,0	script	#CheckJuliaCaveInside	127,1,1,{
+025-4.gat,93,35,0	script	#CheckJuliaCaveInside	45,1,1,{
     if (Rossy_Quest >= 17) goto L_Done;
     if (Rossy_Quest == 16) goto L_Save;
     if (Rossy_Quest <= 15) goto L_Cheat;
