@@ -19,7 +19,7 @@ rm conf/eathena-monitor.conf
 
 mv conf/login_local.conf login/conf/
 mv conf/ladmin_local.conf login/conf/
-mv conf/gm_account.txt login/conf/
+mv conf/gm_account.txt login/save/
 
 mv conf/char_local.conf world/conf/
 
