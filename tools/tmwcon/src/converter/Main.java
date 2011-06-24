@@ -48,6 +48,7 @@ public class Main {
 
     public static PrintWriter getWriter(File f) {
         try {
+            f.getParentFile().mkdir();
             f.createNewFile();
             return new PrintWriter(f);
         } catch (Exception e) {
