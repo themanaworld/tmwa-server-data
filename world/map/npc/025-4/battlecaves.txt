@@ -955,7 +955,21 @@ L_Cleaning:
     killmonster "025-4.gat", "#StartBossCaveFight::OnBossDeath";
     end;
 
+L_CleaningNorid:
+    stopnpctimer;
+    setnpctimer 0;    
+    set $@wave_cave10, 0;
+    set $@cave10_kills, 0;
+    set $@cave10start, 0;
+    set $@cave10fighter$, "";
+    set $@cave10fighterdeaths$, 0;
+    set $@battlebosscave, 0;
+    killmonster "025-4.gat", "#StartBossCaveFight::OnMonsterDeath";
+    killmonster "025-4.gat", "#StartBossCaveFight::OnBossDeath";
+    end;
+
 OnTimer4000:
+    if (isloggedin(getcharid(3,$@cave10fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave10fighter$));
     set @boss, @boss + 1;
     if (@boss == 1) message strcharinfo(0), "You feel something strange... Looks like something terrible is about to show up in this cave.";
@@ -975,8 +989,10 @@ OnBossDeath:
     set $@cave10start, 0;
     set $@cave10fighter$, "";
     set $@cave10fighterdeaths$, 0;
-    message strcharinfo(0), "What a harsh battle! I should save Julia now.";
+    set $@battlebosscave, 0;
+    message strcharinfo(0), "What a harsh battle! You lose no time and run to the door before more monsters start to appear.";
     set Rossy_Quest, 16;
+    warp "025-4.gat", 93, 33;
     end;
 
 L_Close:
