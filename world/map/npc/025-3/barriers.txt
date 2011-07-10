@@ -39,10 +39,10 @@ OnTimer5000:
     if ($@battlecave1 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave1fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave1fighter$));
-    if (cavefights & BATTLE_CAVE1) goto L_Win;
     if (getareausers("025-4.gat", 26, 63, 60, 97) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave1start >= $@CAVE1_TIME) goto L_Cleaning;
     if (PC_DIE_COUNTER > $@cave1fighterdeaths) goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE1) goto L_Win;
+    if (gettimetick(2) - $@cave1start >= $@CAVE1_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -57,7 +57,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave1, 0;
     set $@cave1_kills, 0;
     set $@cave1start, 0;
@@ -67,74 +67,40 @@ L_Ranaway:
     killmonster "025-4.gat", "#StartCaveFight1::OnMonsterDeath";
     stopnpctimer;
     setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-3.gat", 78, 129;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
-    set $@wave_cave1, 0;
-    set $@cave1_kills, 0;
-    set $@cave1start, 0;
-    set $@cave1fighter$, "";
-    set $@cave1fighterdeaths$, 0;
-    set $@battlecave1, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave1fighter$));
     warp "025-3.gat", 78, 129;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave1, 0;
-    set $@cave1_kills, 0;
-    set $@cave1start, 0;
-    set $@cave1fighter$, "";
-    set $@cave1fighterdeaths$, 0;
-    set $@battlecave1, 0;
-    killmonster "025-4.gat", "#StartCaveFight1::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave1fighter$));
     warp "025-3.gat", 78, 129;
     message strcharinfo(0), "You were not strong enough to eliminate this power source.";
-    set $@wave_cave1, 0;
-    set $@cave1_kills, 0;
-    set $@cave1start, 0;
-    set $@cave1fighter$, "";
-    set $@cave1fighterdeaths$, 0;
-    set $@battlecave1, 0;
-    killmonster "025-4.gat", "#StartCaveFight1::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningNorid:
-    set $@wave_cave1, 0;
-    set $@cave1_kills, 0;
-    set $@cave1start, 0;
-    set $@cave1fighter$, "";
-    set $@cave1fighterdeaths$, 0;
-    set $@battlecave1, 0;
-    killmonster "025-4.gat", "#StartCaveFight1::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave1fighter$));
     warp "025-3.gat", 78, 129;
-    set $@wave_cave1, 0;
-    set $@cave1_kills, 0;
-    set $@cave1start, 0;
-    set $@cave1fighter$, "";
-    set $@cave1fighterdeaths$, 0;
-    set $@battlecave1, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
@@ -183,10 +149,10 @@ OnTimer5000:
     if ($@battlecave2 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave2fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave2fighter$));
-    if (cavefights & BATTLE_CAVE2) goto L_Win;
     if (getareausers("025-4.gat", 97, 62, 126, 96) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave2start >= $@CAVE2_TIME) goto L_Cleaning;
     if (PC_DIE_COUNTER > $@cave2fighterdeaths) goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE2) goto L_Win;
+    if (gettimetick(2) - $@cave2start >= $@CAVE2_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -201,7 +167,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave2, 0;
     set $@cave2_kills, 0;
     set $@cave2start, 0;
@@ -211,74 +177,40 @@ L_Ranaway:
     killmonster "025-4.gat", "#StartCaveFight2::OnMonsterDeath";
     stopnpctimer;
     setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-3.gat", 53, 109;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
-    set $@wave_cave1, 0;
-    set $@cave2_kills, 0;
-    set $@cave2start, 0;
-    set $@cave2fighter$, "";
-    set $@cave2fighterdeaths$, 0;
-    set $@battlecave2, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave2fighter$));
     warp "025-3.gat", 53, 109;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave2, 0;
-    set $@cave2_kills, 0;
-    set $@cave2start, 0;
-    set $@cave2fighter$, "";
-    set $@cave2fighterdeaths$, 0;
-    set $@battlecave2, 0;
-    killmonster "025-4.gat", "#StartCaveFight2::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave2fighter$));
     warp "025-3.gat", 53, 109;
     message strcharinfo(0), "You were not strong enough to eliminate this power source.";
-    set $@wave_cave2, 0;
-    set $@cave2_kills, 0;
-    set $@cave2start, 0;
-    set $@cave2fighter$, "";
-    set $@cave2fighterdeaths$, 0;
-    set $@battlecave2, 0;
-    killmonster "025-4.gat", "#StartCaveFight2::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningNorid:
-    set $@wave_cave2, 0;
-    set $@cave2_kills, 0;
-    set $@cave2start, 0;
-    set $@cave2fighter$, "";
-    set $@cave2fighterdeaths$, 0;
-    set $@battlecave2, 0;
-    killmonster "025-4.gat", "#StartCaveFight2::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave2fighter$));
     warp "025-3.gat", 53, 109;
-    set $@wave_cave2, 0;
-    set $@cave2_kills, 0;
-    set $@cave2start, 0;
-    set $@cave2fighter$, "";
-    set $@cave2fighterdeaths$, 0;
-    set $@battlecave2, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
@@ -326,10 +258,10 @@ OnTimer5000:
     if ($@battlecave3 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave3fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave3fighter$));
-    if (cavefights & BATTLE_CAVE3) goto L_Win;
     if (getareausers("025-4.gat", 150, 84, 177, 117) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave3start >= $@CAVE3_TIME) goto L_Cleaning;
+    if (cavefights & BATTLE_CAVE3) goto L_Win;
     if (PC_DIE_COUNTER > $@cave3fighterdeaths) goto L_CleaningDead;
+    if (gettimetick(2) - $@cave3start >= $@CAVE3_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -344,7 +276,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave3, 0;
     set $@cave3_kills, 0;
     set $@cave3start, 0;
@@ -354,74 +286,40 @@ L_Ranaway:
     killmonster "025-4.gat", "#StartCaveFight3::OnMonsterDeath";
     stopnpctimer;
     setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-3.gat", 71, 85;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
-    set $@wave_cave3, 0;
-    set $@cave3_kills, 0;
-    set $@cave3start, 0;
-    set $@cave3fighter$, "";
-    set $@cave3fighterdeaths$, 0;
-    set $@battlecave3, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave3fighter$));
     warp "025-3.gat", 71, 85;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave3, 0;
-    set $@cave3_kills, 0;
-    set $@cave3start, 0;
-    set $@cave3fighter$, "";
-    set $@cave3fighterdeaths$, 0;
-    set $@battlecave3, 0;
-    killmonster "025-4.gat", "#StartCaveFight3::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave3fighter$));
     warp "025-3.gat", 71, 85;
     message strcharinfo(0), "You were not strong enough to eliminate this power source.";
-    set $@wave_cave3, 0;
-    set $@cave3_kills, 0;
-    set $@cave3start, 0;
-    set $@cave3fighter$, "";
-    set $@cave3fighterdeaths$, 0;
-    set $@battlecave3, 0;
-    killmonster "025-4.gat", "#StartCaveFight3::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningNorid:
-    set $@wave_cave3, 0;
-    set $@cave3_kills, 0;
-    set $@cave3start, 0;
-    set $@cave3fighter$, "";
-    set $@cave3fighterdeaths$, 0;
-    set $@battlecave3, 0;
-    killmonster "025-4.gat", "#StartCaveFight3::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave3fighter$));
     warp "025-3.gat", 71, 85;
-    set $@wave_cave3, 0;
-    set $@cave3_kills, 0;
-    set $@cave3start, 0;
-    set $@cave3fighter$, "";
-    set $@cave3fighterdeaths$, 0;
-    set $@battlecave3, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
@@ -469,10 +367,10 @@ OnTimer5000:
     if ($@battlecave4 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave4fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave4fighter$));
-    if (cavefights & BATTLE_CAVE4) goto L_Win;
     if (getareausers("025-4.gat", 28, 124, 57, 156) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave4start >= $@CAVE4_TIME) goto L_Cleaning;
     if (PC_DIE_COUNTER > $@cave4fighterdeaths) goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE4) goto L_Win;
+    if (gettimetick(2) - $@cave4start >= $@CAVE4_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -487,7 +385,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave4, 0;
     set $@cave4_kills, 0;
     set $@cave4start, 0;
@@ -497,74 +395,40 @@ L_Ranaway:
     killmonster "025-4.gat", "#StartCaveFight4::OnMonsterDeath";
     stopnpctimer;
     setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-3.gat", 80, 85;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
-    set $@wave_cave4, 0;
-    set $@cave4_kills, 0;
-    set $@cave4start, 0;
-    set $@cave4fighter$, "";
-    set $@cave4fighterdeaths$, 0;
-    set $@battlecave4, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave4fighter$));
     warp "025-3.gat", 80, 85;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave4, 0;
-    set $@cave4_kills, 0;
-    set $@cave4start, 0;
-    set $@cave4fighter$, "";
-    set $@cave4fighterdeaths$, 0;
-    set $@battlecave4, 0;
-    killmonster "025-4.gat", "#StartCaveFight4::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave4fighter$));
     warp "025-3.gat", 80, 85;
     message strcharinfo(0), "You were not strong enough to eliminate this power source.";
-    set $@wave_cave4, 0;
-    set $@cave4_kills, 0;
-    set $@cave4start, 0;
-    set $@cave4fighter$, "";
-    set $@cave4fighterdeaths$, 0;
-    set $@battlecave4, 0;
-    killmonster "025-4.gat", "#StartCaveFight4::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningNorid:
-    set $@wave_cave4, 0;
-    set $@cave4_kills, 0;
-    set $@cave4start, 0;
-    set $@cave4fighter$, "";
-    set $@cave4fighterdeaths$, 0;
-    set $@battlecave4, 0;
-    killmonster "025-4.gat", "#StartCaveFight4::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave4fighter$));
     warp "025-3.gat", 80, 85;
-    set $@wave_cave4, 0;
-    set $@cave4_kills, 0;
-    set $@cave4start, 0;
-    set $@cave4fighter$, "";
-    set $@cave4fighterdeaths$, 0;
-    set $@battlecave4, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
@@ -612,10 +476,10 @@ OnTimer5000:
     if ($@battlecave5 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave5fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave5fighter$));
-    if (cavefights & BATTLE_CAVE5) goto L_Win;
     if (getareausers("025-4.gat", 91, 131, 124, 160) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave5start >= $@CAVE5_TIME) goto L_Cleaning;
     if (PC_DIE_COUNTER > $@cave5fighterdeaths) goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE5) goto L_Win;
+    if (gettimetick(2) - $@cave5start >= $@CAVE5_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -630,7 +494,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave5, 0;
     set $@cave5_kills, 0;
     set $@cave5start, 0;
@@ -640,74 +504,40 @@ L_Ranaway:
     killmonster "025-4.gat", "#StartCaveFight5::OnMonsterDeath";
     stopnpctimer;
     setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-3.gat", 71, 32;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
-    set $@wave_cave5, 0;
-    set $@cave5_kills, 0;
-    set $@cave5start, 0;
-    set $@cave5fighter$, "";
-    set $@cave5fighterdeaths$, 0;
-    set $@battlecave5, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave5fighter$));
     warp "025-3.gat", 71, 32;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave5, 0;
-    set $@cave5_kills, 0;
-    set $@cave5start, 0;
-    set $@cave5fighter$, "";
-    set $@cave5fighterdeaths$, 0;
-    set $@battlecave5, 0;
-    killmonster "025-4.gat", "#StartCaveFight5::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave5fighter$));
     warp "025-3.gat", 71, 32;
     message strcharinfo(0), "You were not strong enough to eliminate this power source.";
-    set $@wave_cave5, 0;
-    set $@cave5_kills, 0;
-    set $@cave5start, 0;
-    set $@cave5fighter$, "";
-    set $@cave5fighterdeaths$, 0;
-    set $@battlecave5, 0;
-    killmonster "025-4.gat", "#StartCaveFight5::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningNorid:
-    set $@wave_cave5, 0;
-    set $@cave5_kills, 0;
-    set $@cave5start, 0;
-    set $@cave5fighter$, "";
-    set $@cave5fighterdeaths$, 0;
-    set $@battlecave5, 0;
-    killmonster "025-4.gat", "#StartCaveFight5::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave5fighter$));
     warp "025-3.gat", 71, 32;
-    set $@wave_cave5, 0;
-    set $@cave5_kills, 0;
-    set $@cave5start, 0;
-    set $@cave5fighter$, "";
-    set $@cave5fighterdeaths$, 0;
-    set $@battlecave5, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
@@ -755,10 +585,10 @@ OnTimer5000:
     if ($@battlecave6 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave6fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave6fighter$));
-    if (cavefights & BATTLE_CAVE6) goto L_Win;
     if (getareausers("025-4.gat", 153, 143, 178, 174) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave6start >= $@CAVE6_TIME) goto L_Cleaning;
     if (PC_DIE_COUNTER > $@cave6fighterdeaths) goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE6) goto L_Win;
+    if (gettimetick(2) - $@cave6start >= $@CAVE6_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -773,7 +603,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave6, 0;
     set $@cave6_kills, 0;
     set $@cave6start, 0;
@@ -783,74 +613,40 @@ L_Ranaway:
     killmonster "025-4.gat", "#StartCaveFight6::OnMonsterDeath";
     stopnpctimer;
     setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-3.gat", 128, 37;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
-    set $@wave_cave6, 0;
-    set $@cave6_kills, 0;
-    set $@cave6start, 0;
-    set $@cave6fighter$, "";
-    set $@cave6fighterdeaths$, 0;
-    set $@battlecave6, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave6fighter$));
     warp "025-3.gat", 128, 37;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave6, 0;
-    set $@cave6_kills, 0;
-    set $@cave6start, 0;
-    set $@cave6fighter$, "";
-    set $@cave6fighterdeaths$, 0;
-    set $@battlecave6, 0;
-    killmonster "025-4.gat", "#StartCaveFight6::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave6fighter$));
     warp "025-3.gat", 128, 37;
     message strcharinfo(0), "You were not strong enough to eliminate this power source.";
-    set $@wave_cave6, 0;
-    set $@cave6_kills, 0;
-    set $@cave6start, 0;
-    set $@cave6fighter$, "";
-    set $@cave6fighterdeaths$, 0;
-    set $@battlecave6, 0;
-    killmonster "025-4.gat", "#StartCaveFight6::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningNorid:
-    set $@wave_cave6, 0;
-    set $@cave6_kills, 0;
-    set $@cave6start, 0;
-    set $@cave6fighter$, "";
-    set $@cave6fighterdeaths$, 0;
-    set $@battlecave6, 0;
-    killmonster "025-4.gat", "#StartCaveFight6::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave6fighter$));
     warp "025-3.gat", 128, 37;
-    set $@wave_cave6, 0;
-    set $@cave6_kills, 0;
-    set $@cave6start, 0;
-    set $@cave6fighter$, "";
-    set $@cave6fighterdeaths$, 0;
-    set $@battlecave6, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
@@ -898,10 +694,10 @@ OnTimer5000:
     if ($@battlecave7 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave7fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave7fighter$));
-    if (cavefights & BATTLE_CAVE7) goto L_Win;
     if (getareausers("025-4.gat", 27, 185, 61, 219) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave7start >= $@CAVE7_TIME) goto L_Cleaning;
     if (PC_DIE_COUNTER > $@cave7fighterdeaths) goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE7) goto L_Win;
+    if (gettimetick(2) - $@cave7start >= $@CAVE7_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -916,7 +712,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave7, 0;
     set $@cave7_kills, 0;
     set $@cave7start, 0;
@@ -925,75 +721,41 @@ L_Ranaway:
     set $@battlecave7, 0;
     killmonster "025-4.gat", "#StartCaveFight7::OnMonsterDeath";
     stopnpctimer;
-    setnpctimer 0;    
+    setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-3.gat", 70, 59;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
-    set $@wave_cave7, 0;
-    set $@cave7_kills, 0;
-    set $@cave7start, 0;
-    set $@cave7fighter$, "";
-    set $@cave7fighterdeaths$, 0;
-    set $@battlecave7, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave7fighter$));
     warp "025-3.gat", 70, 59;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave7, 0;
-    set $@cave7_kills, 0;
-    set $@cave7start, 0;
-    set $@cave7fighter$, "";
-    set $@cave7fighterdeaths$, 0;
-    set $@battlecave7, 0;
-    killmonster "025-4.gat", "#StartCaveFight7::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;    
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave7fighter$));
     warp "025-3.gat", 70, 59;
     message strcharinfo(0), "You were not strong enough to eliminate this power source.";
-    set $@wave_cave7, 0;
-    set $@cave7_kills, 0;
-    set $@cave7start, 0;
-    set $@cave7fighter$, "";
-    set $@cave7fighterdeaths$, 0;
-    set $@battlecave7, 0;
-    killmonster "025-4.gat", "#StartCaveFight7::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;    
     end;
 
 L_CleaningNorid:
-    set $@wave_cave7, 0;
-    set $@cave7_kills, 0;
-    set $@cave7start, 0;
-    set $@cave7fighter$, "";
-    set $@cave7fighterdeaths$, 0;
-    set $@battlecave7, 0;
-    killmonster "025-4.gat", "#StartCaveFight7::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;    
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave7fighter$));
     warp "025-3.gat", 70, 59;
-    set $@wave_cave7, 0;
-    set $@cave7_kills, 0;
-    set $@cave7start, 0;
-    set $@cave7fighter$, "";
-    set $@cave7fighterdeaths$, 0;
-    set $@battlecave7, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
@@ -1041,10 +803,10 @@ OnTimer5000:
     if ($@battlecave8 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave8fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave8fighter$));
-    if (cavefights & BATTLE_CAVE8) goto L_Win;
     if (getareausers("025-4.gat", 90, 193, 119, 216) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave8start >= $@CAVE8_TIME) goto L_Cleaning;
     if (PC_DIE_COUNTER > $@cave8fighterdeaths) goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE8) goto L_Win;
+    if (gettimetick(2) - $@cave8start >= $@CAVE8_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -1059,7 +821,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave8, 0;
     set $@cave8_kills, 0;
     set $@cave8start, 0;
@@ -1069,74 +831,40 @@ L_Ranaway:
     killmonster "025-4.gat", "#StartCaveFight8::OnMonsterDeath";
     stopnpctimer;
     setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-3.gat", 138, 94;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
-    set $@wave_cave8, 0;
-    set $@cave8_kills, 0;
-    set $@cave8start, 0;
-    set $@cave8fighter$, "";
-    set $@cave8fighterdeaths$, 0;
-    set $@battlecave8, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave8fighter$));
     warp "025-3.gat", 138, 94;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave8, 0;
-    set $@cave8_kills, 0;
-    set $@cave8start, 0;
-    set $@cave8fighter$, "";
-    set $@cave8fighterdeaths$, 0;
-    set $@battlecave8, 0;
-    killmonster "025-4.gat", "#StartCaveFight8::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave8fighter$));
     warp "025-3.gat", 138, 94;
     message strcharinfo(0), "You were not strong enough to eliminate this power source.";
-    set $@wave_cave8, 0;
-    set $@cave8_kills, 0;
-    set $@cave8start, 0;
-    set $@cave8fighter$, "";
-    set $@cave8fighterdeaths$, 0;
-    set $@battlecave8, 0;
-    killmonster "025-4.gat", "#StartCaveFight8::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_CleaningNorid:
-    set $@wave_cave8, 0;
-    set $@cave8_kills, 0;
-    set $@cave8start, 0;
-    set $@cave8fighter$, "";
-    set $@cave8fighterdeaths$, 0;
-    set $@battlecave8, 0;
-    killmonster "025-4.gat", "#StartCaveFight8::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;    
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave8fighter$));
     warp "025-3.gat", 138, 94;
-    set $@wave_cave8, 0;
-    set $@cave8_kills, 0;
-    set $@cave8start, 0;
-    set $@cave8fighter$, "";
-    set $@cave8fighterdeaths$, 0;
-    set $@battlecave8, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
@@ -1184,10 +912,10 @@ OnTimer5000:
     if ($@battlecave9 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave9fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave9fighter$));
-    if (cavefights & BATTLE_CAVE9) goto L_Win;
     if (getareausers("025-4.gat", 144, 192, 173, 226) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave9start >= $@CAVE9_TIME) goto L_Cleaning;
     if (PC_DIE_COUNTER > $@cave9fighterdeaths) goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE9) goto L_Win;
+    if (gettimetick(2) - $@cave9start >= $@CAVE9_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -1202,7 +930,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave9, 0;
     set $@cave9_kills, 0;
     set $@cave9start, 0;
@@ -1211,75 +939,41 @@ L_Ranaway:
     set $@battlecave9, 0;
     killmonster "025-4.gat", "#StartCaveFight9::OnMonsterDeath";
     stopnpctimer;
-    setnpctimer 0;    
+    setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-3.gat", 138, 158;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
-    set $@wave_cave9, 0;
-    set $@cave9_kills, 0;
-    set $@cave9start, 0;
-    set $@cave9fighter$, "";
-    set $@cave9fighterdeaths$, 0;
-    set $@battlecave9, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave9fighter$));
     warp "025-3.gat", 138, 158;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave9, 0;
-    set $@cave9_kills, 0;
-    set $@cave9start, 0;
-    set $@cave9fighter$, "";
-    set $@cave9fighterdeaths$, 0;
-    set $@battlecave9, 0;
-    killmonster "025-4.gat", "#StartCaveFight9::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;    
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave9fighter$));
     warp "025-3.gat", 138, 158;
     message strcharinfo(0), "You were not strong enough to eliminate this power source.";
-    set $@wave_cave9, 0;
-    set $@cave9_kills, 0;
-    set $@cave9start, 0;
-    set $@cave9fighter$, "";
-    set $@cave9fighterdeaths$, 0;
-    set $@battlecave9, 0;
-    killmonster "025-4.gat", "#StartCaveFight9::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;    
     end;
 
 L_CleaningNorid:
-    set $@wave_cave9, 0;
-    set $@cave9_kills, 0;
-    set $@cave9start, 0;
-    set $@cave9fighter$, "";
-    set $@cave9fighterdeaths$, 0;
-    set $@battlecave9, 0;
-    killmonster "025-4.gat", "#StartCaveFight9::OnMonsterDeath";
-    stopnpctimer;
-    setnpctimer 0;    
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave9fighter$));
     warp "025-3.gat", 138, 158;
-    set $@wave_cave9, 0;
-    set $@cave9_kills, 0;
-    set $@cave9start, 0;
-    set $@cave9fighter$, "";
-    set $@cave9fighterdeaths$, 0;
-    set $@battlecave9, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
@@ -1337,10 +1031,10 @@ OnTimer5000:
     if ($@battlecave10 == 0) goto L_AlreadyClean;
     if (isloggedin(getcharid(3,$@cave10fighter$))==0) goto L_CleaningNorid;
     attachrid(getcharid(3,$@cave10fighter$));
-    if (Rossy_Quest == 16) goto L_Win;
     if (getareausers("025-4.gat", 142, 24, 172, 48) < 1) goto L_Ranaway;
-    if (gettimetick(2) - $@cave10start >= $@CAVE10_TIME) goto L_Cleaning;
     if (PC_DIE_COUNTER > $@cave10fighterdeaths) goto L_CleaningDead;
+    if (Rossy_Quest == 16) goto L_Win;
+    if (gettimetick(2) - $@cave10start >= $@CAVE10_TIME) goto L_Cleaning;
     setnpctimer 0;
     end;
 
@@ -1355,7 +1049,7 @@ L_Win:
     setnpctimer 0;
     end;
 
-L_Ranaway:
+S_PreCleaning:
     set $@wave_cave10, 0;
     set $@cave10_kills, 0;
     set $@cave10start, 0;
@@ -1365,92 +1059,48 @@ L_Ranaway:
     killmonster "025-4.gat", "#StartBossCaveFight::OnMonsterDeath";
     killmonster "025-4.gat", "#StartBossCaveFight::OnBossDeath";
     stopnpctimer;
-    setnpctimer 0;    
+    setnpctimer 0;
+    return;
+
+L_Ranaway:
+    callsub S_PreCleaning;
     end;
 
 L_BadAir:
+    callsub S_PreCleaning;
     warp "025-4.gat", 93, 33;
     message strcharinfo(0), "You can't stand the foul air inside the cave and run as fast as you can to save Julia!";
-    set $@wave_cave10, 0;
-    set $@cave10_kills, 0;
-    set $@cave10start, 0;
-    set $@cave10fighter$, "";
-    set $@cave10fighterdeaths$, 0;
-    set $@battlecave10, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_Cleaning:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave10fighter$));
     warp "025-3.gat", 77, 168;
     message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
-    set $@wave_cave10, 0;
-    set $@cave10_kills, 0;
-    set $@cave10start, 0;
-    set $@cave10fighter$, "";
-    set $@cave10fighterdeaths$, 0;
-    set $@battlecave10, 0;
-    killmonster "025-4.gat", "#StartBossCaveFight::OnMonsterDeath";
-    killmonster "025-4.gat", "#StartBossCaveFight::OnBossDeath";
-    stopnpctimer;
-    setnpctimer 0;    
     end;
 
 L_CleaningDead:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave10fighter$));
     warp "025-3.gat", 77, 168;
     if ($@wave_cave10 < 5) message strcharinfo(0), "You were not strong enough to eliminate this power source.";
     if ($@wave_cave10 == 5) message strcharinfo(0), "This horrible monster is probably too powerful for you right now.";
-    set $@wave_cave10, 0;
-    set $@cave10_kills, 0;
-    set $@cave10start, 0;
-    set $@cave10fighter$, "";
-    set $@cave10fighterdeaths$, 0;
-    set $@battlecave10, 0;
-    killmonster "025-4.gat", "#StartBossCaveFight::OnMonsterDeath";
-    killmonster "025-4.gat", "#StartBossCaveFight::OnBossDeath";
-    stopnpctimer;
-    setnpctimer 0;    
     end;
 
 L_CleaningNorid:
-    set $@wave_cave10, 0;
-    set $@cave10_kills, 0;
-    set $@cave10start, 0;
-    set $@cave10fighter$, "";
-    set $@cave10fighterdeaths$, 0;
-    set $@battlecave10, 0;
-    killmonster "025-4.gat", "#StartBossCaveFight::OnMonsterDeath";
-    killmonster "025-4.gat", "#StartBossCaveFight::OnBossDeath";
-    stopnpctimer;
-    setnpctimer 0;    
+    callsub S_PreCleaning;
     end;
 
 OnGetout:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave10fighter$));
     warp "025-3.gat", 77, 168;
-    set $@wave_cave10, 0;
-    set $@cave10_kills, 0;
-    set $@cave10start, 0;
-    set $@cave10fighter$, "";
-    set $@cave10fighterdeaths$, 0;
-    set $@battlecave10, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 OnWin:
+    callsub S_PreCleaning;
     attachrid(getcharid(3,$@cave10fighter$));
     warp "025-4.gat", 93, 33;
-    set $@wave_cave10, 0;
-    set $@cave10_kills, 0;
-    set $@cave10start, 0;
-    set $@cave10fighter$, "";
-    set $@cave10fighterdeaths$, 0;
-    set $@battlecave10, 0;
-    stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_AlreadyClean:
