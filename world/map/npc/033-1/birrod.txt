@@ -1,0 +1,109 @@
+033-1.gat,72,27,0	script	Birrod	217, {
+
+	set @Q_Barbarians_MASK, NIBBLE_0_MASK;
+	set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
+
+	set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
+
+//TODO: think about amount
+	set @candy, 25;
+	set @chocolate, 20;
+	set @candycane, 15;
+	set @sweet_exp, 10000;
+
+	if (@state >= 6) goto L_Impressed;
+	if (@state == 5) goto L_Questions;
+	if (@state == 4) goto L_Warrior;
+	if (@state == 3) goto L_Sweets;
+	if (@state == 2) goto L_Kimarr;
+	if (@state == 1) goto L_Fluffy;
+
+	mes "[Barbarian]";
+	mes "\"Welcome. My name is Birrod, warrior of the Mangarr.\"";
+	next;
+	mes "\"We usually live high up in the snowy mountains, but we need to solve a problem, so we came down here.\"";
+	next;
+	mes "\"But this shouldn't concern you.\"";
+	close;
+
+L_Fluffy:
+	mes "[Birrod]";
+	mes "\"Kimarr asked you to perform the fluffy hunting? I'm curious how you're going to do it.\"";
+	mes "He grins.";
+	close;
+
+L_Kimarr:
+	mes "[Birrod]";
+	mes "\"Great! Very well done! Welcome to our tribe.\"";
+	next;
+	mes "\"But I think, Kimarr has something for you.\"";
+	close;
+
+L_Sweets:
+	mes "Birrod speaks with a lowered voice.";
+	mes "[Birrod]";
+	mes "\"" + strcharinfo(0) + ", can I ask you for a favor?\"";
+	next;
+	mes "\"I noticed those slime things with the funny hats. And they have so tasty stuff with them!\"";
+	next;
+	mes "He blushes.";
+	mes "[Birrod]";
+	mes "\"A warrior shouldn't get excited about sweets, so ahm, it would be great if you don't tell Yerrnk and Kimarr about it.\"";
+	next;
+	mes "\"Do you have " + @candy + " Candys, " + @chocolate + " Chocolate Bars and " + @candycane + " Candy Canes for me?\"";
+	menu
+		"Sure.",-,
+		"I'll see what I can do.",L_Close,
+		"I'm a great warrior, I don't have sweets with me!",L_Close;
+
+	if ((countitem("Candy") < @candy) || (countitem("ChocolateBar") < @chocolate) || (countitem("CandyCane") < @candycane)) goto L_No_Items;
+	delitem "Candy", @candy;
+	delitem "ChocolateBar", @chocolate;
+	delitem "CandyCane", @candycane;
+	getexp @sweet_exp, 0;
+	set @state, 4;
+	callsub S_Update_Mask;
+	close;
+
+L_Warrior:
+//TODO: player can show his fighting abilities by bringing some drop of wolve monsters
+// wolve monsters are more dangerous and harder to hunt than fluffies -> harder task
+// reason to hunt them: there unusual aggressive and are a danger for the people living in that area
+// also use of the items the drop (e.g. fur -> clothes)
+	mes "TODO: add story about hunting the wolf monsters here.";
+	menu
+		"Debug: succes",-,
+		"Debug: no succes",L_Close;
+	set @state, 5;
+	callsub S_Update_Mask;
+	close;
+
+L_Questions:
+//TODO: minigame idea: barbarian asks some questions with three possible answers, player needs to always choose the right answer
+//question are about how the player would act in certain situations and about his attitude
+// give raging skill if successfull
+	mes "TODO: minigame and skill";
+	menu
+		"Debug: succes",-,
+		"Debug: no succes",L_Close;
+	set @state, 6;
+	callsub S_Update_Mask;
+	close;
+
+L_Impressed:
+	mes "\"I'm very proud of you being a member of the tribe.\"";
+	close;
+
+L_No_Items:
+	mes "\"" + strcharinfo(0) + ", remember that a member of our tribe is candid and honest.\"";
+	close;
+
+L_Close:
+	close;
+
+S_Update_Mask:
+        set QUEST_Barbarians,
+        	(QUEST_Barbarians & ~(@Q_Barbarians_MASK))
+                | (@state << @Q_Barbarians_SHIFT);
+        return;
+}
