@@ -1,217 +1,300 @@
-033-1.gat,74,32,0	script	Kimarr	218, {
+033-1.gat,74,32,0	script	Kimarr	218,{
 
-	set @Q_Barbarians_MASK, NIBBLE_0_MASK;
-	set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
+    set @Q_Barbarians_MASK, NIBBLE_0_MASK;
+    set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
 
-	set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
+    set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
 
-	if (@state >= 3) goto L_Again;
-	if (@state == 2) goto L_Reward;
-	if (@state == 1) goto L_Ask;
+    if (@state >= 3) goto L_Again;
+    if (@state == 2) goto L_Reward;
+    if (@state == 1) goto L_Ask;
 
-	mes "[Barbarian]";
-	mes "\"Greetings, little person.\"";
-	next;
-	mes "\"I am Kimarr, hunter and warrior of the Mangarr.\"";
-	next;
-	mes "\"You are very small, better be careful in this snowy mountains. It is cold and dangerous monsters are here.\"";
-	menu
-		"Hello, my name is " + strcharinfo(0) + " and I'm not small. I'm a great warrior!",-,
-		"I'm " + strcharinfo(0) + ", don't underestimate me. I'm an experienced adventurer!" ,-,
-		"I'm the legendary " + strcharinfo(0) + ", I've fought countless battles.",-;
+    mes "[Barbarian]";
+    mes "\"Greetings, little person.\"";
+    next;
+    mes "\"I am Kimarr, hunter and warrior of the Mangarr.\"";
+    next;
+    mes "\"You are very small, better be careful in this snowy mountains. It is cold and dangerous monsters are here.\"";
+    menu
+        "Hello, my name is " + strcharinfo(0) + " and I'm not small. I'm a great warrior!",-,
+        "I'm " + strcharinfo(0) + ", don't underestimate me. I'm an experienced adventurer!" ,-,
+        "I'm the legendary " + strcharinfo(0) + ", I've fought countless battles.",-;
 
-	mes "Kimarr seems to be amused.";
-	mes "[Kimarr]";
-	mes "\"Really? Do you want to prove it?\"";
-	menu
-		"Sure! What shall I do?", L_Explain,
-		"No, I don't need to prove anything.",L_Close;
+    mes "Kimarr seems to be amused.";
+    mes "[Kimarr]";
+    mes "\"Really? Do you want to prove it?\"";
+    menu
+        "Sure! What shall I do?", L_Explain,
+        "No, I don't need to prove anything.",L_Close;
 
 L_Explain:
-	mes "[Kimarr]";
-	mes "\"Every young member of our tribe proves his or her worth by hunting monsters.\"";
-	next;
-	mes "\"The first monsters to hunt are fluffies. Fluffies give a good meal for a young person and the fur can be used to make clothes and blankets.\"";
-	next;
-	callsub S_Explain_Game;
+    mes "[Kimarr]";
+    mes "\"Every young member of our tribe proves his or her worth by hunting monsters.\"";
+    next;
+    mes "\"The first monsters to hunt are fluffies. Fluffies give a good meal for a young person and the fur can be used to make clothes and blankets.\"";
+    next;
+    callsub S_Explain_Game;
 
-	set @state, 1;
-	callsub S_Update_Mask;
+    set @state, 1;
+    callsub S_Update_Mask;
 L_Ask:
-	mes "[Kimarr]";
-	mes "\"So, are you going to try?\"";
-	menu
-		"Yeah, let's start",L_Game,
-		"Could you explain again?",-,
-		"Maybe later.",L_Close;
+    mes "[Kimarr]";
+    mes "\"So, are you going to try?\"";
+    menu
+        "Yeah, let's start",L_Game,
+        "Could you explain again?",-,
+        "Maybe later.",L_Close;
 
-	callsub S_Explain_Game;
-	goto L_Ask;
+    callsub S_Explain_Game;
+    goto L_Ask;
 
 S_Explain_Game:
-	mes "[Kimarr]";
-	mes "\"In that cave there are living fluffies. They like to eat apples.\"";
-	next;
-	mes "\"I also saw one of them getting excited about one of that sweet things you call 'cake'.\"";
-	next;
-	mes "\"You should be careful, other monsters living here might like the food as well\"";
-	next;
-	mes "\"Go to the cave entrance and throw food on the floor to make them come out.\"";
-	next;
-	mes "\"Then hunt as many fluffies as you can until I tell you to stop.\"";
-	next;
-	mes "\"Drop more food when no fluffies are left.\"";
-	return;
+    mes "[Kimarr]";
+    mes "\"In that cave there are living fluffies. They like to eat apples.\"";
+    next;
+    mes "\"I also saw one of them getting excited about one of that sweet things you call 'cake'.\"";
+    next;
+    mes "\"You should be careful, other monsters living here might like the food as well\"";
+    next;
+    mes "\"Go to the cave entrance and throw food on the floor to make them come out.\"";
+    next;
+    mes "\"Then hunt as many fluffies as you can until I tell you to stop.\"";
+    next;
+    mes "\"Drop more food when no fluffies are left.\"";
+    return;
 
 L_Reward:
-	mes "[Kimarr]";
-	mes "\"That was very impressing - now you can call yourself hunter " + strcharinfo(0) +".\"";
-	next;
-	getinventorylist;
-	if (@inventorylist_count == 100) goto L_Full_Inv;
-	mes "\"Take this as a symbol of your strength. You're a member of our tribe now.\"";
-	getitem "YetiSkinShirt", 1;
-	set @state, 3;
-	callsub S_Update_Mask;
-	close;
+    message strcharinfo(0), "Kimarr: That was very impressive - now you can call yourself a hunter " + strcharinfo(0) + ".";
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Full_Inv;
+    message strcharinfo(0), "Kimarr: Take this as a symbol of your strength. You're a member of our tribe now.";
+    getitem "YetiSkinShirt", 1;
+    set @state, 3;
+    callsub S_Update_Mask;
+    callsub S_Clean;
+    end;
 
 L_Again:
-	mes "[Kimarr]";
-	mes "\"Does hunter " + strcharinfo(0) + " want to hunt some fluffies again?\"";
-	menu
-		"Yeah!",L_Game,
-		"Can you tell me who were the most successfull fluffy hunters?",-,
-		"Not now.",L_Close;
-	//TODO: give list of best hunters
-	close;
+    mes "[Kimarr]";
+    mes "\"Does the hunter " + strcharinfo(0) + " want to hunt some fluffies again?\"";
+    menu
+        "Yeah!",L_Game,
+        "Can you tell me who were the most successfull fluffy hunters?",-,
+        "Not now.",L_Close;
+    set @loop, 0;
+    close2;
+    goto L_ShowRecord;
 
 L_Full_Inv:
-	mes "[Kimarr]";
-	mes "\"You are carrying a lot of things. I will give something to you when you have room for it.\"";
-	close;
+    message strcharinfo(0), "Kimarr: That was very impressing - now you can call yourself hunter " + strcharinfo(0) +".\"";
+    close;
 
 L_Close:
-	close;
+    close;
 
 L_Game:
-//REMOVE
-goto L_Reward;
-	if ($@FLUFFY_HUNTING) goto L_Someone_Else;
-	set $@FLUFFY_HUNTING, 1;
-	set $@FLUFFY_COUNTER, 0;
-	set $@FLUFFY_TIME, 0;
-	set $@FLUFFY_LVL, baselevel;
+    if ($@FLUFFY_HUNTING) goto L_Someone_Else;
+    set $@FLUFFY_HUNTING, 1;
+    set $@FLUFFY_COUNTER, 0;
+    set $@FLUFFY_DEATHS, PC_DIE_COUNTER;
+    set $@FLUFFY_FIGHTER$, strcharinfo(0);
+    set $@FLUFFY_TIME, 0;
+    set $@FLUFFY_LVL, baselevel;
 //TODO: set minimum  number of killed fluffies (maybe based on level?)
-	set $@FLUFFY_MIN, 10;
-	warp "033-1.gat", 79, 34;
-	startnpctimer;
-	goto L_Close;
+    set $@FLUFFY_MIN, 1;
+    warp "033-1.gat", 79, 34;
+    set @place, 0;
+    set @position, 0;
+    set @currentposition, 0;
+    startnpctimer;
+    goto L_Close;
 
 L_Someone_Else:
-	mes "[Kimarr]";
-	mes "\"At the moment someone else is hunting. Let's wait until that hunting has ended.\"";
-	close;
+    mes "[Kimarr]";
+    mes "\"At the moment someone else is hunting. Let's wait until that hunting has ended.\"";
+    close;
 
 OnTimer1000:
-	setnpctimer 0;
-	if ($@FLUFFY_HUNTING != 0) goto L_Hunting;
+    if (isloggedin(getcharid(3,$@FLUFFY_FIGHTER$)) == 0) goto L_GotOut;
+    attachrid(getcharid(3,$@FLUFFY_FIGHTER$));
+    if (getareausers("033-1.gat", 79, 29, 88, 42) == 0) goto L_GotOut;
+    if (PC_DIE_COUNTER > $@FLUFFY_DEATHS) goto L_Died;
+    set $@FLUFFY_TIME, $@FLUFFY_TIME + 1;
+    if ($@FLUFFY_TIME > 300) goto L_TooSlow;
+    if ($@FLUFFY_HUNTING == 1) set $@DROP_TIME, $@DROP_TIME + 1;
+    if ($@FLUFFY_HUNTING == 1) goto L_CheckDrops;
+    if ($@FLUFFY_HUNTING == 2) goto L_Hunting;
+    setnpctimer 0;
+    end;
+
+L_CheckDrops:
+    set $@FLUFFY_REDAPPLES, getareadropitem("033-1.gat", 79, 29, 88, 42, 535, 1);
+    set $@FLUFFY_XMASCAKE, getareadropitem("033-1.gat", 79, 29, 88, 42, 508, 1);
+    set $@FLUFFY_CAKE, getareadropitem("033-1.gat", 79, 29, 88, 42, 513, 1);
+    set $@FLUFFY_GREENAPPLE, getareadropitem("033-1.gat", 79, 29, 88, 42, 719, 1);
+    if ($@FLUFFY_REDAPPLES != 0 || $@FLUFFY_XMASCAKE != 0 || $@FLUFFY_CAKE != 0 || $@FLUFFY_GREENAPPLE != 0) set $@FLUFFY_HUNTING, 2;
+    if ($@DROP_TIME > 15) goto L_DidntDrop;
+    setnpctimer 0;
+    end;
 
 L_Hunting:
-	set $@FLUFFY_TIME, $@FLUFFY_TIME + 1;
-	if ($@FLUFFY_TIME > 300) goto L_CleanUp;
-	//TODO: monsterID angry fluffy
-	if (getareausers("033-1.gat", 79, 29, 88, 42) == 0) goto L_CleanUp;
-
-	set $@FLUFFY_REDAPPLES, getareadropitem("033-1.gat", 79, 29, 88, 42, 535, 1);
-	set $@FLUFFY_XMASCAKE, getareadropitem("033-1.gat", 79, 29, 88, 42, 508, 1);
-	set $@FLUFFY_CAKE, getareadropitem("033-1.gat", 79, 29, 88, 42, 513, 1);
-	set $@FLUFFY_GREENAPPLE, getareadropitem("033-1.gat", 79, 29, 88, 42, 719, 1);
-
-//TODO: balance the spawns and maybe add the new monster
-	set $@FLUFFY_SPAWN, $@FLUFFY_REDAPPLES + 5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + $@FLUFFY_GREENAPPLE;
-
-//TODO: remove debug messages
-	if ($@FLUFFY_TIME % 10 == 0)
-		mapannounce "033-1.gat", "$@FLUFFY_TIME " + $@FLUFFY_TIME, 0;
-	if ($@FLUFFY_TIME % 10 == 0)
-		mapannounce "033-1.gat", "$@FLUFFY_COUNTER " + $@FLUFFY_COUNTER, 0;
-	areamonster "033-1.gat", 79, 29, 88, 42, "", 1020, $@FLUFFY_SPAWN, "Kimarr::onFluffyDeath";
-	if (($@FLUFFY_SPAWN > 0) && ($@FLUFFY_LVL > 40) && (rand(5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + 10 * $@FLUFFY_LVL) > 500)) // Ice Goblin
-		areamonster "033-1.gat", 79, 29, 88, 42, "", 1058, 1, "Kimarr::onPetDeath";
-	if (($@FLUFFY_SPAWN > 0) && ($@FLUFFY_LVL > 60) && (rand(5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + 10 * $@FLUFFY_LVL) > 550)) // Santa Slime
-		areamonster "033-1.gat", 79, 29, 88, 42, "", 1015, 1, "Kimarr::onPetDeath";
-	if (($@FLUFFY_SPAWN > 0) && ($@FLUFFY_LVL > 70) && (rand(5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + 10 * $@FLUFFY_LVL) > 600)) // Yeti
-		areamonster "033-1.gat", 79, 29, 88, 42, "", 1072, 1, "Kimarr::onPetDeath";
-	set $@FLUFFY_REDAPPLES, 0;
-	set $@FLUFFY_XMASCAKE , 0;
-	set $@FLUFFY_CAKE, 0;
-	set $@FLUFFY_GREENAPPLE, 0;
-	end;
-//onInit:
-//	initnpctimer;
-//	stopnpctimer;
+    set $@DROP_TIME, 0;
+    set $@FLUFFY_SPAWN, $@FLUFFY_REDAPPLES + 5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + $@FLUFFY_GREENAPPLE;
+    areamonster "033-1.gat", 79, 29, 88, 42, "", 1020, $@FLUFFY_SPAWN, "Kimarr::onFluffyDeath";
+    if (($@FLUFFY_SPAWN > 0) && ($@FLUFFY_LVL > 40) && (rand(5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + 10 * $@FLUFFY_LVL) > 500)) // Ice Goblin
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1058, 1, "Kimarr::onPetDeath";
+    if (($@FLUFFY_SPAWN > 0) && ($@FLUFFY_LVL > 60) && (rand(5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + 10 * $@FLUFFY_LVL) > 550)) // Santa Slime
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1015, 1, "Kimarr::onPetDeath";
+    if (($@FLUFFY_SPAWN > 0) && ($@FLUFFY_LVL > 70) && (rand(5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + 10 * $@FLUFFY_LVL) > 600)) // Yeti
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1072, 1, "Kimarr::onPetDeath";
+    set $@FLUFFY_REDAPPLES, 0;
+    set $@FLUFFY_XMASCAKE , 0;
+    set $@FLUFFY_CAKE, 0;
+    set $@FLUFFY_GREENAPPLE, 0;
+    set $@FLUFFY_HUNTING, 3;
+    setnpctimer 0;
+    end;
 
 onFluffyDeath:
-	set $@FLUFFY_COUNTER, $@FLUFFY_COUNTER + 1;
-	mapannounce "033-1.gat", "fluffies killed: " + $@FLUFFY_COUNTER, 0;
-	end;
+    set $@FLUFFY_COUNTER, $@FLUFFY_COUNTER + 1;
+    mapannounce "033-1.gat", "fluffies killed: " + $@FLUFFY_COUNTER, 0;
+    if ($@FLUFFY_COUNTER >= $@FLUFFY_SPAWN) set $@FLUFFY_HUNTING, 1;
+    end;
 
-L_CleanUp:
-	areatimer "033-1.gat", 79, 29, 88, 42, 10, "Kimarr::onReward";
-	set $@FLUFFY_HUNTING, 0;
-	mapannounce "033-1.gat", "You killed " + $@FLUFFY_COUNTER + "Fluffies", 0;
-	set $@FLUFFY_COUNTER, 0;
-	//TODO: save amount of killed fluffies in playervariable (hunting redoable, npc tells the best result)
-	set $@FLUFFY_TIME, 0;
-//TODO: check if that command really only kills the event monsters
-	killmonster "033-1.gat", "All";
-	stopnpctimer;
-	setnpctimer 0;
-	mapannounce "033-1.gat", "clean up", 0;
-	end;
+L_DidntDrop:
+    warp "033-1.gat", 77, 34;
+    message strcharinfo(0), "Kimarr: You waited too much to trow the food on the ground... Now the fluffies know you are planning something.";
+    goto L_CheckRecord;
 
-onReward:
-	//TODO: add check for new record
-	warp "033-1.gat", 77, 34;
-	set @place, -1;
-//TODO: prevent that one player can be in that list more than once
-	if ($FLUFFYGAME_PTS[8] < $@FLUFFY_COUNTER) set @place,8;
-	if ($FLUFFYGAME_PTS[7] < $@FLUFFY_COUNTER) set @place,7;
-	if ($FLUFFYGAME_PTS[6] < $@FLUFFY_COUNTER) set @place,6;
-	if ($FLUFFYGAME_PTS[5] < $@FLUFFY_COUNTER) set @place,5;
-	if ($FLUFFYGAME_PTS[4] < $@FLUFFY_COUNTER) set @place,4;
-	if ($FLUFFYGAME_PTS[3] < $@FLUFFY_COUNTER) set @place,3;
-	if ($FLUFFYGAME_PTS[2] < $@FLUFFY_COUNTER) set @place,2;
-	if ($FLUFFYGAME_PTS[1] < $@FLUFFY_COUNTER) set @place,1;
-	if ($FLUFFYGAME_PTS[0] < $@FLUFFY_COUNTER) set @place,0;
-	if (@place != -1) callsub MOVE_NAME;
+L_GotOut:
+    npctalk "What a strange thing... " + $@FLUFFY_FIGHTER$ + " just disappeared!";
+    goto L_CheckRecord;
 
-	if (@state > 1) goto L_Skip;
-	if ($@FLUFFY_COUNTER < $@FLUFFY_MIN) goto L_Skip;
-	set @state, 2;
-	callsub S_Update_Mask;
-L_Skip:
-	end;
-//////
+L_Died:
+    warp "033-1.gat", 77, 34;
+    message strcharinfo(0), "You are dead.";
+    goto L_CheckRecord;
+
+L_TooSlow:
+    warp "033-1.gat", 77, 34;
+    message strcharinfo(0), "Your time is over.";
+    goto L_CheckRecord;
+
+S_Clean:
+    killmonster "033-1.gat", "Kimarr::onPetDeath";
+    killmonster "033-1.gat", "Kimarr::onFluffyDeath";
+    set $@FLUFFY_HUNTING, 0;
+    set $@FLUFFY_TIME, 0;
+    set $@DROP_TIME, 0;
+    set $@FLUFFY_DEATHS, 0;
+    set $@FLUFFY_FIGHTER$, "";
+    set $@FLUFFY_COUNTER, 0;
+    set $@FLUFFY_REDAPPLES, 0;
+    set $@FLUFFY_XMASCAKE , 0;
+    set $@FLUFFY_CAKE, 0;
+    set $@FLUFFY_GREENAPPLE, 0;
+    set $@FLUFFY_SPAWN, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_CheckRecord:
+    if ($@FLUFFY_COUNTER < $@FLUFFY_MIN) goto L_End;
+    set @loop, 11;
+    set @place, 0;
+
+L_FindPlace:
+    set @loop, @loop - 1;
+    if ($FLUFFYGAME_NAME$[@loop] == strcharinfo(0)) set @currentposition, @loop;
+    if (@loop == 0 || $@FLUFFY_COUNTER <= $FLUFFYGAME_PTS[@loop]) goto L_CheckPosition;
+    set @place, @place + 1;
+    goto L_FindPlace;
+
+L_CheckPosition:
+    if (@place == 0) goto L_End;
+    set @position, 11 - @place;
+    if (@currentposition == 0) goto L_RegisterName;
+    if (@currentposition < @position) goto L_End;
+    if (@currentposition >= @position) goto L_HandleDuplicated;
+
+L_RegisterName:
+    callsub S_MOVE_NAME;
+    if (@state > 1) goto L_End;
+    set @state, 2;
+    callsub S_Update_Mask;
+    goto L_Reward;
+
+L_HandleDuplicated:
+    set $FLUFFYGAME_PTS[@currentposition], 0;
+    set $FLUFFYGAME_NAME$[@currentposition], "";
+    set $FLUFFYGAME_DATE$[@currentposition], "";
+    goto L_RegisterName;
 
 S_MOVE_NAME:
-    set @i,9;
+    set @i,10;
 
 MOVE_NAME_L1:
     set @i, @i-1;
     set $FLUFFYGAME_PTS[@i+1], $FLUFFYGAME_PTS[@i];
-    set $FLUFFYGAME_PTS[@i+1], $FLUFFYGAME_PTS[@i];
-    if (@i == @place) goto MOVE_NAME_L2;
+    set $FLUFFYGAME_NAME$[@i+1], $FLUFFYGAME_NAME$[@i];
+    set $FLUFFYGAME_DATE$[@i+1], $FLUFFYGAME_DATE$[@i];
+    if (@i == @position) goto MOVE_NAME_L2;
     goto MOVE_NAME_L1;
 
 MOVE_NAME_L2:
-    set $FLUFFYGAME_PTS[@place], $@FLUFFY_COUNTER;
-    set $FLUFFYGAME_NAME[@place], strcharinfo(0);
+    set $FLUFFYGAME_PTS[@position], $@FLUFFY_COUNTER;
+    set $FLUFFYGAME_NAME$[@position], $@FLUFFY_FIGHTER$;
+    set $FLUFFYGAME_DATE$[@position], gettimestr("%d/%m/%Y-%H:%M:%S",21);
     return;
 
 S_Update_Mask:
-        set QUEST_Barbarians,
-        	(QUEST_Barbarians & ~(@Q_Barbarians_MASK))
-                | (@state << @Q_Barbarians_SHIFT);
-        return;
+    set QUEST_Barbarians,
+        (QUEST_Barbarians & ~(@Q_Barbarians_MASK))
+            | (@state << @Q_Barbarians_SHIFT);
+    return;
+
+L_End:
+    callsub S_Clean;
+    set @loop, 0;
+
+L_ShowRecord:
+    set @loop, @loop + 1;
+    if ($FLUFFYGAME_PTS[@loop] != 0) message strcharinfo(0), "Position: " + @loop + " - " + $FLUFFYGAME_NAME$[@loop] + " - " + $FLUFFYGAME_PTS[@loop] + " fluffies killed in " + $FLUFFYGAME_DATE$[@loop];
+    if (@loop > 10) end;
+    goto L_ShowRecord;
+    end;
+
+}
+
+033-1.gat,70,32,0	script	Kimarr Debug	218,{
+
+    menu
+        "Reset records", -,
+        "Close", L_Close;
+
+    set $FLUFFYGAME_PTS[0], 0;
+    set $FLUFFYGAME_NAME$[0], "";
+    set $FLUFFYGAME_PTS[1], 0;
+    set $FLUFFYGAME_NAME$[1], "";
+    set $FLUFFYGAME_PTS[2], 0;
+    set $FLUFFYGAME_NAME$[2], "";
+    set $FLUFFYGAME_PTS[3], 0;
+    set $FLUFFYGAME_NAME$[3], "";
+    set $FLUFFYGAME_PTS[4], 0;
+    set $FLUFFYGAME_NAME$[4], "";
+    set $FLUFFYGAME_PTS[5], 0;
+    set $FLUFFYGAME_NAME$[5], "";
+    set $FLUFFYGAME_PTS[6], 0;
+    set $FLUFFYGAME_NAME$[6], "";
+    set $FLUFFYGAME_PTS[7], 0;
+    set $FLUFFYGAME_NAME$[7], "";
+    set $FLUFFYGAME_PTS[8], 0;
+    set $FLUFFYGAME_NAME$[8], "";
+    set $FLUFFYGAME_PTS[9], 0;
+    set $FLUFFYGAME_NAME$[9], "";
+    set $FLUFFYGAME_PTS[10], 0;
+    set $FLUFFYGAME_NAME$[10], "";
+
+L_Close:
+    close;
 }
