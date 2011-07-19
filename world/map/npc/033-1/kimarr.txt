@@ -5,6 +5,7 @@
 
     set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
 
+    if ($@FLUFFY_HUNTING > 0 && $@FLUFFY_FIGHTER$ == strcharinfo(0)) goto L_Attention;
     if (@state >= 3) goto L_Again;
     if (@state == 2) goto L_Reward;
     if (@state == 1) goto L_Ask;
@@ -93,7 +94,7 @@ L_Close:
     close;
 
 L_Game:
-    if ($@FLUFFY_HUNTING) goto L_Someone_Else;
+    if ($@FLUFFY_HUNTING > 0) goto L_Someone_Else;
     set $@FLUFFY_HUNTING, 1;
     set $@FLUFFY_COUNTER, 0;
     set $@FLUFFY_DEATHS, PC_DIE_COUNTER;
@@ -112,6 +113,11 @@ L_Game:
 L_Someone_Else:
     mes "[Kimarr]";
     mes "\"At the moment someone else is hunting. Let's wait until that hunting has ended.\"";
+    close;
+
+L_Someone_Else:
+    mes "[Kimarr]";
+    mes "\"You should be focused on hunting fluffies, not talking.\"";
     close;
 
 OnTimer1000:
