@@ -42,7 +42,7 @@ L_Ask:
     mes "[Kimarr]";
     mes "\"So, are you going to try?\"";
     menu
-        "Yeah, let's start",L_Game,
+        "Yeah, let's start!",L_Game,
         "Could you explain again?",-,
         "Maybe later.",L_Close;
 
@@ -87,7 +87,7 @@ L_Again:
     goto L_ShowRecord;
 
 L_Full_Inv:
-    message strcharinfo(0), "Kimarr: That was very impressing - now you can call yourself hunter " + strcharinfo(0) +".\"";
+    message strcharinfo(0), "Kimarr: You can't carry the reward I want to give you.";
     close;
 
 L_Close:
@@ -101,7 +101,7 @@ L_Game:
     set $@FLUFFY_FIGHTER$, strcharinfo(0);
     set $@FLUFFY_TIME, 0;
     set $@FLUFFY_LVL, baselevel;
-//TODO: set minimum  number of killed fluffies (maybe based on level?)
+//TODO: set minimum number of killed fluffies (maybe based on level?)
     set $@FLUFFY_MIN, 1;
     warp "033-1.gat", 79, 34;
     set @place, 0;
@@ -151,6 +151,7 @@ L_Hunting:
         areamonster "033-1.gat", 79, 29, 88, 42, "", 1058, 1, "Kimarr::onPetDeath";
     if (($@FLUFFY_SPAWN > 0) && ($@FLUFFY_LVL > 60) && (rand(5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + 10 * $@FLUFFY_LVL) > 550)) // Santa Slime
         areamonster "033-1.gat", 79, 29, 88, 42, "", 1015, 1, "Kimarr::onPetDeath";
+    // TODO: add the wolvern as well when it has been added
     if (($@FLUFFY_SPAWN > 0) && ($@FLUFFY_LVL > 70) && (rand(5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + 10 * $@FLUFFY_LVL) > 600)) // Yeti
         areamonster "033-1.gat", 79, 29, 88, 42, "", 1072, 1, "Kimarr::onPetDeath";
     set $@FLUFFY_REDAPPLES, 0;
@@ -163,6 +164,7 @@ L_Hunting:
 
 onFluffyDeath:
     set $@FLUFFY_COUNTER, $@FLUFFY_COUNTER + 1;
+    //TODO: remove announce after debugging
     mapannounce "033-1.gat", "fluffies killed: " + $@FLUFFY_COUNTER, 0;
     if ($@FLUFFY_COUNTER >= $@FLUFFY_SPAWN) set $@FLUFFY_HUNTING, 1;
     end;
