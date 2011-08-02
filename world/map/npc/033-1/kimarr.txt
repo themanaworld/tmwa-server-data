@@ -123,7 +123,7 @@ L_Attention:
 OnTimer1000:
     if (isloggedin(getcharid(3,$@FLUFFY_FIGHTER$)) == 0) goto L_GotOut;
     attachrid(getcharid(3,$@FLUFFY_FIGHTER$));
-    if (getareausers("033-1.gat", 79, 29, 88, 42) == 0) goto L_GotOut;
+    if (getareausers("033-1.gat", 79, 29, 88, 42) == 0) goto L_WarpedOut;
     if (PC_DIE_COUNTER > $@FLUFFY_DEATHS) goto L_Died;
     set $@FLUFFY_TIME, $@FLUFFY_TIME + 1;
     if ($@FLUFFY_TIME > 300) goto L_TooSlow;
@@ -180,6 +180,11 @@ L_GotOut:
     callsub S_Clean;
     end;
 
+L_WarpedOut:
+    npctalk "What a strange thing... " + $@FLUFFY_FIGHTER$ + " just disappeared!";
+    goto L_CheckRecord;
+    end;
+
 L_Died:
     warp "033-1.gat", 77, 34;
     message strcharinfo(0), "You are dead.";
@@ -210,22 +215,30 @@ S_Clean:
 
 L_CheckRecord:
     if ($@FLUFFY_COUNTER < $@FLUFFY_MIN) goto L_End;
+    set @loop, 0;
+    callsub S_FINDPLACE;
     set @loop, 11;
     set @place, 0;
-
-L_FindPlace:
-    set @loop, @loop - 1;
-    if ($FLUFFYGAME_NAME$[@loop] == strcharinfo(0)) set @currentposition, @loop;
-    if (@loop == 0 || $@FLUFFY_COUNTER <= $FLUFFYGAME_PTS[@loop]) goto L_CheckPosition;
-    set @place, @place + 1;
-    goto L_FindPlace;
-
-L_CheckPosition:
+    callsub S_CHECKPOS;
     if (@place == 0) goto L_End;
     set @position, 11 - @place;
     if (@currentposition == 0) goto L_RegisterName;
     if (@currentposition < @position) goto L_End;
-    if (@currentposition >= @position) goto L_HandleDuplicated;
+    if (@currentposition > @position) goto L_HandleDuplicated;
+    if (@currentposition == @position) goto L_Oldscore;
+    goto L_End;
+
+S_FINDPLACE:
+    set @loop, @loop + 1;
+    if ($FLUFFYGAME_NAME$[@loop] == strcharinfo(0)) set @currentposition, @loop;
+    if (@loop < 11) goto S_FINDPLACE;
+    return;
+
+S_CHECKPOS:
+    set @loop, @loop - 1;
+    if (@loop == 0 || $@FLUFFY_COUNTER <= $FLUFFYGAME_PTS[@loop]) return;
+    set @place, @place + 1;
+    goto S_CHECKPOS;
 
 L_RegisterName:
     callsub S_MOVE_NAME;
@@ -239,6 +252,11 @@ L_HandleDuplicated:
     set $FLUFFYGAME_NAME$[@currentposition], "";
     set $FLUFFYGAME_DATE$[@currentposition], "";
     goto L_RegisterName;
+
+L_Oldscore:
+    set $FLUFFYGAME_PTS[@currentposition], $@FLUFFY_COUNTER;
+    set $FLUFFYGAME_DATE$[@currentposition], gettimestr("%d/%m/%Y-%H:%M:%S",21);
+    goto L_End;
 
 S_MOVE_NAME:
     set @i,10;
