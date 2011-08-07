@@ -1,6 +1,8 @@
 /*
- * TMWServ to eAthena Converter (c) 2008 Jared Adams
- * License: GPL, v2 or later
+ * Converter from Tiled .tmx files to tmwAthena .wlk and mob/warp scripts
+ * Copyright (c) 2008 Jared Adams
+ * Copyright (c) 2011 Ben Longbons
+ * License: GNU GPL, v2 or later
  */
 
 package converter;

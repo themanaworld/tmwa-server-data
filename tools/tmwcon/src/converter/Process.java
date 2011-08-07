@@ -1,6 +1,8 @@
 /*
- * TMWServ to eAthena Converter (c) 2008, 2011 Jared Adams
- * License: GPL, v2 or later
+ * Converter from Tiled .tmx files to tmwAthena .wlk and mob/warp scripts
+ * Copyright (c) 2008, 2011 Jared Adams
+ * Copyright (c) 2011 Ben Longbons
+ * License: GNU GPL, v2 or later
  */
 
 package converter;
@@ -18,6 +20,11 @@ import tiled.core.*;
 import tiled.plugins.tmw.*;
 
 public class Process {
+    // both were formerly (hard-coded) "\t", for different reasons
+    // Note: don't use println, as we want only '\n'
+    private static final String SEPARATOR = "|";
+    private static final String INDENTATION = "    ";
+
     private static final String mobFile = "_mobs.txt";
     private static final String warpFile = "_warps.txt";
     private static final String importFile = "_import.txt";
@@ -80,7 +87,7 @@ public class Process {
         if (y < 0) return;
         int[] shape = resolveBounds(bounds, true);
         System.out.printf("Usable warp found: %s\n", name);
-        out.printf("%s.gat,%d,%d\twarp\t%s\t%d,%d,%s.gat,%d,%d\n",
+        out.printf("%s.gat,%d,%d" + SEPARATOR + "warp" + SEPARATOR + "%s" + SEPARATOR + "%d,%d,%s.gat,%d,%d\n",
                    map, shape[0], shape[1], name, shape[2], shape[3], dest, x / 32, y / 32);
     }
 
@@ -94,7 +101,7 @@ public class Process {
         int time2 = getProp(props, "eA_death", 0);
         int[] shape = resolveBounds(bounds, false);
         System.out.printf("Usable mob found: %s (%d)\n", name, mob);
-        out.printf("%s.gat,%d,%d,%d,%d\tmonster\t%s\t%d,%d,%d,%d,Mob%s::On%d\n",
+        out.printf("%s.gat,%d,%d,%d,%d" + SEPARATOR + "monster" + SEPARATOR + "%s" + SEPARATOR + "%d,%d,%d,%d,Mob%s::On%d\n",
                    map, shape[0], shape[1], shape[2], shape[3], name, mob, max, time1, time2, map, mob);
         return mob;
     }
@@ -138,11 +145,11 @@ public class Process {
         processFiles(folder, output_elements);
         PrintWriter importOut = Main.getWriter(_import);
         importOut.printf("// Map %s: %s\n", name, title);
-        importOut.printf("// This file is generated automatically. All manually changes will be removed when running the Converter.\n");
+        importOut.print("// This file is generated automatically. All manually changes will be removed when running the Converter.\n");
         importOut.printf("map: %s.gat\n", name);
         Collections.sort(output_elements);
         for (String s : output_elements)
-            importOut.println(s);
+            importOut.print(s + "\n");
         importOut.flush();
         importOut.close();
     }
@@ -152,7 +159,7 @@ public class Process {
         if (map == null) return null;
 
         Properties props = map.getProperties();
-        String title = getProp(props, "name", "");
+        String title = getProp(props, "name", "unnamed map " + name);
 
         String folderName =  "npc/" + name;
 
@@ -169,9 +176,9 @@ public class Process {
         }
 
         if (summary != null) {
-            summary.printf("\tName: %s: '%s'\n", name, title);
-            summary.printf("\tMusic: '%s'\n", getProp(props, "music", ""));
-            summary.printf("\tMinimap: '%s'\n", getProp(props, "minimap", ""));
+            summary.printf("Name: %s: '%s'\n", name, title);
+            summary.printf("Music: '%s'\n", getProp(props, "music", ""));
+            summary.printf("Minimap: '%s'\n", getProp(props, "minimap", ""));
         }
 
         if (wlk != null) wlk.write(name, map, wlkFile);
@@ -179,8 +186,10 @@ public class Process {
         PrintWriter warpOut = Main.getWriter(new File(folder, warpFile));
         PrintWriter mobOut = Main.getWriter(new File(folder, mobFile));
 
-        warpOut.printf("// This file is generated automatically. All manually changes will be removed when running the Converter.\n// %s warps\n\n", title);
-        mobOut.printf("// This file is generated automatically. All manually changes will be removed when running the Converter.\n// %s mobs\n\n", title);
+        warpOut.print("// This file is generated automatically. All manually changes will be removed when running the Converter.\n");
+        warpOut.printf("// %s warps\n\n", title);
+        mobOut.print("// This file is generated automatically. All manually changes will be removed when running the Converter.\n");
+        mobOut.printf("// %s mobs\n\n", title);
 
         TreeSet<Integer> mobs = new TreeSet<Integer>();
         processObjects(map.getObjects(), name, warpOut, mobOut, mobs);
@@ -194,12 +203,15 @@ public class Process {
         warpOut.close();
 
         System.out.println("Starting mob points");
-        mobOut.printf("\n\n%s.gat,0,0,0\tscript\tMob%1$s\t-1,{\n", name);
+        mobOut.printf("\n\n%s.gat,0,0,0" + SEPARATOR + "script" + SEPARATOR + "Mob%1$s" + SEPARATOR + "-1,{\n", name);
         for (int mob : mobs) {
             if (mob == -1) continue;
-            mobOut.printf("On%d:\n\tset @mobID, %d;\n\tcallfunc \"MobPoints\";\n\tbreak;\n\n", mob, mob);
+            mobOut.printf("On%d:\n", mob);
+            mobOut.printf(INDENTATION + "set @mobID, %d;\n", mob);
+            mobOut.printf(INDENTATION + "callfunc \"MobPoints\";\n");
+            mobOut.printf(INDENTATION + "end;\n\n");
         }
-        mobOut.printf("\tend;\n}\n");
+        mobOut.printf(INDENTATION + "end;\n}\n");
         System.out.println("Finished mob points");
 
         mobOut.flush();
@@ -225,7 +237,7 @@ public class Process {
 
         Collections.sort(output_elements);
         for (String s : output_elements)
-            out.println(s);
+            out.print(s + "\n");
 
         out.flush();
         out.close();
