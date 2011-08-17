@@ -562,13 +562,13 @@ SPELL lay-on-hands (target : STRING) : "#L10" =
           REQUIRE hp(caster) > max_hp(caster) / 20,
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level,
-          REQUIRE if_then_else(failed(pc(target)), 1,
-                                                  (pc(target) <> caster)
-                                                  &&
-                                                  (rdistance(location(caster),
-                                                           location(pc(target))) < 2 + sqrt(spellpower) / 4)
-                                                  && not (running_status_update(pc(target), SC_HALT_REGENERATE))
-                                                  ))
+          REQUIRE if_then_else(failed(pc(target)),
+                               1,
+                               (pc(target) <> caster)
+                                && (rdistance(location(caster), location(pc(target)))
+                                    < 2 + (12 * sqrt(spellpower) + spellpower) / 100)
+                                && not (running_status_update(pc(target), SC_HALT_REGENERATE))
+                              ))
           => EFFECT CALL adjust_spellpower(school);
 		    IF (not (target)) THEN ABORT;
                     IF failed(pc(target))
