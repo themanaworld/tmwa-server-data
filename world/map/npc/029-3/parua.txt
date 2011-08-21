@@ -19,6 +19,8 @@
 L_Paying:
 	if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
 	if (zeny < 20000) goto L_NotEnough;
+// Do not charge the money if the fight or the announces were already started by someone else
+	if ($@FIGHT_CAVE_STATUS != 0) close;
 	set zeny, zeny - 20000;
 
 L_StartFight:
@@ -46,8 +48,8 @@ L_CallPlayers:
 	     "In 15 minutes.", -,
 	     "In 30 minutes.", -,
 	     "I don't want to wait. Let's start it now!", L_Paying;
-
-	if ($@FIGHT_CAVE_STATUS >= 2) close;	
+// Do not charge the money if the fight or the announces were already started by someone else
+	if ($@FIGHT_CAVE_STATUS != 0) close;
 	if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
 	if (zeny < 20000 + 3000) goto L_NotEnough_Announce;
 	set zeny, zeny - (20000 + 3000);
