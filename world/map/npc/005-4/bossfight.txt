@@ -30,7 +30,10 @@ L_Start_Level_1:
 	goto L_Exit; // This one is triggered on talking to the switch.
 
 L_Enjoy:
-	mes "*It seems the switch is stuck in the on position*";
+	mes "*As you get ready to touch the switch, a spark flys from you to it and causes the switch to flip off then back on quickly*";
+	// Random colors for everyone!
+	areatimer "005-4.gat", 19, 19, 54, 37, 10, "Switch#elecave::onChaos";
+
 L_Exit:
         close;
         end;
@@ -52,16 +55,22 @@ OnTimer3000:
 	set $@ELE_CAVE_DIFF, 0;
 	if ($@ELE_CAVE_RED_COUNT > $@ELE_CAVE_BLUE_COUNT) goto L_More_Red;
 	if ($@ELE_CAVE_RED_COUNT < $@ELE_CAVE_BLUE_COUNT) goto L_More_Blue;
+
+	if ($@ELE_CAVE_LAST_MESSAGE != 0) mapannounce "005-4.gat", "The ions are once again balanced.  Try to kill a red and blue at the same time.", 0;
+	set $@ELE_CAVE_LAST_MESSAGE, 0;
+
 	goto L_Next_Step;
 
 L_More_Red:
 	set $@ELE_CAVE_DIFF, $@ELE_CAVE_RED_COUNT - $@ELE_CAVE_BLUE_COUNT;
-	mapannounce "005-4.gat", "Their are too many red ions in the air!", 0;
+	if ($@ELE_CAVE_LAST_MESSAGE != 1) mapannounce "005-4.gat", "There are too many red ions in the air!  Kill more red sparks!", 0;
+	set $@ELE_CAVE_LAST_MESSAGE, 1;
 	goto L_Next_Step;
 
 L_More_Blue:
 	set $@ELE_CAVE_DIFF, $@ELE_CAVE_BLUE_COUNT - $@ELE_CAVE_RED_COUNT;
-	mapannounce "005-4.gat", "Their are too many blue ions in the air!", 0;
+	if ($@ELE_CAVE_LAST_MESSAGE != 2) mapannounce "005-4.gat", "There are too many blue ions in the air!  Kill more blue sparks!", 0;
+	set $@ELE_CAVE_LAST_MESSAGE, 2;
 	goto L_Next_Step;
 
 L_Next_Step:
@@ -109,7 +118,7 @@ L_Start_Level_3:
 onChaos:
 	if (isdead(0)) end;
 L_Set_Color:
-	message strcharinfo(0), "You feel funny.";
+	message strcharinfo(0), "You feel funny.  You think your color has changed.";
 	set @ELE_CAVE_COLOR, rand(1, 2);
 	end;
 
@@ -134,12 +143,9 @@ onTick:
 L_Do_Red:
 	specialeffect2 114; // Red effects
 
-	// Punish blue players who stand around a red player
-	areatimer "005-4.gat", getx(0) - 2, gety(0) - 2, getx(0) + 2, gety(0) + 2, 10, "Switch#elecave::onBlue";
-
 	if (isin("005-4.gat", 42, 19, 54, 32)) goto L_Heal;
 	if (isin("005-4.gat", 32, 19, 54, 37)) end;
-	message strcharinfo(0), "Sparks are flying between you and a piller.";
+	message strcharinfo(0), "Sparks are flying between you and a piller.  Maybe you should stand near a piller with the same color as you.";
 	heal MaxHp / -6, 0;
 
 	end;
@@ -147,12 +153,9 @@ L_Do_Red:
 L_Do_Blue:
 	specialeffect2 115; // Blue effects
 
-	// Punish red players who stand around a blue player
-	areatimer "005-4.gat", getx(0) - 2, gety(0) - 2, getx(0) + 2, gety(0) + 2, 10, "Switch#elecave::onRed";
-
 	if (isin("005-4.gat", 19, 19, 31, 32)) goto L_Heal;
 	if (isin("005-4.gat", 19, 19, 41, 37)) end;
-	message strcharinfo(0), "Sparks are flying between you and a piller.";
+	message strcharinfo(0), "Sparks are flying between you and a piller.  Maybe you should stand near a piller with the same color as you";
 	heal MaxHp / -6, 0;
 
 	end;
@@ -161,32 +164,18 @@ L_Heal:
 	heal MaxHp / 20, 0;
 	end;
 
-// Punishment triggers
-onRed:
-	if (@ELE_CAVE_COLOR == 2) end;
-	message strcharinfo(0), "Sparks are flying between you and the person you are next to!";
-	heal MaxHp / -5, 0;
-	end;
-
-onBlue:
-	if (@ELE_CAVE_COLOR == 1) end;
-	message strcharinfo(0), "Sparks are flying between you and the person you are next to!";
-        heal MaxHp / -5, 0;
-	end;
-
-
 // Death triggers
 onBlueDeath:
 	// Blue players have to kill blue sparks
 	if (@ELE_CAVE_COLOR == 2) end;
-	message strcharinfo(0), "The dieing spark reacts explosively with you.";
+	message strcharinfo(0), "The dieing spark reacts explosively with you.  You should only kill sparks with the same color as you.";
         heal MaxHp / -2, 0;
 	end;
 
 onRedDeath:
 	// Red players have to kill red sparks
 	if (@ELE_CAVE_COLOR == 1) end;
-	message strcharinfo(0), "The dieing spark reacts explosively with you.";
+	message strcharinfo(0), "The dieing spark reacts explosively with you.  You should only kill sparks with teh same color as you.";
         heal MaxHp / -2, 0;
 	end;
 
@@ -194,6 +183,7 @@ onInit:
         initnpctimer;
         stopnpctimer;
 L_CleanUp:
+	set $@ELE_CAVE_LAST_MESSAGE, 0;
 	set $@ELE_CAVE_STATUS, 0;
 	set $@ELE_CAVE_PLAYER_COUNT, 0;
 	set $@ELE_CAVE_LEVEL, 0;
