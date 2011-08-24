@@ -123,7 +123,7 @@ L_Attention:
 OnTimer1000:
     if (isloggedin(getcharid(3,$@FLUFFY_FIGHTER$)) == 0) goto L_GotOut;
     attachrid(getcharid(3,$@FLUFFY_FIGHTER$));
-    if (getareausers("033-1.gat", 79, 29, 88, 42) == 0) goto L_WarpedOut;
+    if (getareausers("033-1.gat", 79, 28, 88, 42) == 0) goto L_WarpedOut;
     if (PC_DIE_COUNTER > $@FLUFFY_DEATHS) goto L_Died;
     set $@FLUFFY_TIME, $@FLUFFY_TIME + 1;
     if ($@FLUFFY_TIME > 300) goto L_TooSlow;
@@ -147,6 +147,8 @@ L_Hunting:
     // TODO: limit the number of monsters that can be spawned, to prevent people creating lag with massive amount of monsters
     set $@DROP_TIME, 0;
     set $@FLUFFY_SPAWN, $@FLUFFY_REDAPPLES + 5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + $@FLUFFY_GREENAPPLE;
+    if ($@FLUFFY_SPAWN > 100)
+        set $@FLUFFY_SPAWN, 100;
     areamonster "033-1.gat", 79, 29, 88, 42, "", 1020, $@FLUFFY_SPAWN, "Kimarr::onFluffyDeath";
     if (($@FLUFFY_SPAWN > 0) && ($@FLUFFY_LVL > 40) && (rand(5 * $@FLUFFY_XMASCAKE + 3 * $@FLUFFY_CAKE + 10 * $@FLUFFY_LVL) > 500)) // Ice Goblin
         areamonster "033-1.gat", 79, 29, 88, 42, "", 1058, 1, "Kimarr::onPetDeath";
@@ -166,7 +168,7 @@ L_Hunting:
 onFluffyDeath:
     set $@FLUFFY_COUNTER, $@FLUFFY_COUNTER + 1;
     //TODO: remove announce after debugging
-    mapannounce "033-1.gat", "fluffies killed: " + $@FLUFFY_COUNTER, 0;
+    //mapannounce "033-1.gat", "fluffies killed: " + $@FLUFFY_COUNTER, 0;
     if ($@FLUFFY_COUNTER >= $@FLUFFY_SPAWN) set $@FLUFFY_HUNTING, 1;
     end;
 
@@ -298,6 +300,7 @@ L_ShowRecord:
 
     menu
         "Reset records", -,
+        "Reset quest",L_Reset,
         "Close", L_Close;
 
     set $FLUFFYGAME_PTS[0], 0;
@@ -322,6 +325,20 @@ L_ShowRecord:
     set $FLUFFYGAME_NAME$[9], "";
     set $FLUFFYGAME_PTS[10], 0;
     set $FLUFFYGAME_NAME$[10], "";
+
+L_Reset:
+
+    set @Q_Barbarians_MASK, NIBBLE_0_MASK;
+    set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
+    set @state, 0;
+    callsub S_Update_Mask;
+    close;
+
+S_Update_Mask:
+    set QUEST_Barbarians,
+        (QUEST_Barbarians & ~(@Q_Barbarians_MASK))
+            | (@state << @Q_Barbarians_SHIFT);
+    return;
 
 L_Close:
     close;
