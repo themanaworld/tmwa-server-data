@@ -1,0 +1,56 @@
+// A replacement for gettimestr()
+// At some point this should be a builtin in the server
+// Should I allow formatting of times other than the current time?
+
+// Variables:
+// output @ts_date$ "yyyy-mm-dd"
+// output @ts_time$ "hh:mm:ss"
+
+function|script|time_stamp|{
+    // local variables
+    // if there is reasonable demand, these might be exported
+    // (that is what the builtin is likely to do)
+    set @ts_year,       gettime(7);
+    set @ts_month,      gettime(6);
+    set @ts_mday,       gettime(5);
+    //set @ts_wday,       gettime(4);
+    set @ts_hour,       gettime(3);
+    set @ts_minute,     gettime(2);
+    set @ts_second,     gettime(1);
+
+    // locals used to generate leading zeroes
+    set @ts_month_pad$, "";
+    set @ts_mday_pad$,  "";
+    set @ts_hour_pad$,  "";
+    set @ts_minute_pad$, "";
+    set @ts_second_pad$, "";
+
+    if (@ts_month < 10)
+        set @ts_month_pad$, "0";
+    if (@ts_mday < 10)
+        set @ts_mday_pad$, "0";
+    if (@ts_hour < 10)
+        set @ts_hour_pad$, "0";
+    if (@ts_minute < 10)
+        set @ts_minute_pad$, "0";
+    if (@ts_second < 10)
+        set @ts_second_pad$, "0";
+
+    set @ts_date$, @ts_year + "-" + @ts_month_pad$ + @ts_month + "-" + @ts_mday_pad$ + @ts_mday;
+    set @ts_time$, @ts_hour_pad$ + @ts_hour + ":" + @ts_minute_pad$ + @ts_minute + ":" +@ts_second_pad$ + @ts_second;
+
+    // cleanup
+    set @ts_year,       0;
+    set @ts_month,      0;
+    set @ts_mday,       0;
+    set @ts_hour,       0;
+    set @ts_minute,     0;
+    set @ts_second,     0;
+    set @ts_month_pad$, "";
+    set @ts_mday_pad$,  "";
+    set @ts_hour_pad$,  "";
+    set @ts_minute_pad$, "";
+    set @ts_second_pad$, "";
+
+    return;
+}
