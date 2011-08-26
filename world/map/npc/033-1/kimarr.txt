@@ -77,7 +77,7 @@ L_Ask:
 // this label is reached on completion of the quest, or, if you inventory was
 // full at the time, when you next initiate dialog (with @state == 2)
 L_Reward:
-    mes "[Kimarr]"
+    mes "[Kimarr]";
     mes "That was very impressive - now you can call yourself a hunter, " + strcharinfo(0) + ".";
     next;
 
@@ -132,12 +132,15 @@ L_Attention:
     end;
 
 OnTimer1000:
-    if (!attachrid($@Fluffy_FighterID))
+// Checking if player is logged
+    if (isloggedin($@Fluffy_FighterID) == 0)
+        goto L_GotOut;
+    attachrid($@Fluffy_FighterID);
+// Checking if player is still in the map or used a towell or spell to get out
+    if (getareausers("033-1.gat", 79, 28, 88, 42) == 0)
         goto L_GotOut;
     if (PC_DIE_COUNTER > $@Fluffy_PC_Deaths)
         goto L_Died;
-    if (!getareausers("033-1.gat", 79, 28, 88, 42))
-        goto L_GotOut;
 
     set $@Fluffy_Time, $@Fluffy_Time + 1;
     if ($@Fluffy_Time > 300)
@@ -217,7 +220,7 @@ OnFluffyDeath:
 
 L_DidntDrop:
     warp "033-1.gat", 77, 34;
-    mes "[Kimarr]"
+    mes "[Kimarr]";
     mes "You waited too much to throw the food on the ground... Now the fluffies know you are planning something.";
     callsub S_Clean;
     goto L_Close;
