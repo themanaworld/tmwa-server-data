@@ -1,0 +1,29 @@
+// A debug NPC for barbarian quest
+
+033-1.gat,70,32,0|script|Kimarr Debug|218,{
+
+    menu
+        "Reset all records", -,
+        "Reset quest",L_Reset,
+        "Close", L_Close;
+
+    cleararray $Record_Fluffy_Kills, 0, MAX_HIGH_SCORES;
+    cleararray $Record_Fluffy_Name$, "", MAX_HIGH_SCORES;
+    cleararray $Record_Fluffy_Date$, "", MAX_HIGH_SCORES;
+
+L_Reset:
+    set @Q_Barbarians_MASK, NIBBLE_0_MASK;
+    set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
+    set @state, 0;
+    callsub S_Update_Mask;
+    close;
+
+S_Update_Mask:
+    set QUEST_Barbarians,
+        (QUEST_Barbarians & ~(@Q_Barbarians_MASK))
+            | (@state << @Q_Barbarians_SHIFT);
+    return;
+
+L_Close:
+    close;
+}
