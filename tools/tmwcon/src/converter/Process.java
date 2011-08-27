@@ -149,6 +149,7 @@ public class Process {
         importOut.printf("map: %s.gat\n", name);
         Collections.sort(output_elements);
         for (String s : output_elements)
+            if (!s.endsWith("~"))
             importOut.print(s + "\n");
         importOut.flush();
         importOut.close();
