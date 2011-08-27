@@ -6,7 +6,7 @@
 // Variables:
 // global $@Fluffy_Hunting - state of the quest
 //      0: nobody is hunting
-//      1: somebody is hunting. The script checks every second if there is food on the ground. 
+//      1: somebody is hunting. The script checks every second if there is food on the ground.
 //      2: not used anymore, was: food dropped but no spawn yet
 //      3: not used anymore, was: monsters have been spawned
 // global $@Fluffy_Time - the number of seconds since you entered the area
@@ -187,7 +187,7 @@ OnTimer1000:
         goto L_Died;
 
     set $@Fluffy_Time, $@Fluffy_Time + 1;
-    if ($@Fluffy_Time > 300)
+    if ($@Fluffy_Time > 180)
         goto L_TimeOver;
         goto L_CheckDrops;
 
@@ -224,12 +224,12 @@ L_CheckDrops:
     goto L_ContinueTimer;
 
 L_TooManyFluffies:
-    if (@Fluffy_Toomany == 0)
+    if (@Fluffy_Toomany)
+        goto L_ContinueTimer;
     message strcharinfo(0), "Wow, calm down, there are already too many fluffies around here.";
-    if (@Fluffy_Toomany == 0)
-        set @Fluffy_Toomany, 1;
+    set @Fluffy_Toomany, 1;
     goto L_ContinueTimer;
-    
+
 L_BeginHunting:
     set $@Fluffy_Spawn, @Fluffy_RedApple + 5 * @Fluffy_XmasCake + 3 * @Fluffy_Cake + @Fluffy_GreenApple;
     // limit the number of monsters that can be spawned, to prevent people creating lag with massive amount of monsters
@@ -261,7 +261,8 @@ OnOtherDeath:
     end;
 
 OnFluffyDeath:
-    if ($@Fluffy_Hunting == 0) end;
+    if ($@Fluffy_Hunting == 0)
+        end;
     set $@Fluffy_Kills, $@Fluffy_Kills + 1;
     set $@Fluffy_Alive, $@Fluffy_Alive - 1;
     //TODO: remove announce after debugging
@@ -275,7 +276,7 @@ OnFluffyDeath:
     end;
 
 L_Killedall:
-    message strcharinfo(0), "Good job, but you still have time to trow more food on the ground.";
+    message strcharinfo(0), "Good job, but you still have time to throw more food on the ground.";
     end;
 
 S_Clean:
@@ -300,6 +301,9 @@ L_MaybeRecordScore:
 L_MaybeInsertNext:
     if ($@Fluffy_Kills > $Record_Fluffy_Kills[@rank])
         goto L_InsertScore;
+    // you already had a better score
+    if (strcharinfo(0) == $Record_Fluffy_Name$[@rank])
+        goto L_Reward1;
     set @rank, @rank + 1;
     if (@rank == MAX_HIGH_SCORES)
         goto L_Reward1;
