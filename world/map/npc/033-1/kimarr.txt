@@ -6,13 +6,13 @@
 // Variables:
 // global $@Fluffy_Hunting - state of the quest
 //      0: nobody is hunting
-//      1: somebody is in there but hasn't dropped anything OR (buggily?) all monster have been killed
+//      1: somebody is hunting. The script checks every second if there is food on the ground. 
 //      2: not used anymore, was: food dropped but no spawn yet
-//      3: monsters have been spawned
+//      3: not used anymore, was: monsters have been spawned
 // global $@Fluffy_Time - the number of seconds since you entered the area
 // global $@Fluffy_Spawn - how many fluffies have been spawned
 // global $@Fluffy_Kills - how many fluffies you have killed so far
-// global $@Fluffy_Min - how many fluffies you have to kill to get a reward
+// global $@Fluffy_Alive - how many fluffies are currently alive
 // global $@Fluffy_PC_Deaths - used to keep track of whether the fluffies kill you
 // global $@Fluffy_Fighter$ - name of the person hunting fluffies (only used for ornamentation)
 // global $@Fluffy_FighterID - ID of the person hunting fluffies
@@ -23,8 +23,9 @@
 //      3: got reward
 
 // Note: if you're going to reenable the "drop multiple times" feature
-// 1: please do it every second, not just once you've killed everything
+// 1: please do it every second, not just once you've killed everything - Done
 // 2: you should change $@Fluffy_Spawn to $@Fluffy_Alive and decrement it on kills
+//  Kept $@Fluffy_Spawn and added $@Fluffy_Alive. The script spawns the amount related to what you drop at each specific time.
 // 3: add a variable to spawn more fluffies if you drop more than 100 apples, as you kill them
 
 // Also, the $@Fluffy_Extra behaviour should be reconsidered (hardly anything spawns ...)
@@ -98,7 +99,7 @@ L_Ask:
 
 L_AlreadyGotReward:
     callsub S_Clean;
-    mes "Once again you prove your worth as a hunter, " + strcharinfo(0);
+    mes "Once again you prove you are worth as a hunter, " + strcharinfo(0);
     goto L_Close;
 
 L_Reward1:
@@ -112,7 +113,7 @@ L_Reward1:
     // as far as I can tell, this fails because it won't resume from the "next"
     // when the script is executed via the "OnFluffyDeath" callback
     // (I haven't tried via the 301st call of OnTimer1000)
-    message "Kimarr: talk to me for your reward";
+    message strcharinfo(0), "Kimarr: talk to me for your reward";
     goto L_Close;
 
 // this label is reached on completion of the quest, or, if you inventory was
@@ -159,8 +160,6 @@ L_Game:
     set $@Fluffy_Time, 0;
 
 //TODO: set minimum number of killed fluffies (maybe based on level?)
-    // Make sure it is more than 1 to avoid grammar issues "%d fluffies killed"
-    set $@Fluffy_Min, 2;
     warp "033-1.gat", 79, 34;
     initnpctimer;
     goto L_Close;
@@ -188,7 +187,6 @@ OnTimer1000:
     set $@Fluffy_Time, $@Fluffy_Time + 1;
     if ($@Fluffy_Time > 300)
         goto L_TimeOver;
-    if ($@Fluffy_Hunting == 1)
         goto L_CheckDrops;
 
 L_ContinueTimer:
@@ -212,8 +210,9 @@ L_TimeOver:
     goto L_MaybeRecordScore;
 
 L_CheckDrops:
-    if ($@Fluffy_Time > 15)
-        goto L_DidntDrop;
+    if ($@Fluffy_Alive >= 100)
+        goto L_TooManyFluffies;
+    set @Fluffy_Toomany, 0;
     set @Fluffy_RedApple,      getareadropitem("033-1.gat", 79, 29, 88, 42, "RedApple", 1);
     set @Fluffy_XmasCake,      getareadropitem("033-1.gat", 79, 29, 88, 42, "XmasCake", 1);
     set @Fluffy_Cake,          getareadropitem("033-1.gat", 79, 29, 88, 42, "Cake", 1);
@@ -222,14 +221,18 @@ L_CheckDrops:
         goto L_BeginHunting;
     goto L_ContinueTimer;
 
+L_TooManyFluffies:
+    if (@Fluffy_Toomany == 0)
+    message strcharinfo(0), "Wow, calm down, there are already too many fluffies around here.";
+    if (@Fluffy_Toomany == 0)
+        set @Fluffy_Toomany, 1;
+    goto L_ContinueTimer;
+    
 L_BeginHunting:
     set $@Fluffy_Spawn, @Fluffy_RedApple + 5 * @Fluffy_XmasCake + 3 * @Fluffy_Cake + @Fluffy_GreenApple;
     // limit the number of monsters that can be spawned, to prevent people creating lag with massive amount of monsters
     if ($@Fluffy_Spawn > 100)
         set $@Fluffy_Spawn, 100;
-    if ($@Fluffy_Spawn < $@Fluffy_Min)
-        // TODO: should we instead say "You didn't put enough food"
-        set $@Fluffy_Spawn, $@Fluffy_Min;
 
     areamonster "033-1.gat", 79, 29, 88, 42, "", 1020, $@Fluffy_Spawn, "Kimarr::OnFluffyDeath";
 
@@ -248,8 +251,7 @@ L_BeginHunting:
     set @Fluffy_XmasCake, 0;
     set @Fluffy_Cake, 0;
     set @Fluffy_GreenApple, 0;
-    set $@Fluffy_Hunting, 3;
-
+    set $@Fluffy_Alive, $@Fluffy_Alive + $@Fluffy_Spawn;
     goto L_ContinueTimer;
 
 OnOtherDeath:
@@ -257,27 +259,25 @@ OnOtherDeath:
     end;
 
 OnFluffyDeath:
+    if ($@Fluffy_Hunting == 0) end;
     set $@Fluffy_Kills, $@Fluffy_Kills + 1;
+    set $@Fluffy_Alive, $@Fluffy_Alive - 1;
     //TODO: remove announce after debugging
-    //mapannounce "033-1.gat", "fluffies killed: " + $@Fluffy_Kills, 0;
-    if ($@Fluffy_Kills < $@Fluffy_Spawn)
+//  message strcharinfo(0), "Fluffies alive: " + $@Fluffy_Alive;
+//  message strcharinfo(0), "Fluffies killed: " + $@Fluffy_Kills;
+    if ($@Fluffy_Alive != 0)
         end;
     if (attachrid($@Fluffy_FighterID))
-        goto L_MaybeRecordScore;
+        goto L_Killedall;
     goto L_GotOut;
     end;
 
-L_DidntDrop:
-    warp "033-1.gat", 77, 34;
-    mes "[Kimarr]";
-    mes "You waited too much to throw the food on the ground... Now the fluffies know you are planning something.";
-    callsub S_Clean;
-    goto L_Close;
+L_Killedall:
+    message strcharinfo(0), "Good job, but you still have time to trow more food on the ground.";
+    end;
 
 S_Clean:
     stopnpctimer;
-    killmonster "033-1.gat", "Kimarr::OnOtherDeath";
-    killmonster "033-1.gat", "Kimarr::OnFluffyDeath";
     set $@Fluffy_Hunting, 0;
     set $@Fluffy_Time, 0;
     set $@Fluffy_PC_Deaths, 0;
@@ -285,6 +285,9 @@ S_Clean:
     set $@Fluffy_FighterID, 0;
     set $@Fluffy_Kills, 0;
     set $@Fluffy_Spawn, 0;
+    set $@Fluffy_Alive, 0;
+    killmonster "033-1.gat", "Kimarr::OnOtherDeath";
+    killmonster "033-1.gat", "Kimarr::OnFluffyDeath";
     return;
 
 L_MaybeRecordScore:
