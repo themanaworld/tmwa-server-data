@@ -158,7 +158,7 @@ L_Game:
     set $@Fluffy_PC_Deaths, PC_DIE_COUNTER;
     set $@Fluffy_Fighter$, strcharinfo(0);
     set $@Fluffy_FighterID, getcharid(3);
-    set $@Fluffy_Time, 0;
+    set $@Fluffy_Time, 180;
 
 //TODO: set minimum number of killed fluffies (maybe based on level?)
     set $@Fluffy_Min, 2;
@@ -187,12 +187,26 @@ OnTimer1000:
         goto L_Died;
 // Checking if there is more than 1 player in the fight area
     if (getareausers("033-1.gat", 79, 28, 88, 42) > 1)
-        areatimer "033-1.gat", 79, 28, 88, 42, 10, "Kimarr::OnToomany";
-    
-    set $@Fluffy_Time, $@Fluffy_Time + 1;
-    if ($@Fluffy_Time > 180)
+        areatimer "033-1.gat", 79, 28, 88, 42, 10, "Kimarr::OnTooMany";
+
+    if ($@Fluffy_Time == 180)
+        npctalk strcharinfo(0) + ", you have 3 minutes.";
+    if ($@Fluffy_Time == 120)
+        npctalk "You have 2 minutes left.";
+    if ($@Fluffy_Time == 60)
+        npctalk "You have 1 minute left.";
+    if ($@Fluffy_Time == 30)
+        npctalk "You have 30 seconds left.";
+    if ($@Fluffy_Time == 15)
+        npctalk "You have 15 seconds left.";
+    if ($@Fluffy_Time == 10)
+        npctalk "You have 10 seconds left.";
+    if ($@Fluffy_Time == 5)
+        npctalk "You have 5 seconds left.";
+    set $@Fluffy_Time, $@Fluffy_Time - 1;
+    if ($@Fluffy_Time < 0)
         goto L_TimeOver;
-        goto L_CheckDrops;
+    goto L_CheckDrops;
 
 L_ContinueTimer:
     setnpctimer 0;
@@ -204,12 +218,9 @@ L_GotOut:
     callsub S_Clean;
     end;
 
-OnToomany:
-    if (getcharid(3) != $@Fluffy_FighterID)
-    goto L_Warp;
-    end;
-
-L_Warp:
+OnTooMany:
+    if (getcharid(3) == $@Fluffy_FighterID)
+        end;
     warp "033-1.gat", 77, 34;
     npctalk "Hey " + strcharinfo(0) + "! What are you doing there? This hunt is for " + $@Fluffy_Fighter$ + " alone!";
     end;
