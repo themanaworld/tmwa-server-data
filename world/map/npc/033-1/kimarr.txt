@@ -262,15 +262,14 @@ L_BeginHunting:
 
     areamonster "033-1.gat", 79, 29, 88, 42, "", 1020, $@Fluffy_Spawn, "Kimarr::OnFluffyDeath";
 
-    // other monsters don't generate a real event
     set $@Fluffy_Extra, 5 * @Fluffy_XmasCake + 3 * @Fluffy_Cake + 10 * BaseLevel;
     if ((BaseLevel > 40) && (rand($@Fluffy_Extra) > 500)) // Ice Goblin
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1058, 1, "Kimarr::OnOtherDeath";
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1058, 1, "Kimarr::OnIceGoblinDeath";
     if ((BaseLevel > 60) && (rand($@Fluffy_Extra) > 550)) // Santa Slime
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1015, 1, "Kimarr::OnOtherDeath";
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1015, 1, "Kimarr::OnSantaSlimeDeath";
     // TODO: add the wolvern as well when it has been added
     if ((BaseLevel > 70) && (rand($@Fluffy_Extra) > 600)) // Yeti
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1072, 1, "Kimarr::OnOtherDeath";
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1072, 1, "Kimarr::OnYetiDeath";
 
     set $@Fluffy_Extra, 0;
     set @Fluffy_RedApple, 0;
@@ -280,23 +279,59 @@ L_BeginHunting:
     set $@Fluffy_Alive, $@Fluffy_Alive + $@Fluffy_Spawn;
     goto L_ContinueTimer;
 
-OnOtherDeath:
-    // nothing happens
+OnIceGoblinDeath:
+    set @MobID, 1058;
+    if (getcharid(3) != $@Fluffy_FighterID)
+        goto L_Punish;
+    set @MobID, 0;
+    end;
+
+OnSantaSlimeDeath:
+    set @MobID, 1015;
+    if (getcharid(3) != $@Fluffy_FighterID)
+        goto L_Punish;
+    set @MobID, 0;
+    end;
+
+OnYetiDeath:
+    set @MobID, 1072;
+    if (getcharid(3) != $@Fluffy_FighterID)
+        goto L_Punish;
+    set @MobID, 0;
     end;
 
 OnFluffyDeath:
+    set @MobID, 1020;
     if ($@Fluffy_Hunting == 0)
         end;
+    if (getcharid(3) != $@Fluffy_FighterID)
+        goto L_Punish;
+    set @MobID, 0;
     set $@Fluffy_Kills, $@Fluffy_Kills + 1;
     set $@Fluffy_Alive, $@Fluffy_Alive - 1;
     //TODO: remove announce after debugging
-//  message strcharinfo(0), "Fluffies alive: " + $@Fluffy_Alive;
-//  message strcharinfo(0), "Fluffies killed: " + $@Fluffy_Kills;
+    //  message strcharinfo(0), "Fluffies alive: " + $@Fluffy_Alive;
+    //  message strcharinfo(0), "Fluffies killed: " + $@Fluffy_Kills;
     if ($@Fluffy_Alive != 0)
         end;
     if (attachrid($@Fluffy_FighterID))
         goto L_Killedall;
     goto L_GotOut;
+    end;
+
+L_Punish:
+    if (@MobID == 1020)
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1020, 1, "Kimarr::OnFluffyDeath";
+    if (@MobID == 1058)
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1058, 1, "Kimarr::OnIceGoblinDeath";
+    if (@MobID == 1015)
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1015, 1, "Kimarr::OnSantaSlimeDeath";
+    if (@MobID == 1072)
+        areamonster "033-1.gat", 79, 29, 88, 42, "", 1072, 1, "Kimarr::OnYetiDeath";
+
+    npctalk strcharinfo(0) + "! This hunt is for " + $@Fluffy_Fighter$ + " alone!";
+    percentheal -100, 0;
+    set @MobID, 0;
     end;
 
 L_Killedall:
@@ -313,7 +348,9 @@ S_Clean:
     set $@Fluffy_Kills, 0;
     set $@Fluffy_Spawn, 0;
     set $@Fluffy_Alive, 0;
-    killmonster "033-1.gat", "Kimarr::OnOtherDeath";
+    killmonster "033-1.gat", "Kimarr::OnIceGoblinDeath";
+    killmonster "033-1.gat", "Kimarr::OnSantaSlimeDeath";
+    killmonster "033-1.gat", "Kimarr::OnYetiDeath";
     killmonster "033-1.gat", "Kimarr::OnFluffyDeath";
     return;
 
