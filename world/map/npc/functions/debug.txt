@@ -1,0 +1,398 @@
+// Author: alastrim, Jenalya
+
+function|script|Debug|{
+
+L_Begin:
+    set @debug_mask, 65535;
+    set @debug_shift, 0;
+    set @mexp, ((MAGIC_EXPERIENCE & @debug_mask) >> @debug_shift);
+    mes "What do you want to do?";
+    menu
+        "Change base level", L_Level,
+        "Reset status points", L_Status,
+        "Change my skills", L_Skills,
+        "Change my magic skills", L_Magic,
+        "Close", -;
+    close;
+
+L_Level:
+    mes "Which level do you want to be? (min: 1 - max: 255)";
+    next;
+    input @lvl;
+    if (@lvl > 255) goto L_Leveltoohigh;
+    if (@lvl < 1) goto L_Leveltoolow;
+    if (Baselevel - @lvl == 0) goto L_Samelvl;
+    set BaseLevel, BaseLevel - (Baselevel - @lvl);
+    resetstatus;
+    message "New level: " + Baselevel;
+    goto L_Begin;
+
+L_Samelvl:
+    mes "You are already level " + @lvl;
+    next;
+    goto L_Level;
+
+L_Leveltoolow:
+    mes "Bad choice. Minimum level is 1.";
+    next;
+    goto L_Level;
+
+L_Leveltoohigh:
+    mes "Bad choice. Maximum level is 255.";
+    next;
+    goto L_Level;
+
+L_Skills:
+    set @mallard, getskilllv(SKILL_MALLARDS_EYE);
+    set @brawling, getskilllv(SKILL_BRAWLING);
+    set @speed, getskilllv(SKILL_SPEED);
+    set @poison, getskilllv(SKILL_RESIST_POISON);
+    set @astralsoul, getskilllv(SKILL_ASTRAL_SOUL);
+    set @raging, getskilllv(SKILL_WARRIOR_RAGING);
+
+    menu
+        "Overview of my skills", L_Seeskills,
+        "Focus/Unfocus", L_Unfocus,
+        "Add skills", L_Changeskills,
+        "Reset skills", L_Resetskills,
+        "Back to main menu", L_Begin,
+        "Close", -;
+    close;
+
+L_Unfocus:
+    cleararray @skilllist_name$[0], "", 8;
+    cleararray @skilllist_id[0], 0, 8;
+    cleararray @skilllist_count[0], 0, 8;
+    if (getskilllv(SKILL_POOL) == 0) setskill SKILL_POOL, 1;
+    getactivatedpoolskilllist;
+    if (@skilllist_count == 0) goto L_Focus;
+    getactivatedpoolskilllist;
+    if (@skilllist_count != 0) goto L_Askunfocus;
+    mes "You aren't focused on a skill at the moment";
+    goto L_Skills;
+
+L_Askunfocus:
+    mes "Unfocus " + @skilllist_name$[@skilllist_count-1] + "?";
+    menu
+        "Yes", -,
+        "No", L_Skills;
+    unpoolskill @skilllist_id[@skilllist_count-1];
+    goto L_Skills;
+
+L_Focus:
+    cleararray @skilllist_name$[0], "", 8;
+    cleararray @skilllist_id[0], 0, 8;
+    cleararray @skilllist_count[0], 0, 8;
+    getunactivatedpoolskilllist;
+    if (@skilllist_count == 0) goto L_Noskills;
+    set @skilllist_id[@skilllist_count], 0;
+    set @skilllist_name$[@skilllist_count], "Back to skills menu";
+    mes "You don't have any skill focused right now. Which one do you want to focus?";
+    menu
+        @skilllist_name$[0], -,
+        @skilllist_name$[1], -,
+        @skilllist_name$[2], -,
+        @skilllist_name$[3], -,
+        @skilllist_name$[4], -,
+        @skilllist_name$[5], -,
+        @skilllist_name$[6], -,
+        @skilllist_name$[7], -;
+    set @menu, @menu - 1;
+    poolskill @skilllist_id[@menu];
+    goto L_Skills;
+
+L_Noskills:
+    mes "You have no skills to focus/unfocus.";
+    goto L_Skills;
+
+L_Seeskills:
+    cleararray @skilllist_name$[0], "", 8;
+    cleararray @skilllist_id[0], 0, 8;
+    cleararray @skilllist_count[0], 0, 8;
+    getactivatedpoolskilllist;
+    if (@skilllist_count == 0) goto L_Focusmessage;
+    if (@skilllist_count != 0) mes "You are focused on " + @skilllist_name$[@skilllist_count-1] + " skill.";
+
+L_Skillsoverview:
+    mes "You level in mallards eye skill is " + @mallard;
+    mes "You level in brawling skill is " + @brawling;
+    mes "You level in speed skill is " + @speed;
+    mes "You level in resist poison skill is " + @poison;
+    mes "You level in astral soul skill is " + @astralsoul;
+    mes "You level in raging skill is " + @raging;
+    next;
+    goto L_Skills;
+
+L_Focusmessage:
+    mes "You don't have any skill focused right now.";
+    goto L_Skillsoverview;
+
+L_Changeskills:
+    menu
+        "Mallards eye", L_Changemallard,
+        "Brawling", L_Changebrawling,
+        "Speed", L_Changespeed,
+        "Resist Poison", L_Changepoison,
+        "Astral Soul", L_Changeastralsoul,
+        "Raging", LChangeraging,
+        "All skills level 9", L_AllSkills,
+        "Back to skills menu", L_Skills,
+        "Close", -;
+    close;
+
+L_Badskilllvl:
+    mes "Invalid skill lvl. Try again.";
+    next;
+    goto L_Changeskills;
+
+L_Changemallard:
+    mes "Enter the lvl you want to be in this skill(min: 1 - max: 9):";
+    input @lvl;
+    if (@lvl < 1 || @lvl > 9) goto L_Badskilllvl;
+    setskill SKILL_MALLARDS_EYE, @lvl;
+    goto L_Skills;
+
+L_Changebrawling:
+    mes "Enter the lvl you want to be in this skill(min: 1 - max: 9):";
+    input @lvl;
+    if (@lvl < 1 || @lvl > 9) goto L_Badskilllvl;
+    setskill SKILL_BRAWLING, @lvl;
+    goto L_Skills;
+
+L_Changespeed:
+    mes "Enter the lvl you want to be in this skill(min: 1 - max: 9):";
+    input @lvl;
+    if (@lvl < 1 || @lvl > 9) goto L_Badskilllvl;
+    setskill SKILL_SPEED, @lvl;
+    goto L_Skills;
+
+L_Changepoison:
+    mes "Enter the lvl you want to be in this skill(min: 1 - max: 9):";
+    input @lvl;
+    if (@lvl < 1 || @lvl > 9) goto L_Badskilllvl;
+    setskill SKILL_RESIST_POISON, @lvl;
+    goto L_Skills;
+
+L_Changeastralsoul:
+    mes "Enter the lvl you want to be in this skill(min: 1 - max: 9):";
+    input @lvl;
+    if (@lvl < 1 || @lvl > 9) goto L_Badskilllvl;
+    setskill SKILL_ASTRAL_SOUL, @lvl;
+    goto L_Skills;
+
+L_Changeraging:
+    mes "Enter the lvl you want to be in this skill(min: 1 - max: 9):";
+    input @lvl;
+    if (@lvl < 1 || @lvl > 9) goto L_Badskilllvl;
+    setskill SKILL_WARRIOR_RAGING, @lvl;
+    goto L_Skills;
+
+L_AllSkills:
+    setskill SKILL_MALLARDS_EYE, 9;
+    setskill SKILL_BRAWLING, 9;
+    setskill SKILL_SPEED, 9;
+    setskill SKILL_RESIST_POISON, 9;
+    setskill SKILL_ASTRAL_SOUL, 9;
+    setskill SKILL_WARRIOR_RAGING, 9;
+    goto L_Skills;
+
+L_Resetskills:
+    setskill SKILL_MALLARDS_EYE, 0;
+    setskill SKILL_BRAWLING, 0;
+    setskill SKILL_SPEED, 0;
+    setskill SKILL_RESIST_POISON, 0;
+    setskill SKILL_ASTRAL_SOUL, 0;
+    setskill SKILL_WARRIOR_RAGING, 0;
+    goto L_Skills;
+
+L_Magic:
+    set @general, getskilllv(SKILL_MAGIC);
+    set @life, getskilllv(SKILL_MAGIC_LIFE);
+    set @war, getskilllv(SKILL_MAGIC_WAR);
+    set @trans, getskilllv(SKILL_MAGIC_TRANSMUTE);
+    set @nature, getskilllv(SKILL_MAGIC_NATURE);
+    set @astral, getskilllv(SKILL_MAGIC_ASTRAL);
+
+    menu
+        "Overview of my magical skills", L_Seemagic,
+        "Get magic skills", L_Changemagic,
+        "Get magic experience", L_Magicexp,
+        "Get all magic skills lvl2 and max exp", L_GetAllMagic,
+        "Reset magic", L_Resetmagic,
+        "Back to main menu", L_Begin,
+        "Close", -;
+    close;
+
+L_Nomagicskills:
+    mes "You can't have magic experience, since you have no magic skills.";
+   goto L_Magic;
+
+L_GetAllMagic:
+    setskill SKILL_MAGIC, 2;
+    setskill SKILL_MAGIC_LIFE, 2;
+    setskill SKILL_MAGIC_WAR, 2;
+    setskill SKILL_MAGIC_TRANSMUTE, 2;
+    setskill SKILL_MAGIC_NATURE, 2;
+    setskill SKILL_MAGIC_ASTRAL, 2;
+    set @mexp, 1200;
+    callsub S_Update_Mask;
+    goto L_Magic;
+
+L_Resetmagic:
+    setskill SKILL_MAGIC, 0;
+    setskill SKILL_MAGIC_LIFE, 0;
+    setskill SKILL_MAGIC_WAR, 0;
+    setskill SKILL_MAGIC_TRANSMUTE, 0;
+    setskill SKILL_MAGIC_NATURE, 0;
+    setskill SKILL_MAGIC_ASTRAL, 0;
+    set @mexp, 0;
+    callsub S_Update_Mask;
+    goto L_Magic;
+
+L_Wrongexp:
+    mes "Wrong value informed. Try again.";
+
+L_Magicexp:
+    mes "Your current magic experience is " + @mexp;
+    if (@general == 0 && @life == 0 && @war == 0  && @trans == 0  && @nature == 0  && @astral == 0) goto L_Nomagicskills;
+    if (@general == 2 || @life == 2 || @war == 2  || @trans == 2  || @nature == 2  || @astral == 2) goto L_Magicexp2;
+
+L_Magicexp1:
+    mes "Set the desired magic experience (min: 1 - max: 100)";
+    input @value;
+    if (@value < 1 || @value > 100) goto L_Wrongexp;
+    set @mexp, @value;
+    callsub S_Update_Mask;
+    goto L_Magic;
+
+L_Magicexp2:
+    mes "Set the desired magic experience (min: 100 - max: 1200)";
+    input @value;
+    if (@value < 100 || @value > 1200) goto L_Wrongexp;
+    set @mexp, @value;
+    callsub S_Update_Mask;
+    goto L_Magic;
+
+L_Changemagic:
+    menu
+        "General Magic", L_Changegeneral,
+        "Life Magic", L_Changelife,
+        "War Magic", L_Changewar,
+        "Transmutation Magic", L_Changetrans,
+        "Nature Magic", L_Changenature,
+        "Astral Magic", L_Changeastral,
+        "Back to magic menu", L_Magic,
+        "Close", -;
+    close;
+
+L_Seemagic:
+    mes "Your current magic experience is " + @mexp;
+    mes "You level in general magic is " + @general;
+    mes "You level in life magic is " + @life;
+    mes "You level in war magic is " + @war;
+    mes "You level in transmutation magic is " + @trans;
+    mes "You level in nature magic is " + @nature;
+    mes "You level in astral magic is " + @astral;
+    next;
+    goto L_Magic;
+
+L_Changegeneral:
+    mes "You level in general magic is " + @general + ". What do you want to do?";
+    menu
+        "Get Level one", -,
+        "Get Level two", L_Generallvl2,
+        "Back to magic menu", L_Magic;
+    if (@menu == 1) setskill SKILL_MAGIC, 1;
+    goto L_Magic;
+
+L_Generallvl2:
+    setskill SKILL_MAGIC, 2;
+    if (@mexp < 100) set @mexp, 100;
+    callsub S_Update_Mask;
+    goto L_Magic;
+
+L_Changelife:
+    mes "You level in life magic is " + @war + ". What do you want to do?";
+    menu
+        "Get Level one", -,
+        "Get Level two", L_Lifelvl2,
+        "Back to magic menu", L_Magic;
+    if (@menu == 1) setskill SKILL_MAGIC_LIFE, 1;
+    goto L_Magic;
+
+L_Lifelvl2:
+    setskill SKILL_MAGIC_LIFE, 2;
+    if (@mexp < 100) set @mexp, 100;
+    callsub S_Update_Mask;
+    goto L_Magic;
+
+L_Changewar:
+    mes "You level in war magic is " + @war + ". What do you want to do?";
+    menu
+        "Get Level one", -,
+        "Get Level two", L_Warlvl2,
+        "Back to magic menu", L_Magic;
+    if (@menu == 1) setskill SKILL_MAGIC_WAR, 1;
+    goto L_Magic;
+
+L_Warlvl2:
+    setskill SKILL_MAGIC_WAR, 2;
+    if (@mexp < 100) set @mexp, 100;
+    callsub S_Update_Mask;
+    goto L_Magic;
+
+L_Changetrans:
+    mes "You level in transmutation magic is " + @trans + ". What do you want to do?";
+    menu
+        "Get Level one", -,
+        "Get Level two", L_Translvl2,
+        "Back to magic menu", L_Magic;
+    if (@menu == 1) setskill SKILL_MAGIC_TRANSMUTE, 1;
+    goto L_Magic;
+
+L_Translvl2:
+    setskill SKILL_MAGIC_TRANSMUTE, 2;
+    if (@mexp < 100) set @mexp, 100;
+    callsub S_Update_Mask;
+    goto L_Magic;
+
+L_Changenature:
+    mes "You level in nature magic is " + @nature + ". What do you want to do?";
+    menu
+        "Get Level one", -,
+        "Get Level two", L_Naturelvl2,
+        "Back to magic menu", L_Magic;
+    if (@menu == 1) setskill SKILL_MAGIC_NATURE, 1;
+    goto L_Magic;
+
+L_Naturelvl2:
+    setskill SKILL_MAGIC_NATURE, 2;
+    if (@mexp < 100) set @mexp, 100;
+    callsub S_Update_Mask;
+    close;
+
+L_Changeastral:
+    mes "You level in astral magic is " + @astral + ". What do you want to do?";
+    menu
+        "Get Level one", -,
+        "Get Level two", L_Astrallvl2,
+        "Back to magic menu", L_Magic;
+    if (@menu == 1) setskill SKILL_MAGIC_ASTAL, 1;
+    goto L_Magic;
+
+L_Astrallvl2:
+    setskill SKILL_MAGIC_ASTRAL, 2;
+    if (@mexp < 100) set @mexp, 100;
+    callsub S_Update_Mask;
+    goto L_Magic;
+
+L_Status:
+    resetstatus;
+    goto L_Begin;
+
+S_Update_Mask:
+        set MAGIC_EXPERIENCE,
+            (MAGIC_EXPERIENCE & ~(@debug_mask))
+                | (@mexp << @debug_shift);
+        return;
+}
