@@ -1,63 +1,84 @@
-//
+// The Barber script has been around since before the repository split
+// so it's hard to figure out who wrote it.
 
-function	script	Barber	{
-	menu
-		"Change my style", L_Style,
-		"Change my color", L_Color,
-		"Nah, I'm fine", L_Done;
+// o11c updated it according to new scripting standards while adding pink.
 
-	goto L_Done;
+// Note: there is a soft limit of 12 colors (0-11) and 20 styles (0-19)
+// This is the number that can be set when creating a character
+// or using GM commands, but scripts (such as this one) can set
+// any value 0-255
+
+function|script|Barber|{
+    // TODO do something like this, but with names
+    //set @style, getlook(LOOK_HAIR_STYLE);
+    //set @color, getlook(LOOK_HAIR_COLOR);
+    //mes "Your current style is " + @style + " and your current color is " + @color + ".";
+
+    menu
+        "Change my style", L_Style,
+        "Change my color", L_Color,
+        "Nah, I'm fine", L_Done;
 
 L_Style:
-	menu
-		"Bald", -,
-		"Flat ponytail", -,
-		"Bowl cut", -,
-		"Combed back", -,
-		"Emo", -,
-		"Mohawk", -,
-		"Pompadour", -,
-		"Center parting/Short and slick", -,
-		"Long and slick", -,
-		"Short and curly", -,
-		"Pigtails", -,
-		"Long and curly", -,
-		"Parted", -,
-		"Perky ponytail", -,
-		"Wave", -,
-		"Mane", -,
-		"Bun", -,
-		"Shoulder Length Flick", -,
-		"Fizzy", -,
-		"Surprise me", -,
-		"Nah, I'm fine", L_Done;
+    menu
+        "Bald", -,
+        "Flat ponytail", -,
+        "Bowl cut", -,
+        "Combed back", -,
+        "Emo", -,
+        "Mohawk", -,
+        "Pompadour", -,
+        "Center parting/Short and slick", -,
+        "Long and slick", -,
+        "Short and curly", -,
+        "Pigtails", -,
+        "Long and curly", -,
+        "Parted", -,
+        "Perky ponytail", -,
+        "Wave", -,
+        "Mane", -,
+        "Bun", -,
+        "Shoulder Length Flick", -,
+        "Fizzy", -,
+        // "Last normal style (currently displayed as bald)", -,
+        "Surprise me", L_RandomStyle,
+        "Nah, I'm fine", L_Done;
 
-L_Process_Style:
-	set @style, @menu - 1;
-	if (@style == 19) set @style, rand(19);
-	setlook 1, @style;
-	return;
+    setlook LOOK_HAIR_STYLE, @menu - 1;
+    goto L_Done;
+
+L_RandomStyle:
+    setlook LOOK_HAIR_STYLE, rand(20);
+    goto L_Done;
 
 L_Color:
-	menu
-		"Brunette", -,
-		"Green", -,
-		"Dark red", -,
-		"Light purple", -,
-		"Gray", -,
-		"Blonde", -,
-		"Teal", -,
-		"Light red", -,
-		"Blue", -,
-		"Dark purple", -,
-		"Black", -,
-		"Surprise me", -,
-		"Nah, I'm fine", L_Done;
-	set @color, @menu - 1;
-	if (@color == 11) set @color, rand(11);
-	setlook 6, @color;
-	return;
+    menu
+        "Brunette", -,
+        "Green", -,
+        "Dark red", -,
+        "Light purple", -,
+        "Gray", -,
+        "Blonde", -,
+        "Teal", -,
+        "Light red", -,
+        "Blue", -,
+        "Dark purple", -,
+        "Black", -,
+        "Pink", -,
+        "Surprise me", L_RandomColor,
+        "Nah, I'm fine", L_Done;
+
+    setlook LOOK_HAIR_COLOR, @menu - 1;
+    goto L_Done;
+
+L_RandomColor:
+    setlook LOOK_HAIR_COLOR, rand(12);
+    goto L_Done;
 
 L_Done:
-	return;
+    // cleanup
+    set @menu, 0;
+    //set @style, 0;
+    //set @color, 0;
+    return;
 }
