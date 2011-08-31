@@ -1,162 +1,149 @@
-function	script	QuestTreeTrigger	{
-        set @Q_MASK, NIBBLE_2_MASK;
-        set @Q_SHIFT, NIBBLE_2_SHIFT;
+function|script|QuestTreeTrigger|{
+    set @Q_MASK, NIBBLE_2_MASK;
+    set @Q_SHIFT, NIBBLE_2_SHIFT;
 
-        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
-        set @Q_status_lower, @Q_status & 3;
-        set @Q_status, (@Q_status & 12) >> 2;
+    set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+    set @Q_status_lower, @Q_status & 3;
+    set @Q_status, (@Q_status & 12) >> 2;
 
-        if (@Q_status & @flag)
-		close;  // already did that
+    if (@Q_status & @flag) close;  // already did that
 
-        if (@flag == 2)
-		goto L_hug;
+    if (@flag == 2) goto L_hug;
 
 L_cont:
-        set @Q_status, @Q_status | @flag;
-        callsub S_update_var;
+    set @Q_status, @Q_status | @flag;
+    callsub S_update_var;
 
-        if (@Q_status != 3)
-        	close;
+    if (@Q_status != 3) close;
 
-        if (MAGIC_FLAGS & MFLAG_DID_CUTTREE)
-		close;
+    if (MAGIC_FLAGS & MFLAG_DID_CUTTREE) close;
 
-	mes "Maybe it is just a trick of the light, but you can't help but think that the tree looks different... healthier, almost younger.";
-        mes "[20000 experience points]";
-        getexp 20000, 0;
-        set @value, 15;
-        callfunc "QuestSagathaHappy";
-        close;
+    mes "Maybe it is just a trick of the light, but you can't help but think that the tree looks different... healthier, almost younger.";
+    mes "[20000 experience points]";
+    getexp 20000, 0;
+    set @value, 15;
+    callfunc "QuestSagathaHappy";
+    close;
 
 L_hug:
-	mes "You hug the tree.";
-        next;
-        goto L_cont;
+    mes "You hug the tree.";
+    next;
+    goto L_cont;
 
 S_update_var:
-        set @Q_wr_status, (@Q_status << 2) | @Q_status_lower;
-	set QUEST_MAGIC,
-		(QUEST_MAGIC & ~(@Q_MASK)
-		| (@Q_wr_status << @Q_SHIFT));
-	return;
+    set @Q_wr_status, (@Q_status << 2) | @Q_status_lower;
+    set QUEST_MAGIC, (QUEST_MAGIC & ~(@Q_MASK) | (@Q_wr_status << @Q_SHIFT));
+    return;
 }
 
-function	script	QuestTreeTouch	{
-        set @Q_MASK, NIBBLE_2_MASK;
-        set @Q_SHIFT, NIBBLE_2_SHIFT;
+function|script|QuestTreeTouch|{
+    set @Q_MASK, NIBBLE_2_MASK;
+    set @Q_SHIFT, NIBBLE_2_SHIFT;
 
-        set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
-        set @Q_status, (@Q_status & 12) >> 2;
+    set @Q_status, (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+    set @Q_status, (@Q_status & 12) >> 2;
 
-        if (@Q_status == 3)
-		goto L_happy;
+    if (@Q_status == 3) goto L_happy;
 
-        if ((MAGIC_FLAGS & (MFLAG_KNOWS_DRUIDTREE | MFLAG_KNOWS_CUTTREE)) == MFLAG_KNOWS_CUTTREE)
-		goto L_cut;
+    if ((MAGIC_FLAGS & (MFLAG_KNOWS_DRUIDTREE | MFLAG_KNOWS_CUTTREE)) == MFLAG_KNOWS_CUTTREE) goto L_cut;
 
-        if ((MAGIC_FLAGS & (MFLAG_KNOWS_DRUIDTREE | MFLAG_KNOWS_CUTTREE)) == MFLAG_KNOWS_DRUIDTREE)
-		goto L_water;
+    if ((MAGIC_FLAGS & (MFLAG_KNOWS_DRUIDTREE | MFLAG_KNOWS_CUTTREE)) == MFLAG_KNOWS_DRUIDTREE) goto L_water;
 
-        if ((MAGIC_FLAGS & (MFLAG_KNOWS_DRUIDTREE | MFLAG_KNOWS_CUTTREE)) > 0)   //i.e., both are set
-		goto L_both;
+    if ((MAGIC_FLAGS & (MFLAG_KNOWS_DRUIDTREE | MFLAG_KNOWS_CUTTREE)) > 0)   //i.e., both are set
+        goto L_both;
 
-	mes "[Dying Tree]";
-	mes "You see a strange tree.";
-	close;
+    mes "[Dying Tree]";
+    mes "You see a strange tree.";
+    close;
 
 L_cut:
-	mes "[Dying Tree]";
-        mes "This must be the tree that the earth spirit was referring to.";
-        next;
-        menu
-		"Cut off a branch", L_do_cut,
-		"Leave it alone", -;
-        close;
+    mes "[Dying Tree]";
+    mes "This must be the tree that the earth spirit was referring to.";
+    next;
+    menu
+        "Cut off a branch", L_do_cut,
+        "Leave it alone", -;
+    close;
 
 L_water:
-	mes "[Dying Tree]";
-        mes "This must be the druid tree.";
-        next;
-        menu
-		"Water the tree", L_givewater,
-		"Kiss tree", L_kiss, 
-		"Leave it alone", -;
-        close;
+    mes "[Dying Tree]";
+    mes "This must be the druid tree.";
+    next;
+    menu
+        "Water the tree", L_givewater,
+        "Kiss tree", L_kiss,
+        "Leave it alone", -;
+    close;
 
 L_both:
-	mes "[Dying Tree]";
-        mes "This must be the druid tree that Wyara and the earth spirit were talking about.";
-        next;
-        menu
-		"Water the tree", L_givewater,
-		"Kiss tree", L_kiss, 
-		"Cut off a branch", L_do_cut,
-		"Leave it alone", -;
-        close;
+    mes "[Dying Tree]";
+    mes "This must be the druid tree that Wyara and the earth spirit were talking about.";
+    next;
+    menu
+        "Water the tree", L_givewater,
+        "Kiss tree", L_kiss,
+        "Cut off a branch", L_do_cut,
+        "Leave it alone", -;
+    close;
 
 L_givewater:
-        if (countitem("BottleOfWater") < 1)
-		goto L_no_water;
-        delitem "BottleOfWater", 1;
-        getitem "EmptyBottle", 1;
+    if (countitem("BottleOfWater") < 1) goto L_no_water;
+    delitem "BottleOfWater", 1;
+    getitem "EmptyBottle", 1;
 
-	mes "[Dying Tree]";
-        mes "You pour a bottle of water into the sand.  The water dissipates quickly, without any effect.";
-        close;
+    mes "[Dying Tree]";
+    mes "You pour a bottle of water into the sand.  The water dissipates quickly, without any effect.";
+    close;
 
 L_no_water:
-	mes "[Dying Tree]";
-        mes "You don't have any water.";
-        close;
+    mes "[Dying Tree]";
+    mes "You don't have any water.";
+    close;
 
 L_kiss:
-	mes "[Dying Tree]";
-        mes "You pluck out a splinter from your lip.";
-        mes "Somehow, you don't think that this helped.";
-        close;
+    mes "[Dying Tree]";
+    mes "You pluck out a splinter from your lip.";
+    mes "Somehow, you don't think that this helped.";
+    close;
 
 L_do_cut:
-        if (countitem(570) < 1)
-		goto L_no_boneknife;
+    if (countitem(570) < 1) goto L_no_boneknife;
 
-	if (MAGIC_FLAGS & MFLAG_DID_CUTTREE)
-		goto L_really_cut;
+    if (MAGIC_FLAGS & MFLAG_DID_CUTTREE) goto L_really_cut;
 
-	mes "[Dying Tree]";
-        mes "You find a suitable branch and put your bone knife in position.";
-        mes "Holding the branch, you have an uneasy feeling-- as if something inside the tree were trying to resist you...";
-        mes "Do you want to continue cutting?";
-        next;
-
-        menu
-		"Nah... better not.", -,
-		"Yes, let's cut!", L_really_cut;
-	close;
+    mes "[Dying Tree]";
+    mes "You find a suitable branch and put your bone knife in position.";
+    mes "Holding the branch, you have an uneasy feeling-- as if something inside the tree were trying to resist you...";
+    mes "Do you want to continue cutting?";
+    next;
+    menu
+        "Nah... better not.", -,
+        "Yes, let's cut!", L_really_cut;
+    close;
 
 L_really_cut:
-        set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_DID_CUTTREE;
-        getitem "DruidTreeBranch", 1;
-	mes "[Dying Tree]";
-        mes "You cut off a branch from the tree.";
-        mes "For an instant, you have an uneasy feeling, as if the branch were writhing in your hand...";
-        close;
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_DID_CUTTREE;
+    getitem "DruidTreeBranch", 1;
+    mes "[Dying Tree]";
+    mes "You cut off a branch from the tree.";
+    mes "For an instant, you have an uneasy feeling, as if the branch were writhing in your hand...";
+    close;
 
 L_no_boneknife:
-	mes "[Dying Tree]";
-	mes "Try as you might, you can't seem to find a way to cut off a branch.  Perhaps you need a different tool for cutting?";
-        close;
+    mes "[Dying Tree]";
+    mes "Try as you might, you can't seem to find a way to cut off a branch.  Perhaps you need a different tool for cutting?";
+    close;
 
 L_happy:
-	mes "[Druid Tree]";
-	mes "The tree looks younger and healthier now.";
-	close;
+    mes "[Druid Tree]";
+    mes "The tree looks younger and healthier now.";
+    close;
 }
 
-005-1.gat,79,41,0	script	#DruidTree0#_M	127,{
-	callfunc "QuestTreeTouch";
+005-1.gat,79,41,0|script|#DruidTree0#_M|127,{
+    callfunc "QuestTreeTouch";
 }
 
-005-1.gat,80,41,0	script	#DruidTree1#_M	127,{
-	callfunc "QuestTreeTouch";
+005-1.gat,80,41,0|script|#DruidTree1#_M|127,{
+    callfunc "QuestTreeTouch";
 }
