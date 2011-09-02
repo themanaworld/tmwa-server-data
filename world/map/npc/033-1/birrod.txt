@@ -1,26 +1,21 @@
 033-1.gat,72,27,0|script|Birrod|217,{
-//TODO: minimum level for quests?
+// TODO: check name of wolf monster after it has been added to the mob_db
     set @Q_Barbarians_MASK, NIBBLE_0_MASK;
     set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
 
     set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
 
-//TODO: think about amount
-    set @candy, 25;
-    set @chocolate, 20;
-    set @candycane, 15;
-    set @sweet_exp, 10000;
-
-// different idea: wolf ambushs on 034-1
-//TODO    set @wolfdrop, ;
-//TODO    set @wolf_exp, ;
+// TODO: determine values:
+    set @wolvern_level, 40;    // minimum level to do the wolvern hunting
+    set @wolvern_amount, 10;   // number of script spawned wolverns to kill
+    set @wolvern_exp, 5000;
 
     set @minigame_exp, 5000;
 
     if (@state >= 6) goto L_Impressed;
     if (@state == 5) goto L_Questions;
-    if (@state == 4) goto L_Warrior;
-    if (@state == 3) goto L_Sweets;
+    if (@state == 4) goto L_Wolverns;
+    if (@state == 3) goto L_Hunting;
     if (@state == 2) goto L_Kimarr;
     if (@state == 1) goto L_Fluffy;
 
@@ -45,62 +40,46 @@ L_Kimarr:
     mes "\"But I think, Kimarr has something for you.\"";
     close;
 
-// TODO: decide whether to leave out this part or not
-L_Sweets:
-    mes "Birrod speaks with a lowered voice.";
-    mes "[Birrod]";
-    mes "\"" + strcharinfo(0) + ", can I ask you for a favor?\"";
-    next;
-    mes "\"I noticed those slime things with the funny hats. And they have so tasty stuff with them!\"";
-    next;
-    mes "He blushes.";
-    mes "[Birrod]";
-    mes "\"A warrior shouldn't get excited about sweets, so ahm, it would be great if you don't tell Yerrnk and Kimarr about it.\"";
-    next;
-    mes "\"Do you have " + @candy + " Candys, " + @chocolate + " Chocolate Bars and " + @candycane + " Candy Canes for me?\"";
-    menu
-        "Sure.",-,
-        "I'll see what I can do.",L_Close,
-        "I'm a great warrior, I don't have sweets with me!",L_Close;
-
-    if ((countitem("Candy") < @candy) || (countitem("ChocolateBar") < @chocolate) || (countitem("CandyCane") < @candycane)) goto L_No_Items;
-    delitem "Candy", @candy;
-    delitem "ChocolateBar", @chocolate;
-    delitem "CandyCane", @candycane;
-    getexp @sweet_exp, 0;
-    set @state, 4;
-    callsub S_Update_Mask;
-    mes "[Birrod]";
-    mes "\"Thank you!\"";
-    mes "He puts the sweets in his pockets covertly.";
-    mes "Then takes one candy and eats it with such a delighted look on his face that's really hard not to burst out in laughter.";
-    close;
-
-L_Warrior:
-// TODO: player can show his fighting abilities by bringing some drop of wolve monsters
-// different idea: wolf ambushs on 034-1
-// wolve monsters are more dangerous and harder to hunt than fluffies -> harder task
-// reason to hunt them: there unusual aggressive and are a danger for the people living in that area
-// also use of the items the drop (e.g. fur -> clothes)
+L_Hunting:
+    if (baselevel < @wolvern_level)
+        goto L_Weak;
     mes "[Birrod]";
     mes "\"Hello, " + strcharinfo(0) + "! Would you like to prove your hunting skills again?\"";
     next;
-// TODO: check name of monster
-    mes "\"I noticed many wolverns in this area. When there are so many of them, they reduce the fluffy population too much.";
-    mes "Also they are dangerous to all the small people who live in the town nearby.\"";
+    mes "\"I noticed some groups of wolverns in the forest west of here which are unusually aggressive.";
+    mes "This makes dangerous to all the small people from the town nearby to go there.\"";
     next;
-    mes "\"Bring me (amount) (TODO:drop of wolvern).";
-    mes "alternative: hunt (amount) of the aggressive wolverns in forest in the west.";
-    mes "TODO: add story about what useful can be done with that drop.";
-    menu
-        "Debug succes",-,
-        "Debug no succes",L_Close;
+    mes "\"To prove your skills, go to the forest and hunt down " + @wolvern_amount + " of the very aggressive wolverns.\"";
+    next;
+    mes "\"There are also some wolverns that behave normally attacking you when you come to close to them.";
+    mes "Those are not the ones I mean, but those that seek the battle themselves.\"";
+    set @state, 4;
+    callsub S_Update_Mask;
+    close;
+
+L_Wolverns:
+    if (wolvern_count >= @wolvern_amount)
+        goto L_Wolverns_Done;
+    mes "[Birrod]";
+    mes "\"Greetings, my friend.";
+    mes "The aggressive wolverns are still roaming the forest west of here.\"";
+    next;
+    mes "\"This is your chance to prove your worth.\"";
+    close;
+
+L_Wolverns_Done:
     set @state, 5;
     callsub S_Update_Mask;
-    if (getskilllv(SKILL_POOL) == 0) goto L_Not_Ready;
+    set wolvern_count, 0;
     mes "[Birrod]";
+    mes "\"" + strcharinfo(0) + "!";
+    mes "Good work. Now this area is much safer.\"";
+    next;
+    getexp @wolvern_exp, 0;
+    if (getskilllv(SKILL_POOL) == 0) goto L_Not_Ready;
     mes "\"Your skills are impressing. You are worthy to be called a warrior of the Mangarr, if you accept.\"";
     next;
+    goto L_Questions;
 
 L_Questions:
     if (getskilllv(SKILL_POOL) == 0) goto L_Not_Ready;
@@ -251,7 +230,13 @@ L_No_Member:
     mes "Come back when you feel better prepared.\"";
     close;
 
+L_Weak:
+    mes "[Birrod]";
+    mes "\"Hello, " + strcharinfo(0) + "! I might have a task for you when you've grown up a bit.\"";
+    close;
+
 L_Close:
+    // TODO: set all variables to 0
     close;
 
 S_Update_Mask:
