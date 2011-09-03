@@ -2,6 +2,8 @@
 // Authors: Jenalya, alastrim
 
 042-1.gat,111,68,0|script|Hasan|189,{
+    mes "This NPC is disabled due to bugs, sorry.";
+    close;
 
     set @toll, 10000;
     set @x, getx(0);
@@ -157,7 +159,8 @@ L_Cliff_Up:
 L_SummonAgain:
     message strcharinfo(0), "Kaan is mad at you for your interference! He walks over to the edge of the cliff and throws a rock on top of your head, then lets another scorpion run just near Hasan!";
     percentheal -100, 0;
-    attachrid(getcharid(3,$@ScorpionFighter$));
+    if (attachrid(getcharid(3,$@ScorpionFighter$)) == 0)
+        end;
     message strcharinfo(0), "Kaan: \"Just go while he is distracted and no one is interfering!\"";
     monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
     end;
@@ -168,8 +171,8 @@ L_Clean:
     set $@scorp, 0;
     stopnpctimer;
     setnpctimer 0;
-    if (isloggedin(getcharid(3,$@ScorpionFighter$))==0) end;
-    attachrid(getcharid(3,$@ScorpionFighter$));
+    if (attachrid(getcharid(3,$@ScorpionFighter$)) == 0)
+        end;
     if (PC_DIE_COUNTER > $@ScorpDeath) goto L_MessageDeath;
     message strcharinfo(0), "Hasan, with his eyes almost closed, trembling with fear, runs toward the scorpion and stabs it with all his strength! Seems like you took too long and the plan didn't work this time.";
     warp "042-1.gat", 112, 64;
@@ -186,7 +189,8 @@ L_Wait:
     close;
 
 OnTimer5000:
-    if(isloggedin(getcharid(3,$@ScorpionFighter$))==0) goto L_Clean;
+    if(isloggedin(getcharid(3,$@ScorpionFighter$)) == 0)
+        goto L_Clean;
     set $@ScorpionTimer, $@ScorpionTimer + 5;
     if ($@ScorpionTimer >= 300) goto L_Clean;
     attachrid(getcharid(3,$@ScorpionFighter$));
@@ -208,6 +212,7 @@ onScorpionDeath:
     end;
 
 OnInit:
+    end;
     initnpctimer;
     stopnpctimer;
 
@@ -218,6 +223,7 @@ OnInit:
     end;
 
 OnTouch:
+    end;
     if ($@scorp && $@ScorpionFighter$ == strcharinfo(0)) 
         end;
     if ((FLAGS & FLAG_TUTORIAL_DONE) || (hasan == 4))
