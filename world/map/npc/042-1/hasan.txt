@@ -9,12 +9,18 @@
     set @x, getx(0);
     set @y, gety(0);
 
-    if ($@scorp) goto L_Fear;
-    if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Tut_Done;
-    if ( (@y < 64)&&(@x < 110) || (@x < 107) ) goto L_Cliff_Up;
-    if (hasan == 4) goto L_Thank;
-    if (hasan == 3) goto L_Trick;
-    if (hasan > 0) goto L_Toll;
+    if (FLAGS & FLAG_TUTORIAL_DONE)
+        goto L_Tut_Done;
+    if ( (@y < 64)&&(@x < 110) || (@x < 107) )
+        goto L_Cliff_Up;
+    if (hasan == 4)
+        goto L_Thank;
+    if (hasan == 3)
+        goto L_Trick;
+    if (hasan > 0)
+        goto L_Toll;
+    if ($@scorp)
+        goto L_Fear;
 
     mes "[Unfriendly Guy]";
     mes "\"Hey! You can't pass here.\"";
@@ -82,10 +88,12 @@ L_Trick:
     menu
         "I don't have that much money!",L_NoPay,
         "No. (Scratch your head.)",-;
-    if ($@scorp == 1) goto L_Wait;
+    if ($@scorp == 1)
+        goto L_Wait;
     mes "While you're scratching your head, you see Kaan coming nearer to the cliff above you.";
     close2;
     monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
+    set $@ScorpionTimer, 0;
     set $@ScorpionFighter$, strcharinfo(0);
     set $@scorp, 1;
     set $@ScorpDeath, PC_DIE_COUNTER;
@@ -159,63 +167,54 @@ L_Cliff_Up:
 L_SummonAgain:
     message strcharinfo(0), "Kaan is mad at you for your interference! He walks over to the edge of the cliff and throws a rock on top of your head, then lets another scorpion run just near Hasan!";
     percentheal -100, 0;
-    if (attachrid(getcharid(3,$@ScorpionFighter$)) == 0)
-        end;
     message strcharinfo(0), "Kaan: \"Just go while he is distracted and no one is interfering!\"";
     monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
     end;
 
 L_Clean:
     killmonster "042-1.gat", "Hasan::onScorpionDeath";
+    set $@ScorpionFighter$, "";
     set $@ScorpionTimer, 0;
     set $@scorp, 0;
+    set $@ScorpDeath, 0;
     stopnpctimer;
     setnpctimer 0;
-    if (attachrid(getcharid(3,$@ScorpionFighter$)) == 0)
-        end;
-    if (PC_DIE_COUNTER > $@ScorpDeath) goto L_MessageDeath;
+    end;
+
+L_TimeOut:
     message strcharinfo(0), "Hasan, with his eyes almost closed, trembling with fear, runs toward the scorpion and stabs it with all his strength! Seems like you took too long and the plan didn't work this time.";
     warp "042-1.gat", 112, 64;
     message strcharinfo(0), "Hasan: \"Hey you! I told you you cannot pass!\"";
-    set $@ScorpionFighter$, "";
-    end;
+    goto L_Clean;
 
 L_MessageDeath:
     message strcharinfo(0), "Ouch... I should be more careful when fighting these monsters.";
-    end;
+    goto L_Clean;
 
 L_Wait:
     mes "There is a scorpion near Hasan already. I think Kaan is helping someone else... Maybe I should try the plan later.";
     close;
 
 OnTimer5000:
-    if(isloggedin(getcharid(3,$@ScorpionFighter$)) == 0)
+    if (attachrid(getcharid(3,$@ScorpionFighter$)) == 0)
         goto L_Clean;
     set $@ScorpionTimer, $@ScorpionTimer + 5;
-    if ($@ScorpionTimer >= 300) goto L_Clean;
-    if (attachrid(getcharid(3,$@ScorpionFighter$)) == 0)
-        end;
-    if (PC_DIE_COUNTER > $@ScorpDeath) goto L_Clean;
+    if ($@ScorpionTimer >= 300)
+        goto L_TimeOut;
+    if (PC_DIE_COUNTER > $@ScorpDeath)
+        goto L_MessageDeath;
     setnpctimer 0;
     end;
 
 onScorpionDeath:
-    if (strcharinfo(0) != $@ScorpionFighter$) goto L_SummonAgain;
+    if (strcharinfo(0) != $@ScorpionFighter$)
+        goto L_SummonAgain;
     set $@scorp, 0;
     if (hasan != 3)
         end;
     set hasan, 4;
     message strcharinfo(0), "You saved Hasan.";
-    set $@ScorpionTimer, 0;
-    set $@ScorpionFighter$, "";
-    stopnpctimer;
-    setnpctimer 0;
-    end;
-
-OnInit:
-    end;
-    initnpctimer;
-    stopnpctimer;
+    goto L_Clean;
 
 }
 
