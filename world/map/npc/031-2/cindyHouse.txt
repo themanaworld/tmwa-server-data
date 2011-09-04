@@ -1,51 +1,51 @@
 // author: Jenalya
-// reviewed by: 
+// reviewed by:
 // state0,1,2: you shouldn't be able to reach this place
 // state3 and greater: Cindy is saved, she says one of some random phrases
 //
 
-031-2.gat,27,26,0	script	Cindy	197, {
+031-2.gat,27,26,0|script|Cindy|197, {
 
-	set @Q_Nivalis_state_MASK, NIBBLE_5_MASK;
-	set @Q_Nivalis_state_SHIFT, NIBBLE_5_SHIFT;
+    set @Q_Nivalis_state_MASK, NIBBLE_5_MASK;
+    set @Q_Nivalis_state_SHIFT, NIBBLE_5_SHIFT;
 
-	set @rescue_Cindy, ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
-         
-	if (@rescue_Cindy > 2) goto L_Happy_Random;
+    set @rescue_Cindy, ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
 
-	mes "...";
-	close; 
+    if (@rescue_Cindy > 2) goto L_Happy_Random;
+
+    mes "...";
+    close;
 
 L_Happy_Random:
-	getinventorylist;
-	set @candy, rand(50); 
-	if (@inventorylist_count < 100 && @candy == 42) goto L_Candy;
-	
-	setarray @quote_Cindy$, "Thank you so much for rescuing me!",
-	"My mother made really tasty cookies yesterday. But I already ate them all...",
-	"I want to go ice skating tomorrow. That will be fun!",
-	"I wonder when Daddy will come home next time. He always brings exciting stuff!",
-	strcharinfo(0) + "! You're my hero!",
-	"My mother is so upset about the Yetis - they are very very shy usually. You have to be lucky to see one. I wonder what's wrong with them.",
-	"When I'm a little older, I want to travel like you and my father. I want to see every place on the world!",
-	"Did you ever meet Santa? He's very kind! He always gives me some candy when we go to see him.",
-	strcharinfo(0) + ", you are sooo strong! Amazing! But my dad is strong too!";
-	set @random, rand(9);
-	if (@random != 5) emotion 3;
-	set @quote$, "\"" + @quote_Cindy$[@random] + "\"";
-	mes "[Cindy]";
-	mes @quote$;
-	close;
-	
+    getinventorylist;
+    set @candy, rand(50);
+    if (@inventorylist_count < 100 && @candy == 42) goto L_Candy;
+
+    setarray @quote_Cindy$, "Thank you so much for rescuing me!",
+    "My mother made really tasty cookies yesterday. But I already ate them all...",
+    "I want to go ice skating tomorrow. That will be fun!",
+    "I wonder when Daddy will come home next time. He always brings exciting stuff!",
+    strcharinfo(0) + "! You're my hero!",
+    "My mother is so upset about the Yetis - they are very very shy usually. You have to be lucky to see one. I wonder what's wrong with them.",
+    "When I'm a little older, I want to travel like you and my father. I want to see every place on the world!",
+    "Did you ever meet Santa? He's very kind! He always gives me some candy when we go to see him.",
+    strcharinfo(0) + ", you are sooo strong! Amazing! But my dad is strong too!";
+    set @random, rand(9);
+    if (@random != 5) emotion 3;
+    set @quote$, "\"" + @quote_Cindy$[@random] + "\"";
+    mes "[Cindy]";
+    mes @quote$;
+    close;
+
 L_Candy:
-	mes "[Cindy]";
-	mes "\"Santa gave me some candy! Please, take that!\"";
-	getitem "Candy", 1;
-	close;
-	
+    mes "[Cindy]";
+    mes "\"Santa gave me some candy! Please, take that!\"";
+    getitem "Candy", 1;
+    close;
+
 S_Update_Mask:
         set QUEST_Nivalis_state,
-        	(QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
+            (QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
                 | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
         return;
 }
