@@ -25,17 +25,17 @@ L_Exp:
     next;
     mes "[Luca the Hunter]";
     mes "\"Oh man! My pockets have been ripped clean off!\"";
-    close;
+    goto L_Close;
 
 L_Nev:
     mes "[Luca the Hunter]";
     mes "\"Hmpf!\"";
-    close;
+    goto L_Close;
 
 L_teach_soon:
     mes "[Luca the Hunter]";
     mes "\"You've grown quite a bit stronger since I first saw you, strolling around town like that! You know, if you train a little more, maybe we can help each other out a little?\"";
-       close;
+    goto L_Close;
 
 L_teach:
     if (getskilllv(SKILL_POOL)) goto L_teachmore;
@@ -132,7 +132,7 @@ L_teach0_follow:
 L_wronganswer:
     mes "[Luca the Hunter]";
     mes "\"No, that was wrong. I suppose you're not as experienced as I thought you'd be.\"";
-    close;
+    goto L_Close;
 
 S_explain:
     mes "[Luca the Hunter]";
@@ -270,15 +270,15 @@ L_teachmore2_noovv:
         @choice$[4],-;
 
     set @menu, @menu - 1;
-    if (@choices[@menu] == 0) close;
+    if (@choices[@menu] == 0) goto L_Close;
     if (@choices[@menu] == @C_focus) goto L_focus;
     if (@choices[@menu] == @C_unfocus) goto L_unfocus;
     if (@choices[@menu] == @C_teachbrawling) goto L_teach_brawling;
     if (@choices[@menu] == @C_teachnothing) goto L_teach_nothing;
     if (@choices[@menu] == @C_explainagain) goto L_teachmore_explain;
     if (@choices[@menu] == @C_focusoverview) goto L_focus_overview;
-    if (@choices[@menu] == @C_nvm) close;
-    close;
+    if (@choices[@menu] == @C_nvm) goto L_Close;
+    goto L_Close;
 
 L_teachmore_explain:
     callsub S_explain;
@@ -323,7 +323,7 @@ L_unfocus:
     menu
         "Ok, I will get a Grimace of Dementia potion", -,
         "Alright, be right back!", -;
-    close;
+    goto L_Close;
 
 L_nopotion:
     mes "[Luca the Hunter]";
@@ -360,7 +360,7 @@ L_unfocus_menu:
     delitem "DementiaPotion", 1;
 
     unpoolskill @skilllist_id[@menu];
-    close;
+    goto L_Close;
 
 L_focus_overview:
     getactivatedpoolskilllist;
@@ -408,7 +408,7 @@ L_teach_brawling:
     set @SUP_name$, "Brawling";
     set @SUP_xp, @EXP_BRAWLING;
     callfunc "SkillUp";
-    close;
+    goto L_Close;
 
 L_teach_nothing:
     mes "[Luca the Hunter]";
@@ -417,4 +417,24 @@ L_teach_nothing:
     mes "\"You see, I am an adventurer. Everybody has his tricks. But you really should visit someone who is a teacher, not an adventurer, now.\"";
     next;
     goto L_teachmore2;
+
+L_Close:
+    set @SUP_id, 0;
+    set @SUP_lvl, 0;
+    set @SUP_name$, "";
+    set @SUP_xp, 0;
+    set @EXP_BRAWLING, 0;
+    set @answer$, "";
+    set @message$, "";
+    cleararray @choices[0], 0, 4;
+    cleararray @choice$[0], "", 4;
+    set @choice_nr, 0;
+    set @C_focus, 0;
+    set @C_unfocus, 0;
+    set @C_teachbrawling, 0;
+    set @C_teachnothing, 0;
+    set @C_explainagain, 0;
+    set @C_nvm, 0;
+    set @C_focusoverview, 0;
+    close;
 }
