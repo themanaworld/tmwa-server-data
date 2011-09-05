@@ -22,7 +22,7 @@
 }
 
 001-2.gat,32,67,0|script|MoneyChanger|124,{
-    mes "[" + @npcname$ + "]";
+    mes "[Money Changer]";
     mes "\"I used to exchange Casino Coins for cash, but the Wizard's Council shut me down.  Now the casino only runs off Casino Coins currently in circulation.\"";
     next;
     mes "\"I heard that many a gambler wandered onto the Beach to the South West and through to the Snake Desert to the South East.  If you want to find coins already in circulation, you might find some on the monsters there.\"";
@@ -38,7 +38,7 @@
         "Yes", L_Begin,
         "No", -;
     mes "\"As you wish.\"";
-    close;
+    goto L_Close;
 
 L_Begin:
     if(countitem("CasinoCoins") < 15) goto L_NoCoin;
@@ -73,17 +73,17 @@ L_End:
     mes "I had " + @croupier + ".";
     mes "You get 45 casino coins.\"";
     getitem "CasinoCoins", 45;
-    close;
+    goto L_Close;
 
 L_NoCoin:
     mes "\"You need at least 15 coins.\"";
-    close;
+    goto L_Close;
 
 L_Lost:
     mes "\"I'm sorry but you lost.";
     mes "You got " + @player + " with your cards.";
     mes "I had " + @croupier + ".\"";
-    close;
+    goto L_Close;
 
 L_Ace:
     set @player, @player + 11;
@@ -96,6 +96,11 @@ L_Ace:
     menu
         "Yes", L_Another,
         "No", L_End;
+
+L_Close:
+    set @croupier, 0;
+    set @player, 0;
+    set @tempace, 0;
     close;
 }
 
@@ -111,7 +116,7 @@ L_Ace:
         "100 coins", L_b100,
         "Maybe I'll play later", -;
     mes "Come again.";
-    close;
+    goto L_Close;
 
 L_b1:
     set @bet, 1;
@@ -146,7 +151,7 @@ L_Check:
     if(@color == 1) goto L_Lost;
     mes "You won!";
     getitem "CasinoCoins", @bet * 2;
-    close;
+    goto L_Close;
 
 L_Number:
     menu
@@ -165,13 +170,20 @@ L_Number:
     if (@number != @roulette) goto L_Lost;
     mes "\"You won!\"";
     getitem "CasinoCoins", @bet * 10;
-    close;
+    goto L_Close;
 
 L_NoCoin:
     mes "\"You don't have enough coins.\"";
-    close;
+    goto L_Close;
 
 L_Lost:
     mes "\"I'm sorry, you lost.\"";
+    goto L_Close;
+
+L_Close:
+    set @number, 0;
+    set @roulette, 0;
+    set @color, 0;
+    set @bet, 50;
     close;
 }

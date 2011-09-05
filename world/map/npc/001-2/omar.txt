@@ -39,12 +39,12 @@ function|script|KadiyaSubquestConsts|{
         "Well met!  May I ask who you are?", L_omar,
         "What's wrong with your daughter?", L_kadiya_sick,
         "Thank you!", -;
-    close;
+    goto L_Close;
 
 L_omar:
     mes "[Omar]";
     mes "\"My name is Omar;  I am a trader of oils and spices.\"";
-    close;
+    goto L_Close;
 
 L_kadiya_sick:
     mes "[Omar]";
@@ -61,24 +61,24 @@ L_kadiya_sick:
     mes "[Omar]";
     mes "\"Well, she is a strong girl.  I am sure that she will get over it eventually.\"";
     mes "He smiles, but you see doubt in his eyes.";
-    close;
+    goto L_Close;
 
 L_sick_elanore:
     mes "[Omar]";
     mes "\"Elanore?\"";
     mes "He frowns.";
     mes "\"She knows nothing.  I see no point in talking to her.\"";
-    close;
+    goto L_Close;
 
 L_sick_hospital:
     mes "[Omar]";
     mes "\"Hurnscald is too far away.  I don't think that it would be good for her to go on such a long trip.\"";
-    close;
+    goto L_Close;
 
 L_sick_self:
     mes "[Omar]";
     mes "\"You are very kind, but I don't think there is anything you can do.\"";
-    close;
+    goto L_Close;
 
 L_didnt_drink:
     mes "[Omar]";
@@ -95,7 +95,7 @@ L_didnt_drink:
         mes "\"If only we could make it smell and taste like orange cupcakes...  she really loves those cupcakes.\"";
     if (@Q_status == @Q_STATUS_WANTS_CHOCOCAKE)
         mes "\"If only this were a chocolate cake and not a potion... she really loves chocolate cakes.\"";
-    close;
+    goto L_Close;
 
 L_make_food:
     mes "[Omar]";
@@ -104,13 +104,13 @@ L_make_food:
         mes "\"Alas, it is not an orange cupcake.\"";
     if (@Q_status == @Q_STATUS_WANTS_CHOCOCAKE)
         mes "\"If only it were to smell and taste like her favourite chocolate cake...\"";
-    close;
+    goto L_Close;
 
 L_cured:
     if (@Q_status == @Q_STATUS_COMPLETED) goto L_cured_choice;
     mes "[Omar]";
     mes "\"She is sleeping now, but she seems to be much better.  I am sure that she will be up and running around again soon.\"";
-    close;
+    goto L_Close;
 
 L_cured_choice:
     mes "[Omar]";
@@ -127,7 +127,7 @@ L_cured_choice:
     set @Q_status, @Q_STATUS_COMPLETED_NOELANORE;
     callsub S_update_var;
     set zeny, zeny + 5000;
-    close;
+    goto L_Close;
 
 L_cured_nothing:
     mes "[Omar]";
@@ -138,7 +138,7 @@ L_cured_nothing:
     callsub S_update_var;
     getitem "Pearl", 2;
     set zeny, zeny + 10000;
-    close;
+    goto L_Close;
 
 L_cured_elanore:
     mes "[Omar]";
@@ -153,7 +153,7 @@ L_cured_elanore:
     next;
     set @Q_status, @Q_STATUS_COMPLETED_ELANORE;
     callsub S_update_var;
-    close;
+    goto L_Close;
 
 S_update_var:
     set QUEST_MAGIC2, (QUEST_MAGIC2 & ~(NIBBLE_3_MASK) | (@Q_status << NIBBLE_3_SHIFT));
@@ -224,19 +224,19 @@ L_M_no_cupcake:
     if (@choice == @M_POTION) goto L_potion;
     if (@choice == @M_CHOCOCAKE) goto L_chococake;
     if (@choice == @M_CUPCAKE) goto L_cupcake;
-    close;
+    goto L_Close;
 
 L_name:
     mes "[Kadiya]";
     mes "She smiles a faint smile.";
     mes "\"My name is Kadiya.\"";
-    close;
+    goto L_Close;
 
 L_no_candy:
     mes "[Kadiya]";
     mes "She hesitates for a moment.";
     mes "\"No, thank you.  I don't think I should.\"";
-    close;
+    goto L_Close;
 
 L_potion:
     mes "[Kadiya]";
@@ -249,8 +249,7 @@ L_potion:
     mes "[Kadiya]";
     mes "She pulls the sheets over her head.";
     mes "\"I won't drink that!\"";
-    next;
-    close;
+    goto L_Close;
 
 L_chococake:
     delitem "LacedChocolateCake", 1;
@@ -282,16 +281,41 @@ L_do_cure:
     next;
     mes "[Kadiya]";
     mes "\"You should get some sleep now, sweetheart.  I'm sure that you will be better soon.\"";
-    close;
+    goto L_Close;
 
 L_goodbye:
     mes "[Kadiya]";
     mes "Goodbye!";
-    close;
+    goto L_Close;
 
 L_cured:
     mes "[Kadiya]";
     mes "Kadiya seems to be sleeping calmly.  She looks much less sweaty than earlier; unless you are very much mistaken, her fever has disappeared.";
+    goto L_Close;
+
+L_Close:
+    set @Q_STATUS_KNOWS_MOPOX, 1;
+    set @Q_STATUS_MADE_MOPOX, 2;
+    set @Q_STATUS_DIDNT_DRINK, 3;
+    set @Q_STATUS_WANTS_CHOCOCAKE, 4;
+    set @Q_STATUS_WANTS_ORANGECUPCAKE, 5;
+    set @Q_STATUS_COMPLETED, 6;
+    set @Q_STATUS_COMPLETED_ELANORE, 7;
+    set @Q_STATUS_COMPLETED_NOELANORE, 8;
+    set @Q_STATUS_COMPLETED_POST_ELANORE, 9;
+    set @Q_kadiya_status, 0;
+    set @Q_status, 0;
+    set @Q_MASK, 0;
+    set @Q_SHIFT, 0;
+    set @M_NAME, 1;
+    set @M_CANDY, 2;
+    set @M_POTION, 3;
+    set @M_CHOCOCAKE, 4;
+    set @M_CUPCAKE, 5;
+    set @choice, 0;
+    set @choices_nr, 0;
+    cleararray @choice_idx[0], 0, 7;
+    cleararray @choice$[0], "", 7;
     close;
 
 S_update_var:
