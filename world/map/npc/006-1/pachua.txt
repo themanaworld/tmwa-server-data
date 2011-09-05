@@ -43,9 +43,9 @@ L_Check_Shops:
         menu
             "Wait, can you make a leather patch for me?", L_leather_patch,
             "OK, bye.", -;
-    close;
+    goto L_Close;
 
-L_CheckStuff:
+S_CheckStuff:
     mes "[Chief Pachua]";
     mes "";
     mes "\"Let me see what you have there.\"";
@@ -53,7 +53,7 @@ L_CheckStuff:
     return;
 
 L_Super_store:
-    callsub L_CheckStuff;
+    callsub S_CheckStuff;
     mes "[Chief Pachua]";
     mes "";
     mes "\"Ahh you have lots of good items to work with.\"";
@@ -74,7 +74,7 @@ L_Super_store:
             "Not now, maybe later.", L_NoDeal;
 
 L_Cowboy_store:
-    callsub L_CheckStuff;
+    callsub S_CheckStuff;
     mes "[Chief Pachua]";
     mes "";
     mes "\"To make you a Cowboy hat I will need:";
@@ -95,7 +95,7 @@ L_Cowboy_store:
             "On second thought, maybe later.", L_NoDeal;
 
 L_Chaps_store:
-    callsub L_CheckStuff;
+    callsub S_CheckStuff;
     mes "[Chief Pachua]";
     mes "";
     mes "\"To make you a pair of Snake Skin Chaps I will need:";
@@ -151,7 +151,7 @@ L_leather_patch:
     next;
     menu
         "Here you are.", -,
-        "OK, I'll be back later.", L_End,
+        "OK, I'll be back later.", L_Close,
         "That's too expensive!.", L_NoDeal;
 
     if (countitem("SnakeSkin") < 1) goto L_NoSkins;
@@ -170,37 +170,37 @@ L_DealDone:
     mes "\"Here you are!\"";
     mes "";
     mes "\"Come back any time.\"";
-    close;
+    goto L_Close;
 
 L_NoDeal:
     mes "[Chief Pachua]";
     mes "";
     mes "\"Alright, but you won't get a better deal anywhere else!\"";
-    close;
+    goto L_Close;
 
 L_NoMoney:
     mes "[Chief Pachua]";
     mes "";
     mes "\"Oh dear, it seems you don't have enough money.\"";
-    close;
+    goto L_Close;
 
 L_NoJeans:
     mes "[Chief Pachua]";
     mes "";
     mes "\"Oh dear, it seems you don't have enough jeans shorts.\"";
-    close;
+    goto L_Close;
 
 L_NoFancy:
     mes "[Chief Pachua]";
     mes "";
     mes "\"Oh dear, it seems you don't have enough fancy hats.\"";
-    close;
+    goto L_Close;
 
 L_NoSkins:
     mes "[Chief Pachua]";
     mes "";
     mes "\"Oh dear, it seems you don't have enough snake skins.\"";
-    close;
+    goto L_Close;
 
 L_WearingCowboy:
     mes "[Chief Pachua]";
@@ -216,14 +216,20 @@ L_WearingChaps:
     next;
     goto L_Check_Shops;
 
-L_End:
+L_Close:
+    set @LEATHER_PATCH_PRICE, 0;
+    set @wants_leather_patch, 0;
+    set @month, 0;
+    set @start_day, 0;
+    set @end_day, 0;
+    set @temp, 0;
     close;
 
 L_TooMany:
     mes "[Chief Pachua]";
     mes "";
     mes "\"You don't have room for a leather patch. Come back later.\"";
-    close;
+    goto L_Close;
 
 L_smoke:
     message strcharinfo(0), "Pachua quickly inhales from his pipe and releases a ring of smoke towards the sky!";
@@ -251,7 +257,7 @@ L_Basket:
     mes "\"I appreciate your attitude. Maybe I can help you with that.\"";
     menu
         "I would be really grateful if you could do that!", -,
-        "Nah, I decided not to do that stupid quest.", L_End,
+        "Nah, I decided not to do that stupid quest.", L_Close,
         "I would prefer to talk to you about other stuff.", L_Begin; //should go to pachuas's regular chat
     set QUEST_Easter11, 2;
 
@@ -263,20 +269,20 @@ L_MakeBasket:
     mes "\"You should be able to get those from mouboos as they graze.\"";
     menu
         "I have the Reeds!", -,
-        "Ok, I will be back soon", L_End,
-        "I changed my mind, forget about it", L_End,
+        "Ok, I will be back soon", L_Close,
+        "I changed my mind, forget about it", L_Close,
         "Can I talk to you about another stuff?", L_Begin; //should go to pachuas's regular chat
 
     if(countitem("ReedBundle") < 5) goto L_EasterNotEnough;
     if(countitem("ReedBundle") >= 5) goto L_EasterEnough;
-    close;
+    goto L_Close;
 
 L_EasterNotEnough:
     mes "[Chief Pachua]";
     mes "";
     mes "\"You do not have enough Reed Bundles for me to work with.\"";
     mes "\"Go gather more.\"";
-    close;
+    goto L_Close;
 
 L_EasterEnough:
     getinventorylist;
@@ -292,13 +298,13 @@ L_EasterEnough:
     mes "then swiftly weaves them into a basket shape.";
     mes "Next, he places the damp basket in the sun to dry for a minute before handing it over to you.";
     mes "\"Here is your Easter Basket.\"";
-    close;
+    goto L_Close;
 
 L_EasterTooMany:
     mes "[Chief Pachua]";
     mes "";
     mes "\"You don't have room for the Easter Basket. Come back later.\"";
-    close;
+    goto L_Close;
 
 L_SeeBunny:
     mes "[Chief Pachua]";

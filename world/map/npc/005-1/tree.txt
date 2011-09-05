@@ -6,7 +6,7 @@ function|script|QuestTreeTrigger|{
     set @Q_status_lower, @Q_status & 3;
     set @Q_status, (@Q_status & 12) >> 2;
 
-    if (@Q_status & @flag) close;  // already did that
+    if (@Q_status & @flag) goto L_Close;  // already did that
 
     if (@flag == 2) goto L_hug;
 
@@ -14,21 +14,30 @@ L_cont:
     set @Q_status, @Q_status | @flag;
     callsub S_update_var;
 
-    if (@Q_status != 3) close;
+    if (@Q_status != 3) goto L_Close;
 
-    if (MAGIC_FLAGS & MFLAG_DID_CUTTREE) close;
+    if (MAGIC_FLAGS & MFLAG_DID_CUTTREE) goto L_Close;
 
     mes "Maybe it is just a trick of the light, but you can't help but think that the tree looks different... healthier, almost younger.";
     mes "[20000 experience points]";
     getexp 20000, 0;
     set @value, 15;
     callfunc "QuestSagathaHappy";
-    close;
+    goto L_Close;
 
 L_hug:
     mes "You hug the tree.";
     next;
     goto L_cont;
+
+L_Close:
+    set @Q_MASK, 0;
+    set @Q_SHIFT, 0;
+    set @Q_status, 0;
+    set @Q_status_lower, 0;
+    set @Q_wr_status, 0;
+    set @value, 0;
+    close;
 
 S_update_var:
     set @Q_wr_status, (@Q_status << 2) | @Q_status_lower;
@@ -54,7 +63,7 @@ function|script|QuestTreeTouch|{
 
     mes "[Dying Tree]";
     mes "You see a strange tree.";
-    close;
+    goto L_Close;
 
 L_cut:
     mes "[Dying Tree]";
@@ -63,7 +72,7 @@ L_cut:
     menu
         "Cut off a branch", L_do_cut,
         "Leave it alone", -;
-    close;
+    goto L_Close;
 
 L_water:
     mes "[Dying Tree]";
@@ -73,7 +82,7 @@ L_water:
         "Water the tree", L_givewater,
         "Kiss tree", L_kiss,
         "Leave it alone", -;
-    close;
+    goto L_Close;
 
 L_both:
     mes "[Dying Tree]";
@@ -84,7 +93,7 @@ L_both:
         "Kiss tree", L_kiss,
         "Cut off a branch", L_do_cut,
         "Leave it alone", -;
-    close;
+    goto L_Close;
 
 L_givewater:
     if (countitem("BottleOfWater") < 1) goto L_no_water;
@@ -93,18 +102,18 @@ L_givewater:
 
     mes "[Dying Tree]";
     mes "You pour a bottle of water into the sand.  The water dissipates quickly, without any effect.";
-    close;
+    goto L_Close;
 
 L_no_water:
     mes "[Dying Tree]";
     mes "You don't have any water.";
-    close;
+    goto L_Close;
 
 L_kiss:
     mes "[Dying Tree]";
     mes "You pluck out a splinter from your lip.";
     mes "Somehow, you don't think that this helped.";
-    close;
+    goto L_Close;
 
 L_do_cut:
     if (countitem(570) < 1) goto L_no_boneknife;
@@ -119,7 +128,7 @@ L_do_cut:
     menu
         "Nah... better not.", -,
         "Yes, let's cut!", L_really_cut;
-    close;
+    goto L_Close;
 
 L_really_cut:
     set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_DID_CUTTREE;
@@ -127,17 +136,24 @@ L_really_cut:
     mes "[Dying Tree]";
     mes "You cut off a branch from the tree.";
     mes "For an instant, you have an uneasy feeling, as if the branch were writhing in your hand...";
-    close;
+    goto L_Close;
 
 L_no_boneknife:
     mes "[Dying Tree]";
     mes "Try as you might, you can't seem to find a way to cut off a branch.  Perhaps you need a different tool for cutting?";
-    close;
+    goto L_Close;
 
 L_happy:
     mes "[Druid Tree]";
     mes "The tree looks younger and healthier now.";
+    goto L_Close;
+
+L_Close:
+    set @Q_MASK, 0;
+    set @Q_SHIFT, 0;
+    set @Q_status, 0;
     close;
+
 }
 
 005-1.gat,79,41,0|script|#DruidTree0#_M|127,{
