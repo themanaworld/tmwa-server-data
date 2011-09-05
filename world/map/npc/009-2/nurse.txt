@@ -22,7 +22,7 @@
 
 
 //######################################################################################
-009-2.gat,147,65,0	script	Nurse	119,	{
+009-2.gat,147,65,0|script|Nurse|119,{
     set @SNAKET_AMOUNT, 5;
     set @BSCORPIONST_AMOUNT, 10;
     // This quest can be done very often: so give less xp
@@ -107,17 +107,16 @@ state0:
     menu
         "I will do what I can. What do you need?", L_firstquest,
         "I'm really sorry, but I don't think I can help you.", -;
-
     mes "\"That is disagreeable to hear. Maybe I can find another person to take this task.\"";
     next;
     goto L_Usual;
 
 L_firstquest:
     set @Q_poison, 1;
-        callsub S_Update_Var;
-
+    callsub S_Update_Var;
     mes "\"That's great! First, I need some parts of the poisonous creatures.\"";
     next;
+
 L_ExplainAgain1:
     mes "\"Please bring me five tongues of snakes and ten stingers of black scorpions.\"";
     close;
@@ -131,20 +130,19 @@ state1:
         "Sorry, I forgot. What shall I bring you?", L_ExplainAgain1,
         "I have what you asked for.", -,
         "I'm still working on that.", quit;
-
-    if (countitem("SnakeTongue") < @SNAKET_AMOUNT || countitem("BlackScorpionStinger") < @BSCORPIONST_AMOUNT) goto L_NotEnough;
+    if (countitem("SnakeTongue") < @SNAKET_AMOUNT || countitem("BlackScorpionStinger") < @BSCORPIONST_AMOUNT)
+        goto L_NotEnough;
     delitem "SnakeTongue", @SNAKET_AMOUNT;
     delitem "BlackScorpionStinger", @BSCORPIONST_AMOUNT;
     getexp @QUEST1_EXP, 0;
-
     set @Q_poison, 2;
-        callsub S_Update_Var;
-
+    callsub S_Update_Var;
     mes "[Nurse]";
     mes "\"Very good. Now I have to extract the poison from this, it will take some time.\"";
     next;
     mes "\"But there are some other things we will need in any case. It would be courteous if you could get them meanwhile.\"";
     next;
+
 L_ExplainAgain2:
     mes "\"Please bring me ten acorns, five red apples, five green apples and also five oranges. And we need some small healing potions. They will be useful to hold off the baneful effects. Three of them will be enough, I guess.\"";
     close;
@@ -159,17 +157,20 @@ state2:
         "I have a bad memory. Can you tell me again what we need?", L_ExplainAgain2,
         "I managed to get everything we need.", -,
         "I will go and get it.", quit;
-
-    if (countitem("Acorn") < @ACORNS_AMOUNT || countitem("GreenApple") < @GREENAPPLE_AMOUNT || countitem("RedApple") < @REDAPPLE_AMOUNT || countitem("Orange") < @ORANGE_AMOUNT || countitem("SmallHealingPotion") < @HEALING_AMOUNT) goto L_NotEnough;
+    if (countitem("Acorn") < @ACORNS_AMOUNT
+        || countitem("GreenApple") < @GREENAPPLE_AMOUNT
+        || countitem("RedApple") < @REDAPPLE_AMOUNT
+        || countitem("Orange") < @ORANGE_AMOUNT
+        || countitem("SmallHealingPotion") < @HEALING_AMOUNT)
+            goto L_NotEnough;
     delitem "Acorn", @ACORNS_AMOUNT;
     delitem "GreenApple", @GREENAPPLE_AMOUNT;
     delitem "RedApple", @REDAPPLE_AMOUNT;
     delitem "Orange", @ORANGE_AMOUNT;
     delitem "SmallHealingPotion", @HEALING_AMOUNT;
     getexp @QUEST2_EXP, 0;
-
     set @Q_poison, 3;
-        callsub S_Update_Var;
+    callsub S_Update_Var;
 
 L_Chemistry:
     callsub L_Shuffle_Need;
@@ -220,9 +221,10 @@ L_Exp_Game:
     menu
         "Please explain it again.", L_Exp_Game,
         "Alright.", -;
+
 L_Game:
     set @Q_poison, @Q_poison + 1;
-        callsub S_Update_Var;
+    callsub S_Update_Var;
     // healing, venom, stabilizer
     callsub L_Load_Need;
     //descriptions
@@ -244,17 +246,26 @@ L_Game:
     mes "\"As far as I can tell you will need " + @desc$[@stIndex] + " of the stabilizer.\"";
     next;
 
-    if(@hlNeed/@vnNeed > 1 ) mes "\"I see that the healing potions are needed at least " + @hlNeed/@vnNeed + " times as much as the venom.\"";
-    if(@vnNeed/@hlNeed > 1 ) mes "\"I see that the venom extracts are needed at least " + @vnNeed/@hlNeed + " times as much as the healing potions.\"";
-    if ( (@hlNeed/@vnNeed > 1 ) || (@vnNeed/@hlNeed > 1 )) next;
+    if(@hlNeed/@vnNeed > 1 )
+        mes "\"I see that the healing potions are needed at least " + @hlNeed/@vnNeed + " times as much as the venom.\"";
+    if(@vnNeed/@hlNeed > 1 )
+        mes "\"I see that the venom extracts are needed at least " + @vnNeed/@hlNeed + " times as much as the healing potions.\"";
+    if ( (@hlNeed/@vnNeed > 1 ) || (@vnNeed/@hlNeed > 1 ))
+        next;
 
-    if(@stNeed/@vnNeed > 1 ) mes "\"I see that the stabilizer is needed at least " + @stNeed/@vnNeed + " times as much as the venom extracts.\"";
-    if(@vnNeed/@stNeed > 1 ) mes "\"I see that the venom extracts are needed at least " + @vnNeed/@stNeed + " times as much as the stabilizer.\"";
-    if ((@vnNeed/@stNeed > 1 ) || (@stNeed/@vnNeed > 1 )) next;
+    if(@stNeed/@vnNeed > 1 )
+        mes "\"I see that the stabilizer is needed at least " + @stNeed/@vnNeed + " times as much as the venom extracts.\"";
+    if(@vnNeed/@stNeed > 1 )
+        mes "\"I see that the venom extracts are needed at least " + @vnNeed/@stNeed + " times as much as the stabilizer.\"";
+    if ((@vnNeed/@stNeed > 1 ) || (@stNeed/@vnNeed > 1 ))
+        next;
 
-    if(@stNeed/@hlNeed > 1 ) mes "\"I see that the stabilizer is needed at least " + @stNeed/@hlNeed + " times as much as the healing potions.\"";
-    if(@hlNeed/@stNeed > 1 ) mes "\"I see that the healing potions are needed at least " + @hlNeed/@stNeed + " times as much as the stabilizer.\"";
-    if ((@hlNeed/@stNeed > 1 ) || (@stNeed/@hlNeed > 1 )) next;
+    if(@stNeed/@hlNeed > 1 )
+        mes "\"I see that the stabilizer is needed at least " + @stNeed/@hlNeed + " times as much as the healing potions.\"";
+    if(@hlNeed/@stNeed > 1 )
+        mes "\"I see that the healing potions are needed at least " + @hlNeed/@stNeed + " times as much as the stabilizer.\"";
+    if ((@hlNeed/@stNeed > 1 ) || (@stNeed/@hlNeed > 1 ))
+        next;
 
 L_choosePut:
     set @max, @count+@offset-1;
@@ -264,18 +275,24 @@ L_choosePut:
 
     mes "\"How many drops of the healing potion should we use?\"";
     input @hlPut;
-    if (@hlPut < @offset) goto L_Game_tooless;
-    if (@hlPut > @max) goto L_Game_toomuch;
+    if (@hlPut < @offset)
+        goto L_Game_tooless;
+    if (@hlPut > @max)
+        goto L_Game_toomuch;
 
     mes "\"How many drops of the venom extract potion should we use? \"";
     input @vnPut;
-    if (@vnPut < @offset) goto L_Game_tooless;
-    if (@vnPut > @max) goto L_Game_toomuch;
+    if (@vnPut < @offset)
+        goto L_Game_tooless;
+    if (@vnPut > @max)
+        goto L_Game_toomuch;
 
     mes "\"How many drops of the stabilizer potion should we use? \"";
     input @stPut;
-    if (@stPut < @offset) goto L_Game_tooless;
-    if (@stPut > @max) goto L_Game_toomuch;
+    if (@stPut < @offset)
+        goto L_Game_tooless;
+    if (@stPut > @max)
+        goto L_Game_toomuch;
 
     mes "The nurse puts the potions together according to your instructions. Then she takes a spoon and stirs it.";
     next;
@@ -296,10 +313,14 @@ L_choosePut:
     mes "You lift the glass to your lips and drink it all at once.";
     next;
 
-    if ( (@hlPut >  @hlNeed) && (@vnPut >  @vnNeed) ) goto m_hl_m_vn;
-    if ( (@hlPut >  @hlNeed) && (@vnPut <= @vnNeed) ) goto m_hl_l_vn;
-    if ( (@hlPut <= @hlNeed) && (@vnPut >  @vnNeed) ) goto l_hl_m_vn;
-    if ( (@hlPut <  @hlNeed) && (@vnPut <  @vnNeed) ) goto l_hl_l_vn;
+    if ( (@hlPut >  @hlNeed) && (@vnPut >  @vnNeed) )
+        goto m_hl_m_vn;
+    if ( (@hlPut >  @hlNeed) && (@vnPut <= @vnNeed) )
+        goto m_hl_l_vn;
+    if ( (@hlPut <= @hlNeed) && (@vnPut >  @vnNeed) )
+        goto l_hl_m_vn;
+    if ( (@hlPut <  @hlNeed) && (@vnPut <  @vnNeed) )
+        goto l_hl_l_vn;
 
     mes "You feel quite normal.";
     mes "[Nurse]";
@@ -337,7 +358,6 @@ m_hl_l_vn:
     next;
     mes "\"Very well, you are sober again.\"";
     next;
-
     goto check_st;
 
 l_hl_m_vn:
@@ -363,9 +383,12 @@ l_hl_l_vn:
     goto check_st;
 
 check_st:
-    if ( (@stPut < @stNeed) ) goto l_st;
-    if ( (@stPut > @stNeed) ) goto m_st;
-    if (@hl_vn_ok == 1) goto allcorrect;
+    if ( (@stPut < @stNeed) )
+        goto l_st;
+    if ( (@stPut > @stNeed) )
+        goto m_st;
+    if (@hl_vn_ok == 1)
+        goto allcorrect;
 
     mes "[Nurse]";
     mes "\"The amount of the stabilizer seems alright, but we have to think again about the other ingredients.\"";
@@ -377,11 +400,13 @@ l_st:
     mes "\"It looks like we used not enough of the stabilizer. The antidote will lose its effect after some time.\"";
     next;
     goto notallcorrect;
+
 m_st:
     mes "[Nurse]";
     mes "\"It looks like we used too much of the stabilizer. The antidote will turn into venom again after some time.\"";
     next;
     goto notallcorrect;
+
 allcorrect:
     mes "You feel totally normal again.";
     next;
@@ -395,67 +420,64 @@ allcorrect:
     getexp @ANTIDOTE_EXP, 0;
     setskill SKILL_RESIST_POISON, 1;
     set @Q_poison, 7;
-        callsub S_Update_Var;
+    callsub S_Update_Var;
     close;
 
 notallcorrect:
     mes "[Nurse]";
     mes "\"It didn't work. You are a really brave person. Now you should rest and recover. I hope you won't give up now. Please come back later, so we can try it again.\"";
     next;
+    close;
 
-     close;
 state4:
-     mes "The nurse has a worried look in her face.";
-     mes "[Nurse]";
-     mes "\"Hello. I hope you recovered well.\"";
-     next;
-     mes "\"There is enough of the distillates left to have another try.\"";
-     next;
-     mes "\"Oh no, with all that trouble I forgot to label your distillate.\"";
-     next;
-     mes "She holds up two ampullas.";
-     next;
-     mes "\"I hope this one is yours. I'm sorry.\"";
-     next;
-     mes "\"If you feel ok, we could try it again.\"";
-     next;
-
-     menu
+    mes "The nurse has a worried look in her face.";
+    mes "[Nurse]";
+    mes "\"Hello. I hope you recovered well.\"";
+    next;
+    mes "\"There is enough of the distillates left to have another try.\"";
+    next;
+    mes "\"Oh no, with all that trouble I forgot to label your distillate.\"";
+    next;
+    mes "She holds up two ampullas.";
+    next;
+    mes "\"I hope this one is yours. I'm sorry.\"";
+    next;
+    mes "\"If you feel ok, we could try it again.\"";
+    next;
+    menu
         "I still feel a bit dizzy, so I don't want to do it now.", L_Usual,
         "I'm ok. We can try, but please explain again.", L_Exp_Game,
         "Let's start right now.", L_Game;
 
 state5:
-     mes "The nurse looks at you pitifully.";
-     mes "[Nurse]";
-     mes "\"Hello. I'm really sorry for causing you so much pain.\"";
-     next;
-     mes "\"But if we succeed we will be heroes! I will be able to help a lot of people.\"";
-     next;
-     mes "\"Next time you might remind me to label the distillates correctly. I am sorry that it is screwed up again.\"";
-     next;
-     mes "\"There is enough stuff left for one last try.\"";
-     next;
-     mes "\"If we don't get it this time, you will have to get new ingredients.\"";
-     next;
-     mes "\"Do you want to try again?\"";
-     next;
-
-     menu
+    mes "The nurse looks at you pitifully.";
+    mes "[Nurse]";
+    mes "\"Hello. I'm really sorry for causing you so much pain.\"";
+    next;
+    mes "\"But if we succeed we will be heroes! I will be able to help a lot of people.\"";
+    next;
+    mes "\"Next time you might remind me to label the distillates correctly. I am sorry that it is screwed up again.\"";
+    next;
+    mes "\"There is enough stuff left for one last try.\"";
+    next;
+    mes "\"If we don't get it this time, you will have to get new ingredients.\"";
+    next;
+    mes "\"Do you want to try again?\"";
+    next;
+    menu
         "I still feel a bit dizzy, so I don't want to do it now.", L_Usual,
         "I'm ok. We can try, but please explain again.", L_Exp_Game,
         "Let's start right now.", L_Game;
 
 state6:
-     mes "The nurse looks at you pitifully.";
-     mes "[Nurse]";
-     mes "\"There is not enough stuff left for another try.\"";
-     next;
-     mes "\"We should try again, right?\"";
-     set @Q_poison, 1;
-        callsub S_Update_Var;
-
-     goto L_ExplainAgain1;
+    mes "The nurse looks at you pitifully.";
+    mes "[Nurse]";
+    mes "\"There is not enough stuff left for another try.\"";
+    next;
+    mes "\"We should try again, right?\"";
+    set @Q_poison, 1;
+    callsub S_Update_Var;
+    goto L_ExplainAgain1;
 
 state7: // geschafft
     mes "[Nurse]";
@@ -468,8 +490,10 @@ state7: // geschafft
 L_NotEnough:
     mes "[Nurse]";
     mes "\"This must be a misunderstanding. You don't have all the things I asked you for.\"";
-    if (@Q_poison == 1) goto L_ExplainAgain1;
-    if (@Q_poison == 2) goto L_ExplainAgain2;
+    if (@Q_poison == 1)
+        goto L_ExplainAgain1;
+    if (@Q_poison == 2)
+        goto L_ExplainAgain2;
     // the following close *should* never be reached, but who knows, whoever will mess this script up!
     close;
 
@@ -477,10 +501,8 @@ quit:
     close;
 
 S_Update_Var:
-        set QUEST_Forestbow_state,
-            (QUEST_Forestbow_state & ~(@Q_poison_MASK)
-                | (@Q_poison << @Q_poison_SHIFT));
-        return;
+    set QUEST_Forestbow_state, (QUEST_Forestbow_state & ~(@Q_poison_MASK) | (@Q_poison << @Q_poison_SHIFT));
+    return;
 
 L_Game_init_vars:
     set @count, 24;
@@ -508,14 +530,12 @@ L_Load_Need:
     return;
 
 L_Game_tooless:
-   mes "[Nurse]";
-   mes "\"That is nothing! You need to put in there at least a small amount.";
-   goto L_choosePut;
+    mes "[Nurse]";
+    mes "\"That is nothing! You need to put in there at least a small amount.";
+    goto L_choosePut;
 
 L_Game_toomuch:
-   mes "[Nurse]";
-   mes "\"This would be way too much for my scale. I don't want to break it.\"";
-   goto L_choosePut;
+    mes "[Nurse]";
+    mes "\"This would be way too much for my scale. I don't want to break it.\"";
+    goto L_choosePut;
 }
-
-
