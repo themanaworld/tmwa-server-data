@@ -11,7 +11,8 @@
         goto L_Tut_Done;
     if ( (@y < 64)&&(@x < 110) || (@x < 107) )
         goto L_Cliff_Up;
-    if (($@scorp) && (strcharinfo(0) == $@ScorpionFighter$))
+    // implicitly, $@ScorpionFighter is nonzero
+    if (getcharid(3) == $@ScorpionFighter)
         goto L_Fear;
     if (hasan == 4)
         goto L_Thank;
@@ -86,16 +87,16 @@ L_Trick:
     menu
         "I don't have that much money!",L_NoPay,
         "No. (Scratch your head.)",-;
-    if ($@scorp == 1)
+    if ($@ScorpionFighter)
         goto L_Wait;
     mes "While you're scratching your head, you see Kaan coming nearer to the cliff above you.";
+    set $@ScorpionTimer, 0;
+    set $@ScorpionFighter, getcharid(3);
+    set $@ScorpDeath, PC_DIE_COUNTER;
+    // close2 blocks
     close2;
     monster "042-1.gat",110,70,"Scorpion",1003,1, "Hasan::onScorpionDeath";
-    set $@ScorpionTimer, 0;
-    set $@ScorpionFighter$, strcharinfo(0);
-    set $@scorp, 1;
-    set $@ScorpDeath, PC_DIE_COUNTER;
-    startnpctimer;
+    initnpctimer;
     end;
 
 L_Thank:
@@ -171,12 +172,10 @@ L_SummonAgain:
 
 L_Clean:
     killmonster "042-1.gat", "Hasan::onScorpionDeath";
-    set $@ScorpionFighter$, "";
+    set $@ScorpionFighter, 0;
     set $@ScorpionTimer, 0;
-    set $@scorp, 0;
     set $@ScorpDeath, 0;
     stopnpctimer;
-    setnpctimer 0;
     end;
 
 L_TimeOut:
@@ -194,7 +193,7 @@ L_Wait:
     close;
 
 OnTimer5000:
-    if (attachrid(getcharid(3,$@ScorpionFighter$)) == 0)
+    if (attachrid($@ScorpionFighter) == 0)
         goto L_Clean;
     set $@ScorpionTimer, $@ScorpionTimer + 5;
     if ($@ScorpionTimer >= 300)
@@ -205,9 +204,8 @@ OnTimer5000:
     end;
 
 onScorpionDeath:
-    if (strcharinfo(0) != $@ScorpionFighter$)
+    if (getcharid(3) != $@ScorpionFighter)
         goto L_SummonAgain;
-    set $@scorp, 0;
     if (hasan != 3)
         end;
     set hasan, 4;
@@ -217,11 +215,11 @@ onScorpionDeath:
 }
 
 042-1.gat,111,68,0|script|#Toll|45,2,2,{
-
     end;
 
 OnTouch:
-    if ($@scorp && $@ScorpionFighter$ == strcharinfo(0))
+    // implicitly, $@ScorpionFighter is nonzero
+    if ($@ScorpionFighter == getcharid(3))
         end;
     if ((FLAGS & FLAG_TUTORIAL_DONE) || (hasan == 4))
         end;
@@ -233,15 +231,18 @@ OnTouch:
 
 042-1.gat,117,76,0|script|#barrier|45,0,2{
     end;
+
 OnTouch:
     if (FLAGS & FLAG_TUTORIAL_DONE)
         goto L_Tut;
     warp "042-1.gat", 115, 76;
-    if ($@scorp && $@ScorpionFighter$ == strcharinfo(0))
+    // implicitly, $@ScorpionFighter is nonzero
+    if ($@ScorpionFighter == getcharid(3))
         message strcharinfo(0), "Hasan: \" " + strcharinfo(0) + "! Please help me!\"";
-    if ($@scorp && $@ScorpionFighter$ != strcharinfo(0))
+    if ($@ScorpionFighter && $@ScorpionFighter != getcharid(3))
+        // is this reachable?
         message strcharinfo(0), "Hasan: \"Hey! Stop right there!\"";
-    if (!$@scorp && hasan == 4)
+    if (hasan == 4)
         message strcharinfo(0), "Hasan: \"Please wait a moment!\"";
     end;
 L_Tut:
