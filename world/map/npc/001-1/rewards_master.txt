@@ -30,7 +30,7 @@
         @Menu$[11], -;
 
     // this is for the last entry "No thanks":
-    if (@menu > @i) close;
+    if (@menu > @i) goto L_Close;
     // this is for the "Give all" entry:
     if (@menu == 11) goto L_Give_all;
 
@@ -46,17 +46,17 @@ L_Item_Loop:
 
 L_Item_Done:
     if (@rec < @req) mes "It looks like your Monster Points were over estimated.";
-    close;
+    goto L_Close;
 
 L_Register:
     mes "[Ishi the Rewards Master]";
     mes "\"Hey, it seems like you didn't register as a quest participant yet! You can sign up with Aidan.\"";
-    close;
+    goto L_Close;
 
 L_NotEnough:
     mes "[Ishi the Rewards Master]";
     mes "\"You don't have enough Monster Points for a reward. You'll need to kill some more monsters first.\"";
-    close;
+    goto L_Close;
 
 
 
@@ -80,10 +80,16 @@ L_Give_all_next:
     mes "\"You have brought lots of items now. You have still " + Mobpt + " monster points. Shall we continue?\"";
     menu
         "Yes", L_Give_all,
-        "No", L_Give_all_done;
-    close;
+        "No", L_Close;
 
-L_Give_all_done:
+L_Close:
+    set @gotocounter, 0;
+    set @itemgiveerror, 0;
+    set @pts, 0;
+    set @dif, 0;
+    set @i, 0;
+    cleararray @Menu$[0], "", 10;
+    cleararray @Items$[0], "", 10;
     close;
 
 //////////////////////////////////////////////////

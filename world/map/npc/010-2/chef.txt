@@ -1,201 +1,198 @@
-010-2.gat,33,25,0	script	Chef	148,{
+010-2.gat,33,25,0|script|Chef|148,{
 
 // lines belong to easter 2011:
-//	set @month, 4;
-//	set @start_day, 15;
-//	set @end_day, 30;
+// set @month, 4;
+// set @start_day, 15;
+// set @end_day, 30;
 
-//	if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 7) goto L_JellyBean;
-//	if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 8) goto L_MakeJellyBean;
-//	if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 9) goto L_SeeBunny;
+// if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 7) goto L_JellyBean;
+// if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 8) goto L_MakeJellyBean;
+// if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 9) goto L_SeeBunny;
 
 L_Begin:
-	mes "[Chef]";
-	mes "";
-	mes "\"I'm too busy right now to talk.\"";
+    mes "[Chef]";
+    mes "";
+    mes "\"I'm too busy right now to talk.\"";
 
-	callfunc "KadiyaSubquestConsts";
-	if ((@Q_kadiya_status == @Q_STATUS_WANTS_CHOCOCAKE) && (countitem ("MopoxCurePotion") > 0))
-		goto L_lace_chococake;
-
-	if ((@Q_kadiya_status == @Q_STATUS_WANTS_ORANGECUPCAKE) && (countitem ("MopoxCurePotion") > 0))
-		goto L_lace_cupcake;
-	close;
+    callfunc "KadiyaSubquestConsts";
+    if ((@Q_kadiya_status == @Q_STATUS_WANTS_CHOCOCAKE) && (countitem ("MopoxCurePotion") > 0))
+        goto L_lace_chococake;
+    if ((@Q_kadiya_status == @Q_STATUS_WANTS_ORANGECUPCAKE) && (countitem ("MopoxCurePotion") > 0))
+        goto L_lace_cupcake;
+    close;
 
 L_lace_chococake:
-	next;
-	menu
-		"Sorry.", L_end,
-		"I need your help with a sick young girl!", -;
-
-	mes "[Chef]";
-	mes "";
-	mes "You explain Kadiya's situation to him.";
-	mes "\"Hmrmf.  I can't help you; I'm a chef, not a baker!\"";
-	close;
+    next;
+    menu
+        "Sorry.", L_end,
+        "I need your help with a sick young girl!", -;
+    mes "[Chef]";
+    mes "";
+    mes "You explain Kadiya's situation to him.";
+    mes "\"Hmrmf.  I can't help you; I'm a chef, not a baker!\"";
+    close;
 
 L_lace_cupcake:
-	next;
-	menu
-		"Sorry.", L_end,
-		"I need your help with a sick young girl!", -;
+    next;
+    menu
+        "Sorry.", L_end,
+        "I need your help with a sick young girl!", -;
+    mes "[Chef]";
+    mes "";
+    mes "You explain Kadiya's situation to him.";
+    mes "\"Hmrmf.  I was about to make another batch of orange cupcakes.  Do you have that potion with you?\"";
+    next;
+    menu
+        "No, sorry.", L_bringit,
+        "Yes, here you are.", -;
+    if (countitem ("MopoxCurePotion") < 1)
+        goto L_bringit;
+    mes "[Chef]";
+    mes "";
+    mes "He shudders as he smells the bottle.";
+    mes "\"That is disgusting!  How do you expect me to mask this?\"";
+    mes "He ponders his own question for a moment.";
+    next;
+    mes "[Chef]";
+    mes "";
+    mes "\"Ah yes.  We need to bind the smell in gingerbread.  Bring me three pieces of gingerbread, one orange, and 500 GP for the other ingredients, and I will make you your cupcake.\"";
+    next;
+    menu
+        "I'll go and get it.", L_end,
+        "Here you are!", -,
+        "Not now.", L_end;
 
-	mes "[Chef]";
-	mes "";
-	mes "You explain Kadiya's situation to him.";
-	mes "\"Hmrmf.  I was about to make another batch of orange cupcakes.  Do you have that potion with you?\"";
-	next;
+    if (countitem ("GingerBreadMan") < 3)
+        goto L_no_gingerbread;
+    if (countitem ("Orange") < 1)
+        goto L_no_orange;
+    if (countitem ("MopoxCurePotion") < 1)
+        goto L_no_potion;
+    if (zeny < 500)
+        goto L_no_zeny;
 
-	menu
-		"No, sorry.", L_bringit,
-		"Yes, here you are.", -;
+    set zeny, zeny - 500;
+    delitem "GingerBreadMan", 3;
+    delitem "Orange", 1;
+    delitem "MopoxCurePotion", 1;
 
-	if (countitem ("MopoxCurePotion") < 1)
-		goto L_bringit;
+    getitem "LacedOrangeCupcake", 1;
 
-	mes "[Chef]";
-	mes "";
-	mes "He shudders as he smells the bottle.";
-	mes "\"That is disgusting!  How do you expect me to mask this?\"";
-	mes "He ponders his own question for a moment.";
-	next;
-
-	mes "[Chef]";
-	mes "";
-	mes "\"Ah yes.  We need to bind the smell in gingerbread.  Bring me three pieces of gingerbread, one orange, and 500 GP for the other ingredients, and I will make you your cupcake.\"";
-	next;
-
-	menu
-		"I'll go and get it.", L_end,
-		"Here you are!", -,
-		"Not now.", L_end;
-
-	if (countitem ("GingerBreadMan") < 3) goto L_no_gingerbread;
-	if (countitem ("Orange") < 1) goto L_no_orange;
-	if (countitem ("MopoxCurePotion") < 1) goto L_no_potion;
-	if (zeny < 500) goto L_no_zeny;
-
-	set zeny, zeny - 500;
-	delitem "GingerBreadMan", 3;
-	delitem "Orange", 1;
-	delitem "MopoxCurePotion", 1;
-
-	getitem "LacedOrangeCupcake", 1;
-
-	mes "[Chef]";
-	mes "";
-	mes "\"Good, good.  This should work.\"";
-	mes "He crumbles the gingerbread, mixes it with the potion and some spices, and finally adds some cupcake batter and the orange pieces.";
-	next;
-
-	mes "[Chef]";
-	mes "";
-	mes "\"Take a seat.\"";
-	mes "He fills the mixture into a cupcake form and puts it into the oven.  You watch the cupcake grow for a while.";
-	mes "Finally, he removes the form and carefully extracts the cupcake.";
-	next;
-
-	mes "[Chef]";
-	mes "";
-	mes "\"Here you are.  It's a bit bigger than a regular cupcake and will taste a bit like ginger, I think, but otherwise it should be fine.\"";
-	close;
+    mes "[Chef]";
+    mes "";
+    mes "\"Good, good.  This should work.\"";
+    mes "He crumbles the gingerbread, mixes it with the potion and some spices, and finally adds some cupcake batter and the orange pieces.";
+    next;
+    mes "[Chef]";
+    mes "";
+    mes "\"Take a seat.\"";
+    mes "He fills the mixture into a cupcake form and puts it into the oven.  You watch the cupcake grow for a while.";
+    mes "Finally, he removes the form and carefully extracts the cupcake.";
+    next;
+    mes "[Chef]";
+    mes "";
+    mes "\"Here you are.  It's a bit bigger than a regular cupcake and will taste a bit like ginger, I think, but otherwise it should be fine.\"";
+    close;
 
 L_no_gingerbread:
-	mes "[Chef]";
-	mes "";
-	mes "\"I will need three pieces of gingerbread.\"";
-	close;
+    mes "[Chef]";
+    mes "";
+    mes "\"I will need three pieces of gingerbread.\"";
+    close;
 
 L_no_orange:
-	mes "[Chef]";
-	mes "";
-	mes "\"Please bring me an orange for these cupcakes.\"";
-	close;
+    mes "[Chef]";
+    mes "";
+    mes "\"Please bring me an orange for these cupcakes.\"";
+    close;
 
 L_no_zeny:
-	mes "[Chef]";
-	mes "";
-	mes "\"No.  I need extra ingredients worth 500 GP, and I expect you to pay for those.\"";
-	close;
+    mes "[Chef]";
+    mes "";
+    mes "\"No.  I need extra ingredients worth 500 GP, and I expect you to pay for those.\"";
+    close;
 
 L_no_potion:
-	mes "[Chef]";
-	mes "";
-	mes "\"Where did your Mopox potion go?\"";
-	close;
+    mes "[Chef]";
+    mes "";
+    mes "\"Where did your Mopox potion go?\"";
+    close;
 
 L_bringit:
-	mes "[Chef]";
-	mes "";
-	mes "\"Bring it here when you do.\"";
-	next;
+    mes "[Chef]";
+    mes "";
+    mes "\"Bring it here when you do.\"";
+    next;
 
 L_End:
-	close;
+    close;
 
 L_JellyBean:
-	mes "[Chef]";
-	mes "";
-	mes "\"I can't talk right now... I'm too busy.\"";
-	next;
-	mes "\"Oh, wait. I see you are the adventurer who was speaking with the Easter Bunny. He has a really bad memory, you know? Every year he forgets who he needs to ask to get Jelly Beans, and every year an adventurer comes to my kitchen asking if I can help the Easter Bunny get some.\"";
-	next;
-	mes "\"Even though I am really busy this time of year, I will help you make some Jelly Beans to put in the basket if you wish. Just to keep the tradition alive...\"";
-	menu
-		"I would really appreciate that!", -,
-		"Nah, I decided not to do that stupid quest.", L_End;
-	set QUEST_Easter11, 8;
+    mes "[Chef]";
+    mes "";
+    mes "\"I can't talk right now... I'm too busy.\"";
+    next;
+    mes "\"Oh, wait. I see you are the adventurer who was speaking with the Easter Bunny. He has a really bad memory, you know? Every year he forgets who he needs to ask to get Jelly Beans, and every year an adventurer comes to my kitchen asking if I can help the Easter Bunny get some.\"";
+    next;
+    mes "\"Even though I am really busy this time of year, I will help you make some Jelly Beans to put in the basket if you wish. Just to keep the tradition alive...\"";
+    menu
+        "I would really appreciate that!", -,
+        "Nah, I decided not to do that stupid quest.", L_End;
+    set QUEST_Easter11, 8;
 
 L_MakeJellyBean:
-	mes "[Chef]";
-	mes "";
-	mes "\"I will need you to bring me some candies.\"";
-	mes "\"I think 15 should be enough.\"";
-	mes "\"Sea slimes seem to have those, so try them.\"";
-	mes "\"And because it's the holidays, I'll add in the other ingredient for free.\"";
-	menu
-		"I have some candies!", -,
-		"Ok, I will be back soon.", L_End,
-		"I changed my mind, forget about it.", L_End;
+    mes "[Chef]";
+    mes "";
+    mes "\"I will need you to bring me some candies.\"";
+    mes "\"I think 15 should be enough.\"";
+    mes "\"Sea slimes seem to have those, so try them.\"";
+    mes "\"And because it's the holidays, I'll add in the other ingredient for free.\"";
+    menu
+        "I have some candies!", -,
+        "Ok, I will be back soon.", L_End,
+        "I changed my mind, forget about it.", L_End;
 
-	if(countitem("Candy") < 15) goto L_EasterNotEnough;
-	if(countitem("Candy") >= 15) goto L_EasterEnough;
-	close;
+    if(countitem("Candy") < 15)
+        goto L_EasterNotEnough;
+    if(countitem("Candy") >= 15)
+        goto L_EasterEnough;
+    close;
 
 L_EasterNotEnough:
-	mes "[Chef]";
-	mes "";
-	mes "\"You do not have enough candies for me to work with yet.\"";
-	mes "\"Please go get more.\"";
-	close;
+    mes "[Chef]";
+    mes "";
+    mes "\"You do not have enough candies for me to work with yet.\"";
+    mes "\"Please go get more.\"";
+    close;
 
 L_EasterEnough:
-	getinventorylist;
-	if (@inventorylist_count == 100 && countitem("Candy") > 15) goto L_EasterTooMany;
-	if(countitem("Candy") < 15) goto L_EasterNotEnough;
-	delitem "Candy", 15;
-	getitem "JellyBeans", 1;
-	set QUEST_Easter11, 9;
-	mes "[Chef]";
-	mes "";
-	mes "\"You have gathered enough candies for me to make the Jelly Beans.\"";
-	mes "He puts the candies into a pot and starts melting them.";
-	mes "He adds in some gooey stuff, then lets the solution cool for a moment before forming the Jelly Beans.";
-	mes "\"Here are your Jelly Beans.\"";
-	close;
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitem("Candy") > 15)
+        goto L_EasterTooMany;
+    if(countitem("Candy") < 15)
+        goto L_EasterNotEnough;
+    delitem "Candy", 15;
+    getitem "JellyBeans", 1;
+    set QUEST_Easter11, 9;
+    mes "[Chef]";
+    mes "";
+    mes "\"You have gathered enough candies for me to make the Jelly Beans.\"";
+    mes "He puts the candies into a pot and starts melting them.";
+    mes "He adds in some gooey stuff, then lets the solution cool for a moment before forming the Jelly Beans.";
+    mes "\"Here are your Jelly Beans.\"";
+    close;
 
 L_TooMany:
-	mes "[Chef]";
-	mes "";
-	mes "\"You don't have enough room for the Jelly Beans. Come back later.\"";
-	close;
+    mes "[Chef]";
+    mes "";
+    mes "\"You don't have enough room for the Jelly Beans. Come back later.\"";
+    close;
 
 L_SeeBunny:
-	mes "[Chef]";
-	mes "";
-	mes "\"Oh yeah, you need to return to the Easter Bunny now.\"";
-	next;
-	goto L_Begin;
-	close;
-
+    mes "[Chef]";
+    mes "";
+    mes "\"Oh yeah, you need to return to the Easter Bunny now.\"";
+    next;
+    goto L_Begin;
+    close;
 }

@@ -6,263 +6,245 @@
 //   * Airlia quest = 2 unlocks other options, perhaps with future Warrior Guild prospects (this is long term) 
 
 
-009-2.gat,123,71,0	script	Airlia	108,{
-	// Subquest 1a: Caretaker's daughter (initial, once)
-	set @LETTER_REWARD_GOLD_INITIAL, 1000;
-	set @LETTER_REWARD_EXP_INITIAL, 2000;
+009-2.gat,123,71,0|script|Airlia|108,{
+    // Subquest 1a: Caretaker's daughter (initial, once)
+    set @LETTER_REWARD_GOLD_INITIAL, 1000;
+    set @LETTER_REWARD_EXP_INITIAL, 2000;
 
-	set @Q_STATUS_RECIEVED_FIRST_LETTER, 2;
-	set @Q_STATUS_DELIVERED_FIRST_LETTER, 3;
+    set @Q_STATUS_RECIEVED_FIRST_LETTER, 2;
+    set @Q_STATUS_DELIVERED_FIRST_LETTER, 3;
 
-	// Subquest 1b: Continued delivery of letters (unlimited)
-	set @LETTER_REWARD_GOLD, 42;
-	set @LETTER_REWARD_EXP, 500;
+    // Subquest 1b: Continued delivery of letters (unlimited)
+    set @LETTER_REWARD_GOLD, 42;
+    set @LETTER_REWARD_EXP, 500;
 
-	set @Q_STATUS_HAS_NO_NEW_LETTER, 4;
-	set @Q_STATUS_HAS_NEW_LETTER, 5;
+    set @Q_STATUS_HAS_NO_NEW_LETTER, 4;
+    set @Q_STATUS_HAS_NEW_LETTER, 5;
 
-	// Subquest 2a: Fetch those undead drops (initial, once)
-	// TODO: Set sane values below
-	set @FETCH_AMOUNT_INITIAL, 50;
-	set @FETCH_LABEL_INITIAL$, "Bone";
-	set @FETCH_REWARD_GOLD_INITIAL, 5000;
-	set @FETCH_REWARD_EXP_INITIAL, 50000;
+    // Subquest 2a: Fetch those undead drops (initial, once)
+    // TODO: Set sane values below
+    set @FETCH_AMOUNT_INITIAL, 50;
+    set @FETCH_LABEL_INITIAL$, "Bone";
+    set @FETCH_REWARD_GOLD_INITIAL, 5000;
+    set @FETCH_REWARD_EXP_INITIAL, 50000;
 
-	set @Q_STATUS_HELP_AIRLIA, 1;
-	set @Q_STATUS_INITIAL_FETCH_REWARDED, 2;
+    set @Q_STATUS_HELP_AIRLIA, 1;
+    set @Q_STATUS_INITIAL_FETCH_REWARDED, 2;
 
-	// Subquest 2b: Fetch those undead drops (unlimited)
-	// TODO: Set sane values below
-	set @FETCH_AMOUNT, 10;
-	set @FETCH_LABEL$, "DiseasedHeart";
-	set @FETCH_REWARD_GOLD, 6000;
-	set @FETCH_REWARD_EXP, 40000;
+    // Subquest 2b: Fetch those undead drops (unlimited)
+    // TODO: Set sane values below
+    set @FETCH_AMOUNT, 10;
+    set @FETCH_LABEL$, "DiseasedHeart";
+    set @FETCH_REWARD_GOLD, 6000;
+    set @FETCH_REWARD_EXP, 40000;
 
 
-	if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED) goto L_Rewarded;
-	if (QUEST_Airlia == @Q_STATUS_HELP_AIRLIA) goto L_Fetch;
-	if (QUEST_Graveyard_Caretaker > @Q_STATUS_RECIEVED_FIRST_LETTER) goto L_Airlia_intro;
+    if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED) goto L_Rewarded;
+    if (QUEST_Airlia == @Q_STATUS_HELP_AIRLIA) goto L_Fetch;
+    if (QUEST_Graveyard_Caretaker > @Q_STATUS_RECIEVED_FIRST_LETTER) goto L_Airlia_intro;
 
 L_Caretaker:
-	mes "[Airlia]";
-	mes "\"Greetings. Do you need a housing permit, or to license your mount?\"";
-	next;
-
-	if (QUEST_Graveyard_Caretaker < @Q_STATUS_RECIEVED_FIRST_LETTER)
-		menu
-			"Sorry, no.", -,
-			"My what?", L_Caretaker_mount;
-
-	if (QUEST_Graveyard_Caretaker == @Q_STATUS_RECIEVED_FIRST_LETTER)
-		menu
-			"Sorry, no.", -,
-			"I have a letter from your father.", L_Caretaker_first_reward,
-			"My what?", L_Caretaker_mount;
-
-	mes "[Airlia]";
-	mes "\"Nobody ever does...\"";
-	close;
+    mes "[Airlia]";
+    mes "\"Greetings. Do you need a housing permit, or to license your mount?\"";
+    next;
+    if (QUEST_Graveyard_Caretaker < @Q_STATUS_RECIEVED_FIRST_LETTER)
+        menu
+            "Sorry, no.", -,
+            "My what?", L_Caretaker_mount;
+    if (QUEST_Graveyard_Caretaker == @Q_STATUS_RECIEVED_FIRST_LETTER)
+        menu
+            "Sorry, no.", -,
+            "I have a letter from your father.", L_Caretaker_first_reward,
+            "My what?", L_Caretaker_mount;
+    mes "[Airlia]";
+    mes "\"Nobody ever does...\"";
+    close;
 
 L_Caretaker_mount:
-	// The mention of mounts will certainly gather some interest from players,
-	// this section may be extended.
-	close;
+    // The mention of mounts will certainly gather some interest from players,
+    // this section may be extended.
+    close;
 
 L_Caretaker_first_reward:
-	mes "[Airlia]";
-	mes "\"Oh! Thank you very, very much! Please take this for your trouble.\"";
-	if (@LETTER_REWARD_GOLD_INITIAL > 0)
-		mes "[" + @LETTER_REWARD_GOLD_INITIAL + " GP]";
-	if (@LETTER_REWARD_EXP_INITIAL > 0)
-		mes "[" + @LETTER_REWARD_EXP_INITIAL + " experience points]";
-
-	set zeny, zeny + @LETTER_REWARD_GOLD_INITIAL;
-	getexp @LETTER_REWARD_EXP_INITIAL, 0;
-	set QUEST_Graveyard_Caretaker, @Q_STATUS_DELIVERED_FIRST_LETTER;
-	close;
+    mes "[Airlia]";
+    mes "\"Oh! Thank you very, very much! Please take this for your trouble.\"";
+    if (@LETTER_REWARD_GOLD_INITIAL > 0)
+        mes "[" + @LETTER_REWARD_GOLD_INITIAL + " GP]";
+    if (@LETTER_REWARD_EXP_INITIAL > 0)
+        mes "[" + @LETTER_REWARD_EXP_INITIAL + " experience points]";
+    set zeny, zeny + @LETTER_REWARD_GOLD_INITIAL;
+    getexp @LETTER_REWARD_EXP_INITIAL, 0;
+    set QUEST_Graveyard_Caretaker, @Q_STATUS_DELIVERED_FIRST_LETTER;
+    close;
 
 L_Caretaker_later_rewards:
-	mes "[Airlia]";
-	mes "\"Oh! Thank you very, very much! Please take this for your trouble.\"";
-	if (@LETTER_REWARD_GOLD > 0)
-		mes "[" + @LETTER_REWARD_GOLD + " GP]";
-	if (@LETTER_REWARD_EXP > 0)
-		mes "[" + @LETTER_REWARD_EXP + " experience points]";
-
-	set zeny, zeny + @LETTER_REWARD_GOLD;
-	getexp @LETTER_REWARD_EXP, 0;
-	set QUEST_Graveyard_Caretaker, @Q_STATUS_HAS_NO_NEW_LETTER;
-	close;
+    mes "[Airlia]";
+    mes "\"Oh! Thank you very, very much! Please take this for your trouble.\"";
+    if (@LETTER_REWARD_GOLD > 0)
+        mes "[" + @LETTER_REWARD_GOLD + " GP]";
+    if (@LETTER_REWARD_EXP > 0)
+        mes "[" + @LETTER_REWARD_EXP + " experience points]";
+    set zeny, zeny + @LETTER_REWARD_GOLD;
+    getexp @LETTER_REWARD_EXP, 0;
+    set QUEST_Graveyard_Caretaker, @Q_STATUS_HAS_NO_NEW_LETTER;
+    close;
 
 L_Airlia_intro:
-	mes "[Airlia]";
-	mes "\"My poor father, doomed to that awful cemetery.\"";
-	next;
+    mes "[Airlia]";
+    mes "\"My poor father, doomed to that awful cemetery.\"";
+    next;
 
-	// CASE REMOVED:
-	// This step is pointless and just forces the player to make a selection that doesn't effect anything.
-	// ALSO it misses the case where QUEST_Graveyard_Caretaker == 3, in this case it proceeds to the message without wasting player clicks
-	// Removing this check will make execution the same for QUEST_Graveyard_Caretaker == 3 and QUEST_Graveyard_Caretaker == 4
-	// If for some reason this is desireable, uncomment it and make sure to catch the extra case mentioned
-	//
-	//if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NO_NEW_LETTER)
-	//	menu
-	//		"...", -;
+    // CASE REMOVED:
+    // This step is pointless and just forces the player to make a selection that doesn't effect anything.
+    // ALSO it misses the case where QUEST_Graveyard_Caretaker == 3, in this case it proceeds to the message without wasting player clicks
+    // Removing this check will make execution the same for QUEST_Graveyard_Caretaker == 3 and QUEST_Graveyard_Caretaker == 4
+    // If for some reason this is desireable, uncomment it and make sure to catch the extra case mentioned
+    //
+    //if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NO_NEW_LETTER)
+    //    menu
+    //        "...", -;
 
-	if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
-		menu
-			"...", -,
-			"Oh, I have a letter from him.", L_Caretaker_later_rewards;
-
-	mes "[Airlia]";
-	mes "\"You know, there are many who believe that each time the undead rise after being killed, they lose mana.";
-	mes "Eventually, there will not be enough mana for them to rise again and they can be at rest. Do you believe this is true?\"";
-	next;
-
-	menu
-		"I believe so, yes.", L_Airlia_intro_mana_loss,
-		"Maybe...", L_Airlia_intro_mana_loss,
-		"No, that is not proven.", -;
-
-	mes "[Airlia]";
-	mes "\"Oh...\"";
-	close;
+    if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
+        menu
+            "...", -,
+            "Oh, I have a letter from him.", L_Caretaker_later_rewards;
+    mes "[Airlia]";
+    mes "\"You know, there are many who believe that each time the undead rise after being killed, they lose mana.";
+    mes "Eventually, there will not be enough mana for them to rise again and they can be at rest. Do you believe this is true?\"";
+    next;
+    menu
+        "I believe so, yes.", L_Airlia_intro_mana_loss,
+        "Maybe...", L_Airlia_intro_mana_loss,
+        "No, that is not proven.", -;
+    mes "[Airlia]";
+    mes "\"Oh...\"";
+    close;
 
 L_Airlia_intro_mana_loss:
-	mes "[Airlia]";
-	mes "\"When I am not working, I recruit help for the esteemed Fighters of the Undead, or FoU.";
-	mes "They are an official group effort of the Warriors' Guild and Magicians, you know, a very prestigious group.\"";
-	next;
-
-	menu
-		"...", L_Airlia_intro_fou,
-		"I have heard of them.", L_Airlia_intro_fou,
-		"Keep up the good work. I have to go now, bye.", -;
-	close;
+    mes "[Airlia]";
+    mes "\"When I am not working, I recruit help for the esteemed Fighters of the Undead, or FoU.";
+    mes "They are an official group effort of the Warriors' Guild and Magicians, you know, a very prestigious group.\"";
+    next;
+    menu
+        "...", L_Airlia_intro_fou,
+        "I have heard of them.", L_Airlia_intro_fou,
+        "Keep up the good work. I have to go now, bye.", -;
+    close;
 
 L_Airlia_intro_fou:
-	mes "[Airlia]";
-	mes "\"If we drain those evil creatures of their mana, I can get my father back. He is getting very old. Will you help us?\"";
-	next;
-
-	menu
-		"Of course I will.", L_Airlia_intro_fight,
-		"Sure, I guess.", L_Airlia_intro_fight,
-		"Thanks, but no thanks. I have other business to attend to.", -;
-	close;
+    mes "[Airlia]";
+    mes "\"If we drain those evil creatures of their mana, I can get my father back. He is getting very old. Will you help us?\"";
+    next;
+    menu
+        "Of course I will.", L_Airlia_intro_fight,
+        "Sure, I guess.", L_Airlia_intro_fight,
+        "Thanks, but no thanks. I have other business to attend to.", -;
+    close;
 
 L_Airlia_intro_fight:
-	mes "[Airlia]";
-	mes "\"Great, just kill any of the undead creatures you can and bring me proof of your work, and I will put in a word for you with the guild.\"";
-	next;
-
-	menu
-		"I'm on it.", -,
-		"What sort of proof?", L_Airlia_intro_proof;
-
-	set QUEST_Airlia, @Q_STATUS_HELP_AIRLIA;
-	close;
+    mes "[Airlia]";
+    mes "\"Great, just kill any of the undead creatures you can and bring me proof of your work, and I will put in a word for you with the guild.\"";
+    next;
+    menu
+        "I'm on it.", -,
+        "What sort of proof?", L_Airlia_intro_proof;
+    set QUEST_Airlia, @Q_STATUS_HELP_AIRLIA;
+    close;
 
 L_Airlia_intro_proof:
-	mes "[Airlia]";
-	mes "\"Let's say " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s. You don't know how much this means to me, thank you.\"";
-	set QUEST_Airlia, @Q_STATUS_HELP_AIRLIA;
-	close;
+    mes "[Airlia]";
+    mes "\"Let's say " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s. You don't know how much this means to me, thank you.\"";
+    set QUEST_Airlia, @Q_STATUS_HELP_AIRLIA;
+    close;
 
 L_Fetch:
-	mes "[Airlia]";
-	mes "\"Thank you for helping my father.\"";
-	next;	
-	
-	// Make sure to check if the player has a letter to deliver.
-	// If the check is not made then there is a bug, where the player
-	// has a letter but has not completed the initial fetch
-	// and is prevented from turing in the letter until the fetch is completed.
-	// 
-	if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
-		menu
-			"You are welcome.", -,
-			"I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
+    mes "[Airlia]";
+    mes "\"Thank you for helping my father.\"";
+    next;
 
-	if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
-		menu
-			"You are welcome.", -,
-			"I have another letter from your father.", L_Caretaker_later_rewards,
-			"I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
+    // Make sure to check if the player has a letter to deliver.
+    // If the check is not made then there is a bug, where the player
+    // has a letter but has not completed the initial fetch
+    // and is prevented from turing in the letter until the fetch is completed.
 
-	// The following checks are REDUNDANT
-	// The only way to get to this lable is after a check for QUEST_Airlia == @Q_STATUS_HELP_AIRLIA
-	// Incase you weren't paying attention: @Q_STATUS_HELP_AIRLIA = 1 < @Q_STATUS_INITIAL_FETCH_REWARDED
-	// Note: proper handling of the first case is done above.
-	//       The second case never gets executed anyway and not handled.
-	//
-	//if (QUEST_Airlia < @Q_STATUS_INITIAL_FETCH_REWARDED)
-	//	menu
-	//		"You are welcome.", -,
-	//		"I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
-	//
-	//if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED)
-	//	menu
-	//		"You are welcome.", -,
-	//		"I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
-	
-	close;
+    if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
+        menu
+            "You are welcome.", -,
+            "I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
+    if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
+        menu
+            "You are welcome.", -,
+            "I have another letter from your father.", L_Caretaker_later_rewards,
+            "I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
+
+    // The following checks are REDUNDANT
+    // The only way to get to this lable is after a check for QUEST_Airlia == @Q_STATUS_HELP_AIRLIA
+    // Incase you weren't paying attention: @Q_STATUS_HELP_AIRLIA = 1 < @Q_STATUS_INITIAL_FETCH_REWARDED
+    // Note: proper handling of the first case is done above.
+    //       The second case never gets executed anyway and not handled.
+    //
+    //if (QUEST_Airlia < @Q_STATUS_INITIAL_FETCH_REWARDED)
+    //    menu
+    //        "You are welcome.", -,
+    //        "I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
+    //
+    //if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED)
+    //    menu
+    //        "You are welcome.", -,
+    //        "I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
+
+    close;
 
 L_Fetch_initial_reward:
-	if (countitem(@FETCH_LABEL_INITIAL$) < @FETCH_AMOUNT_INITIAL) goto L_Fetch_not_enough;
-
-	mes "[Airlia]";
-	mes "\"Excellent work. You are definitely a great warrior. I will tell the guild of your deeds.\"";
-	if (@FETCH_REWARD_GOLD_INITIAL > 0)
-		mes "[" + @FETCH_REWARD_GOLD_INITIAL + " GP]";
-	if (@FETCH_REWARD_EXP_INITIAL > 0)
-		mes "[" + @FETCH_REWARD_EXP_INITIAL + " experience points]";
-	delitem @FETCH_LABEL_INITIAL$, @FETCH_AMOUNT_INITIAL;
-	set zeny, zeny + @FETCH_REWARD_GOLD_INITIAL;
-	getexp @FETCH_REWARD_EXP_INITIAL, 0;
-	set QUEST_Airlia, @Q_STATUS_INITIAL_FETCH_REWARDED;
-	next;
-
-	mes "[Airlia]";
-	// TODO: Write the dialogue when I'm not tired...
-	mes "\"Oh, before you leave. We all must do what we can to stop this tragedy.";
-	mes "If you are willing to keep draining the undead of mana, I will give you what gold I can afford as a token of my gratitude.\"";
-	close;
+    if (countitem(@FETCH_LABEL_INITIAL$) < @FETCH_AMOUNT_INITIAL) goto L_Fetch_not_enough;
+    mes "[Airlia]";
+    mes "\"Excellent work. You are definitely a great warrior. I will tell the guild of your deeds.\"";
+    if (@FETCH_REWARD_GOLD_INITIAL > 0)
+        mes "[" + @FETCH_REWARD_GOLD_INITIAL + " GP]";
+    if (@FETCH_REWARD_EXP_INITIAL > 0)
+        mes "[" + @FETCH_REWARD_EXP_INITIAL + " experience points]";
+    delitem @FETCH_LABEL_INITIAL$, @FETCH_AMOUNT_INITIAL;
+    set zeny, zeny + @FETCH_REWARD_GOLD_INITIAL;
+    getexp @FETCH_REWARD_EXP_INITIAL, 0;
+    set QUEST_Airlia, @Q_STATUS_INITIAL_FETCH_REWARDED;
+    next;
+    mes "[Airlia]";
+    // TODO: Write the dialogue when I'm not tired...
+    mes "\"Oh, before you leave. We all must do what we can to stop this tragedy.";
+    mes "If you are willing to keep draining the undead of mana, I will give you what gold I can afford as a token of my gratitude.\"";
+    close;
 
 L_Fetch_later_rewards:
-	if (countitem(@FETCH_LABEL$) < @FETCH_AMOUNT) goto L_Fetch_not_enough;
-
-	mes "[Airlia]";
-	mes "\"Excellent work. You are definitely a great warrior.\"";
-	if (@FETCH_REWARD_GOLD > 0)
-		mes "[" + @FETCH_REWARD_GOLD + " GP]";
-	if (@FETCH_REWARD_EXP > 0)
-		mes "[" + @FETCH_REWARD_EXP + " experience points]";
-	delitem @FETCH_LABEL$, @FETCH_AMOUNT;
-	set zeny, zeny + @FETCH_REWARD_GOLD;
-	getexp @FETCH_REWARD_EXP, 0;
-	close;
+    if (countitem(@FETCH_LABEL$) < @FETCH_AMOUNT)
+        goto L_Fetch_not_enough;
+    mes "[Airlia]";
+    mes "\"Excellent work. You are definitely a great warrior.\"";
+    if (@FETCH_REWARD_GOLD > 0)
+        mes "[" + @FETCH_REWARD_GOLD + " GP]";
+    if (@FETCH_REWARD_EXP > 0)
+        mes "[" + @FETCH_REWARD_EXP + " experience points]";
+    delitem @FETCH_LABEL$, @FETCH_AMOUNT;
+    set zeny, zeny + @FETCH_REWARD_GOLD;
+    getexp @FETCH_REWARD_EXP, 0;
+    close;
 
 L_Fetch_not_enough:
-	mes "[Airlia]";
-	mes "\"I'm sorry, I didn't realize you couldn't count. Perhaps when I have some free time, I can help you learn if you'd like.\"";
-	close;
+    mes "[Airlia]";
+    mes "\"I'm sorry, I didn't realize you couldn't count. Perhaps when I have some free time, I can help you learn if you'd like.\"";
+    close;
 
 L_Rewarded:
-	mes "[Airlia]";
-	mes "\"Thank you for your help.\"";
-	next;
-
-	if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
-		menu
-			"You are welcome.", -,
-			"I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
-
-	if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
-		menu
-			"You are welcome.", -,
-			"I have another letter from your father.", L_Caretaker_later_rewards,
-			"I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
-
-	close;
+    mes "[Airlia]";
+    mes "\"Thank you for your help.\"";
+    next;
+    if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
+        menu
+            "You are welcome.", -,
+            "I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
+    if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
+        menu
+            "You are welcome.", -,
+            "I have another letter from your father.", L_Caretaker_later_rewards,
+            "I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
+    close;
 }

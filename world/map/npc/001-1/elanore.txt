@@ -93,28 +93,28 @@ Heal_1:
     mes "[Elanore the Healer]";
     mes "\"Here you go!\"";
     heal 10000,10000;
-    close;
+    goto L_Close;
 
 Heal_2:
 
     mes "[Elanore the Healer]";
     mes "\"Painless, wasn't it?";
     heal 10000,10000;
-    close;
+    goto L_Close;
 
 Heal_3:
 
     mes "[Elanore the Healer]";
     mes "\"You should be more careful.\"";
     heal 10000,10000;
-    close;
+    goto L_Close;
 
 Heal_4:
 
     mes "[Elanore the Healer]";
     mes "\"Much better, right?!\"";
     heal 10000,10000;
-    close;
+    goto L_Close;
 
 L_NoHeal:
     if (MAGIC_FLAGS)
@@ -125,7 +125,7 @@ L_NoHealMessage:
     mes "\"I'm sorry but unless you are young and in need, I can't help you, and your level is already higher than ten.";
     mes "With so many people still injured from the earthquake, I really have no time to help.";
     mes "You can get some rest in the inn near here.\"";
-    close;
+    goto L_Close;
 
 L_Chat:
     mes "[Elanore the Healer]";
@@ -151,7 +151,7 @@ L_Main:
             "Can you heal me?", L_NoHealMessage,
             "What do you know about...", L_Question,
             "Goodbye!", L_bye;
-    close;
+    goto L_Close;
 
 OnPCKillEvent:
     if (attachrid(@killerrid) == 0)
@@ -166,7 +166,7 @@ L_OnPcKillWipe:
 
 L_OnPcKillFinish:
     set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE & ~(255 << 24)) | (@Q_heal_exp << 24);
-    close;
+    goto L_Close;
 
 L_Lifestones:
     mes "[Elanore the Healer]";
@@ -177,7 +177,7 @@ L_Lifestones:
         "No way!", -,
         "Here you are!", L_Lifestones_Trade,
         "Can I make them myself?", L_Lifestones_MakeSelf;
-    close;
+    goto L_Close;
 
 L_Lifestones_Trade:
     if (countitem("MauveHerb") < 10) goto L_Lifestones_Trade_Missing;
@@ -207,18 +207,18 @@ L_Lifestones_Trade:
     mes "\"Five for you and five for me.\"";
     mes "She smiles.";
     mes "[200 experience points]";
-    close;
+    goto L_Close;
 
 L_Lifestones_NoRoom:
     mes "[Elanore the Healer]";
     mes "\"Oh... it seems that you have no room for the lifestones.  But please do come back later when you have made a little space.\"";
-    close;
+    goto L_Close;
 
 L_Lifestones_Trade_Missing:
     mes "[Elanore the Healer]";
     mes "Elanore counts the leaves you show her.";
     mes "\"No, I am sorry.  Please bring me ten leaves each of gamboge, alizarin, mauve, and cobalt.\"";
-    close;
+    goto L_Close;
 
 L_Lifestones_MakeSelf:
     mes "[Elanore the Healer]";
@@ -229,11 +229,11 @@ L_Lifestones_MakeSelf_yes:
     next;
     mes "[Elanore the Healer]";
     mes "\"You will have to make sure that your powers are pure, though, either by wearing a white robe or some other special magical item that does this for you.\"";
-    close;
+    goto L_Close;
 
 L_Lifestones_MakeSelf_no:
     mes "\"No, you are not powerful enough yet.  Please come back and ask me again when you have learned to control more powerful magic, though!\"";
-    close;
+    goto L_Close;
 
 L_Teach:
     if (@Q_status == @STATUS_INITIAL) goto L_Teach_Initial;
@@ -246,7 +246,7 @@ L_Teach:
 
     mes "[Elanore the Healer]";
     mes "\"You have made good progress, but you lack the magical power to advance further.  Also, I would like to observe you some more to be certain that you will make a good healer.\"";
-    close;
+    goto L_Close;
 
 L_Teach_Initial:
     mes "[Elanore the Healer]";
@@ -282,12 +282,12 @@ L_Teach_Initial:
     mes "[Elanore the Healer]";
     mes "Elanore hands you the crystal.";
     mes "\"Here you are.  I hope that it will allow you to do good!\"";
-    close;
+    goto L_Close;
 
 L_Teach_Initial_Noroom:
     mes "[Elanore the Healer]";
     mes "\"Oh... you managed to put things into every little nook and pocket, haven't you?  Well, come back later, I will give it to you then.\"";
-    close;
+    goto L_Close;
 
 L_Teach_CheckAdvanceTo2:
     mes "[Elanore the Healer]";
@@ -318,7 +318,7 @@ L_Teach_AdvanceTo2_skip:
     set @SUP_xp, 5000;
     set @SUP_lvl, 2;
     callfunc "SkillUp";
-    close;
+    goto L_Close;
 
 L_Teach_CheckAdvanceTo2_fail:
     mes "\"I think I would like to observe you for a little longer to see if you would make a good healer.\"";
@@ -328,7 +328,7 @@ L_Teach_CheckAdvanceTo2_fail:
         mes "\"You are making progress, but you still need more practice.\"";
     if (@Q_heal_exp >= 15)
         mes "\"You have made good progress, but please do continue in your efforts.\"";
-    close;
+    goto L_Close;
 
 L_Teach_CheckAdvanceToLOH:
     if (getskilllv(SKILL_MAGIC) < 2) goto L_Teach_LOH_advance_abort0;
@@ -346,17 +346,17 @@ L_Teach_CheckAdvanceToLOH:
     getexp 1000, 0;
     set @Q_status, @STATUS_LEARNED_LAY_ON_HANDS;
     callsub S_update_var;
-    close;
+    goto L_Close;
 
 L_Teach_LOH_advance_abort0:
     mes "[Elanore the Healer]";
     mes "\"You don't have enough magical power to learn the next healing spell yet.\"";
-    close;
+    goto L_Close;
 
 L_Teach_LOH_advance_abort1:
     mes "[Elanore the Healer]";
     mes "\"I'm sorry, but I am not yet convinced that you are a good enough healer.  Please continue in your endeavours.\"";
-    close;
+    goto L_Close;
 
 L_Teach_Explain3:
     if (getskilllv(SKILL_MAGIC) < 3) goto L_Teach_Explain3_abort;
@@ -426,7 +426,7 @@ L_3_where:
 L_Teach_Explain3_abort:
     mes "[Elanore the Healer]";
     mes "\"I'm sorry, but you lack the magical power to advance.\"";
-    close;
+    goto L_Close;
 
 L_Teach_Explain3_fail:
     mes "[Elanore the Healer]";
@@ -436,7 +436,7 @@ L_Teach_Explain3_fail:
         mes "\"You still need more practice in the art of healing.\"";
     if ((@Q_heal_exp >= 40))
         mes "\"You are doing well, but you need some more practice as a healer first.\"";
-    close;
+    goto L_Close;
 
 L_Teach_CheckAdvanceTo3:
     callfunc "KadiyaSubquestConsts";
@@ -582,7 +582,6 @@ L_Q_auldsbel:
     next;
     goto L_Main;
 
-
 L_CurePoison:
     mes "[Elanore the Healer]";
     mes "\"Oh dear!  That looks like poison; hang on...\"";
@@ -594,11 +593,31 @@ L_CurePoison:
     next;
     mes "[Elanore the Healer]";
     mes "\"There you are, right as rain!  Now you take care, all right?\"";
-    close;
+    goto L_Close;
 
 L_bye:
     mes "[Elanore the Healer]";
     mes "\"Goodbye!\"";
+    goto L_Close;
+
+L_Close:
+    set @Q_MASK, 0;
+    set @Q_SHIFT, 0;
+    set @has_magic, 0;
+    set @Q_STATUS_MAX, 0;
+    set @Q_heal_exp, 0;
+    set @Q_status, 0;
+    set @SUP_id, 0;
+    set @SUP_name$, "";
+    set @ignore, 0;
+    set @STATUS_LEARNED_LIGHT_HEAL, 0;
+    set @STATUS_MASTERED_LIGHT_HEAL, 0;
+    set @STATUS_LEARNED_LAY_ON_HANDS, 0;
+    set @STATUS_WAITING_FOR_KADIYA, 0;
+    set @STATUS_READY_TO_LEARN_CURE_POISON, 0;
+    set @STATUS_LEARNED_CURE_POISON, 0;
+    set @TEMP,0;
+    set @xp, 0;
     close;
 
 S_update_var:

@@ -2,6 +2,7 @@
 // so it's hard to figure out who wrote it.
 
 // o11c updated it according to new scripting standards while adding pink.
+// ... and added the code that shows your old color/style.
 
 // Note: there is a soft limit of 12 colors (0-11) and 20 styles (0-19)
 // This is the number that can be set when creating a character
@@ -9,11 +10,23 @@
 // any value 0-255
 
 function|script|Barber|{
-    // TODO do something like this, but with names
-    //set @style, getlook(LOOK_HAIR_STYLE);
-    //set @color, getlook(LOOK_HAIR_COLOR);
-    //mes "Your current style is " + @style + " and your current color is " + @color + ".";
+    set @style, getlook(LOOK_HAIR_STYLE);
+    set @color, getlook(LOOK_HAIR_COLOR);
 
+    set @style$, "Unknown";
+    set @color$, "Unknown";
+    if (@style >= 0 && @style < 20)
+        set @style$, $@HairStyles$[@style];
+    if (@color >= 0 && color < 20)
+        set @color$, $@HairColors$[@color];
+    if (@color == 127)
+        set @color$, "Shocked White";
+
+    mes "Your current style is " + @style$ + " and your current color is " + @color$ + ".";
+    set @style$, "";
+    set @color$, "";
+
+L_Main:
     menu
         "Change my style", L_Style,
         "Change my color", L_Color,
@@ -44,12 +57,19 @@ L_Style:
         "Surprise me", L_RandomStyle,
         "Nah, I'm fine", L_Done;
 
+    if (@menu - 1 == @style)
+        goto L_SameStyle;
+
     setlook LOOK_HAIR_STYLE, @menu - 1;
     goto L_Done;
 
 L_RandomStyle:
     setlook LOOK_HAIR_STYLE, rand(20);
     goto L_Done;
+
+L_SameStyle:
+    mes "Your hair was already that style";
+    goto L_Main;
 
 L_Color:
     menu
@@ -68,6 +88,9 @@ L_Color:
         "Surprise me", L_RandomColor,
         "Nah, I'm fine", L_Done;
 
+    if (@menu - 1 == @color)
+        goto L_SameColor;
+
     setlook LOOK_HAIR_COLOR, @menu - 1;
     goto L_Done;
 
@@ -75,10 +98,29 @@ L_RandomColor:
     setlook LOOK_HAIR_COLOR, rand(12);
     goto L_Done;
 
+L_SameColor:
+    mes "Your hair was already that color";
+    goto L_Main;
+
 L_Done:
     // cleanup
     set @menu, 0;
-    //set @style, 0;
-    //set @color, 0;
+    set @style, 0;
+    set @color, 0;
+    return;
+}
+
+// Since this is a function, not an NPC, OnInit doesn't work
+// So call this from a real NPC's OnInit (001-1/barber.txt)
+function|script|OnInitBarber|{
+    setarray $@HairStyles$,
+        "Bald", "Flat ponytail", "Bowl cut", "Combed back", "Emo", "Mohawk",
+        "Pompadour", "Center parting/Short and slick", "Long and slick",
+        "Short and curly", "Pigtails", "Long and curly", "Parted",
+        "Perky ponytail", "Wave", "Mane", "Bun", "Shoulder Length Flick",
+        "Fizzy", "Bald";
+    setarray $@HairColors$,
+        "Brunette", "Green", "Dark red", "Light purple", "Gray", "Blonde",
+        "Teal", "Light red", "Blue", "Dark purple", "Black", "Pink";
     return;
 }

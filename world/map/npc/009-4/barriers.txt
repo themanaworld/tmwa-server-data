@@ -1,229 +1,246 @@
 //# see detailed description at orum.txt
-function	script	GetBarrierColor	{
-	if (@Barrier < 0 || @Barrier > 2) goto L_Error;
+function|script|GetBarrierColor|{
+    if (@Barrier < 0 || @Barrier > 2) goto L_Error;
 
-	set @Mask, 15;
-	set @Shift, 4 * @Barrier;
-	set @BarrierColor, (OrumQuestBarrier >> @Shift) & @Mask;
-	return;
+    set @Mask, 15;
+    set @Shift, 4 * @Barrier;
+    set @BarrierColor, (OrumQuestBarrier >> @Shift) & @Mask;
+    return;
 
 L_Error:
-	mes "Barrier number is out of range.";
-	close;
+    mes "Barrier number is out of range.";
+    close;
 }
 
-function	script	SetBarrierColor	{
-	if (@Barrier < 0 || @Barrier > 2) goto L_Error;
-	if (@Color < 0 || @Color > 12) goto L_Error2;
+function|script|SetBarrierColor|{
+    if (@Barrier < 0 || @Barrier > 2)
+        goto L_Error;
+    if (@Color < 0 || @Color > 12)
+        goto L_Error2;
 
-	set @Mask, (15 << (4 * @Barrier));
-	set OrumQuestBarrier, (OrumQuestBarrier & (~(@Mask))) | @Color << (4 * @Barrier);
-	return;
+    set @Mask, (15 << (4 * @Barrier));
+    set OrumQuestBarrier, (OrumQuestBarrier & (~(@Mask))) | @Color << (4 * @Barrier);
+    return;
 
 L_Error:
-	mes "Barrier number is out of range.";
-	close;
+    mes "Barrier number is out of range.";
+    close;
 
 L_Error2:
-	mes "Barrier color is out of range.";
-	close;
+    mes "Barrier color is out of range.";
+    close;
 }
 
 
 // Starting Barrier / Quest Entrance
-009-4.gat,37,120,0	script	#OrumCaveStartBarrier	0,1,0,{
+009-4.gat,37,120,0|script|#OrumCaveStartBarrier|0,1,0,{
 
-	if (OrumQuest >= 3) close;
-	if (OrumQuest == 2) goto L_Started;
+    if (OrumQuest >= 3) close;
+    if (OrumQuest == 2) goto L_Started;
 
-	warp "009-4.gat", 37, 118;
-	mes "As you try to pass, two torches begin to flare and push you back. They seem to form some kind of barrier..";
-	close;
+    warp "009-4.gat", 37, 118;
+    mes "As you try to pass, two torches begin to flare and push you back. They seem to form some kind of barrier..";
+    close;
 
 L_Started:
-	message strcharinfo(0), "The torches dim as you approach, granting you passage.";
-	set OrumQuest, 3;
-	close;
+    message strcharinfo(0), "The torches dim as you approach, granting you passage.";
+    set OrumQuest, 3;
+    close;
 }
 
 // First Barrier
-009-4.gat,57,29,0	script	#OrumCaveFirstBarrier	0,1,0,{
+009-4.gat,57,29,0|script|#OrumCaveFirstBarrier|0,1,0,{
 
-	if (OrumQuest >= 5) close;
+    if (OrumQuest >= 5) close;
 
-	message strcharinfo(0), "Nothing seems to happen as you enter this room.. The barrier must need both of its torches to function properly..";
-	set OrumQuest, 5;
-	close;
+    message strcharinfo(0), "Nothing seems to happen as you enter this room.. The barrier must need both of its torches to function properly..";
+    set OrumQuest, 5;
+    close;
 }
 
 // Second Barrier
-009-4.gat,61,54,0	script	#OrumCaveSecondBarrier	0,1,0,{
+009-4.gat,61,54,0|script|#OrumCaveSecondBarrier|0,1,0,{
 
-	if (OrumQuest == 3) set OrumQuest, 4;
+    if (OrumQuest == 3) set OrumQuest, 4;
 
-	set @Barrier, 0;
-	callfunc("GetBarrierColor");
-	set @Torch, 0;
-	callfunc("GetTorchColor");
-	if (OrumQuest > 7 && @TorchColor == @BarrierColor) goto L_Allow_Second_Passage;
+    set @Barrier, 0;
+    callfunc("GetBarrierColor");
+    set @Torch, 0;
+    callfunc("GetTorchColor");
+    if (OrumQuest > 7 && @TorchColor == @BarrierColor)
+        goto L_Allow_Second_Passage;
 
-	warp "009-4.gat", 61, 56;
-	mes "As you try to pass, the torches begin to flare and push you back. Perhaps there's a way to get past it..";
-	mes "";
-	setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
-	mes "Looking closely between the two torches you can see the barrier has a " + @colors$[@BarrierColor] + " tint to it..";
-	close;
+    warp "009-4.gat", 61, 56;
+    mes "As you try to pass, the torches begin to flare and push you back. Perhaps there's a way to get past it..";
+    mes "";
+    setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
+    mes "Looking closely between the two torches you can see the barrier has a " + @colors$[@BarrierColor] + " tint to it..";
+    close;
 
 L_Allow_Second_Passage:
-	if (OrumQuest < 9) goto L_Advance_Quest;
-	close;
+    if (OrumQuest < 9) goto L_Advance_Quest;
+    close;
 
 L_Advance_Quest:
-	message strcharinfo(0), "The torches dim as you enter like the first. You must be on the right trail..";
-	set OrumQuest, 9;
-	close;
+    message strcharinfo(0), "The torches dim as you enter like the first. You must be on the right trail..";
+    set OrumQuest, 9;
+    close;
 }
 
 // Third Barrier
-009-4.gat,24,66,0	script	#OrumCaveThirdBarrier	0,1,0,{
+009-4.gat,24,66,0|script|#OrumCaveThirdBarrier|0,1,0,{
 
-	if (OrumQuest == 3) set OrumQuest, 4;
+    if (OrumQuest == 3) set OrumQuest, 4;
 
-	set @Barrier, 1;
-	callfunc("GetBarrierColor");
+    set @Barrier, 1;
+    callfunc("GetBarrierColor");
 
-	set @Torch, 0;
-	callfunc("GetTorchColor");
-	set @Torch1Color, @TorchColor;
+    set @Torch, 0;
+    callfunc("GetTorchColor");
+    set @Torch1Color, @TorchColor;
 
-	set @Torch, 1;
-	callfunc("GetTorchColor");
-	set @Torch2Color, @TorchColor;
+    set @Torch, 1;
+    callfunc("GetTorchColor");
+    set @Torch2Color, @TorchColor;
 
-	set @firstColor, @BarrierColor - 2;
-	set @secondColor, @BarrierColor + 2;
-	if (@firstColor < 1) set @firstColor, 12;
-	if (@secondColor > 12) set @secondColor, 1;
+    set @firstColor, @BarrierColor - 2;
+    set @secondColor, @BarrierColor + 2;
+    if (@firstColor < 1)
+        set @firstColor, 12;
+    if (@secondColor > 12)
+        set @secondColor, 1;
 
-	if (OrumQuest > 8 && @Torch1Color == @firstColor && @Torch2Color == @secondColor)
-		goto L_Allow_Third_Passage;
-	if (OrumQuest > 8 && @Torch2Color == @firstColor && @Torch1Color == @secondColor)
-		goto L_Allow_Third_Passage;
+    if (OrumQuest > 8 && @Torch1Color == @firstColor && @Torch2Color == @secondColor)
+        goto L_Allow_Third_Passage;
+    if (OrumQuest > 8 && @Torch2Color == @firstColor && @Torch1Color == @secondColor)
+        goto L_Allow_Third_Passage;
 
-	warp "009-4.gat", 24, 64;
-	mes "As you try to pass, the torches begin to flare and push you back. Perhaps there is a way to get past it..";
-	mes "";
-	setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
-	mes "Looking closely between the two torches you can see the barrier has a " + @colors$[@BarrierColor] + " tint to it..";
-	close;
+    warp "009-4.gat", 24, 64;
+    mes "As you try to pass, the torches begin to flare and push you back. Perhaps there is a way to get past it..";
+    mes "";
+    setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
+    mes "Looking closely between the two torches you can see the barrier has a " + @colors$[@BarrierColor] + " tint to it..";
+    close;
 
 L_Allow_Third_Passage:
-if (OrumQuest < 10) goto L_Advance_Quest;
-	close;
+    if (OrumQuest < 10) goto L_Advance_Quest;
+    close;
 
 L_Advance_Quest:
-	set OrumQuest, 10;
-	close;
+    set OrumQuest, 10;
+    close;
 }
 
 // Ending Barrier
-009-4.gat,48,38,0	script	#OrumCaveEndBarrier	0,1,0,{
+009-4.gat,48,38,0|script|#OrumCaveEndBarrier|0,1,0,{
 
-	if (OrumQuest >= 11) close;
-	if (OrumQuest == 3) set OrumQuest, 4;
+    if (OrumQuest >= 11) close;
+    if (OrumQuest == 3) set OrumQuest, 4;
 
-	set @Barrier, 2;
-	callfunc("GetBarrierColor");
+    set @Barrier, 2;
+    callfunc("GetBarrierColor");
 
-	if (OrumQuest < 10) goto L_Deny_Final_Passage;
+    if (OrumQuest < 10)
+        goto L_Deny_Final_Passage;
 
-	set @Torch, 0;
-	callfunc("GetTorchColor");
-	set @Torch1Color, @TorchColor;
+    set @Torch, 0;
+    callfunc("GetTorchColor");
+    set @Torch1Color, @TorchColor;
 
-	set @Torch, 1;
-	callfunc("GetTorchColor");
-	set @Torch2Color, @TorchColor;
+    set @Torch, 1;
+    callfunc("GetTorchColor");
+    set @Torch2Color, @TorchColor;
 
-	set @Torch, 2;
-	callfunc("GetTorchColor");
-	set @Torch3Color, @TorchColor;
+    set @Torch, 2;
+    callfunc("GetTorchColor");
+    set @Torch3Color, @TorchColor;
 
-	// Extract the secondary color
-	set @secondary, @BarrierColor - 1;
-	if (@secondary != 3 && @secondary != 7 && @secondary != 11)
-		set @secondary, @BarrierColor + 1;
+    // Extract the secondary color
+    set @secondary, @BarrierColor - 1;
+    if (@secondary != 3 && @secondary != 7 && @secondary != 11)
+        set @secondary, @BarrierColor + 1;
 
-	// Make sure it's in bounds
-	if (@secondary > 12) set @secondary, @secondary - 12;
-	if (@secondary < 1) set @secondary, @secondary + 12;
+    // Make sure it's in bounds
+    if (@secondary > 12)
+        set @secondary, @secondary - 12;
+    if (@secondary < 1)
+        set @secondary, @secondary + 12;
 
-	// Extract first 2 required colors
-	set @firstColor, @secondary - 2;
-	set @secondColor, @secondary + 2;
-	if (@firstColor > 12) set @firstColor, @firstColor - 12;
-	if (@firstColor < 1) set @firstColor, @firstColor + 12;
-	if (@secondColor > 12) set @secondColor, @secondColor - 12;
-	if (@secondColor < 1) set @secondColor, @secondColor + 12;
+    // Extract first 2 required colors
+    set @firstColor, @secondary - 2;
+    set @secondColor, @secondary + 2;
+    if (@firstColor > 12)
+        set @firstColor, @firstColor - 12;
+    if (@firstColor < 1)
+        set @firstColor, @firstColor + 12;
+    if (@secondColor > 12)
+        set @secondColor, @secondColor - 12;
+    if (@secondColor < 1)
+        set @secondColor, @secondColor + 12;
 
-	set @thirdColor, 12;
-	set @offsetOne, @BarrierColor + 1;
-	set @offsetTwo, @BarrierColor - 1;
+    set @thirdColor, 12;
+    set @offsetOne, @BarrierColor + 1;
+    set @offsetTwo, @BarrierColor - 1;
 
-	// Make sure they in bounds
-	if (@offsetOne > 12) set @offsetOne, @offsetOne - 12;
-	if (@offsetOne < 1) set @offsetOne, @offsetOne + 12;
-	if (@offsetTwo > 12) set @offsetTwo, @offsetTwo - 12;
-	if (@offsetTwo < 1) set @offsetTwo, @offsetTwo + 12;
+    // Make sure they in bounds
+    if (@offsetOne > 12)
+        set @offsetOne, @offsetOne - 12;
+    if (@offsetOne < 1)
+        set @offsetOne, @offsetOne + 12;
+    if (@offsetTwo > 12)
+        set @offsetTwo, @offsetTwo - 12;
+    if (@offsetTwo < 1)
+        set @offsetTwo, @offsetTwo + 12;
 
-	// Extract third needed color
-	if (@secondary == @offsetOne)
-		set @thirdColor, @firstColor;
-	if (@secondary == @offsetTwo)
-		set @thirdColor, @secondColor;
+    // Extract third needed color
+    if (@secondary == @offsetOne)
+        set @thirdColor, @firstColor;
+    if (@secondary == @offsetTwo)
+        set @thirdColor, @secondColor;
 
-	set @firstDone, 0;
-	set @secondDone, 0;
-	set @thirdDone, 0;
+    set @firstDone, 0;
+    set @secondDone, 0;
+    set @thirdDone, 0;
 
-	if (@firstDone == 0 && @secondDone != 1 && @thirdDone != 1 && @Torch1Color == @firstColor)
-		set @firstDone, 1;
-	if (@firstDone != 1 && @secondDone == 0 && @thirdDone != 1 && @Torch1Color == @secondColor)
-		set @secondDone, 1;
-	if (@firstDone != 1 && @secondDone != 1 && @thirdDone == 0 && @Torch1Color == @thirdColor)
-		set @thirdDone, 1;
+    if (@firstDone == 0 && @secondDone != 1 && @thirdDone != 1 && @Torch1Color == @firstColor)
+        set @firstDone, 1;
+    if (@firstDone != 1 && @secondDone == 0 && @thirdDone != 1 && @Torch1Color == @secondColor)
+        set @secondDone, 1;
+    if (@firstDone != 1 && @secondDone != 1 && @thirdDone == 0 && @Torch1Color == @thirdColor)
+        set @thirdDone, 1;
 
-	if (@firstDone == 0 && @secondDone != 2 && @thirdDone != 2 && @Torch2Color == @firstColor)
-		set @firstDone, 2;
-	if (@firstDone != 2 && @secondDone == 0 && @thirdDone != 2 && @Torch2Color == @secondColor)
-		set @secondDone, 2;
-	if (@firstDone != 2 && @secondDone != 2 && @thirdDone == 0 && @Torch2Color == @thirdColor)
-		set @thirdDone, 2;
+    if (@firstDone == 0 && @secondDone != 2 && @thirdDone != 2 && @Torch2Color == @firstColor)
+        set @firstDone, 2;
+    if (@firstDone != 2 && @secondDone == 0 && @thirdDone != 2 && @Torch2Color == @secondColor)
+        set @secondDone, 2;
+    if (@firstDone != 2 && @secondDone != 2 && @thirdDone == 0 && @Torch2Color == @thirdColor)
+        set @thirdDone, 2;
 
-	if (@firstDone == 0 && @secondDone != 3 && @thirdDone != 3 && @Torch3Color == @firstColor)
-		set @firstDone, 3;
-	if (@firstDone != 3 && @secondDone == 0 && @thirdDone != 3 && @Torch3Color == @secondColor)
-		set @secondDone, 3;
-	if (@firstDone != 3 && @secondDone != 3 && @thirdDone == 0 && @Torch3Color == @thirdColor)
-		set @thirdDone, 3;
+    if (@firstDone == 0 && @secondDone != 3 && @thirdDone != 3 && @Torch3Color == @firstColor)
+        set @firstDone, 3;
+    if (@firstDone != 3 && @secondDone == 0 && @thirdDone != 3 && @Torch3Color == @secondColor)
+        set @secondDone, 3;
+    if (@firstDone != 3 && @secondDone != 3 && @thirdDone == 0 && @Torch3Color == @thirdColor)
+        set @thirdDone, 3;
 
-	if (@firstDone != 0 && @secondDone != 0 && @thirdDone != 0) goto L_Allow_Final_Passage;
-	goto L_Deny_Final_Passage;
+    if (@firstDone != 0 && @secondDone != 0 && @thirdDone != 0)
+        goto L_Allow_Final_Passage;
+    goto L_Deny_Final_Passage;
 
 L_Deny_Final_Passage:
-	warp "009-4.gat", 48, 36;
-	mes "As you try to pass, the torches begin to flare and push you back. Perhaps there is a way to get past it..";
-	mes "";
-	setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
-	mes "Looking closely between the two torches you can see the barrier has a " + @colors$[@BarrierColor] + " tint to it..";
-	close;
+    warp "009-4.gat", 48, 36;
+    mes "As you try to pass, the torches begin to flare and push you back. Perhaps there is a way to get past it..";
+    mes "";
+    setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
+    mes "Looking closely between the two torches you can see the barrier has a " + @colors$[@BarrierColor] + " tint to it..";
+    close;
 
 L_Allow_Final_Passage:
-	if (OrumQuest < 11) goto L_Advance_Quest;
-	close;
+    if (OrumQuest < 11) goto L_Advance_Quest;
+    close;
 
 L_Advance_Quest:
-	message strcharinfo(0), "The torches dim as you enter. At last you finally have access!";
-	set OrumQuest, 11;
-	close;
+    message strcharinfo(0), "The torches dim as you enter. At last you finally have access!";
+    set OrumQuest, 11;
+    close;
 }

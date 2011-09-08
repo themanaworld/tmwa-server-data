@@ -1,256 +1,256 @@
 // Parua's fight
-029-3.gat,50,25,0	script	Parua	183,{
-	if ($@FIGHT_CAVE_STATUS == 1) goto L_Enjoy;
-	if ($@FIGHT_CAVE_STATUS >= 2) goto L_Wait;
-	mes "[Parua]";
-	mes "\"Hello.\"";
-	next;
-	mes "[Parua]";
-	mes "\"Do you dare challenge the power that sleeps here?\"";
-	menu "No, I'll let it sleep.", L_Exit,
-	     "Ha! What's the worst it could do?", -;
-	mes "[Parua]";
-	mes "\"Very well, for a fee of 20,000 GP, I will awaken that power.\"";
-	menu "No, what a ripoff!", L_Exit,
-	     "Fine, here you go.", -;
-	if ($@FIGHT_CAVE_STATUS == 1) goto L_AlreadyStarted;
-	if (zeny >= 20000 + 3000) goto L_CallPlayers;
+029-3.gat,50,25,0|script|Parua|183,{
+    if ($@FIGHT_CAVE_STATUS == 1) goto L_Enjoy;
+    if ($@FIGHT_CAVE_STATUS >= 2) goto L_Wait;
+    mes "[Parua]";
+    mes "\"Hello.\"";
+    next;
+    mes "[Parua]";
+    mes "\"Do you dare challenge the power that sleeps here?\"";
+    menu "No, I'll let it sleep.", L_Exit,
+         "Ha! What's the worst it could do?", -;
+    mes "[Parua]";
+    mes "\"Very well, for a fee of 20,000 GP, I will awaken that power.\"";
+    menu "No, what a ripoff!", L_Exit,
+         "Fine, here you go.", -;
+    if ($@FIGHT_CAVE_STATUS == 1) goto L_AlreadyStarted;
+    if (zeny >= 20000 + 3000) goto L_CallPlayers;
 
 L_Paying:
-	if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
-	if (zeny < 20000) goto L_NotEnough;
+    if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
+    if (zeny < 20000) goto L_NotEnough;
 // Do not charge the money if the fight or the announces were already started by someone else
-	if ($@FIGHT_CAVE_STATUS != 0) close;
-	set zeny, zeny - 20000;
+    if ($@FIGHT_CAVE_STATUS != 0) close;
+    set zeny, zeny - 20000;
 
 L_StartFight:
-	if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
-	npctalk "Let the battle begin!";
-	set $@FIGHT_CAVE_STATUS, 1;
-	set $@FIGHT_CAVE_LEVEL, 1;
-	set $@FIGHT_CAVE_PLAYER_COUNT, getareausers("029-3.gat", 20, 20, 70, 60);
-	startnpctimer;
-	goto L_Exit;
+    if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
+    npctalk "Let the battle begin!";
+    set $@FIGHT_CAVE_STATUS, 1;
+    set $@FIGHT_CAVE_LEVEL, 1;
+    set $@FIGHT_CAVE_PLAYER_COUNT, getareausers("029-3.gat", 20, 20, 70, 60);
+    startnpctimer;
+    goto L_Exit;
 
 L_CallPlayers:
-	mes "[Parua]";
-	mes "\"Good... Your money will be very useful. I can awaken this power right now, if you want, or, for an additional fee of 3,000 GP, I can help you gather some of your friends to help you in this battle. What will it be?\"";
-	menu "We are OK. Just do it!", L_Paying,
-	     "I will accept your help.", -;
+    mes "[Parua]";
+    mes "\"Good... Your money will be very useful. I can awaken this power right now, if you want, or, for an additional fee of 3,000 GP, I can help you gather some of your friends to help you in this battle. What will it be?\"";
+    menu "We are OK. Just do it!", L_Paying,
+         "I will accept your help.", -;
 
-	mes "[Parua]";
-	mes "\"OK, I can make up to 3 announcements to the people of this world, letting them know that you are about to challenge the powers that sleep in this cave! If you want the fight to start in 5 minutes, I will make one announcement, if it is 15 minutes, I will make 2 announcements, and if it is to start in 30 minutes, it will be 3 announcements.\"";
-	next;
-	mes "\"But be careful! If there aren't at least five people here at the time of the fight, your money will be lost.\"";
-	next;
-	mes "\"So, when should it start?\"";
-	menu "In 5 minutes.", -,
-	     "In 15 minutes.", -,
-	     "In 30 minutes.", -,
-	     "I don't want to wait. Let's start it now!", L_Paying;
+    mes "[Parua]";
+    mes "\"OK, I can make up to 3 announcements to the people of this world, letting them know that you are about to challenge the powers that sleep in this cave! If you want the fight to start in 5 minutes, I will make one announcement, if it is 15 minutes, I will make 2 announcements, and if it is to start in 30 minutes, it will be 3 announcements.\"";
+    next;
+    mes "\"But be careful! If there aren't at least five people here at the time of the fight, your money will be lost.\"";
+    next;
+    mes "\"So, when should it start?\"";
+    menu "In 5 minutes.", -,
+         "In 15 minutes.", -,
+         "In 30 minutes.", -,
+         "I don't want to wait. Let's start it now!", L_Paying;
 // Do not charge the money if the fight or the announces were already started by someone else
-	if ($@FIGHT_CAVE_STATUS != 0) close;
-	if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
-	if (zeny < 20000 + 3000) goto L_NotEnough_Announce;
-	set zeny, zeny - (20000 + 3000);
-	set $@SPONSOR$, strcharinfo(0);
-	set $@FIGHT_CAVE_STATUS, $@FIGHT_CAVE_STATUS + (@menu + 2);
-	if ($@FIGHT_CAVE_STATUS == 3) set $@ANNOUNCE_TIME, gettimetick(2) + 300;
-	if ($@FIGHT_CAVE_STATUS == 4) set $@ANNOUNCE_TIME, gettimetick(2) + 900;
-	if ($@FIGHT_CAVE_STATUS >= 5) set $@ANNOUNCE_TIME, gettimetick(2) + 1800;
-	startnpctimer;
-	close;
+    if ($@FIGHT_CAVE_STATUS != 0) close;
+    if (getareausers("029-3.gat", 20, 20, 70, 60) < 5) goto L_NotEnoughPlayers;
+    if (zeny < 20000 + 3000) goto L_NotEnough_Announce;
+    set zeny, zeny - (20000 + 3000);
+    set $@SPONSOR$, strcharinfo(0);
+    set $@FIGHT_CAVE_STATUS, $@FIGHT_CAVE_STATUS + (@menu + 2);
+    if ($@FIGHT_CAVE_STATUS == 3) set $@ANNOUNCE_TIME, gettimetick(2) + 300;
+    if ($@FIGHT_CAVE_STATUS == 4) set $@ANNOUNCE_TIME, gettimetick(2) + 900;
+    if ($@FIGHT_CAVE_STATUS >= 5) set $@ANNOUNCE_TIME, gettimetick(2) + 1800;
+    startnpctimer;
+    close;
 
 L_Enjoy:
-	mes "[Parua]";
-	mes "\"Enjoy the fight!\"";
-	goto L_Exit;
+    mes "[Parua]";
+    mes "\"Enjoy the fight!\"";
+    goto L_Exit;
 
 L_Wait:
-	set @seconds, ($@ANNOUNCE_TIME - gettimetick(2));
-	mes "[Parua]";
-	if (@seconds/60 == 0) mes "\"Be Patient... The fight will start in " + @seconds + " seconds.\"";
-	if (@seconds/60 > 0) mes "\"Be Patient... The fight will start in " + @seconds/60 + " minute(s).\"";
-	goto L_Exit;
+    set @seconds, ($@ANNOUNCE_TIME - gettimetick(2));
+    mes "[Parua]";
+    if (@seconds/60 == 0) mes "\"Be Patient... The fight will start in " + @seconds + " seconds.\"";
+    if (@seconds/60 > 0) mes "\"Be Patient... The fight will start in " + @seconds/60 + " minute(s).\"";
+    goto L_Exit;
 
 L_NotEnough:
-	mes "[Parua]";
-	mes "\"Seems you can't meet my fee.\"";
-	goto L_Exit;
+    mes "[Parua]";
+    mes "\"Seems you can't meet my fee.\"";
+    goto L_Exit;
 
 L_NotEnough_Announce:
-	mes "[Parua]";
-	mes "\"Seems you can't meet the announcement fee.\"";
-	goto L_Exit;
+    mes "[Parua]";
+    mes "\"Seems you can't meet the announcement fee.\"";
+    goto L_Exit;
 
 L_AlreadyStarted:
-	mes "[Parua]";
-	mes "\"Seems your friend already paid me.\"";
-	goto L_Exit;
+    mes "[Parua]";
+    mes "\"Seems your friend already paid me.\"";
+    goto L_Exit;
 
 L_NotEnoughPlayers:
-	if ($@FIGHT_CAVE_STATUS == 2) goto L_CleanUp_Announcement;
-	mes "[Parua]";
-	mes "\"Maybe you should bring some friends with you; this will get messy.\"";
-	mes "He takes a moment to calculate. \"You'll probably need at least...five people, including yourself.\"";
-	goto L_Exit;
+    if ($@FIGHT_CAVE_STATUS == 2) goto L_CleanUp_Announcement;
+    mes "[Parua]";
+    mes "\"Maybe you should bring some friends with you; this will get messy.\"";
+    mes "He takes a moment to calculate. \"You'll probably need at least...five people, including yourself.\"";
+    goto L_Exit;
 
 L_Exit:
-	close;
-	end;
+    close;
+    end;
 
 // Fight logic
 OnTimer5000:
-	setnpctimer 0;
-	if ($@FIGHT_CAVE_STATUS == 1) goto L_CaveLogic;
-	if ($@FIGHT_CAVE_STATUS >= 2) goto L_GlobalAnnounce;
+    setnpctimer 0;
+    if ($@FIGHT_CAVE_STATUS == 1) goto L_CaveLogic;
+    if ($@FIGHT_CAVE_STATUS >= 2) goto L_GlobalAnnounce;
 
 L_Return_1:
-	set $@FIGHT_CAVE_PLAYER_COUNT, 0;
-	areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::onTick";
-	end;
+    set $@FIGHT_CAVE_PLAYER_COUNT, 0;
+    areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::onTick";
+    end;
 
 L_CaveLogic:
-	set $@FIGHT_CAVE_ROUND_PEN, $@FIGHT_CAVE_PLAYER_COUNT;
-	if ($@FIGHT_CAVE_ROUND_PEN > 60) set $@FIGHT_CAVE_ROUND_PEN, 60;
-	if ($@FIGHT_CAVE_PLAYER_COUNT <= 0) goto L_CleanUp;
-	set $@FIGHT_CAVE_ROUND_TIMER, $@FIGHT_CAVE_ROUND_TIMER + 5; // Advance 5 seconds
-	if (mobcount("029-3.gat", "Parua::onPetDeath") <= 0) goto L_NextRound;
-	if ($@FIGHT_CAVE_ROUND_TIMER + $@FIGHT_CAVE_ROUND_PEN >= 120) goto L_NextRound;
-	goto L_Return_1;
+    set $@FIGHT_CAVE_ROUND_PEN, $@FIGHT_CAVE_PLAYER_COUNT;
+    if ($@FIGHT_CAVE_ROUND_PEN > 60) set $@FIGHT_CAVE_ROUND_PEN, 60;
+    if ($@FIGHT_CAVE_PLAYER_COUNT <= 0) goto L_CleanUp;
+    set $@FIGHT_CAVE_ROUND_TIMER, $@FIGHT_CAVE_ROUND_TIMER + 5; // Advance 5 seconds
+    if (mobcount("029-3.gat", "Parua::onPetDeath") <= 0) goto L_NextRound;
+    if ($@FIGHT_CAVE_ROUND_TIMER + $@FIGHT_CAVE_ROUND_PEN >= 120) goto L_NextRound;
+    goto L_Return_1;
 
 L_NextRound:
-	set $@FIGHT_CAVE_ROUND_TIMER, 0;
+    set $@FIGHT_CAVE_ROUND_TIMER, 0;
 
-	set $@FIGHT_CAVE_TEMP_UP, ($@FIGHT_CAVE_LEVEL / 10);
-	if ($@FIGHT_CAVE_TEMP_UP > 100) set $@FIGHT_CAVE_TEMP_UP, 100;
+    set $@FIGHT_CAVE_TEMP_UP, ($@FIGHT_CAVE_LEVEL / 10);
+    if ($@FIGHT_CAVE_TEMP_UP > 100) set $@FIGHT_CAVE_TEMP_UP, 100;
 
-	set $@FIGHT_CAVE_LEVEL, $@FIGHT_CAVE_LEVEL + $@FIGHT_CAVE_PLAYER_COUNT + $@FIGHT_CAVE_TEMP_UP;
-	if ($@FIGHT_CAVE_LEVEL >= 2200) goto L_CleanUp;
-	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_LEVEL;
+    set $@FIGHT_CAVE_LEVEL, $@FIGHT_CAVE_LEVEL + $@FIGHT_CAVE_PLAYER_COUNT + $@FIGHT_CAVE_TEMP_UP;
+    if ($@FIGHT_CAVE_LEVEL >= 2200) goto L_CleanUp;
+    set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_LEVEL;
 
-	if ($@FIGHT_CAVE_LAST + 30  < $@FIGHT_CAVE_LEVEL) goto L_Announce;
+    if ($@FIGHT_CAVE_LAST + 30  < $@FIGHT_CAVE_LEVEL) goto L_Announce;
 L_Return_2:
        mapannounce "029-3.gat", "Parua: The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive." , 0;
 
-	set $@MOB_1_SUMMON, 0;
-	set $@MOB_2_SUMMON, 0;
-	set $@MOB_3_SUMMON, 0;
-	set $@MOB_4_SUMMON, 0;
-	set $@MOB_5_SUMMON, 0;
-	set $@MOB_6_SUMMON, 0;
+    set $@MOB_1_SUMMON, 0;
+    set $@MOB_2_SUMMON, 0;
+    set $@MOB_3_SUMMON, 0;
+    set $@MOB_4_SUMMON, 0;
+    set $@MOB_5_SUMMON, 0;
+    set $@MOB_6_SUMMON, 0;
 L_Summon:
-	if ($@FIGHT_CAVE_POINTS >= 243 && $@MOB_1_SUMMON < 2) goto L_MOB1;
-	if ($@FIGHT_CAVE_POINTS >= 81 && $@MOB_2_SUMMON < 6) goto L_MOB2;
-	if ($@FIGHT_CAVE_POINTS >= 27 && $@MOB_3_SUMMON < 5) goto L_MOB3;
-	if ($@FIGHT_CAVE_POINTS >= 9 && $@MOB_4_SUMMON < 7) goto L_MOB4;
-	if ($@FIGHT_CAVE_POINTS >= 3 && $@MOB_5_SUMMON < 10) goto L_MOB5;
-	if ($@FIGHT_CAVE_POINTS >= 1 && $@MOB_6_SUMMON < 12) goto L_MOB6;
-	goto L_Return_1;
+    if ($@FIGHT_CAVE_POINTS >= 243 && $@MOB_1_SUMMON < 2) goto L_MOB1;
+    if ($@FIGHT_CAVE_POINTS >= 81 && $@MOB_2_SUMMON < 6) goto L_MOB2;
+    if ($@FIGHT_CAVE_POINTS >= 27 && $@MOB_3_SUMMON < 5) goto L_MOB3;
+    if ($@FIGHT_CAVE_POINTS >= 9 && $@MOB_4_SUMMON < 7) goto L_MOB4;
+    if ($@FIGHT_CAVE_POINTS >= 3 && $@MOB_5_SUMMON < 10) goto L_MOB5;
+    if ($@FIGHT_CAVE_POINTS >= 1 && $@MOB_6_SUMMON < 12) goto L_MOB6;
+    goto L_Return_1;
 
 L_Announce:
-	mapannounce "029-1.gat", "Parua: The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive." , 0;
-	set $@FIGHT_CAVE_LAST, $@FIGHT_CAVE_LAST + 30;
-	goto L_Return_2;
+    mapannounce "029-1.gat", "Parua: The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive." , 0;
+    set $@FIGHT_CAVE_LAST, $@FIGHT_CAVE_LAST + 30;
+    goto L_Return_2;
 
 L_GlobalAnnounce:
-	if ($@FIGHT_CAVE_STATUS == 3) goto L_Five_Minutes;
-	if ($@FIGHT_CAVE_STATUS == 4) goto L_Fifteen_Minutes;
-	if ($@FIGHT_CAVE_STATUS >= 5) goto L_Thirty_Minutes;
-	if (gettimetick(2) >= $@ANNOUNCE_TIME) goto L_StartFight;
-	end;
+    if ($@FIGHT_CAVE_STATUS == 3) goto L_Five_Minutes;
+    if ($@FIGHT_CAVE_STATUS == 4) goto L_Fifteen_Minutes;
+    if ($@FIGHT_CAVE_STATUS >= 5) goto L_Thirty_Minutes;
+    if (gettimetick(2) >= $@ANNOUNCE_TIME) goto L_StartFight;
+    end;
 
 L_Five_Minutes:
-	if ($@ANNOUNCE_TIME - gettimetick(2) > 300) end;
-	announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. It is almost time! The fight will start in 5 minutes and, at the moment, there are only " + getareausers("029-3.gat", 20, 20, 70, 60) + " fighter(s) in the cave.", 0;
-	set $@FIGHT_CAVE_STATUS, 2;
-	end;
+    if ($@ANNOUNCE_TIME - gettimetick(2) > 300) end;
+    announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. It is almost time! The fight will start in 5 minutes and, at the moment, there are only " + getareausers("029-3.gat", 20, 20, 70, 60) + " fighter(s) in the cave.", 0;
+    set $@FIGHT_CAVE_STATUS, 2;
+    end;
 
 L_Fifteen_Minutes:
-	if ($@ANNOUNCE_TIME - gettimetick(2) > 900) end;
-	announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. You still have time to prepare yourself for this fight, since it will only start in 15 minutes. Right now, there are " + getareausers("029-3.gat", 20, 20, 70, 60) + " fighter(s) in the cave.", 0;
-	set $@FIGHT_CAVE_STATUS, 3;
-	end;
+    if ($@ANNOUNCE_TIME - gettimetick(2) > 900) end;
+    announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. You still have time to prepare yourself for this fight, since it will only start in 15 minutes. Right now, there are " + getareausers("029-3.gat", 20, 20, 70, 60) + " fighter(s) in the cave.", 0;
+    set $@FIGHT_CAVE_STATUS, 3;
+    end;
 
 L_Thirty_Minutes:
-	announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. The fight will start in 30 minutes, so prepare yourself and call your friends. At the moment there are " + getareausers("029-3.gat", 20, 20, 70, 60) + " fighter(s) in the cave.", 0;
-	set $@FIGHT_CAVE_STATUS, 4;
-	end;
+    announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. The fight will start in 30 minutes, so prepare yourself and call your friends. At the moment there are " + getareausers("029-3.gat", 20, 20, 70, 60) + " fighter(s) in the cave.", 0;
+    set $@FIGHT_CAVE_STATUS, 4;
+    end;
 
 L_MOB1:
-	set $@MOB_1_SUMMON, $@MOB_1_SUMMON + 1;
-	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 243;
-	areamonster "029-3.gat", 20, 20, 70, 60, "", 1022, 1, "Parua::onPetDeath";
-	goto L_Summon;
+    set $@MOB_1_SUMMON, $@MOB_1_SUMMON + 1;
+    set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 243;
+    areamonster "029-3.gat", 20, 20, 70, 60, "", 1022, 1, "Parua::onPetDeath";
+    goto L_Summon;
 
 L_MOB2:
-	set $@MOB_2_SUMMON, $@MOB_2_SUMMON + 1;
-	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 81;
-	areamonster "029-3.gat", 20, 20, 70, 60, "", 1045, 1, "Parua::onPetDeath";
-	goto L_Summon;
+    set $@MOB_2_SUMMON, $@MOB_2_SUMMON + 1;
+    set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 81;
+    areamonster "029-3.gat", 20, 20, 70, 60, "", 1045, 1, "Parua::onPetDeath";
+    goto L_Summon;
 
 L_MOB3:
-	set $@MOB_3_SUMMON, $@MOB_3_SUMMON + 1;
-	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 27;
-	areamonster "029-3.gat", 20, 20, 70, 60, "", 1024, 1, "Parua::onPetDeath";
-	goto L_Summon;
+    set $@MOB_3_SUMMON, $@MOB_3_SUMMON + 1;
+    set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 27;
+    areamonster "029-3.gat", 20, 20, 70, 60, "", 1024, 1, "Parua::onPetDeath";
+    goto L_Summon;
 
 L_MOB4:
-	set $@MOB_4_SUMMON, $@MOB_4_SUMMON + 1;
-	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 9;
-	areamonster "029-3.gat", 20, 20, 70, 60, "", 1043, 1, "Parua::onPetDeath";
-	goto L_Summon;
+    set $@MOB_4_SUMMON, $@MOB_4_SUMMON + 1;
+    set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 9;
+    areamonster "029-3.gat", 20, 20, 70, 60, "", 1043, 1, "Parua::onPetDeath";
+    goto L_Summon;
 
 L_MOB5:
-	set $@MOB_5_SUMMON, $@MOB_5_SUMMON + 1;
-	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 3;
-	areamonster "029-3.gat", 20, 20, 70, 60, "", 1010, 1, "Parua::onPetDeath";
-	goto L_Summon;
+    set $@MOB_5_SUMMON, $@MOB_5_SUMMON + 1;
+    set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 3;
+    areamonster "029-3.gat", 20, 20, 70, 60, "", 1010, 1, "Parua::onPetDeath";
+    goto L_Summon;
 
 L_MOB6:
-	set $@MOB_6_SUMMON, $@MOB_6_SUMMON + 1;
-	set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 1;
-	areamonster "029-3.gat", 20, 20, 70, 60, "", 1008, 1, "Parua::onPetDeath";
-	goto L_Summon;
+    set $@MOB_6_SUMMON, $@MOB_6_SUMMON + 1;
+    set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 1;
+    areamonster "029-3.gat", 20, 20, 70, 60, "", 1008, 1, "Parua::onPetDeath";
+    goto L_Summon;
 
 // Called on each player once every 5 seconds
 onTick:
-	if (isdead(0)) end;
-	set $@FIGHT_CAVE_PLAYER_COUNT, $@FIGHT_CAVE_PLAYER_COUNT + 1;
-	end;
+    if (isdead()) end;
+    set $@FIGHT_CAVE_PLAYER_COUNT, $@FIGHT_CAVE_PLAYER_COUNT + 1;
+    end;
 
 onPetDeath:
-	end;
+    end;
 
 onInit:
-	initnpctimer;
-	stopnpctimer;
+    initnpctimer;
+    stopnpctimer;
 L_CleanUp:
-	npctalk "Game Over";
-	mapannounce "029-1.gat", "Parua: The dungeon is now ready for its next victims.", 0;
-	areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::onReward";
-	set $@FIGHT_CAVE_STATUS, 0;
-	set $@FIGHT_CAVE_PLAYER_COUNT, 0;
-	set $@FIGHT_CAVE_LEVEL, 1;
-	set $@FIGHT_CAVE_ROUND_TIMER, 0;
-	killmonster "029-3.gat", "Parua::onPetDeath";
-	stopnpctimer;
-	setnpctimer 0;
-	end;
+    npctalk "Game Over";
+    mapannounce "029-1.gat", "Parua: The dungeon is now ready for its next victims.", 0;
+    areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::onReward";
+    set $@FIGHT_CAVE_STATUS, 0;
+    set $@FIGHT_CAVE_PLAYER_COUNT, 0;
+    set $@FIGHT_CAVE_LEVEL, 1;
+    set $@FIGHT_CAVE_ROUND_TIMER, 0;
+    killmonster "029-3.gat", "Parua::onPetDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
 
 L_CleanUp_Announcement:
-	npctalk $@SPONSOR$ + " lost the money invested in the fight, since there are less than 5 players in the cave";
-	set $@SPONSOR$, "";
-	set $@ANNOUNCE_TIME, 0;
-	set $@FIGHT_CAVE_STATUS, 0;
-	stopnpctimer;
-	setnpctimer 0;
-	end;
+    npctalk $@SPONSOR$ + " lost the money invested in the fight, since there are less than 5 players in the cave";
+    set $@SPONSOR$, "";
+    set $@ANNOUNCE_TIME, 0;
+    set $@FIGHT_CAVE_STATUS, 0;
+    stopnpctimer;
+    setnpctimer 0;
+    end;
 
 onReward:
-	if (isdead(0)) end;
-	set BOSS_POINTS, BOSS_POINTS + 100;
-	message strcharinfo(0), "You gain 100 Boss Points giving you a total of " + BOSS_POINTS;
-	end;
+    if (isdead()) end;
+    set BOSS_POINTS, BOSS_POINTS + 100;
+    message strcharinfo(0), "You gain 100 Boss Points giving you a total of " + BOSS_POINTS;
+    end;
 
 }

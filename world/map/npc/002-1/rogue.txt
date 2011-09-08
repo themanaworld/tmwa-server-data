@@ -1,50 +1,53 @@
 //
 
-002-1.gat,22,21,0	script	Malivox	103,{
+002-1.gat,22,21,0|script|Malivox|103,{
 
-//	if (ResetA_charstate == 1) goto L_Multiple;
+// if (ResetA_charstate == 1) goto L_Multiple;
 
-//	set @cost, 10000000 / ($ResetA_uses + 1);
+// set @cost, 10000000 / ($ResetA_uses + 1);
 
-	set @cost, baselevel * 100;
+    set @cost, baselevel * 100;
 
-	mes "[Rogue Mage]";
-	mes "\"I have come across a spell that will";
-	mes "reset your status points.";
-	mes "Normally this spell is expensive, but";
-        mes "due to an unusual constellation of the";
-        mes "stars I can cast it very cheaply!";
-        mes "For you it will cost only "+@cost+" gp.\"";
-	next;
+    mes "[Rogue Mage]";
+    mes "\"I have come across a spell that will";
+    mes "reset your status points.";
+    mes "Normally this spell is expensive, but";
+    mes "due to an unusual constellation of the";
+    mes "stars I can cast it very cheaply!";
+    mes "For you it will cost only "+@cost+" gp.\"";
+    next;
+    menu
+        "Reset my stats",-,
+        "Forget about it",L_Pass;
 
-	menu "Reset my stats",-,"Forget about it",L_Pass;
+    if (zeny<@cost) goto L_NoMoney;
 
-	if (zeny<@cost) goto L_NoMoney;
-
-//	set $ResetA_uses, $ResetA_uses + 1;
-//	set ResetA_charstate, 1;
+// set $ResetA_uses, $ResetA_uses + 1;
+// set ResetA_charstate, 1;
 
 L_Reset:
+    set zeny, zeny-@cost;
+    resetstatus;
 
-	set zeny, zeny-@cost;
-
-	resetstatus;
-
-	mes "[Rogue Mage]";
-	mes "\"There you are.";
-	mes "";
-	mes "Good as new!\"";
-	close;
+    mes "[Rogue Mage]";
+    mes "\"There you are.";
+    mes "";
+    mes "Good as new!\"";
+    goto L_Close;
 
 L_Pass:
-	mes "[Rogue Mage]";
-	mes "\"Very well then, see you.\"";
-	close;
+    mes "[Rogue Mage]";
+    mes "\"Very well then, see you.\"";
+    goto L_Close;
 
 L_NoMoney:
-	mes "[Rogue Mage]";
-	mes "\"Oh dear, the price cannot be bargained.";
-	mes "";
-	mes "Perhaps you can borrow from a friend?\"";
-	close;
+    mes "[Rogue Mage]";
+    mes "\"Oh dear, the price cannot be bargained.";
+    mes "";
+    mes "Perhaps you can borrow from a friend?\"";
+    goto L_Close;
+
+L_Close:
+    set @cost, 0;
+    close;
 }
