@@ -1,220 +1,225 @@
 // The government builing in the south west
 
 // A clerk
-021-2.gat,27,17,0	script	Estard	107,{
-	mes "[Estard]";
-	mes "\"Hello what can I do for you?\"";
-	next;
+021-2.gat,27,17,0|script|Estard|107,{
+    mes "[Estard]";
+    mes "\"Hello what can I do for you?\"";
+    next;
 
 L_main:
-	if (getpartnerid2())
-		goto L_main_married;
+    if (getpartnerid2())
+        goto L_main_married;
 
-	menu
-		"I'm looking at getting married.", L_marry,
-		"Nothing, I guess.", -;
-	close;
+    menu
+        "I'm looking at getting married.", L_marry,
+        "Nothing, I guess.", -;
+    close;
 
 L_main_married:
-	menu
-		"I'd like a divorce.", L_divorce,
-		"Nothing, I guess.", -;
-	close;
+    menu
+        "I'd like a divorce.", L_divorce,
+        "Nothing, I guess.", -;
+    close;
 
 L_marry:
-	if (BaseLevel < WEDDING_MIN_LEVEL)
-		goto L_marry_too_young;
-	if (zeny < WEDDING_FEE)
-		goto L_marry_too_poor;
-	
-	mes "[Estard]";
-	mes "\"Are you sure you want to get married? It'll cost " + WEDDING_FEE + " GP.\"";
-	
-	menu
-		"Yes", L_marry_do,
-		"No", -;
-	close;
+    if (BaseLevel < WEDDING_MIN_LEVEL)
+        goto L_marry_too_young;
+    if (zeny < WEDDING_FEE)
+        goto L_marry_too_poor;
+
+    mes "[Estard]";
+    mes "\"Are you sure you want to get married? It'll cost " + WEDDING_FEE + " GP.\"";
+    menu
+        "Yes", L_marry_do,
+        "No", -;
+    close;
 
 L_marry_do:
-	callsub S_give_rings;
-	
-	mes "[Estard]";
-	mes "\"Here are your rings. You can get married by standing in one of the designated places (like that small rug over there) with your partner, give them their ring, and say 'marry (their name here)'. You both need to have your rings on.\"";
-	close;
+    callsub S_give_rings;
+
+    mes "[Estard]";
+    mes "\"Here are your rings. You can get married by standing in one of the designated places (like that small rug over there) with your partner, give them their ring, and say 'marry (their name here)'. You both need to have your rings on.\"";
+    close;
 
 L_marry_too_young:
-	mes "[Estard]";
-	mes "\"I'm sorry, but you are too young to get married. You must be atleast " + WEDDING_MIN_LEVEL + " levels old.\"";
-	next;
-	
-	menu
-		"Can I at least get wedding rings?", L_get_rings,
-		"Thanks anyways.", -;
-	close;
+    mes "[Estard]";
+    mes "\"I'm sorry, but you are too young to get married. You must be atleast " + WEDDING_MIN_LEVEL + " levels old.\"";
+    next;
+
+    menu
+        "Can I at least get wedding rings?", L_get_rings,
+        "Thanks anyways.", -;
+    close;
 
 L_marry_too_poor:
-	mes "[Estard]";
-	mes "\"You need " + WEDDING_FEE + " GP to get married. That covers all administrative fees for the marriage and provides two wedding rings.\"";
-	close;
+    mes "[Estard]";
+    mes "\"You need " + WEDDING_FEE + " GP to get married. That covers all administrative fees for the marriage and provides two wedding rings.\"";
+    close;
 
 L_get_rings:
-	mes "[Estard]";
-	mes "\"Yes. They are " + WEDDING_FEE + " GP. That covers all administrative fees for the marriage.\"";
-	
-	if (zeny < WEDDING_FEE)
-		menu
-			"Thanks anyways. I don't have enough with me.", -;
-	    
-	if (zeny >= WEDDING_FEE)
-		menu
-			"I'll buy a pair.", L_get_rings_pay,
-			"Thanks anyways.", -;
-	close;
+    mes "[Estard]";
+    mes "\"Yes. They are " + WEDDING_FEE + " GP. That covers all administrative fees for the marriage.\"";
+
+    if (zeny < WEDDING_FEE)
+        menu
+            "Thanks anyways. I don't have enough with me.", -;
+    if (zeny >= WEDDING_FEE)
+        menu
+            "I'll buy a pair.", L_get_rings_pay,
+            "Thanks anyways.", -;
+    close;
 
 L_get_rings_pay:
-	callsub S_give_rings;
-	
-	mes "[Estard]";
-	mes "\"There you go. Come again.\"";
-	close;
+    callsub S_give_rings;
+
+    mes "[Estard]";
+    mes "\"There you go. Come again.\"";
+    close;
 
 L_divorce:
-	set @divorce_cost, DIVORCE_FEE_PER_LEVEL * BaseLevel;
-	
-	if (zeny < @divorce_cost)
-		goto L_divorce_not_enough;
-	
-	mes "[Estard]";
-	mes "\"If you're sure you want a divorce, it'll cost you " + @divorce_cost + " GP.\"";
-	next;
-	
-	menu
-		"I am sure I want it.", L_do_divorce,
-		"I don't want it.", -;
-	close;
+    set @divorce_cost, DIVORCE_FEE_PER_LEVEL * BaseLevel;
+
+    if (zeny < @divorce_cost)
+        goto L_divorce_not_enough;
+
+    mes "[Estard]";
+    mes "\"If you're sure you want a divorce, it'll cost you " + @divorce_cost + " GP.\"";
+    next;
+    menu
+        "I am sure I want it.", L_do_divorce,
+        "I don't want it.", -;
+    close;
 
 L_do_divorce:
-	if (zeny < @divorce_cost)
-		goto L_not_enough_money;
-	
-	if (divorce()) goto L_divorce_done;
-	
-	mes "[Estard]";
-	mes "\"I'm having trouble finding the record. \"";
+    if (zeny < @divorce_cost)
+        goto L_not_enough_money;
 
-	mes "[Server]";
-	mes "Try again when your partner is online too.";
-	close;
+    if (divorce())
+        goto L_divorce_done;
+
+    mes "[Estard]";
+    mes "\"I'm having trouble finding the record. \"";
+    mes "[Server]";
+    mes "Try again when your partner is online too.";
+    close;
 
 L_divorce_done:
-	set zeny, zeny - @divorce_cost;
-	
-	mes "[Estard]";
-	mes "\"You have been divorced. Come again.\"";
-	close;
+    set zeny, zeny - @divorce_cost;
+
+    mes "[Estard]";
+    mes "\"You have been divorced. Come again.\"";
+    close;
 
 L_divorce_not_enough:
-	mes "[Estard]";
-	mes "\"I'm sorry , but you don't have enough money to get a divorce. You need " + @divorce_cost + " GP.\"";
-	close;
+    mes "[Estard]";
+    mes "\"I'm sorry , but you don't have enough money to get a divorce. You need " + @divorce_cost + " GP.\"";
+    close;
 
 L_not_enough_money:
-	mes "[Estard]";
-	mes "\"Seems you don't have enough money.\"";
-	close;
+    mes "[Estard]";
+    mes "\"Seems you don't have enough money.\"";
+    close;
 
 L_no_room_for_rings:
-	mes "[Estard]";
-	mes "\"You don't have enough room to carry these rings.\"";
-	close;
+    mes "[Estard]";
+    mes "\"You don't have enough room to carry these rings.\"";
+    close;
 
 S_give_rings:
-	if (zeny < WEDDING_FEE)
-		goto L_not_enough_money;
-	getinventorylist;
-	if (@inventorylist_count > 98) goto L_no_room_for_rings;
-	
-	set zeny, zeny - WEDDING_FEE;
-	getitem "WeddingRing", 1;
-	getitem "WeddingRing", 1;
-	return;
+    if (zeny < WEDDING_FEE)
+        goto L_not_enough_money;
+    getinventorylist;
+    if (@inventorylist_count > 98)
+        goto L_no_room_for_rings;
+
+    set zeny, zeny - WEDDING_FEE;
+    getitem "WeddingRing", 1;
+    getitem "WeddingRing", 1;
+    return;
 }
 
-021-2.gat,36,17,0	script	Tathin	107,{
-	set @PARTY_SKILL, 3;
+021-2.gat,36,17,0|script|Tathin|107,{
+    set @PARTY_SKILL, 3;
 
-	mes "[Tathin]";
-	mes "\"Hello what Can I do for you?\"";
-	next;
+    mes "[Tathin]";
+    mes "\"Hello what Can I do for you?\"";
+    next;
 
-	if (getskilllv(@PARTY_SKILL) == 2 ) goto L_Base_Menu;
-	if (BaseLevel >= 15 && getskilllv(@PARTY_SKILL) == 1) goto L_Can_Make_Party;
-	if (getskilllv(@PARTY_SKILL) == 1) goto L_Base_Menu;
-	if (BaseLevel >= 10) goto L_Can_Party;
+    if (getskilllv(@PARTY_SKILL) == 2 )
+        goto L_Base_Menu;
+    if (BaseLevel >= 15
+        && getskilllv(@PARTY_SKILL) == 1)
+            goto L_Can_Make_Party;
+    if (getskilllv(@PARTY_SKILL) == 1)
+        goto L_Base_Menu;
+    if (BaseLevel >= 10)
+        goto L_Can_Party;
 
 L_Base_Menu:
-	menu
-		"Nothing, I guess.", -;
-	close;
+    menu
+        "Nothing, I guess.", -;
+    close;
 
 L_Can_Party:
-	menu
-		"I'd like to get a party permit.", L_Get_Party,
-		"Nothing, I guess.", -;
-	close;
+    menu
+        "I'd like to get a party permit.", L_Get_Party,
+        "Nothing, I guess.", -;
+    close;
 
 L_Can_Make_Party:
-	menu
-		"I'd like to get a party creator permit.", L_Get_Make_Party,
-		"Nothing, I guess.", -;
-	close;
+    menu
+        "I'd like to get a party creator permit.", L_Get_Make_Party,
+        "Nothing, I guess.", -;
+    close;
 
 L_Get_Party:
-	mes "[Tathin]";
-	mes "\"A permit to join parties costs 10 GP.\"";
-	next;
-	menu
-		"OK", L_Give_Party,
-		"No thank you", -;
-	close;
+    mes "[Tathin]";
+    mes "\"A permit to join parties costs 10 GP.\"";
+    next;
+    menu
+        "OK", L_Give_Party,
+        "No thank you", -;
+    close;
 
 L_Give_Party:
-	if (zeny < 10) goto L_NotEnoughMoney;
-	set zeny, zeny - 10;
-	setskill @PARTY_SKILL, 1;
-	mes "[Tathin]";
-	mes "\"Here's your permit. You'll need to be invited by an existing member of a party to join it.\"";
-	next;
-	mes "[Tathin]";
-	mes "\"Remember, parties cannot share experience if any members are more than 10 levels apart.\"";
-	close;
+    if (zeny < 10)
+        goto L_NotEnoughMoney;
+    set zeny, zeny - 10;
+    setskill @PARTY_SKILL, 1;
+    mes "[Tathin]";
+    mes "\"Here's your permit. You'll need to be invited by an existing member of a party to join it.\"";
+    next;
+    mes "[Tathin]";
+    mes "\"Remember, parties cannot share experience if any members are more than 10 levels apart.\"";
+    close;
 
 L_Get_Make_Party:
-	mes "[Tathin]";
-	mes "\"A permit to create parties costs 50 GP.\"";
-	next;
-	menu
-		"OK", L_Give_Make_Party,
-		"No thank you", -;
-	close;
+    mes "[Tathin]";
+    mes "\"A permit to create parties costs 50 GP.\"";
+    next;
+    menu
+        "OK", L_Give_Make_Party,
+        "No thank you", -;
+    close;
 
 L_Give_Make_Party:
-	if (zeny < 50) goto L_NotEnoughMoney;
-	set zeny, zeny - 50;
-	setskill @PARTY_SKILL, 2;
-	mes "[Tathin]";
-	mes "\"Here's your permit. You can create parties with the 'new' or 'create' commands on the Party tab in the client. Parties need to have unique names.\"";
-	close;
+    if (zeny < 50)
+        goto L_NotEnoughMoney;
+    set zeny, zeny - 50;
+    setskill @PARTY_SKILL, 2;
+    mes "[Tathin]";
+    mes "\"Here's your permit. You can create parties with the 'new' or 'create' commands on the Party tab in the client. Parties need to have unique names.\"";
+    close;
 
 L_NotEnoughMoney:
-	mes "[Tathin]";
-	mes "\"You don't have enough GP\"";
-	close;
+    mes "[Tathin]";
+    mes "\"You don't have enough GP\"";
+    close;
 }
 
 // Guard
-021-2.gat,20,19,0	script	Guard	123,1,1,{
-	mes "[Guard]";
-	mes "\"You can't come back here.\"";
-	close;
+021-2.gat,20,19,0|script|Guard|123,1,1,{
+    mes "[Guard]";
+    mes "\"You can't come back here.\"";
+    close;
 }

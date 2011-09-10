@@ -7,1012 +7,1065 @@
 //#
 //#################################################################################
 
-018-2.gat,37,22,0	script	Caul	107,{
-        set @SETZER_INITIAL, 0;
-        set @SETZER_KNOWS_OIL, 1;
-        set @SETZER_KNOWS_STINGER, 2;
-        set @SETZER_FLAG_MADE_OIL, 4;
+018-2.gat,37,22,0|script|Caul|107,{
+    set @SETZER_INITIAL, 0;
+    set @SETZER_KNOWS_OIL, 1;
+    set @SETZER_KNOWS_STINGER, 2;
+    set @SETZER_FLAG_MADE_OIL, 4;
 
-        set @MONSTER_OIL_XP, 100000;
-        set @MOPOX_CURE_XP, 30000;
+    set @MONSTER_OIL_XP, 100000;
+    set @MOPOX_CURE_XP, 30000;
 
-        set @Q_MASK, NIBBLE_3_MASK;
-        set @Q_SHIFT, NIBBLE_3_SHIFT;
+    set @Q_MASK, NIBBLE_3_MASK;
+    set @Q_SHIFT, NIBBLE_3_SHIFT;
 
-        set @Q_status, (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
+    set @Q_status, (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
 
-        set @Q_knows_mopox_cure, ((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) >= 4; // Elanore's quest for curing Kadiya
+    set @Q_knows_mopox_cure, ((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) >= 4; // Elanore's quest for curing Kadiya
 
-        // Can the player get XP for brewing the cure?
-        set @Q_can_score_mopox_cure, (((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) == 4) // Elanore's quest for curing Kadiya
+    // Can the player get XP for brewing the cure?
+    set @Q_can_score_mopox_cure, (((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) == 4) // Elanore's quest for curing Kadiya
                                              && (((QUEST_MAGIC2 & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT) < 2); // Haven't brewed it yet
 
-	mes "[Caul]";
-	mes "\"I can help you to brew healing potions out of mauve, cobalt, gamboge and alizarin herbs.";
-	mes "How many potions do you want to brew?\"";
-	next;
+    mes "[Caul]";
+    mes "\"I can help you to brew healing potions out of mauve, cobalt, gamboge and alizarin herbs.";
+    mes "How many potions do you want to brew?\"";
+    next;
 
-        set @C_monster_oil, 20;
-        set @C_mopox_cure, 21;
-        set @C_nohmask, 22;
-        set @C_dementiapotion, 23;
-        set @C_bye, 24;
+    set @C_monster_oil, 20;
+    set @C_mopox_cure, 21;
+    set @C_nohmask, 22;
+    set @C_dementiapotion, 23;
+    set @C_bye, 24;
 
-        setarray @choice$, "One.", "Five.", "Ten.", "Fifty.", "", "", "", "", "";
-        setarray @choice_idx, 1, 5, 10, 50, 0, 0, 0, 0, 0;
-        set @choices_nr, 4;
+    setarray @choice$, "One.", "Five.", "Ten.", "Fifty.", "", "", "", "", "";
+    setarray @choice_idx, 1, 5, 10, 50, 0, 0, 0, 0, 0;
+    set @choices_nr, 4;
 
 
-        if !(@Q_status)
-		goto L_M_no_monster_oil;
+    if !(@Q_status)
+        goto L_M_no_monster_oil;
 
-        set @choice_idx[@choices_nr], @C_monster_oil;
-        set @choice$[@choices_nr], "I would like to brew Monster Oil.";
-        set @choices_nr, @choices_nr + 1;
+    set @choice_idx[@choices_nr], @C_monster_oil;
+    set @choice$[@choices_nr], "I would like to brew Monster Oil.";
+    set @choices_nr, @choices_nr + 1;
 
 L_M_no_monster_oil:
+    if (!@Q_knows_mopox_cure)
+        goto L_M_no_mopox_cure;
 
-        if (!@Q_knows_mopox_cure)
-		goto L_M_no_mopox_cure;
-
-        set @choice_idx[@choices_nr], @C_mopox_cure;
-        set @choice$[@choices_nr], "I would like to brew a Mopox Cure Potion.";
-        set @choices_nr, @choices_nr + 1;
+    set @choice_idx[@choices_nr], @C_mopox_cure;
+    set @choice$[@choices_nr], "I would like to brew a Mopox Cure Potion.";
+    set @choices_nr, @choices_nr + 1;
 
 L_M_no_mopox_cure:
+    if (Inspector != 10)
+        goto L_M_no_inspector;
 
-        if (Inspector != 10)
-		goto L_M_no_inspector;
-
-        set @choice_idx[@choices_nr], @C_nohmask;
-        set @choice$[@choices_nr], "Actually...";
-        set @choices_nr, @choices_nr + 1;
+    set @choice_idx[@choices_nr], @C_nohmask;
+    set @choice$[@choices_nr], "Actually...";
+    set @choices_nr, @choices_nr + 1;
 
 L_M_no_inspector:
+    if (!(MAGIC_FLAGS & MFLAG_KNOWS_UNFOCUS_RECIPE))
+        goto L_M_no_dempo;
 
-        if (!(MAGIC_FLAGS & MFLAG_KNOWS_UNFOCUS_RECIPE))
-		goto L_M_no_dempo;
-
-        set @choice_idx[@choices_nr], @C_dementiapotion;
-        set @choice$[@choices_nr], "I would like to brew a Dementia Potion.";
-        set @choices_nr, @choices_nr + 1;
+    set @choice_idx[@choices_nr], @C_dementiapotion;
+    set @choice$[@choices_nr], "I would like to brew a Dementia Potion.";
+    set @choices_nr, @choices_nr + 1;
 
 L_M_no_dempo:
+    set @choice_idx[@choices_nr], @C_bye;
+    set @choice$[@choices_nr], "Never mind.";
+    set @choices_nr, @choices_nr + 1;
 
-        set @choice_idx[@choices_nr], @C_bye;
-        set @choice$[@choices_nr], "Never mind.";
-        set @choices_nr, @choices_nr + 1;
+    menu
+        @choice$[0], -,
+        @choice$[1], -,
+        @choice$[2], -,
+        @choice$[3], -,
+        @choice$[4], -,
+        @choice$[5], -,
+        @choice$[6], -,
+        @choice$[7], -;
 
-        menu
-		@choice$[0], -,
-		@choice$[1], -,
-		@choice$[2], -,
-		@choice$[3], -,
-		@choice$[4], -,
-		@choice$[5], -,
-		@choice$[6], -,
-		@choice$[7], -;
+    set @choice, @choice_idx[@menu - 1];
 
-	set @choice, @choice_idx[@menu - 1];
+    if (@choice == @C_monster_oil)
+        goto L_monster_oil_start;
+    if (@choice == @C_mopox_cure)
+        goto L_mopox_cure_start;
+    if (@choice == @C_nohmask)
+        goto L_NohMask;
+    if (@choice == @C_dementiapotion)
+        goto L_DemPotion;
+    if (@choice == @C_bye)
+        goto L_close;
 
-        if (@choice == @C_monster_oil)
-		goto L_monster_oil_start;
-        if (@choice == @C_mopox_cure)
-		goto L_mopox_cure_start;
-        if (@choice == @C_nohmask)
-		goto L_NohMask;
-        if (@choice == @C_dementiapotion)
-		goto L_DemPotion;
-        if (@choice == @C_bye)
-		goto L_close;
-
-        // otherwise the choice is the number of potions-to-brew
-        set @num, @choice;
-        if (@num == 0)
-            goto L_close;
+    // otherwise the choice is the number of potions-to-brew
+    set @num, @choice;
+    if (@num == 0)
+        goto L_close;
 
 L_brew:
-	mes "[Caul]";
-	mes "\"Now put " + @num + " herbs of each kind into the cauldron, stir, and concentrate all your mental energy on it.\"";
-	next;
+    mes "[Caul]";
+    mes "\"Now put " + @num + " herbs of each kind into the cauldron, stir, and concentrate all your mental energy on it.\"";
+    next;
 
-	if (countitem("MauveHerb") < @num) goto L_NotEnough;
-	if (countitem("CobaltHerb") < @num) goto L_NotEnough;
-	if (countitem("GambogeHerb") < @num) goto L_NotEnough;
-	if (countitem("AlizarinHerb") < @num) goto L_NotEnough;
+    if (countitem("MauveHerb") < @num)
+        goto L_NotEnough;
+    if (countitem("CobaltHerb") < @num)
+        goto L_NotEnough;
+    if (countitem("GambogeHerb") < @num)
+        goto L_NotEnough;
+    if (countitem("AlizarinHerb") < @num)
+        goto L_NotEnough;
 
-	set @a, @num;
-	set @result1, 0;
-	set @result2, 0;
-	set @result3, 0;
-	set @result4, 0;
+    set @a, @num;
+    set @result1, 0;
+    set @result2, 0;
+    set @result3, 0;
+    set @result4, 0;
 
 L_CraftLoop:
-	set @throw, rand(readparam(bInt));
-	set @result, 1;
-	if (@throw >= 5) set @result, 2;
-	if (@throw >= 15) set @result, 3;
-	if (@throw >= 35) set @result, 4;
+    set @throw, rand(readparam(bInt));
+    set @result, 1;
+    if (@throw >= 5) set @result, 2;
+    if (@throw >= 15) set @result, 3;
+    if (@throw >= 35) set @result, 4;
 
-	if (@result == 1) set @result1, @result1 + 1;
-	if (@result == 2) set @result2, @result2 + 1;
-	if (@result == 3) set @result3, @result3 + 1;
-	if (@result == 4) set @result4, @result4 + 1;
+    if (@result == 1) set @result1, @result1 + 1;
+    if (@result == 2) set @result2, @result2 + 1;
+    if (@result == 3) set @result3, @result3 + 1;
+    if (@result == 4) set @result4, @result4 + 1;
 
-	set @a, @a - 1;
-	if (@a > 0) goto L_CraftLoop;
+    set @a, @a - 1;
+    if (@a > 0) goto L_CraftLoop;
 
-	delitem "MauveHerb", @num;
-	delitem "CobaltHerb", @num;
-	delitem "GambogeHerb", @num;
-	delitem "AlizarinHerb", @num;
+    delitem "MauveHerb", @num;
+    delitem "CobaltHerb", @num;
+    delitem "GambogeHerb", @num;
+    delitem "AlizarinHerb", @num;
 
-	getitem 684, @result1;
-	getitem 685, @result2;
-	getitem 686, @result3;
-	getitem 687, @result4;
+    getitem 684, @result1;
+    getitem 685, @result2;
+    getitem 686, @result3;
+    getitem 687, @result4;
 
-	mes "[Caul]";
-	mes "\"Well done! You made:";
-	if (@result1 > 0) mes @result1 + " tiny potions";
-	if (@result2 > 0) mes @result2 + " small potions";
-	if (@result3 > 0) mes @result3 + " medium potions";
-	if (@result4 > 0) mes @result4 + " large potions";
-	mes "Come again.\"";
-	close;
+    mes "[Caul]";
+    mes "\"Well done! You made:";
+    if (@result1 > 0)
+        mes @result1 + " tiny potions";
+    if (@result2 > 0)
+        mes @result2 + " small potions";
+    if (@result3 > 0)
+        mes @result3 + " medium potions";
+    if (@result4 > 0)
+        mes @result4 + " large potions";
+    mes "Come again.\"";
+    close;
 
 L_NotEnough:
-	mes "[Caul]";
-	mes "\"Oh, it seems like you don't have enough herbs. You can find herbs in deep forests.\"";
-	close;
+    mes "[Caul]";
+    mes "\"Oh, it seems like you don't have enough herbs. You can find herbs in deep forests.\"";
+    close;
 
 L_monster_oil_start:
-	mes "[Caul]";
-	mes "\"Monster oil?  Hmm, I have heard of it, but I don't remember the precise recipe to make it...\"";
-        next;
-        if (@Q_status == @SETZER_KNOWS_OIL)
-		menu	"OK, I'll ask around, perhaps someone else knows.", L_close;
-        if (@Q_status > @SETZER_KNOWS_OIL)
-		menu	"Rauk told me the recipe.", L_monster_oil_knows_recipe;
-	close;
+    mes "[Caul]";
+    mes "\"Monster oil?  Hmm, I have heard of it, but I don't remember the precise recipe to make it...\"";
+    next;
+    if (@Q_status == @SETZER_KNOWS_OIL)
+        menu
+            "OK, I'll ask around, perhaps someone else knows.", L_close;
+    if (@Q_status > @SETZER_KNOWS_OIL)
+        menu
+            "Rauk told me the recipe.", L_monster_oil_knows_recipe;
+    close;
 
 L_monster_oil_knows_recipe:
-	mes "[Caul]";
-	mes "\"Ah, but of course!  Yes, we should be able to brew that here.  Except that... hmm.  Pearl and three black scorpion stingers?  This sounds very dangerous;";
-        mes "I fear that I will have to ask you to do this yourself.\"";
-        next;
+    mes "[Caul]";
+    mes "\"Ah, but of course!  Yes, we should be able to brew that here.  Except that... hmm.  Pearl and three black scorpion stingers?  This sounds very dangerous;";
+    mes "I fear that I will have to ask you to do this yourself.\"";
+    next;
 
 L_monster_oil_main_menu:
-        set @main_menu, 1;
-        menu
-		"What do you mean by 'dangerous'?", L_monster_oil_why_dangerous,
-		"What do I need, again?", L_monster_oil_ingredients,
-		"How does this work?", L_monster_oil_explain,
-		"Let's start!", L_monster_oil_start_brew,
-                "Where can I get a golden scorpion stinger?", L_monster_oil_where_gold,
-		"I've changed my mind.", L_close;
-        close;
+    set @main_menu, 1;
+    menu
+        "What do you mean by 'dangerous'?", L_monster_oil_why_dangerous,
+        "What do I need, again?", L_monster_oil_ingredients,
+        "How does this work?", L_monster_oil_explain,
+        "Let's start!", L_monster_oil_start_brew,
+        "Where can I get a golden scorpion stinger?", L_monster_oil_where_gold,
+        "I've changed my mind.", L_close;
+    close;
 
 L_monster_oil_why_dangerous:
-	mes "[Caul]";
-	mes "\"Well, with those two reagents in there at that ratio, you risk an explosion-- quite possibly a fatal one.  So be prepared to duck if the brew gets too bubbly-- it's better to lose the ingredients than your head!\"";
-        next;
-	goto L_monster_oil_main_menu;
+    mes "[Caul]";
+    mes "\"Well, with those two reagents in there at that ratio, you risk an explosion-- quite possibly a fatal one.  So be prepared to duck if the brew gets too bubbly-- it's better to lose the ingredients than your head!\"";
+    next;
+    goto L_monster_oil_main_menu;
 
 L_monster_oil_ingredients:
-	mes "[Caul]";
-	mes "\"You will need one pearl, two snake skins, three black scorpion stingers, two piles of ash, and a golden scorpion stinger.  The golden stinger goes in last, after the dangerous part, so you won't lose it if your brew blows up.\"";
-        next;
-	mes "[Caul]";
-	mes "\"You should also bring gamboge, mauve, alizarin and cobalt leaves. You will have to stabilize the brew, and they will help with that.\"";
-        next;
-	goto L_monster_oil_main_menu;
+    mes "[Caul]";
+    mes "\"You will need one pearl, two snake skins, three black scorpion stingers, two piles of ash, and a golden scorpion stinger.  The golden stinger goes in last, after the dangerous part, so you won't lose it if your brew blows up.\"";
+    next;
+    mes "[Caul]";
+    mes "\"You should also bring gamboge, mauve, alizarin and cobalt leaves. You will have to stabilize the brew, and they will help with that.\"";
+    next;
+    goto L_monster_oil_main_menu;
 
 L_monster_oil_explain:
-	mes "[Caul]";
-	mes "\"After you have put in the monster parts-- except for the golden stinger-- the brew will take on some random color; this can be a light, dark, or medium color.  You have to stabilize this color by adding leaves to it.\"";
-        next;
-	mes "[Caul]";
-	mes "\"Of course, with such a violent brew the mixture will change color by itself, too, probably faster than your leaves can affect it.  It will randomly add or remove colors, and might even get lighter.\"";
-        next;
-	mes "[Caul]";
-	mes "\"From what I have seen, it seems to go through phases-- for each alternate leaf it adds a colour, then removes a color, then adds again and so on.  Of course, if the color is there already it can't add any more.\"";
-        next;
-	mes "[Caul]";
-	mes "\"I haven't figured out yet precisely when it gets lighter, though.\"";
-        next;
-	mes "[Caul]";
-	mes "\"By adding Mauve, you can make it darker.  Alizarin adds red, Gamboge yellow, Cobalt blue.  To make it a proper black, you have to get it to be dark gray, then add one Mauve leaf.\"";
-        next;
-	mes "[Caul]";
-	mes "\"Unfortunately the brew changes randomly before your leaves dissolve, so sometimes you can't help but add the wrong color...\"";
-        next;
-	mes "[Caul]";
-	mes "\"Since the brew changes its color first, you might want to add the Mauve when your color is a dark purple or dark green or dark orange and hope for the best.\"";
-        next;
-	mes "[Caul]";
-	mes "\"But don't add too much!  If you add a color that is already there, or try to make it darker at the wrong spot, it may backfire.\"";
-        next;
-        if (@main_menu)
-		goto L_monster_oil_main_menu;
-        goto L_monster_oil_loop;
+    mes "[Caul]";
+    mes "\"After you have put in the monster parts-- except for the golden stinger-- the brew will take on some random color; this can be a light, dark, or medium color.  You have to stabilize this color by adding leaves to it.\"";
+    next;
+    mes "[Caul]";
+    mes "\"Of course, with such a violent brew the mixture will change color by itself, too, probably faster than your leaves can affect it.  It will randomly add or remove colors, and might even get lighter.\"";
+    next;
+    mes "[Caul]";
+    mes "\"From what I have seen, it seems to go through phases-- for each alternate leaf it adds a colour, then removes a color, then adds again and so on.  Of course, if the color is there already it can't add any more.\"";
+    next;
+    mes "[Caul]";
+    mes "\"I haven't figured out yet precisely when it gets lighter, though.\"";
+    next;
+    mes "[Caul]";
+    mes "\"By adding Mauve, you can make it darker.  Alizarin adds red, Gamboge yellow, Cobalt blue.  To make it a proper black, you have to get it to be dark gray, then add one Mauve leaf.\"";
+    next;
+    mes "[Caul]";
+    mes "\"Unfortunately the brew changes randomly before your leaves dissolve, so sometimes you can't help but add the wrong color...\"";
+    next;
+    mes "[Caul]";
+    mes "\"Since the brew changes its color first, you might want to add the Mauve when your color is a dark purple or dark green or dark orange and hope for the best.\"";
+    next;
+    mes "[Caul]";
+    mes "\"But don't add too much!  If you add a color that is already there, or try to make it darker at the wrong spot, it may backfire.\"";
+    next;
+    if (@main_menu)
+        goto L_monster_oil_main_menu;
+    goto L_monster_oil_loop;
 
 L_monster_oil_where_gold:
-	mes "[Caul]";
-	mes "\"Good question.  There aren't any golden scorpions nearby.  Perhaps you can find a trader or an adventurer who have travelled further south and ask them to help?\"";
-        next;
-	goto L_monster_oil_main_menu;
+    mes "[Caul]";
+    mes "\"Good question.  There aren't any golden scorpions nearby.  Perhaps you can find a trader or an adventurer who have travelled further south and ask them to help?\"";
+    next;
+    goto L_monster_oil_main_menu;
 
 L_monster_oil_start_brew:
-        set @main_menu, 0;
-	if (countitem ("Pearl") < 1) goto L_monster_oil_missing;
-	if (countitem ("SnakeSkin") < 2) goto L_monster_oil_missing;
-	if (countitem ("BlackScorpionStinger") < 3) goto L_monster_oil_missing;
-	if (countitem ("PileOfAsh") < 2) goto L_monster_oil_missing;
-	if (countitem ("GoldenScorpionStinger") < 1) goto L_monster_oil_missing_gold;
+    set @main_menu, 0;
+    if (countitem ("Pearl") < 1)
+        goto L_monster_oil_missing;
+    if (countitem ("SnakeSkin") < 2)
+        goto L_monster_oil_missing;
+    if (countitem ("BlackScorpionStinger") < 3)
+        goto L_monster_oil_missing;
+    if (countitem ("PileOfAsh") < 2)
+        goto L_monster_oil_missing;
+    if (countitem ("GoldenScorpionStinger") < 1)
+        goto L_monster_oil_missing_gold;
 
-	delitem "Pearl", 1;
-	delitem "SnakeSkin", 2;
-	delitem "BlackScorpionStinger", 3;
-	delitem "PileOfAsh", 2;
+    delitem "Pearl", 1;
+    delitem "SnakeSkin", 2;
+    delitem "BlackScorpionStinger", 3;
+    delitem "PileOfAsh", 2;
 
-        set @bubble_mode, 0;
-        setarray @bubble_modes$,
-        	"The brew is calm.",
-        	"The brew is bubbling.",
-        	"The brew is bubbling violently.";
+    set @bubble_mode, 0;
+    setarray @bubble_modes$,
+        "The brew is calm.",
+        "The brew is bubbling.",
+        "The brew is bubbling violently.";
 
-	set @color, 1 << (rand(3));
-	setarray @colors$,
-		"white",
-		"red",
-		"yellow",
-		"orange",
-		"blue",
-		"purple",
-		"green",
-		"gray";
+    set @color, 1 << (rand(3));
+    setarray @colors$,
+        "white",
+        "red",
+        "yellow",
+        "orange",
+        "blue",
+        "purple",
+        "green",
+        "gray";
 
-	set @intensity, 1;
-	setarray @intensities$,
-		"light",
-		"medium",
-		"dark";
+    set @intensity, 1;
+    setarray @intensities$,
+        "light",
+        "medium",
+        "dark";
 
-	set @auto_mode, 0;	// Start by adding a colour or going lighter
+    set @auto_mode, 0;    // Start by adding a colour or going lighter
 
-	goto L_monster_oil_loop;
+    goto L_monster_oil_loop;
 
 L_monster_oil_missing:
-	mes "[Caul]";
-	mes "\"You don't seem to have all of the ingredients.  You need one pearl, two snake skins, three black stingers, two piles of ash, and one golden stinger.\"";
-        close;
+    mes "[Caul]";
+    mes "\"You don't seem to have all of the ingredients.  You need one pearl, two snake skins, three black stingers, two piles of ash, and one golden stinger.\"";
+    close;
 
 L_monster_oil_missing_gold:
-	mes "[Caul]";
-	mes "\"You seem to have everything except for the golden stinger.  I understand that this one is hard to get, but I'm sure that you can find one somewhere.\"";
-        close;
+    mes "[Caul]";
+    mes "\"You seem to have everything except for the golden stinger.  I understand that this one is hard to get, but I'm sure that you can find one somewhere.\"";
+    close;
 
 L_monster_oil_loop:
-	mes "[Brewing monster oil]";
-	mes @bubble_modes$[@bubble_mode];
-        mes "It is currently a " + @intensities$[@intensity] + " " + @colors$[@color] + ".";
-        next;
+    mes "[Brewing monster oil]";
+    mes @bubble_modes$[@bubble_mode];
+    mes "It is currently a " + @intensities$[@intensity] + " " + @colors$[@color] + ".";
+    next;
 
-        menu
-		"Add alizarin leaf", L_monster_oil_alizarin,
-		"Add gamboge leaf", L_monster_oil_gamboge,
-		"Add cobalt leaf", L_monster_oil_cobalt,
-		"Add mauve leaf", L_monster_oil_mauve,
-                "Ask Caul for advice", L_monster_oil_explain,
-		"Duck!", -;
+    menu
+        "Add alizarin leaf", L_monster_oil_alizarin,
+        "Add gamboge leaf", L_monster_oil_gamboge,
+        "Add cobalt leaf", L_monster_oil_cobalt,
+        "Add mauve leaf", L_monster_oil_mauve,
+        "Ask Caul for advice", L_monster_oil_explain,
+        "Duck!", -;
 
-	mes "[Brewing monster oil]";
-        mes "You throw yourself onto the ground.  Seconds later, the cauldron shakes, and your entire mixture explodes upwards.";
-        mes "Caul crawls out from underneath a char.";
-        next;
-	mes "[Caul]";
-        mes "\"I'm glad to see that you chose to brew another day... perhaps it might be best if you give up on this dangerous concoction, though!\"";
-        close;
+    mes "[Brewing monster oil]";
+    mes "You throw yourself onto the ground.  Seconds later, the cauldron shakes, and your entire mixture explodes upwards.";
+    mes "Caul crawls out from underneath a char.";
+    next;
+    mes "[Caul]";
+    mes "\"I'm glad to see that you chose to brew another day... perhaps it might be best if you give up on this dangerous concoction, though!\"";
+    close;
 
 L_monster_oil_out_of_leaves:
-	mes "[Brewing monster oil]";
-        mes "You don't have any of these leaves left!";
-        next;
-        goto L_monster_oil_loop;
+    mes "[Brewing monster oil]";
+    mes "You don't have any of these leaves left!";
+    next;
+    goto L_monster_oil_loop;
 
 L_monster_oil_alizarin:
-	set @use_leaf$, "AlizarinHerb";
-	set @use_color, 1;
-        goto L_monster_oil_leaf_color;
+    set @use_leaf$, "AlizarinHerb";
+    set @use_color, 1;
+    goto L_monster_oil_leaf_color;
 
 L_monster_oil_gamboge:
-	set @use_leaf$, "GambogeHerb";
-	set @use_color, 2;
-        goto L_monster_oil_leaf_color;
+    set @use_leaf$, "GambogeHerb";
+    set @use_color, 2;
+    goto L_monster_oil_leaf_color;
 
 L_monster_oil_cobalt:
-	set @use_leaf$, "CobaltHerb";
-	set @use_color, 4;
-        goto L_monster_oil_leaf_color;
+    set @use_leaf$, "CobaltHerb";
+    set @use_color, 4;
+    goto L_monster_oil_leaf_color;
 
 L_monster_oil_leaf_color:
-        if (countitem (@use_leaf$) < 1) goto L_monster_oil_out_of_leaves;
+    if (countitem (@use_leaf$) < 1)
+        goto L_monster_oil_out_of_leaves;
 
-	callsub S_monster_oil_random_move;
-	if (@color & @use_color) goto L_monster_oil_pc_bad;
-        set @color, @color | @use_color;
-        delitem @use_leaf$, 1;
+    callsub S_monster_oil_random_move;
+    if (@color & @use_color)
+        goto L_monster_oil_pc_bad;
+    set @color, @color | @use_color;
+    delitem @use_leaf$, 1;
 
-        mes "The brew changes its hue as your leaf dissolves.";
-        next;
-        goto L_monster_oil_loop;
+    mes "The brew changes its hue as your leaf dissolves.";
+    next;
+    goto L_monster_oil_loop;
 
 L_monster_oil_mauve:
-	if (countitem("MauveHerb") < 1) goto L_monster_oil_out_of_leaves;
-        delitem "MauveHerb", 1;
+    if (countitem("MauveHerb") < 1)
+        goto L_monster_oil_out_of_leaves;
+    delitem "MauveHerb", 1;
 
-	callsub S_monster_oil_random_move;
-        if (@intensity == 2 && @color == 7) goto L_monster_oil_done;
-        if (@intensity == 2) goto L_monster_oil_pc_bad;
+    callsub S_monster_oil_random_move;
+    if (@intensity == 2 && @color == 7)
+        goto L_monster_oil_done;
+    if (@intensity == 2)
+        goto L_monster_oil_pc_bad;
 
-        set @intensity, @intensity + 1;
-        mes "The brew darkens as your mauve leaf dissolves.";
-        next;
-        goto L_monster_oil_loop;
+    set @intensity, @intensity + 1;
+    mes "The brew darkens as your mauve leaf dissolves.";
+    next;
+    goto L_monster_oil_loop;
 
 S_monster_oil_random_move:
-	mes "[Brewing monster oil]";
-        mes "You throw in a leaf and stir.";
+    mes "[Brewing monster oil]";
+    mes "You throw in a leaf and stir.";
 
-	if (@auto_mode == 1)
-		goto L_monster_oil_random_1;
+    if (@auto_mode == 1)
+        goto L_monster_oil_random_1;
 
 L_monster_oil_random_0: // mode 0:  add colour or lighten up
-	set @auto_mode, 1;
-        if (rand(3) == 0)
-		goto L_monster_oil_random_0_lighten;
+    set @auto_mode, 1;
+    if (rand(3) == 0)
+        goto L_monster_oil_random_0_lighten;
 
-	set @choice, 1 << (rand(3));
-	if (@color & @choice)
-		goto L_monster_oil_auto_bad;
-	set @color, @color | @choice;
+    set @choice, 1 << (rand(3));
+    if (@color & @choice)
+        goto L_monster_oil_auto_bad;
+    set @color, @color | @choice;
 
-        mes "Before your leaf has a chance to dissolve, the brew changes to a " + @colors$[@color] + " hue.";
-        return;
+    mes "Before your leaf has a chance to dissolve, the brew changes to a " + @colors$[@color] + " hue.";
+    return;
 
 L_monster_oil_random_0_lighten:
-	if (@intensity == 0)
-		goto L_monster_oil_auto_bad;
-	set @intensity, @intensity - 1;
-        mes "Before your leaf has a chance to dissolve, the brew takes on a lighter shade of " + @colors$[@color] + ".";
-	return;
+    if (@intensity == 0)
+        goto L_monster_oil_auto_bad;
+    set @intensity, @intensity - 1;
+    mes "Before your leaf has a chance to dissolve, the brew takes on a lighter shade of " + @colors$[@color] + ".";
+    return;
 
 L_monster_oil_random_1: // mode 1: remove colour
-	set @auto_mode, 0;
-	set @choice, 1 << (rand(3));
-	if (!(@color & @choice))
-		goto L_monster_oil_auto_bad;
-	set @color, @color & (~@choice);
-        mes "Before your leaf has a chance to dissolve, the brew changes to a " + @colors$[@color] + " hue.";
-        return;
+    set @auto_mode, 0;
+    set @choice, 1 << (rand(3));
+    if (!(@color & @choice))
+        goto L_monster_oil_auto_bad;
+    set @color, @color & (~@choice);
+    mes "Before your leaf has a chance to dissolve, the brew changes to a " + @colors$[@color] + " hue.";
+    return;
 
 L_monster_oil_pc_bad:
-	if (rand(readparam(bInt) + 100) > 60) goto L_monster_oil_pc_bad_ok;
-        if (@bubble_mode)
-        	mes "As your leaf dissolves, the intensity of the bubbling increases.";
-        if (!@bubble_mode)
-        	mes "As your leaf dissolves, the brew begins to bubble.";
-	next;
-        set @bubble_mode, @bubble_mode + 1;
-        if (@bubble_mode > 2)
-		goto L_monster_oil_explode;
-        goto L_monster_oil_loop;
+    if (rand(readparam(bInt) + 100) > 60)
+        goto L_monster_oil_pc_bad_ok;
+    if (@bubble_mode)
+        mes "As your leaf dissolves, the intensity of the bubbling increases.";
+    if (!@bubble_mode)
+        mes "As your leaf dissolves, the brew begins to bubble.";
+    next;
+    set @bubble_mode, @bubble_mode + 1;
+    if (@bubble_mode > 2)
+        goto L_monster_oil_explode;
+    goto L_monster_oil_loop;
 
 L_monster_oil_pc_bad_ok:
-	mes "Your leaf dissolves but seems to have no effect.";
-        next;
-        goto L_monster_oil_loop;
+    mes "Your leaf dissolves but seems to have no effect.";
+    next;
+    goto L_monster_oil_loop;
 
 L_monster_oil_auto_bad:
-	if (rand(3) == 0)
-		return;
-	if (rand(readparam(bInt) + 100) > 70)
-		return;
-        mes "The brew begins to bubble more violently.";
-        set @bubble_mode, @bubble_mode + 1;
-        if (@bubble_mode > 2)
-                next;
-        if (@bubble_mode > 2)
-		goto L_monster_oil_explode;
-	return;
+    if (rand(3) == 0)
+        return;
+    if (rand(readparam(bInt) + 100) > 70)
+        return;
+    mes "The brew begins to bubble more violently.";
+    set @bubble_mode, @bubble_mode + 1;
+    if (@bubble_mode > 2)
+        next;
+    if (@bubble_mode > 2)
+        goto L_monster_oil_explode;
+    return;
 
 L_monster_oil_explode:
-        mes "[Exploding monster oil]";
-        mes "Your brew explodes!";
-        if (rand(readparam(bAgi)) > 40)
-		goto L_monster_oil_explode_dodge;
-	mes "The burst of boiling monster brew hits you.";
-        next;
-        itemheal (15 * rand(readparam(bVit))) - 1500, 0;
-        close;
+    mes "[Exploding monster oil]";
+    mes "Your brew explodes!";
+    if (rand(readparam(bAgi)) > 40)
+        goto L_monster_oil_explode_dodge;
+    mes "The burst of boiling monster brew hits you.";
+    next;
+    itemheal (15 * rand(readparam(bVit))) - 1500, 0;
+    close;
 
 L_monster_oil_explode_dodge:
-	mes "You throw yourself to the ground at the very last moment, barely avoiding the burst of boiling monster brew.";
-        next;
-	mes "[Caul]";
-        mes "Caul nods at you from underneath a chair.";
-        mes "\"I told you, it's dangerous!!\"";
-        close;
+    mes "You throw yourself to the ground at the very last moment, barely avoiding the burst of boiling monster brew.";
+    next;
+    mes "[Caul]";
+    mes "Caul nods at you from underneath a chair.";
+    mes "\"I told you, it's dangerous!!\"";
+    close;
 
 L_monster_oil_done:
-        mes "As you throw in another mauve leaf, the brew takes on a deep black color and calms down.";
-        next;
+    mes "As you throw in another mauve leaf, the brew takes on a deep black color and calms down.";
+    next;
+    mes "[Brewing monster oil]";
+    mes "As instructed, you toss in your golden scorpion stinger.";
 
-	mes "[Brewing monster oil]";
-        mes "As instructed, you toss in your golden scorpion stinger.";
+    if (countitem ("GoldenScorpionStinger") < 1)
+        goto L_monster_oil_no_gold_end;
 
-	if (countitem ("GoldenScorpionStinger") < 1) goto L_monster_oil_no_gold_end;
+    mes "The brew bubbles once more, then calms completely.";
 
-        mes "The brew bubbles once more, then calms completely.";
+    delitem "GoldenScorpionStinger", 1;
+    getitem "MonsterOilPotion", 1;
 
-        delitem "GoldenScorpionStinger", 1;
-        getitem "MonsterOilPotion", 1;
+    if (!(@Q_status & @SETZER_FLAG_MADE_OIL))
+        getexp @MONSTER_OIL_XP, 0;
+    if (!(@Q_status & @SETZER_FLAG_MADE_OIL))
+        mes "[" + @MONSTER_OIL_XP + " experience points]";
 
-        if (!(@Q_status & @SETZER_FLAG_MADE_OIL))
-        	getexp @MONSTER_OIL_XP, 0;
-        if (!(@Q_status & @SETZER_FLAG_MADE_OIL))
-        	mes "[" + @MONSTER_OIL_XP + " experience points]";
-
-	set @Q_status, @Q_status | @SETZER_FLAG_MADE_OIL;
-	callsub S_Update_Var;
-        next;
-
-	mes "[Caul]";
-        mes "Caul gets up from underneath the cover he was taking and looks at your brew.  He is visibly impressed.";
-        mes "\"Well done!  This should be just enough for one potion of monster oil.  Let me get you a bottle.\"";
-        mes "He hands you the monster oil.";
-        close;
+    set @Q_status, @Q_status | @SETZER_FLAG_MADE_OIL;
+    callsub S_Update_Var;
+    next;
+    mes "[Caul]";
+    mes "Caul gets up from underneath the cover he was taking and looks at your brew.  He is visibly impressed.";
+    mes "\"Well done!  This should be just enough for one potion of monster oil.  Let me get you a bottle.\"";
+    mes "He hands you the monster oil.";
+    close;
 
 L_monster_oil_no_gold_end:
-	mes "But where is your golden stinger?  Didn't you have one earlier?";
-        mes "Frustrated, you give up.";
-        close;
+    mes "But where is your golden stinger?  Didn't you have one earlier?";
+    mes "Frustrated, you give up.";
+    close;
 
 L_mopox_cure_start:
-	mes "[Caul]";
-	mes "\"The mopox cure potion?  Certainly, if you have all of the ingredients... oh, and make sure to bring water, roots, sulphur powder and Mauve leaves.\"";
-        mes "\"This is a very easy one, so I think I should let you do this yourself.  It is very good exercise.\"";
-        next;
+    mes "[Caul]";
+    mes "\"The mopox cure potion?  Certainly, if you have all of the ingredients... oh, and make sure to bring water, roots, sulphur powder and Mauve leaves.\"";
+    mes "\"This is a very easy one, so I think I should let you do this yourself.  It is very good exercise.\"";
+    next;
 
 L_mopox_cure_overview_menu:
-        menu
-		"I'm ready!",	L_mopox_cure_setup,
-                "What are the ingredients?", L_mopox_cure_ingredients,
-                "How does this work?", L_mopox_cure_howto,
-                "I'd rather not try.", -;
-	close;
+    menu
+        "I'm ready!", L_mopox_cure_setup,
+        "What are the ingredients?", L_mopox_cure_ingredients,
+        "How does this work?", L_mopox_cure_howto,
+        "I'd rather not try.", -;
+    close;
 
 L_mopox_cure_ingredients:
-	mes "[Caul]";
-	mes "\"You will need one concentration potion, one iron potion, a lifestone, and one gamboge leaf.\"";
-        next;
-        goto L_mopox_cure_overview_menu;
+    mes "[Caul]";
+    mes "\"You will need one concentration potion, one iron potion, a lifestone, and one gamboge leaf.\"";
+    next;
+    goto L_mopox_cure_overview_menu;
 
 L_mopox_cure_howto:
-	mes "[Caul]";
-	mes "\"When you start brewing, the liquid very rarely has the proper consistency and color.  You need to make it gooey and medium dark.\"";
-        next;
-
-	mes "[Caul]";
-	mes "\"You can affect the consistency by adding ground roots and water, and you can change the color by adding mauve leaves (to darken it) and sulphur powder (to make it brighter).\"";
-        next;
-
-	mes "[Caul]";
-	mes "\"The ingredients have some side effects, though, so you will have to experiment a little.\"";
-        next;
-
-	mes "[Caul]";
-	mes "\"Oh, and be careful:  water will evaporate over time, too.\"";
-        next;
-        goto L_mopox_cure_overview_menu;
+    mes "[Caul]";
+    mes "\"When you start brewing, the liquid very rarely has the proper consistency and color.  You need to make it gooey and medium dark.\"";
+    next;
+    mes "[Caul]";
+    mes "\"You can affect the consistency by adding ground roots and water, and you can change the color by adding mauve leaves (to darken it) and sulphur powder (to make it brighter).\"";
+    next;
+    mes "[Caul]";
+    mes "\"The ingredients have some side effects, though, so you will have to experiment a little.\"";
+    next;
+    mes "[Caul]";
+    mes "\"Oh, and be careful:  water will evaporate over time, too.\"";
+    next;
+    goto L_mopox_cure_overview_menu;
 
 L_mopox_cure_no_lifestone:
-	mes "[Caul]";
-	mes "\"You will need a lifestone.\"";
-        goto L_mopox_cure_overview_menu;
+    mes "[Caul]";
+    mes "\"You will need a lifestone.\"";
+    goto L_mopox_cure_overview_menu;
 
 L_mopox_cure_no_gamboge:
-	mes "[Caul]";
-	mes "\"You will need a gamboge leaf.\"";
-        goto L_mopox_cure_overview_menu;
+    mes "[Caul]";
+    mes "\"You will need a gamboge leaf.\"";
+    goto L_mopox_cure_overview_menu;
 
 L_mopox_cure_no_concentration:
-	mes "[Caul]";
-	mes "\"You will need a concentration potion.\"";
-        goto L_mopox_cure_overview_menu;
+    mes "[Caul]";
+    mes "\"You will need a concentration potion.\"";
+    goto L_mopox_cure_overview_menu;
 
 L_mopox_cure_no_iron:
-	mes "[Caul]";
-	mes "\"You will need an iron potion.\"";
-        goto L_mopox_cure_overview_menu;
+    mes "[Caul]";
+    mes "\"You will need an iron potion.\"";
+    goto L_mopox_cure_overview_menu;
 
 L_mopox_cure_setup:
-        if (countitem("IronPotion") < 1) goto L_mopox_cure_no_iron;
-        if (countitem("ConcentrationPotion") < 1) goto L_mopox_cure_no_concentration;
-        if (countitem("GambogeHerb") < 1) goto L_mopox_cure_no_gamboge;
-        if (countitem("Lifestone") < 1) goto L_mopox_cure_no_lifestone;
+    if (countitem("IronPotion") < 1)
+        goto L_mopox_cure_no_iron;
+    if (countitem("ConcentrationPotion") < 1)
+        goto L_mopox_cure_no_concentration;
+    if (countitem("GambogeHerb") < 1)
+        goto L_mopox_cure_no_gamboge;
+    if (countitem("Lifestone") < 1)
+        goto L_mopox_cure_no_lifestone;
 
-        delitem "IronPotion", 1;
-        delitem "ConcentrationPotion", 1;
-        delitem "GambogeHerb", 1;
-        delitem "Lifestone", 1;
+    delitem "IronPotion", 1;
+    delitem "ConcentrationPotion", 1;
+    delitem "GambogeHerb", 1;
+    delitem "Lifestone", 1;
 
-        mes "[Brewing Mopox Cure]";
-        mes "You pour your two potions into the cauldron, then add a gamboge herb and a lifestone.  Caul heats up the cauldron and you wait until it begins to boil.";
+    mes "[Brewing Mopox Cure]";
+    mes "You pour your two potions into the cauldron, then add a gamboge herb and a lifestone.  Caul heats up the cauldron and you wait until it begins to boil.";
 
-        setarray @colours$, "white", "almost white", "light", "medium-dark", "dark", "very dark", "almost black", "black";
-        setarray @stickinesses$, "watery", "very runny", "runny", "gooey", "sticky", "very sticky", "almost solid";
-        set @stickiness, rand(7);
-        set @colour, 2 + rand(5);
+    setarray @colours$, "white", "almost white", "light", "medium-dark", "dark", "very dark", "almost black", "black";
+    setarray @stickinesses$, "watery", "very runny", "runny", "gooey", "sticky", "very sticky", "almost solid";
+    set @stickiness, rand(7);
+    set @colour, 2 + rand(5);
 
-        // Target: (@stickiness, @colour) = (3, 3)
+    // Target: (@stickiness, @colour) = (3, 3)
 
-        if (@stickiness == 3 && @colour == 3)
-		set @colour, 4; // don't allow insta-win; it's easy enough.
-        set @rounds, 0;
+    if (@stickiness == 3 && @colour == 3)
+        set @colour, 4; // don't allow insta-win; it's easy enough.
+    set @rounds, 0;
 
 L_mopox_cure_loop:
-        mes "[Brewing Mopox Cure]";
-        mes "The brew is " + @colours$[@colour] + " and " + @stickinesses$[@stickiness] + ".";
+    mes "[Brewing Mopox Cure]";
+    mes "The brew is " + @colours$[@colour] + " and " + @stickinesses$[@stickiness] + ".";
 
-        if (@colour == 3 && @stickiness == 3)
-		goto L_mopox_cure_win;
-        next;
+    if (@colour == 3 && @stickiness == 3)
+        goto L_mopox_cure_win;
+    next;
 
-        set @colour, @colour + 10;
-        set @stickiness, @stickiness + 10;
+    set @colour, @colour + 10;
+    set @stickiness, @stickiness + 10;
 
-        menu
-        	"Add root", L_mopox_B_root,
-        	"Add water", L_mopox_B_water,
-        	"Add sulphur powder", L_mopox_B_sulphur,
-        	"Add mauve", L_mopox_B_mauve,
-                "...what should I do again?", L_mopox_reexplain,
-                "Wait", -;
+    menu
+        "Add root", L_mopox_B_root,
+        "Add water", L_mopox_B_water,
+        "Add sulphur powder", L_mopox_B_sulphur,
+        "Add mauve", L_mopox_B_mauve,
+        "...what should I do again?", L_mopox_reexplain,
+        "Wait", -;
 
 L_mopox_cure_next:
-	set @stickiness, @stickiness + @rounds;
-        set @rounds, 1 - @rounds;
+    set @stickiness, @stickiness + @rounds;
+    set @rounds, 1 - @rounds;
 
-        if (@stickiness < 10)
-        	set @stickiness, 10;
-	if (@colour < 10) goto L_mopox_failed_badcolour;
-	if (@colour > 17) goto L_mopox_failed_badcolour;
-	if (@stickiness > 16) goto L_mopox_failed_hard;
-	if (@colour > 17) goto L_mopox_failed_badcolour;
+    if (@stickiness < 10)
+        set @stickiness, 10;
+    if (@colour < 10)
+        goto L_mopox_failed_badcolour;
+    if (@colour > 17)
+        goto L_mopox_failed_badcolour;
+    if (@stickiness > 16)
+        goto L_mopox_failed_hard;
+    if (@colour > 17)
+        goto L_mopox_failed_badcolour;
 
-        set @colour, @colour - 10;
-        set @stickiness, @stickiness - 10;
+    set @colour, @colour - 10;
+    set @stickiness, @stickiness - 10;
 
-        goto L_mopox_cure_loop;
+    goto L_mopox_cure_loop;
 
 L_mopox_reexplain:
-        mes "[Caul]";
-        mes "\"Make this brew gooey and medium dark.\"";
-        mes "\"(Gooey is right between runny and sticky.)\"";
-        mes "\"You can add different items that will affect both color and stickiness.\"";
-        next;
-        mes "[Caul]";
-        mes "\"Water and ground roots mostly affect stickiness.\"";
-        mes "\"Mauve and sulphur powder mostly affect color, with Mauve darkening the brew.\"";
-        next;
-        goto L_mopox_cure_next;
+    mes "[Caul]";
+    mes "\"Make this brew gooey and medium dark.\"";
+    mes "\"(Gooey is right between runny and sticky.)\"";
+    mes "\"You can add different items that will affect both color and stickiness.\"";
+    next;
+    mes "[Caul]";
+    mes "\"Water and ground roots mostly affect stickiness.\"";
+    mes "\"Mauve and sulphur powder mostly affect color, with Mauve darkening the brew.\"";
+    next;
+    goto L_mopox_cure_next;
 
 L_mopox_B_none:
-        mes "[Brewing Mopox Cure]";
-	mes "You don't have any left!";
-        next;
-        goto L_mopox_cure_next;
+    mes "[Brewing Mopox Cure]";
+    mes "You don't have any left!";
+    next;
+    goto L_mopox_cure_next;
 
 L_mopox_B_root:
-        if (countitem ("Root") < 1) goto L_mopox_B_none;
-        delitem "Root", 1;
+    if (countitem ("Root") < 1)
+        goto L_mopox_B_none;
+    delitem "Root", 1;
 
-        mes "[Brewing Mopox Cure]";
-	mes "You grind a root and pour it into the brew.";
-        next;
-        set @colour, @colour + 1;
-        set @stickiness, @stickiness + 3;
-        goto L_mopox_cure_next;
+    mes "[Brewing Mopox Cure]";
+    mes "You grind a root and pour it into the brew.";
+    next;
+    set @colour, @colour + 1;
+    set @stickiness, @stickiness + 3;
+    goto L_mopox_cure_next;
 
 L_mopox_B_water:
-        if (countitem ("BottleOfWater") < 1) goto L_mopox_B_none;
-        delitem "BottleOfWater", 1;
-        getitem "EmptyBottle", 1;
+    if (countitem ("BottleOfWater") < 1)
+        goto L_mopox_B_none;
+    delitem "BottleOfWater", 1;
+    getitem "EmptyBottle", 1;
 
-        mes "[Brewing Mopox Cure]";
-	mes "You pour a bottle of water into the brew.";
-        next;
-        set @colour, @colour;
-        set @stickiness, @stickiness - 2;
-        goto L_mopox_cure_next;
+    mes "[Brewing Mopox Cure]";
+    mes "You pour a bottle of water into the brew.";
+    next;
+    set @colour, @colour;
+    set @stickiness, @stickiness - 2;
+    goto L_mopox_cure_next;
 
 L_mopox_B_sulphur:
-        if (countitem ("SulphurPowder") < 1) goto L_mopox_B_none;
-        delitem "SulphurPowder", 1;
+    if (countitem ("SulphurPowder") < 1)
+        goto L_mopox_B_none;
+    delitem "SulphurPowder", 1;
 
-        mes "[Brewing Mopox Cure]";
-	mes "You mix some sulphur powder into the brew.";
-        next;
-        set @colour, @colour - 3;
-        set @stickiness, @stickiness + 1;
-        goto L_mopox_cure_next;
+    mes "[Brewing Mopox Cure]";
+    mes "You mix some sulphur powder into the brew.";
+    next;
+    set @colour, @colour - 3;
+    set @stickiness, @stickiness + 1;
+    goto L_mopox_cure_next;
 
 L_mopox_B_mauve:
-        if (countitem ("MauveHerb") < 1) goto L_mopox_B_none;
-        delitem "MauveHerb", 1;
+    if (countitem ("MauveHerb") < 1)
+        goto L_mopox_B_none;
+    delitem "MauveHerb", 1;
 
-        mes "[Brewing Mopox Cure]";
-	mes "You grind a mauve herb and toss it in.";
-        next;
-        set @colour, @colour + 2;
-        set @stickiness, @stickiness + 1;
-        goto L_mopox_cure_next;
+    mes "[Brewing Mopox Cure]";
+    mes "You grind a mauve herb and toss it in.";
+    next;
+    set @colour, @colour + 2;
+    set @stickiness, @stickiness + 1;
+    goto L_mopox_cure_next;
 
 L_mopox_failed_badcolour:
-        mes "[Brewing Mopox Cure]";
-        mes "The brew suddenly begins to bubble again, turning green.";
-        mes "\"Oh dear,\" Caul remarks, \"you let the color stray too much.\"";
-        next;
-        mes "[Caul]";
-        mes "\"Better luck next time!\"";
-        close;
+    mes "[Brewing Mopox Cure]";
+    mes "The brew suddenly begins to bubble again, turning green.";
+    mes "\"Oh dear,\" Caul remarks, \"you let the color stray too much.\"";
+    next;
+    mes "[Caul]";
+    mes "\"Better luck next time!\"";
+    close;
 
 L_mopox_failed_hard:
-        mes "[Brewing Mopox Cure]";
-        mes "You find it almost impossible to stir the brew.";
-        mes "Suddenly, the thick mass bends outwards, a huge bubble bursting open right in your face!";
-        next;
+    mes "[Brewing Mopox Cure]";
+    mes "You find it almost impossible to stir the brew.";
+    mes "Suddenly, the thick mass bends outwards, a huge bubble bursting open right in your face!";
+    next;
 
-        if (rand(readparam(bVit)) < 40)
-        	sc_start sc_poison, 1, 20;
+    if (rand(readparam(bVit)) < 40)
+        sc_start sc_poison, 1, 20;
 
-        mes "[Brewing Mopox Cure]";
-        mes "Yeech.  That smelled bad.";
-        mes "\"Don't worry, I'll clean up the cauldron,\", interrupts Caul.  \"You should wipe that off your face and make sure that you didn't get poisoned.\"";
-        next;
-
-        mes "[Caul]";
-        mes "\"Better luck next time!\"";
-        close;
+    mes "[Brewing Mopox Cure]";
+    mes "Yeech.  That smelled bad.";
+    mes "\"Don't worry, I'll clean up the cauldron,\", interrupts Caul.  \"You should wipe that off your face and make sure that you didn't get poisoned.\"";
+    next;
+    mes "[Caul]";
+    mes "\"Better luck next time!\"";
+    close;
 
 L_mopox_cure_win:
-        mes "Caul looks pleased.  \"Well done!  This looks very good to me.\"";
-        next;
+    mes "Caul looks pleased.  \"Well done!  This looks very good to me.\"";
+    next;
+    mes "[Caul]";
+    mes "Caul picks a bottle from a shelf and fills it with your brew.";
+    mes "\"One potion of Mopox cure, here you are.  Good luck!\"";
+    getitem "MopoxCurePotion", 1;
+    if (!@Q_can_score_mopox_cure)
+        goto L_mopox_cure_win_quick;
+    getexp @MOPOX_CURE_XP, 0;
+    mes "[" + @MOPOX_CURE_XP + " experience points]";
+    set QUEST_MAGIC2, (QUEST_MAGIC2 & ~NIBBLE_3_MASK) | (2 << NIBBLE_3_SHIFT); // Make sure we can only get XP for brewing this once
 
-        mes "[Caul]";
-        mes "Caul picks a bottle from a shelf and fills it with your brew.";
-        mes "\"One potion of Mopox cure, here you are.  Good luck!\"";
-        getitem "MopoxCurePotion", 1;
-        if (!@Q_can_score_mopox_cure)
-		goto L_mopox_cure_win_quick;
-        getexp @MOPOX_CURE_XP, 0;
-        mes "[" + @MOPOX_CURE_XP + " experience points]";
-        set QUEST_MAGIC2, (QUEST_MAGIC2 & ~NIBBLE_3_MASK) | (2 << NIBBLE_3_SHIFT); // Make sure we can only get XP for brewing this once
 L_mopox_cure_win_quick:
-	close;
+    close;
 
 L_DemPotion:
-        mes "[Caul]";
-        mes "\"Ok, you do know this potion is one of the most dangerous potions brewed? My cauldron is empty, you can try it yourself.\"";
-        next;
-        mes "Caul goes three steps away and watches your actions carefully.";
-        menu
-            "Please explain to me what you know about that potion.", L_explain_dempo,
-            "Ok, I will start brewing.", L_brew_dempo_init,
-            "Nevermind", -;
-        close;
+    mes "[Caul]";
+    mes "\"Ok, you do know this potion is one of the most dangerous potions brewed? My cauldron is empty, you can try it yourself.\"";
+    next;
+    mes "Caul goes three steps away and watches your actions carefully.";
+    menu
+        "Please explain to me what you know about that potion.", L_explain_dempo,
+        "Ok, I will start brewing.", L_brew_dempo_init,
+        "Nevermind", -;
+    close;
+
 L_explain_dempo:
-        mes "[Caul]";
-        mes "\"Hrrm. I have heard of that potion. I hope I can remember all the stuff needed.\"";
-        next;
-        mes "\"Basically this potion is a balancing between death and life; between knowledge and forgetting.\"";
-        next;
-        mes "\"So, to get it balanced, we need ingredients for both sides.\"";
-        next;
-        mes "\"For the death and forgetting side we can use bones. Although, bones do not work well. We would get the best results with a diseased heart of zombies. Of course, we can use undead ears and skulls as well.\"";
-        next;
-        mes "\"For the life and knowledge side we can use fresh mauve herbs. Lifestones would be even better. Roots will do as well, although these must be really fresh to show effect.\"";
-        next;
-        mes "\"Brewing such a powerful potion is dangerous. That is why you will need to do it yourself. I will try to assist you as best as I can.\"";
-        next;
-        mes "\"I don't know exactly, but there is a slight chance of exploding all time.\"";
-        next;
-        mes "\"The color of the mixture will give you a very good impression of what you need to do.\"";
-        mes "\"And to get that potion working, we need to stabilize it with a pearl at the end.\"";
-        next;
-        mes "\"The color will be in a range of really dark black to bright shining white. In between it is grey in different nuances.\"";
-        mes "\"When it is calm grey, the finalisation with a pearl will work best, so I have heard.\"";
-        next;
-        goto L_DemPotion;
+    mes "[Caul]";
+    mes "\"Hrrm. I have heard of that potion. I hope I can remember all the stuff needed.\"";
+    next;
+    mes "\"Basically this potion is a balancing between death and life; between knowledge and forgetting.\"";
+    next;
+    mes "\"So, to get it balanced, we need ingredients for both sides.\"";
+    next;
+    mes "\"For the death and forgetting side we can use bones. Although, bones do not work well. We would get the best results with a diseased heart of zombies. Of course, we can use undead ears and skulls as well.\"";
+    next;
+    mes "\"For the life and knowledge side we can use fresh mauve herbs. Lifestones would be even better. Roots will do as well, although these must be really fresh to show effect.\"";
+    next;
+    mes "\"Brewing such a powerful potion is dangerous. That is why you will need to do it yourself. I will try to assist you as best as I can.\"";
+    next;
+    mes "\"I don't know exactly, but there is a slight chance of exploding all time.\"";
+    next;
+    mes "\"The color of the mixture will give you a very good impression of what you need to do.\"";
+    mes "\"And to get that potion working, we need to stabilize it with a pearl at the end.\"";
+    next;
+    mes "\"The color will be in a range of really dark black to bright shining white. In between it is grey in different nuances.\"";
+    mes "\"When it is calm grey, the finalisation with a pearl will work best, so I have heard.\"";
+    next;
+    goto L_DemPotion;
 
 L_brew_dempo_init:
-        if ((countitem("BottleOfWater") == 0) || (countitem("Bone") == 0) || (countitem("Lifestone") == 0) || (countitem("Pearl") == 0))
+    if ((countitem("BottleOfWater") == 0)
+        || (countitem("Bone") == 0)
+        || (countitem("Lifestone") == 0)
+        || (countitem("Pearl") == 0))
             goto L_dempo_noinit;
-        delitem "BottleOfWater", 1;
-        delitem "Bone", 1;
-        delitem "Lifestone", 1;
+    delitem "BottleOfWater", 1;
+    delitem "Bone", 1;
+    delitem "Lifestone", 1;
 
-        set @finish_dempo, 0;
-        // color can be either black or white at the beginning.
-        // with a slight randomness in there.
-        set @dempo_color, rand(10);
-        if (rand(2)==0)
-            set @dempo_color, @dempo_color + 90 ;
-        mes "To start that potion you put in the cauldron a bone, a bottle of water and a lifestone.";
-        next;
-        goto L_brew_dempo;
+    set @finish_dempo, 0;
+    // color can be either black or white at the beginning.
+    // with a slight randomness in there.
+    set @dempo_color, rand(10);
+    if (rand(2)==0)
+        set @dempo_color, @dempo_color + 90 ;
+    mes "To start that potion you put in the cauldron a bone, a bottle of water and a lifestone.";
+    next;
+    goto L_brew_dempo;
 
 L_dempo_noinit:
-        mes "[Caul]";
-        mes "\"Hrrm. Usually you start that potion with a bone, a bottle of water and a lifestone.\"";
-        mes "\"I'd propose you do it exactly that way. You see, maybe it would even work with a skull and a healing potion, but since we don't know, and I don't want to repair my cauldron again, please don't try other solutions.\"";
-        next;
-        mes "\"Please use only this way to start the recipe: a bone, a bottle of water and a lifestone. In that order!\"";
-        mes "\"Ah, and of course you will need at least one pearl with you. This pearl is needed to finalize the potion.\"";
-        close;
+    mes "[Caul]";
+    mes "\"Hrrm. Usually you start that potion with a bone, a bottle of water and a lifestone.\"";
+    mes "\"I'd propose you do it exactly that way. You see, maybe it would even work with a skull and a healing potion, but since we don't know, and I don't want to repair my cauldron again, please don't try other solutions.\"";
+    next;
+    mes "\"Please use only this way to start the recipe: a bone, a bottle of water and a lifestone. In that order!\"";
+    mes "\"Ah, and of course you will need at least one pearl with you. This pearl is needed to finalize the potion.\"";
+    close;
 
 L_brew_dempo:
-        callsub L_check_explosion;
+    callsub L_check_explosion;
 
-        callsub L_calc_dempo_color;
-        mes "After a little while of cooking you see its color turning into " + @dempo_color_S$+ ".";
-        next;
+    callsub L_calc_dempo_color;
+    mes "After a little while of cooking you see its color turning into " + @dempo_color_S$+ ".";
+    next;
 
-        setarray @choice_idx, 0,0,0,0,0,0,0,0,0,0,0;
-        setarray @choice$, "","","","","","","","","","","";
+    setarray @choice_idx, 0,0,0,0,0,0,0,0,0,0,0;
+    setarray @choice$, "","","","","","","","","","","";
 
-        set @C_root, 12;
-        set @C_mauve, 13;
-        set @C_lifestone, 14;
-        set @C_diseasedheart, 15;
-        set @C_bone, 16;
-        set @C_skull, 17;
-        set @C_undeadear, 18;
-        set @C_pearl, 19;
-        set @C_nevermind, 20;
+    set @C_root, 12;
+    set @C_mauve, 13;
+    set @C_lifestone, 14;
+    set @C_diseasedheart, 15;
+    set @C_bone, 16;
+    set @C_skull, 17;
+    set @C_undeadear, 18;
+    set @C_pearl, 19;
+    set @C_nevermind, 20;
 
-        // counter of avalable answers
-        set @choices_nr, 0;
+    // counter of avalable answers
+    set @choices_nr, 0;
 
-        if (countitem("Root") == 0) goto L_noroots;
-        set @choice_idx[@choices_nr], @C_root;
-        set @choice$[@choices_nr], "Add a root";
-        set @choices_nr, @choices_nr + 1;
+    if (countitem("Root") == 0)
+        goto L_noroots;
+    set @choice_idx[@choices_nr], @C_root;
+    set @choice$[@choices_nr], "Add a root";
+    set @choices_nr, @choices_nr + 1;
+
 L_noroots:
-        if (countitem("MauveHerb") == 0) goto L_nomauve;
-        set @choice_idx[@choices_nr], @C_mauve;
-        set @choice$[@choices_nr], "Add a mauve herb";
-        set @choices_nr, @choices_nr + 1;
+    if (countitem("MauveHerb") == 0)
+        goto L_nomauve;
+    set @choice_idx[@choices_nr], @C_mauve;
+    set @choice$[@choices_nr], "Add a mauve herb";
+    set @choices_nr, @choices_nr + 1;
+
 L_nomauve:
-        if (countitem("Lifestone") == 0) goto L_nolifestone;
-        set @choice_idx[@choices_nr], @C_lifestone;
-        set @choice$[@choices_nr], "Add a lifestone";
-        set @choices_nr, @choices_nr + 1;
+    if (countitem("Lifestone") == 0)
+        goto L_nolifestone;
+    set @choice_idx[@choices_nr], @C_lifestone;
+    set @choice$[@choices_nr], "Add a lifestone";
+    set @choices_nr, @choices_nr + 1;
+
 L_nolifestone:
-        if (countitem("DiseasedHeart") == 0) goto L_noheart;
-        set @choice_idx[@choices_nr], @C_diseasedheart;
-        set @choice$[@choices_nr], "Add a diseased heart";
-        set @choices_nr, @choices_nr + 1;
+    if (countitem("DiseasedHeart") == 0)
+        goto L_noheart;
+    set @choice_idx[@choices_nr], @C_diseasedheart;
+    set @choice$[@choices_nr], "Add a diseased heart";
+    set @choices_nr, @choices_nr + 1;
+
 L_noheart:
-        if (countitem("Bone") == 0) goto L_nobone;
-        set @choice_idx[@choices_nr], @C_bone;
-        set @choice$[@choices_nr], "Add a bone";
-        set @choices_nr, @choices_nr + 1;
+    if (countitem("Bone") == 0)
+        goto L_nobone;
+    set @choice_idx[@choices_nr], @C_bone;
+    set @choice$[@choices_nr], "Add a bone";
+    set @choices_nr, @choices_nr + 1;
+
 L_nobone:
-        if (countitem("Skull") == 0) goto L_noskull;
-        set @choice_idx[@choices_nr], @C_skull;
-        set @choice$[@choices_nr], "Add a skull";
-        set @choices_nr, @choices_nr + 1;
+    if (countitem("Skull") == 0)
+        goto L_noskull;
+    set @choice_idx[@choices_nr], @C_skull;
+    set @choice$[@choices_nr], "Add a skull";
+    set @choices_nr, @choices_nr + 1;
+
 L_noskull:
-        if (countitem("UndeadEar") == 0) goto L_noear;
-        set @choice_idx[@choices_nr], @C_undeadear;
-        set @choice$[@choices_nr], "Add an undead ear";
-        set @choices_nr, @choices_nr + 1;
+    if (countitem("UndeadEar") == 0)
+        goto L_noear;
+    set @choice_idx[@choices_nr], @C_undeadear;
+    set @choice$[@choices_nr], "Add an undead ear";
+    set @choices_nr, @choices_nr + 1;
+
 L_noear:
-        if (countitem("Pearl") == 0) goto L_nopearl;
-        set @choice_idx[@choices_nr], @C_pearl;
-        set @choice$[@choices_nr], "Finalize with a pearl.";
-        set @choices_nr, @choices_nr + 1;
+    if (countitem("Pearl") == 0)
+        goto L_nopearl;
+    set @choice_idx[@choices_nr], @C_pearl;
+    set @choice$[@choices_nr], "Finalize with a pearl.";
+    set @choices_nr, @choices_nr + 1;
+
 L_nopearl:
-        set @choice_idx[@choices_nr], @C_nevermind;
-        set @choice$[@choices_nr], "Nevermind and leave";
+    set @choice_idx[@choices_nr], @C_nevermind;
+    set @choice$[@choices_nr], "Nevermind and leave";
 
-        menu
-            @choice$[0],-,
-            @choice$[1],-,
-            @choice$[2],-,
-            @choice$[3],-,
-            @choice$[4],-,
-            @choice$[5],-,
-            @choice$[6],-,
-            @choice$[7],-,
-            @choice$[8],-,
-            @choice$[9],-,
-            @choice$[10],-;
+    menu
+        @choice$[0],-,
+        @choice$[1],-,
+        @choice$[2],-,
+        @choice$[3],-,
+        @choice$[4],-,
+        @choice$[5],-,
+        @choice$[6],-,
+        @choice$[7],-,
+        @choice$[8],-,
+        @choice$[9],-,
+        @choice$[10],-;
 
-        set @menu, @menu - 1;
-        if (@choice_idx[@menu] == 0)
-            goto L_brew_dempo;
-        if ((countitem("Root") != 0) && (@choice_idx[@menu] == @C_root))
+    set @menu, @menu - 1;
+    if (@choice_idx[@menu] == 0)
+        goto L_brew_dempo;
+    if ((countitem("Root") != 0)
+        && (@choice_idx[@menu] == @C_root))
             goto L_useroot;
-        if ((countitem("MauveHerb") != 0) && (@choice_idx[@menu] == @C_mauve))
+    if ((countitem("MauveHerb") != 0)
+        && (@choice_idx[@menu] == @C_mauve))
             goto L_usemauve;
-        if ((countitem("Lifestone") != 0) && (@choice_idx[@menu] == @C_lifestone))
+    if ((countitem("Lifestone") != 0)
+        && (@choice_idx[@menu] == @C_lifestone))
             goto L_uselifestone;
-        if ((countitem("DiseasedHeart") != 0) && (@choice_idx[@menu] == @C_diseasedheart))
+    if ((countitem("DiseasedHeart") != 0)
+        && (@choice_idx[@menu] == @C_diseasedheart))
             goto L_usediseasedheart;
-        if ((countitem("Bone") != 0) && (@choice_idx[@menu] == @C_bone))
+    if ((countitem("Bone") != 0)
+        && (@choice_idx[@menu] == @C_bone))
             goto L_usebone;
-        if ((countitem("Skull") != 0) && (@choice_idx[@menu] == @C_skull))
+    if ((countitem("Skull") != 0)
+        && (@choice_idx[@menu] == @C_skull))
             goto L_useskull;
-        if ((countitem("UndeadEar") != 0) && (@choice_idx[@menu] == @C_undeadear))
+    if ((countitem("UndeadEar") != 0)
+        && (@choice_idx[@menu] == @C_undeadear))
             goto L_useear;
-        if ((countitem("Pearl") != 0) && (@choice_idx[@menu] == @C_pearl))
+    if ((countitem("Pearl") != 0)
+        && (@choice_idx[@menu] == @C_pearl))
             goto L_usepearl;
-        if ((@choice_idx[@menu] == @C_nevermind))
-            goto L_ask_quit;
+    if ((@choice_idx[@menu] == @C_nevermind))
+        goto L_ask_quit;
 
-        // fallthrough only when player remove the items while in menu, trying to cheat
-        // the potion will be lost then
-        mes "\"Do not try to betray me. Come back when you have a better morale.\"";
-        close;
+    // fallthrough only when player remove the items while in menu, trying to cheat
+    // the potion will be lost then
+    mes "\"Do not try to betray me. Come back when you have a better morale.\"";
+    close;
 
 L_useroot:
-        delitem "Root", 1;
-        set @dempo_color, @dempo_color + 9 + rand(9);
-        goto L_brew_dempo;
+    delitem "Root", 1;
+    set @dempo_color, @dempo_color + 9 + rand(9);
+    goto L_brew_dempo;
 
 L_usemauve:
-        delitem "MauveHerb", 1;
-        set @dempo_color, @dempo_color + 1 + rand(2);
-        goto L_brew_dempo;
+    delitem "MauveHerb", 1;
+    set @dempo_color, @dempo_color + 1 + rand(2);
+    goto L_brew_dempo;
 
 L_uselifestone:
-        delitem "Lifestone", 1;
-        set @dempo_color, @dempo_color + 3 + rand(4);
-        goto L_brew_dempo;
+    delitem "Lifestone", 1;
+    set @dempo_color, @dempo_color + 3 + rand(4);
+    goto L_brew_dempo;
 
 L_usediseasedheart:
-        delitem "DiseasedHeart", 1;
-        set @dempo_color, @dempo_color - 35 - rand(25);
-        goto L_brew_dempo;
+    delitem "DiseasedHeart", 1;
+    set @dempo_color, @dempo_color - 35 - rand(25);
+    goto L_brew_dempo;
 
 L_usebone:
-        delitem "Bone", 1;
-        set @dempo_color, @dempo_color - 3 - rand(3);
-        goto L_brew_dempo;
+    delitem "Bone", 1;
+    set @dempo_color, @dempo_color - 3 - rand(3);
+    goto L_brew_dempo;
 
 L_useskull:
-        delitem "Skull", 1;
-        set @dempo_color, @dempo_color - 9 - rand(9);
-        goto L_brew_dempo;
+    delitem "Skull", 1;
+    set @dempo_color, @dempo_color - 9 - rand(9);
+    goto L_brew_dempo;
 
 L_useear:
-        delitem "UndeadEar", 1;
-        set @dempo_color, @dempo_color - 15 - rand(13);
-        goto L_brew_dempo;
+    delitem "UndeadEar", 1;
+    set @dempo_color, @dempo_color - 15 - rand(13);
+    goto L_brew_dempo;
 
 L_usepearl:
-        delitem "Pearl", 1;
-        //ending it is a little dangerous as well,
-        // stay calm, when it smashes your fine tuned well done potion.
-        set @finish_dempo, 1;
-        callsub L_check_explosion;
-        // ok now you really did it. Here is your potion:
-        getitem "DementiaPotion",1;
+    delitem "Pearl", 1;
+    //ending it is a little dangerous as well,
+    // stay calm, when it smashes your fine tuned well done potion.
+    set @finish_dempo, 1;
+    callsub L_check_explosion;
+    // ok now you really did it. Here is your potion:
+    getitem "DementiaPotion",1;
 
-        mes "[Caul]";
-        mes "\"The potion is now ready. It seems as if it worked fine.\"";
-        next;
-        mes "\"Ok here is a flask of that potion. I'll care for the rest.\"";
-        mes "\"I mean it is a very dangerous fluid.\"";
-        next;
-        mes "\"See you later, alligator!\"";
-        close;
+    mes "[Caul]";
+    mes "\"The potion is now ready. It seems as if it worked fine.\"";
+    next;
+    mes "\"Ok here is a flask of that potion. I'll care for the rest.\"";
+    mes "\"I mean it is a very dangerous fluid.\"";
+    next;
+    mes "\"See you later, alligator!\"";
+    close;
 
 L_ask_quit:
-        mes "[Caul]";
-        mes "\"The potion is not ready. You can't just leave now!\"";
-        menu
-            "Please throw away that stupid potion, I'm in a hurry!", -,
-            "Oh you are right, let me finish it.", L_brew_dempo;
-        close;
+    mes "[Caul]";
+    mes "\"The potion is not ready. You can't just leave now!\"";
+    menu
+        "Please throw away that stupid potion, I'm in a hurry!", -,
+        "Oh you are right, let me finish it.", L_brew_dempo;
+    close;
 
 L_check_explosion:
-        // set to range [-50 50];
-        set @prob, @dempo_color - 50;
+    // set to range [-50 50];
+    set @prob, @dempo_color - 50;
 
-        set @prob, ((@prob * @prob) / 80) + 4;
-        if (@finish_dempo == 0)
-            goto L_check_exp_nof;
+    set @prob, ((@prob * @prob) / 80) + 4;
+    if (@finish_dempo == 0)
+        goto L_check_exp_nof;
 
-        // square again, so you must be in the middle to get it work there;
-        // and multiply with 3 so there is definitly no chance to get it directly after starting
-        set @prob, (@prob * @prob) * 2;
+    // square again, so you must be in the middle to get it work there;
+    // and multiply with 3 so there is definitly no chance to get it directly after starting
+    set @prob, (@prob * @prob) * 2;
+
 L_check_exp_nof:
-        // in about 95% of the cases anything is fine, so return.
-        if (rand(1000) > @prob) return;
-        // in some cases it is not:
-        // kabooom!
-        close2;
-        heal -(Hp/2), 0;
-        misceffect 5;
-        misceffect 16;
-        heal -Hp, 0;
-        end;
+    // in about 95% of the cases anything is fine, so return.
+    if (rand(1000) > @prob) return;
+    // in some cases it is not:
+    // kabooom!
+    close2;
+    heal -(Hp/2), 0;
+    misceffect 5;
+    misceffect 16;
+    heal -Hp, 0;
+    end;
 
 L_calc_dempo_color:
-        // @dempo_color_S$ is set in here:
+    // @dempo_color_S$ is set in here:
 
-        //really dark black						0-11
-        if (@dempo_color < 12)
-            set @dempo_color_S$, "really dark black";
+    //really dark black                     0-11
+    if (@dempo_color < 12)
+        set @dempo_color_S$, "really dark black";
 
-        //dark black							12-23
-        if ((@dempo_color > 11) && (@dempo_color < 24))
-            set @dempo_color_S$, "dark black";
+    //dark black                            12-23
+    if ((@dempo_color > 11) && (@dempo_color < 24))
+        set @dempo_color_S$, "dark black";
 
-        //black								24-34
-        if ((@dempo_color > 23) && (@dempo_color < 35))
-            set @dempo_color_S$, "black";
+    //black                                24-34
+    if ((@dempo_color > 23) && (@dempo_color < 35))
+        set @dempo_color_S$, "black";
 
-        //dark grey with little dark spots	35-41
-        if ((@dempo_color > 34) && (@dempo_color < 42))
-            set @dempo_color_S$, "dark grey with little dark spots";
+    //dark grey with little dark spots    35-41
+    if ((@dempo_color > 34) && (@dempo_color < 42))
+        set @dempo_color_S$, "dark grey with little dark spots";
 
-        //dark grey							42-47
-        if ((@dempo_color > 41) && (@dempo_color < 48))
-            set @dempo_color_S$, "dark grey";
+    //dark grey                            42-47
+    if ((@dempo_color > 41) && (@dempo_color < 48))
+        set @dempo_color_S$, "dark grey";
 
-        //calm grey 							48-52
-        if ((@dempo_color > 47) && (@dempo_color < 53))
-            set @dempo_color_S$, "calm grey";
+    //calm grey                             48-52
+    if ((@dempo_color > 47) && (@dempo_color < 53))
+        set @dempo_color_S$, "calm grey";
 
-        //light grey							53-58
-        if ((@dempo_color > 52) && (@dempo_color < 59))
-            set @dempo_color_S$, "light grey";
+    //light grey                            53-58
+    if ((@dempo_color > 52) && (@dempo_color < 59))
+        set @dempo_color_S$, "light grey";
 
-        //light grey with little light spots	59-65
-        if ((@dempo_color > 58) && (@dempo_color < 66))
-            set @dempo_color_S$, "light grey with little light spots";
+    //light grey with little light spots    59-65
+    if ((@dempo_color > 58) && (@dempo_color < 66))
+        set @dempo_color_S$, "light grey with little light spots";
 
-        //white								66-76
-        if ((@dempo_color > 65) && (@dempo_color < 77))
-            set @dempo_color_S$, "white";
+    //white                                66-76
+    if ((@dempo_color > 65) && (@dempo_color < 77))
+        set @dempo_color_S$, "white";
 
-        //shining white						77-88
-        if ((@dempo_color > 76) && (@dempo_color < 89))
-            set @dempo_color_S$, "shining white";
+    //shining white                        77-88
+    if ((@dempo_color > 76) && (@dempo_color < 89))
+        set @dempo_color_S$, "shining white";
 
-        //bright shining white				77-100
-        if (@dempo_color > 88)
-            set @dempo_color_S$, "bright shining white";
+    //bright shining white                77-100
+    if (@dempo_color > 88)
+        set @dempo_color_S$, "bright shining white";
 
-        return;
+    return;
 
 L_NohMask:
-	mes "[Caul]";
-	mes "\"I'm sorry, but I didn't. I'm staying in town. Try asking one of the miners.\"";
-	close;
+    mes "[Caul]";
+    mes "\"I'm sorry, but I didn't. I'm staying in town. Try asking one of the miners.\"";
+    close;
 
 L_close:
         close;
 
 S_Update_Var:
-	set QUEST_Forestbow_state,
-		(QUEST_Forestbow_state & ~(@Q_MASK)
-		| (@Q_status << @Q_SHIFT));
-	return;
+    set QUEST_Forestbow_state,
+        (QUEST_Forestbow_state & ~(@Q_MASK)
+        | (@Q_status << @Q_SHIFT));
+    return;
 }
