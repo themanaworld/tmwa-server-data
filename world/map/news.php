@@ -14,7 +14,7 @@ if (substr($agent, 0, 3) == "TMW" || substr($agent, 0, 4) == "Mana")
 }
 
 $min_version = '0.0.29.1';
-$cur_version = '0.5.2';
+$cur_version = '0.5.3';
 
 if (substr($agent, 0, 3) == "TMW" and $agent < 'TMW/' . $min_version)
 {
