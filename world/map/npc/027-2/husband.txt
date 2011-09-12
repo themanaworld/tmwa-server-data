@@ -43,13 +43,13 @@
 
     mes "[Pale Man]";
     mes "\"Hello, I hope you're enjoying your time in Reid's Inn. My name is Hamond, and I'm running this inn together with my beautiful wife Reid. If there is anything I can do for you, please let me know.\"";
-    if (baselevel < 85) goto L_Close;
+    if (baselevel < 85)
+        goto L_Close;
     next;
     menu
         "I'd like to know why all the people in here are dead.",-,
         "Are you feeling well? You look very pale... In fact, deathly pale.",-,
         "Thank you, but I'm fine.", L_Close;
-
     mes "Hamond seems very confused. Then he notices the grey color of his hands and begins to shake his head in panic.";
     mes "[Hamond]";
     mes "\"WHAT IS THIS?\"";
@@ -81,22 +81,20 @@ L_Ice_Cube:
     mes "\"Hello my friend! Good to see you again. Did you find something to cool the drinks?\"";
     next;
 
-    if ((@kidstate == 4) && countitem("IceCube") > 0)
-        menu
-            "Maybe this never melting Ice Cube?", L_Check_Ice,
-            "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
-            "I'm still searching.", L_Close;
-
+    if ((@kidstate == 4)
+        && countitem("IceCube") > 0)
+            menu
+                "Maybe this never melting Ice Cube?", L_Check_Ice,
+                "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
+                "I'm still searching.", L_Close;
     if (@kidstate == 4)
         menu
             "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
             "I'm still searching.", L_Close;
-
     if (countitem("IceCube") > 0)
         menu
             "Maybe this never melting Ice Cube?", L_Check_Ice,
             "I'm still searching.", L_Close;
-
     mes "\"You didn't? Too bad.\"";
     close;
 
@@ -140,8 +138,9 @@ L_Check_Ice:
 L_Check_Bones:
     mes "[Hamond]";
     mes "\"Welcome back! Let me see what you have.\"";
-    if ((countitem("Bone") < @BONE_AMOUNT) || (countitem("Skull") < @SKULL_AMOUNT))
-        goto L_Not_Enough_B;
+    if ((countitem("Bone") < @BONE_AMOUNT)
+        || (countitem("Skull") < @SKULL_AMOUNT))
+            goto L_Not_Enough_B;
     delitem "Bone", @BONE_AMOUNT;
     delitem "Skull", @SKULL_AMOUNT;
 
@@ -155,24 +154,22 @@ L_Brought_Bones:
     mes "\"Thanks for your help! Now I'll be able to satisfy another strange request from one of our patrons.\"";
     next;
 
-    if ((@kidstate == 4) && (@woman > 5))
-        menu
-            "Would you tell me about this mage named Savaric?", L_Savaric,
-            "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
-            "You're welcome.", L_Close;
-
+    if ((@kidstate == 4)
+        && (@woman > 5))
+            menu
+                "Would you tell me about this mage named Savaric?", L_Savaric,
+                "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
+                "You're welcome.", L_Close;
     if (@kidstate == 4)
         menu
             "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
             "You're welcome.", L_Close;
-
     if (@woman > 5)
         menu
             "Would you tell me about this mage named Savaric?", L_Savaric,
             "You're welcome.",-;
     mes "[Hamond]";
     mes "\"Please make yourself at home.\"";
-
     close;
 
 L_Savaric:
@@ -181,8 +178,12 @@ L_Savaric:
     mes "\"That cheeky egomaniac - \"";
     next;
 
-    if ((Sex == 0) && (@kidstate < 7)) goto L_Woman;
-    if ((Sex == 1) && (@kidstate < 7)) goto L_Man;
+    if ((Sex == 0)
+        && (@kidstate < 7))
+            goto L_Woman;
+    if ((Sex == 1)
+        && (@kidstate < 7))
+            goto L_Man;
     mes "\"Well, I have been thinking about you. You seem to be a very helpful and wise person. Even my son told me good things about you, making a long speech about how great you are and your ability to comprehend and deal with delicate matters. I wonder how he reached that conclusion... But anyway, I'll tell you about Savaric.\"";
     next;
 
@@ -238,7 +239,6 @@ L_News:
     menu
         "I'm enjoying myself.",L_Close,
         "I found out what happened to you and this place.",-;
-
     mes "[Hamond]";
     mes "\"You did? Amazing! Please tell me.\"";
     next;
@@ -256,7 +256,6 @@ L_News:
         "Maybe it was just fate.",-,
         "You got very upset, don't blame yourself",-,
         "You're right. You were very violent. How could you do that if you love her?",-;
-
     mes "[Hamond]";
     mes "\"I- I need to apologize.\"";
     next;
@@ -282,7 +281,8 @@ L_Apologize:
     next;
     mes "\"However, you are a great friend and did a lot for me. I want you to have this.\"";
     getinventorylist;
-    if (@inventorylist_count == 100) goto L_Full_Inv;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
     getitem "BowlerHatBrown", 1;
     set @state, 7;
     callsub S_Update_Mask;
@@ -314,14 +314,14 @@ L_Close:
     close;
 
 S_Update_Mask_Kid:
-        set QUEST_Graveyard_Inn,
-            (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Kid_MASK))
-                | (@kidstate << @Graveyard_Inn_Kid_SHIFT);
-        return;
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Kid_MASK))
+            | (@kidstate << @Graveyard_Inn_Kid_SHIFT);
+    return;
 
 S_Update_Mask:
-        set QUEST_Graveyard_Inn,
-            (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
-                | (@state << @Graveyard_Inn_SHIFT);
-        return;
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+            | (@state << @Graveyard_Inn_SHIFT);
+    return;
 }

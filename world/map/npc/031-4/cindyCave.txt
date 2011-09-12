@@ -46,15 +46,18 @@ L_Please_Help:
     close;
 
 L_Try_Cage:
-    if (baselevel < 70) goto L_To_Weak;
-    if (countitem("TreasureKey") < @KEYS_AMOUNT) goto L_Not_Enough_Keys;
+    if (baselevel < 70)
+        goto L_To_Weak;
+    if (countitem("TreasureKey") < @KEYS_AMOUNT)
+        goto L_Not_Enough_Keys;
     delitem "TreasureKey", @KEYS_AMOUNT;
     mes "As you try to open the door of the cage, there is a loud squeaking noise.";
     next;
     mes "You get an uncomfortable feeling and Cindy starts to shiver.";
     next;
     mes "\"Oh no, the Yetis...\"";
-    if ($@FIGHT_YETI_STATUS != 0) goto L_Yeti;
+    if ($@FIGHT_YETI_STATUS != 0)
+        goto L_Yeti;
 
     // initialize fight
     set $@FIGHT_YETI_STATUS, 1;
@@ -83,10 +86,12 @@ L_Reward:
     mes "\"I've found this thing in the cave - it looks valuable. I want you to have it.\"";
     next;
     getinventorylist;
-    if (@inventorylist_count == 100) goto L_Full_Inv;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
 
     set @reward, rand(15);
-    if (@reward < 10) goto L_Wizard_Hat;
+    if (@reward < 10)
+        goto L_Wizard_Hat;
     getitem "WoodenStaff", 1;
     set @rescue_Cindy, 3;
     callsub S_Update_Mask;
@@ -125,7 +130,9 @@ L_Full_Inv:
 // Fight logic attached to npc
 OnTimer5000:
     setnpctimer 0;
-    if ($@FIGHT_YETI_STATUS != 0) goto L_CaveLogic;
+    if ($@FIGHT_YETI_STATUS != 0)
+        goto L_CaveLogic;
+
 L_Return_1:
     set $@FIGHT_YETI_PLAYER_COUNT, 0;
     areatimer "031-4.gat", 0, 0, 95, 91, 10, "Cindy::onTick";
@@ -133,18 +140,26 @@ L_Return_1:
 
 L_CaveLogic:
     set $@FIGHT_YETI_ROUND_PEN, $@FIGHT_YETI_PLAYER_COUNT;
-    if ($@FIGHT_YETI_ROUND_PEN > 60) set $@FIGHT_YETI_ROUND_PEN, 60;
-    if ($@FIGHT_YETI_PLAYER_COUNT <= 0) goto L_CleanUp;
+    if ($@FIGHT_YETI_ROUND_PEN > 60)
+        set $@FIGHT_YETI_ROUND_PEN, 60;
+    if ($@FIGHT_YETI_PLAYER_COUNT <= 0)
+        goto L_CleanUp;
     set $@FIGHT_YETI_ROUND_TIMER, $@FIGHT_YETI_ROUND_TIMER + 5; // Advance 5 seconds
-    if (mobcount("031-4.gat", "Cindy::onPetDeath") <= 0) goto L_NextWave;
-    if ($@FIGHT_YETI_ROUND_TIMER + $@FIGHT_YETI_ROUND_PEN >= 120) goto L_NextWave;
+    if (mobcount("031-4.gat", "Cindy::onPetDeath") <= 0)
+        goto L_NextWave;
+    if ($@FIGHT_YETI_ROUND_TIMER + $@FIGHT_YETI_ROUND_PEN >= 120)
+        goto L_NextWave;
     goto L_Return_1;
 
 L_NextWave:
     set $@FIGHT_YETI_ROUND_TIMER, 0;
     set $@FIGHT_YETI_WAVE, $@FIGHT_YETI_WAVE + 1;
-    if ($@FIGHT_YETI_WAVE > 10 && $@YETI_COUNT == 0) goto L_CleanUp;
-    if ($@FIGHT_YETI_WAVE > 10 && $@FIGHT_YETI_WAVE < 22) goto L_Return_1;
+    if ($@FIGHT_YETI_WAVE > 10
+        && $@YETI_COUNT == 0)
+            goto L_CleanUp;
+    if ($@FIGHT_YETI_WAVE > 10
+        && $@FIGHT_YETI_WAVE < 22)
+            goto L_Return_1;
     if ($@FIGHT_YETI_WAVE > 22)
         areamonster "031-4.gat", 0, 0, 95, 91, "", 1072, $@FIGHT_YETI_WAVE*2 + $@FIGHT_YETI_PLAYER_COUNT*5, "Cindy::onPetDeath";
     if ($@FIGHT_YETI_WAVE > 22)
@@ -211,6 +226,7 @@ onPetDeath:
 onInit:
     initnpctimer;
     stopnpctimer;
+
 L_CleanUp:
     areatimer "031-4.gat", 0, 0, 95, 91, 10, "Cindy::onReward";
     set $@FIGHT_YETI_STATUS, 0;
@@ -227,7 +243,8 @@ onReward:
     set @bonus, (baselevel/2);
     set DailyQuestBonus, DailyQuestBonus + @bonus;
     message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained." ;
-    if (@rescue_Cindy != 1 ) end;
+    if (@rescue_Cindy != 1 )
+        end;
     set @rescue_Cindy, 2;
     callsub S_Update_Mask;
     message strcharinfo(0), "Cindy looks relieved and as if she wants to talk with you.";
@@ -235,21 +252,8 @@ onReward:
 
 /////////
 S_Update_Mask:
-        set QUEST_Nivalis_state,
-            (QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
-                | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
-        return;
+    set QUEST_Nivalis_state,
+        (QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
+            | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
+    return;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

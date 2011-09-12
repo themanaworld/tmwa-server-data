@@ -15,7 +15,8 @@
     mes "\"What a nice place here, isn't it?\"";
     next;
     mes "\"Just the stuff they call 'food' in here is awful, bah.\"";
-    if (baselevel < 80) goto L_Close;
+    if (baselevel < 80)
+        goto L_Close;
     next;
     mes "\"I like bones from big animals, the best would be with some raw flesh on it. But just the bones are fine too.\"";
     next;
@@ -28,11 +29,12 @@ L_Bones:
     mes "[Wolfgang]";
     mes "\"Do you have " + @ANIMALBONES_AMOUNT + " bones of an animal for me?\"";
     next;
-    if ((countitem("Bone") > 0) && (countitem("AnimalBones") >= @ANIMALBONES_AMOUNT))
-        menu
-            "Yes, here they are.",L_Bring,
-            "What about this normal bone?",L_Human,
-            "Not yet.",L_Close;
+    if ((countitem("Bone") > 0)
+        && (countitem("AnimalBones") >= @ANIMALBONES_AMOUNT))
+            menu
+                "Yes, here they are.",L_Bring,
+                "What about this normal bone?",L_Human,
+                "Not yet.",L_Close;
     if (countitem("Bone") > 0)
         menu
             "What about this normal bone?",L_Human,
@@ -85,7 +87,8 @@ L_Happy:
 
 //The game mechanics is copied from casino.txt
 L_Game:
-    if(zeny < @money) goto L_No_Money;
+    if (zeny < @money)
+        goto L_No_Money;
     mes "[Wolfgang]";
     mes "\"Very nice. Let's start.\"";
     mes "He shuffles the cards.";
@@ -95,29 +98,33 @@ L_Game:
     set @croupier, @croupier + 17;
     set @player, rand(4, 21);
     mes "\"You got " + @player + " with your cards.";
-    if(@player == 21) goto L_End;
+    if (@player == 21)
+        goto L_End;
     mes "Do you want another card?\"";
     next;
-
     menu
         "Yes.", L_Another,
         "No.", L_End;
 
 L_Another:
     set @tempace, rand(2, 11);
-    if (@tempace == 11) goto L_Ace;
+    if (@tempace == 11)
+        goto L_Ace;
     set @player, @player + @tempace;
-    if (@player > 21) goto L_Lost;
-    if (@player == 21) goto L_End;
+    if (@player > 21)
+        goto L_Lost;
+    if (@player == 21)
+        goto L_End;
     mes "\"You got " + @player + " with your cards.";
     mes "Do you want another card?\"";
     next;
-
     menu
         "Yes", L_Another,
         "No", L_End;
+
 L_End:
-    if (@player <= @croupier) goto L_Lost;
+    if (@player <= @croupier)
+        goto L_Lost;
     mes "\"You won! Hrm, here is your money.\"";
     set zeny, zeny + (3 * @money);
     close;
@@ -135,13 +142,15 @@ L_Lost:
 
 L_Ace:
     set @player, @player + 11;
-    if (@player > 21) set @player, @player - 10;
-    if (@player > 21) goto L_Lost;
-    if (@player == 21) goto L_End;
+    if (@player > 21)
+        set @player, @player - 10;
+    if (@player > 21)
+        goto L_Lost;
+    if (@player == 21)
+        goto L_End;
     mes "You got " + @player + " with your cards.";
     mes "Do you want another card?";
     next;
-
     menu
         "Yes", L_Another,
         "No", L_End;
@@ -151,8 +160,8 @@ L_Close:
     close;
 
 S_Update_Mask:
-        set QUEST_Graveyard_Inn,
-            (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
-                | (@state << @Graveyard_Inn_SHIFT);
-        return;
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+            | (@state << @Graveyard_Inn_SHIFT);
+    return;
 }

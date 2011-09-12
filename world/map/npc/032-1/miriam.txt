@@ -4,16 +4,16 @@
 // This npc teaches you the speed skill.
 // used variables:
 // QUEST_MIRIAM:
-// 	0  either fully completed the quests in here, or not started.
-// 	1  you said the wrong words, she is insulted. (so you excuse and goto 2)
-// 	2  waiting for the ingredients
-// 	3  you brought the needed stuff. if you meet other criteria (baselevel, agi) you will be taught the skill
-// 	4  you have met the criteria of 3, but declined to take the speed test.
-// 	5  you tried the quest but you failed
+//  0  either fully completed the quests in here, or not started.
+//  1  you said the wrong words, she is insulted. (so you excuse and goto 2)
+//  2  waiting for the ingredients
+//  3  you brought the needed stuff. if you meet other criteria (baselevel, agi) you will be taught the skill
+//  4  you have met the criteria of 3, but declined to take the speed test.
+//  5  you tried the quest but you failed
 // QUEST_MIRIAM_start
-//	a time in ticks. This is only !=0 if you started running to pachua.
+//  a time in ticks. This is only !=0 if you started running to pachua.
 // QUEST_MIRIAM_run
-//	when you reach pachua, he stores the difference of start and arrival in here.
+//  when you reach pachua, he stores the difference of start and arrival in here.
 //#############################################
 // after you gained the speed skill, all variables are reset to zero.
 //#############################################
@@ -70,7 +70,6 @@ L_intro:
     set QUEST_MIRIAM, 2;
     close;
 
-
 L_canthelp:
     mes "[Miriam]";
     mes "\"Oh, really? So you better pray to not need my help in the future!\"";
@@ -118,7 +117,9 @@ L_ask3:
     close;
 
 L_getitems:
-    if (countitem("SnakeTongue") < 10 || countitem("ConcentrationPotion") < 5) goto L_notenough;
+    if (countitem("SnakeTongue") < 10
+        || countitem("ConcentrationPotion") < 5)
+            goto L_notenough;
     delitem "SnakeTongue", 10;
     delitem "ConcentrationPotion", 5;
     set QUEST_MIRIAM, 3;
@@ -127,7 +128,6 @@ L_getitems:
     next;
     mes "\"Now, since you helped me, maybe I can teach you a basic skill, but only if you prove yourself to be a fast runner! Come back and talk to me when you think you are prepared to learn.\"";
     close;
-
 
 L_notenough:
     mes "[Miriam]";
@@ -145,10 +145,20 @@ L_teach:
     set @agi, readparam(bAgi);
     set @torso$, getitemname(getequipid(equip_torso));
     set @weight, MaxWeight/Weight;
-    if (@weight < 3) goto L_heavyweight;
-    if (@agi < 60) goto L_slow;
-    if (baselevel < 60) goto L_lowlevel;
-    if (countitem("SteelShield") > 0 || countitem("WarlordHelmet") > 0 || countitem("CrusadeHelmet") > 0 || countitem("WarlordPlate") > 0 || countitem("KnightsHelmet") > 0 || countitem("InfantryHelmet") > 0 || countitem("ChainmailShirt") > 0) goto L_heavymetal;
+    if (@weight < 3)
+        goto L_heavyweight;
+    if (@agi < 60)
+        goto L_slow;
+    if (baselevel < 60)
+        goto L_lowlevel;
+    if (countitem("SteelShield") > 0
+        || countitem("WarlordHelmet") > 0
+        || countitem("CrusadeHelmet") > 0
+        || countitem("WarlordPlate") > 0
+        || countitem("KnightsHelmet") > 0
+        || countitem("InfantryHelmet") > 0
+        || countitem("ChainmailShirt") > 0)
+            goto L_heavymetal;
     goto L_offer;
 
 L_heavyweight:
@@ -177,7 +187,8 @@ L_offer:
     mes "[Miriam]";
     mes "\"Hmm! You look great in these clothes! They look very comfortable too... And it seems like you are not carrying too much weight.\"";
     next;
-    if (!(getskilllv(SKILL_POOL))) goto L_noskill;
+    if (!(getskilllv(SKILL_POOL)))
+        goto L_noskill;
     menu
         "Yes, I look really good in this " +@torso$+ ".",-;
     mes "[Miriam]";
@@ -259,9 +270,12 @@ L_wasting:
     close;
 
 L_checktime:
-    if (QUEST_MIRIAM_cheat != 0) goto L_warning;
-    if (QUEST_MIRIAM_run > 210) goto L_tryagain;
-    if (QUEST_MIRIAM_run <= 210) goto L_goodjob;
+    if (QUEST_MIRIAM_cheat != 0)
+        goto L_warning;
+    if (QUEST_MIRIAM_run > 210)
+        goto L_tryagain;
+    if (QUEST_MIRIAM_run <= 210)
+        goto L_goodjob;
 
 L_tryagain:
     mes "[Miriam]";

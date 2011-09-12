@@ -1,61 +1,66 @@
 // 027-1 Graveyard zombies and fallens
 // they need to be in an extra file because of the crying child quest
 
-027-1.gat,71,41,31,22	monster	Zombie	1036,2,300000,120000,specialMob027-1::On1036
-027-1.gat,37,41,33,22	monster	Zombie	1036,2,200000,10000,specialMob027-1::On1036
-027-1.gat,37,65,33,22	monster	Zombie	1036,3,140000,30000,specialMob027-1::On1036
-027-1.gat,37,65,33,22	monster	Fallen	1045,3,120000,30000,specialMob027-1::On1045
+027-1.gat,71,41,31,22|monster|Zombie|1036,2,300000,120000,specialMob027-1::On1036
+027-1.gat,37,41,33,22|monster|Zombie|1036,2,200000,10000,specialMob027-1::On1036
+027-1.gat,37,65,33,22|monster|Zombie|1036,3,140000,30000,specialMob027-1::On1036
+027-1.gat,37,65,33,22|monster|Fallen|1045,3,120000,30000,specialMob027-1::On1045
 
-027-1.gat,0,0,0	script	specialMob027-1	-1,{
+027-1.gat,0,0,0|script|specialMob027-1|-1,{
 On1036:
-	set @mobID, 1036;
-	callsub _MOBCOUNT_ZOMBIES;
-	callfunc "MobPoints";
-	break;
+    set @mobID, 1036;
+    callsub _MOBCOUNT_ZOMBIES;
+    callfunc "MobPoints";
+    break;
 
 On1045:
-	set @mobID, 1045;
-	callsub _MOBCOUNT_FALLENS;
-	callfunc "MobPoints";
-	break;
+    set @mobID, 1045;
+    callsub _MOBCOUNT_FALLENS;
+    callfunc "MobPoints";
+    break;
 
 _MOBCOUNT_ZOMBIES:
 
-	set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
-	set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
+    set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
+    set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
 
-	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+    set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
 
-	if (@state != 1) return;
-	set @ring, @ring + 1;
-	if (@ring < 10) return;
-	if (rand(8) != 0) return;
-	message strcharinfo(0), "You found a ring hidden in the zombie's rotten rags. Maybe this is what Aldred was looking for...";
-	set @state, 2;
-	callsub S_Update_Mask;
-	return;
+    if (@state != 1)
+        return;
+    set @ring, @ring + 1;
+    if (@ring < 10)
+        return;
+    if (rand(8) != 0)
+        return;
+    message strcharinfo(0), "You found a ring hidden in the zombie's rotten rags. Maybe this is what Aldred was looking for...";
+    set @state, 2;
+    callsub S_Update_Mask;
+    return;
 
 _MOBCOUNT_FALLENS:
 
-	set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
-	set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
+    set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
+    set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
 
-	set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+    set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
 
-	if (@state != 1) return;
-	set @ring, @ring + 1;
-	if (@ring < 10) return;
-	if (rand(8) != 0) return;
-	message strcharinfo(0), "You found a ring inside the fallen's broken helmet. Maybe this is what Aldred was looking for...";
-	set @state, 2;
-	callsub S_Update_Mask;
-	return;
+    if (@state != 1)
+        return;
+    set @ring, @ring + 1;
+    if (@ring < 10)
+        return;
+    if (rand(8) != 0)
+        return;
+    message strcharinfo(0), "You found a ring inside the fallen's broken helmet. Maybe this is what Aldred was looking for...";
+    set @state, 2;
+    callsub S_Update_Mask;
+    return;
 
 S_Update_Mask:
-        set QUEST_Graveyard_Inn,
-        	(QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
-                | (@state << @Graveyard_Inn_SHIFT);
-        return;
-
-	end;
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+            | (@state << @Graveyard_Inn_SHIFT);
+    return;
+    end;
 }
