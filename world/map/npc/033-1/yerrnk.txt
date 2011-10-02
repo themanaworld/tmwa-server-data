@@ -1,10 +1,14 @@
 033-1.gat,66,28,0|script|Yerrnk|216,{
-//TODO: minimum level for quests?
     set @Q_Barbarians_MASK, NIBBLE_0_MASK;
     set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
 
     set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
 
+    set @yeti_level, 70;
+
+    if (@state == 9) goto L_Done;
+    if (@state == 8) goto L_Yeti_Success;
+    if (@state == 7) goto L_Hunt_Yeti;
     if (@state == 6) goto L_Warrior;
     if (@state == 5) goto L_Birrod;
     if (@state == 4) goto L_Sorrow;
@@ -18,7 +22,7 @@
     mes "Yerrnk looks at you in a reserved way.";
     mes "[Yerrnk]";
     mes "\"Please take care of your own business.\"";
-    close;
+    goto L_Close;
 
 L_Fluffy:
     mes "[Yerrnk]";
@@ -27,12 +31,12 @@ L_Fluffy:
     next;
     mes "[Yerrnk]";
     mes "\"Are you going to accept Kimarr's task? It's an ancient ceremony in our tribe. A young member is accepted as an adult when completing it.\"";
-    close;
+    goto L_Close;
 
 L_Kimarr:
     mes "[Yerrnk]";
     mes "\"I think Kimarr wants to give you something.\"";
-    close;
+    goto L_Close;
 
 L_Duty:
     mes "[Yerrnk]";
@@ -43,7 +47,7 @@ L_Duty:
     mes "\"So you'll have to obey our laws and traditiones, protect and help any member of our tribe that is in need and never show weakness nor fear in battle.\"";
     next;
     mes "\"Keep this in mind. If you fail you'll have to recieve the elders judgement.\"";
-    close;
+    goto L_Close;
 
 L_Sorrow:
     mes "[Yerrnk]";
@@ -67,7 +71,7 @@ L_Mission:
     next;
     mes "\"That's why we were sent on a mission to find and talk to Santa, one of the Sages of Kazei.";
     mes "The Sages are wizards of great power and wisdom, and we hope Santa might be able to give us advice.\"";
-    close;
+    goto L_Close;
 
 L_Birrod:
     mes "[Yerrnk]";
@@ -79,7 +83,7 @@ L_Birrod:
     menu
         "Alright.",-,
         "Can you tell me again what are you here for?",L_Mission;
-    close;
+    goto L_Close;
 
 L_Not_Ready:
     mes "[Yerrnk]";
@@ -88,12 +92,86 @@ L_Not_Ready:
     menu
         "Alright.",-,
         "What are you doing down here?",L_Mission;
-    close;
+    goto L_Close;
 
 L_Warrior:
-//TODO: player is now fully accepted warrior of the tribe, gets a task: bring yeti claws
-// reason: claws can be used to craft spears which are effective to use against the yetis
-    mes "TODO: add story about bringing yeti claw (probably final quest)";
+    mes "[Yerrnk]";
+    mes "\"" + strcharinfo(0) + ", welcome back!";
+    mes "Do you have any question?\"";
+    menu
+        "Everything's alright, thanks.",-,
+        "What are you doing down here?",L_Mission,
+        "Can you explain the raging ability to me?",L_Skill,
+        "Do you have a task for me?",L_Task;
+    goto L_Close;
+
+L_Skill:
+    mes "[Yerrnk]";
+    mes "\"As a warrior of our tribe it should be the most important thing to you to defend weaker members of the tribe.";
+    mes "To achieve this goal our warriors are training the skill to stand the pain of being hit and even use it to get into a state of rage.";
+    next;
+    mes "It only works in a melee fight, when you hear your opponent gasping, smell his sweat, feel the heat of his body, -\"";
+    next;
+    mes "Yerrnk gets excited, then he pauses a moment calming down.";
+    mes "\"Basically its a neglect of your own defense but therefor being able to hit the enemy with outstanding might.\"";
+    next;
+    mes "[Yerrnk]";
+    mes "\"You can imagine that this comprises some danger. That's why we usually fight as a group, so a weakened warrior can step back and recover while the others keep the fight.";
+    mes "It's also beneficial to have a healer, but very few members of our tribe are born with the capability to wield magic.\"";
+    goto L_Close;
+
+L_Task:
+    if (baselevel >= @yeti_level)
+        goto L_Yeti;
+    mes "[Yerrnk]";
+    mes "\"Not at the moment.";
+    mes "Try to stop by later and use the time to practice your abilities.\"";
+    goto L_Close;
+
+L_Yeti:
+    mes "[Yerrnk]";
+    mes "\"Indeed, there's something to do that needs a competent warrior.";
+    mes "We've got reports about a single Yeti prowling around one of the houses in the woods west of here.\"";
+    next;
+    mes "\"If you dare to take on this task, seek that Yeti and make the area secure again.";
+    mes "To find the house, enter the forest and then go first south and then west.\"";
+    set @state, 7;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Hunt_Yeti:
+    mes "[Yerrnk]";
+    mes "\"That Yeti is still roaming in the forest west of here.";
+    mes "To find the house it's prowling around, enter the forest and then go first south and then west.\"";
+    menu
+        "I'm on it.",-,
+        "What are you doing down here?",L_Mission,
+        "Can you explain the raging ability to me?",L_Skill;
+    goto L_Close;
+
+L_Yeti_Success:
+    mes "[Yerrnk]";
+    mes "\"" + strcharinfo(0) + "! You made it!";
+    mes "You proved that you're one of the most skilled warriors of our tribe.\"";
+    next;
+    mes "TODO: add reward here, maybe leather pants?";
+    set @state, 9;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Done:
+// TODO: maybe add background informations about barbarian village here
+    mes "Yerrnk smiles at you.";
+    mes "[Yerrnk]";
+    mes "\"Welcome back, great warrior.\"";
+    menu
+        "What's the reason you came here?",L_Mission,
+        "Can you explain the raging ability to me?",L_Skill;
+    goto L_Close;
+
+L_Close:
+    // TODO: set all temporary variables to zero
+    set @yeti_level, 0;
     close;
 
 S_Update_Mask:
