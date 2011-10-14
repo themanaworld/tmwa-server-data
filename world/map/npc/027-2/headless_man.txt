@@ -36,18 +36,18 @@
     mes "You jump back a bit, startled, as the head starts talking to you!";
     mes "It's a little strange watching him talk, but it's better than looking at what's left of his neck.";
     next;
-    if (baselevel < 85)
+    if (BaseLevel < 85)
         goto L_greet;
     mes "[Headless Man]";
     mes "\"Hello " + @madamsir$ + ".  My name is Thurstan. Could I ask your assistance with something? I seem to be in a spot of difficulty.\"";
     menu
         "I'll listen, just keep that thing from dripping on me.", L_Quest_ask,
-        "Ack, a bloody talking head!  Gross, no way!", L_Quest_close;
+        "Ack, a bloody talking head!  Gross, no way!", L_Close;
 
 L_greet:
     mes "[Headless Man]";
     mes "\"Greetings " + @madamsir$ + "!  Do you have any duck tape?\"";
-    close;
+    goto L_Close;
 
 L_Quest_ask:
     mes "[Thurstan]";
@@ -58,9 +58,6 @@ L_Quest_ask:
     menu
         "Lay it on me, Mr. Noggin!", L_Quest_start,
         "Sorry, I'm kinda busy with, you know, living.", L_Quest_no;
-
-L_Quest_close:
-    close;
 
 L_Quest_start:
     mes "[Thurstan]";
@@ -82,12 +79,12 @@ L_Quest_start:
     mes "\"I know it probably doesn't seem like that much to you, but it is a really big deal for me.  I will try to find something to compensate you for your efforts.\"";
     set @state, 1;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Quest_no:
     mes "[Thurstan]";
     mes "\"Very well.  Just don't come looking to me when your own head falls off!\"";
-    close;
+    goto L_Close;
 
 L_Quest_progress:
     mes "[Thurstan]";
@@ -95,7 +92,7 @@ L_Quest_progress:
     menu
         "Yes, here you go!", L_Quest_check,
         "What was I supposed to get again?", L_Quest_items,
-        "No, I'm still working on it.", L_Quest_close;
+        "No, I'm still working on it.", L_Close;
 
 L_Quest_check:
     if (countitem("WispPowder") < @Wisp_Powder
@@ -142,13 +139,13 @@ L_Quest_check:
     mes "\"Thank you so much!  That is such a weight on my shoulders!  Now that I have some mobility back, let me see what I can do to repay you.  Would you mind coming back in a few minutes?\"";
     set @state, 2;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Quest_notenough:
     mes "Thurstan quickly looks through the items you've brought.";
     mes "[Thurstan]";
     mes "\"It seems you are missing a few things.  Please come back once you have everything on the list.\"";
-    close;
+    goto L_Close;
 
 L_Quest_items:
     mes "[Thurstan]";
@@ -161,7 +158,7 @@ L_Quest_items:
     mes "\"" + @Yellow_Dye + " vials of Yellow Dye,\"";
     mes "\"" + @LB_Dye + " vials of Light Blue Dye,\"";
     mes "\"We'll also need 1 Infantry Helmet to use as a bowl for mixing everything together.\"";
-    close;
+    goto L_Close;
 
 L_Quest_finished:
     mes "[Thurstan]";
@@ -178,16 +175,33 @@ L_Quest_finished:
     getitem "pinkiehelmet", 1;
     set @state, 3;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Full_Inv:
     mes "[Thurstan]";
     mes "\"I'd like to give you something for your efforts, but you're carrying too much stuff.\"";
-    close;
+    goto L_Close;
 
 L_Final:
     mes "[Thurstan]";
     mes "\"I guess I will need to find another way to re-attach my cranium.  If you come across any good alchemists who might be able to help, please let me know.\"";
+    goto L_Close;
+
+L_Close:
+
+    set @madamsir$, "";
+    set @Graveyard_Inn_MASK, 0;
+    set @Graveyard_Inn_SHIFT, 0;
+    set @state, 0;
+    set @Wisp_Powder, 0;
+    set @Polt_Powder, 0;
+    set @Spec_Powder, 0;
+    set @Iron_Pot, 0;
+    set @Conc_Pot, 0;
+    set @Red_Dye, 0;
+    set @Yellow_Dye, 0;
+    set @LB_Dye, 0;
+    set @Glue_Exp, 0;
     close;
 
 S_Update_Mask:

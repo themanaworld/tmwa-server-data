@@ -1,3 +1,5 @@
+// author: Jenalya
+
 027-2.gat,118,23,0|script|Wolfgang|305,{
     set @Graveyard_Inn_MASK, NIBBLE_5_MASK;
     set @Graveyard_Inn_SHIFT, NIBBLE_5_SHIFT;
@@ -7,6 +9,7 @@
     set @ANIMALBONES_AMOUNT, 30;
     set @ANIMALBONES_EXP, 40000;
     set @money, 1000;
+    set @minLevel, 80;
 
     if (@state > 1) goto L_Happy;
     if (@state == 1) goto L_Bones;
@@ -15,7 +18,7 @@
     mes "\"What a nice place here, isn't it?\"";
     next;
     mes "\"Just the stuff they call 'food' in here is awful, bah.\"";
-    if (baselevel < 80)
+    if (BaseLevel < @minLevel)
         goto L_Close;
     next;
     mes "\"I like bones from big animals, the best would be with some raw flesh on it. But just the bones are fine too.\"";
@@ -23,7 +26,7 @@
     mes "\"Can you bring me " + @ANIMALBONES_AMOUNT + " of them?\"";
     set @state, 1;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Bones:
     mes "[Wolfgang]";
@@ -45,7 +48,7 @@ L_Bones:
             "Not yet.",L_Close;
     menu
         "Not yet.",-;
-    close;
+    goto L_Close;
 
 L_Bring:
     if (countitem("AnimalBones") < @ANIMALBONES_AMOUNT)
@@ -56,19 +59,19 @@ L_Bring:
     mes "\"Ah! Wonderful! Thank you.\"";
     set @state, 2;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Human:
     mes "[Wolfgang]";
     mes "\"What?! That's a humans bone! I don't eat humans. That brings only trouble.\"";
     next;
     mes "\"Besides, from that I heard, they taste bad.\"";
-    close;
+    goto L_Close;
 
 L_Not_Enough:
     mes "[Wolfgang]";
     mes "\"Are you trying to kid me? I can count.\"";
-    close;
+    goto L_Close;
 
 L_Happy:
     mes "You see the werewolf happily crunching the bones you brought him.";
@@ -83,17 +86,17 @@ L_Happy:
     menu
         "Sure, why not?",L_Game,
         "No, thanks.",-;
-    close;
+    goto L_Close;
 
 //The game mechanics is copied from casino.txt
 L_Game:
-    if (zeny < @money)
+    if (Zeny < @money)
         goto L_No_Money;
     mes "[Wolfgang]";
     mes "\"Very nice. Let's start.\"";
     mes "He shuffles the cards.";
     next;
-    set zeny, zeny - @money;
+    set Zeny, Zeny - @money;
     set @croupier, rand(0, 4);
     set @croupier, @croupier + 17;
     set @player, rand(4, 21);
@@ -126,19 +129,19 @@ L_End:
     if (@player <= @croupier)
         goto L_Lost;
     mes "\"You won! Hrm, here is your money.\"";
-    set zeny, zeny + (3 * @money);
-    close;
+    set Zeny, Zeny + (3 * @money);
+    goto L_Close;
 
 L_No_Money:
     mes "\"You need at least " + @money + " GP.\"";
-    close;
+    goto L_Close;
 
 L_Lost:
     mes "[Wolfgang]";
     mes "\"Fine! I won!";
     mes "You got " + @player + " with your cards.";
     mes "I had " + @croupier + ".\"";
-    close;
+    goto L_Close;
 
 L_Ace:
     set @player, @player + 11;
@@ -154,9 +157,20 @@ L_Ace:
     menu
         "Yes", L_Another,
         "No", L_End;
-    close;
+    goto L_Close;
 
 L_Close:
+    set @Graveyard_Inn_MASK, 0;
+    set @Graveyard_Inn_SHIFT, 0;
+    set @state, 0;
+    set @ANIMALBONES_AMOUNT, 0;
+    set @ANIMALBONES_EXP, 0;
+    set @money, 0;
+    set @minLevel, 0;
+
+    set @croupier, 0;
+    set @player, 0;
+    set @tempace, 0;
     close;
 
 S_Update_Mask:

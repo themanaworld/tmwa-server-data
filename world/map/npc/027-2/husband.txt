@@ -1,6 +1,6 @@
 // author: Jenalya
 // love triangle quest, involved npcs: Reid's Ghost, Hamond, Savaric, Aldred, Golbenez
-// state 0: if baselevel >= 85, he asks for something to cool the drinks (ice cubes)
+// state 0: if BaseLevel >= 85, he asks for something to cool the drinks (ice cubes)
 // state 1: can be asked about the ring. needs @ICE_CUBE_AMOUNT ice cubes, then asks for bones and skulls.
 // state 2: wants @BONE_AMOUNT and @SKULL_AMOUNT bones and skulls
 // state 3: can be asked about the ring. needs @woman > 5 to be asked about savaric, tells, if crying child quest is completed
@@ -26,6 +26,12 @@
 
     set @kidstate, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Kid_MASK) >> @Graveyard_Inn_Kid_SHIFT);
 
+    set @Graveyard_Inn_Golbenez_MASK, NIBBLE_4_MASK;
+    set @Graveyard_Inn_Golbenez_SHIFT, NIBBLE_4_SHIFT;
+
+    set @golbanez, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Golbenez_MASK) >> @Graveyard_Inn_Golbenez_SHIFT);
+
+    set @minLevel, 85;
     set @ICE_CUBE_AMOUNT, 100;
     set @ICE_CUBE_EXP, 75000;
     set @BONE_AMOUNT, 100;
@@ -43,7 +49,7 @@
 
     mes "[Pale Man]";
     mes "\"Hello, I hope you're enjoying your time in Reid's Inn. My name is Hamond, and I'm running this inn together with my beautiful wife Reid. If there is anything I can do for you, please let me know.\"";
-    if (baselevel < 85)
+    if (BaseLevel < @minLevel)
         goto L_Close;
     next;
     menu
@@ -74,7 +80,7 @@
     set @state, 1;
     callsub S_Update_Mask;
 
-    close;
+    goto L_Close;
 
 L_Ice_Cube:
     mes "[Hamond]";
@@ -96,7 +102,7 @@ L_Ice_Cube:
             "Maybe this never melting Ice Cube?", L_Check_Ice,
             "I'm still searching.", L_Close;
     mes "\"You didn't? Too bad.\"";
-    close;
+    goto L_Close;
 
 L_Check_Ice:
     if (countitem("IceCube") < @ICE_CUBE_AMOUNT)
@@ -133,7 +139,7 @@ L_Check_Ice:
     mes "\"I know, this is a bit strange - I'm still getting used to being dead. But a patron's wish is a patron's wish!\"";
     next;
     mes "\"Can you bring me a huge amount of bones and skulls? This way I can fulfill that peculiar wish and make another patron very happy!\"";
-    close;
+    goto L_Close;
 
 L_Check_Bones:
     mes "[Hamond]";
@@ -170,7 +176,7 @@ L_Brought_Bones:
             "You're welcome.",-;
     mes "[Hamond]";
     mes "\"Please make yourself at home.\"";
-    close;
+    goto L_Close;
 
 L_Savaric:
     mes "Hamond's face turns into an ugly grimace.";
@@ -204,20 +210,20 @@ L_Jealousy:
     mes "\"Ah, this is annoying.\"";
     set @state, 4;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Man:
     mes "[Hamond]";
     mes "\"You're a man - I think you would understand what is happening to me.\"";
     mes "\"But, to be honest, I think I'd only be able to talk about such a complicated matter if I am sure I am sharing my feelings with a good, wise and understanding person. No offense, it is just that I barely know you...\"";
-    close;
+    goto L_Close;
 
 L_Woman:
     mes "[Hamond]";
     mes "\"Hrm - I don't think you'll understand. It is a problem between men.\"";
     next;
     mes "\"And, to be honest, I'd only be able to talk about such a complicated matter if I am sure I am sharing my feelings with a good, wise and understanding person. No offense, it is just that I barely know you...\"";
-    close;
+    goto L_Close;
 
 L_Ring:
     mes "[Hamond]";
@@ -228,7 +234,7 @@ L_Ring:
     mes "\"Anyway, I remember you could easily find one of these in a lot of small shops in town. I am pretty sure that whoever lost it won't bother coming all the way back to get it.\"";
     set @kidstate, 5;
     callsub S_Update_Mask_Kid;
-    close;
+    goto L_Close;
 
 L_News:
     mes "[Hamond]";
@@ -262,12 +268,12 @@ L_News:
     mes "\"" + strcharinfo(0) + "! Can you help me once more? Please get " + @RUBY_AMOUNT + " Rubies and bring them to her as a symbol of my love and my remorse.\"";
     set @state, 5;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Waiting:
     mes "[Hamond]";
     mes "\"Did you bring Reid the " + @RUBY_AMOUNT + " Rubies?\"";
-    close;
+    goto L_Close;
 
 L_Apologize:
     mes "[Hamond]";
@@ -286,31 +292,50 @@ L_Apologize:
     getitem "BowlerHatBrown", 1;
     set @state, 7;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Thanks:
     mes "[Hamond]";
     mes "\"Good to see you, my friend! The inn is running well and I'm getting used to being dead.\"";
-    close;
+    goto L_Close;
 
 L_Not_Enough_B:
     if (countitem("Bone") < @BONE_AMOUNT)
         mes "\"I need more Bones than you have with you right now.\"";
     if (countitem("Skull") < @SKULL_AMOUNT)
         mes "\"Maybe you should come back with more Skulls than you have now. I don't think it is enough.\"";
-    close;
+    goto L_Close;
 
 L_Not_Enough_Cubes:
     mes "[Hamond]";
     mes "\"Yes, they look good! But I think I need more of them. Maybe " + @ICE_CUBE_AMOUNT + "?\"";
-    close;
+    goto L_Close;
 
 L_Full_Inv:
     mes "[Hamond]";
     mes "\"You have a really full backpack, haven't you? Come back when you have some room in there.\"";
-    close;
+    goto L_Close;
 
 L_Close:
+    set @Graveyard_Inn_MASK, 0;
+    set @Graveyard_Inn_SHIFT, 0;
+    set @state, 0;
+    set @Graveyard_Inn_Woman_MASK, 0;
+    set @Graveyard_Inn_Woman_SHIFT, 0;
+    set @woman, 0;
+    set @Graveyard_Inn_Kid_MASK, 0;
+    set @Graveyard_Inn_Kid_SHIFT, 0;
+    set @Graveyard_Inn_Golbenez_MASK, 0;
+    set @Graveyard_Inn_Golbenez_SHIFT, 0;
+    set @golbanez, 0;
+    set @kidstate, 0;
+    set @minLevel, 0;
+    set @ICE_CUBE_AMOUNT, 0;
+    set @ICE_CUBE_EXP, 0;
+    set @BONE_AMOUNT, 0;
+    set @SKULL_AMOUNT, 0;
+    set @BONE_EXP, 0;
+    set @RUBY_AMOUNT, 0;
     close;
 
 S_Update_Mask_Kid:

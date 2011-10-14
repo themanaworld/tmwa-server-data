@@ -1,7 +1,7 @@
 // author: Jenalya
 // love triangle quest, involved npcs: Reid's Ghost, Hamond, Savaric, Aldred, Golbenez
 // state 0: first talk
-// state 1: if baselevel >= 85 player can ask about the inn and dead
+// state 1: if BaseLevel >= 85 player can ask about the inn and dead
 // state 2: reid knows now she's dead, can be asked about the ring
 // state 3: can be asked about ring, player offered help to find out what happened, she wants something to represent her sadness (frozen yeti tears)
 // state 4: can be asked about ring, can be asked about her life
@@ -40,6 +40,7 @@
 
     set @golbanez, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Golbanez_MASK) >> @Graveyard_Inn_Golbanez_SHIFT);
 
+    set @minLevel, 85;
     set @YETI_TEAR_AMOUNT, 30;
     set @YETI_TEAR_EXP, 100000;
     set @DIAMOND_AMOUNT, 20; // caution, this value needs to be the same as in the lovers script!
@@ -74,12 +75,12 @@
 L_After_Welcome:
     mes "[Reid's Ghost]";
     mes "\"Please enjoy yourself!\"";
-    if (baselevel < 85)
-        goto L_Close;
+    if (BaseLevel < @minLevel)
+            goto L_Close;
 
 L_Ask_Dead:
-    if (baselevel < 85)
-        goto L_Close;
+    if (BaseLevel < 85)
+            goto L_Close;
 
     menu
         "What happened to you?", - ,
@@ -105,7 +106,7 @@ L_Ask_Dead:
     mes "She stares into space and doesn't seem to notice you anymore.";
     set @state, 2;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Offer_Help2:
     mes "Reid's Ghost is still staring into space.";
@@ -128,7 +129,7 @@ L_Offer_Help1:
 
     set @state, 3;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Bring_Tears:
     mes "[Reid's Ghost]";
@@ -150,7 +151,7 @@ L_Bring_Tears:
             "I found this frozen tear to represent your sadness.", L_Check_Tears,
             "I'm still searching.", L_Close;
     mes "\"You didn't? It seems you're not serious with your offer to help me.\"";
-    close;
+    goto L_Close;
 
 L_Check_Tears:
     if (countitem("FrozenYetiTear") < @YETI_TEAR_AMOUNT)
@@ -256,12 +257,12 @@ L_Lovestory:
 
     set @state, 6;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Read_Diary:
     mes "[Reid's Ghost]";
     mes "\"Please go into my room and read the diary. You will find my diary in the bookshelf, hidden behind a book with poems.\"";
-    close;
+    goto L_Close;
 
 L_Savaric:
     mes "[Reid's Ghost]";
@@ -290,7 +291,7 @@ L_Savaric:
     mes "\"I'm feeling hurt. And confused. Both Hamond and Savaric turned out not to be the persons I believed them to be.\"";
     set @state, 8;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Sorry:
     mes "[Reid's Ghost]";
@@ -311,7 +312,7 @@ L_Sorry:
         menu
             "Hamond sent me to bring you this.",L_Ruby,
             "Nevermind.",-;
-    close;
+    goto L_Close;
 
 L_Diamond:
     if (countitem("GemRawWhite") < @DIAMOND_AMOUNT)
@@ -325,7 +326,7 @@ L_Diamond:
     callsub S_Update_Mask_Lover;
     set @state, @state + 1;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Ruby:
     if (countitem("GemRawRed") < @RUBY_AMOUNT)
@@ -339,7 +340,7 @@ L_Ruby:
     callsub S_Update_Mask_Husband;
     set @state, @state + 1;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Kidding:
     mes "[Reid's Ghost]";
@@ -348,7 +349,7 @@ L_Kidding:
 L_Tease:
     mes "[Reid's Ghost]";
     mes "\"Don't be mean! I never felt like that before.\"";
-    close;
+    goto L_Close;
 
 L_Thanks:
     mes "[Reid's Ghost]";
@@ -368,7 +369,7 @@ L_Mylarin:
     mes "\"I'm not sure what it is used for, but I remember her saying something about some special crafting tradition which uses it to make really strong armor.\"";
     next;
     mes "\"Maybe you should try to find someone who can use it.\"";
-    close;
+    goto L_Close;
 
 L_Happy:
     mes "[Reid's Ghost]";
@@ -376,7 +377,7 @@ L_Happy:
     menu
         "Can you tell me again about the powder you gave me?",L_Mylarin,
         "I'm glad I could help.",-;
-    close;
+    goto L_Close;
 
 L_Not_Enough_Tears:
     mes "[Reid's Ghost]";
@@ -385,19 +386,19 @@ L_Not_Enough_Tears:
         mes "\"This is beautiful! But one of them isn't enough to represent my sadness.\"";
     if (@tears > 1)
         mes "\"This is beautiful! But " + @tears + " of them aren't enough to represent my sadness.\"";
-    close;
+    goto L_Close;
 
 L_Man:
     mes "[Reid's Ghost]";
     mes "\"What I have to tell is very personal. You're a man - I'm not sure if I want to tell you. I know you helped me already and showed me you are a sensitive man, but I barely know you. I am sorry, but I have to think a little bit more. Maybe later, when I know you better, I can tell you more about it. \"";
-    close;
+    goto L_Close;
 
 L_Woman:
     mes "[Reid's Ghost]";
     mes "\"What I have to tell you is something very personal. You are a woman like me - I'm sure you would understand.\"";
     next;
     mes "\"But I'm not sure if I want to tell you. I know you helped me already and showed me you are a sensitive woman, but I barely know you. I am sorry, but I have to think a little bit more. Maybe later, when I know you better, I can tell you more about it. \"";
-    close;
+    goto L_Close;
 
 L_Ring:
     mes "[Reid's Ghost]";
@@ -408,14 +409,35 @@ L_Ring:
     mes "\"Ah, I forgot again. It pains me not being able to wear it. Please, take it with you, I don't want it anymore. It hurts too much.\"";
     set @kidstate, 6;
     callsub S_Update_Mask_Kid;
-    close;
+    goto L_Close;
 
 L_Full_Inv:
     mes "[Reid's Ghost]";
     mes "\"Dear, you're carrying so much stuff, you can't take my present. Come back later to take it.\"";
-    close;
+    goto L_Close;
 
 L_Close:
+    set @Graveyard_Inn_MASK, 0;
+    set @Graveyard_Inn_SHIFT, 0;
+    set @state, 0;
+    set @Graveyard_Inn_Lover_MASK, 0;
+    set @Graveyard_Inn_Lover_SHIFT, 0;
+    set @lover, 0;
+    set @Graveyard_Inn_Kid_MASK, 0;
+    set @Graveyard_Inn_Kid_SHIFT, 0;
+    set @kidstate, 0;
+    set @Graveyard_Inn_Husband_MASK, 0;
+    set @Graveyard_Inn_Husband_SHIFT, 0;
+    set @husband, 0;
+    set @Graveyard_Inn_Golbanez_MASK, 0;
+    set @Graveyard_Inn_Golbanez_SHIFT, 0;
+    set @golbanez, 0;
+    set @minLevel, 0;
+    set @YETI_TEAR_AMOUNT, 0;
+    set @YETI_TEAR_EXP, 0;
+    set @DIAMOND_AMOUNT, 0;
+    set @RUBY_AMOUNT, 0;
+    set @tears, 0;
     close;
 
 S_Update_Mask_Kid:

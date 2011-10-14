@@ -1,6 +1,6 @@
 // author: Jenalya
 // love triangle quest, involved npcs: Reid's Ghost, Hamond, Savaric, Aldred, Golbenez
-// state 0: if baselevel >= 85, tells he want dark crystals
+// state 0: if BaseLevel >= 85, tells he want dark crystals
 // state 1: needs @CRYSTAL_AMOUNT dark crystals to go on, tells the player to search the inn for source of magic (Golbenez)
 // state 2: if the player has talked to Golbenez, he tells you to negotiate with him to find out what happened
 // state 3: when player has seen all memories (@golbanez < 5), telling Savaric what happened. he asks the player to bring reid @DIAMOND_AMOUNT diamonds
@@ -26,6 +26,7 @@
 
     set @golbanez, ((QUEST_Graveyard_Inn & @Graveyard_Inn_Golbenez_MASK) >> @Graveyard_Inn_Golbenez_SHIFT);
 
+    set @minLevel, 85;
     set @CRYSTAL_AMOUNT, 500;
     set @CRYSTAL_EXP, 200000;
     set @CRYSTAL_EXTRA_EXP, 100;
@@ -42,7 +43,7 @@
 
     mes "You see a dead man hanging. This place is creepy!";
     next;
-    if (baselevel < 85) goto L_Close;
+    if (BaseLevel < @minLevel)     goto L_Close;
     mes "Suddenly the man opens his eyes and looks at you.";
     next;
     mes "[Hanged Man]";
@@ -62,7 +63,7 @@
     mes "\"I'll need... well, at least " + @CRYSTAL_AMOUNT + ". But if you have more, I can use extras!\"";
     set @state, 1;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Crystals:
     mes "[Hanged Man]";
@@ -104,7 +105,7 @@ L_Skip:
     next;
     mes "The buzzing gets louder and louder, so you can't hear a word the hanged man is saying now.";
     next;
-    set hp, 5;
+    set Hp, 5;
     mes "The crystals explode and hit you!";
     next;
     mes "You fall down on the floor and blink frantically to regain your eyesight.";
@@ -129,7 +130,7 @@ L_Skip:
     mes "\"If you can forgive me my behaviour, may I ask you for another favor? Can you please search for someone or something in this inn that could be the source of this dark magic?\"";
     set @state, 2;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_News:
     mes "[Savaric]";
@@ -164,7 +165,7 @@ L_Golbenez:
     mes "\"Savaric seems to be completely absorbed in his thoughts.\"";
     menu
         "Hello? Are you still there?",-,
-        "Excuse me, I don't want to interrupt you, but can you explain to me what's going on? I'm confused",-,
+        "Excuse me, I don't want to interrupt you, but can you explain to me what's going on? I'm confused.",-,
         "Hey! I'm talking with you!",-;
     mes "Savaric winces.";
     next;
@@ -185,7 +186,7 @@ L_Golbenez:
     mes "\"" + strcharinfo(0) + "! I need your help again! Please return to Golbenez and try to get out of him what was happening here. But be careful when negotiating.. he will demand a service in return.\"";
     set @state, 3;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Golb:
     mes "[Savaric]";
@@ -210,12 +211,12 @@ L_Golb:
     mes "\"But wait. It is not enough just to ask for forgiveness. Please, can you bring her " + @DIAMOND_AMOUNT + " Diamonds? They symbolize my pure feelings for her.\"";
     set @state, 4;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Waiting:
     mes "[Savaric]";
     mes "\"Have you already brought the Diamonds to Reid?\"";
-    close;
+    goto L_Close;
 
 L_Apologize:
     mes "[Savaric]";
@@ -228,7 +229,7 @@ L_Apologize:
     mes "\"Golbenez took my soul and I want it back. You were very clever with how you negotiated with him so far. Could you get my soul back for me?\"";
     set @state, 6;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Want_Soul:
     if (@golbanez >= 7)
@@ -240,7 +241,7 @@ L_Want_Soul:
         "Yes, but it isn't easy.",-;
     mes "[Savaric]";
     mes "\"Thank you so much! I'm counting on you!\"";
-    close;
+    goto L_Close;
 
 L_Soul:
     mes "[Savaric]";
@@ -256,28 +257,44 @@ L_Soul:
     mes "\"This is what mages and their apprentices wore when I lived. It is white because I wasn't a master yet.\"";
     next;
     mes "\"But I guess the old traditions have changed since then.\"";
-    close;
+    goto L_Close;
 
 L_Have_Soul:
     mes "[Savaric]";
     mes "\"I'll be in your debt forever. Thank you so much.\"";
-    close;
+    goto L_Close;
 
 L_Reid:
     mes "[Savaric]";
     mes "\"Relationship? Well, she is the innkeeper of this inn and I'm a patron. There is nothing more to say about this.\"";
-    close;
+    goto L_Close;
 
 L_Not_Enough_Crystals:
     mes "It seems you managed to get some, but not enough. Can you bring me more?";
-    close;
+    goto L_Close;
 
 L_Full_Inv:
     mes "[Savaric]";
     mes "\"Oh, you can't carry anything more. Come back when you can take it.\"";
-    close;
+    goto L_Close;
 
 L_Close:
+    set @Graveyard_Inn_MASK, 0;
+    set @Graveyard_Inn_SHIFT, 0;
+    set @state, 0;
+    set @Graveyard_Inn_Woman_MASK, 0;
+    set @Graveyard_Inn_Woman_SHIFT, 0;
+    set @woman, 0;
+    set @Graveyard_Inn_Golbenez_MASK, 0;
+    set @Graveyard_Inn_Golbenez_SHIFT, 0;
+    set @golbanez, 0;
+    set @minLevel, 0;
+    set @CRYSTAL_AMOUNT, 0;
+    set @CRYSTAL_EXP, 0;
+    set @CRYSTAL_EXTRA_EXP, 0;
+    set @CRYSTAL_MAX, 0;
+    set @DIAMOND_AMOUNT, 0;
+    set @crystal, 0;
     close;
 
 S_Update_Mask:
