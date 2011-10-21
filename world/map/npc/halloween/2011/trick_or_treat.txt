@@ -109,10 +109,21 @@ L_Check_Karma:
     // Please don't change this, you'll break stuff.
     if (rand($@hw2011_num_npcs, 0xffff) <= (hw2011 & 0xffff))
         goto L_Cheater;
+    if (hw2011 & $@hw2011_got_big_reward)
+        goto L_Tricking_Trick_or_Treat;
+    // assert: (hw2011 & 0xffff) < $@hw2011_num_npcs
+    if (rand($@hw2011_num_npcs - (hw2011 & 0xffff)))
+        goto L_Tricking_Trick_or_Treat;
+    mes "Here, have something to freshen you up after your long night";
+    getitem $@hw2011_big_reward$, 1;
+    // you get the big reward first, then the main treats
+    // otherwise it would be too complicated, and/or possibly unfair
     goto L_Tricking_Trick_or_Treat;
 
 L_Cheater:
     mes "I recognize you despite your mask, you have been taking sweets you do not deserve.";
+    if ((hw2011 & 0xFFFF) != 0xFFFF)
+        set hw2011, hw2011 + 1;
     goto L_Close;
 
 L_Remember_Face:
@@ -188,7 +199,7 @@ L_ScaryFace:
     mes "\"Oh, that's your face ...\"";
     next;
     set @mask, 0;
-    set @scarefactor, 5;
+    set @scarefactor, 2 + rand(3);
     goto L_MaskDone;
 
 L_NoMask:
