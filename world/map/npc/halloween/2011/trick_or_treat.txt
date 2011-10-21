@@ -86,7 +86,7 @@ L_MaskMemoryNo:
     set @loop, 0;
     set @sweets_types, 0;
 L_Count_Sweets:
-    if (!$@hw2011_sweets$[@loop])
+    if ($@hw2011_sweets$[@loop] == "")
         goto L_Check_Inventory;
     if (countitem($@hw2011_sweets$[@loop]))
         set @sweets_types, @sweets_types + 1;
@@ -114,14 +114,15 @@ L_Check_Karma:
     // assert: (hw2011 & 0xffff) < $@hw2011_num_npcs
     if (rand($@hw2011_num_npcs - (hw2011 & 0xffff)))
         goto L_Tricking_Trick_or_Treat;
-    mes "Here, have something to freshen you up after your long night";
+    mes "\"All this candy isn't healthy, here take this to have a break from it.\"";
     getitem $@hw2011_big_reward$, 1;
+    set hw2011, hw2011 | $@hw2011_got_big_reward;
     // you get the big reward first, then the main treats
     // otherwise it would be too complicated, and/or possibly unfair
     goto L_Tricking_Trick_or_Treat;
 
 L_Cheater:
-    mes "I recognize you despite your mask, you have been taking sweets you do not deserve.";
+    mes "\"I recognize you despite your mask, you have been taking sweets you do not deserve.\"";
     if ((hw2011 & 0xFFFF) != 0xFFFF)
         set hw2011, hw2011 + 1;
     goto L_Close;
