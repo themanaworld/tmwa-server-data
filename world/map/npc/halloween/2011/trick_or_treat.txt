@@ -30,6 +30,7 @@ function|script|TrickOrTreat2011|{
             "Reset this NPC's mask memory", L_ResetMask,
             "Just do the quest", -;
 L_Begin:
+    set @karma, hw2011 & 0xffff;
     // must be early to handle all the one-off mes;s in the init stuff
     mes $@hw2011_npc_names$[@hw2011_npc_id];
 
@@ -107,12 +108,15 @@ L_Check_Inventory:
 
 L_Check_Karma:
     // Please don't change this, you'll break stuff.
-    if (rand($@hw2011_num_npcs, 0xffff) <= (hw2011 & 0xffff))
+    if (rand($@hw2011_num_npcs, 0xffff) <= @karma)
+        goto L_Cheater;
+    // this is a cheap, limited form of ilog2
+    if ((@karma >= 0x10) && !(rand( 4 - (@karma >= 0x40) + (@karma >= 0x100) + (@karma >= 0x400) )))
         goto L_Cheater;
     if (hw2011 & $@hw2011_got_big_reward)
         goto L_Tricking_Trick_or_Treat;
-    // assert: (hw2011 & 0xffff) < $@hw2011_num_npcs
-    if (rand($@hw2011_num_npcs - (hw2011 & 0xffff)))
+    // assert: @karma < $@hw2011_num_npcs
+    if (rand($@hw2011_num_npcs - @karma))
         goto L_Tricking_Trick_or_Treat;
     mes "\"All this candy isn't healthy, here take this to have a break from it.\"";
     getitem $@hw2011_big_reward$, 1;
@@ -123,7 +127,7 @@ L_Check_Karma:
 
 L_Cheater:
     mes "\"I recognize you despite your mask, you have been taking sweets you do not deserve.\"";
-    if ((hw2011 & 0xFFFF) != 0xFFFF)
+    if (@karma != 0xFFFF)
         set hw2011, hw2011 + 1;
     goto L_Close;
 
@@ -162,13 +166,23 @@ L_Tricking_Veryscary:
     goto L_Tricking_Reward;
 
 L_Tricking_Reward:
+    next;
+    if (@karma >= 0x10)
+        set @scare_factor, rand(@scare_factor / 2, @scare_factor);
+    if (@karma >= 0x100)
+        set @scare_factor, rand(@scare_factor / 2, @scare_factor);
+    if (@karma >= 0x1000)
+        set @scare_factor, rand(@scare_factor / 2, @scare_factor);
+    if (@scare_factor < 1)
+        set @scare_factor, 1;
+L_Tricking_Reward_Loop:
     if (!@scare_factor)
         goto L_Tricking_End;
     // NOTE: it gives out one piece at a time, but can loop several times
-    getitem $@hw2011_sweets$[rand(20)], 1;
+    getitem $@hw2011_sweets$[rand($@hw2011_sweets_num)], 1;
 
     set @scare_factor, @scare_factor - 1;
-    goto L_Tricking_Reward;
+    goto L_Tricking_Reward_Loop;
 L_SetRememberFace:
     set hw2011, hw2011 | (0x1 << (31 - @hw2011_npc_id));
     goto L_Close;
@@ -214,6 +228,7 @@ L_NoMask:
 L_Close:
     set @tmp, 0;
     set @mask, 0;
+    set @karma, 0;
 
     set @loop, 0;
     set @menu, 0;
