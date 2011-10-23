@@ -1,5 +1,4 @@
 // author: Jenalya
-// reviewed by:
 // state0: Cindy is totally scared and does nothing helpful
 // state1: you are able to open the cage
 // state2: Cindy is saved, she gives you a reward (wizard hat or wooden staff)
@@ -9,6 +8,7 @@
     if ($@FIGHT_YETI_STATUS != 0) goto L_Yeti;
 
     set @KEYS_AMOUNT, 10;
+    set @minlevel, 70;
 
     set @Q_Nivalis_state_MASK, NIBBLE_5_MASK;
     set @Q_Nivalis_state_SHIFT, NIBBLE_5_SHIFT;
@@ -25,7 +25,7 @@
     mes "There is a little girl in a cage. As you come near, she starts to shiver and back off from you as far as she can in that small cage.";
     next;
     mes "You don't know what to do.";
-    close;
+    goto L_Close;
 
 L_Please_Help:
     mes "There is a little girl in a cage. As you come near, she starts to shiver and back off from you as far as she can in that small cage.";
@@ -42,11 +42,11 @@ L_Please_Help:
     mes "\"But be careful. If the Yetis hear you, they will come!\"";
     menu
         "Try to open the cage", L_Try_Cage,
-        "Leave", -;
-    close;
+        "Leave", L_Close;
+    goto L_Close;
 
 L_Try_Cage:
-    if (baselevel < 70)
+    if (BaseLevel < @minlevel)
         goto L_To_Weak;
     if (countitem("TreasureKey") < @KEYS_AMOUNT)
         goto L_Not_Enough_Keys;
@@ -68,16 +68,13 @@ L_Try_Cage:
     // without it, the first and second wave start nearly the same time
     areamonster "031-4.gat", 0, 0, 95, 91, "", 1072, 1, "Cindy::onPetDeath";
 
-    startnpctimer;
-    goto L_Exit;
-
-L_Exit:
-    close;
+    initnpctimer;
+    goto L_Close;
 
 L_Yeti:
     mes "[Cindy]";
     mes "\"Watch out, the Yetis!\"";
-    close;
+    goto L_Close;
 
 L_Reward:
     mes "[Cindy]";
@@ -108,23 +105,35 @@ L_Visit:
     mes "\"Thank you so much; please come to my home. It's the house at the beach.\"";
     next;
     mes "\"I'm sure my mother wants to thank you as well.\"";
-    close;
+    goto L_Close;
 
 L_Please_Visit:
     mes "[Cindy]";
     mes "\"Thank you, thank you! You're a hero! Please come home with me to our house at the beach!\"";
-    close;
+    goto L_Close;
 
 L_To_Weak:
     mes "You try to open the cage, but it's stuck. It seems you're too weak!";
-    close;
+    goto L_Close;
 
 L_Not_Enough_Keys:
     mes "You don't have enough keys to open the cage.";
-    close;
+    goto L_Close;
 
 L_Full_Inv:
     mes "\"Oh, it seems you carry so much stuff - I will keep it for you until you can take it.\"";
+    goto L_Close;
+
+L_Close:
+    set @KEYS_AMOUNT, 0;
+    set @Q_Nivalis_state_MASK, 0;
+    set @Q_Nivalis_state_SHIFT, 0;
+    set @rescue_Cindy, 0;
+    set @title$, "";
+    set @minlevel, 0;
+    set @inventorylist_count, 0;
+    cleararray @wizardhats, 0, 10;
+    set @reward, 0;
     close;
 
 // Fight logic attached to npc
@@ -223,16 +232,15 @@ onPetDeath:
     set $@YETI_COUNT, $@YETI_COUNT - 1;
     end;
 
-onInit:
-    initnpctimer;
-    stopnpctimer;
-
 L_CleanUp:
     areatimer "031-4.gat", 0, 0, 95, 91, 10, "Cindy::onReward";
     set $@FIGHT_YETI_STATUS, 0;
     set $@FIGHT_YETI_PLAYER_COUNT, 0;
     set $@FIGHT_YETI_WAVE, 1;
     set $@FIGHT_YETI_ROUND_TIMER, 0;
+    set $@YETI_COUNT, 0;
+    set $@FIGHT_YETI_ROUND_PEN, 0;
+    set $@FIGHT_YETI_NUMBER, 0;
     killmonster "031-4.gat", "Cindy::onPetDeath";
     stopnpctimer;
     setnpctimer 0;
@@ -240,14 +248,22 @@ L_CleanUp:
 
 onReward:
     if (isdead()) end;
-    set @bonus, (baselevel/2);
+    set @bonus, (BaseLevel/2);
     set DailyQuestBonus, DailyQuestBonus + @bonus;
     message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained." ;
+    set @Q_Nivalis_state_MASK, NIBBLE_5_MASK;
+    set @Q_Nivalis_state_SHIFT, NIBBLE_5_SHIFT;
+    set @rescue_Cindy, ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
     if (@rescue_Cindy != 1 )
-        end;
+        goto L_End;
     set @rescue_Cindy, 2;
     callsub S_Update_Mask;
     message strcharinfo(0), "Cindy looks relieved and as if she wants to talk with you.";
+L_End:
+    set @bonus, 0;
+    set @Q_Nivalis_state_MASK, 0;
+    set @Q_Nivalis_state_SHIFT, 0;
+    set @rescue_Cindy, 0;
     end;
 
 /////////

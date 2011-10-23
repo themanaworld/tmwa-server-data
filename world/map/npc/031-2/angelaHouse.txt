@@ -1,9 +1,7 @@
 // author: Jenalya
-// reviewed by:
 // state0, 1, 2: you shouldn't be able to come here
 // state3: it's your first visit, you can choose a reward
 // state4: you can do daily quests with white and yellow presents boxes
-//
 
 031-2.gat,29,28,0|script|Angela|196,{
 
@@ -16,7 +14,7 @@
     if (@rescue_Cindy == 3) goto L_Reward;
 
     mes "...";
-    close;
+    goto L_Close;
 
 L_Reward:
     mes "[Angela]";
@@ -43,11 +41,11 @@ L_Reward:
     mes "\"Usually, Yetis are very shy - I wonder why they did that. There is something strange going on.\"";
     next;
     mes "\"May I ask you for help again? I'll give you a small reward for every 3 boxes of one color you bring me.\"";
-    close;
+    goto L_Close;
 
 L_Full_Inv:
     mes "\"Oh, it seems you carry so much stuff - I will keep it for you until you can take it.\"";
-    close;
+    goto L_Close;
 
 L_Hello_Again:
     mes "[Angela]";
@@ -57,7 +55,7 @@ L_Hello_Again:
         "I just wanted to say hello.",-,
         "I have some yellow present boxes.",L_Yellow,
         "I have some white present boxes.",L_White;
-    close;
+    goto L_Close;
 
 L_Yellow:
     set @dq_level, 70;
@@ -70,9 +68,9 @@ L_Yellow:
 
     callfunc "DailyQuest";
     next;
-    if (@dq_return ==4)
+    if (@dq_return == 4)
         mes "\"Santa will be glad to have them back.\"";
-    close;
+    goto L_Close;
 
 L_White:
     set @dq_level, 80;
@@ -85,8 +83,23 @@ L_White:
 
     callfunc "DailyQuest";
     next;
-    if (@dq_return ==4)
+    if (@dq_return == 4)
         mes "\"You are a great help!\"";
+    goto L_Close;
+
+L_Close:
+    set @Q_Nivalis_state_MASK, 0;
+    set @Q_Nivalis_state_SHIFT, 0;
+    set @rescue_Cindy, 0;
+
+    set @dq_level, 0;
+    set @dq_cost, 0;
+    set @dq_count, 0;
+    set @dq_name$, "";
+    set @dq_friendly_name$, "";
+    set @dq_money, 0;
+    set @dq_exp, 0;
+    set @dq_return, 0;
     close;
 
 S_Update_Mask:
