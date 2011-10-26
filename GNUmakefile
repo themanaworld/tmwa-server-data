@@ -18,7 +18,7 @@ mobxp-impl:
 	tools/mobxp < world/map/db/mob_db.old > world/map/db/mob_db.txt
 	rm world/map/db/mob_db.old
 indent: indent-mobs indent-items
-indent-items:
+indent-items: tools/aligncsv
 	tools/aligncsv world/map/db/item_db.txt
-indent-mobs:
+indent-mobs: tools/aligncsv
 	tools/aligncsv world/map/db/mob_db.txt
