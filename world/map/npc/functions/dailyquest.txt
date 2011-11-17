@@ -75,6 +75,7 @@ L_Trade:
         goto L_Exit_Good;
 
     mes "\"Thank you!\"";
+    callsub S_SayPhrase;
     mes "";
     mes "[" + @dq_money + " money]";
     mes "[" + @dq_exp + " experience points]";
@@ -96,12 +97,45 @@ L_Low_Level:
     goto L_Exit;
 
 L_Not_Enough_Points:
-    if (!@dq_handle_return)
-        mes "\"You look exhausted, maybe you should rest a bit.\"";
+    callsub S_SayPhrase;
     set @dq_return, 2;
     goto L_Exit;
 
 L_Exit:
     set @dq_handle_return, 0;  // Incase they forget
     return;
+
+S_SayPhrase:
+    if (@dq_handle_return)
+        return;
+    if (DailyQuestPoints > 100)
+        goto L_Very_Very_High;
+    if (DailyQuestPoints > 80)
+        goto L_Very_High;
+    if (DailyQuestPoints > 50)
+        goto L_Medium_High;
+    if (DailyQuestPoints > @dq_cost)
+        goto L_High;
+    if (DailyQuestPoints > @dq_cost / 2)
+        goto L_Medium;
+    goto L_Low;
+L_Very_Very_High:
+    mes "\"Woah, you're bursting with power.\"";
+    return;
+L_Very_High:
+    mes "\"You're in a very good shape.\"";
+    return;
+L_Medium_High:
+    mes "\"TODO"\";
+    return;
+L_High:
+    mes "\"You don't seem very exhausted by my tasks.\"";
+    return
+L_Medium:
+    mes "\"I do not have any further tasks for you right now.\"";
+    return;
+L_Low:
+    mes "\"You look exhausted, maybe you should rest a bit.\"";
+    return;
+
 }
