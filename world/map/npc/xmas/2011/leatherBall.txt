@@ -109,6 +109,9 @@ L_LeatherBall:
         "I don't have it yet.",L_Close;
     if ((countitem("LeatherPatch") < @leather_amount) || (countitem("MaggotSlime") < @maggotslime_amount))
         goto L_NoItems;
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
     delitem "LeatherPatch", @leather_amount;
     delitem "MaggotSlime", @maggotslime_amount;
     set @ball, 3;
@@ -150,10 +153,16 @@ L_NoItems:
     mes "\"You don't have it!\"";
     goto L_Close;
 
+L_Full_Inv:
+    mes "[Iivo]";
+    mes "\"You have a full backpack! Come back when you're carrying less things.\"";
+    goto L_Close;
+
 L_Close:
     set @cotton_amount, 0;
     set @fur_amount, 0;
     set @ball, 0;
+    set @inventorylist_count, 0;
     close;
 
 S_Update_Var:

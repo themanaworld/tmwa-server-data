@@ -128,6 +128,9 @@ L_StickReinboo:
         "Ok, I'll bring those.",L_Close;
     if ((countitem("RawLog") < @log_amount) || (countitem("LeatherPatch") < @leather_amount))
         goto L_NoItems;
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
     delitem "RawLog", @log_amount;
     delitem "LeatherPatch", @leather_amount;
     set @stickreinboo, 3;
@@ -167,10 +170,16 @@ L_NoItems:
     mes "\"Ha, don't speak nonsense. You don't have it, so I don't have to start working.\"";
     goto L_Close;
 
+L_Full_Inv:
+    mes "[Kalevi]";
+    mes "\"You have a full backpack! Come back when you're carrying less things.\"";
+    goto L_Close;
+
 L_Close:
     set @log_amount, 0;
     set @leather_amount, 0;
     set @stickreinboo, 0;
+    set @inventorylist_count, 0;
     close;
 
 S_Update_Var:

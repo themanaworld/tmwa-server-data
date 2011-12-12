@@ -68,6 +68,65 @@ L_Search:
     mes "Imagine what would happen if they don't arrive in time!\"";
     next;
     mes "\"And remember, don't give them candy, but red apples. Those are the best ones.";
+
+
+    cleararray @choice_idx, 0, 5;
+    cleararray @choice$, "", 5;
+
+    set @C_r1, 1;
+    set @C_r2, 2;
+    set @C_r3, 3;
+    set @C_r4, 4;
+    set @C_nevermind, 5;
+
+    // counter of available answers
+    set @choices_nr, 0;
+
+    if (!(xmas11 & $@xmas11_firstReinbooDone))
+        goto L_NoR1;
+    set @choice_idx[@choices_nr], @C_r1;
+    set @choice$[@choices_nr], "I found Meireles, he's about to come home.";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoR1:
+    if (!(xmas11 & $@xmas11_secondReinbooDone))
+        goto L_NoR2;
+    set @choice_idx[@choices_nr], @C_r2;
+    set @choice$[@choices_nr], "Meileres is on his way home.";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoR2:
+    if (!(xmas11 & $@xmas11_thirdReinbooDone))
+        goto L_NoR3;
+    set @choice_idx[@choices_nr], @C_r3;
+    set @choice$[@choices_nr], "Reilemes said he'll follow my smell back home.";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoR3:
+    if (!(xmas11 & $@xmas11_fourthReinbooDone))
+        goto L_NoR4;
+    set @choice_idx[@choices_nr], @C_r4;
+    set @choice$[@choices_nr], "I found Leiremes, he should be here anytime.";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoR4:
+    set @choice_idx[@choices_nr], @C_nevermind;
+    set @choice$[@choices_nr], "I'm still searching.";
+
+    menu
+        @choice$[0],-,
+        @choice$[1],-,
+        @choice$[2],-,
+        @choice$[3],-,
+        @choice$[4],-;
+
+    set @menu, @menu - 1;
+    if (@choice_idx[@menu] == 0)
+        goto L_Close;
+    if ((@choice_idx[@menu] == @C_nevermind))
+        goto L_Close;
+    mes "[Grombadil]";
+    mes "\"Ah, that are good news!\"";
     goto L_Close;
 
 L_NoEvent:
@@ -82,6 +141,14 @@ L_RewardTime:
     goto L_Close;
 
 L_Close:
+    cleararray @choice_idx, 0, 5;
+    cleararray @choice$, "", 5;
+    set @C_r1, 0;
+    set @C_r2, 0;
+    set @C_r3, 0;
+    set @C_r4, 0;
+    set @C_nevermind, 0;
+    set @choices_nr, 0;
     close;
 }
 
