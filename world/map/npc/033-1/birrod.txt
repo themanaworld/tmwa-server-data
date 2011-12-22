@@ -1,11 +1,10 @@
 033-1.gat,72,27,0|script|Birrod|217,{
-// TODO: check name of wolf monster after it has been added to the mob_db
+
     set @Q_Barbarians_MASK, NIBBLE_0_MASK;
     set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
 
     set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
 
-// TODO: determine values:
     set @wolvern_level, 40;    // minimum level to do the wolvern hunting
     set @wolvern_amount, 10;   // number of script spawned wolverns to kill
     set @wolvern_exp, 5000;
@@ -25,20 +24,20 @@
     mes "\"We usually live high up in the snowy mountains, but we need to solve a problem, so we came down here.\"";
     next;
     mes "\"But this shouldn't concern you.\"";
-    close;
+    goto L_Close;
 
 L_Fluffy:
     mes "[Birrod]";
     mes "\"Kimarr asked you to perform the fluffy hunting? I'm curious how you're going to do it.\"";
     mes "He grins.";
-    close;
+    goto L_Close;
 
 L_Kimarr:
     mes "[Birrod]";
     mes "\"Great! Very well done! Welcome to our tribe.\"";
     next;
     mes "\"But I think, Kimarr has something for you.\"";
-    close;
+    goto L_Close;
 
 L_Hunting:
     if (BaseLevel < @wolvern_level)
@@ -55,7 +54,7 @@ L_Hunting:
     mes "Those are not the ones I mean, but those that seek the battle themselves.\"";
     set @state, 4;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Wolverns:
     if (wolvern_count >= @wolvern_amount)
@@ -65,7 +64,7 @@ L_Wolverns:
     mes "The aggressive wolverns are still roaming the forest west of here.\"";
     next;
     mes "\"This is your chance to prove your worth.\"";
-    close;
+    goto L_Close;
 
 L_Wolverns_Done:
     set @state, 5;
@@ -204,15 +203,15 @@ L_Success5:
     next;
     mes "\"Therefore you gain the ability to put back your own safety for Raging in battle with a tremendous power.";
     mes "This power now lies within you, waiting for someone to help you focusing on it.\"";
-    close;
+    goto L_Close;
 
 L_Impressed:
     mes "\"I'm very proud of you being a member of the tribe.\"";
-    close;
+    goto L_Close;
 
 L_No_Items:
     mes "\"" + strcharinfo(0) + ", remember that a member of our tribe is candid and honest.\"";
-    close;
+    goto L_Close;
 
 L_Not_Ready:
     mes "[Birrod]";
@@ -221,27 +220,32 @@ L_Not_Ready:
     next;
     mes "\"Roam this world to find more experienced persons than yourself to learn new things.";
     mes "Then come back when you've gained the ability to focus your mind.\"";
-    close;
+    goto L_Close;
 
 L_No_Member:
     mes "Birrod shakes his head.";
     mes "[Birrod]";
     mes "\"Think again about your position in our tribe and what you want to achieve.";
     mes "Come back when you feel better prepared.\"";
-    close;
+    goto L_Close;
 
 L_Weak:
     mes "[Birrod]";
     mes "\"Hello, " + strcharinfo(0) + "! I might have a task for you when you've grown up a bit.\"";
-    close;
+    goto L_Close;
 
 L_Close:
-    // TODO: set all variables to 0
+    set @Q_Barbarians_MASK, 0;
+    set @Q_Barbarians_SHIFT, 0;
+    set @state, 0;
+    set @wolvern_level, 0;
+    set @wolvern_amount, 0;
+    set @wolvern_exp, 0;
+    set @minigame_exp, 0;
     close;
 
 S_Update_Mask:
-        set QUEST_Barbarians,
-            (QUEST_Barbarians & ~(@Q_Barbarians_MASK))
-                | (@state << @Q_Barbarians_SHIFT);
-        return;
+    set QUEST_Barbarians,
+        (QUEST_Barbarians & ~(@Q_Barbarians_MASK)) | (@state << @Q_Barbarians_SHIFT);
+    return;
 }

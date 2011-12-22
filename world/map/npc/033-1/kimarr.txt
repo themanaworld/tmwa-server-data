@@ -157,11 +157,8 @@ L_Game:
     set $@Fluffy_FighterID, getcharid(3);
     set $@Fluffy_Time, 180;
 
-//TODO: set minimum number of killed fluffies, here are some ideas
-//    set $@Fluffy_Min, (BaseLevel*7)/10;
-//    set $@Fluffy_Min, (BaseLevel*2)/3;
-//    set $@Fluffy_Min, (BaseLevel*3)/4;
-    set $@Fluffy_Min, 2;
+    set $@Fluffy_Min, (BaseLevel*7)/10;
+
     warp "033-1.gat", 79, 34;
     initnpctimer;
     goto L_Close;
@@ -306,9 +303,6 @@ OnFluffyDeath:
     set @MobID, 0;
     set $@Fluffy_Kills, $@Fluffy_Kills + 1;
     set $@Fluffy_Alive, $@Fluffy_Alive - 1;
-    //TODO: remove announce after debugging
-    //  message strcharinfo(0), "Fluffies alive: " + $@Fluffy_Alive;
-    //  message strcharinfo(0), "Fluffies killed: " + $@Fluffy_Kills;
     if ($@Fluffy_Alive != 0)
         end;
     if (attachrid($@Fluffy_FighterID) == 1)
@@ -349,6 +343,9 @@ S_Clean:
     killmonster "033-1.gat", "Kimarr::OnWolvernDeath";
     killmonster "033-1.gat", "Kimarr::OnYetiDeath";
     killmonster "033-1.gat", "Kimarr::OnFluffyDeath";
+    set @Q_Barbarians_MASK, 0;
+    set @Q_Barbarians_SHIFT, 0;
+    set @state, 0;
     return;
 
 L_MaybeRecordScore:
@@ -421,12 +418,10 @@ L_Close:
 
     // if you unset @state, @Q_Barbarians_MASK or @Q_Barbarians_SHIFT, it might break the script
     // If only we had the concept of "local constants" ...
-
     close;
 
 S_Update_Mask:
     set QUEST_Barbarians,
-        (QUEST_Barbarians & ~(@Q_Barbarians_MASK))
-            | (@state << @Q_Barbarians_SHIFT);
+        (QUEST_Barbarians & ~(@Q_Barbarians_MASK)) | (@state << @Q_Barbarians_SHIFT);
     return;
 }
