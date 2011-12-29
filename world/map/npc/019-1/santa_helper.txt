@@ -1,5 +1,25 @@
+// Author: accoring to git history probably Jaxad
+// quest made seasonal and adapted to new scripting standards by Jenalya
+
 019-1.gat,74,75,0|script|Santa's Helper|105,{
     if (ChristmasQuest2 == 1) goto L_Done;
+
+    if ($@month == 12) goto L_Quest;
+
+    mes "[Santa's Helper]";
+    mes "\"Ah, isn't it peaceful here? Around Christmas time we always have problems with some slimy monsters.";
+    mes "They steal the presents boxes. I think they feel attracted by the spiritual power of the Christmas presents.\"";
+    next;
+    mes "He smiles happily.";
+    mes "[Santa's Helper]";
+    mes "\"But at this time of the year everything's calm and relaxing.\"";
+    goto L_Close;
+
+L_Quest:
+    set @purple_amount, 25;
+    set @blue_amount, 20;
+    set @green_amount, 5;
+
     mes "[Santa's Helper]";
     mes "\"Hello my young friend.";
     mes "Would you like to help me?\"";
@@ -19,51 +39,57 @@ L_Y:
     mes "[Santa's Helper]";
     mes "\"Hmm, let me check what you have.\"";
     next;
-    if (countitem("PurplePresentBox") < 25)
+    if (countitem("PurplePresentBox") < @purple_amount)
         goto L_NoItem;
-    if (countitem("BluePresentBox") < 20)
+    if (countitem("BluePresentBox") < @blue_amount)
         goto L_NoItem;
-    if (countitem("GreenPresentBox") < 5)
+    if (countitem("GreenPresentBox") < @green_amount)
         goto L_NoItem;
     getinventorylist;
     if (@inventorylist_count > 99)
         goto L_TooMany;
     mes "[Santa's Helper]";
     mes "\"Great! Here is something for you\"";
-    delitem "PurplePresentBox", 25;
-    delitem "BluePresentBox", 20;
-    delitem "GreenPresentBox", 5;
+    delitem "PurplePresentBox", @purple_amount;
+    delitem "BluePresentBox", @blue_amount;
+    delitem "GreenPresentBox", @green_amount;
     getitem "TurtleneckSweater", 1;
     set ChristmasQuest2,1;
-    close;
+    goto L_Close;
 
 L_R:
     mes "[Santa's Helper]";
     mes "\"I need:";
-    mes "25 Purple Present Boxes";
-    mes "20 Blue Present Boxes";
-    mes "5 Green Present Boxes\"";
+    mes @purple_amount + " Purple Present Boxes";
+    mes @blue_amount + " Blue Present Boxes";
+    mes @green_amount + " Green Present Boxes\"";
     next;
     goto L_M;
 
 L_N:
     mes "[Santa's Helper]";
     mes "\"Enjoy your holidays and I wish you a happy Christmas!\"";
-    close;
+    goto L_Close;
 
 L_NoItem:
     mes "[Santa's Helper]";
     mes "\"You dont seem to have enough presents.\"";
-    close;
+    goto L_Close;
 
 L_Done:
     mes "[Santa's Helper]";
     mes "\"All the children got their Christmas presents.";
     mes "Thank you for your help.\"";
-    close;
+    goto L_Close;
 
 L_TooMany:
     mes "[Santa's Helper]";
     mes "\"It doesn't look like you have room for this. Come back later.\"";
+    goto L_Close;
+
+L_Close:
+    set @purple_amount, 0;
+    set @blue_amount, 0;
+    set @green_amount, 0;
     close;
 }
