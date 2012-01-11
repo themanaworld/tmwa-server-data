@@ -1,0 +1,111 @@
+// Merchant got his shop shot down due to selling poison and asks the player for some errand
+// after finishing this, daily quest with scorpion stingers
+// Using bit 8 and 9 of QUEST_NorthTulimshar (first half of nibble 2)
+// author: Jenalya
+
+-|script|#ImecShopConfig|-1,{
+OnInit:
+    set $@ImecShopNT_MASK, 0x300;
+    set $@ImecShopNT_SHIFT, 8;
+    end;
+}
+
+021-1.gat,128,36,0|script|Imec|162,{
+
+    set @state, ((QUEST_NorthTulimshar & $@ImecShopNT_MASK) >> $@ImecShopNT_SHIFT);
+    set @money, 500;
+
+    if (@state >= 3) goto L_Stingers;
+    if (@state == 2) goto L_Return;
+    if (@state == 1) goto L_Bring;
+
+    mes "[Imec]";
+    mes "\"The Wizard's Council shut down my shop!";
+    mes "They said I was selling illegal things, but what's so illegal about poison?\"";
+    next;
+    mes "\"Anyways, I hope to get a merchant's permit again... One of these days...\"";
+    mes "He looks at you.";
+    next;
+    mes "[Imec]";
+    mes "\"You can do some errand for me. I just finished writing a petition to the Council about my shop.";
+    mes "If you bring it to the government building near the bazaar, I'll give you a small reward.\"";
+L_Offer:
+    menu
+        "What is in that government building and where is it?",L_Explain,
+        "Ok, sounds good.",-,
+        "No!",L_Close;
+    mes "[Imec]";
+    mes "\"Very good. Here is the paper.\"";
+    mes "Imec gives you a sealed letter. You put it away in a pocket seperated from your inventory, so it won't get lost.";
+    set @state, 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Explain:
+    mes "[Imec]";
+    mes "\"Follow the road to the south past the bakery, then go west when you reach the town walls. It's right before the gate to the bazaar.\"";
+    next;
+    mes "\"In the building there are several offices. If you want to join or form a party, you have to pay your taxes there first.\"";
+    next;
+    mes "\"So, will you bring my petition to the office in that building?\"";
+    if (@state == 0)
+        goto L_Offer;
+    goto L_Close;
+
+L_Bring:
+    mes "[Imec]";
+    mes "\"What are you waiting for? Bring my petition to the government building.\"";
+    menu
+        "Where is it again?",L_Explain,
+        "I'm on my way.",L_Close;
+
+L_Return:
+    mes "[Imec]";
+    mes "\"Ah, you're back.\"";
+    mes "You hand the letter of acknowledgement over to Imec.";
+    next;
+    mes "[Imec]";
+    mes "\"Very well. I'm sure I'll be able to open my shop again soon.\"";
+    next;
+    mes "It seems Imec doesn't notice you anymore.";
+    menu
+        "You mentioned a reward.",-;
+    mes "[Imec]";
+    mes "\"What? Ah, right. Here, have this.\"";
+    set Zeny, Zeny + @money;
+    set @state, 3;
+    callsub S_Update_Mask;
+    next;
+    mes "\"Actually, you could be of further help for me.\"";
+    next;
+L_Stingers:
+    mes "[Imec]";
+    set @dq_level, 10;
+    set @dq_cost, 3;
+    set @dq_count, 3;
+    set @dq_name$, "ScorpionStinger";
+    set @dq_friendly_name$, "Scorpion Stingers";
+    set @dq_money, 200;
+    set @dq_exp, 40;
+
+    callfunc "DailyQuest";
+    goto L_Close;
+
+L_Close:
+    set @money, 0;
+    set @state, 0;
+
+    set @dq_level, 0;
+    set @dq_cost, 0;
+    set @dq_count, 0;
+    set @dq_name$, "";
+    set @dq_friendly_name$, "";
+    set @dq_money, 0;
+    set @dq_exp, 0;
+    set @dq_return, 0;
+    close;
+
+S_Update_Mask:
+    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~($@ImecShopNT_MASK)) | (@state << $@ImecShopNT_SHIFT);
+    return;
+}
