@@ -1,4 +1,22 @@
-// A professor at Tulimshar's magic academy
+// A professor at Tulimshar's magic academy, involved in quest:
+// Anwar needs a magic fertilizer for his field
+// Quest uses Nibble 3 of QUEST_NorthTulimshar
+// Author: Jenalya
+// state 1: Anwar sent to Tinris for help to get a magic fertilizer
+// state 2: Tinris asked for chocolate cake as present for his girlfriend
+// state 3: Tinris asked for ingredients for the fertilizer
+// state 4: Tinris gave you the fertilizer
+// state 5: Anwar tried it out and it doesn't work well, sent you back to Tinris
+// state 6: Tinris asked for more ingredients for a new try
+// state 7: Tinris says it's really hard, gives you the fertilizer and tells you to ask Eomie to cast a spell on it
+// state 8: Eomie sends you to get some stuff so she can interrupt her spell on the spot of grass
+// state 9: Eomie casted a spell on the fertilizer
+// state 10: Anwar used it and it worked. he asks you to help him preparing a thank-you-gift for each Tinris and Eomis
+// state 11: Anwar asked to bring present to Tinris
+// state 12: gave present to Tinris
+// state 13: Anwar asked to bring present to Eomie
+// state 14: gave present to Eomie
+// state 15: reported back to Anwar and done
 
 024-1.gat,72,94,0|script|Eomie|164,{
 
@@ -11,12 +29,119 @@
 //    if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 5) goto L_MakeGrass;
 //    if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 6) goto L_SeeBunny;
 
-L_Greeting:
+    set @state, ((QUEST_NorthTulimshar & $@magicfieldNT_MASK) >> $@magicfieldNT_SHIFT);
+
+    set @grass_amount, 5;
+    set @water_amount, 2;
+    set @ice_amount, 2;
+
+    set @silk_exp, 600;
+
+    if (@state >= 14) goto L_Done;
+    if (@state >= 9) goto L_CastedSpell;
+    if (@state == 8) goto L_GetStuff;
+
     mes "[Eomie]";
-    mes "";
     mes "\"I maintain this little spot of grass in the desert.\"";
+    if (@state != 7)
+        goto L_Close;
+    menu
+        "I have this magic fertilizer from Tinris and need a spell casted on it.",-;
+    mes "[Eomie]";
+    mes "\"Oh? I see, that's a difficult task.";
+    mes "I'd be glad to help you, but unfortunaly I can't interrupt the magic I use to keep this spot of grass alive.\"";
+    next;
+    mes "\"It's unusually hot at the moment, even for this desert area. It might have something to do with the aftereffects of the earthquake.\"";
+    menu
+        "Isn't there any possibility?",-;
+    mes "She hesitates.";
+    set @state, 8;
+    callsub S_Update_Mask;
+L_GetStuff: // @state == 8
+    mes "[Eomie]";
+    mes "\"I could try to interrupt my spells to be able to cast the spell on the fertilizer, but then I need to prepare the grass for this.";
+    mes "Bring me " + @grass_amount + " Grass Seeds, " + @water_amount + " Bottles of Water and " + @ice_amount + " Ice Cubes.\"";
+    menu
+        "I have it.",-,
+        "Where can I get Grass Seeds?",L_Hurnscald,
+        "How to get Ice Cubes? Where in the desert!",L_Mine,
+        "Ok, I'll go and get it.",L_Close;
+    if ((countitem("GrassSeed") < @grass_amount) || (countitem("BottleOfWater") < @water_amount) || (countitem("IceCube") < @ice_amount))
+        goto L_NoItem;
+    delitem "GrassSeed", @grass_amount;
+    delitem "BottleOfWater", @water_amount;
+    delitem "IceCube", @ice_amount;
+    set @state, 9;
+    callsub S_Update_Mask;
+    mes "[Eomie]";
+    mes "\"Very good.\"";
+    mes "She takes the things you brought her and uses them to create some balloon of coolness around the spot of grass.";
+    misceffect sfx_magic_nature;
+    next;
+    mes "[Eomie]";
+    mes "\"This should last long enough to keep the spot of grass alive until I casted the spell on the fertilizer. And if some of it shrivels I still have the seeds you brought me which I can use to recover it.\"";
+    next;
+    mes "She takes the fertilizer and casts some invocations. After a while she's done and gives it back to you with a smile.";
+    misceffect sfx_magic_nature;
+    mes "[Eomie]";
+    mes "\"This should help you. I'm glad you're taking care about the plants. Not enough people do that nowadays.\"";
+    goto L_Close;
+
+L_Hurnscald: // player asked how to get Grass Seeds
+    mes "[Eomie]";
+    mes "\"Squirrels tend to pick up Grass Seeds as they gather food. You can find them around Hurnscald. To get there you will have to take the ferry in the harbor district.\"";
+    goto L_Close;
+
+L_Mine: // player asked how to get Ice Cubes
+    mes "[Eomie]";
+    mes "\"Hm, that's a difficult task, indeed. Naturally you will find them on the continent of Kaizei, which is high up in the north and covered with snow most time of the year. But it might be difficult to get there.\"";
+    next;
+    mes "\"But I heard that Ice Goblins were seen in this underground palace that was discovered in the desert south of the city. Maybe you can find Ice Cubes in there.\"";
+    next;
+    mes "\"Though they don't let in everyone. Miners, Soldiers and sometimes an adventurer. I suggest to talk to Lieutnant Dausen about that.\"";
+    goto L_Close;
+
+L_CastedSpell: // @state >= 9 but below 14
+    mes "[Eomie]";
+    mes "\"The grass wasn't damaged due to the interruption. I hope the magic fertilizer is useful for Anwar.\"";
+    if (@state != 13)
+        goto L_Close;
+    menu
+        "It was and he created this Silk Headband as present for you.",-,
+        "(Mumble something and leave)",L_Close;
+    if (countitem("SilkHeadband") < 1)
+        goto L_NoItem;
+    delitem "SilkHeadband", 1;
+    getexp @silk_exp, 0;
+    set @state, 14;
+    callsub S_Update_Mask;
+    mes "[Eomie]";
+    mes "\"Oh, this is very friendly! Please tell him I'm very happy about it.\"";
+    mes "She smiles.";
+    goto L_Close;
+
+L_Done: // @state >= 14
+    mes "[Eomie]";
+    mes "\"Hello. I'm happy to see someone like you being dedicated to the needs of plants and people.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Eomie]";
+    mes "\"Where is it?\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
+    set @grass_amount, 0;
+    set @water_amount, 0;
+    set @ice_amount, 0;
     close;
 
+S_Update_Mask:
+    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~($@magicfieldNT_MASK)) | (@state << $@magicfieldNT_SHIFT);
+    return;
+
+// lines below here belong to easter 2011
 L_Grass:
     mes "[Eomie]";
     mes "";
