@@ -77,7 +77,7 @@ L_Explain_Game:
     next;
     mes "\"I also saw one of them getting excited about one of that sweet things you call 'cake'.\"";
     next;
-    mes "\"You should be careful, other monsters living here might like the food as well\"";
+    mes "\"You should be careful, other monsters living here might like the food as well.\"";
     next;
     mes "\"Go to the cave entrance and throw food on the floor to make them come out.\"";
     next;
@@ -97,8 +97,9 @@ L_Ask:
     goto L_Close;
 
 L_AlreadyGotReward:
+    npctalk strcharinfo(0) + " killed " + $@Fluffy_Kills + " Fluffies and has once again proven to be a good hunter.";
+    message strcharinfo(0), "Kimarr: Once again you prove you are worth as a hunter! You killed " + $@Fluffy_Kills + " Fluffies.";
     callsub S_Clean;
-    mes "Once again you prove you are worth as a hunter, " + strcharinfo(0) + ".";
     goto L_Close;
 
 L_Reward1:
@@ -109,14 +110,16 @@ L_Reward1:
     if (@state >= 2)
         goto L_AlreadyGotReward;
 
-    set @state, 2;
-    callsub S_Update_Mask;
-    callsub S_Clean;
+    npctalk "Hooray! " + strcharinfo(0) + " killed " + $@Fluffy_Kills + " Fluffies and is now a worthy hunter.";
 
     // as far as I can tell, this fails because it won't resume from the "next"
     // when the script is executed via the "OnFluffyDeath" callback
     // (I haven't tried via the 301st call of OnTimer1000)
-    message strcharinfo(0), "Kimarr: Talk to me for your reward.";
+    message strcharinfo(0), "Kimarr: Hooray! You hunted " + $@Fluffy_Kills + " Fluffies. Talk to me for your reward.";
+
+    set @state, 2;
+    callsub S_Update_Mask;
+    callsub S_Clean;
     goto L_Close;
 
 // this label is reached on completion of the quest, or, if you inventory was
@@ -234,9 +237,6 @@ L_TimeOver:
     goto L_MaybeRecordScore;
 
 L_CheckDrops:
-    if ($@Fluffy_Alive >= 100)
-        goto L_TooManyFluffies;
-    set @Fluffy_Toomany, 0;
     set @Fluffy_RedApple,      getareadropitem("033-1.gat", 79, 29, 88, 42, "RedApple", 1);
     set @Fluffy_XmasCake,      getareadropitem("033-1.gat", 79, 29, 88, 42, "XmasCake", 1);
     set @Fluffy_Cake,          getareadropitem("033-1.gat", 79, 29, 88, 42, "Cake", 1);
@@ -245,19 +245,17 @@ L_CheckDrops:
         goto L_BeginHunting;
     goto L_ContinueTimer;
 
-L_TooManyFluffies:
-    if (@Fluffy_Toomany)
-        goto L_ContinueTimer;
-    message strcharinfo(0), "Wow, calm down, there are already too many fluffies around here.";
-    set @Fluffy_Toomany, 1;
-    goto L_ContinueTimer;
-
 L_BeginHunting:
     set $@Fluffy_Spawn, @Fluffy_RedApple + 5 * @Fluffy_XmasCake + 3 * @Fluffy_Cake + @Fluffy_GreenApple;
     // limit the number of monsters that can be spawned, to prevent people creating lag with massive amount of monsters
-    if ($@Fluffy_Spawn > 100)
-        set $@Fluffy_Spawn, 100;
+    if (($@Fluffy_Spawn + $@Fluffy_Alive) <= 100)
+        goto L_SpawnFluffies;
+    message strcharinfo(0), "Wow, calm down, there are already too many fluffies around here.";
+    set $@Fluffy_Spawn, 100 - $@Fluffy_Alive;
+    if ($@Fluffy_Spawn <= 0)
+        goto L_ContinueTimer;
 
+ L_SpawnFluffies:
     areamonster "033-1.gat", 79, 29, 88, 42, "", 1089, $@Fluffy_Spawn, "Kimarr::OnFluffyDeath";
 
     set $@Fluffy_Extra, 5 * @Fluffy_XmasCake + 3 * @Fluffy_Cake + 12 * ($@Fluffy_Alive + $@Fluffy_Spawn) + 7 * BaseLevel;
@@ -399,6 +397,8 @@ L_FinallyInsertMe:
     goto L_Reward1;
 
 L_NotGoodEnough:
+    npctalk  "What a disapointment, " + strcharinfo(0) + " hunted only " + $@Fluffy_Kills + " Fluffies.";
+    message strcharinfo(0), "Kimarr: What a disapointment, you hunted only " + $@Fluffy_Kills + " Fluffies.";
     callsub S_Clean;
     end;
 
