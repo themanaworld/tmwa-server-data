@@ -1,12 +1,8 @@
 033-1.gat,72,27,0|script|Birrod|217,{
 
-    set @Q_Barbarians_MASK, NIBBLE_0_MASK;
-    set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
-
-    set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
+    set @state, ((QUEST_Barbarians & $@Q_Barbarians_MASK) >> $@Q_Barbarians_SHIFT);
 
     set @wolvern_level, 40;    // minimum level to do the wolvern hunting
-    set @wolvern_amount, 10;   // number of script spawned wolverns to kill
     set @wolvern_exp, 5000;
 
     set @minigame_exp, 5000;
@@ -48,7 +44,7 @@ L_Hunting:
     mes "\"I noticed some groups of wolverns in the forest west of here which are unusually aggressive.";
     mes "This makes it dangerous for all the small people from the town nearby to go there.\"";
     next;
-    mes "\"To prove your skills, go to the forest and hunt down " + @wolvern_amount + " of the very aggressive wolverns.\"";
+    mes "\"To prove your skills, go to the forest and hunt down " + $@Q_Barbarians_wolvern_amount + " of the very aggressive wolverns.\"";
     next;
     mes "\"There are also some wolverns that behave normally and attack you only when you come too close to them.";
     mes "Those are not the ones I mean, but those that seek the battle themselves.\"";
@@ -57,7 +53,7 @@ L_Hunting:
     goto L_Close;
 
 L_Wolverns:
-    if (wolvern_count >= @wolvern_amount)
+    if (wolvern_count >= $@Q_Barbarians_wolvern_amount)
         goto L_Wolverns_Done;
     mes "[Birrod]";
     mes "\"Greetings, my friend.";
@@ -235,17 +231,14 @@ L_Weak:
     goto L_Close;
 
 L_Close:
-    set @Q_Barbarians_MASK, 0;
-    set @Q_Barbarians_SHIFT, 0;
     set @state, 0;
     set @wolvern_level, 0;
-    set @wolvern_amount, 0;
     set @wolvern_exp, 0;
     set @minigame_exp, 0;
     close;
 
 S_Update_Mask:
     set QUEST_Barbarians,
-        (QUEST_Barbarians & ~(@Q_Barbarians_MASK)) | (@state << @Q_Barbarians_SHIFT);
+        (QUEST_Barbarians & ~($@Q_Barbarians_MASK)) | (@state << $@Q_Barbarians_SHIFT);
     return;
 }

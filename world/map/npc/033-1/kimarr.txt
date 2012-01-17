@@ -37,10 +37,7 @@
     if ($@Fluffy_FighterID == getcharid(3))
         goto L_Attention;
 
-    set @Q_Barbarians_MASK, NIBBLE_0_MASK;
-    set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
-
-    set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
+    set @state, ((QUEST_Barbarians & $@Q_Barbarians_MASK) >> $@Q_Barbarians_SHIFT);
 
     if (@state >= 3) goto L_Again;
     if (@state == 2) goto L_Reward;
@@ -103,9 +100,7 @@ L_AlreadyGotReward:
     goto L_Close;
 
 L_Reward1:
-    set @Q_Barbarians_MASK, NIBBLE_0_MASK;
-    set @Q_Barbarians_SHIFT, NIBBLE_0_SHIFT;
-    set @state, ((QUEST_Barbarians & @Q_Barbarians_MASK) >> @Q_Barbarians_SHIFT);
+    set @state, ((QUEST_Barbarians & $@Q_Barbarians_MASK) >> $@Q_Barbarians_SHIFT);
 
     if (@state >= 2)
         goto L_AlreadyGotReward;
@@ -344,8 +339,6 @@ S_Clean:
     killmonster "033-1.gat", "Kimarr::OnWolvernDeath";
     killmonster "033-1.gat", "Kimarr::OnYetiDeath";
     killmonster "033-1.gat", "Kimarr::OnFluffyDeath";
-    set @Q_Barbarians_MASK, 0;
-    set @Q_Barbarians_SHIFT, 0;
     set @state, 0;
     return;
 
@@ -420,12 +413,12 @@ L_Close:
     // still, I think it's a good precent to ALWAYS exit via L_Close
     set @loop, 0;
 
-    // if you unset @state, @Q_Barbarians_MASK or @Q_Barbarians_SHIFT, it might break the script
+    // if you unset @state, it might break the script
     // If only we had the concept of "local constants" ...
     close;
 
 S_Update_Mask:
     set QUEST_Barbarians,
-        (QUEST_Barbarians & ~(@Q_Barbarians_MASK)) | (@state << @Q_Barbarians_SHIFT);
+        (QUEST_Barbarians & ~($@Q_Barbarians_MASK)) | (@state << $@Q_Barbarians_SHIFT);
     return;
 }
