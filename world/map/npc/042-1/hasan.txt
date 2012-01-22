@@ -10,6 +10,7 @@
     if (FLAGS & FLAG_TUTORIAL_DONE)
         goto L_Tut_Done;
     // Please consider rewriting this in terms of isin()
+    // it's not that trivial to put this in a rectangle...
     if ( (@y < 64)&&(@x < 110) || (@x < 107) )
         goto L_Cliff_Up;
     // implicitly, $@ScorpionFighter is nonzero
@@ -46,12 +47,11 @@ L_Toll:
     menu
         "What? I don't have that much money!",L_NoPay,
         "We'll see if you can stop me!",L_Fight;
-    close;
 
 L_NoPay:
     mes "[Hasan]";
     mes "\"That's not my problem. You have to stay here then.\"";
-    close;
+    goto L_Close;
 
 L_Fight:
     mes "He laughs derisively.";
@@ -60,7 +60,7 @@ L_Fight:
     mes "He pulls out a nasty looking dagger and stabs it in your direction.";
     set Hp, 1;
     mes "That hurt! You begin to think searching for a different solution might be healthier.";
-    close;
+    goto L_Close;
 
 L_Pay:
     if (Zeny < @toll)
@@ -75,12 +75,12 @@ L_Pay:
     set tanisha, 0;
     set maggot, 0;
     set FLAGS, FLAGS | FLAG_TUTORIAL_DONE;
-    close;
+    goto L_Close;
 
 L_Cheat:
     mes "[Hasan]";
     mes "\"Don't you dare try to cheat me!\"";
-    close;
+    goto L_Close;
 
 L_Trick:
     mes "[Hasan]";
@@ -127,12 +127,12 @@ L_Thank:
         "I'll try to find the way myself.",L_Explore,
         "Could you just tell me the way?",L_Directions;
     warp "001-1.gat", 44, 40;
-    close;
+    goto L_Close;
 
 L_Explore:
     mes "[Hasan]";
     mes "\"Alright. Take care!\"";
-    close;
+    goto L_Close;
 
 L_Directions:
     mes "[Hasan]";
@@ -141,13 +141,13 @@ L_Directions:
     mes "\"Pass through them and at the crossway, just go west and then south until you reach some other gateway.\"";
     next;
     mes "\"Behind it there is the bazaar of Tulimshar.\"";
-    close;
+    goto L_Close;
 
 L_Fear:
     mes "[Hasan]";
     mes "\"Sc-sc-sco-scorpion!\"";
     mes "He seems close to tears.";
-    close;
+    goto L_Close;
 
 L_Tut_Done:
     mes "[Hasan]";
@@ -155,15 +155,15 @@ L_Tut_Done:
         mes "\"Welcome to the suburbs of Tulimshar. I wonder what an experienced adventurer like you is doing here.\"";
     if (BaseLevel < 40)
         mes "\"Bah, nothing interesting is happening here.\"";
-    close;
+    goto L_Close;
 
 L_Distance:
     mes "There is a person off in the distance. He doesn't seem to notice you, maybe you should go closer.";
-    close;
+    goto L_Close;
 
 L_Cliff_Up:
     mes "You see a guy in shabby clothes when you look down the cliff.";
-    close;
+    goto L_Close;
 
 L_SummonAgain:
     message strcharinfo(0), "Kaan is mad at you for your interference! He walks over to the edge of the cliff and throws a rock on top of your head, then lets another scorpion run just near Hasan!";
@@ -192,6 +192,12 @@ L_MessageDeath:
 
 L_Wait:
     mes "There is a scorpion near Hasan already. I think Kaan is helping someone else... Maybe I should try the plan later.";
+    goto L_Close;
+
+L_Close:
+    set @toll, 0;
+    set @x, 0;
+    set @y, 0;
     close;
 
 OnTimer5000:
