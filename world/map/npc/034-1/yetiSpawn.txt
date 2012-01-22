@@ -35,7 +35,7 @@ OnYetiDeath:
 
     set @state, ((QUEST_Barbarians & $@Q_Barbarians_MASK) >> $@Q_Barbarians_SHIFT);
     if (@state != 7)
-        goto L_End;
+        goto L_NonQuestKill;
     set @state, 8;
     callsub S_Update_Mask;
     message strcharinfo(0), "You defeated the Yeti.";
@@ -44,6 +44,11 @@ L_End:
     set $@Yerrnk_Yeti_Active, 0;
     set $@Yerrnk_Yetifighter_ID, 0;
     end;
+
+L_NonQuestKill:
+    message strcharinfo(0), "The dying Yeti takes you along to the other side.";
+    percentheal -100, 0;
+    goto L_End;
 
 S_Update_Mask:
         set QUEST_Barbarians,
