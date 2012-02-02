@@ -6,9 +6,8 @@
 // Variables:
 // global $@Fluffy_Hunting - state of the quest
 //      0: nobody is hunting
-//      1: somebody is hunting. The script checks every second if there is food on the ground.
-//      2: not used anymore, was: food dropped but no spawn yet
-//      3: not used anymore, was: monsters have been spawned
+//    1-2: 2 timer iterations to give time for the warp to finish.
+//      3: somebody is hunting. The script checks every second if there is food on the ground.
 // global $@Fluffy_Time - the number of seconds since you entered the area
 // global $@Fluffy_Spawn - how many fluffies have been spawned
 // global $@Fluffy_Kills - how many fluffies you have killed so far
@@ -174,6 +173,12 @@ L_Attention:
     end;
 
 OnTimer1000:
+// Give 3 seconds, so the server can warp and the player can get ready
+    if ($@Fluffy_Hunting == 3)
+        goto L_Action;
+    set $@Fluffy_Hunting, $@Fluffy_Hunting + 1;
+    goto L_ContinueTimer;
+L_Action:
 // Checking if player is logged
     if (attachrid($@Fluffy_FighterID) == 0)
         goto L_GotOut;
