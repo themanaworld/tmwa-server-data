@@ -1,6 +1,10 @@
 // A historian
+// takes part in quest given by 021-2/kylian.txt
 
 021-1.gat,130,125,0|script|Weellos|103,{
+    set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@knowWeellosNT;
+    set @kylian, ((QUEST_NorthTulimshar & $@businessmanNT_MASK) >> $@businessmanNT_SHIFT);
+
     set @hw2011_npc_id, $@hw2011_npc_weellos;
     if (gettime(7) == $@hw2011_year && gettime(6) == 10 && gettime(5) >= $@hw2011_start_day)
         goto L_TrickOrTreat;
@@ -10,12 +14,23 @@ L_Begin:
 
     mes "[Weellos]";
     mes "\"This is a very historic building. One of the oldest in the area.\"";
-    close;
+    goto L_BeforeClose;
 
 // If the player is inside the fence with Weellos
 L_In:
     mes "[Weellos]";
     mes "\"What did you think of the historic building?\"";
+    goto L_BeforeClose;
+
+L_BeforeClose:
+    if (@kylian != 4)
+        goto L_Close;
+    next;
+    mes "You wonder if Kylian would be interested to see this building.";
+    goto L_Close;
+
+L_Close:
+    set @kylian, 0;
     close;
 
 L_TrickOrTreat:
