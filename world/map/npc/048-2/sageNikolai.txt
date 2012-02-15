@@ -1,0 +1,292 @@
+// Part of Blue Sage quests
+// author: Jenalya
+// see bluesageConfig for detailed quest description
+// Sage Nikolai gives hints about the different subquests and rewards
+
+048-2.gat,98,106,0|script|Nikolai|362,{
+
+    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    set @bookpages, ((QUEST_BlueSage & $@Q_BlueSageBookPages_MASK) >> $@Q_BlueSageBookPages_SHIFT);
+    set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    set @material, ((QUEST_BlueSage & $@Q_BlueSageMaterial_MASK) >> $@Q_BlueSageMaterial_SHIFT);
+
+    if ((@bookpages == 31)
+            && (QUEST_BlueSage & $@Q_BlueSageMaterialInk)
+            && (QUEST_BlueSage & $@Q_BlueSageMaterialClaw)
+            && (QUEST_BlueSage & $@Q_BlueSageMaterialReed)
+            && (QUEST_BlueSage & $@Q_BlueSageMaterialSilk)
+            && !(QUEST_BlueSage & $@Q_BlueSageGrimoire))
+        goto L_GrimoireReward;
+
+    if ((@slimes == 255) && !(QUEST_BlueSage & $@Q_BlueSageIceSword))
+        goto L_SlimesReward;
+
+    if ((QUEST_BlueSage & $@Q_BlueSageGrimoire) && (QUEST_BlueSage & $@Q_BlueSageIceSword))
+        goto L_Done;
+
+    if (QUEST_BlueSage > 0)
+        goto L_Hints;
+
+    mes "You see a very reputable looking man who is going through some papers. He looks up as you approach.";
+    mes "[Nikolai]";
+    mes "\"Welcome to my mansion. I am Nikolai, member of the Sages of Kaizei.";
+    mes "I assume you came to see our famous library? As you can see, it isn't in a good shape due to some... misfortunes. I'm very sorry.\"";
+    if (BaseLevel < $@Q_BlueSageMinimumLevel)
+        goto L_Close;
+    next;
+    mes "\"You seem to be a quite experienced adventurer. I usually wouldn't ask for this, but since my dear friend Santa mentioned his good experiences with hiring additional helpers in times of pressure, I reconsidered.";
+    mes "If you don't mind, every help with our current situation would be appreciated.\"";
+    next;
+    mes "\"There are many things to take care of at the moment, so if you'd like to aid us, the helpers will be able to tell you what they need.\"";
+    goto L_Close;
+
+L_Hints:
+    mes "[Nikolai]";
+    mes "\"I heard you started to help out a bit. That's very kind.\"";
+
+    cleararray @choice_idx, 0, 10;
+    cleararray @choice$, "", 10;
+
+    set @C_startBookpages, 1;
+    set @C_bookpages, 2;
+    set @C_startMaterials, 3;
+    set @C_materials, 4;
+    set @C_startSlimes, 5;
+    set @C_slimes, 6;
+    set @C_startInvestigate, 7;
+    set @C_investigate, 8;
+    set @C_investigate2, 9;
+    set @C_nevermind, 10;
+
+    // counter of available answers
+    set @choices_nr, 0;
+
+    if (@bookpages > 0)
+        goto L_NoStartBookpages;
+    set @choice_idx[@choices_nr], @C_startBookpages;
+    set @choice$[@choices_nr], "I heard the slimes ate most of the books...";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoStartBookpages:
+    if ((@bookpages == 0) || (@bookpages == 31))
+        goto L_NoBookpages;
+    set @choice_idx[@choices_nr], @C_bookpages;
+    set @choice$[@choices_nr], "I'm collecting lost bookpages.";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoBookpages:
+    if (@material > 0)
+        goto L_NoStartMaterials;
+    set @choice_idx[@choices_nr], @C_startMaterials;
+    set @choice$[@choices_nr], "There were many valuable books in your library, right?";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoStartMaterials:
+    if ((@material == 0) || (@material == 255))
+        goto L_NoMaterials;
+    set @choice_idx[@choices_nr], @C_materials;
+    set @choice$[@choices_nr], "I brought some material to repair the books.";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoMaterials:
+    if (@slimes > 0)
+        goto L_NoStartSlimes;
+    set @choice_idx[@choices_nr], @C_startSlimes;
+    set @choice$[@choices_nr], "Those slimes really caused a mess!";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoStartSlimes:
+    if ((@slimes == 0) || (@slimes == 255))
+        goto L_NoSlimes;
+    set @choice_idx[@choices_nr], @C_slimes;
+    set @choice$[@choices_nr], "I'm hunting the remaining slimes in the library.";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoSlimes:
+    if (@investigate > 0)
+        goto L_NoStartInvestigate;
+    set @choice_idx[@choices_nr], @C_startInvestigate;
+    set @choice$[@choices_nr], "How did this all happen?";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoStartInvestigate:
+    if ((@investigate < 2) || (@investigate > 11))
+        goto L_NoInvestigate;
+    set @choice_idx[@choices_nr], @C_investigate;
+    set @choice$[@choices_nr], "I'm trying to find out how that accident could've happened.";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoInvestigate:
+    if (@investigate != 11)
+        goto L_NoInvestigate2;
+    set @choice_idx[@choices_nr], @C_investigate2;
+    set @choice$[@choices_nr], "I told Chief Oskari what I found out about the accident.";
+    set @choices_nr, @choices_nr + 1;
+
+L_NoInvestigate2:
+    set @choice_idx[@choices_nr], @C_nevermind;
+    set @choice$[@choices_nr], "Nevermind.";
+
+    menu
+        @choice$[0],-,
+        @choice$[1],-,
+        @choice$[2],-,
+        @choice$[3],-,
+        @choice$[4],-,
+        @choice$[5],-,
+        @choice$[6],-,
+        @choice$[7],-,
+        @choice$[8],-,
+        @choice$[9],-;
+
+    set @menu, @menu - 1;
+    if (@choice_idx[@menu] == 0)
+        goto L_Close;
+    if (@choice_idx[@menu] == @C_startBookpages)
+        goto L_StartPagesAdvice;
+    if (@choice_idx[@menu] == @C_bookpages)
+        goto L_PagesAdvice;
+    if (@choice_idx[@menu] == @C_startMaterials)
+        goto L_StartMaterialAdvice;
+    if (@choice_idx[@menu] == @C_materials)
+        goto L_MaterialAdvice;
+    if (@choice_idx[@menu] == @C_startSlimes)
+        goto L_StartSlimesAdvice;
+    if (@choice_idx[@menu] == @C_slimes)
+        goto L_SlimesAdvice;
+    if (@choice_idx[@menu] == @C_startInvestigate)
+        goto L_StartInvestigateAdvice;
+    if (@choice_idx[@menu] == @C_investigate)
+        goto L_InvestigateAdvice;
+    if (@choice_idx[@menu] == @C_investigate2)
+        goto L_InvestigateAdvice2;
+    if ((@choice_idx[@menu] == @C_nevermind))
+        goto L_Close;
+     goto L_Close;
+
+L_StartPagesAdvice:
+    // I heard the slimes ate most of the books...
+    mes "[Nikolai]";
+    mes "\"This is true. But while hunting the slimes we discovered that they occasionaly drop bookpages that are still readable.";
+    mes "Since we had several copies of nearly all the books, we might be able to recreate most of them if we can get at least one copy of each page.\"";
+    goto L_Close;
+
+L_PagesAdvice:
+    // I'm collecting lost bookpages.
+    mes "[Nikolai]";
+    mes "\"Excellent! This will save us a lot of time. Ensio coordinates the sorting of the pages.\"";
+    goto L_Close;
+
+L_StartMaterialAdvice:
+    // There were many valuable books in your library, right?
+    mes "He sighs.";
+    mes "[Nikolai]";
+    mes "\"Yes. There were some really old and rare pieces.\"";
+    next;
+    mes "\"We're going to recreate some of them, but I'm not sure if we have all the needed materials. If you'd like to help you could ask around if someone is missing something.\"";
+    goto L_Close;
+
+L_MaterialAdvice:
+    // I brought some material to repair the books.
+    mes "[Nikolai]";
+    mes "\"That's very generous! Though I think not everyone has all they need yet.\"";
+    goto L_Close;
+
+L_StartSlimesAdvice:
+    // Those slimes really caused a mess!
+    mes "[Nikolai]";
+    mes "\"Indeed. My helpers did great work to clean the worst of it, but there are still some remaining slimes in the deeper parts of the library.\"";
+    goto L_Close;
+
+L_SlimesAdvice:
+    // I'm hunting the remaining slimes in the library.
+    mes "[Nikolai]";
+    mes "\"You're a great help! All helpers who would be capable to deal with the slimes are occupied with other tasks.\"";
+    goto L_Close;
+
+L_StartInvestigateAdvice:
+    // How did this all happen?
+    mes "[Nikolai]";
+    mes "\"We're not sure yet. The helper who was responsible to seal away the slimes has been sent to his room until they situation calms down and we can start an investigation.\"";
+    goto L_Close;
+
+L_InvestigateAdvice:
+    // I'm trying to find out how that accident could've happened.
+    mes "[Nikolai]";
+    mes "\"I see. Well, we were too busy to start with that ourselves, but having someone unbiased looking at this case might be a good thing.\"";
+    next;
+    mes "\"It might be good if you talk to Elias at the reception. He usually has a very good overview of all the things going on and especially about visitors.\"";
+    goto L_Close;
+
+L_InvestigateAdvice2:
+    // I told Chief Oskari what I found out about the accident.
+    mes "[Nikolai]";
+    mes "\"Yes, he already let me know. You're investigations were very helpful! This is surely something we need to look into further.\"";
+    next;
+    mes "\"Did you already talk to Peetu? I'm sure he'll be glad to know about your results as well.\"";
+    goto L_Close;
+
+L_GrimoireReward:
+    mes "[Nikolai]";
+    mes "\"Ah, " + strcharinfo(0) + "! We're doing excellent progress with our attempts to recover the important and valuable of the destroyed books, all thanks to you.\"";
+    next;
+    mes "\"I'd like you to have this as a reward for your help.\"";
+    getinventorylist;
+    if ((checkweight("Grimoire", 1) == 0) || (@inventory_count == 100))
+        goto L_Full_Inv;
+    getitem "Grimoire", 1;
+    set QUEST_BlueSage, QUEST_BlueSage | $@Q_BlueSageGrimoire;
+    mes "He hands you a very precious book.";
+    next;
+    mes "\"This is an artifact of great power, and holding it while attempting to use magic will allow you to access your inner magic power much better. Use it wisely.\"";
+    goto L_Close;
+
+L_SlimesReward:
+    mes "[Nikolai]";
+    mes "\"Ah, I heard you took care about the remaining slimes in the library!\"";
+    next;
+    mes "\"While looking through some old artifacts that we found during the cleaning, we found this sword. We don't really have a use for it.\"";
+    getinventorylist;
+    if ((checkweight("IceGladius", 1) == 0) || (@inventory_count == 100))
+        goto L_Full_Inv;
+    getitem "IceGladius", 1;
+    set QUEST_BlueSage, QUEST_BlueSage | $@Q_BlueSageIceSword;
+    mes "He gives you a sword with a shimmering blue blade.";
+    next;
+    mes "\"I'm sure you can use this well.\"";
+    goto L_Close;
+
+L_Full_Inv:
+    mes "[Nikolai]";
+    mes "\"You have a very full backback. Please come back when you have more room available.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Nikolai]";
+    mes "\"Thanks for all your help.\"";
+    goto L_Close;
+
+L_Close:
+    set @inventorylist_count, 0;
+    set @investigate, 0;
+    set @bookpages, 0;
+    set @slimes, 0;
+    close;
+}
+
+048-2.gat,100,106,0|script|Debug|160,{
+    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    set @bookpages, ((QUEST_BlueSage & $@Q_BlueSageBookPages_MASK) >> $@Q_BlueSageBookPages_SHIFT);
+    set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    mes "QUEST_BlueSage: " + QUEST_BlueSage;
+    mes "investigate: " + @investigate;
+    mes "slimes: " + @slimes;
+    mes "bookpages: " + @bookpages;
+    menu
+        "reset quest",-,
+        "close",L_Close;
+    set QUEST_BlueSage, 0;
+L_Close:
+    close;
+}

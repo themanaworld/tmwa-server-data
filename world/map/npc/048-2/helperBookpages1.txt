@@ -1,0 +1,114 @@
+// Part of Blue Sage quests
+// author: Jenalya
+// see bluesageConfig for detailed quest description
+// Ensio is one of the helpers working on sorting the bookpages, can take bookpages
+// can give second hint about the visitor in investigation subquest
+
+048-2.gat,104,86,0|script|Ensio|365,{
+
+    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    set @bookpages, ((QUEST_BlueSage & $@Q_BlueSageBookPages_MASK) >> $@Q_BlueSageBookPages_SHIFT);
+
+    set @old_bookpage_exp, 1000;
+    set @new_bookpage_exp, 10000;
+
+    if (@bookpages == 31) goto L_Thank;
+    if (@bookpages > 0) goto L_Progress;
+
+    mes "[Ensio]";
+    mes "\"Hello. Did you come here to see the library? It's not much left... But we're working on recovering the books by collecting the ripped out book pages, sorting them and recreating the books.\"";
+    if (BaseLevel < $@Q_BlueSageMinimumLevel)
+        goto L_Close;
+    menu
+        "Good luck with that. See you in ten years or something.",L_Investigate,
+        "Can I help somehow?",-;
+    mes "[Ensio]";
+    mes "\"Oh, would you? That'd be great! You see, the slimes ate most of the books and it is difficult to get back the bookpages.";
+    mes "If you feel capable of this task, you could go out to hunt the Blue and White Slimes to get back the bookpages from them.\"";
+L_Progress:
+    mes "[Ensio]";
+    mes "\"Did you get some bookpage from the slimes?\"";
+    menu
+        "Yes, have a look.",-,
+        "No.",L_Investigate;
+
+    if (countitem("BookPage") < 1)
+        goto L_NoItem;
+    delitem "BookPage", 1;
+
+    if (rand(100 - @bookpages) > 50)
+        goto L_OldPage;
+
+    set @bookpages, @bookpages + 1;
+    callfunc "updateBlueSageBookPages";
+    getexp @new_bookpage_exp, 0;
+    mes "[Ensio]";
+    mes "\"Ah, wonderful! This is a page we didn't find yet!\"";
+    if (@bookpages < 31)
+        goto L_Progress;
+    next;
+    mes "\"Amazing. I think you found all the missing pages of which we don't had a copy. This is a great help! I'll mention this towards Nikolai.\"";
+    goto L_Investigate;
+
+L_OldPage:
+    getexp @old_bookpage_exp, 0;
+    mes "[Ensio]";
+    mes "\"Mh, let me see. We already have a copy of this page, but it's helpful nevertheless. Thank you.\"";
+    goto L_Progress;
+
+L_Thank:
+    mes "[Ensio]";
+    mes "\"We'd never be able to recover our books so quickly without your help. Thanks!\"";
+    goto L_Investigate;
+
+L_NoItem:
+    mes "[Ensio]";
+    mes "\"This isn't funny! Come back when you're serious.\"";
+    goto L_Investigate;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Can you tell me something about the visitor with the mask?",L_Visitor,
+        "I need to leave.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your impression about Peetu and how he does his work?",L_Helper,
+        "See you later.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Can you tell me something about the visitor with the mask?",L_Visitor,
+        "What's your impression about Peetu and how does he do his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Visitor:
+    mes "[Ensio]";
+    mes "\"Visitor with a mask? Ah, I think I know who are you talking about. Black clothes and a golden mask. Rather strange guy.\"";
+    next;
+    mes "\"He was looking around in the library a while, and then came to ask about our researches. He seemed to be particularly interested in our experiments with the slimes.";
+    mes "Heh, I wonder what he've had said if he'd have visited us a little bit later. Mh, now that I think about it, the accidenet with the slimes happened just the night after he was here.\"";
+    if ((@investigate != 3) && (@investigate != 6) && (@investigate != 9))
+        goto L_Close;
+    set @investigate, @investigate + 1;
+    callfunc "updateBlueSageInvestigate";
+    goto L_Close;
+
+L_Helper:
+    mes "[Ensio]";
+    mes "\"Oh, I can't really tell. I'm mostly working in the library, while he's very involved in the researches. \"";
+    goto L_Close;
+
+L_Close:
+    set @investigate, 0;
+    set @bookpages, 0;
+    set @old_bookpage_exp, 0;
+    set @new_bookpage_exp, 0;
+    close;
+}

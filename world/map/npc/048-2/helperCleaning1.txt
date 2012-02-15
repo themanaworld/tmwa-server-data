@@ -1,0 +1,86 @@
+// Part of Blue Sage quests
+// author: Jenalya
+// see bluesageConfig for detailed quest description
+// Pyry works on cleaning the library, can start the slime subquest
+// can give second hint about helper in investigation subquest
+
+048-2.gat,117,106,0|script|Pyry|365,{
+
+    set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+
+    if (@slimes == 255) goto L_Thank;
+    if (@slimes > 0) goto L_Progress;
+
+    mes "[Pyry]";
+    mes "\"Welcome to the library of Sage Nikolai. I'm very sorry, but as you see it's not in a good shape at the moment. Most of the books got eaten by the slimes or damaged and we're working hard on cleaning up the mess.";
+    mes "I have to ask you not to go in the deeper parts of the library, since there are still some of the slimes left and they're dangerous.\"";
+    if (BaseLevel < $@Q_BlueSageMinimumLevel)
+        goto L_Close;
+    menu
+        "I can fight them.",-,
+        "Ok, thanks for the warning.",L_Investigate;
+    mes "Pyry seems surprised.";
+    mes "[Pyry]";
+    mes "\"That... I didn't think about this possibility. But it'd be a great help!";
+    mes "Ok, there are some slimes left in the deeper parts of the library. They... erm, developed some very fast breeding behaviour, both the Blue Slimes and the White Slimes, but in a slightly different fashion.\"";
+    next;
+    mes "\"The Blue ones are able to generate smaller slimes which show a self-destructive behaviour to protect their... parent slime if you want to call it like that. You have to kill the big one, but be careful about the smaller ones while trying that.\"";
+    next;
+    mes "\"The White Slimes appear in groups and when you attack one of them, they also show some self-destructive behaviour to protect their group as a whole. You have to defeat all of one group, otherwise the remaining ones will breed new slimes to fill up their losses.\"";
+    set QUEST_BlueSage, QUEST_BlueSage | $@Q_BlueSageSlimesStart;
+    goto L_Investigate;
+
+L_Progress:
+    mes "[Pyry]";
+    mes "\"It's very brave of you to fight against those slimes deeper in the library. Remember that you have to kill all of one group to prevent them from breeding.\"";
+    goto L_Investigate;
+
+L_Thank:
+    mes "[Pyry]";
+    mes "\"It seems all of the slimes are gone now. I'm so glad! Thanks for your help. I mentioned your assistance to Nikolai.\"";
+    goto L_Investigate;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Can you tell me something about the visitor with the mask?",L_Visitor,
+        "I need to leave.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your impression about Peetu and how he does his work?",L_Helper,
+        "See you later.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Can you tell me something about the visitor with the mask?",L_Visitor,
+        "What's your impression about Peetu and how does he do his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Visitor:
+    mes "[Pyry]";
+    mes "\"Mh, yes. I remember him, he was very interested in the library and the researches we do here. He had an unordinary behaviour and appearance. But well, this isn't a reason to refuse someone, right?\"";
+    goto L_Close;
+
+L_Helper:
+    mes "[Pyry]";
+    mes "\"Peetu? I was always glad to have him in the team. He really brought forward our work here.\"";
+    next;
+    mes "\"I was very surprised when I heard that he's responsible for the failed sealing spell. I'd never have expected that from him.\"";
+    if ((@investigate != 5) && (@investigate != 6) && (@investigate != 7))
+        goto L_Close;
+    set @investigate, @investigate + 3;
+    callfunc "updateBlueSageInvestigate";
+    goto L_Close;
+
+L_Close:
+    set @investigate, 0;
+    set @slimes, 0;
+    close;
+}

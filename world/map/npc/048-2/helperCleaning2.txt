@@ -1,0 +1,76 @@
+// Part of Blue Sage quests
+// author: Jenalya
+// see bluesageConfig for detailed quest description
+// Nea works on cleaning the library
+// can give second hint about helper in investigation subquest
+
+048-2.gat,123,87,0|script|Nea|363,{
+
+    set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+
+    if (@slimes == 255) goto L_Thank;
+    if (@slimes > 0) goto L_Progress;
+
+    mes "[Nea]";
+    mes "\"Oh, hello. If I were you I wouldn't go deeper into the library. There are still some of those monsters left. Slipping around between the bookshelves.\"";
+    mes "She shudders.";
+    next;
+    mes "[Nea]";
+    mes "\"And they can explode! Nothing in the world could make go there. I'll do my work just right here, clean the floor and tidy up the books, while I keep my eyes open if they get over here.\"";
+    goto L_Investigate;
+
+L_Progress:
+    mes "[Nea]";
+    mes "\"Oh, I'm so glad you're taking care about this scary slimes. You're so brave!";
+    mes "How much of the are still left, what do you think? Will it be secure to go there soon?\"";
+    goto L_Investigate;
+
+L_Thank:
+    mes "[Nea]";
+    mes "\"I feel much safer now that you defeated the slimes. Thanks so much!\"";
+    goto L_Investigate;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Can you tell me something about the visitor with the mask?",L_Visitor,
+        "I need to leave.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your impression about Peetu and how he does his work?",L_Helper,
+        "See you later.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Can you tell me something about the visitor with the mask?",L_Visitor,
+        "What's your impression about Peetu and how does he do his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Visitor:
+    mes "[Nea]";
+    mes "\"With a mask? Mh, I think I know who are you talking about, I remember vaguely that there was someone with a mask... but I can't recall any details, I didn't really pay attention.\"";
+    goto L_Close;
+
+L_Helper:
+    mes "[Nea]";
+    mes "\"Peetu? Yeah, he's that kind of person who always wants to do things perfectly. That makes him a bit wearisome to work with him, since he has as high expectations to everyone else as he has to himself.\"";
+    next;
+    mes "\"I really wonder how that accident with the sealing spell could've happened. I'd have never expected him to mess up something like that.\"";
+    if ((@investigate != 5) && (@investigate != 6) && (@investigate != 7))
+        goto L_Close;
+    set @investigate, @investigate + 3;
+    callfunc "updateBlueSageInvestigate";
+    goto L_Close;
+
+L_Close:
+    set @investigate, 0;
+    set @slimes, 0;
+    close;
+}
