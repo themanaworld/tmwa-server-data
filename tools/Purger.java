@@ -21,7 +21,7 @@ import java.util.*;
         int accounts = 0;
         int characters = 0;
         int deletedCharacters = 0;
-        Vector activeAccounts = new Vector();
+        Set<String> activeAccounts = new HashSet<String>();
 
         File folder = new File(args[0]);
         // Do some sanity checking
