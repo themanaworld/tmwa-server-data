@@ -13,7 +13,10 @@
     set @new_bookpage_exp, 10000;
 
     if (@bookpages == 31) goto L_Thank;
-    if (@bookpages > 0) goto L_Progress;
+    if (@bookpages > 26) goto L_Almost;
+    if (@bookpages > 18) goto L_Many;
+    if (@bookpages > 8) goto L_Some;
+    if (@bookpages > 0) goto L_Few;
 
     mes "[Ensio]";
     mes "\"Hello. Did you come here to see the library? There isn't much left... But we're working on recovering the books by collecting the ripped out book pages, sorting them and recreating the books.\"";
@@ -24,10 +27,35 @@
         "Can I help somehow?",-;
     mes "[Ensio]";
     mes "\"Oh, would you? That'd be great! You see, the slimes ate most of the books and it is difficult to retrieve the bookpages.";
-    mes "If you feel capable of this task, you could go out to hunt the Blue and White Slimes to get the bookpages back from them.\"";
-L_Progress:
+    mes "If you feel capable of this task, you could go out to hunt the Blue and White Slimes, to get the bookpages back from them.\"";
+    goto L_Progress;
+
+L_Few:
     mes "[Ensio]";
-    mes "\"Did you get some bookpage from the slimes?\"";
+    mes "\"So many bookpages are still missing...\"";
+    next;
+    goto L_Progress;
+
+L_Some:
+    mes "[Ensio]";
+    mes "\"Thanks for the pages you brought. There are still some missing.\"";
+    next;
+    goto L_Progress;
+
+L_Many:
+    mes "[Ensio]";
+    mes "\"Wow, you already found quite a lot of bookpages. Please keep it up!\"";
+    next;
+    goto L_Progress;
+
+L_Almost:
+    mes "[Ensio]";
+    mes "\"There are only a few pages missing.\"";
+    next;
+    goto L_Progress;
+
+L_Progress:
+    mes "\"Did you get some bookpages from the slimes?\"";
     menu
         "Yes, have a look.",-,
         "No.",L_Investigate;
@@ -36,7 +64,7 @@ L_Progress:
         goto L_NoItem;
     delitem "BookPage", 1;
 
-    if (rand(100 - @bookpages) > 50)
+    if (rand(100 - @bookpages) < 50)
         goto L_OldPage;
 
     set @bookpages, @bookpages + 1;
