@@ -3,8 +3,8 @@
 .NOTPARALLEL:
 all: maps conf
 maps:
-	ant -f tools/tmwcon/build.xml
-	java -jar tools/tmwcon/converter.jar client-data/ world/map/
+	tools/tmx_converter.py client-data/ world/map/
+
 % : | %.example
 	cp "$|" "$@"
 conf: \
