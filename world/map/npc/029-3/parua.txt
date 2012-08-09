@@ -45,15 +45,15 @@ L_CallPlayers:
         "We are OK. Just do it!", L_Paying,
         "I will accept your help.", -;
     mes "[Parua]";
-    mes "\"OK, I can make up to 3 announcements to the people of this world, letting them know that you are about to challenge the powers that sleep in this cave! If you want the fight to start in 5 minutes, I will make one announcement, if it is 15 minutes, I will make 2 announcements, and if it is to start in 30 minutes, it will be 3 announcements.\"";
+    mes "\"OK, I can make up to 3 announcements to the people of this world, letting them know that you are about to challenge the powers that sleep in this cave! If you want the fight to start in 5 minutes, I will make one announcement, if it is 10 minutes, I will make 2 announcements, and if it is to start in 15 minutes, it will be 3 announcements.\"";
     next;
     mes "\"But be careful! If there aren't at least five people here at the time of the fight, your money will be lost.\"";
     next;
     mes "\"So, when should it start?\"";
     menu
         "In 5 minutes.", -,
+        "In 10 minutes.", -,
         "In 15 minutes.", -,
-        "In 30 minutes.", -,
         "I don't want to wait. Let's start it now!", L_Paying;
 // Do not charge the money if the fight or the announces were already started by someone else
     if ($@FIGHT_CAVE_STATUS != 0)
@@ -68,9 +68,9 @@ L_CallPlayers:
     if ($@FIGHT_CAVE_STATUS == 3)
         set $@ANNOUNCE_TIME, gettimetick(2) + 300;
     if ($@FIGHT_CAVE_STATUS == 4)
-        set $@ANNOUNCE_TIME, gettimetick(2) + 900;
+        set $@ANNOUNCE_TIME, gettimetick(2) + 600;
     if ($@FIGHT_CAVE_STATUS >= 5)
-        set $@ANNOUNCE_TIME, gettimetick(2) + 1800;
+        set $@ANNOUNCE_TIME, gettimetick(2) + 900;
     startnpctimer;
     close;
 
@@ -196,9 +196,9 @@ L_GlobalAnnounce:
     if ($@FIGHT_CAVE_STATUS == 3)
         goto L_Five_Minutes;
     if ($@FIGHT_CAVE_STATUS == 4)
-        goto L_Fifteen_Minutes;
+        goto L_Ten_Minutes;
     if ($@FIGHT_CAVE_STATUS >= 5)
-        goto L_Thirty_Minutes;
+        goto L_Fifteen_Minutes;
     if (gettimetick(2) >= $@ANNOUNCE_TIME)
         goto L_StartFight;
     end;
@@ -210,15 +210,15 @@ L_Five_Minutes:
     set $@FIGHT_CAVE_STATUS, 2;
     end;
 
-L_Fifteen_Minutes:
-    if ($@ANNOUNCE_TIME - gettimetick(2) > 900)
+L_Ten_Minutes:
+    if ($@ANNOUNCE_TIME - gettimetick(2) > 600)
         end;
-    announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. You still have time to prepare yourself for this fight, since it will only start in 15 minutes. Right now, there are " + getmapusers("029-3.gat") + " fighter(s) in the cave.", 0;
+    announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. You still have time to prepare yourself for this fight, since it will only start in 10 minutes. Right now, there are " + getmapusers("029-3.gat") + " fighter(s) in the cave.", 0;
     set $@FIGHT_CAVE_STATUS, 3;
     end;
 
-L_Thirty_Minutes:
-    announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. The fight will start in 30 minutes, so prepare yourself and call your friends. At the moment there are " + getmapusers("029-3.gat") + " fighter(s) in the cave.", 0;
+L_Fifteen_Minutes:
+    announce "Parua: " + $@SPONSOR$ + " invites everyone to a challenge against the powers that sleep in Candor. The fight will start in 15 minutes, so prepare yourself and call your friends. At the moment there are " + getmapusers("029-3.gat") + " fighter(s) in the cave.", 0;
     set $@FIGHT_CAVE_STATUS, 4;
     end;
 
