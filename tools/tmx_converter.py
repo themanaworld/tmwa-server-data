@@ -170,15 +170,17 @@ class ContentHandler(xml.sax.ContentHandler):
                 self.state = State.LAYER
         elif self.state is State.LAYER:
             if name == u'data':
-                if attr[u'encoding'] != u'csv' and attr[u'encoding'] != u'base64':
-                    print('Bad encoding:', attr[u'encoding'])
+                if attr.get(u'encoding','') not in (u'', u'csv', u'base64', u'xml'):
+                    print('Bad encoding:', attr.get(u'encoding',''))
                     return
                 self.encoding = attr.get(u'encoding','')
-                if attr.get(u'compression','') != '' and attr.get(u'compression','') != 'none' and attr.get(u'compression','') != u'zlib' and attr.get(u'compression','') != u'gzip':
-                    print('Bad compression:', attr[u'compression'])
+                if attr.get(u'compression','') not in (u'', u'none', u'zlib', u'gzip'):
+                    print('Bad compression:', attr.get(u'compression',''))
                     return
                 self.compression = attr.get(u'compression','')
                 self.state = State.DATA
+        elif self.state is State.DATA:
+            self.out.write(chr(int(attr.get(u'gid',0)) not in self.tilesets))
         elif self.state is State.FINAL:
             if name == u'object':
                 obj_type = attr[u'type'].lower()
@@ -260,21 +262,20 @@ class ContentHandler(xml.sax.ContentHandler):
                     ])
                 )
 
-        if self.state is State.DATA:
-            if self.encoding == u'csv':
-                for x in self.buffer.split(','):
-                    self.out.write(chr(int(x) not in self.tilesets))
-            elif self.encoding == u'base64':
-                data=base64.b64decode(self.buffer)
-                if self.compression == u'zlib':
-                    data2 = zlib.decompress(data)
+        if name == u'data':
+            if self.state is State.DATA:
+                if self.encoding == u'csv':
+                    for x in self.buffer.split(','):
+                        self.out.write(chr(int(x) not in self.tilesets))
+                elif self.encoding == u'base64':
+                    data=base64.b64decode(self.buffer)
+                    if self.compression == u'zlib':
+                        data = zlib.decompress(data)
+                    elif self.compression == u'gzip':
+                        data = zlib.decompressobj().decompress('x\x9c' + data[10:-8])
                     for i in range(self.width*self.height):
-                        self.out.write(chr(int(struct.unpack('<I',data2[i*4:i*4+4])[0]) not in self.tilesets))
-                elif self.compression == u'gzip':
-                    data2 = zlib.decompressobj().decompress('x\x9c' + data[10:-8])
-                    for i in range(self.width*self.height):
-                        self.out.write(chr(int(struct.unpack('<I',data2[i*4:i*4+4])[0]) not in self.tilesets))
-            self.state = State.FINAL
+                        self.out.write(chr(int(struct.unpack('<I',data[i*4:i*4+4])[0]) not in self.tilesets))
+                self.state = State.FINAL
 
     def endDocument(self):
         self.mobs.write('\n\n%s.gat,0,0,0|script|Mob%s|-1,{\n' % (self.base, self.base))
