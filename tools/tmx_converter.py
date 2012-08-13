@@ -28,6 +28,8 @@ import os
 import posixpath
 import struct
 import xml.sax
+import base64
+import zlib
 
 dump_all = False # wall of text
 
@@ -97,6 +99,10 @@ class ContentHandler(xml.sax.ContentHandler):
         'state',    # state of collision info
         'tilesets', # first gid of each tileset
         'buffer',   # characters within a section
+        'encoding', # encoding of layer data
+        'compression', # compression of layer data
+        'width',    # width of the collision layer
+        'height',   # height of the collision layer
         'base',     # base name of current map
         'npc_dir',  # world/map/npc/<base>
         'mobs',     # open file to _mobs.txt
@@ -113,6 +119,10 @@ class ContentHandler(xml.sax.ContentHandler):
         self.state = State.INITIAL
         self.tilesets = {0} # consider the null tile as its own tileset
         self.buffer = bytearray()
+        self.encoding = None
+        self.compression = None
+        self.width = None
+        self.height = None
         self.base = posixpath.basename(npc_dir)
         self.npc_dir = npc_dir
         self.mobs = mobs
@@ -154,15 +164,20 @@ class ContentHandler(xml.sax.ContentHandler):
                 self.tilesets.add(int(attr[u'firstgid']))
 
             if name == u'layer' and attr[u'name'].lower().startswith(u'collision'):
-                width = int(attr[u'width'])
-                height = int(attr[u'height'])
-                self.out.write(struct.pack('<HH', width, height))
+                self.width = int(attr[u'width'])
+                self.height = int(attr[u'height'])
+                self.out.write(struct.pack('<HH', self.width, self.height))
                 self.state = State.LAYER
         elif self.state is State.LAYER:
             if name == u'data':
-                if attr[u'encoding'] != u'csv':
-                    print('Bad encoding (not csv):', attr[u'encoding'])
+                if attr[u'encoding'] != u'csv' and attr[u'encoding'] != u'base64':
+                    print('Bad encoding:', attr[u'encoding'])
                     return
+                self.encoding = attr.get(u'encoding','')
+                if attr.get(u'compression','') != '' and attr.get(u'compression','') != 'none' and attr.get(u'compression','') != u'zlib' and attr.get(u'compression','') != u'gzip':
+                    print('Bad compression:', attr[u'compression'])
+                    return
+                self.compression = attr.get(u'compression','')
                 self.state = State.DATA
         elif self.state is State.FINAL:
             if name == u'object':
@@ -246,8 +261,19 @@ class ContentHandler(xml.sax.ContentHandler):
                 )
 
         if self.state is State.DATA:
-            for x in self.buffer.split(','):
-                self.out.write(chr(int(x) not in self.tilesets))
+            if self.encoding == u'csv':
+                for x in self.buffer.split(','):
+                    self.out.write(chr(int(x) not in self.tilesets))
+            elif self.encoding == u'base64':
+                data=base64.b64decode(self.buffer)
+                if self.compression == u'zlib':
+                    data2 = zlib.decompress(data)
+                    for i in range(self.width*self.height):
+                        self.out.write(chr(int(struct.unpack('<I',data2[i*4:i*4+4])[0]) not in self.tilesets))
+                elif self.compression == u'gzip':
+                    data2 = zlib.decompressobj().decompress('x\x9c' + data[10:-8])
+                    for i in range(self.width*self.height):
+                        self.out.write(chr(int(struct.unpack('<I',data2[i*4:i*4+4])[0]) not in self.tilesets))
             self.state = State.FINAL
 
     def endDocument(self):
