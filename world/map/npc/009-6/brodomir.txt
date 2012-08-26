@@ -12,11 +12,17 @@
 //      time when the players will be warped into the fight cave
 // $@BRODOMIR_PLAYERS: number of players taking part in the event
 
+// $@BRODOMIR_ITEM$: Item that was given by the sponsor as price
+// $@BRODOMIR_ITEM_AMOUNT: Amount of price items
+// $@BRODOMIR_SPONSOR: player ID of sponsor that gave the item
 
 // $@BRODOMIR_MONEY: Amount of money given by the sponsor
 
 009-6.gat,36,40,0|script|Brodomir|116,{
     set @brodomir_money, 0;
+    set @brodomir_item_amount, 0;
+    set @brodomir_item$, "";
+
     if ($@BRODOMIR_PVP_STATUS == 2)
         goto L_Alreadystarted;
     if ($@BRODOMIR_PVP_STATUS == 1)
@@ -52,11 +58,49 @@ L_Shorttalk:
 L_Menu:
     menu
         "No.", L_Exit,
-        "Yes.", L_Pay;
+        "Yes.", L_Pay,
+        "I'd like this item to be the price.", L_Item;
 
 L_Exit:
     mes "[Brodomir]";
     mes "\"Okay, you can come back anytime.\"";
+    goto L_Close;
+
+L_Item:
+    mes "[Brodomir]";
+    mes "\"Ok, which item?\"";
+    mes "Make sure to spell correctly and if the item name contains whitespaces, leave them out.";
+    input @brodomir_item$;
+    mes "[Brodomir]";
+    mes "\"And how many?\"";
+    input @brodomir_item_amount;
+    if (@brodomir_item_amount < 1)
+        goto L_Fool;
+    mes "[Brodomir]";
+    mes "\"So the price should be " + @brodomir_item_amount + " " + @brodomir_item$ + "?\"";
+    mes "\"In case there aren't enough people to start the fight, I'll try to give it back to you. If you're not here then... well, then I'll keep it for myself.\"";
+    menu
+        "Ok.", -,
+        "No, you missunderstood me.", L_Item,
+        "I changed my mind, forget it.", L_Close;
+    if ($@BRODOMIR_PVP_STATUS == 1)
+        goto L_Wait;
+    if (getareausers("009-6.gat", 20, 20, 80, 80, 1) < 3)
+        goto L_NotEnoughPlayers;
+    if (countitem(@brodomir_item$) < @brodomir_item_amount)
+        goto L_NoItem;
+    delitem @brodomir_item$, @brodomir_item_amount;
+    set $@BRODOMIR_SPONSOR, getcharid(3);
+    goto L_Go;
+
+L_NoItem:
+    mes "[Brodomir]";
+    mes "\"Hey, you don't have " + @brodomir_item_amount + " " + @brodomir_item$ + "!\"";
+    goto L_Close;
+
+L_Fool:
+    mes "[Brodomir]";
+    mes "\"Are you trying to fool me? Come back when you're more serious.\"";
     goto L_Close;
 
 L_Pay:
@@ -73,9 +117,13 @@ L_Pay:
     goto L_Go;
 
 L_Go:
+    set $@BRODOMIR_ITEM$, @brodomir_item$;
+    set $@BRODOMIR_ITEM_AMOUNT, @brodomir_item_amount;
     set $@BRODOMIR_MONEY, @brodomir_money;
     set $@BRODOMIR_PVP_STATUS, 1;
     mapannounce "009-6.gat", "In 5 minutes I will bring you all to the PvP cave. If there are less than 3 players here the event will not start.", 0;
+    if ($@BRODOMIR_ITEM_AMOUNT > 0)
+        mapannounce "009-6.gat", "The winner will receive 150GP per player and " + $@BRODOMIR_ITEM_AMOUNT + $@BRODOMIR_ITEM$ + ".", 0;
     if ($@BRODOMIR_MONEY > 0)
         mapannounce "009-6.gat", "The winner will receive " + $@BRODOMIR_MONEY + "GP and additionally 150GP per player.", 0;
     mes "[Brodomir]";
@@ -107,12 +155,21 @@ L_Warp:
     set $@BRODOMIR_PVP_STATUS, $@BRODOMIR_PVP_STATUS + 1;
     set $@BRODOMIR_PLAYERS, getareausers("009-6.gat", 20, 20, 80, 80, 1);
     mapwarp "009-6.gat", "009-5.gat", 0, 0;
+    if ($@BRODOMIR_ITEM_AMOUNT > 0)
+        mapannounce "009-6.gat", "The last one standing will receive 150GP per player and " + $@BRODOMIR_ITEM_AMOUNT + $@BRODOMIR_ITEM$ + ".", 0;
     mapannounce "009-5.gat", "PvP On!", 0;
     pvpon "009-5.gat";
     end;
 
 L_Warpfail:
     mapannounce "009-6.gat", "There are not enough players around to start!", 0;
+    if ($@BRODOMIR_ITEM_AMOUNT == 0)
+        goto L_Cleanup;
+    if (attachrid($@BRODOMIR_SPONSOR) != 0)
+        getitem $@BRODOMIR_ITEM$, $@BRODOMIR_ITEM_AMOUNT;
+    set $@BRODOMIR_ITEM_AMOUNT, 0;
+    set $@BRODOMIR_ITEM$, "";
+    set $@BRODOMIR_SPONSOR, 0;
     goto L_Cleanup;
 
 L_Check:
@@ -126,6 +183,10 @@ onReward:
         end;
     message strcharinfo(0), "Congratulations you won!";
     set Zeny, Zeny + ($@BRODOMIR_MONEY + 150 * $@BRODOMIR_PLAYERS);
+    getitem $@BRODOMIR_ITEM$, $@BRODOMIR_ITEM_AMOUNT;
+    set $@BRODOMIR_ITEM_AMOUNT, 0;
+    set $@BRODOMIR_ITEM$, "";
+    set $@BRODOMIR_SPONSOR, 0;
     set $@BRODOMIR_MONEY, 0;
     set $@BRODOMIR_PLAYERS, 0;
     end;
@@ -158,5 +219,7 @@ L_Cleanup:
 
 L_Close:
     set @brodomir_money, 0;
+    set @brodomir_item_amount, 0;
+    set @brodomir_item$, "";
     close;
 }
