@@ -2,9 +2,19 @@
 
     set @ROBE_COCOONS_NR, 150; // must be multiple of ten
     set @ROBE_ZENY, 10000;
+    set @FINEDRESS_COCOONS, 180;
 
     if (QUEST_WG_state == 10) goto L_agostine_menu;
-    if (QUEST_WG_state >= 11) goto L_regular_intro;
+    if (QUEST_WG_state == 11 || QUEST_WG_state == 12) goto L_regular_intro;
+    if (QUEST_WG_state == 13) goto L_proposal_intro;
+    if (QUEST_WG_state == 14) goto L_proposal_show_materials;
+    if (QUEST_WG_state == 15) goto L_proposal_search_items;
+    if (QUEST_WG_state == 16) goto L_proposal_retrieve_design;
+    if (QUEST_WG_state == 17) goto L_proposal_bringing_design;
+    if (QUEST_WG_state == 18) goto L_proposal_wait_dress_finished;
+    if (QUEST_WG_state == 19) goto L_proposal_dress_finished;
+    if (QUEST_WG_state >= 20 && QUEST_WG_state < 23) goto L_proposal_deliver_dress;
+    if (QUEST_WG_state >= 23) goto L_regular_intro;
 
     set @t, rand(3);
     if (@t == 0) goto L_intro_0;
@@ -177,6 +187,8 @@ L_regular_intro:
     mes "[Lora Tay the Seamstress]";
     mes "\"Ah, you again.  Is there anything in particular you need?\"";
     next;
+    if (QUEST_WG_state == 12)
+        goto L_main_menu2;
     goto L_main_menu;
 
 L_give_water:
@@ -200,6 +212,10 @@ L_give_water:
     mes "[Lora Tay the Seamstress]";
     mes "\"If HE can sew petty every-day items for ordinary peasants, then so can I.  Very well, is there anything in particular that you need made?  I shall show you how a proper seamstress operates!\"";
     next;
+    
+    if (QUEST_WG_state == 12)
+        goto L_main_menu2;
+    goto L_main_menu;
 
 L_main_menu:
     menu
@@ -217,6 +233,173 @@ L_main_menu:
     mes "\"From what?  Fluffy fur?  I won't work with such lowly materials.\"";
     next;
     goto L_main_menu;
+
+L_main_menu2:
+    menu
+        "Can you trim something for me?", L_trim,
+        "Can you lengthen something for me?", L_lengthen,
+        "Can you make me a shirt?", L_shirt,
+        "Can you make me a tank top?", L_tanktop,
+        "Can you make me a cape?", L_cape,
+        "Can you make fur boots for me?", -,
+        "Can you make winter gloves me?", -,
+        "Can you sew a robe for me?", L_robe,
+        "Can you make a desert hat for me?", L_desert_hat,
+        "Actually...I have a proposal for you...", L_agostine_proposal,
+        "Goodbye for now.", L_end;
+    mes "[Lora Tay the Seamstress]";
+    mes "\"From what?  Fluffy fur?  I won't work with such lowly materials.\"";
+    next;
+    goto L_main_menu2;
+
+L_agostine_proposal:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"What kind of proposal are you asking of me?\"";
+    next;
+    
+    menu
+        "I have talked to Agostine and he needs your help.", -,
+        "I forgot...", L_main_menu2;
+    
+    mes "[Lora Tay the Seamstress]";
+    mes "\"That cheat! What could he possibly want from me?";
+    mes "We dont even have the same style in seeming. Is this a joke?\"";
+    next;
+    
+    menu
+        "It's no joke. he needs your help in creating a new fashion!", -,
+        "yeah you are right, he was probably joking.", L_end;
+    
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Well it depends what he wants from me.";
+    mes "Go see Agostine, ask him what he's planning and I will think about it.\"";
+    
+    set QUEST_WG_state, 13;
+    
+    close;
+
+L_proposal_intro:
+    mes "Lora Tay seems lost in her thoughts... ";
+    menu
+        "Sorry to disturb you, but...", L_main_menu,
+        "I better go talk to Agostine.", L_end;
+    close;
+
+L_proposal_show_materials:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Did you talk to Agostine about his idea?\"";
+    next;
+    menu
+        "Yes, he explained he saw a dress in a dream and gave me these materials.", -,
+        "No, that guy is a total wacko.", L_end;
+    
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Wow these are such fine materials!";
+    mes "These are certainly not for just any ordinary clothes...";
+    mes "He must be thinking of something magnificent.\"";
+    next;
+    
+    menu
+        "He said this dress would be his first dress creation and he wanted it to be fabulous!", -;
+    
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Fine I will accept his offer...";
+    mes "But the materials he has given you need some sewing on the edges.\"";
+    next;
+    mes "[Lora Tay the Seamstress]";
+    mes "\"I will fix them, but I cannot use normal threading to fix this material.";
+    mes "I will need a soft thin thread so I wont spoil the textures.\"";
+    next;
+    
+    goto L_proposal_search_items;
+
+L_proposal_search_items:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Please bring me " + @FINEDRESS_COCOONS + " silk cocoons.";
+    mes "This should cover the materials needs and will leave extra for sewing the pieces together later on.\"";
+    next;
+    
+    menu
+        "I will go get them right away!", -,
+        "Here you are.", L_proposal_give_items,
+        @FINEDRESS_COCOONS+" silk cocoons for a dress? Find somebody else.", L_end;
+    set QUEST_WG_state, 15;
+    close;
+
+L_proposal_not_enough_items:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"This is not funny. I need " + @FINEDRESS_COCOONS + " silk cocoons. No less.";
+    close;
+
+L_proposal_give_items:
+    if (countitem ("SilkCocoon") < @FINEDRESS_COCOONS)
+        goto L_proposal_not_enough_items;
+    delitem "SilkCocoon", @FINEDRESS_COCOONS;
+    set QUEST_WG_state, 16;
+    
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Great, now I can spin the silk threading and fix this mess made of these fine materials.";
+    mes "While I do this, you will need to go get the design drawings from Agostine...";
+    mes "Every taylor puts their designs on paper before they forget about it.\"";
+    next;
+    goto L_proposal_retrieve_design;
+
+L_proposal_retrieve_design:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"May you go retrieve the design from Agostine?\"";
+    next;
+    menu
+        "Certainly I'll be back soon!", -;
+    close;
+
+L_proposal_bringing_design:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Welcome back, did you get the drawings I requested?\"";
+    next;
+    menu
+        "Here they are!", -;
+    
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Wonderful, this dress design is magnificent!";
+    mes "I am done with the threading but I will now need to sew these materials together into the design.\"";
+    next;
+    set QUEST_WG_state, 18;
+    goto L_proposal_wait_dress_finished;
+
+L_proposal_wait_dress_finished:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Come back later and the dress will be finished!\"";
+    close;
+
+L_proposal_dress_finished:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Well it was difficult seeming with such fragile materials.";
+    mes "But I have done it. The design is finished except for one part of it.\"";
+    next;
+    
+    menu
+        "Wow it looks great, but what's missing?", -;
+    
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Well there are white flare designs on the bottom of the dress.";
+    mes "I'm not great with fine cloth design so this might be something Agostine must do on his own.";
+    next;
+    
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Please take the unfinished dress to him so he may finish the edges with the cloth.\"";
+    next;
+    
+    menu
+        "Okay, can't wait to see the finished product! Thanks for your help!", -;
+    
+    set QUEST_WG_state, 20;
+    
+    close;
+
+L_proposal_deliver_dress:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Please take the unfinished dress to him so he may finish the edges with the cloth.\"";
+    close;
 
 L_desert_hat:
     mes "[Lora Tay the Seamstress]";

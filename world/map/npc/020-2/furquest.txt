@@ -6,6 +6,8 @@
 020-2.gat,27,26,0|script|Agostine|137,{
 
     set @CUTFUR_EXP, 10;
+    set @FINEDRESS_COTTON_CLOTHS, 20;
+    set @FINEDRESS_GP, 20000;
 
     if (QUEST_WG_state == 1) goto L_State_0_3;
     if (QUEST_WG_state == 2) goto L_State_1;
@@ -15,7 +17,17 @@
     if (QUEST_WG_state == 6) goto L_State_6;
     if (QUEST_WG_state == 7) goto L_State_11;
     if (QUEST_WG_state == 8) goto L_State_12;
-    if (QUEST_WG_state >= 9) goto L_State_13;
+    if (QUEST_WG_state >= 9 && QUEST_WG_state < 11) goto L_State_13;
+    if (QUEST_WG_state == 11) goto L_State_14;
+    if (QUEST_WG_state == 12) goto L_State_14_AlreadyAccepted;
+    if (QUEST_WG_state == 13) goto L_State_15;
+    if (QUEST_WG_state > 13 && QUEST_WG_state < 16) goto L_State_15_Repeat;
+    if (QUEST_WG_state == 16) goto L_State_16;
+    if (QUEST_WG_state > 16 && QUEST_WG_state < 20) goto L_State_16_Repeat;
+    if (QUEST_WG_state == 20) goto L_State_17;
+    if (QUEST_WG_state == 21) goto L_State_17_AskItems;
+    if (QUEST_WG_state == 22) goto L_State_17_ProposeBuyDress;
+    if (QUEST_WG_state >= 23) goto L_State_18;
 
     mes "\"This goes up, this goes left...\"";
     next;
@@ -340,4 +352,246 @@ L_No_Fur:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"You don't have any white fur! Stop talking nonsense.\"";
     close;
+
+L_State_14:
+    if (BaseLevel < 60)
+        goto L_State_13;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"You are so glamourous, my dear friend!";
+    mes "I have done a very good job on your clothes... But... \"";
+    next;
+    
+    menu
+        "But?", -;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"There is a new fashion ive been dying to try out!";
+    mes "But I dont have all the knowledge in the world about seeming this wonderful fashion.\"";
+    next;
+    
+    menu
+        "Ah, that's too bad...", L_Close,
+        "I know another taylor who might know!", -;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"What taylor may that be?";
+    mes "I havent been out of Nivalis for quite some time since I have been busy with clothes for the people of the town.";
+    mes "If you can tell me the name of this great taylor, maybe we can work something out, like a collaboration!\"";
+    next;
+    
+    menu
+        "Well... There is a taylor in Dimond's Cove who makes pretty good clothing. Her name is Lora Tay.", -;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"I had almost forgotten about Lora Tay.";
+    mes "She has tried to put me out of business a few times long ago.";
+    mes "But I am willing to collaborate with her to make this fine fashion come alive.";
+    mes "Will you go ask her if she is willing to help sew and seem this fashion I will create?\"";
+    
+    menu
+        "Sure thing! Be back soon.", L_State_14_Accept,
+        "It will never happen. I wont waste my time.", -;
+    close;
+
+L_State_14_Accept:
+    set QUEST_WG_state, 12;
+    close;
+
+L_State_14_AlreadyAccepted:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Please my friend, go talk to Lora Tay about our possible collaboration!\"";
+    close;
+
+L_State_15:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Hi there fashionable friend, have you talked to Lora Tay about my request?\"";
+    next;
+    menu
+        "Yes, but she would like to know more information about it and I'm kind of curious myself.", -,
+        "I havent yet, sorry.", L_Close;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Well I had a dream of a woman in a beautiful dress I would like to recreate from my dream...";
+    mes "But the thing is I have never sewn a dress this fabulous in my life!";
+    mes "This is why I wanted an experienced taylor to help me with it.\"";
+    next;
+    
+    menu
+        "You must be thinking of fashion a lot if it's in your dreams! I shall bring this information to Lora Tay.", -,
+        "You're obsessed, I cant help you.", L_Close;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Please take these materials with you to show Lora Tay the kind of vision I have!";
+    mes "These are the finest materials in my whole house and have been saving them for something special such as this.\"";
+    next;
+    
+    message strcharinfo(0), "Agostine gives you a set of fine materials that you carefully put in your backpack.";
+    mes "Agostine gives you a set of fine materials that you carefully put in your backpack.";
+    next;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Hurry back my friend!\"";
+    
+    set QUEST_WG_state, 14;
+    
+    close;
+
+L_State_15_Repeat:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Please take these materials with you to show Lora Tay the kind of vision I have!";
+    mes "Hurry back my friend!\"";
+    close;
+
+L_State_16:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Hello there! Did you tell Lora Tay about the type of fashion I was hoping to create?\"";
+    next;
+    
+    menu
+        "Yes she is also working on threading to sew the materials together", -,
+        "Why would I do that for?", L_Close;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Wow she did not only accept but she is willing to sew these materials for me?";
+    mes "This is amazing... I was quite worried I would ruin these fine cloths sewing them myself.\"";
+    next;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Is there anything I can do in the meanwhile?\"";
+    next;
+    menu
+        "Actually she wanted the design drawings to know what it should look like.", -;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Of course! How could I forget, I drew the designs right after the dream I had.";
+    mes "Please take these to Lora Tay and ask her to try and make it as close as she can.\"";
+    next;
+    
+    menu
+        "Sure thing be back soon!", -,
+        "... I'll take a nap first.", L_Close;
+    
+    set QUEST_WG_state, 17;
+    
+    message strcharinfo(0), "Agostine folds carefully his designs and gives you the paper that you put in your pocket.";
+    mes "Agostine folds carefully his designs and gives you the paper that you put in your pocket.";
+    
+    close;
+
+L_State_16_Repeat:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Please my friend, bring my designs to Lora Tay.\"";
+    close;
+
+L_State_17:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Wow is that the dress?";
+    mes "It looks fabulous...\"";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"But I do notice it is missing something from my design.\"";
+    next;
+    
+    menu
+        "Lora Tay mentioned the bottom has to be edged with cotton cloths but she cannot do the design you wanted", -;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"That's fine. I will finish it with the cloth but it seems I dont have anymore around...\"";
+    next;
+    
+    goto L_State_17_AskItems;
+
+L_State_17_AskItems:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Do you think you can get some for me? I will need about " + @FINEDRESS_COTTON_CLOTHS + " cotton cloths to finish this master piece.\"";
+    next;
+    
+    menu
+        "Sure thing, I will go get them!", -,
+        "Here you are!", L_State_17_GiveItems;
+    set QUEST_WG_state, 21;
+    
+    close;
+
+L_State_17_NotEnoughItems:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"My friend, sorry to disappoint you, but you are lacking some cloth.";
+    mes "I need exactly " + @FINEDRESS_COTTON_CLOTHS + " cotton cloths to finish this master piece.\"";
+    close;
+
+L_State_17_GiveItems:
+    if (countitem ("CottonCloth") < @FINEDRESS_COTTON_CLOTHS)
+        goto L_State_17_NotEnoughItems;
+    delitem "CottonCloth", @FINEDRESS_COTTON_CLOTHS;
+    set QUEST_WG_state, 22;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Great now just a little cloth here........\"";
+    next;
+    mes "............................";
+    next;
+    mes "...................";
+    next;
+    mes "..............";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"It's finished!";
+    mes "The finest dress in my design is finally finished!\"";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"I dont know how I can repay you for all your hard work...\"";
+    next;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Hmmm I know something that will be good for you and for myself!\"";
+    next;
+    
+    menu
+        "What is it?", -;
+    
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"How about I let you buy the dress off me?";
+    mes "This will allow you to have a fine dress and allow me to show the world what I'm capable of.";
+    mes "I would charge " + @FINEDRESS_GP +" gp, which I think is a magnificent price for something this fine.\"";
+    next;
+    
+    goto L_State_17_BuyDress;
+
+L_State_17_ProposeBuyDress:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Did you consider buying the dress off me?";
+    mes "I would charge " + @FINEDRESS_GP +" gp, which I think is a magnificent price for something this fine.\"";
+    next;
+    
+    goto L_State_17_BuyDress;
+
+L_State_17_BuyDress:
+    menu
+        "Wow that sounds great ill take it!", -,
+        "I'll think about it...", L_Close;
+    
+    getinventorylist;
+    if (@inventory_count == 100)
+        goto L_Inventory;
+    
+    set Zeny, Zeny - @FINEDRESS_GP;
+    getitem "FineDress", 1;
+    set QUEST_WG_state, 23;
+    
+    close;
+
+L_State_17_InventoryFull:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"My friend, you don't have room to carry my master piece. Come back when you do.\"";
+    close;
+
+L_State_18:
+    // Same dialog than on state 13, but we could add something about the dress
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"You are so glamourous, my dear friend!";
+    mes "I have done a very good job on your clothes!\"";
+    close;
+
+L_Close:
+    close;
+
 }
