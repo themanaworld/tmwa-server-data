@@ -1469,7 +1469,9 @@ CONST E10_FLAG_USED_FREE_WARP_SHIFT = 17
 
 NONMAGIC SILENT SPELL world-shift : "#S00" =
     (REQUIRE (script_int(caster, "Easter_2010_QuestState") >> 16) & 1 == 1 && (script_int(caster, "Easter_2010_QuestState") >> 7) & 3 == 2) => # Travel only works when you have both helped the doctor at least thrice and have defeated the invader - top level requirement.
-     (  (REQUIRE count_item(caster, "DarkPetal")) # Allow unlimited travel with the petal
+     (  (REQUIRE (count_item(caster, "DarkPetal")) && # Allow unlimited travel with the petal
+        (map_nr(location(caster)) != 5698) # Do not allow if player is in botcheck area
+        )
      => ((REQUIRE rdistance(location(caster), @("028-1.gat", 63, 67)) < 5) =>
      	         EFFECT sfx(location(caster), SFX_TELEPORT, 200);
                         WAIT 8000;
