@@ -1,0 +1,163 @@
+// Author: Jenalya
+// Quest states:
+// 14: Completed first part of the quest
+// 15: Persuaded the Guarding Spirit to let you into the cave
+// 16: Got task to bring materials for first magical flower
+// 17: Got task to place the first magical flower
+// 18: Placed first magical flower
+// 19: Got task to bring materials for second magical flower
+// 20: Got task to place the second magical flower
+// 21: Placed second magical flower
+// 22: Got task to bring materials for third magical flower
+// 23: Completed easy minigame and got task to place the third magical flower
+// 24: Placed third magical flower
+// 25: Got task to bring materials for fourth magical flower
+// 26: Completed difficult minigame and got task to place the fourth magical flower
+// 27: Placed fourth magical flower
+// 28: Got task to bring materials for fifth magical flower
+// 29: Failed unbeatable minigame and got the flower hat
+// 30: Got task to place the fifth flower
+// 31: Placed fifth flower
+// 32: Got reward
+
+017-4.gat,211,32,0|script|Orum|158,{
+
+    // first flower
+    set @AMOUNT_SMALLMUSHROOM, 5;
+    set @AMOUNT_ASH, 5;
+    set @RECOMPENSATION_1, 5000;
+
+    if (OrumQuest == 18) goto L_PlacedFirstFlower;
+    if (OrumQuest == 17) goto L_PlaceFirstFlower;
+    if (OrumQuest == 16) goto L_FirstFlower;
+
+    if (OrumQuest == 15) goto L_InitialTalk;
+
+    goto L_Banish;
+
+L_InitialTalk: // 15: Persuaded the Guarding Spirit to let you into the cave
+    mes "[Orum]";
+    mes "\"I... My Guarding Spirit... You... What...\"";
+    mes "[Waric]";
+    mes "\"Pull yourself together!\"";
+    next;
+    mes "[Orum]";
+    mes "\"Y-yes, master.\"";
+    mes "He turns to you.";
+    mes "\"I told you not to follow us! Are you so eager to die?\"";
+    menu
+        "I'm here to offer my service...", -,
+        "Hah, you thought you could hide from me?", L_Banish,
+        "Keep calm, I want to work together with you.", -,
+        "D-d-die?!", L_Banish;
+
+    mes "[Orum]";
+    mes "\"You want to help us?\"";
+    mes "Waric raises his eyebrows...";
+    next;
+    mes "[Orum]";
+    mes "\"I don't think that's a good idea.\"";
+    menu
+        "You won't know until you try.", -,
+        "You have no choice, I found your hideout!", L_Banish;
+
+    mes "[Orum]";
+    mes "\"Well, why not. Here is a simple task to proof you're serious.";
+    mes "Bring me " + @AMOUNT_SMALLMUSHROOM + " Small Mushrooms, " + @AMOUNT_ASH + " Piles of Ash and one Orange Tulip.\"";
+
+    set OrumQuest, 16;
+    menu
+        "Sure!", L_Close,
+        "Why do you need that?", -;
+
+    mes "[Orum]";
+    mes "\"Don't ask stupid questions! Do what I told you.\"";
+    mes "...";
+    mes "\"Those things are ingredients for a magical artifact. You don't need to know more at the moment.\"";
+    goto L_Close;
+
+L_Banish:
+    mes "[Orum]";
+    mes "\"This will be the last mistake you did...\"";
+    mes "He starts mumbering and you suddenly feel weirdly weightless. Your vision fades...";
+    mes "You last thing you hear is Waric shouting something about untalented apprentices.";
+    set Hp, 1 + rand(5);
+    warp "017-1.gat", 0, 0;
+    goto L_Close;
+
+L_FirstFlower: // 16: Got task to bring materials for first magical flower
+    mes "[Orum]";
+    mes "\"So? Where are the " + @AMOUNT_SMALLMUSHROOM + " Small Mushrooms, " + @AMOUNT_ASH + " Piles of Ash and Orange Tulip you should bring?\"";
+    menu
+        "I have everything you want!", -,
+        "I don't have it yet.", L_Close;
+
+    if ((countitem("SmallMushroom") < @AMOUNT_SMALLMUSHROOM)
+        || (countitem("PileOfAsh") < @AMOUNT_ASH)
+        || (countitem("OrangeTulip") < 1))
+        goto L_NoItem;
+
+    delitem "SmallMushroom", @AMOUNT_SMALLMUSHROOM;
+    delitem "PileOfAsh", @AMOUNT_SMALLMUSHROOM;
+    delitem "OrangeTulip", 1;
+    getitem "BlueRose", 1; // TODO: replace with magical flower artefact
+    set OrumQuest, 17;
+
+    mes "Orum takes the items and starts to pulverize them, mixes some of it together in the caldron and finally dips the tulip into it, mumbering enchantements. The tulip changes its appearance. Then he hands it over to you.";
+    mes "[Orum]";
+    mes "\"Phew, done. Now I feel exhausted. You need to place it at its destination.\"";
+    next;
+L_WayFirstFlower:
+    mes "\"We prepared a place for this in the forest outside the caves. When you left the cave, go some steps to the east and you'll find a spot of grass with flowers on a small hill. There you have to place it, right in the middle.\"";
+    goto L_Close;
+
+L_PlaceFirstFlower: // 17: Got task to place the first magical flower
+    mes "[Orum]";
+    mes "\"Go ahead and place the first magical flower.\"";
+    menu
+        "Ok, will do that.", L_Close,
+        "Can you explain the way again?", L_WayFirstFlower,
+        "I... I lost it.", -;
+
+    mes "[Orum]";
+    mes "\"What?! I can't believe it! How can you handle a powerful magical artifact in such a careless way?\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_1 + " GP, and I'm going to allow you to continue helping us. So?\"";
+    menu
+        "Ok.", -,
+        "No way, that's too much!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_1)
+        goto L_NoMoney;
+    set Zeny, Zeny - @RECOMPENSATION_1;
+    set OrumQuest, 16;
+
+    mes "[Orum]";
+    mes "\"Very well. Now bring me " + @AMOUNT_SMALLMUSHROOM + " Small Mushrooms, " + @AMOUNT_ASH + " Piles of Ash and one Orange Tulip again, so we can start over.\"";
+    goto L_Close;
+
+L_PlacedFirstFlower:
+    // TODO: start with second flower
+    goto L_Close;
+
+L_NoRecompensation:
+    mes "[Orum]";
+    mes "\"Well, you could still try to get back the magical flower instead. Your decision.\"";
+    goto L_Close;
+
+L_NoMoney:
+    mes "[Orum]";
+    mes "\"Hey, you don't have enough money!\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Orum]";
+    mes "\"Hey, you don't have it!\"";
+    goto L_Close;
+
+L_Close:
+    set @AMOUNT_SMALLMUSHROOM, 0;
+    set @AMOUNT_ASH, 0;
+    set @RECOMPENSATION_1, 0;
+    close;
+}
