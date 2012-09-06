@@ -26,6 +26,14 @@
     set @AMOUNT_SMALLMUSHROOM, 5;
     set @AMOUNT_ASH, 5;
     set @RECOMPENSATION_1, 5000;
+    // second flower
+    set @AMOUNT_PINKPETAL, 5;
+    set @AMOUNT_STINGER, 5;
+    set @RECOMPENSATION_2, 10000;
+
+    if (OrumQuest == 21) goto L_PlacedSecondFlower;
+    if (OrumQuest == 20) goto L_PlaceSecondFlower;
+    if (OrumQuest == 19) goto L_SecondFlower;
 
     if (OrumQuest == 18) goto L_PlacedFirstFlower;
     if (OrumQuest == 17) goto L_PlaceFirstFlower;
@@ -136,8 +144,86 @@ L_PlaceFirstFlower: // 17: Got task to place the first magical flower
     mes "\"Very well. Now bring me " + @AMOUNT_SMALLMUSHROOM + " Small Mushrooms, " + @AMOUNT_ASH + " Piles of Ash and one Orange Tulip again, so we can start over.\"";
     goto L_Close;
 
-L_PlacedFirstFlower:
-    // TODO: start with second flower
+L_PlacedFirstFlower: // 18: Placed first magical flower
+    mes "[Orum]";
+    mes "\"I felt the eruption of magical power when you placed it! Wonderful! Let's start with the next one right now.\"";
+    menu
+        "Ok, what should I do now?", -,
+        "Weird monsters appeared when I placed it!", L_AskMonsters;
+
+    set OrumQuest, 19;
+    goto L_SecondFlower;
+
+L_AskMonsters:
+    mes "[Orum]";
+    mes "\"Oh, right. Well, that was to be expected, some of the power seeped out when you placed it. I hope those monsters didn't harm you?";
+    mes "However, we should continue.\"";
+    set OrumQuest, 19;
+    next;
+    goto L_SecondFlower;
+
+L_SecondFlower: // 19: Got task to bring materials for second magical flower
+    mes "[Orum]";
+    mes "\"Bring me " + @AMOUNT_PINKPETAL + " Pink Petals, " + @AMOUNT_STINGER + " Scorpion Stinger and one Purple Tulip.\"";
+    menu
+        "I have it.", -,
+        "All right, I'll get it.", L_Close,
+        "What's the purpose of this?", L_AskPurpose;
+
+    if ((countitem("PinkPetal") < @AMOUNT_PINKPETAL)
+        || (countitem("ScorpionStinger") < @AMOUNT_STINGER)
+        || (countitem("PurpleTulip") < 1))
+        goto L_NoItem;
+
+    delitem "PinkPetal", @AMOUNT_PINKPETAL;
+    delitem "ScorpionStinger", @AMOUNT_STINGER;
+    delitem "PurpleTulip", 1;
+    getitem "BlueRose", 1; // TODO: replace with magical flower artefact
+    set OrumQuest, 20;
+
+    mes "Orum starts to handle the material similiar to the ones for the first flower. Suddenly something from the pulver gets on his hand and it makes a nasty frizzling sound. He yells in pain. After cleaning his hand he continues. At the end he gives you another magical flower while rubbing his hand.";
+    next;
+    mes "[Orum]";
+    mes "\"Ouch, it still hurts. I need to recover. You're going to place it.\"";
+    next;
+L_WaySecondFlower:
+    mes "[Orum]";
+    mes "\"The next spot is in the Woodland Hills. When you left our caves, go south until you come out of the forest and then to the west, past the hut of that old man.";
+    mes "The spot where you have to place it is on higher ground, so you eventually have to find a way through the caves to reach it.\"";
+    goto L_Close;
+
+L_AskPurpose:
+    mes "[Orum]";
+    mes "\"Purpose? Well... We're buidling a pentagram.\"";
+    goto L_Close;
+
+L_PlaceSecondFlower: // 20: Got task to place the second magical flower
+    mes "[Orum]";
+    mes "\"Go to place second magical flower.\"";
+    menu
+        "I'm on my way.", L_Close,
+        "Where do I have to put it again?", L_WaySecondFlower,
+        "Sorry, I lost it.", -;
+
+    mes "[Orum]";
+    mes "\"What?! You incompetent dumbhead! I got hurt while creating this powerful magical artifact and you lose it!\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_2 + " GP, and I'm going to allow you to continue helping us. So?\"";
+    menu
+        "Ok.", -,
+        "No way, that's too much!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_2)
+        goto L_NoMoney;
+    set Zeny, Zeny - @RECOMPENSATION_2;
+    set OrumQuest, 19;
+
+    mes "[Orum]";
+    mes "\"Ok, now that this is settled, bring me " + @AMOUNT_PINKPETAL + " Pink Petals, " + @AMOUNT_STINGER + " Scorpion Stinger and one Purple Tulip again.\"";
+    goto L_Close;
+
+L_PlacedSecondFlower: // 21: Placed second magical flower
+    mes "TODO next";
     goto L_Close;
 
 L_NoRecompensation:
@@ -159,5 +245,8 @@ L_Close:
     set @AMOUNT_SMALLMUSHROOM, 0;
     set @AMOUNT_ASH, 0;
     set @RECOMPENSATION_1, 0;
+    set @AMOUNT_PINKPETAL, 0;
+    set @AMOUNT_STINGER, 0;
+    set @RECOMPENSATION_2, 0;
     close;
 }
