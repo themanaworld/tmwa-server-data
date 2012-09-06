@@ -30,6 +30,14 @@
     set @AMOUNT_PINKPETAL, 5;
     set @AMOUNT_STINGER, 5;
     set @RECOMPENSATION_2, 10000;
+    // third flower
+    set @AMOUNT_WHITEFUR, 5;
+    set @AMOUNT_REDSTINGER, 5;
+    set @RECOMPENSATION_3, 20000;
+
+    if (OrumQuest == 24) goto L_PlacedThirdFlower;
+    if (OrumQuest == 23) goto L_PlaceThirdFlower;
+    if (OrumQuest == 22) goto L_ThirdFlower;
 
     if (OrumQuest == 21) goto L_PlacedSecondFlower;
     if (OrumQuest == 20) goto L_PlaceSecondFlower;
@@ -223,6 +231,143 @@ L_PlaceSecondFlower: // 20: Got task to place the second magical flower
     goto L_Close;
 
 L_PlacedSecondFlower: // 21: Placed second magical flower
+    mes "[Orum]";
+    mes "\"Very good. You placed the second flower, right? I was able to feel it here.";
+    mes "Everything is going very well.\"";
+    mes "Orum grins pleased.";
+    menu
+        "What do you need next?", -,
+        "How can we build a pentagram by randomly planting flowers?", L_AskPentagram;
+
+    set OrumQuest, 22;
+    goto L_ThirdFlower;
+
+L_AskPentagram:
+    mes "[Orum]";
+    mes "\"Randomly? The places are very carefully chosen! You see, it's going to be a very BIG pentagram.\"";
+    set OrumQuest, 22;
+    next;
+    goto L_ThirdFlower;
+
+L_ThirdFlower: // 22: Got task to bring materials for third magical flower
+    mes "[Orum]";
+    mes "\"Now we need " + @AMOUNT_WHITEFUR + " White Fur, " + @AMOUNT_REDSTINGER + " Red Scorpion Stinger and one White Tulip.\"";
+    menu
+        "I got everything you want.", -,
+        "I'm still searching.", L_Close,
+        "And what is the pentagram going to do?", L_AskPentaEffect;
+
+    if ((countitem("WhiteFur") < @AMOUNT_WHITEFUR)
+        || (countitem("RedScorpionStinger") < @AMOUNT_REDSTINGER)
+        || (countitem("WhiteTulip") < 1))
+        goto L_NoItem;
+
+    delitem "WhiteFur", @AMOUNT_WHITEFUR;
+    delitem "RedScorpionStinger", @AMOUNT_REDSTINGER;
+    delitem "WhiteTulip", 1;
+
+    mes "Orum takes the things out of your hands and starts to prepare them.";
+    mes "[Orum]";
+    mes "\"This time you're going to help me. It's safer when I don't have to handle all of it myself. Ok, listen.\"";
+    next;
+    mes "\"Here is the rheological additive that you have to pour on it when the reaction between the pulvers is on its peak level. I'm going to slowly add a little more of the pulver, which will make it react faster. Got it?\"";
+    menu
+        "Rheo-what?", -,
+        "Ok, let's try.", -,
+        "I'm not sure I understand...", -;
+
+    mes "[Orum]";
+    mes "\"Well, just pour when it's bubbling really hard.\"";
+    mes "He starts to mix the powders together in the caldron.";
+    next;
+
+    setarray @bubblingLevels$, "calmly", "slightly", "noticeably", "heavily";
+    set @bubblingLevel, rand(10);
+
+L_EasyMinigame:
+    mes "The mixture is bubbling " + @bubblingLevels$[@bubblingLevel/7] + ". What do you want to do?";
+    menu
+        "Wait.", -,
+        "Pour.", L_EasyCheck;
+
+    if (@menu == 1)
+        set @bubblingLevel, @bubblingLevel + rand(1,10);
+    if (@bubblingLevel > 27)
+        goto L_EasyTooHigh;
+    mes "Orum adds some more pulver.";
+    goto L_EasyMinigame;
+
+L_EasyCheck:
+    set @bubblingLevel, @bubblingLevel + 3 - rand(7);
+    if (@bubblingLevel < 22)
+        goto L_EasyTooEarly;
+    if (@bubblingLevel > 27)
+        goto L_EasyTooHigh;
+    goto L_EasySuccess;
+
+L_EasyTooHigh:
+    mes "Suddenly the mixture glows brightly. Then it calms down very quickly and turns into a weird greyish color.";
+    mes "[Orum]";
+    mes "\"Are you sleeping? Now it's wasted. You waited too long.\"";
+    next;
+    mes "\"Now you have to collect the ingredients again.\"";
+    goto L_Close;
+
+L_EasyTooEarly:
+    mes "You pour the liquid Orum gave you on this mixture.";
+    mes "It stops bubbling and gets thicker... and thicker... and thicker...";
+    mes "[Orum]";
+    mes "\"No! That was too early. See what you've done. It's hard as a rock now.\"";
+    next;
+    mes "\"How annoying. You have to get new ingredients.\"";
+    goto L_Close;
+
+L_EasySuccess:
+    getitem "BlueRose", 1; // TODO: replace with magical flower artefact
+    set OrumQuest, 23;
+
+    mes "As you pour the liquid on the bubbling mixture, it calms down and becomes viscous. Orum takes the tulip and dips it into the mixture.";
+    mes "[Orum]";
+    mes "\"Very well! Here it is.\"";
+    next;
+L_WayThirdFlower:
+    mes "[Orum]";
+    mes "\"This flower needs to be placed on top of the Hurnscald mines. It might be a bit hard to reach, but I'm sure you'll do fine.\"";
+    goto L_Close;
+
+L_AskPentaEffect:
+    mes "[Orum]";
+    mes "\"Don't you have at least tiny knowledge of Astral magic? A pentagram is used to summon, of course.\"";
+    goto L_Close;
+
+L_PlaceThirdFlower: // 23: Completed easy minigame and got task to place the third magical flower
+    mes "[Orum]";
+    mes "\"What are you waiting for? Bring the third flower to its destination.\"";
+    menu
+        "Ok.", L_Close,
+        "I forget where to put it.", L_WayThirdFlower,
+        "Unfortunately... I don't have it anymore.", -;
+
+    mes "Orum sighs.";
+    mes "[Orum]";
+    mes "\"I hope this is a joke. No, you're serious? What an effrontery! This was a valuable and powerful magical artifact.\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_3 + " GP, and I'm going to allow you to continue helping us. So?\"";
+    menu
+        "Here it is.", -,
+        "That's too much!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_3)
+        goto L_NoMoney;
+    set Zeny, Zeny - @RECOMPENSATION_3;
+    set OrumQuest, 22;
+
+    mes "[Orum]";
+    mes "\"Once again we need " + @AMOUNT_WHITEFUR + " White Fur, " + @AMOUNT_REDSTINGER + " Red Scorpion Stinger and one White Tulip.\"";
+    goto L_Close;
+
+L_PlacedThirdFlower: // 24: Placed third magical flower
+    mes "[Orum]";
     mes "TODO next";
     goto L_Close;
 
@@ -248,5 +393,10 @@ L_Close:
     set @AMOUNT_PINKPETAL, 0;
     set @AMOUNT_STINGER, 0;
     set @RECOMPENSATION_2, 0;
+    set @AMOUNT_WHITEFUR , 0;
+    set @AMOUNT_REDSTINGER , 0;
+    set @RECOMPENSATION_3, 0;
+    set @bubblingLevel, 0;
+    cleararray @bubblingLevels$[0], "", 4;
     close;
 }
