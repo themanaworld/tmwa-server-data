@@ -2,6 +2,18 @@
 
 009-2.gat,183,57,0|script|Peter|157,{
 
+    set @peter_chain_mail_coal, 10;
+    set @peter_chain_mail_ingot, 5;
+    set @peter_chain_mail_money, 20000;
+
+    set @peter_light_plate_coal, 20;
+    set @peter_light_plate_ingot, 10;
+    set @peter_light_plate_money, 50000;
+
+    set @peter_warlord_plate_coal, 30;
+    set @peter_warlord_plate_ingot, 15;
+    set @peter_warlord_plate_money, 100000;
+
     mes "[Peter]";
     mes "\"Hello, I am Peter, apprentice to Nicholas.\"";
     next;
@@ -10,82 +22,92 @@
     mes "[Peter]";
     mes "\"What would you like me to make?\"";
     menu
-        "Chain Mail (10 coal, 5 ingots and 20000 GP).", L_Peter_Chain_Mail,
-        "Light Plate (20 coal, 10 ingots and 50000 GP).", L_Peter_Light_Plate,
-        "Warlord Plate (30 coal, 15 ingots and 100000 GP).", L_Peter_Warlord_Plate,
+        "Chain Mail ("+@peter_chain_mail_coal+" coal, "+@peter_chain_mail_ingot+" ingots and "+@peter_chain_mail_money+" GP).", L_Peter_Chain_Mail,
+        "Light Plate ("+@peter_light_plate_coal+" coal, "+@peter_light_plate_ingot+" ingots and "+@peter_light_plate_money+" GP).", L_Peter_Light_Plate,
+        "Warlord Plate ("+@peter_warlord_plate_coal+" coal, "+@peter_warlord_plate_ingot+" ingots and "+@peter_warlord_plate_money+" GP).", L_Peter_Warlord_Plate,
         "Nevermind.", -;
-    close;
+    goto L_Close;
 
 L_Peter_Chain_Mail:
-    if (Zeny < 20000)
-        goto L_Peter_NotEnough_Zeny;
-    if (countitem("IronIngot") < 5)
-        goto L_Peter_NotEnough_Ingot;
-    if (countitem("Coal") < 10)
-        goto L_Peter_NotEnough_Coal;
-    getinventorylist;
-    if (@inventorylist_count == 100)
-        goto L_Peter_TooMany;
-    set Zeny, Zeny - 20000;
-    delitem "IronIngot", 5;
-    getitem "ChainmailShirt", 1;
-    mes "[Peter]";
-    mes "\"Here you go!\"";
-    close;
+    set @peter_crafting_coal, @peter_chain_mail_coal;
+    set @peter_crafting_iron_ingot, @peter_chain_mail_ingot;
+    set @peter_crafting_money, @peter_chain_mail_money;
+    set @peter_crafting_item$, "ChainmailShirt";
+    callsub S_Peter_Get_Smithery_Item;
+    goto L_Close;
 
 L_Peter_Light_Plate:
-    if (Zeny < 50000)
-        goto L_Peter_NotEnough_Zeny;
-    if (countitem("IronIngot") < 10)
-        goto L_Peter_NotEnough_Ingot;
-    if (countitem("Coal") < 20)
-        goto L_Peter_NotEnough_Coal;
-    getinventorylist;
-    if (@inventorylist_count == 100)
-        goto L_Peter_TooMany;
-    set Zeny, Zeny - 50000;
-    delitem "IronIngot", 10;
-    delitem "Coal", 20;
-    getitem "LightPlatemail", 1;
-    mes "[Peter]";
-    mes "\"Here you go!\"";
-    close;
+    set @peter_crafting_coal, @peter_light_plate_coal;
+    set @peter_crafting_iron_ingot, @peter_light_plate_ingot;
+    set @peter_crafting_money, @peter_light_plate_money;
+    set @peter_crafting_item$, "LightPlatemail";
+    callsub S_Peter_Get_Smithery_Item;
+    goto L_Close;
 
 L_Peter_Warlord_Plate:
-    if (Zeny < 100000)
+    set @peter_crafting_coal, @peter_warlord_plate_coal;
+    set @peter_crafting_iron_ingot, @peter_warlord_plate_ingot;
+    set @peter_crafting_money, @peter_warlord_plate_money;
+    set @peter_crafting_item$, "WarlordPlate";
+    callsub S_Peter_Get_Smithery_Item;
+    goto L_Close;
+
+S_Peter_Get_Smithery_Item:
+    if (Zeny < @peter_crafting_money)
         goto L_Peter_NotEnough_Zeny;
-    if (countitem("IronIngot") < 15)
+    if (countitem("IronIngot") < @peter_crafting_iron_ingot)
         goto L_Peter_NotEnough_Ingot;
-    if (countitem("Coal") < 30)
+    if (countitem("Coal") < @peter_crafting_coal)
         goto L_Peter_NotEnough_Coal;
     getinventorylist;
     if (@inventorylist_count == 100)
         goto L_Peter_TooMany;
-    set Zeny, Zeny - 100000;
-    delitem "IronIngot", 15;
-    delitem "Coal", 30;
-    getitem "WarlordPlate", 1;
+    set Zeny, Zeny - @peter_crafting_money;
+    delitem "IronIngot", @peter_crafting_iron_ingot;
+    delitem "Coal", @peter_crafting_coal;
+    getitem @peter_crafting_item$, 1;
     mes "[Peter]";
     mes "\"Here you go!\"";
-    close;
+    return;
 
 L_Peter_NotEnough_Zeny:
     mes "[Peter]";
     mes "\"You don't have enough gold.\"";
-    close;
+    goto L_Close;
 
 L_Peter_NotEnough_Ingot:
     mes "[Peter]";
     mes "\"You don't have enough ingots.\"";
-    close;
+    goto L_Close;
 
 L_Peter_NotEnough_Coal:
     mes "[Peter]";
     mes "\"You don't have enough Coal.\"";
-    close;
+    goto L_Close;
 
 L_Peter_TooMany:
     mes "[Peter]";
     mes "\"You have too much stuff.  Please get rid of something if you want some armor.\"";
+    goto L_Close;
+
+L_Close:
+    // Clear all local variables
+    set @peter_chain_mail_coal, 0;
+    set @peter_chain_mail_ingot, 0;
+    set @peter_chain_mail_money, 0;
+
+    set @peter_light_plate_coal, 0;
+    set @peter_light_plate_ingot, 0;
+    set @peter_light_plate_money, 0;
+
+    set @peter_warlord_plate_coal, 0;
+    set @peter_warlord_plate_ingot, 0;
+    set @peter_warlord_plate_money, 0;
+
+    set @peter_crafting_coal, 0;
+    set @peter_crafting_iron_ingot, 0;
+    set @peter_crafting_money, 0;
+    set @peter_crafting_item$, "";
     close;
+
 }
