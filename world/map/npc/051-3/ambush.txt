@@ -1,0 +1,176 @@
+//-----------------------------------------------------------------------------
+// Bandit cave
+// $@illia_progress = 2
+//
+// Level progress:
+//     0: Did not start the task yet
+//     1: Players are ambushed
+//     2: Players escaped their jails
+//     3: Reinforcements come when they approach the exit of the cave
+//     4: Key of the door found, to leave the cave
+//-----------------------------------------------------------------------------
+
+051-3.gat,40,52,0|script|#WayBlockedTrigger|32767,2,2,{
+    message strcharinfo(0), "There is no way I can pass here. Let's find another way.";
+    end;
+}
+
+051-3.gat,31,70,0|script|#AmbushReadyTrigger|32767,2,2,{
+    set @step, 2;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if (strcharinfo(0) == $@ILLIA_HERO$ && $@illia_level_2_progress == 0) goto L_PrepareAmbush;
+    end;
+
+L_PrepareAmbush:
+    disablenpc "Sneaky Bandit";
+    disablenpc "Another Sneaky Bandit";
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+
+}
+
+051-3.gat,31,93,0|script|#BanditAmbushTrigger|32767,3,3,{
+    set @step, 2;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if ($@illia_level_2_progress == 0 && strcharinfo(0) == $@ILLIA_HERO$) goto L_MakeAmbush;
+    end;
+
+L_MakeAmbush:
+    set $@illia_level_2_progress, 1;
+    cmdothernpc "#BndtTl", "Ambush";
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    message strcharinfo(0), "Your throat got cut by a sneaky bandit!";
+    end;
+}
+
+051-3.gat,1,1,0|script|#BndtTl|127,{
+    end;
+
+OnCommandAmbush:
+    initnpctimer;
+    end;
+
+OnTimer1000:
+    enablenpc "Sneaky Bandit";
+    cmdothernpc "Sneaky Bandit", "Talk";
+    enablenpc "Another Sneaky Bandit";
+    cmdothernpc "Another Sneaky Bandit", "Talk";
+    end;
+
+OnTimer9000:
+    areawarp "051-3.gat", 22, 45, 42, 97, "051-3.gat", 101, 13;
+    end;
+
+OnTimer9750:
+    areatimer "051-3.gat", 100, 12, 102, 15, 500, "#BndtTl::onOuch";
+    areatimer "051-3.gat", 100, 12, 102, 15, 3000, "#BndtTl::onA";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+onOuch:
+    message strcharinfo(0), "Ouch my head...";
+    end;
+
+onA:
+    if (strcharinfo(0) == $@ILLIA_HERO$)
+        goto L_CaptureHero;
+    if (strcharinfo(0) == $@ILLIA_HELPER1$)
+        goto L_CaptureHelper1;
+    if (strcharinfo(0) == $@ILLIA_HELPER2$)
+        goto L_CaptureHelper2;
+    if (strcharinfo(0) == $@ILLIA_HELPER3$)
+        goto L_CaptureHelper3;
+    // kill that player otherwise, since not part of the quest.
+    percentheal -100,0;
+    end;
+
+L_CaptureHero:
+    // Simulate the capture of the player.
+    // Unequip all equipments
+    nude;
+    // put the health at 40%.
+    percentheal 100, 0;
+    percentheal -60, 0;
+    warp "051-3.gat", 69, 109;
+    message strcharinfo(0), "Meh... Where am I?";
+    end;
+
+L_CaptureHelper1:
+    // Simulate the capture of the player.
+    // Unequip all equipments
+    nude;
+    // put the health at 40%.
+    percentheal 100, 0;
+    percentheal -60, 0;
+    warp "051-3.gat", 64, 102;
+    message strcharinfo(0), "Meh... Where am I?";
+    end;
+
+L_CaptureHelper2:
+    // Simulate the capture of the player.
+    // Unequip all equipments
+    nude;
+    // put the health at 40%.
+    percentheal 100, 0;
+    percentheal -60, 0;
+    warp "051-3.gat", 62, 102;
+    message strcharinfo(0), "Meh... Where am I?";
+    end;
+
+L_CaptureHelper3:
+    // Simulate the capture of the player.
+    // Unequip all equipments
+    nude;
+    // put the health at 40%.
+    percentheal 100, 0;
+    percentheal -60, 0;
+    warp "051-3.gat", 58, 102;
+    message strcharinfo(0), "Meh... Where am I?";
+    end;
+
+}
+
+051-3.gat,29,94,0|script|Sneaky Bandit|127,{
+    end;
+
+OnCommandTalk:
+    initnpctimer;
+    end;
+
+OnTimer100:
+    npctalk "Did you think you could sneak in our den without a problem?";
+    end;
+
+OnTimer3600:
+    npctalk "Drop your weapons, and come with us!";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+}
+
+051-3.gat,33,95,0|script|Another Sneaky Bandit|127,{
+    end;
+
+OnCommandTalk:
+    initnpctimer;
+    end;
+
+OnTimer1500:
+    npctalk "W00t! More slaves!";
+    end;
+
+OnTimer5500:
+    npctalk "Ahaha, that was easy!";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+}
