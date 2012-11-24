@@ -183,6 +183,10 @@ L_ProposeUseKaflosh:
 L_GetEmptyBottles:
     mes "[Oscar]";
     mes "\"Ok, here are the " + $@halloween_num_water_bottles + " empty bottles.\"";
+    next;
+    mes "\"Oh and while you fill these bottles, why not bring some friends here as well?";
+    mes "Let's not be reckless. Maybe these rumors about the pumpkins are true.";
+    mes "Oh, unless you consider yourself strong enough to take care of this alone!\"";
     getitem "EmptyBottle", $@halloween_num_water_bottles;
     goto L_End;
 
@@ -232,11 +236,21 @@ L_WaterWithKaflosh:
     mes "Water the pumpkin patches right here with your awesome magic!\"";
     next;
     mes "\"Here is one bottle of water to do it.\"";
+    next;
+    mes "\"By the way, I told you about the rumors concerning these pumpkins.";
+    mes "Why not bring some friends here? Oh, unless you consider yourself strong enough!\"";
     set Quest_Halloween, 5;
     getitem "BottleOfWater", 1;
     goto L_End;
 
 L_HelpWaterPatches:
+    // We check again here that the player has magic skills
+    // This case happens when the player has logged off
+    // during the infestation phase.
+    set @nature_magic, getskilllv(SKILL_MAGIC_NATURE);
+    if (!(@nature_magic > 1))
+        goto L_HelpFillWaters;
+    set @nature_magic, 0;
     mes "[Oscar]";
     mes "\"Come on, water the pumpkin patches right here with your awesome magic!";
     mes "For sure you will be more efficient than me!\"";
@@ -351,12 +365,12 @@ onPD:
     // huntsman spider x1
     if (@halloween_rand < (15*BaseLevel)/100)
         areamonster "011-1.gat", 97, 40, 101, 44, "", 1083, 1, "Oscar::onPDP";
-    // Or archant x2
-    if (@halloween_rand >= (15*BaseLevel)/100 && @halloween_rand < (50*BaseLevel)/100)
-        areamonster "011-1.gat", 97, 40, 101, 44, "", 1060, 2, "Oscar::onPDP";
     // Or spider x1
-    if (@halloween_rand >= (50*BaseLevel)/100)
+    if (@halloween_rand >= (15*BaseLevel)/100 && @halloween_rand < (75*BaseLevel)/100)
         areamonster "011-1.gat", 97, 40, 101, 44, "", 1012, 1, "Oscar::onPDP";
+    // Or archant x2
+    if (@halloween_rand >= (75*BaseLevel)/100)
+        areamonster "011-1.gat", 97, 40, 101, 44, "", 1060, 2, "Oscar::onPDP";
 
     set @halloween_rand, 0;
     end;
