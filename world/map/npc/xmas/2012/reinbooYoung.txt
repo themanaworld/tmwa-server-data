@@ -1,0 +1,74 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+044-1.gat,109,116,0|script|Neimeres|331,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo == 14) goto L_Done;
+    if (@reinboo > 8) goto L_Talisman;
+    if (@reinboo == 8) goto L_Afraid;
+    if (@reinboo > 1) goto L_Neiremes;
+
+    mes "[Neimeres]";
+    mes "\"Hello. What are you doing here? Humans usually don't come here, because they have to go through an icy cave with monsters living in there. You must be very brave.\"";
+    goto L_Close;
+
+L_Neiremes:
+    mes "[Neimeres]";
+    mes "\"You're going to help Neiremes, right? I'm so worried. I want to fly with him!\"";
+    goto L_Close;
+
+L_Afraid:
+    mes "[Neimeres]";
+    mes "\"You were helping Neiremes a lot! That's very kind. But... I don't think it's enough. He's afraid of being high up in the air for a long time.\"";
+    mes "Neimeres looks sad.";
+    next;
+    mes "[Neimeres]";
+    mes "\"But I had an idea! Neiremes needs a Flight Talisman! Then he won't be afraid anymore!\"";
+    menu
+        "What is a Flight Talisman?", -;
+    mes "[Neimeres]";
+    mes "\"It's a magical talisman that keeps you safe during flights, I think. I never saw one.";
+    mes "But Santa's helpers are very wise and know a lot of things. I'm sure they know about it.\"";
+    next;
+    mes "\"And Tarmo knows the most about magic items. Please ask him about it! I need to stay here, with Neiremes. He'd be sad if I go away.\"";
+    set @reinboo, 9;
+    callfunc "xmas2012update_reinboo_var";
+    goto L_Close;
+
+L_Talisman:
+    mes "[Neimeres]";
+    mes "\"Please ask Tarmo about the Flight Talisman! With such a talisman Neiremes won't be afraid anymore, I'm sure.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Neimeres]";
+    mes "\"Thanks for bringing the Flight Talisman! Neiremes is training very hard now. I'm sure he will do well on Christmas! Make sure to stay around to hear how he did.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Neimeres]";
+    mes "\"These mountains are nice. I like being here.\"";
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Neimeres]";
+    mes "\"It was so wonderful to fly with Santa and Neiremes. He did really well! Oh, I'm so happy.\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"You helped so much. Go talk to Neiremes. He wants to thank you.\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}

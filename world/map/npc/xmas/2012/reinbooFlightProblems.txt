@@ -1,0 +1,185 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+044-1.gat,71,101,0|script|Neiremes|331,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo == 14) goto L_Done;
+    if (@reinboo > 8) goto L_Training;
+    if (@reinboo == 8) goto L_Neimeres;
+    if (@reinboo > 6) goto L_Acorn;
+    if (@reinboo == 6) goto L_Hungry;
+    if (@reinboo > 1) goto L_Blanket;
+
+    mes "[Neiremes]";
+    mes "\"Hello? Please don't disturb me. I'm practicing.\"";
+    if (@reinboo == 0)
+        goto L_Close;
+    menu
+        "I'm here to help you!", -,
+        "Ok, sorry.", L_Close;
+    mes "[Neiremes]";
+    mes "\"Help me? Oh, that's kind. Now that you say it, I can smell Grombadil on you. He sent you, right? He's so friendly to me. And I fear I'll dissapoint him.\"";
+    menu
+        "I'm sure you won't. What's causing you problems?", -,
+        "Pull yourself together! What's your problem?", -;
+    mes "[Neiremes]";
+    mes "\"I... I have problems with flying. I can manage a short flight, but... well, first of all it's so terribly cold in the upper air!";
+    mes "I don't like freezing.\"";
+    menu
+        "I'll try to get something to keep you warm.", -;
+    mes "[Neiremes]";
+    mes "\"Oh, that's very kind! But... it has to be red, ok? It's Santa's color. I can't wear a different color!\"";
+    set @reinboo, 2;
+    callfunc "xmas2012update_reinboo_var";
+    goto L_Close;
+
+L_Blanket:
+    mes "[Neiremes]";
+    mes "\"Did you find something to keep me warm yet? I'm sure that'll help me to stay in the air for a longer time. And remember, I can only wear something red. Because it's Santa's color.\"";
+    if (@reinboo != 5)
+        goto L_Close;
+    menu
+        "I have a Red Saddle Rug for you!", -,
+        "Not yet.", L_Close;
+
+    if (countitem("RedSaddleRug") < 1)
+        goto L_NoItem;
+    delitem "RedSaddleRug", 1;
+    set @reinboo, 6;
+    callfunc "xmas2012update_reinboo_var";
+
+    mes "[Neiremes]";
+    mes "\"Oh, oh, oh! Amazing! It's so fluffy! And red! And warm! Thank you!\"";
+    mes "He takes the rug with his mouth and puts it on his back.";
+    next;
+    mes "[Neiremes]";
+    mes "\"Can you fasten it onto my back? Pull that strap. Yes, that's right.\"";
+    next;
+    mes "\"Oh, I'm so happy. I'm sure now I can stay in the cold air for a longer time.";
+    mes "\"Unless...";
+    menu
+        "Unless?", -,
+        "What's now the problem?", -;
+L_Hungry:
+    mes "[Neiremes]";
+    mes "\"Oh, I... I feel hungry now. It's hard to concentrate when I'm hungry. And I feel exhausted because of that. Yes. I need to eat first.\"";
+    next;
+    mes "\"Leiremes, my trainer, said it's not good to go on a long flight when you're hungry.\"";
+    menu
+        "Are you sure you aren't just afraid?", -,
+        "Ok, I'll get you something.", L_Close;
+
+    mes "[Neiremes]";
+    mes "\"Oh, don't be mean! I'm really hungry! I'm doing my best.\"";
+    goto L_Close;
+
+L_Acorn:
+    mes "[Neiremes]";
+    mes "\"That Red Saddle Rug you brought me is really nice and warm. But I can't go on a long training flight when I'm hungry. Leiremes said it's dangerous to fly when you're hungry. He's my trainer and he's very wise.\"";
+    menu
+        "I'll try to find something appropriate.", L_Close,
+        "I've got some Roasted Acorns for you.", -;
+
+    if (countitem("RoastedAcorn") < $@xmas2012_roasted_acorn_amount)
+        goto L_NoItem;
+    delitem "RoastedAcorn", $@xmas2012_roasted_acorn_amount;
+    set @reinboo, 8;
+    callfunc "xmas2012update_reinboo_var";
+
+    mes "[Neiremes]";
+    mes "\"Roasted Acorns! Yum, yum, yum. Tasty!\"";
+    mes "Neiremes munches the acorns with visible delight.";
+    next;
+    mes "[Neiremes]";
+    mes "\"Now I'm going back to training.\"";
+    next;
+L_Neimeres:
+    mes "[Neiremes]";
+    mes "\"Neimeres wanted to talk to you. I told her about the nice saddle rug you brought me and she got curious about you. She is just over there at the well.\"";
+    next;
+    mes "\"Mh... I think you have to go through that cave further downhill.\"";
+    goto L_Close;
+
+L_Training:
+    mes "[Neiremes]";
+    mes "\"I'm training. Thank you for bringing me the saddle rug and the food. I'm doing my best now.";
+    mes "... If I only wouldn't have to fly so high...\"";
+    if (@reinboo != 13)
+        goto L_Close;
+    menu
+        "I have a Flight Talisman for you!", -,
+        "You just have to train harder!", L_Close;
+    mes "[Neiremes]";
+    mes "\"Oh, exciting! What does it do? Does it help me?\"";
+    menu
+        "It'll keep you safe while you're flying.", -;
+    if (countitem("FlightTalisman") < 1)
+        goto L_NoItem;
+    delitem "FlightTalisman", 1;
+    set @reinboo, 14;
+    callfunc "xmas2012update_reinboo_var";
+    mes "You give Neiremes the talisman.";
+    mes "[Neiremes]";
+    mes "\"Oh, I already feel more safe. It's really powerful, is it? Thank you so much. I'm going to do another training flight, to test it.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Neiremes]";
+    mes "\"Hello! I just made a very long and high training flight. And I didn't feel cold and I wasn't nervous! Are you proud of me? Thank you so much for bringing this Flight Talisman.\"";
+    next;
+    mes "\"Will you come to see how I did after Christmas?\"";
+    menu
+        "Of course I will!", -,
+        "When I have the time...", L_Please;
+    mes "[Neiremes]";
+    mes "\"Yay!\"";
+    goto L_Close;
+
+L_Please:
+    mes "[Neiremes]";
+    mes "\"Oh, please come!\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Neiremes]";
+    mes "\"Hey? You don't have it! That's mean.\"";
+    mes "Neiremes looks very sad.";
+    goto L_Close;
+
+L_NoEvent:
+    mes "Neiremes the Reinboo hums happily.";
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Neiremes]";
+    mes "\"Thank you so much for your help! It was really great to fly with Santa and the others. Neimeres was so happy too.\"";
+    if (@reinboo != 14)
+        goto L_Close;
+
+    getinventorylist;
+    if ((checkweight("RedNose", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    mes "\"Here, this is for you.\"";
+    getitem "RedNose", 1;
+    set @reinboo, 15;
+    callfunc "xmas2012update_reinboo_var";
+    goto L_Close;
+
+L_Inventory:
+    mes "[Neiremes]";
+    mes "\"Oh, I want to give you a gift, but you can't carry it.\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}

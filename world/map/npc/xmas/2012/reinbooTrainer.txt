@@ -1,0 +1,85 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+044-1.gat,66,103,0|script|Leiremes|170,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo == 14) goto L_Done;
+    if (@reinboo > 8) goto L_Talisman;
+    if (@reinboo == 8) goto L_Neimeres;
+    if (@reinboo == 7) goto L_Food;
+    if (@reinboo == 6) goto L_Hungry;
+    if (@reinboo > 1) goto L_Blanket;
+
+    mes "[Leiremes]";
+    mes "\"Oh, I'm surprised to see you here. Humans doesn't come here often. We're here to train flying, so please don't disturb us.\"";
+    goto L_Close;
+
+L_Blanket:
+    mes "[Leiremes]";
+    mes "\"It isn't easy to train Neiremes... We'll see if your efforts can help.\"";
+    goto L_Close;
+
+L_Hungry:
+    mes "[Leiremes]";
+    mes "\"That's a very nice saddle rug you brought. Now Neiremes can't complain about the cold anymore.\"";
+    menu
+        "He's hungry now.", -;
+
+    mes "[Leiremes]";
+    mes "\"I see. Well, he should eat something nutrient but light. He probably wants a cake, but that'd feel too heavy in his stomach during the flight.\"";
+    next;
+    mes "\"I know, Roasted Acorns would be good.\"";
+    set @reinboo, 7;
+    callfunc "xmas2012update_reinboo_var";
+    goto L_Close;
+
+L_Food:
+    mes "[Leiremes]";
+    mes "\"Verneri, one of Santa's bodyguards, knows how to make really tasty Roasted Acorns. Maybe you should talk to him.\"";
+    goto L_Close;
+
+L_Neimeres:
+    mes "[Leiremes]";
+    mes "\"Neiremes should go back to training now. Why don't you talk to Neimeres in the meanwhile? She's his flight partner.\"";
+    mes "\"Everyone of us has a flight partner, we start our service together and retire at the same time. My partner is Leimeres.\"";
+    goto L_Close;
+
+L_Talisman:
+    mes "[Leiremes]";
+    mes "\"I heard about this idea with the Flight Talisman. I have to say, I'm a bit skeptical if that'll work. But I don't have any better ideas.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Leiremes]";
+    mes "\"Since you gave the Flight Talisman to Neiremes he's really motivated. Thank you.\"";
+    next;
+    mes "\"The Christmas Flight will show how much it helped.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Leiremes]";
+    mes "\"I love flying over the snowy hills.\"";
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Leiremes]";
+    mes "\"Neiremes did very well on the flight with Santa. Thanks for your help!\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"You should also talk to Neiremes. I think he wants to thank you personally.\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}

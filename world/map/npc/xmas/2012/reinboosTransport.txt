@@ -1,0 +1,181 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+030-1.gat,75,65,0|script|Meileres|170,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (xmas2012 & $@xmas2012_FLIGHT_FLAG1) goto L_Again;
+
+    mes "[Meileres]";
+    mes "\"Hello. Are you here to see Santa and the helpers? They're inside the house.\"";
+    if (@reinboo < 1)
+        goto L_Close;
+    menu
+        "Could you bring me to Neiremes?", -,
+        "It's really cold here, I'll go inside.", L_Close;
+    mes "[Meileres]";
+    mes "\"To Neiremes? Oh, but they're training! What do you want from Neiremes?\"";
+    menu
+        "Grombadil sent me to help him.", -,
+        "You're right, I should leave him alone.", L_Close;
+    mes "Meileres sniffs on you.";
+    mes "[Meileres]";
+    mes "\"Well, I can smell that you talked to Grombadil. Ok. I can bring you there. But I need something to eat first.\"";
+    next;
+    mes "\"Otherwise I get tired, and we might fall from the sky! You don't want to fall from the sky, right?\"";
+    set xmas2012, xmas2012 | $@xmas2012_FLIGHT_FLAG1;
+    goto L_Pay;
+
+L_Again:
+    mes "[Meileres]";
+    mes "\"Do you want me to bring you to Neiremes again?\"";
+    menu
+        "Yes.", L_Pay,
+        "No.", L_Close;
+
+L_Pay:
+    mes "[Meileres]";
+    mes "\"Do you have anything tasty for me?\"";
+    menu
+        "What about Red Apples?", -,
+        "I could give you Chocolate Cake.", -,
+        "I have some White Cake here.", -,
+        "I can offer you some Orange Cake.", -,
+        "Would you like some Apple Cake?", -,
+        "You're greedy!", L_Close;
+
+    set @flight_pay, @menu - 1;
+    mes "[Meileres]";
+    mes "\"Ok. Give me " + $@xmas2012_flight_pay[@flight_pay] + " " + $@xmas2012_flight_pay_name$[@flight_pay] + " and I'll fly you over to Neiremes.\"";
+    menu
+        "Here it is.", -,
+        "I need to get it first.", L_Close;
+
+    if (countitem($@xmas2012_flight_pay$[@flight_pay]) < $@xmas2012_flight_pay[@flight_pay])
+        goto L_NoItem;
+    delitem $@xmas2012_flight_pay$[@flight_pay], $@xmas2012_flight_pay[@flight_pay];
+
+    mes "[Meileres]";
+    mes "\"Yum, yum, tasty. Ok, let's start.\"";
+    warp "044-1.gat", 71, 103;
+    goto L_Close;
+
+L_NoItem:
+    mes "[Meileres]";
+    mes "\"Where is it? Where is it? You don't have it!\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Meileres]";
+    mes "\"I really don't understand why humans spend so much time in buildings. It's so much nicer outside.\"";
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Meileres]";
+    mes "\"Neiremes didn't have any problems with the flight! I'm so happy!\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"Do you want me to bring you to Neiremes again?\"";
+    menu
+        "Yes.", L_Pay,
+        "No, thanks.", L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @flight_pay, 0;
+    set @xmas_time, 0;
+    close;
+}
+
+044-1.gat,66,100,0|script|Reilemes|170,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (xmas2012 & $@xmas2012_FLIGHT_FLAG2) goto L_Again;
+
+    mes "[Reilemes]";
+    mes "\"Hello. We're here to train flying.\"";
+    if (@reinboo < 1)
+        goto L_Close;
+    menu
+        "Could you fly me back to Santa's place?", -,
+        "Good luck!", L_Close;
+    mes "[Reilemes]";
+    mes "\"Hm. Ok, why not. But you have to give me something to eat first.\"";
+    set xmas2012, xmas2012 | $@xmas2012_FLIGHT_FLAG2;
+    next;
+    goto L_Pay;
+
+L_Again:
+    mes "[Reilemes]";
+    mes "\"Do you want to return to Santa's residence?\"";
+    menu
+        "Yes.", L_Pay,
+        "No.", L_Close;
+
+L_Pay:
+    mes "[Reilemes]";
+    mes "\"Do you have anything tasty for me?\"";
+    menu
+        "What about Red Apples?", -,
+        "I could give you Chocolate Cake.", -,
+        "I have some White Cake here.", -,
+        "I can offer you some Orange Cake.", -,
+        "Would you like some Apple Cake?", -,
+        "You're greedy!", L_Close;
+
+    set @flight_pay, @menu - 1;
+    mes "[Reilemes]";
+    mes "\"Ok. Give me " + $@xmas2012_flight_pay[@flight_pay] + " " + $@xmas2012_flight_pay_name$[@flight_pay] + " and I'll fly you over to Santa's place.\"";
+    menu
+        "Ok.", -,
+        "I changed my mind.", L_Close;
+
+    if (countitem($@xmas2012_flight_pay$[@flight_pay]) < $@xmas2012_flight_pay[@flight_pay])
+        goto L_NoItem;
+    delitem $@xmas2012_flight_pay$[@flight_pay], $@xmas2012_flight_pay[@flight_pay];
+
+    mes "[Reilemes]";
+    mes "\"Yum, yum, tasty. Ok, let's start.\"";
+    warp "030-1.gat", 75, 68;
+    goto L_Close;
+
+L_NoItem:
+    mes "[Reilemes]";
+    mes "\"Are you trying to trick me? You don't have it!\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Reilemes]";
+    mes "\"I like these snowy hills.\"";
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Reilemes]";
+    mes "\"Neiremes and Neimeres did very good for their first Christmas Flight.\"";
+    next;
+    if (@reinboo != 14)
+        goto L_Again;
+    mes "\"What are you waiting for? Talk to Neiremes!\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @flight_pay, 0;
+    set @xmas_time, 0;
+    close;
+}

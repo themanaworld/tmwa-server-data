@@ -1,0 +1,96 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+030-2.gat,25,35,0|script|Vellamo|328,{
+    callfunc "xmas2012time";
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (xmas2012 & $@xmas2012_CANDY_FLAG)
+        goto L_Candy;
+
+    mes "[Vellamo]";
+    mes "\"Oh, hello. Visitors usually don't come down here in the basement. Here we store several things, materials for the presents, the finished presents, supplies.\"";
+    menu
+        "Nice. I have to go.", L_Close,
+        "Do you need help with anything?", -;
+    mes "[Vellamo]";
+    mes "\"Oh? You want to help us? Actually, there is one thing you could do. Did you see those weird slimes out there on the Snow Fields? Argh, I hate those creatures, last year they invaded the entire basement...\"";
+    next;
+    mes "\"However, this year they tried again, but I was able to hold them off. They just managed to devour most of our Candy supplies.\"";
+    next;
+    mes "\"So in case you find some of the Candies, feel free to bring them back. Ismo will give you some reward for them.\"";
+    set xmas2012, xmas2012 | $@xmas2012_CANDY_FLAG;
+    goto L_Close;
+
+L_Candy:
+    mes "[Vellamo]";
+    mes "\"Ah, welcome back. When you have found some of the Candy, please give it to Ismo.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Vellamo]";
+    mes "\"I'm sorry, the house isn't open to visitors at the moment.\"";
+    warp "030-1.gat", 99, 55;
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Vellamo]";
+    mes "\"Now that Christmas is over, we need to prepare everything for leaving the residence again. Santa spends the rest of the year in other places on Kaizei, working for the welfare of our continent.\"";
+    goto L_Close;
+
+L_Close:
+    set @xmas_time, 0;
+    close;
+}
+
+030-2.gat,33,29,0|script|Ismo|329,{
+    callfunc "xmas2012time";
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (xmas2012 & $@xmas2012_CANDY_FLAG)
+        goto L_Candy;
+
+    mes "[Ismo]";
+    mes "\"Hello. I'm helping Vellamo. He's the storage administrator.\"";
+    goto L_Close;
+
+L_Candy:
+    mes "[Ismo]";
+    mes "\"Did you get back some Candy from the slimes?\"";
+    next;
+
+    set @dq_level, 30;
+    set @dq_cost, 12;
+    set @dq_count, 3;
+    set @dq_name$, "Candy";
+    set @dq_friendly_name$, "Candies";
+    set @dq_money, 1000;
+    set @dq_exp, 200;
+
+    callfunc "DailyQuest";
+
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Ismo]";
+    mes "\"I'm sorry, the house isn't open to visitors at the moment.\"";
+    warp "030-1.gat", 99, 55;
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Ismo]";
+    mes "\"We're going to have a lot of work here now, because we're going to leave this residence soon.\"";
+    goto L_Close;
+
+L_Close:
+    set @xmas_time, 0;
+    close;
+}

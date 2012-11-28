@@ -1,0 +1,67 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+030-2.gat,87,77,0|script|Chief Warrick|329,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo == 14) goto L_Done;
+    if (@reinboo > 8) goto L_Talisman;
+    if (@reinboo > 1) goto L_Neiremes;
+
+    mes "[Chief Warrick]";
+    mes "\"Welcome to Santa's residence. We're currently in the Christmas preparations, but feel free to have a look around the house and talk to the helpers.\"";
+
+    if ((BaseLevel < 30) || (gettimetick(2) - TUT_var < 4*7*86400)) // player must be created at least four weeks ago
+        goto L_Close;
+    menu
+        "Can I help somehow?", -,
+        "Thank you.", L_Close;
+    mes "[Chief Warrick]";
+    mes "\"Help? Oh, did you hear about the troubles we had last year? Well, everything is going well this year, so we don't need help from outside this time.";
+    mes "Unless...\"";
+    next;
+    mes "\"Maybe you could have a talk with Grombadil, the equerry. He mentioned some trouble with one of the young Reinboos that are going to begin their duty this year. You can find him outside the house.\"";
+    goto L_Close;
+
+L_Neiremes:
+    mes "[Chief Warrick]";
+    mes "\"I really hope Neiremes will pull himself together soon enough. Everything else is going well, and it'd be a shame if all the preparations get ruined.\"";
+    goto L_Close;
+
+L_Talisman:
+    mes "[Chief Warrick]";
+    mes "\"Tarmo told me about Neimeres' idea with the Flight Talisman. That kind of magic isn't very common among the Sages and their helpers, as it is rather archaic. But if it can help, why not?\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Chief Warrick]";
+    mes "\"Grombadil let me know that Neiremes has much more self-confidence now, thanks to you! Let's see how he does on the Christmas Flight. Make sure to be around at that time if you want to see how he will do.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Chief Warrick]";
+    mes "\"Excuse me, you should leave now. The residence is closed at this time of the year.\"";
+    warp "030-1.gat", 99, 55;
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Chief Warrick]";
+    mes "\"This year's Christmas was a good year. And much less stressful than last year. Very well.\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"You were of great help for Neiremes. I think he'd like to thank you personally.\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}

@@ -1,0 +1,118 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+030-1.gat,106,54,0|script|Grombadil|105,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo == 14) goto L_Done;
+    if (@reinboo > 8) goto L_Talisman;
+    if (@reinboo == 8) goto L_Neimeres;
+    if (@reinboo > 5) goto L_Food;
+    if (@reinboo > 1) goto L_Blanket;
+    if (@reinboo == 1) goto L_Directions;
+
+    mes "[Grombadil]";
+    mes "\"Hello. I'm Grombadil, Santa's equerry - the person in charge of the Reinboos. This year two of the Reinboos are going to retire and two young ones are going to join the team.";
+    mes "But...\"";
+    next;
+    mes "\"One of the young ones, Neiremes... He's having trouble to learn flying. That's really worrying.\"";
+
+    if ((BaseLevel < 30) || (gettimetick(2) - TUT_var < 4*7*86400)) // player must be created at least four weeks ago
+        goto L_Close;
+
+    menu
+        "Can I do anything to help?", -,
+        "That's too bad.", L_Close;
+    mes "[Grombadil]";
+    mes "\"Oh? I never got the idea to ask someone for help with this. But actually... I'm at the end of my ideas. And maybe Neiremes will listen better to some encouragement from the outside.\"";
+    set @reinboo, 1;
+    callfunc "xmas2012update_reinboo_var";
+    next;
+L_Directions:
+    mes "[Grombadil]";
+    mes "\"You can find Neiremes in the Snowy Hills south west of here. But you can't reach the place directly.\"";
+    next;
+    mes "\"You could go through the caves that you can find north of here. But that's a long way, and who knows what's living in there.";
+    mes "Maybe it's better if you ask Meileres to bring you there. He might ask for some food in return though.\"";
+    goto L_Close;
+
+L_Blanket:
+    mes "[Grombadil]";
+    mes "\"Did you talk to Neiremes already?\"";
+    menu
+        "Yes, he feels cold in the upper air.",-,
+        "Not yet.", L_Close;
+
+    mes "[Grombadil]";
+    mes "\"He feels cold? Hm, usually Reinboo fur is warm enough to prevent them from feeling cold, even high up in the air. But Neiremes always has been a bit more sensitive than others.\"";
+    next;
+    mes "\"Maybe some kind of saddle rug... You should talk to Raimo, he's very experienced with sewing.\"";
+    goto L_Close;
+
+L_Food:
+    mes "[Grombadil]";
+    mes "\"I heard you brought the saddle rug to Neiremes. How's he doing now? Did he get better?\"";
+    menu
+        "Yes, he's back to training.", L_Close,
+        "He's hungry.", -;
+
+    mes "[Grombadil]";
+    mes "\"Hungry! Whatever you do, don't give him cakes to eat!\"";
+    menu
+        "Ok.", L_Close,
+        "Why?", L_Cake,
+        "But what should I give him instead?", L_Trainer;
+    goto L_Close;
+
+L_Cake:
+    mes "[Grombadil]";
+    mes "\"Cakes are unhealthy, even for a grown-up reinboo. But for a young one even more. Unfortunately they like cakes so much...";
+    mes "If you give him cakes, he'd probably just get an upset stomach. Then he won't be able to train at all.\"";
+    goto L_Close;
+
+L_Trainer:
+    mes "[Grombadil]";
+    mes "\"I suppose Leiremes can give best advice about that, since he is training Neiremes. You can find him in the snowy hills as well.\"";
+    goto L_Close;
+
+L_Neimeres:
+    mes "[Grombadil]";
+    mes "\"Meireles told me that Neiremes is back to training now. That's a relief.\"";
+    goto L_Close;
+
+L_Talisman:
+    mes "[Grombadil]";
+    mes "\"Neimeres told me about this Flight Talisman. She always had unusual ideas. Well, if it helps...\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Grombadil]";
+    mes "\"You did a great effort to help Neiremes. Thanks for this. I just hope it was enough. We'll see on the Christmas flight. I'm sure you will want to come back to see if he did well.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Grombadil]";
+    mes "\"I can't imagine anything more satisfying than caring for my Reinboos.\"";
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Grombadil]";
+    mes "\"I'm so glad Neiremes did well.\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"He's so happy. Why don't you go talk to him?\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}

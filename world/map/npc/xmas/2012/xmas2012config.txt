@@ -1,0 +1,140 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+// NPC behavior depending on time:
+// No Event Time: The event didn't start yet or already ended - the house is closed and the outside NPCs give generic dialogue
+// Event Time: Christmas preparation is in progress, main quest can be done
+// Reward Time: Christmas is over, if the main quest was finished, the reward can be taken
+
+// Main quest states saved in NIBBLE 0:
+// 1: Grombadil asked the player to talk to Neiremes
+// 2: Neiremes asked for a blanket
+// 3: Raimo can sew a blanket out of cotton cloth, sends you to Launo with the blanket
+// 4: Launo can make the blanket extra warm by adding some fluffy furs, sends you to Reino with the padded blanket
+// 5: Reino can dye the blanket red with some red dyes, gives you the finished blanket to bring it to Neiremes
+// 6: Gave finished blanket to Neiremes, he now asks for some food. Hint to the trainer reinboo
+// 7: Trainer reinboo says that Roasted Acorns are suitable food.
+// 8: gave roasted acorns to Neiremes, he sends you to Neimeres
+// 9: Neimeres tells you about the Flight Talisman, sends you to Tarmo
+// 10: Tarmo sends you to Kalevi, who can carve the raw form of the talisman
+// 11: Kalevi carved the raw form, sends you back to Tarmo
+// 12: Tarmo explains, that some kind of wing is needed, send you to Santa when found something suitable
+// 13: Santa says bat wings aren't optimal, but ok and enchants the talisman, he sends you back to Neiremes
+// 14: gave talisman to Neiremes
+// 15: got reward from Neiremes: only available during Reward Time
+
+// Two reinboos offer transport between the two places where the quest NPCs are located
+// Saving that the players knows them is done with flags in the first two bits of nibble 2
+
+// The storage administrator Vellamo asks you to get back some candy stolen by the slimes
+// this is saved in the third bit of nibble 2
+// after that, Ismo offers a daily quest with Candy
+
+// When the reward time started, players can get some candy from Santa, this is saved in the fourth bit of nibble 2
+
+-|script|#xmas2012config|-1,{
+OnInit:
+    set $@xmas2012_reward_start_day, 25;
+    set $@xmas2012_reward_end_day, 6;
+    set $@xmas2012_year, 2012;
+
+    set $@xmas2012_event_time, 1;
+    set $@xmas2012_reward_time, 2;
+    set $@xmas2012_no_event_time, 3;
+
+    set $@xmas2012_cotton_cloth_amount, 4;
+    set $@xmas2012_fluffy_fur_amount, 8;
+    set $@xmas2012_red_dye_amount, 2;
+    set $@xmas2012_acorn_amount, 10;
+    set $@xmas2012_roasted_acorn_amount, 30;
+    set $@xmas2012_raw_log_amount, 1;
+    set $@xmas2012_bat_wing_amount, 2;
+
+    set $@xmas2012_FLIGHT_FLAG1, 0x00000100;
+    set $@xmas2012_FLIGHT_FLAG2, 0x00000200;
+    setarray $@xmas2012_flight_pay$, "RedApple", "ChocolateCake", "WhiteCake", "OrangeCake", "AppleCake";
+    setarray $@xmas2012_flight_pay_name$, "Red Apples", "Chocolate Cake", "White Cake", "Orange Cake", "Apple Cake";
+    setarray $@xmas2012_flight_pay, 5, 1, 1, 1, 1;
+
+    set $@xmas2012_CANDY_FLAG, 0x00000400;
+    set $@xmas2012_SANTA_FLAG, 0x00000800;
+}
+
+function|script|xmas2012time|{
+// debug
+//    if (@xmas_debug == $@xmas2012_event_time)
+//        goto L_Event_Time;
+//    if (@xmas_debug == $@xmas2012_reward_time)
+//        goto L_Reward_Time;
+//    if (@xmas_debug == $@xmas2012_no_event_time)
+//        goto L_No_Event_Time;
+
+    if (gettime(7) == $@xmas2012_year && gettime(6) == 12 && gettime(5) < $@xmas2012_reward_start_day)
+        goto L_Event_Time;
+
+    if ((gettime(7) == $@xmas2012_year && gettime(6) == 12 && gettime(5) >= $@xmas2012_reward_start_day)
+        || (gettime(7) == ($@xmas2012_year + 1) && gettime(6) == 1 && gettime(5) <= $@xmas2012_reward_end_day))
+        goto L_Reward_Time;
+
+L_No_Event_Time:
+    set @xmas_time, $@xmas2012_no_event_time;
+    return;
+
+L_Event_Time:
+    set @xmas_time, $@xmas2012_event_time;
+    return;
+
+L_Reward_Time:
+    set @xmas_time, $@xmas2012_reward_time;
+    return;
+}
+
+function|script|xmas2012update_reinboo_var|{
+    set xmas2012, (xmas2012 & ~NIBBLE_0_MASK) | (@reinboo << NIBBLE_0_SHIFT);
+    return;
+}
+
+function|script|xmas2012debug|{
+    mes "What do you want to do?";
+    menu
+        "Set time.", L_Time,
+        "Set reinboo quest state.", L_Reinboo,
+        "Reset complete quest state.", -,
+        "Do nothing.", L_Close;
+
+    set xmas2012, 0;
+    goto L_Close;
+
+L_Time:
+    menu
+        "Event time.", -,
+        "Reward time.", -,
+        "No event time.", -,
+        "Clear time.", -;
+
+    if (@menu == 1)
+        set @xmas_debug, $@xmas2012_event_time;
+    if (@menu == 2)
+        set @xmas_debug, $@xmas2012_reward_time;
+    if (@menu == 3)
+        set @xmas_debug, $@xmas2012_no_event_time;
+    if (@menu == 4)
+        set @xmas_debug, 0;
+
+    goto L_Close;
+
+L_Reinboo:
+    mes "Quest state?";
+    input @reinboo;
+    callfunc "xmas2012update_reinboo_var";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}
+
+// 030-1.gat,91,48,0|script|Debug|105,{
+//     callfunc "xmas2012debug";
+// }

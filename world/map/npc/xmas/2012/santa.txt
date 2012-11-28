@@ -1,0 +1,118 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+030-2.gat,85,79,0|script|Santa|105,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo > 13) goto L_Done;
+    if (@reinboo == 13) goto L_Neiremes;
+    if (@reinboo == 12) goto L_Talisman;
+
+    mes "[Santa]";
+    mes "\"Hello! Welcome to my house. Can I help you with something?\"";
+    menu
+        "I'm just having a look around.", L_Close,
+        "Can I help with the Christmas preparations?", -;
+
+    if ((BaseLevel < 30) || (gettimetick(2) - TUT_var < 4*7*86400)) // player must be created at least four weeks ago
+        goto L_Young;
+
+    mes "[Santa]";
+    mes "\"Helping us? Mh, here in the house everything's going well. But my equerry Grombadil told me that one of the young Reinboos has trouble learning to fly. I suggest to ask him if he needs any assistance.\"";
+    goto L_Close;
+
+L_Talisman:
+    mes "[Santa]";
+    mes "\"Hello " + strcharinfo(0) + ". I heard about your efforts to help Neiremes. I'm very happy to hear that.\"";
+    menu
+        "I need your help to create a Flight Talisman for him.", -,
+        "It's a pleasure.", L_Close;
+    mes "[Santa]";
+    mes "\"A Flight Talisman? What an interesting idea! Do you have a Raw Talisman and some part of wings with you?\"";
+    menu
+        "Would Bat Wings work?", -,
+        "Not yet.", L_Close;
+    mes "[Santa]";
+    mes "\"Hm, that's not the first creature that comes to my mind when thinking about wings. But it should work. Do you have " + $@xmas2012_bat_wing_amount + " Bat Wings?\"";
+    menu
+        "Yes, here.", -,
+        "I'll go and get them.", L_Close;
+    if ((countitem("BatWing") < $@xmas2012_bat_wing_amount) || (countitem("RawTalisman") < 1))
+        goto L_NoItem;
+    if ((checkweight("FlightTalisman", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    misceffect sfx_magic_transmute;
+    delitem "BatWing", $@xmas2012_bat_wing_amount;
+    delitem "RawTalisman", 1;
+    getitem "FlightTalisman", 1;
+    set @reinboo, 13;
+    callfunc "xmas2012update_reinboo_var";
+    mes "Santa takes the items and casts a spell.";
+    next;
+    mes "\"It worked! Here is the Flight Talisman. Please bring it to Neiremes.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Santa]";
+    mes "\"You're mistaken. There's something missing. Please come back when you have everything we need.\"";
+    goto L_Close;
+
+L_Inventory:
+    mes "[Santa]";
+    mes "\"You shouldn't carry so many things. Come back when you have less with you.\"";
+    goto L_Close;
+
+L_Neiremes:
+    mes "[Santa]";
+    mes "\"Did you bring the Flight Talisman to Neiremes already?\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Santa]";
+    mes "\"Thanks for all your help. I'm confident that Neiremes will do well on the Christmas flight.\"";
+    next;
+    mes "\"Please come back after Christmas, maybe I'll have a small present for you.\"";
+    goto L_Close;
+
+L_Young:
+    mes "[Santa]";
+    mes "\"That's a very friendly offer! But I don't think we need any help.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Santa]";
+    mes "\"I'm very sorry, but I can't allow you inside here at the moment. Please come back around Christmas time.\"";
+    warp "030-1.gat", 99, 55;
+    goto L_Close;
+
+L_RewardTime:
+    if (xmas2012 & $@xmas2012_SANTA_FLAG)
+        goto L_SkipReward;
+    mes "[Santa]";
+    mes "\"Hello my friend. I have a small gift for you.\"";
+    getitem "Candy", 10;
+    getitem "ChocolateBar", 3;
+    getitem "GingerBreadMan", 1;
+    set xmas2012, xmas2012 | $@xmas2012_SANTA_FLAG;
+    next;
+L_SkipReward:
+    mes "[Santa]";
+    mes "\"Merry Christmas!\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"You should go to see Neiremes. He was very excited when he talked about your generosity.\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}

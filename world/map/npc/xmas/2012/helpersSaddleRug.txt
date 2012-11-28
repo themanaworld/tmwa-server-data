@@ -1,0 +1,266 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+// Create Blanket
+030-2.gat,153,39,0|script|Raimo|329,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo > 3) goto L_BlanketDone;
+    if (@reinboo == 3) goto L_BlanketNext;
+
+    mes "You see a busy helper, working on some adorable little dolls.";
+    next;
+    mes "[Raimo]";
+    mes "\"Hello there! Welcome to Santa's Christmas workshop. Most of the Christmas presents are crafted here.";
+    mes "Feel free to have a look around and talk to us helpers. Let me know if there's anything I can help you with.\"";
+    if (@reinboo != 2)
+        goto L_Close;
+    menu
+        "Actually, could you sew a blanket for Neiremes?", -,
+        "Thank you.", L_Close;
+
+    mes "[Raimo]";
+    mes "\"A blanket? Well, that'd be an easy task, provided you bring me some material. I need " + $@xmas2012_cotton_cloth_amount + " Cotton Cloths to create a blanket big enough for a Reinboo.\"";
+    menu
+        "Here, I have it.", -,
+        "I'll be right back.", L_Close;
+
+    if (countitem("CottonCloth") < $@xmas2012_cotton_cloth_amount)
+        goto L_NoItem;
+    if ((checkweight("WhiteBlanket", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    delitem "CottonCloth", $@xmas2012_cotton_cloth_amount;
+    getitem "WhiteBlanket", 1;
+    set @reinboo, 3;
+    callfunc "xmas2012update_reinboo_var";
+    mes "Raimo takes the Cotton Cloths and starts working. It doesn't take long and he has created a simple blanket which he gives you.";
+    next;
+    mes "[Raimo]";
+    mes "\"Here you go. Though I don't think it'll keep him warm enough when he's flying high up in the air.";
+    mes "You can ask Launo to pad it.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Raimo]";
+    mes "\"You don't have it!\"";
+    goto L_Close;
+
+L_Inventory:
+    mes "[Raimo]";
+    mes "\"You carry too much!\"";
+    goto L_Close;
+
+L_BlanketNext:
+    mes "[Raimo]";
+    mes "\"Did you already ask Launo to pad the blanket I made?\"";
+    goto L_Close;
+
+L_BlanketDone:
+    mes "[Raimo]";
+    mes "\"It's really kind of you to help Neiremes. I hope the blanket will help him.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Raimo]";
+    mes "\"I'm sorry, the house isn't open to visitors at the moment.\"";
+    warp "030-1.gat", 99, 55;
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Raimo]";
+    mes "\"This year everything went pretty well. Not like last year!\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"You should go and talk to Neiremes. I'm sure he'd like to thank you.\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}
+
+// Create Saddle Rug
+030-2.gat,135,31,0|script|Launo|329,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo > 4) goto L_BlanketDone;
+    if (@reinboo == 4) goto L_BlanketNext;
+
+    mes "[Launo]";
+    mes "\"Hello. I'm creating plush toys for Christmas.\"";
+    next;
+    mes "\"Are you here to talk to Santa? You might find him in his office, just go upstairs through the helpers' office.\"";
+    if (@reinboo != 3)
+        goto L_Close;
+    menu
+        "Could you pad this blanket for Neiremes?", -,
+        "Thank you.", L_Close;
+
+    mes "[Launo]";
+    mes "\"Oh, Neiremes is one of the young Reinboos who are going to join Santa's team, right? I heard he's rather insecure and has some problems with learning to fly over long distances.\"";
+    next;
+    mes "\"I'm very glad to help, if I can. Just bring me " + $@xmas2012_fluffy_fur_amount + " White Furs and give me the White Blanket, then I can add some padding which will keep Neiremes warm on his flights.\"";
+    menu
+        "Here, I have it.", -,
+        "I'll come back later.", L_Close;
+
+    if ((countitem("WhiteBlanket") < 1) || (countitem("WhiteFur") < $@xmas2012_fluffy_fur_amount))
+        goto L_NoItem;
+    if ((checkweight("WhiteSaddleRug", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    delitem "WhiteFur", $@xmas2012_fluffy_fur_amount;
+    delitem "WhiteBlanket", 1;
+    getitem "WhiteSaddleRug", 1;
+    set @reinboo, 4;
+    callfunc "xmas2012update_reinboo_var";
+    mes "Launo takes the White Blanket and the Fur you brought him. It doesn't take long until he's done and he gives you a very warm White Saddle Rug.";
+    next;
+    mes "[Launo]";
+    mes "\"Done! This should keep Neiremes warm. Please bring it to him.\"";
+    menu
+        "But he said it should be red...", -;
+    mes "[Launo]";
+    mes "\"Red? Oh, I see. Well, I think you should ask Reino for help with that. He's working on dying the wrapping papers, but I think he could also dye this Saddle Rug.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Launo]";
+    mes "\"You don't have everything I need.\"";
+    goto L_Close;
+
+L_Inventory:
+    mes "[Launo]";
+    mes "\"You have a lot of things with you. Come back when you carry less.\"";
+    goto L_Close;
+
+L_BlanketNext:
+    mes "[Launo]";
+    mes "\"Talk to Reino about dying the White Saddle Rug.\"";
+    goto L_Close;
+
+L_BlanketDone:
+    mes "[Launo]";
+    mes "\"I love the Christmas time. Creating plush toys is a very satisfying work for me, knowing how much joy they will bring.\"";
+    next;
+    mes "\"I wish I could do that all year long. But as a helper of a Sage, there are other duties as well.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Launo]";
+    mes "\"I'm sorry, the house isn't open to visitors at the moment.\"";
+    warp "030-1.gat", 99, 55;
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Launo]";
+    mes "\"I'm a bit sad that Christmas is already over. I like the preparation time. But of course I'm glad everything went well.\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"Have you talked to Neiremes already?\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}
+
+// Dye Saddle Rug
+030-2.gat,140,31,0|script|Reino|328,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    mes "[Reino]";
+    mes "\"Are you another visitor? We're working on the Christmas preparation here.\"";
+    mes "Reino seems to be a bit grumpy.";
+    if (@reinboo != 4)
+        goto L_Close;
+    menu
+        "I need help with this Saddle Rug for Neiremes...", -,
+        "I see. I'll ... let you work then.", L_Close;
+    mes "[Reino]";
+    mes "\"Neiremes? One of the Reinboos? Why?\"";
+    menu
+        "He feels cold when he's high up in the air.", -,
+        "Forget it.", L_Close;
+    mes "Reino sighs.";
+    mes "[Reino]";
+    mes "\"Well, all right. And what do you want me to do?\"";
+    menu
+        "This Saddle Rug needs to be red, because that's Santa's color.", -;
+    mes "[Reino]";
+    mes "\"Of course! What a stupid question. Well, I tell you I'm doing some more serious work here than pampering some mollycoddle Reinboo.\"";
+    next;
+    mes "\"But if you bring me " + $@xmas2012_red_dye_amount + " Red Dyes, I think I can dye that Saddle Rug quickly.\"";
+    menu
+        "I have it with me.", -,
+        "I'll get that.", L_Close;
+
+    if ((countitem("RedDye") < $@xmas2012_red_dye_amount) || (countitem("WhiteSaddleRug") < 1))
+        goto L_NoItem;
+    if ((checkweight("RedSaddleRug", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    delitem "RedDye", $@xmas2012_red_dye_amount;
+    delitem "WhiteSaddleRug", 1;
+    getitem "RedSaddleRug", 1;
+    set @reinboo, 5;
+    callfunc "xmas2012update_reinboo_var";
+    mes "Reino takes your dyes and the Saddle Rug. He puts the dye into some bowl and dunks the Saddle Rug into it. After the Rug is soaked with the dye, he puts it by the side to dry.";
+    next;
+    mes "[Reino]";
+    mes "\"Ok, done. Now I need to get back to my actual work. Bring that Red Saddle Rug to the Reinboo.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Reino]";
+    mes "\"Don't waste my time! Come back when you have everything I need.\"";
+    goto L_Close;
+
+L_Inventory:
+    mes "[Reino]";
+    mes "\"I suggest you to lighten your backpack first. It must be a pain to carry so many things around!\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Reino]";
+    mes "\"I'm sorry, the house isn't open to visitors at the moment.\"";
+    warp "030-1.gat", 99, 55;
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Reino]";
+    mes "\"It's a really good feeling when all the hard work pays off.\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"By the way, did that Saddle Rug help? Did you talk to Neiremes already?\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}

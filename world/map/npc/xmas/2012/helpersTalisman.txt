@@ -1,0 +1,176 @@
+// This file is part of Christmas Event 2012
+// author: Jenalya
+
+030-2.gat,37,81,0|script|Tarmo|328,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo > 12) goto L_Done;
+    if (@reinboo == 12) goto L_Santa;
+    if (@reinboo > 9) goto L_CarveTalisman;
+
+    mes "[Tarmo]";
+    mes "\"Hello. I hope you're enjoying your time in Santa's residence. If I can help you with anything, please let me know.\"";
+    if (@reinboo != 9)
+        goto L_Close;
+    menu
+        "We need a Flight Talisman for Neiremes.", -,
+        "Thanks.", L_Close;
+    mes "[Tarmo]";
+    mes "\"A Flight Talisman? Was that Neimeres' idea? She always has such fancy ideas.\"";
+    next;
+    mes "\"Talisman magic isn't very common nowadays. It's an ancient form of magic, so you'd more likely find it used by shamans of tribes as the Mangarrs. They're living in the snow mountains north west of Nivalis.\"";
+    next;
+    mes "\"But nevertheless I'm well versed in various fields of magic, including such historical ones. I think you're right that such a simple symbol could encourage Neiremes.\"";
+    next;
+    mes "\"Here, take this drawing to Kalevi and ask him to carve such a form out of a Raw Log. In the meanwhile I'm going to research the spell to enchant the talisman.\"";
+    mes "He gives you a quick sketch of a longish form, with some scribbled remarks about the size.";
+    set @reinboo, 10;
+    callfunc "xmas2012update_reinboo_var";
+    goto L_Close;
+
+L_CarveTalisman:
+    mes "[Tarmo]";
+    mes "\"Show Kalevi the drawing I gave you and come back when you've got a Raw Talisman.\"";
+    if (@reinboo != 11)
+        goto L_Close;
+    menu
+        "I have it!", -,
+        "All right.", L_Close;
+    if (countitem("RawTalisman") < 1)
+        goto L_NoItem;
+    set @reinboo, 12;
+    callfunc "xmas2012update_reinboo_var";
+
+    mes "Tarmo takes the Talisman and inspects it critically. Then he nods and gives it back to you.";
+    mes "[Tarmo]";
+    mes "\"This should do it. Very well. I read up some things about how to create a Flight Talisman. It seems we're going to need some part of the wings of a flying creature. You have to see if you can find such a thing.\"";
+    next;
+    mes "\"And about the spell itself... well, I think you should ask Santa to cast the spell, he's the most powerful mage I know.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Tarmo]";
+    mes "\"Don't fool around! You don't have it.\"";
+    goto L_Close;
+
+L_Santa:
+    mes "[Tarmo]";
+    mes "\"Remember, you need some part of the wings of a flying creature for the Flight Talisman. When you found something that might suffice, ask Santa to cast the spell.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Tarmo]";
+    mes "\"I'm sure the Flight Talisman will help Neiremes to overcome his fears about flying.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Tarmo]";
+    mes "\"What are you doing here? The house isn't open to visitors at this time of the year.\"";
+    warp "030-1.gat", 99, 55;
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Tarmo]";
+    mes "\"Neiremes flew excellently! I'm sure this is because of the Flight Talisman we created.\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"Did you talk to him already?\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}
+
+030-2.gat,147,23,0|script|Kalevi|329,{
+    callfunc "xmas2012time";
+
+    set @reinboo, (xmas2012 & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+
+    if (@xmas_time == $@xmas2012_no_event_time)
+        goto L_NoEvent;
+    if (@xmas_time == $@xmas2012_reward_time)
+        goto L_RewardTime;
+
+    if (@reinboo == 11) goto L_Tarmo;
+    if (@reinboo > 11) goto L_Done;
+
+    mes "[Kalevi]";
+    mes "\"Oh, hello. Are you here to talk? The Christmas time brings so much hectic work... it's stressful.";
+    mes "I prefer when everything is calm and relaxed.\"";
+    if (@reinboo != 10)
+        goto L_Close;
+    menu
+        "Neiremes needs a Flight Talisman. Can you help?", -,
+        "Too bad.", L_Close;
+    mes "You give Kalevi the drawing from Tarmo and he looks at it for a while.";
+    mes "[Kalevi]";
+    mes "\"This shouldn't be a problem. But you have to bring me " + $@xmas2012_raw_log_amount + " Raw Log, since the ones I have here are intended for some more presents.\"";
+    menu
+        "I have it.", -,
+        "Ok, I'll get that.", L_Close;
+    if (countitem("RawLog") < $@xmas2012_raw_log_amount)
+        goto L_NoItem;
+    if ((checkweight("RawTalisman", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    delitem "RawLog", $@xmas2012_raw_log_amount;
+    getitem "RawTalisman", 1;
+    set @reinboo, 11;
+    callfunc "xmas2012update_reinboo_var";
+    mes "Kalevi takes the wood and carves it, looking at the drawing every now and then. After he finished the carving, he polishes the piece to get rid of any splinters. Then he gives it to you.";
+    next;
+    mes "[Kalevi]";
+    mes "\"Here it is. I hope it'll help.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Kalevi]";
+    mes "\"You don't have it!\"";
+    goto L_Close;
+
+L_Inventory:
+    mes "[Kalevi]";
+    mes "\"Wow, you have a lot of stuff with you. Isn't that too heavy?\"";
+    goto L_Close;
+
+L_Tarmo:
+    mes "[Kalevi]";
+    mes "\"And, did you show the Raw Talisman I carved to Tarmo already? Is it usable?\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Kalevi]";
+    mes "\"A Flight Talisman! That's a really interesting idea.\"";
+    next;
+    mes "\"You know, I never thought about the difficulties the reinboos might have to face. I just took it as naturally that they transport Santa on his Christmas Flight.\"";
+    goto L_Close;
+
+L_NoEvent:
+    mes "[Kalevi]";
+    mes "\"I'm sorry, the house isn't open to visitors at the moment.\"";
+    warp "030-1.gat", 99, 55;
+    goto L_Close;
+
+L_RewardTime:
+    mes "[Kalevi]";
+    mes "\"Ah, I'm glad all the hustle and bustle is over.\"";
+    if (@reinboo != 14)
+        goto L_Close;
+    next;
+    mes "\"I wonder, did that Talisman I carved help? You should go to see Neiremes.\"";
+    goto L_Close;
+
+L_Close:
+    set @reinboo, 0;
+    set @xmas_time, 0;
+    close;
+}
