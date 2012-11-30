@@ -576,22 +576,17 @@ L_MagicExperience:
         && @nature == 0
         && @astral == 0)
             goto L_NoMagicSkills;
-    if (@general == 2
-        || @life == 2
-        || @war == 2
-        || @trans == 2
-        || @nature == 2
-        || @astral == 2)
-            goto L_ChangeMagicExperience;
+
+    goto L_ChangeMagicExperience;
 
 L_NoMagicSkills:
     mes "You can't have magic experience, since you have no magic skills yet.";
     goto L_MagicSkills;
 
 L_ChangeMagicExperience:
-    mes "Set the desired magic experience (min: 100 - max: 8000).";
+    mes "Set the desired magic experience (min: 0 - max: 8000).";
     input @value;
-    if (@value < 100 || @value > 8000)
+    if (@value < 0 || @value > 8000)
         goto L_WrongMagicExperience;
     set @mexp, @value;
     callsub S_Update_Mask;
@@ -606,7 +601,7 @@ L_ChangeMagicSkills:
     menu
         "General Magic.", L_ChangeGeneralMagicSkill,
         "Life Magic.", L_ChangeLifeMagicSkill,
-        "War Magic.", L_ChangeWarMagicskill,
+        "War Magic.", L_ChangeWarMagicSkill,
         "Transmutation Magic.", L_ChangeTransmutationMagicSkill,
         "Nature Magic.", L_ChangeNatureMagicSkill,
         "Astral Magic.", L_ChangeAstralMagicSkill,
@@ -765,7 +760,7 @@ L_ChangeAstralMagicSkill1:
     setskill SKILL_MAGIC_ASTRAL, 1;
     mes "Astral Magic skill changed to level 1.";
     next;
-    goto L_Magic;
+    goto L_MagicSkills;
 
 L_ChangeAstralMagicSkill2:
     setskill SKILL_MAGIC_ASTRAL, 2;
@@ -774,7 +769,7 @@ L_ChangeAstralMagicSkill2:
     callsub S_Update_Mask;
     mes "Astral Magic skill changed to level 2.";
     next;
-    goto L_Magic;
+    goto L_MagicSkills;
 
 S_Update_Mask:
     set MAGIC_EXPERIENCE,
