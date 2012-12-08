@@ -1,0 +1,44 @@
+#!/bin/bash -e
+# do nasty work here
+# The job of this script is twofold:
+# 1. kill the existing server, if it exists
+# 2. write the PID file and start the new server
+
+source restart-config
+
+PROCESS=$1
+
+if test -f $PROCESS.pid
+then
+    # if the process ID may change its name (e.g. via exec),
+    # then remove '$PROCESS' on the following line
+    PID=$(pgrep $PROCESS -u $UID -F $PROCESS.pid || true)
+    if test -n "$PID"
+    then
+        kill $PID
+        echo waiting for $PID to die so I can restart $PROCESS
+        while
+            ! kill -s 0 $PID
+        do
+            echo -n .
+            sleep 1
+        done
+        # This shouldn't be necessary, but somehow is
+        sleep 2
+        echo
+    else
+        echo $PROCESS.pid does not point to a valid process - nothing killed
+    fi
+else
+    echo No PID file $PROCESS.pid found - nothing killed
+fi
+
+if test -z "$VERBOSE"
+then
+    exec >/dev/null 2>&1
+fi
+
+{
+    # $$ is not reset in subshells
+    exec sh -c 'echo $$ > '$PROCESS'.pid; exec ./'$PROCESS
+} &
