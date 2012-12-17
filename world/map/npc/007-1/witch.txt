@@ -65,14 +65,6 @@ L_Introduce:
         goto L_AskTeleportSpellItems;
     if (@illia_know_witch == 1)
         goto L_QuickIntroduce;
-    // FIXME BEGIN debug section
-    menu
-        "[Debug] Start the quest automatically using up to three players around you.", L_DebugAuto,
-        "Configure the difficulty penalty.", L_DebugHarvest,
-        "Configure my Illia_Uniques_Count.", L_DebugUniquesCount,
-        "Normal dialogs.", -,
-        "Quit.", L_Exit;
-    // FIXME END debug section
     mes "[Valia]";
     mes "\"I'm Valia Illia. Is it needed to say I am a witch?\"";
     next;
@@ -121,14 +113,6 @@ L_HideSkills:
 L_QuickIntroduce:
     mes "[Valia]";
     mes "\"My sister is in great danger, and time is running out.\"";
-    // FIXME BEGIN debug section
-    menu
-        "[Debug] Start the quest automatically using up to three players around you.", L_DebugAuto,
-        "Configure the difficulty penalty.", L_DebugHarvest,
-        "Configure my Illia_Uniques_Count.", L_DebugUniquesCount,
-        "Normal dialogs.", -,
-        "Quit.", L_Exit;
-    // FIXME END debug section
     next;
     goto L_AskHelp;
 
@@ -666,93 +650,6 @@ OnTimer300000:
     emotion EMOTE_UPSET;
     goto L_EndQuest;
 
-// FIXME BEGIN debug section
-L_DebugHarvest:
-    mes "[Debug]";
-    mes "This quest is designed for a group of 4 players and is repeatable.";
-    mes "When the team fails to complete the quest after a certain progress, the difficulty will be increased for the next team.";
-    mes "The rewards will also be increased. Engaging?";
-    mes "Right now, the difficulty penalty is " + $Illia_Luvia_Harvest + ".";
-    menu
-        "Change it?", -,
-        "No.", L_Exit;
-    input $Illia_Luvia_Harvest;
-    if ($Illia_Luvia_Harvest < 0)
-        set $Illia_Luvia_Harvest, 0;
-    if ($Illia_Luvia_Harvest > 50)
-        set $Illia_Luvia_Harvest, 50;
-    next;
-    mes "The difficulty penalty is now " + $Illia_Luvia_Harvest + ".";
-    goto L_Exit;
-
-L_DebugUniquesCount:
-    mes "[Debug]";
-    mes "Right now, your Illia_Uniques_Count is " + Illia_Uniques_Count + ".";
-    menu
-        "Change it?", -,
-        "No.", L_Exit;
-    input Illia_Uniques_Count;
-    if (Illia_Uniques_Count < 0)
-        set Illia_Uniques_Count, 0;
-    if (Illia_Uniques_Count > 2)
-        set Illia_Uniques_Count, 2;
-    next;
-    mes "Your Illia_Uniques_Count is now " + Illia_Uniques_Count + ".";
-    goto L_Exit;
-
-L_DebugAuto:
-    mes "[Debug]";
-    mes "This quest is designed for a group of 4 players. The recommended level is 90+, but " + @illia_min_level + " is the minimum.";
-    mes "You can start the quest automatically with this debug section, without having to wait the intro of the quest.";
-    mes "Once warped to the forest, you will have the option to jump to another level of the quest to debug it.";
-    mes "Enter here how many players will debug this quest (N = [1,4]). Enter 1 if you are alone.";
-    input $@illia_debug_num_players;
-    if ($@illia_debug_num_players < 1)
-        goto L_Cancelled;
-    if ($@illia_debug_num_players > 4)
-        goto L_DebugAuto;
-    mes "The quest will be started with " + $@illia_debug_num_players + " players.";
-    // temporary block other accesses while warping timer will set this var to 3.
-    set $@ILLIA_STATUS, 3;
-    set $@illia_debug_count, 1;
-    set $@ILLIA_HERO$, strcharinfo(0);
-    set $@ILLIA_HERO_ID, getcharid(3, $@ILLIA_HERO$);
-    areatimer "007-1.gat", 66, 73, 92, 88, 10, "Valia::OnDetect";
-    npctalk "Spiralis Major (Debug)!";
-    addtimer 1500, "Valia::OnStartDebug";
-    // Start the timer to trigger the OnTimer50000 check.
-    setnpctimer 40000;
-    startnpctimer;
-    close;
-
-L_Cancelled:
-    mes "[Debug]";
-    mes "Debug session cancelled.";
-    close;
-
-OnDetect:
-    if (strcharinfo(0) == $@ILLIA_HERO$) end;
-    set $@illia_debug_count, $@illia_debug_count + 1;
-    if ($@illia_debug_count > $@illia_debug_num_players) end;
-    if ($@illia_debug_count == 2) set $@ILLIA_HELPER1$, strcharinfo(0);
-    if ($@illia_debug_count == 3) set $@ILLIA_HELPER2$, strcharinfo(0);
-    if ($@illia_debug_count == 4) set $@ILLIA_HELPER3$, strcharinfo(0);
-    end;
-
-OnStartDebug:
-    goto L_DebugStart;
-
-L_DebugStart:
-    // Trigger 4 areatimers to show the teleport spell
-    // This is better looking than an areawarp
-    mapannounce "007-1.gat", "Debugging Illia Quest with " + $@ILLIA_HERO$ + " (Hero), " + $@ILLIA_HELPER1$ + ", " + $@ILLIA_HELPER2$ + ", " + $@ILLIA_HELPER3$ + ".",0;
-    areatimer "007-1.gat", 66, 73, 92, 88, 1000, "Valia::OnWarpHero";
-    areatimer "007-1.gat", 66, 73, 92, 88, 1500, "Valia::OnWarpHelper1";
-    areatimer "007-1.gat", 66, 73, 92, 88, 2000, "Valia::OnWarpHelper2";
-    areatimer "007-1.gat", 66, 73, 92, 88, 2500, "Valia::OnWarpHelper3";
-    misceffect FX_BLUE_MAGIC_CAST;
-    end;
-// FIXME END debug section
 }
 
 007-1.gat,128,100,0|script|#IlliaDaemon|127,{
