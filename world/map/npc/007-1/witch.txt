@@ -23,6 +23,9 @@
     set @illia_iced_water, 4;
     set @illia_min_level, 90;
 
+    if (getgmlevel() >= 40 && getequipid(equip_head) == 647 && (strcharinfo(0) == "AdminJen" || strcharinfo(0) == "V0id"))
+        goto L_DeveloperBoard;
+
     if (BaseLevel < @illia_min_level) goto L_Unexperienced;
     if ($@ILLIA_STATUS == 0) goto L_Introduce;
     if ($@ILLIA_STATUS == 1) goto L_PreparingSpell;
@@ -30,6 +33,32 @@
     if ($@ILLIA_STATUS == 3) end;
     if ($@ILLIA_STATUS >= 4) goto L_AlreadyBegun;
     end;
+
+L_DeveloperBoard:
+    mes "[Developer Board]";
+    mes "$Illia_Luvia_Harvest: "+$Illia_Luvia_Harvest;
+    mes "$Illia_Win_Counter: "+$Illia_Win_Counter;
+    next;
+    mes "[Developer Board]";
+    mes "See winners?";
+    menu
+        "Yes.", L_DeveloperBoardLoopWinners,
+        "No.", -;
+    close;
+
+L_DeveloperBoardLoopWinners:
+    if (@illia_winner_loop == $Illia_Win_Counter)
+        goto L_DeveloperBoardLoopClose;
+    mes "Winner Team " + @illia_winner_loop + ": " + $Illia_Win_Records$[@illia_winner_loop];
+    // pager every 10.
+    if (@illia_winner_loop != 0 && (@illia_winner_loop/10)*10 == @illia_winner_loop)
+        next;
+    set @illia_winner_loop, @illia_winner_loop + 1;
+    goto L_DeveloperBoardLoopWinners;
+
+L_DeveloperBoardLoopClose:
+    set @illia_winner_loop, 0;
+    close;
 
 L_Introduce:
     if (@illia_go_find_items)
