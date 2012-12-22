@@ -238,16 +238,26 @@ S_CheckChannelling:
 
     detachrid;
 
+    set $@illia_channelling_status_msg$, "";
+
     if ($@illia_magic_power_last_status == 0 && $@illia_magic_power_status == 1)
-        mapannounce "052-1.gat", $@illia_char_channelling$ + ": I think I'm controlling the spell again now. Keep up!", 0;
+        set $@illia_channelling_status_msg$, $@illia_char_channelling$ + ": I think I'm controlling the spell again now. Keep up!";
     if ($@illia_magic_power_last_status == 1 && $@illia_magic_power_status == 0)
-        mapannounce "052-1.gat", $@illia_char_channelling$ + ": Guys I'm loosing it! Hurry up!", 0;
+        set $@illia_channelling_status_msg$, $@illia_char_channelling$ + ": Guys I'm loosing it! Hurry up!";
     if ($@illia_magic_power_last_status == 1 && $@illia_magic_power_status == 2)
-        mapannounce "052-1.gat", $@illia_char_channelling$ + ": I almost have the power to cast it! One last effort!", 0;
+        set $@illia_channelling_status_msg$, $@illia_char_channelling$ + ": I almost have the power to cast it! One last effort!";
     if ($@illia_magic_power_last_status == 2 && $@illia_magic_power_status == 1)
-        mapannounce "052-1.gat", $@illia_char_channelling$ + ": Damn! It faded a little.", 0;
+        set $@illia_channelling_status_msg$, $@illia_char_channelling$ + ": Damn! It faded a little.";
+
+    if ($@illia_channelling_status_msg$ != "")
+        areatimer "052-1.gat", 1, 1, 100, 80, 0, "#Power Circle::onMPSC";
 
     return;
+
+onMPSC:
+    message strcharinfo(0), $@illia_channelling_status_msg$;
+    set $@illia_channelling_status_msg$, "";
+    end;
 
 L_ChannellingComplete:
     message strcharinfo(0), "You successfully cast the spell and broke the door's enchantment!";
