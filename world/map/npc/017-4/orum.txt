@@ -34,6 +34,14 @@
     set @AMOUNT_WHITEFUR, 5;
     set @AMOUNT_REDSTINGER, 5;
     set @RECOMPENSATION_3, 20000;
+    // fourth flower
+    set @AMOUNT_HARDSPIKE, 5;
+    set @AMOUNT_ANGRYSTINGER, 5;
+    set @RECOMPENSATION_4, 40000;
+
+    if (OrumQuest == 27) goto L_PlacedFourthFlower;
+    if (OrumQuest == 26) goto L_PlaceFourthFlower;
+    if (OrumQuest == 25) goto L_FourthFlower;
 
     if (OrumQuest == 24) goto L_PlacedThirdFlower;
     if (OrumQuest == 23) goto L_PlaceThirdFlower;
@@ -368,6 +376,181 @@ L_PlaceThirdFlower: // 23: Completed easy minigame and got task to place the thi
 
 L_PlacedThirdFlower: // 24: Placed third magical flower
     mes "[Orum]";
+    mes "\"We're making very good progress. Now that you placed the third magical flower, only two more are missing.";
+    mes "But we shouldn't become careless now, each flower gets more difficult.\"";
+    menu
+        "Understood! What next?", -,
+        "What are we going to summon with that pentagram?", L_AskSummon;
+
+    set OrumQuest, 25;
+    goto L_FourthFlower;
+
+L_AskSummon:
+    mes "[Orum]";
+    mes "\"Beings from the astral plane of course. Some of them are already coming over when you place the flowers.";
+    mes "But that is NOTHING compared to what will happen when the pentagram is complete! Hahaha!\"";
+    set OrumQuest, 25;
+    next;
+    goto L_FourthFlower;
+
+L_FourthFlower: // 25: Got task to bring materials for fourth magical flower
+    mes "[Orum]";
+    mes "\"Now we need " + @AMOUNT_HARDSPIKE + " Hard Spikes, " + @AMOUNT_ANGRYSTINGER + " Angry Scorpion Stinger and one Yellow Rose.\"";
+    menu
+        "I managed to get everything.", -,
+        "I will get that.", L_Close,
+        "Won't it be dangerous to summon so many aggressive monsters?", L_AskDanger;
+
+    if ((countitem("HardSpike") < @AMOUNT_HARDSPIKE)
+        || (countitem("AngryScorpionStinger") < @AMOUNT_ANGRYSTINGER)
+        || (countitem("YellowRose") < 1))
+        goto L_NoItem;
+
+    delitem "HardSpike", @AMOUNT_HARDSPIKE;
+    delitem "AngryScorpionStinger", @AMOUNT_ANGRYSTINGER;
+    delitem "YellowRose", 1;
+
+    mes "Orum takes the materials and starts to pulverize them once again. You notice that his movements are slower this time and he looks very concentrated.";
+    mes "[Orum]";
+    mes "\"Ok. We're going to do it together again, but this time we switch the roles. You're going to mix the pulvers and I'm going to pour the rheological additive on it.\"";
+    next;
+    mes "\"This is because... ahm, because you will learn something from it, yes.";
+    mes "But remember to handle the pulvers very careful, they're vitriolic.\"";
+    next;
+    mes "\"You have two powders, one of them will make the mixture turn yellow, the other one will make it turn red.";
+    mes "You need to bring it some clear, strong orange and hold that for a moment, so I have to time to pour the rheological additive.\"";
+    menu
+        "Let's try it.", -,
+        "I'm unsure...", -;
+
+    mes "[Orum]";
+    mes "\"Just use the red powder when it's too bright, and the yellow powder when it's too dark. And be careful how much you use, additionally the mixture will randomly fluctuate a bit.\"";
+    mes "He mixes together a few of each pulver and then hands you the small bowls with the powders.";
+    next;
+
+    setarray @colorLevels$, "red", "light red", "dark orange", "orange",  "light orange", "dark yellow", "yellow";
+    set @colorLevel, rand(49);
+    set @goodColor, 0;
+
+L_HardMinigame:
+    mes "The color of the mixture is " + @colorLevels$[@colorLevel/7] + ". What do you want to do?";
+    menu
+        "Add a small portion of Red Powder.", -,
+        "Add a large portion of Red Powder.", -,
+        "Add a small portion of Yellow Powder.", -,
+        "Add a large portion of Yellow Powder.", -;
+
+    if (@menu == 1)
+        set @colorLevel, @colorLevel - rand(1,3);
+    if (@menu == 2)
+        set @colorLevel, @colorLevel - rand(6,8);
+    if (@menu == 3)
+        set @colorLevel, @colorLevel + rand(1,3);
+    if (@menu == 4)
+        set @colorLevel, @colorLevel + rand(6,8);
+
+    if (@colorLevel > 48)
+        goto L_TooYellow;
+    if (@colorLevel < 0)
+        goto L_TooRed;
+
+    mes "Due to your addition, the mixture is now " + @colorLevels$[@colorLevel/7] + ".";
+
+    if ((@colorLevel > 20) && (@colorLevel < 28))
+        goto L_Good;
+
+L_HardRandom:
+    set @colorLevel, @colorLevel + 3 - rand(6);
+    mes "The mixture frizzles and bubbles.";
+
+    if ((@colorLevel < 21) || (@colorLevel > 27))
+        set @goodColor, 0;
+
+    if (@colorLevel > 48)
+        goto L_TooYellow;
+    if (@colorLevel < 0)
+        goto L_TooRed;
+    next;
+    goto L_HardMinigame;
+
+L_Good:
+    set @goodColor, @goodColor + 1;
+    if (@goodColor == 3)
+        goto L_HardSuccess;
+    mes "Hold it like this for a moment!";
+    next;
+    goto L_HardRandom;
+
+L_TooYellow:
+    next;
+    mes "The mixture can't get any more yellow. The bubbling increases and quickly most of the liquid turns into steam that makes you cough.";
+    goto L_HardTooExtreme;
+L_TooRed:
+    next;
+    mes "The mixture can't get any more red. Suddenly the bubbling gets even more violent, it seems it's corroding the caldron! Orum hastily pours the rheological additive on it to make it stop.";
+    goto L_HardTooExtreme;
+
+L_HardTooExtreme:
+    mes "[Orum]";
+    mes "\"What are you doing? It is supposed to turn into orange. You have to use both powders for that!\"";
+    next;
+    mes "\"This is waste now. Go and collect new ingredients.\"";
+    goto L_Close;
+
+L_HardSuccess:
+    getitem "BlueRose", 1; // TODO: replace with magical flower artefact
+    set OrumQuest, 26;
+
+    mes "Orum pours the rheological additive on the mixture and then drips the flower into the caldron.";
+    mes "[Orum]";
+    mes "\"Excellent! Wonderful. Here's the flower. I need to clean up the caldron, so you have to place the flower.\"";
+    next;
+L_WayFourthFlower:
+    mes "[Orum]";
+    mes "\"To find the place, go south after leaving our cave, and then follow the path to the east. Watch out for that nasty forest witch living there, she doesn't like humans.";
+    mes "You have to place the flower on some small island in front of the coast, to get there you have to find a way through the caves that connect it with the mainland.\"";
+    goto L_Close;
+
+L_AskDanger:
+    mes "[Orum]";
+    mes "\"Dangerous? Well, not really, since Waric and I are going to stay here in this cave.\"";
+    menu
+        "That's... very appeasing.", -,
+        "And what about everyone outside? Like me!?", -;
+
+    mes "[Orum]";
+    mes "\"Uhm, well. You won't be in the center of it, of course, where most of the monsters will appear.";
+    mes "And you can handle a few of them, right?\"";
+    goto L_Close;
+
+L_PlaceFourthFlower: // 26: Completed difficult minigame and got task to place the fourth magical flower
+    mes "[Orum]";
+    mes "\"I can't await it! Everything is going so well! Why are you dawdling away? Go and place the fourth magical flower!\"";
+    menu
+        "All right.", L_Close,
+        "Please describe where to place it again.", L_WayFourthFlower,
+        "The magical flower... I lost it.", -;
+
+    mes "Orum shakes his head in disbelief.";
+    mes "[Orum]";
+    mes "\"Lost it? Unbelievable! How can you lose it?\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_4 + " GP, and I'm going to allow you to continue helping us. So?\"";
+    menu
+        "Here it is.", -,
+        "That's too expensive!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_4)
+        goto L_NoMoney;
+    set Zeny, Zeny - @RECOMPENSATION_4;
+    set OrumQuest, 25;
+
+    mes "[Orum]";
+    mes "\"Now bring " + @AMOUNT_HARDSPIKE + " Hard Spikes, " + @AMOUNT_ANGRYSTINGER + " Angry Scorpion Stinger and one Yellow Rose again.\"";
+    goto L_Close;
+
+L_PlacedFourthFlower: // 27: Placed fourth magical flower
+    mes "[Orum]";
     mes "TODO next";
     goto L_Close;
 
@@ -398,5 +581,11 @@ L_Close:
     set @RECOMPENSATION_3, 0;
     set @bubblingLevel, 0;
     cleararray @bubblingLevels$[0], "", 4;
+    set @AMOUNT_HARDSPIKE , 0;
+    set @AMOUNT_ANGRYSTINGER , 0;
+    set @RECOMPENSATION_4, 0;
+    set @colorLevel, 0;
+    set @goodColor, 0;
+    cleararray @colorLevels$[0], "", 7;
     close;
 }
