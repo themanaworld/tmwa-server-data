@@ -23,25 +23,25 @@
     if (Katze == 4 && @catNeedsAlone == 1)
         goto L_HasWood;
     if (Katze >= 4)
-        goto L_Finished;
+        goto L_Close;
 
 L_NeedsMilk:
     if (countitem("Milk") > 0)
         menu
             "Pour in some milk.", L_GiveMilk,
             "Leave it alone.", -;
-    close;
+    goto L_Close;
 
 L_GiveMilk:
     delitem "Milk", 1;
     set @cat, 1;
     callsub S_Update_Katze;
     set @catNeedsAlone, 1;
-    close;
+    goto L_Close;
 
 L_HasMilk:
     mes "There is milk in it.";
-    close;
+    goto L_Close;
 
 L_NeedsFood:
     mes "The milk is gone!";
@@ -60,25 +60,25 @@ L_NeedsFood:
         menu
             "Put in a steak.", L_GiveSteak,
             "Leave it alone.", -;
-    close;
+    goto L_Close;
 
 L_GiveChicken:
     delitem "ChickenLeg", 1;
     set @cat, 2;
     callsub S_Update_Katze;
     set @catNeedsAlone, 1;
-    close;
+    goto L_Close;
 
 L_GiveSteak:
     delitem "Steak", 1;
     set @cat, 2;
     callsub S_Update_Katze;
     set @catNeedsAlone, 1;
-    close;
+    goto L_Close;
 
 L_HasFood:
     mes "There is some food in it.";
-    close;
+    goto L_Close;
 
 L_NeedsFur:
     mes "And it's empty!";
@@ -88,18 +88,18 @@ L_NeedsFur:
         menu
             "Put a white fur next to the pot.", L_GiveFur,
             "Leave it alone.", -;
-    close;
+    goto L_Close;
 
 L_GiveFur:
     mes "You put down the fur, but the cat doesn't seem to take any notice. Maybe there's something else you could do. You pick the fur up again.";
-    close;
+    goto L_Close;
 
 L_NeedsWood:
     if (countitem("RawLog") > 0)
         menu
             "Put a wooden log next to the pot.", L_GiveWood,
             "Leave it alone.", -;
-    close;
+    goto L_Close;
 
 L_GiveWood:
     delitem "RawLog", 1;
@@ -107,13 +107,14 @@ L_GiveWood:
     callsub S_Update_Katze;
     set @catNeedsAlone, 1;
     mes "You put the wooden log next to the pot. The cat eyes it suspiciously, but remains on her spot.";
-    close;
+    goto L_Close;
 
 L_HasWood:
     mes "A wooden log is patiently lying next to it.";
-    close;
+    goto L_Close;
 
-L_Finished:
+L_Close:
+    set @cat, 0;
     close;
 
 S_Update_Katze:
