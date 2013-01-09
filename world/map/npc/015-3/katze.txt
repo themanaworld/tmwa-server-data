@@ -18,17 +18,19 @@
 
 015-3.gat,32,25,0|script|Katze|172,{
 
-    if (Katze == 1 && @KatzeNeedsAlone == 0) goto L_NeedsFood;
-    if (Katze == 1) goto L_PreNeedsFood;
-    if (Katze == 2 && @KatzeNeedsAlone == 0) goto L_NeedsFur;
-    if (Katze == 2) goto L_PreNeedsFur;
-    if (Katze == 3) goto L_NeedsWood;
-    if (Katze == 4 && @KatzeNeedsAlone == 0) goto L_NeedsStuff;
-    if (Katze == 4) goto L_PreNeedsStuff;
-    if (Katze == 5) goto L_NeedsStuff2;
-    if (Katze == 6 && @KatzeNeedsAlone == 0) goto L_GainEars;
-    if (Katze == 6) goto L_PreGainEars;
-    if (Katze == 7) goto L_Finished;
+    set @cat, ((Katze & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if (@cat == 1 && @catNeedsAlone == 0) goto L_NeedsFood;
+    if (@cat == 1) goto L_PreNeedsFood;
+    if (@cat == 2 && @catNeedsAlone == 0) goto L_NeedsFur;
+    if (@cat == 2) goto L_PreNeedsFur;
+    if (@cat == 3) goto L_NeedsWood;
+    if (@cat == 4 && @catNeedsAlone == 0) goto L_NeedsStuff;
+    if (@cat == 4) goto L_PreNeedsStuff;
+    if (@cat == 5) goto L_NeedsStuff2;
+    if (@cat == 6 && @catNeedsAlone == 0) goto L_GainEars;
+    if (@cat == 6) goto L_PreGainEars;
+    if (@cat == 7) goto L_Finished;
 
 L_NeedsMilk:
     mes "[Katze]";
@@ -39,7 +41,8 @@ L_NeedsMilk:
     close;
 
 L_ThrowStone:
-    set Katze, 0;
+    set @cat, 0;
+    callsub S_Update_Katze;
     percentheal -30, 0;
     warp "015-1.gat", 60, 32;
     mes "\"GRAAUWL! Hissss...\"";
@@ -75,7 +78,8 @@ L_NeedsFur:
 
 L_MoveFur:
     delitem "WhiteFur", 1;
-    set Katze, 3;
+    set @cat, 3;
+    callsub S_Update_Katze;
     mes "The cat jumps at the fur! You quickly let go of it. The cat happily returns to its spot, carrying the fur in its mouth.";
     next;
     mes "The cat drops the fur and looks at you with half opened eyes. Suddenly she starts talking, and says: \"That was very kind of you.\" She seems to be smiling.";
@@ -102,7 +106,8 @@ L_PreNeedsStuff:
     close;
 
 L_NeedsStuff:
-    set Katze, 5;
+    set @cat, 5;
+    callsub S_Update_Katze;
     mes "[Katze]";
     mes "\"You've been really kind to me. I can make you something nice, but I will need";
     mes "2 Snake Skins,";
@@ -162,8 +167,9 @@ L_GiveStuff:
     delitem "WhiteFur", 2;
     delitem "HardSpike", 2;
     delitem "TinyHealingPotion", 2;
-    set Katze, 6;
-    set @KatzeNeedsAlone, 1;
+    set @cat, 6;
+    callsub S_Update_Katze;
+    set @catNeedsAlone, 1;
     mes "[Katze]";
     mes "\"Nicely done! Now leave me alone for a while, I need some time to prepare your present.\"";
     close;
@@ -177,7 +183,8 @@ L_GainEars:
     getitem "CatEars", 1;
     set @xpval, 5000;
     getexp @xpval, 0;
-    set Katze, 7;
+    set @cat, 7;
+    callsub S_Update_Katze;
     mes "[Katze]";
     mes "\"Look what I made for you! It makes you look a bit like me! Maybe it will give you a feeling of what it is like to be a cat.\"";
     mes "The cat winks at you.";
@@ -191,4 +198,8 @@ L_Finished:
     if (getequipid(equip_head) != 1217)
         mes "\"Meow. Lost your ears?\"";
     close;
+
+S_Update_Katze:
+    set Katze, (Katze & ~(NIBBLE_0_MASK)) | (@cat << NIBBLE_0_SHIFT);
+    return;
 }

@@ -2,23 +2,25 @@
 
 015-3.gat,37,29,0|script|Pot|127,{
 
+    set @cat, ((Katze & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
     if (Katze > 0)
         mes "It's that old pot again.";
     if (Katze == 0)
         mes "It's a pot.";
     next;
 
-    if (Katze == 1 && @KatzeNeedsAlone == 0)
+    if (Katze == 1 && @catNeedsAlone == 0)
         goto L_NeedsFood;
     if (Katze == 1)
         goto L_HasMilk;
-    if (Katze == 2 && @KatzeNeedsAlone == 0)
+    if (Katze == 2 && @catNeedsAlone == 0)
         goto L_NeedsFur;
     if (Katze == 2)
         goto L_HasFood;
     if (Katze == 3)
         goto L_NeedsWood;
-    if (Katze == 4 && @KatzeNeedsAlone == 1)
+    if (Katze == 4 && @catNeedsAlone == 1)
         goto L_HasWood;
     if (Katze >= 4)
         goto L_Finished;
@@ -32,8 +34,9 @@ L_NeedsMilk:
 
 L_GiveMilk:
     delitem "Milk", 1;
-    set Katze, 1;
-    set @KatzeNeedsAlone, 1;
+    set @cat, 1;
+    callsub S_Update_Katze;
+    set @catNeedsAlone, 1;
     close;
 
 L_HasMilk:
@@ -61,14 +64,16 @@ L_NeedsFood:
 
 L_GiveChicken:
     delitem "ChickenLeg", 1;
-    set Katze, 2;
-    set @KatzeNeedsAlone, 1;
+    set @cat, 2;
+    callsub S_Update_Katze;
+    set @catNeedsAlone, 1;
     close;
 
 L_GiveSteak:
     delitem "Steak", 1;
-    set Katze, 2;
-    set @KatzeNeedsAlone, 1;
+    set @cat, 2;
+    callsub S_Update_Katze;
+    set @catNeedsAlone, 1;
     close;
 
 L_HasFood:
@@ -98,8 +103,9 @@ L_NeedsWood:
 
 L_GiveWood:
     delitem "RawLog", 1;
-    set Katze, 4;
-    set @KatzeNeedsAlone, 1;
+    set @cat, 4;
+    callsub S_Update_Katze;
+    set @catNeedsAlone, 1;
     mes "You put the wooden log next to the pot. The cat eyes it suspiciously, but remains on her spot.";
     close;
 
@@ -109,4 +115,8 @@ L_HasWood:
 
 L_Finished:
     close;
+
+S_Update_Katze:
+    set Katze, (Katze & ~(NIBBLE_0_MASK)) | (@cat << NIBBLE_0_SHIFT);
+    return;
 }
