@@ -13,18 +13,26 @@ if (substr($agent, 0, 3) == "TMW" || substr($agent, 0, 4) == "Mana")
     file_put_contents($file, '[' . date('H:i') . "] $agent\n", FILE_APPEND);
 }
 
-$min_version = '0.0.29.1';
+$min_version = '0.5.0';
 $cur_version = '0.6.1';
 
-if (substr($agent, 0, 3) == "TMW" and $agent < 'TMW/' . $min_version)
+if (substr($agent, 0, 3) == "TMW")
 {
-    echo "##1 The client you're using is no longer\n".
-         "##1 supported! Please upgrade to $min_version or\n".
-         "##1 higher!\n \n".
+    echo "##1 The client you're using is really old!\n",
+         "##1 Please upgrade to a Mana or ManaPlus client.\n",
          "##1     TMW Staff\n \n";
 }
 
-echo "##9 Latest client version: ##6$cur_version\n \n";
+if (substr($agent, 0, 5) == "Mana/"
+    and $agent < 'Mana/' . $min_version)
+{
+    echo "##1 The client you're using is no longer\n".
+         "##1 supported! Please upgrade to $min_version or\n".
+         "##1 higher, or use ManaPlus!\n \n".
+         "##1     TMW Staff\n \n";
+}
+
+echo "##9 Latest client version: ##6$cur_version\n##0\n";
 
 print file_get_contents("news.txt");
 ?>

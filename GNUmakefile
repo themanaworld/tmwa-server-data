@@ -1,7 +1,7 @@
-.PHONY: all maps conf mobxp mobxp-impl indent indent-items indent-mobs
+.PHONY: all maps conf mobxp mobxp-impl indent indent-items indent-mobs news
 # Can't be parallel due to the mobxp/indent-mobs conflict
 .NOTPARALLEL:
-all: maps conf
+all: maps conf news
 maps:
 	tools/tmx_converter.py client-data/ world/map/
 
@@ -22,3 +22,8 @@ indent-items: tools/aligncsv
 	tools/aligncsv world/map/db/item_db.txt
 indent-mobs: tools/aligncsv
 	tools/aligncsv world/map/db/mob_db.txt
+
+world/map/news.txt world/map/news.html: tools/news.py tools/_news_colors.py world/map/news.d/*
+	tools/news.py world/map/ world/map/news.d/
+
+news: world/map/news.txt world/map/news.html
