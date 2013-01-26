@@ -143,6 +143,56 @@ L_Fix_Full:
     return;
 }
 
+// The variable TMW_Quest was used to save the progress in several subquests linearly.
+// The subquests are moved to different nibbles of other variables
+// to make it possible to do some of the quests in parallel.
+function|script|ClearVarTMW_Quest|{
+
+    if (TMW_Quest == 0) goto L_Done;
+    if (TMW_Quest < 7)  goto L_Bernard_Mikhail;
+    if (TMW_Quest < 9)  goto L_Sarah;
+    if (TMW_Quest < 11)  goto L_Vincent;
+    if (TMW_Quest < 13)  goto L_Sandra;
+    if (TMW_Quest < 41)  goto L_Desert;
+
+L_Bandit:
+// move Banditt subquest into Nibble 0 of QUEST_Hurnscald
+    set @bandit, TMW_Quest - 40;
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@bandit << NIBBLE_0_SHIFT));
+    set TMW_Quest, TMW_Quest - @bandit;
+    set @bandit, 0;
+L_Desert:
+// move guard and miner subquest into Byte 2 (Nibble 4 and 5) of QUEST_SouthTulimshar
+    set @miners, TMW_Quest - 12;
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@miners << BYTE_2_SHIFT));
+    set TMW_Quest, TMW_Quest - @miners;
+    set @miners, 0;
+L_Sandra:
+// move Sandra subquest into Nibble 3 of QUEST_SouthTulimshar
+    set @sandra, TMW_Quest - 10;
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_3_MASK) | (@sandra << NIBBLE_3_SHIFT));
+    set TMW_Quest, TMW_Quest - @sandra;
+    set @sandra, 0;
+L_Vincent:
+// move Vincent subquest into Nibble 2 of QUEST_SouthTulimshar
+    set @vincent, TMW_Quest - 8;
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_2_MASK) | (@vincent << NIBBLE_2_SHIFT));
+    set TMW_Quest, TMW_Quest - @vincent;
+    set @vincent, 0;
+L_Sarah:
+// move Sarah subquest into Nibble 1 of QUEST_SouthTulimshar
+    set @sarah, TMW_Quest - 6;
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_1_MASK) | (@sarah << NIBBLE_1_SHIFT));
+    set TMW_Quest, TMW_Quest - @sarah;
+    set @sarah, 0;
+L_Bernard_Mikhail:
+// move Bernard and Mikhail subquest into Nibble 0 of QUEST_SouthTulimshar
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (TMW_Quest << NIBBLE_0_SHIFT));
+    set TMW_Quest, 0;
+L_Done:
+    return;
+}
+
 -|script|#ClearGlobalVars|-1,{
 OnInit:
 
