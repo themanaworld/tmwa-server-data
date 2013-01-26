@@ -1,4 +1,4 @@
-//
+// Variables used: nibble 2 of QUEST_SouthTulimshar
 
 001-1.gat,135,42,0|script|Vincent|113,{
     set @hw2011_npc_id, $@hw2011_npc_vincent;
@@ -6,23 +6,19 @@
         goto L_TrickOrTreat;
 
 L_Begin:
-    if (TMW_Quest >= 10) goto L_Done;
-    if (TMW_Quest == 9) goto L_Progress;
-    if (TMW_Quest == 8) goto L_Start;
-    if (TMW_Quest < 8) goto L_Convince_Vincent_First;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
 
-    // If this happens, something is wrong with the above code.
-    mes "Vincent looks confused.";
-    goto L_Close;
+    set @state, ((QUEST_SouthTulimshar & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+
+    if (@state >= 2) goto L_Done;
+    if (@state == 1) goto L_Progress;
 
 L_Convince_Vincent_First:
     mes "[Vincent]";
     mes "\"I'm making an action figure.  I'm almost done with it.\"";
-    mes "";
-    mes "Vincent seems distracted with his near-completed figurine for now.";
-    goto L_Close;
+    next;
 
-L_Start:
     set @TEMP, rand(4);
     if(@TEMP == 0) goto L_Opening1;
     if(@TEMP == 1) goto L_Opening2;
@@ -30,41 +26,36 @@ L_Start:
     if(@TEMP == 3) goto L_Opening4;
 
 L_Opening1:
-    mes "[Vincent]";
     mes "\"I just need 10 more Bug Legs to finish my action figure!\"";
     next;
     goto L_Ask;
 
 L_Opening2:
-    mes "[Vincent]";
     mes "\"This maggot action figure is awesome! I just need to attach 10 Bug Legs.\"";
     next;
     goto L_Ask;
 
 L_Opening3:
-    mes "[Vincent]";
     mes "\"This is a great action figure! A must have! All I need is a few parts...\"";
     next;
     goto L_Ask;
 
 L_Opening4:
-    mes "[Vincent]";
     mes "\"Can you get me 10 Bug Legs? I need them to replace the action figure parts.\"";
     next;
     goto L_Ask;
 
 L_Ask:
-    mes "[Vincent]";
     mes "\"Will you help me find 10 Bug Legs?\"";
     next;
     menu
-        "Yes", L_Sure,
-        "No", -;
-    goto L_Close;
+        "Yes.", L_Sure,
+        "No.", L_Close;
 
 L_Sure:
-    set TMW_Quest, 9;
-    set @TEMP,rand(4);
+    set @state, 1;
+    callsub S_Update_Var;
+    set @TEMP, rand(4);
     if(@TEMP == 0) goto L_Req1;
     if(@TEMP == 1) goto L_Req2;
     if(@TEMP == 2) goto L_Req3;
@@ -90,29 +81,31 @@ L_Req3:
 
 L_Req4:
     mes "[Vincent]";
-    mes "\"I'm sure I will give a small reward. :D\"";
+    mes "\"I'm sure I will give a small reward.\"";
     next;
     goto L_Wait;
 
 L_Wait:
-    mes "[Vincent]";
     mes "\"Now please go get me 10 Bug Legs.\"";
     goto L_Close;
 
 L_Progress:
-    if(countitem("BugLeg") >= 10) goto L_Have;
+    if(countitem("BugLeg") >= 10)
+        goto L_Have;
     mes "[Vincent]";
-    mes "\"Please help me collect 10 Bug Legs!\"";
+    mes "\"Please help me collect 10 Bug Legs! I need them to complete my action figure.\"";
     goto L_Close;
 
 L_Have:
     mes "[Vincent]";
     mes "\"Excellent! Finally I can complete the model!!\"";
     next;
-    if(countitem("BugLeg") < 10) goto L_Progress;
+    if(countitem("BugLeg") < 10)
+        goto L_Progress;
     delitem "BugLeg", 10;
     set Zeny, Zeny + 1000;
-    set TMW_Quest, 10;
+    set @state, 2;
+    callsub S_Update_Var;
 
     mes "[Vincent]";
     mes "\"Here you go, a little of my appreciation!\"";
@@ -127,7 +120,12 @@ L_Done:
 
 L_Close:
     set @TEMP, 0;
+    set @state, 0;
     close;
+
+S_Update_Var:
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_2_MASK) | (@state << NIBBLE_2_SHIFT));
+    return;
 
 L_TrickOrTreat:
     callfunc "TrickOrTreat2011";
