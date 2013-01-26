@@ -70,6 +70,10 @@ OnInit:
     set @fun_money, 50;
     set @fun_exp, 20;
 
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+    set @bernard, ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
     if (@state == 9) goto L_Done;
     if (@KylianNTCasino) goto L_CasinoDone;
     if (@state == 8) goto L_DesertHat;
@@ -166,7 +170,7 @@ L_SightSeeing: // @state == 4 and logged out sometime between getting to that st
 L_Food: // @state == 5
     mes "[Kylian]";
     mes "\"While I'm out, I could also get something to eat. Maybe some typical dish for this region. Do you have a good suggestion for that?\"";
-    if (TMW_Quest < 4) // didn't yet help Bernard to make his soup
+    if (@bernard < 4) // didn't yet help Bernard to make his soup
         goto L_Close;
     menu
         "Bernard on the bazaar makes a great soup.",-,
@@ -265,6 +269,7 @@ L_Close:
     set @fun_money, 0;
     set @fun_exp, 0;
     set @inventorylist_count, 0;
+    set @bernard, 0;
     // NOT set to zero: @KylianNTLicense, @KylianNTSightSeeing and @KylianNTCasino
     // those are used to check if the player logged out in the meanwhile
     close;

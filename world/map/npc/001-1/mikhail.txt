@@ -1,21 +1,23 @@
-//
+// Variables used: nibble 0 of QUEST_SouthTulimshar
 
 001-1.gat,50,46,0|script|Mikhail|120,{
-    if (TMW_Quest >= 6) goto L_Done;
-    if (TMW_Quest == 5) goto L_Progress;
-    if (TMW_Quest == 4) goto L_Start;
-    if (TMW_Quest < 4) goto L_Convince_Mikhail_First;
 
-    // If this happens, something is wrong with the above case handling.
-    mes "Mikhail looks confused.";
-    close;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if (@state >= 6) goto L_Done;
+    if (@state == 5) goto L_Progress;
+    if (@state == 4) goto L_Start;
+    if (@state < 4) goto L_Convince_Mikhail_First;
 
 L_Convince_Mikhail_First:
     mes "[Mikhail]";
     mes "\"Hello...\"";
     mes "";
     mes "It seems that the boy would like to say more, but does not dare to open up to you. Maybe you should help someone else first, so that he sees your intentions are good.";
-    close;
+    goto L_Close;
 
 L_Start:
     mes "[Mikhail]";
@@ -24,16 +26,13 @@ L_Start:
     mes "\"You look like a nice person.  Would you go get them for me?\"";
     menu
         "Of course, I'll go get them for you.", L_accept,
-        "I've got other things to do right now.", L_close;
-    close;
-
-L_close:
-    close;
+        "I've got other things to do right now.", L_Close;
 
 L_accept:
     mes "[Mikhail]";
     mes "\"Thank you so much!  I'll wait for you here.\"";
-    set TMW_Quest, 5;
+    set @state, 5;
+    callsub S_Update_Var;
     close;
 
 L_Progress:
@@ -42,27 +41,34 @@ L_Progress:
     next;
     menu
         "Yes, here they are, kiddo!", L_try,
-        "Not yet, but I'll be back soon.", L_close;
-    close;
+        "Not yet, but I'll be back soon.", L_Close;
 
 L_try:
-    if countitem("MaggotSlime") >= 5 goto L_get;
+    if countitem("MaggotSlime") >= 5
+        goto L_get;
     mes "[Mikhail]";
     mes "\"It doesn't look like you have them all...\"";
-    close;
+    goto L_Close;
 
 L_get:
     delitem "MaggotSlime", 5;
-    set TMW_Quest, 6;
+    getexp 100, 0;
+    set @state, 6;
+    callsub S_Update_Var;
     mes "[Mikhail]";
     mes "\"Ooh!  Thank you so much!  I can get back to my grandma now!\"";
-    next;
-    getexp 100, 0;
-    mes "You get 100 xp.";
-    close;
+    goto L_Close;
 
 L_Done:
     mes "[Mikhail]";
     mes "\"Thanks again for helping me get those Maggot Slimes!\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Var:
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    return;
 }
