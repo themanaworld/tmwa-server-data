@@ -1,14 +1,20 @@
 //NPC to set the state for killing the bandit lord.
+// Variables used: nibble 0 of QUEST_Hurnscald
 
 011-6.gat,27,200,0|script|Bryant|126,{
 
-    if (TMW_Quest >= 45) goto L_Bryant_Quiet;
-    if (TMW_Quest == 44) goto L_Bryant_Waits;
-    if (TMW_Quest == 43) goto L_Bryant_Summon;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_Hurnscald & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if (@state >= 5) goto L_Bryant_Quiet;
+    if (@state == 4) goto L_Bryant_Waits;
+    if (@state == 3) goto L_Bryant_Summon;
 
     mes "[Bryant]";
     mes "\"I'm looking everywhere for the bandit leader.  I can't seem to find him.\"";
-    close;
+    goto L_Close;
 
 L_Bryant_Summon:
     mes "[Bryant]";
@@ -17,14 +23,20 @@ L_Bryant_Summon:
     mes "Bryant gives you a key, shaped to look like a small silver arrow.";
     next;
     mes "\"I believe I saw him run into a cave south and east of here.  There is a red carpet in front of the cave entrance.  Be careful and good luck.\"";
-    set TMW_Quest, 44;
+    set @state, 4;
+    callsub S_Update_Var;
     monster "011-6.gat",260,250,"BanditLord",1065,1, "Bryant::onBanditLordDead";
-    close;
+    goto L_Close;
 
 onBanditLordDead:
-    if (TMW_Quest<45)
-        set TMW_Quest, 45;
     message strcharinfo(0), "You killed the bandit lord.";
+    set @state, ((QUEST_Hurnscald & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    if (@state != 4)
+        goto L_End;
+    set @state, 5;
+    callsub S_Update_Var;
+L_End:
+    set @state, 0;
     end;
 
 L_Bryant_Waits:
@@ -33,24 +45,31 @@ L_Bryant_Waits:
     menu
         "No.", L_Bryant_No,
         "Yes.", L_Bryant_Yes;
-    close;
 
 L_Bryant_No:
     mes "[Bryant]";
     mes "\"Well, maybe he ran off.  I'm pretty sure he should be there now.\"";
     killmonster "011-6.gat", "Bryant::onBanditLordDead";
     monster "011-6.gat",260,250,"BanditLord",1065,1, "Bryant::onBanditLordDead";
-    close;
+    goto L_Close;
 
 L_Bryant_Yes:
     mes "[Bryant]";
     mes "\"I don't think you killed him.  Please try to find and kill him.  He should be in the cave south and east of here with the red carpet in front of it.\"";
     killmonster "011-6.gat", "Bryant::onBanditLordDead";
     monster "011-6.gat",260,250,"BanditLord",1065,1, "Bryant::onBanditLordDead";
-    close;
+    goto L_Close;
 
 L_Bryant_Quiet:
     mes "[Bryant]";
     mes "\"Glad that bandit leader got what was coming to him.\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Var:
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    return;
 }
