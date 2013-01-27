@@ -1,39 +1,46 @@
-//
+// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
 
 002-3.gat,85,97,6|script|Naem|109,{
 
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+
     if (FLAGS & FLAG_GOT_NAEM_GLOVES) goto L_Naem_Complete;
     if (FLAGS & FLAG_OPENED_UNDERGROUND) goto L_Naem_Gloves;
-    if (TMW_Quest == 34) goto L_Naem_Code;
-    if (TMW_Quest == 33) goto L_Naem_Lt;
-    if (TMW_Quest == 32) goto L_Naem_Memory;
-    if (TMW_Quest > 29) && (TMW_Quest < 31)goto L_Naem_Great;
-    if (TMW_Quest == 29) goto L_Naem_Waits_3;
-    if (TMW_Quest == 28) goto L_Naem_Help_3;
-    if (TMW_Quest == 27) goto L_Naem_Waits_2;
-    if (TMW_Quest == 26) goto L_Naem_Help_2;
-    if (TMW_Quest == 25) goto L_Naem_Waits_1;
-    if (TMW_Quest == 24) goto L_Naem_Help_1;
-    if (TMW_Quest == 22) goto L_Naem_Cool;
-    if (TMW_Quest == 21) goto L_Naem_Okay;
+    if (@state == 22) goto L_Naem_Code;
+    if (@state == 21) goto L_Naem_Lt;
+    if (@state == 20) goto L_Naem_Memory;
+    if (@state > 17) && (@state < 19)goto L_Naem_Great;
+    if (@state == 17) goto L_Naem_Waits_3;
+    if (@state == 16) goto L_Naem_Help_3;
+    if (@state == 15) goto L_Naem_Waits_2;
+    if (@state == 14) goto L_Naem_Help_2;
+    if (@state == 13) goto L_Naem_Waits_1;
+    if (@state == 12) goto L_Naem_Help_1;
+    if (@state == 10) goto L_Naem_Cool;
+    if (@state == 9) goto L_Naem_Okay;
 
     mes "[Naem]";
     mes "\"I'm just mining away here.  Lots of work to do.\"";
-    close;
+    goto L_Close;
 
 L_Naem_Okay:
-    set TMW_Quest, 22;
+    set @state, 10;
+    callsub S_Update_Var;
     mes "[Naem]";
     mes "\"Oh, hello there.  Nickos wanted you to check on me? Yeah, you can tell him I'm okay.\"";
-    close;
+    goto L_Close;
 
 L_Naem_Cool:
     mes "[Naem]";
     mes "\"Yeah, I'm cool.  Just mining away here.\"";
-    close;
+    goto L_Close;
 
 L_Naem_Help_1:
-    set TMW_Quest, 25;
+    set @state, 13;
+    callsub S_Update_Var;
     mes "[Naem]";
     mes "\"Oh, you are here to help move my bags?  Cool, I've got a few ready to go.  Go ahead and take this one!\"";
     next;
@@ -41,43 +48,45 @@ L_Naem_Help_1:
     next;
     mes "[Naem]";
     mes "\"After you deliver that one to Nathan, come on back, I've got a couple more ready to go.\"";
-    close;
+    goto L_Close;
 
 L_Naem_Waits_1:
     mes "[Naem]";
     mes "\"After you deliver that bag of ore to Nathan, come on back, I've got a couple more ready to go.\"";
-    close;
+    goto L_Close;
 
 L_Naem_Help_2:
-    set TMW_Quest, 27;
+    set @state, 15;
+    callsub S_Update_Var;
     mes "Naem gives you a bag of ore.";
     next;
     mes "[Naem]";
     mes "\"Just one more after this one and we'll be all caught up!\"";
-    close;
+    goto L_Close;
 
 L_Naem_Waits_2:
     mes "[Naem]";
     mes "\"Just one more bag of ore after the one you got and we'll be all caught up!\"";
-    close;
+    goto L_Close;
 
 L_Naem_Help_3:
-    set TMW_Quest, 29;
+    set @state, 17;
+    callsub S_Update_Var;
     mes "[Naem]";
     mes "Hands a bag of ore to you.";
     next;
     mes "\"Last one!\"";
-    close;
+    goto L_Close;
 
 L_Naem_Waits_3:
     mes "[Naem]";
     mes "\"You got my last sack already.  Just give it to Nathan and we'll have caught up.\"";
-    close;
+    goto L_Close;
 
 L_Naem_Great:
     mes "[Naem]";
     mes "\"Hi ho!  It's off to work I go!  I work every day for meager pay, a miner's life for me...\"";
-    close;
+    goto L_Close;
 
 L_Naem_Memory:
     mes "You see Naem grimacing in pain as you approach.";
@@ -87,45 +96,54 @@ L_Naem_Memory:
     menu
         "Don't you have a key so I can go to the underground palace?", L_Naem_Palace_No,
         "You should be more careful.", L_Naem_Duh;
-    close;
 
 L_Naem_Duh:
     mes "[Naem]";
     mes "\"I guess I should...\"";
-    close;
+    goto L_Close;
 
 L_Naem_Palace_No:
-    set TMW_Quest, 33;
+    set @state, 21;
+    callsub S_Update_Var;
     mes "[Naem]";
     mes "\"Oh no!  I lost the key!  Don't worry though, talk to Lieutenant Dausen about getting the spare key.\"";
-    close;
+    goto L_Close;
 
 L_Naem_Lt:
     mes "[Naem]";
     mes "\"I hurt my head pretty bad.  I also lost my key.  If you want to get into the underground palace, you'll have to talk to Lieutenant Dausen about getting the spare.\"";
-    close;
+    goto L_Close;
 
 L_Naem_Code:
     mes "[Naem]";
     mes "\"Oh, you got the key.  That is good!  But my head still hurts...  All I remember about the code is you have to put the key into the key hole buttons around the mine in a certain order and turn them in a certain order and it will unlock the underground palace.  Sorry, that's all I have for you.  Good luck!\"";
-    close;
+    goto L_Close;
 
 L_Naem_Gloves:
     getinventorylist;
-    if (@inventorylist_count == 100) goto L_Nathan_TooMany;
+    if (@inventorylist_count == 100)
+        goto L_Nathan_TooMany;
     set FLAGS, FLAGS | FLAG_GOT_NAEM_GLOVES;
     getitem "MinerGloves", 1;
     mes "[Naem]";
     mes "\"Hey, good job on getting that together!  Take these gloves, they might prove useful in the underground palace.\"";
-    close;
+    goto L_Close;
 
 L_Naem_TooMany:
     mes "[Naem]";
     mes "\"You have too many items for me to give you a reward.\"";
-    close;
+    goto L_Close;
 
 L_Naem_Complete:
     mes "[Naem]";
     mes "\"Yo-ho-ho, a miner's life for me!\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Var:
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
+    return;
 }

@@ -1,13 +1,19 @@
 //Sandstorm mine trigger
+// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
 
 002-3.gat,100,37,0|script|Button|127,0,0,{
 
-    if (TMW_Quest == 36) goto L_Trigger_2;
-    if (TMW_Quest == 35) goto L_Trigger_Wrong_2;
-    if (TMW_Quest == 34) goto L_Trigger_Wrong_2;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+
+    if (@state == 24) goto L_Trigger_2;
+    if (@state == 23) goto L_Trigger_Wrong_2;
+    if (@state == 22) goto L_Trigger_Wrong_2;
 
     mes "There is a large button on the ground.  A key hole appears on the button.";
-    close;
+    goto L_Close;
 
 L_Trigger_Wrong_2:
     mes "There is a large button on the ground.  A key hole appears on the button.";
@@ -15,17 +21,18 @@ L_Trigger_Wrong_2:
         "Put the key in, turn right.", L_Right_Wrong_2,
         "Put the key in, turn left.", L_Left_Wrong_2,
         "Do nothing.", L_Nothing_2;
-    close;
 
 L_Right_Wrong_2:
-    set TMW_Quest, 34;
+    set @state, 22;
+    callsub S_Update_Var;
     mes "You turn the key right.";
-    close;
+    goto L_Close;
 
 L_Left_Wrong_2:
-    set TMW_Quest, 34;
+    set @state, 22;
+    callsub S_Update_Var;
     mes "You turn the key left.";
-    close;
+    goto L_Close;
 
 L_Trigger_2:
     mes "There is a large button on the ground.  A key hole appears on the button.";
@@ -33,20 +40,29 @@ L_Trigger_2:
         "Put the key in, turn right.", L_Right_2,
         "Put the key in, turn left.", L_Left_2,
         "Do nothing.", L_Nothing_2;
-    close;
 
 L_Right_2:
-    set TMW_Quest, 34;
+    set @state, 22;
+    callsub S_Update_Var;
     mes "You turn the key right.";
-    close;
+    goto L_Close;
 
 L_Left_2:
-    set TMW_Quest, 37;
+    set @state, 25;
+    callsub S_Update_Var;
     set FLAGS, FLAGS | FLAG_OPENED_UNDERGROUND;
     mes "You turn the key left. A clicking sound echoes throughout the mine, followed by a loud thump.";
-    close;
+    goto L_Close;
 
 L_Nothing_2:
     mes "You leave the button alone.";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Var:
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
+    return;
 }
