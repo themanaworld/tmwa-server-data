@@ -2,11 +2,21 @@
 
 002-1.gat,20,94,0|script|#Sandstorm_Mine_Barrier|45,0,0,{
 
-    if (TMW_Quest >= 20) goto L_Sandstorm_Barrier_Open;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+
+    if (@state >= 8) goto L_Sandstorm_Barrier_Open;
+
     message strcharinfo(0), "Some force seems to block your entrance.";
-    end;
+    goto L_End;
 
 L_Sandstorm_Barrier_Open:
     warp "002-3.gat",37,31;
+    goto L_End;
+
+L_End:
+    set @state, 0;
     end;
 }

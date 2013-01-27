@@ -1,41 +1,52 @@
 // Lieutenant in charge of monitoring the monster threat surrounding the city.
+// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
 
 002-1.gat,54,27,0|script|Lieutenant Dausen|122,{
 
-    if (TMW_Quest == 33) goto L_LD_Key;
-    if (TMW_Quest == 19) goto L_LD_Miners;
-    if (TMW_Quest == 18) goto L_LD_Orders;
-    if (TMW_Quest == 17) goto L_LD_Nickos_Waits;
-    if (TMW_Quest == 16) goto L_LD_Nickos;
-    if (TMW_Quest == 15) goto L_LD_Waits;
-    if (TMW_Quest == 14) goto L_LD_Woe_Is_Me;
-    if (TMW_Quest == 13) goto L_LD_Drinks;
-    if (TMW_Quest == 12) goto L_LD_Start;
-    if (TMW_Quest < 12) goto L_LD_Get_Rep_First;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
 
-    mes "[Lieutenant Dausen]";
-    mes "\"Hello.  I am Lieutenant Dausen.  I monitor the monster threat around the city to ensure the safety of its citizens.\"";
-    close;
+    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
 
-L_LD_Get_Rep_First:
+    if (@state == 21) goto L_LD_Key;
+    if (@state == 7) goto L_LD_Miners;
+    if (@state == 6) goto L_LD_Orders;
+    if (@state == 5) goto L_LD_Nickos_Waits;
+    if (@state == 4) goto L_LD_Nickos;
+    if (@state == 3) goto L_LD_Waits;
+    if (@state == 2) goto L_LD_Woe_Is_Me;
+    if (@state == 1) goto L_LD_Drinks;
+
+    set @bermik, ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    set @sarah, ((QUEST_SouthTulimshar & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    set @vincent, ((QUEST_SouthTulimshar & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    set @sandra, ((QUEST_SouthTulimshar & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    if ((@bermik >= 6) && (@sarah >= 2) && (@vincent >= 2) && (@sandra >= 2))
+        goto L_LD_Start;
+
     mes "[Lieutenant Dausen]";
     mes "\"Hello.  I am Lieutenant Dausen.  I monitor the monster threat around the city to ensure the safety of its citizens.\"";
     next;
     mes "[Lieutenant Dausen]";
     mes "\"I may have a job for you, stranger, but first I would like to learn more about you. Go walk among the citizens of Tulimshar, see if any of them could use some help. Once you have established a good reputation, word will get to me.\"";
-    close;
+    goto L_Close;
 
 L_LD_Start:
-    set TMW_Quest, 13;
+    set @state, 1;
+    callsub S_Update_Var;
     mes "[Lieutenant Dausen]";
     mes "\"Out here in the desert, it sure does get hot!  My men and I get thirsty rather quickly.  Cactus Drinks are our favourite; if you can get some for us, we'd surely appreciate your effort.  About 10 would do.\"";
-    close;
+    goto L_Close;
 
 L_LD_Drinks:
-    if (countitem ("CactusDrink") < 10) goto L_LD_NotEnough_Drink;
+    if (countitem ("CactusDrink") < 10)
+        goto L_LD_NotEnough_Drink;
     getinventorylist;
-    if (@inventorylist_count - (countitem("CactusDrink") == 10) > 99) goto L_LD_TooMany;
-    set TMW_Quest, 14;
+    if (@inventorylist_count - (countitem("CactusDrink") == 10) > 99)
+        goto L_LD_TooMany;
+    set @state, 2;
+    callsub S_Update_Var;
     delitem "CactusDrink", 10;
     getitem "Boots", 1;
     mes "[Lieutenant Dausen]";
@@ -47,17 +58,16 @@ L_LD_Drinks:
     menu
         "I can help you out, since you helped me too.", L_LD_Help,
         "Thanks for the boots, gotta run now.", L_LD_NoHelp;
-    close;
 
 L_LD_NotEnough_Drink:
     mes "[Lieutenant Dausen]";
     mes "\"Hi again.  My men and I sure are thirsty for our favorite drink, the Cactus Drink.  If we had about 10, it would help us out a great deal in this sandstorm.\"";
-    close;
+    goto L_Close;
 
 L_LD_TooMany:
     mes "[Lieutenant Dausen]";
     mes "\"Oh, it seems you have too many items for me to give you a reward.  Come back after you drop or sell some items.\"";
-    close;
+    goto L_Close;
 
 L_LD_Woe_Is_Me:
     mes "[Lieutenant Dausen]";
@@ -65,54 +75,69 @@ L_LD_Woe_Is_Me:
     menu
         "I can help you out, since you helped me out too.", L_LD_Help,
         "Bye-bye.", L_LD_NoHelp;
-    close;
 
 L_LD_Help:
-    set TMW_Quest, 15;
+    set @state, 3;
+    callsub S_Update_Var;
     mes "[Lieutenant Dausen]";
     mes "\"Oh!  Would you?  You are ever most helpful!  Could you let Stewen know first?  I'm the most worried about the monsters from the eastern desert and he should know first to hold his post.  Come back to me after you see him.  Hope to hear from you soon!\"";
-    close;
+    goto L_Close;
 
 L_LD_NoHelp:
     mes "[Lieutenant Dausen]";
     mes "\"See you later then.\"";
-    close;
+    goto L_Close;
 
 L_LD_Waits:
     mes "[Lieutenant Dausen]";
     mes "\"I do hope Stewen holds his post.  If you could tell them to do so, it would help me out a great deal.\"";
-     close;
+     goto L_Close;
 
 L_LD_Nickos:
-    set TMW_Quest, 17;
+    set @state, 5;
+    callsub S_Update_Var;
     mes "[Lieutenant Dausen]";
     mes "\"Thanks for letting Stewen know.  Can you now tell Nickos to hold his post too?  He guards the mine to the south, monitoring the monster threat and protecting the miners when he can.\"";
-    close;
+    goto L_Close;
 
 L_LD_Nickos_Waits:
     mes "[Lieutenant Dausen]";
     mes "\"Could you let Nickos know to hold his post?  It would be very helpful.  He is guarding the mine south of here.\"";
-    close;
+    goto L_Close;
 
 L_LD_Orders:
-    set TMW_Quest, 19;
+    set @state, 7;
+    callsub S_Update_Var;
     set Zeny, Zeny + 500;
     mes "[Lieutenant Dausen]";
     mes "\"Thank you for clearing up the orders to my men!  Here's some gold for your efforts.\"";
     next;
     mes "\"If you think you can handle the monsters lurking out here, I'm sure Nickos and the miners could use some help.  Talk to you later.\"";
-    close;
+    goto L_Close;
 
 L_LD_Miners:
     mes "[Lieutenant Dausen]";
     mes "\"I monitor the monster threat around the city to ensure the safety of its citizens.\"";
     next;
     mes "\"If you think you can handle the monsters lurking out here, I'm sure Nickos and the miners could use some help.  Talk to you later.\"";
-    close;
+    goto L_Close;
 
 L_LD_Key:
-    set TMW_Quest, 34;
+    set @state, 22;
+    callsub S_Update_Var;
     mes "[Lieutenant Dausen]";
     mes "\"Oh, Naem lost his key?  Here, take this spare.  It should help you get into the underground palace.\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
+    set @bermik, 0;
+    set @sarah, 0;
+    set @vincent, 0;
+    set @sandra, 0;
     close;
+
+S_Update_Var:
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
+    return;
 }
