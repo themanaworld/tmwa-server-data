@@ -1,36 +1,47 @@
-//
+// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
 
 002-4.gat,93,37,0|script|Treasure|111,{
 
-    if (TMW_Quest >= 38) goto L_Finished;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+
+    if (@state >= 26) goto L_Finished;
 
     mes "There is a chest here.";
     mes "Do you want to try to open it?";
     next;
     menu
         "Yes.", L_Yes,
-        "No.", -;
-    close;
+        "No.", L_Close;
 
 L_Yes:
-    if(countitem("TreasureKey") < 3) goto L_Not_Enough;
+    if(countitem("TreasureKey") < 3)
+        goto L_Not_Enough;
     getinventorylist;
-    if (@inventorylist_count == 100 && countitem("TreasureKey") > 3) goto L_TooMany;
+    if (@inventorylist_count == 100 && countitem("TreasureKey") > 3)
+        goto L_TooMany;
     mes "You opened the chest and found a short bow!";
     delitem "TreasureKey", 3;
     getitem "ShortBow", 1;
-    set TMW_Quest, 38;
-    close;
+    set @state, 26;
+    callsub S_Update_Var;
+    goto L_Close;
 
 L_Not_Enough:
     mes "It seems that you do not have the right key for this chest yet...";
-    close;
+    goto L_Close;
 
 L_Finished:
     mes "You have already opened this chest.";
-    close;
+    goto L_Close;
 
 L_TooMany:
     mes "You do not have enough room to loot this chest. Maybe you should try again later.";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
 }

@@ -1,14 +1,19 @@
-//
+// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
 
 002-4.gat,32,94,6|script|Sema|340,{
 
-    if (TMW_Quest >= 40) goto L_Sema_Done;
-    if (TMW_Quest == 39) goto L_Sema_Happy;
-    if (TMW_Quest == 38) goto L_Sema_GCM;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+
+    if (@state >= 28) goto L_Sema_Done;
+    if (@state == 27) goto L_Sema_Happy;
+    if (@state == 26) goto L_Sema_GCM;
 
     mes "[Sema the Miner]";
     mes "\"Hello adventurer.  I do not know exactly where, but somewhere in this cave there is a chest.  And wouldn't you know it!  The archants have eaten all the spare keys for the chest.  Go and do what you must do.\"";
-    close;
+    goto L_Close;
 
 L_Sema_GCM:
     mes "[Sema the Miner]";
@@ -16,44 +21,52 @@ L_Sema_GCM:
     menu
         "Yes.", L_Sema_Yes,
         "No.", L_Sema_No;
-    close;
 
 L_Sema_No:
     mes "[Sema the Miner]";
     mes "\"Ahh!  I am very scared now!\"";
-    close;
+    goto L_Close;
 
 L_Sema_Yes:
-    set TMW_Quest, 39;
+    set @state, 27;
+    callsub S_Update_Var;
     monster "002-4.gat", 70, 90, "", 1059, 1;
     mes "[Sema the Miner]";
     mes "\"Good luck.  To prove you killed it, please bring the Iten it swallowed when it ate the miner.  Be careful, there could be more than one.\"";
-    close;
+    goto L_Close;
 
 L_Sema_Happy:
-    if (countitem ("Iten") < 1) goto L_Sema_Not_Happy;
+    if (countitem ("Iten") < 1)
+        goto L_Sema_Not_Happy;
     getinventorylist;
-    if (@inventorylist_count - (countitem ("Iten") == 1) > 99) goto L_Sema_TooMany;
+    if (@inventorylist_count - (countitem ("Iten") == 1) > 99)
+        goto L_Sema_TooMany;
     delitem "Iten", 1;
     getitem "DesertShirt", 1;
-    set TMW_Quest, 40;
+    set @state, 28;
+    callsub S_Update_Var;
     mes "[Sema the Miner]";
     mes "\"You killed it!  What a relief!  I wish I had more to give, but please accept this Desert Shirt as reward.\"";
-    close;
+    goto L_Close;
 
 L_Sema_TooMany:
     mes "[Sema the Miner]";
     mes "\"You have too many items for me to give you a reward.  Please drop or sell something so I can give it to you.  Oh and yes, you can also store items at the nearest bank.\"";
-    close;
+    goto L_Close;
 
 L_Sema_Not_Happy:
-    set TMW_Quest, 38;
+    set @state, 26;
+    callsub S_Update_Var;
     itemheal -Hp, 0;
     mes "A stone falls on your head.";
-    close;
+    goto L_Close;
 
 L_Sema_Done:
     mes "[Sema the Miner]";
     mes "\"You made this cave safer, you are kind beyond belief.  Others may need you.  Happy adventuring.\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
 }
