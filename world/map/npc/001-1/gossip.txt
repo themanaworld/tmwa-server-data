@@ -1,6 +1,16 @@
 // NPC to provide hints on progression of linear quest chain in Tulimshar
 
 001-1.gat,49,31,0|script|Gladys|154,{
+
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @guards, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+    set @bermik, ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    set @sarah, ((QUEST_SouthTulimshar & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    set @vincent, ((QUEST_SouthTulimshar & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    set @sandra, ((QUEST_SouthTulimshar & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
     mes "[Gladys, Town Gossip]";
     mes "\"Hello deary!  I hear some of the most fascinating rumors and bits of news. I just heard a bit more today!\"";
     mes "\"Would you like me to let you in on the good stuff?\"";
@@ -9,18 +19,18 @@
         "No thanks.", L_No;
 
 L_Yes:
-    if (TMW_Quest >=40) goto L_Ferry;
-    if (TMW_Quest >=12) goto L_Desert;
-    if (TMW_Quest >=10) goto L_Sandra;
-    if (TMW_Quest >=8) goto L_Vinc;
-    if (TMW_Quest >=6) goto L_Sarah;
-    if (TMW_Quest >=4) goto L_Mik;
-    if (TMW_Quest <1) goto L_Intro;
+    if (@bermik < 4)  goto L_Intro;
+    if (@bermik < 6)  goto L_Mik;
+    if (@sarah < 2)   goto L_Sarah;
+    if (@vincent < 2) goto L_Vinc;
+    if (@sandra < 2)  goto L_Sandra;
+    if (@guards < 28) goto L_Desert;
+    goto L_Ferry;
 
 L_No:
     mes "[Gladys, Town Gossip]";
     mes "\"Very well.  Come back whenever you like.  I am always getting juicy bits of news!\"";
-    close;
+    goto L_Close;
 
 L_Intro:
     mes "[Gladys, Town Gossip]";
@@ -30,7 +40,7 @@ L_Intro:
     mes "\"I also overheard some of the children in the square talking today.  I think they are having trouble with some of their chores.  Kids these days...\"";
     next;
     mes "The old lady trails off and starts muttering to herself about hills and snow.  Perhaps it's best to leave her alone for now.";
-    close;
+    goto L_Close;
 
 L_Mik:
     mes "[Gladys, Town Gossip]";
@@ -38,7 +48,7 @@ L_Mik:
     next;
     mes "[Gladys, Town Gossip]";
     mes "\"One of the ladies in my quilting club mentioned giving a task to her grandson.  I have my doubts about whether he ever finished it...\"";
-    close;
+    goto L_Close;
 
 L_Sarah:
     mes "[Gladys, Town Gossip]";
@@ -46,12 +56,12 @@ L_Sarah:
     next;
     mes "[Gladys, Town Gossip]";
     mes "\"Do you believe what parents will let their kids do these days?!  I heard about this girl at the far side of town who does nothing but eat sweets all day!  Honestly, what is the world coming to?\"";
-    close;
+    goto L_Close;
 
 L_Vinc:
     mes "[Gladys, Town Gossip]";
     mes "\"I just got news of an exciting new business opportunity!  There's supposed to be a new entrepreneur in town somewhere making toys.  You should get in on the ground floor!\"";
-    close;
+    goto L_Close;
 
 L_Sandra:
     mes "[Gladys, Town Gossip]";
@@ -59,7 +69,7 @@ L_Sandra:
     next;
     mes "[Gladys, Town Gossip]";
     mes "\"I've been hearing reports of you all over town!  I think there's only one little girl you haven't assisted, but she's a strange one...always messing about with bugs. Yuck!\"";
-    close;
+    goto L_Close;
 
 L_Desert:
     if (Sex == 0) set @person$, "gal";
@@ -76,9 +86,14 @@ L_Desert:
 L_Ferry:
     mes "[Gladys, Town Gossip]";
     mes "I heard that there is a handsome sailor in the north of town who will take people to exotic new places!  I'm saving my pennies!\"";
-    close;
+    goto L_Close;
 
 L_Close:
     set @person$, "";
+    set @guards, 0;
+    set @bermik, 0;
+    set @sarah, 0;
+    set @vincent, 0;
+    set @sandra, 0;
     close;
 }
