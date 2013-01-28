@@ -229,7 +229,9 @@ OnTimer24500:
         end;
     npctalk "Demonotis!";
     misceffect FX_EVIL_SUMMON;
-    areamonster "052-2.gat", 20, 23, 47, 41, "", 1101, 20 + 16 - 480/(30+$Illia_Luvia_Harvest), "Luvia?::onDSDeath";
+    callsub S_GetHeroRect;
+    areamonster "052-2.gat", $@illia_lobby_x1, $@illia_lobby_y1, $@illia_lobby_x2, $@illia_lobby_y2, "", 1101, 20 + 16 - 480/(30+$Illia_Luvia_Harvest), "Luvia?::onDSDeath";
+    callsub S_ClearHeroRect;
     end;
 
 OnTimer44000:
@@ -237,7 +239,9 @@ OnTimer44000:
         end;
     npctalk "Demonotis!";
     misceffect FX_EVIL_SUMMON;
-    areamonster "052-2.gat", 20, 23, 47, 41, "", 1101, 28 + 16 - 480/(30+$Illia_Luvia_Harvest), "Luvia?::onDSDeath";
+    callsub S_GetHeroRect;
+    areamonster "052-2.gat", $@illia_lobby_x1, $@illia_lobby_y1, $@illia_lobby_x2, $@illia_lobby_y2, "", 1101, 28 + 16 - 480/(30+$Illia_Luvia_Harvest), "Luvia?::onDSDeath";
+    callsub S_ClearHeroRect;
     end;
 
 OnTimer77000:
@@ -245,7 +249,9 @@ OnTimer77000:
         end;
     npctalk "Demonotis!";
     misceffect FX_EVIL_SUMMON;
-    areamonster "052-2.gat", 20, 23, 47, 41, "", 1101, 42 + 16 - 480/(30+$Illia_Luvia_Harvest), "Luvia?::onDSDeath";
+    callsub S_GetHeroRect;
+    areamonster "052-2.gat", $@illia_lobby_x1, $@illia_lobby_y1, $@illia_lobby_x2, $@illia_lobby_y2, "", 1101, 42 + 16 - 480/(30+$Illia_Luvia_Harvest), "Luvia?::onDSDeath";
+    callsub S_ClearHeroRect;
     // That was the last spawn: reset the timer to start the CheckInvoke loop.
     set $@illia_level_5_progress, 5;
     setnpctimer 0;
@@ -276,7 +282,9 @@ OnTimer18500:
     npctalk "Demonotis Major!";
     misceffect FX_EVIL_SUMMON;
     misceffect FX_MAGIC_DARK_EXPLOSION;
-    areamonster "052-2.gat", 20, 23, 47, 41, "", 1103, 8 + (16 - 480/(30+$Illia_Luvia_Harvest))/3, "Luvia?::onWGDeath";
+    callsub S_GetHeroRect;
+    areamonster "052-2.gat", $@illia_lobby_x1, $@illia_lobby_y1, $@illia_lobby_x2, $@illia_lobby_y2, "", 1103, 8 + (16 - 480/(30+$Illia_Luvia_Harvest))/3, "Luvia?::onWGDeath";
+    callsub S_ClearHeroRect;
     end;
 
 OnTimer20000:
@@ -326,6 +334,37 @@ L_ChaseLuvia:
     set $@illia_max_time, $@illia_max_time + 600;
     areatimer "052-2.gat", 19, 18, 48, 43, 2000, "#LuviaShadow::OnNN";
     end;
+
+S_GetHeroRect:
+    if (isloggedin($@ILLIA_HERO_ID) == 0)
+        goto L_Clear;
+    attachrid($@ILLIA_HERO_ID);
+    set $@illia_lobby_x, getx();
+    set $@illia_lobby_y, gety();
+
+    set $@illia_lobby_x1, $@illia_lobby_x - 18;
+    set $@illia_lobby_y1, $@illia_lobby_y - 11;
+    set $@illia_lobby_x2, $@illia_lobby_x + 18;
+    set $@illia_lobby_y2, $@illia_lobby_y + 11;
+
+    if ($@illia_lobby_x1 < 20)
+        set $@illia_lobby_x1, 20;
+    if ($@illia_lobby_y1 < 19)
+        set $@illia_lobby_y1, 19;
+    if ($@illia_lobby_x2 > 47)
+        set $@illia_lobby_x2, 47;
+    if ($@illia_lobby_y2 > 42)
+        set $@illia_lobby_y2, 42;
+
+    detachrid;
+    return;
+
+S_ClearHeroRect:
+    set $@illia_lobby_x1, 0;
+    set $@illia_lobby_y1, 0;
+    set $@illia_lobby_x2, 0;
+    set $@illia_lobby_y2, 0;
+    return;
 
 onDSDeath:
     end;
