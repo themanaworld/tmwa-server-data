@@ -55,7 +55,7 @@ class HtmlWriter(BasicWriter):
         pass
 
     def put(self, entry):
-        self.stream.write('<div>\n')
+        self.stream.write('<div>\n<p/>\n')
         entry = entry.replace('\n\n', '\n<p/>\n')
         entry = entry.format(**colors.make_html_colors_dict())
         self.stream.write(entry)
