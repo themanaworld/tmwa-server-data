@@ -1,39 +1,36 @@
-//#################################################################################
-//#                                                                               #
-//# this script file contains the npc scripts for the quest to obtain a scythe.   #
-//#                                                                               #
-//# Needed: 10 Pink Antenna                                                       #
-//#                                                                               #
-//# Reward: Scythe                                                                #
-//#                                                                               #
-//#################################################################################
-
-//Farmer
+// This script file contains the npc scripts for the quest to obtain a scythe.
+//
+// Needed: 10 Pink Antenna
+// Reward: Scythe
+//
+// Variables used: Nibble 1 of QUEST_Hurnscald (previously QUEST_Scythe_state)
 
 008-1.gat,101,30,0|script|Hinnak|142,{
+    callfunc "ClearVariables";
+
     if (Inspector == 10) goto L_NohMask;
 
 L_No_NohMask:
-    if (QUEST_Scythe_state == 1) goto L_Exchange;
-    if (QUEST_Scythe_state == 2) goto L_ThanksAgain;
+    set @state, ((QUEST_Hurnscald & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+
+    if (@state == 1) goto L_Exchange;
+    if (@state == 2) goto L_ThanksAgain;
     if (getequipid(equip_head) == 751) goto L_Intro_Hat;
 
     mes "[Farmer Hinnak]";
     mes "\"Argh! I hate them! I @#$% hate them! I @#$% hate these @#$% pinkies!\"";
     next;
     menu
-        "You need some anger control therapy.", -,
+        "You need some anger control therapy.", L_Close,
         "Why do you hate them?", L_Reason;
-    close;
 
 L_Intro_Hat:
     mes "The farmer lunges at you with a farming implement.";
     next;
     heal -50, 0;
     menu
-        "I'm out of here.", -,
+        "I'm out of here.", L_Close,
         "Whoa, what are you doing?", L_Intro_Hat_Explain;
-    close;
 
 L_Intro_Hat_Explain:
     mes "[Farmer Hinnak]";
@@ -48,24 +45,23 @@ L_Reason:
     next;
     menu
         "Want me to help you?", L_Help,
-        "Well, life ain't fair.", -;
-    close;
+        "Well, life ain't fair.", L_Close;
 
 L_Help:
     mes "[Farmer Hinnak]";
     mes "\"Yes, you look quite fast. Maybe you can catch some of them. That will pay them a lesson.";
     mes "Slay some of them and bring me 10 of their antennae.\"";
-    set QUEST_Scythe_state, 1;
+    set @state, 1;
+    callsub S_Update_Mask;
     next;
     menu
-        "Sure, I'm on my way", -,
+        "Sure, I'm on my way", L_Close,
         "How much is this worth to you?", L_Reward;
-    close;
 
 L_Reward:
     mes "[Farmer Hinnak]";
     mes "\"Well, I can't offer you much. But I got an old scythe laying around. Maybe you can use it as a weapon.\"";
-    close;
+    goto L_Close;
 
 L_Exchange:
     if (getequipid(equip_head) != 751)
@@ -78,9 +74,8 @@ L_Exchange_Start:
     mes "\"Have you got the 10 antennae?\"";
     next;
     menu
-        "Not yet, but I am working on it.", -,
+        "Not yet, but I am working on it.", L_Close,
         "Sure, here they are!", L_Exchange_Exchange;
-    close;
 
 L_Exchange_Exchange:
     if (countitem("PinkAntenna") < 10)
@@ -90,20 +85,21 @@ L_Exchange_Exchange:
         goto L_Exchange_TooMany;
     delitem "PinkAntenna", 10;
     getitem "Scythe", 1;
-    set QUEST_Scythe_state, 2;
+    set @state, 2;
+    callsub S_Update_Mask;
     mes "[Farmer Hinnak]";
     mes "\"Thank you very much. I've got something for you. My old scythe. Maybe you can use it as a weapon. It is a bit cumbersome but its strikes are deadly.\"";
-    close;
+    goto L_Close;
 
 L_Exchange_Notenough:
     mes "[Farmer Hinnak]";
     mes "\"It doesn't look like you do.\"";
-    close;
+    goto L_Close;
 
 L_Exchange_TooMany:
     mes "[Farmer Hinnak]";
     mes "\"Looks like you don't have room for this. Come back later to receive your reward. Hold on to the antennea until then.\"";
-    close;
+    goto L_Close;
 
 L_ThanksAgain:
     if (getequipid(equip_head) == 751)
@@ -202,43 +198,50 @@ L_GiveBeer:
 L_Sagatha_hahaha:
     mes "[Farmer Hinnak]";
     mes "\"Yeah, funny now...  But you should've seen that stare!  Ah, well, never mind.\"";
-    close;
+    goto L_Close;
 
 L_Sagatha_scary:
     mes "[Farmer Hinnak]";
     mes "\"Yeah, you could say that...\"";
     mes "He stares into his empty beer jug, as if wishing it weren't empty yet.";
-    close;
+    goto L_Close;
 
 L_Sagatha_word:
     mes "[Farmer Hinnak]";
     mes "\"Oh, I can't be sure... but something like '" + getspellinvocation("summon-maggots") + "', I think.\"";
-    close;
+    goto L_Close;
 
 L_NoBeer:
     mes "[Farmer Hinnak]";
     mes "\"Ah... no beer?  Oh well.\"";
-    close;
+    goto L_Close;
 
 L_Bye:
     mes "[Farmer Hinnak]";
     mes "\"Bye!\"";
-    close;
+    goto L_Close;
 
 L_NohMask:
     menu
         "Did you see anyone in a mask come by here at night?", L_NohMask_Mask,
         "Did you see anyone with a large satchel come by here at night?", L_NohMask_Satchel,
-        "Hello", L_No_NohMask;
-    close;
+        "Hello.", L_No_NohMask;
 
 L_NohMask_Mask:
     mes "[Farmer Hinnak]";
     mes "\"No. It tends to be too dark to see a mask.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Satchel:
     mes "[Farmer Hinnak]";
     mes "\"Yes, I saw someone with a large sack on their back go to the mining camp.\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Mask:
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_1_MASK)) | (@state << NIBBLE_1_SHIFT);
+    return;
 }
