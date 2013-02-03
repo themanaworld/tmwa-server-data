@@ -1,17 +1,30 @@
 //
 
 013-3.gat,71,21,0|script|#DemonMineBarrier1#_M|45,1,1,{
-    if (QUEST_demon_mines >= 2) close;
-    if (QUEST_demon_mines == 1 && countitem("JackOSoul") >= 1) goto L_Has_Jack_O_Soul;
+    callfunc "ClearVariables";
+
+    set @state, ((QUEST_Hurnscald & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+
+    if (@state >= 2) goto L_Close;
+    if (@state == 1 && countitem("JackOSoul") >= 1) goto L_Has_Jack_O_Soul;
 
     mes "A barrier around the opening pushes you back as you approach.";
 
     warp "013-3.gat", 71, 25;
-    close;
+    goto L_Close;
 
 L_Has_Jack_O_Soul:
     mes "The barrier around the opening allows you passage.";
-    set QUEST_demon_mines, 2;
+    set @state, 2;
+    callsub S_Update_Mask;
     delitem "JackOSoul", 1;
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Mask:
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_2_MASK)) | (@state << NIBBLE_2_SHIFT);
+    return;
 }
