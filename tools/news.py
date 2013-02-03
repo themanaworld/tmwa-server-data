@@ -73,7 +73,7 @@ class TxtWriter(BasicWriter):
         entry = entry.replace('\n\n', '\n \n')
         entry = entry.format(**colors.make_txt_colors_dict())
         self.stream.write(entry)
-        self.stream.write('\n\n')
+        self.stream.write(' \n \n')
     def finish(self):
         # DO NOT REMOVE
         #self.stream.write('Did you really read down this far?\n')
