@@ -34,12 +34,12 @@ import zlib
 dump_all = False # wall of text
 
 # lower case versions of everything except 'spawn' and 'warp'
-other_object_types = {
+other_object_types = set([
     'particle_effect',
     'npc', # not interpreted by client
     'script', # for ManaServ
     'fixme', # flag for things that didn't have a type before
-}
+])
 
 # Somebody has put ManaServ fields in our data!
 other_spawn_fields = (
@@ -117,7 +117,7 @@ class ContentHandler(xml.sax.ContentHandler):
         self.locator = None
         self.out = open(out, 'w')
         self.state = State.INITIAL
-        self.tilesets = {0} # consider the null tile as its own tileset
+        self.tilesets = set([0]) # consider the null tile as its own tileset
         self.buffer = bytearray()
         self.encoding = None
         self.compression = None
@@ -268,7 +268,7 @@ class ContentHandler(xml.sax.ContentHandler):
                     for x in self.buffer.split(','):
                         self.out.write(chr(int(x) not in self.tilesets))
                 elif self.encoding == u'base64':
-                    data=base64.b64decode(self.buffer)
+                    data = base64.b64decode(str(self.buffer))
                     if self.compression == u'zlib':
                         data = zlib.decompress(data)
                     elif self.compression == u'gzip':
@@ -314,10 +314,10 @@ def main(argv):
             this_map_npc_dir = posixpath.join(npc_dir, base)
             os.path.isdir(this_map_npc_dir) or os.mkdir(this_map_npc_dir)
             print('Converting %s to %s' % (tmx, wlk))
-            with open(posixpath.join(this_map_npc_dir, NPC_MOBS), 'w') as mobs, \
-                 open(posixpath.join(this_map_npc_dir, NPC_WARPS), 'w') as warps, \
-                 open(posixpath.join(this_map_npc_dir, NPC_IMPORTS), 'w') as imports:
-                xml.sax.parse(tmx, ContentHandler(wlk, this_map_npc_dir, mobs, warps, imports))
+            with open(posixpath.join(this_map_npc_dir, NPC_MOBS), 'w') as mobs:
+                with open(posixpath.join(this_map_npc_dir, NPC_WARPS), 'w') as warps:
+                    with open(posixpath.join(this_map_npc_dir, NPC_IMPORTS), 'w') as imports:
+                        xml.sax.parse(tmx, ContentHandler(wlk, this_map_npc_dir, mobs, warps, imports))
             npc_master.append('import: %s\n' % posixpath.join(SERVER_NPCS, base, NPC_IMPORTS))
 
     with open(posixpath.join(npc_dir, NPC_MASTER_IMPORTS), 'w') as out:
