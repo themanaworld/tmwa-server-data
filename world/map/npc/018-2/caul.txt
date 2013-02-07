@@ -8,6 +8,10 @@
 //#################################################################################
 
 018-2.gat,37,22,0|script|Caul|107,{
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
     set @SETZER_INITIAL, 0;
     set @SETZER_KNOWS_OIL, 1;
     set @SETZER_KNOWS_STINGER, 2;
@@ -59,7 +63,7 @@ L_M_no_monster_oil:
     set @choices_nr, @choices_nr + 1;
 
 L_M_no_mopox_cure:
-    if (Inspector != 10)
+    if (@inspector != 10)
         goto L_M_no_inspector;
 
     set @choice_idx[@choices_nr], @C_nohmask;
@@ -1058,10 +1062,11 @@ L_calc_dempo_color:
 L_NohMask:
     mes "[Caul]";
     mes "\"I'm sorry, but I didn't. I'm staying in town. Try asking one of the miners.\"";
-    close;
+    goto L_close;
 
 L_close:
-        close;
+    set @inspector, 0;
+    close;
 
 S_Update_Var:
     set QUEST_Forestbow_state,

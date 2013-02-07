@@ -9,12 +9,16 @@
 
 // Archer Shop Master
 009-2.gat,99,23,0|script|Alan|125,{
+    callfunc "ClearVariables";
+
     set @Q_MASK, NIBBLE_0_MASK;
     set @Q_SHIFT, NIBBLE_0_SHIFT;
 
     set @Q_status, ((QUEST_Forestbow_state) & @Q_MASK) >> @Q_SHIFT;
 
     set @BROKENLOG_EXP, 15;
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
 
     if (@Q_status == 1) goto L_State_1;
     if (@Q_status == 2) goto L_State_2;
@@ -25,16 +29,16 @@
     mes "[Alan]";
     mes "\"When you want to buy something then please speak to my apprentice. I am only doing special requests.\"";
     next;
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
             "OK, thanks.", -,
             "Can you make me a really good bow?", L_State_0_1,
             "Have you seen anything strange recently that might be connected to the robberies?", L_NohMask_Answer;
-    if (Inspector != 1)
+    if (@inspector != 1)
         menu
             "OK, thanks.", -,
             "Can you make me a really good bow?", L_State_0_1;
-    close;
+    goto L_Close;
 
 L_State_0_1:
     mes "[Alan]";
@@ -46,9 +50,8 @@ L_State_0_1:
     mes "\"Sorry, I am not making these anymore.\"";
     next;
     menu
-        "Oh, too bad.", -,
+        "Oh, too bad.", L_Close,
         "What? Why not?", L_State_0_2;
-    close;
 
 L_State_0_2:
     mes "[Alan]";
@@ -59,48 +62,46 @@ L_State_0_2:
     callsub S_Update_Var;
     next;
     menu
-        "Too bad.", -,
+        "Too bad.", L_Close,
         "Did you ask him why?", L_State_0_3;
-    close;
 
 L_State_0_3:
     mes "[Alan]";
     mes "\"Sure I did. But he just told me to leave him alone. Maybe you could ask him what's wrong?\"";
     next;
     menu
-        "OK, I'll ask him.", -,
+        "OK, I'll ask him.", L_Close,
         "I am sure he got his reasons.", -;
-    close;
 
 L_State_1:
     mes "[Alan]";
     mes "\"Did you already ask Jack why he won't deliver me any more living wood?\"";
     next;
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
             "No, I haven't had the time yet.", -,
             "No, I didn't find him yet.", L_State_1_1,
             "Have you seen anything strange recently that might be connected to the robberies?", L_NohMask_Answer;
-    if (Inspector != 1)
+    if (@inspector != 1)
         menu
             "No, I haven't had the time yet.", -,
             "No, I didn't find him yet.", L_State_1_1;
-    close;
+    goto L_Close;
 
 L_State_1_1:
     mes "[Alan]";
     mes "\"When you leave my shop just go southwest over the village plaza. You can't miss it.\"";
-    close;
+    goto L_Close;
 
 L_State_2:
     mes "[Alan]";
     mes "\"Did you already ask Jack why he won't deliver me any more living wood?\"";
     next;
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
             "Yes, I did. He said that the trees turned into dangerous monsters.", -,
             "Have you seen anything strange recently that might be connected to the robberies?", L_NohMask_Answer;
-    if (Inspector != 1)
+    if (@inspector != 1)
         menu
             "Yes, I did. He said that the trees turned into dangerous monsters.", -;
     mes "[Alan]";
@@ -109,23 +110,24 @@ L_State_2:
     mes "Maybe you will find a piece of wood that is strong enough to become one of my forest bows.\"";
     set @Q_status, 3;
     callsub S_Update_Var;
-    close;
+    goto L_Close;
 
 L_State_3:
     mes "[Alan]";
     mes "\"How is the hunt going? Did you bring me any wood?\"";
-    if (countitem("RawLog") < 1) close;
+    if (countitem("RawLog") < 1)
+        goto L_Close;
     next;
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
             "Here, take a look!", L_State_3_try,
             "Yes, but I need it for something else.", -,
             "Have you seen anything strange recently that might be connected to the robberies?", L_NohMask_Answer;
-    if (Inspector != 1)
+    if (@inspector != 1)
         menu
             "Here, take a look!", L_State_3_try,
             "Yes, but I need it for something else.", -;
-    close;
+    goto L_Close;
 
 L_State_3_try:
     if (countitem("RawLog") < 1)
@@ -142,12 +144,12 @@ L_State_3_try:
     next;
     mes "[Alan]";
     mes "\"Sorry, this log was too weak for one of my forest bows. Now it is junk. Give me another.\"";
-    if (countitem("RawLog") < 1) close;
+    if (countitem("RawLog") < 1)
+        goto L_Close;
     next;
     menu
         "Sure, here you go.", L_State_3_try,
-        "Hey! Stop breaking my stuff!", -;
-    close;
+        "Hey! Stop breaking my stuff!", L_Close;
 
 L_State_3_success:
     mes "Alan tries as hard as he can but the log won't bend.";
@@ -162,16 +164,16 @@ L_State_4:
     mes "[Alan]";
     mes "\"I can make you a really nice forest bow out of this. I just need 10,000 GP for material and work time.\"";
     next;
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
             "10,000??? What a ripoff!", -,
             "Sure, here you go!", L_State_4_pay,
             "Have you seen anything strange recently that might be connected to the robberies?", L_NohMask_Answer;
-    if (Inspector != 1)
+    if (@inspector != 1)
         menu
             "10,000??? What a ripoff!", -,
             "Sure, here you go!", L_State_4_pay;
-    close;
+    goto L_Close;
 
 L_State_4_pay:
     if (Zeny < 10000)
@@ -185,36 +187,39 @@ L_State_4_pay:
     callsub S_Update_Var;
     mes "[Alan]";
     mes "\"Here you go - have fun with it.\"";
-    close;
+    goto L_Close;
 
 L_State_4_nocash:
     mes "[Alan]";
     mes "\"Seems like you are out of cash.\"";
-    close;
+    goto L_Close;
 
 L_State_4_TooMany:
     mes "[Alan]";
     mes "\"Seems like you don't have room for this bow. Come back later.\"";
-    close;
+    goto L_Close;
 
 L_State_5:
     mes "[Alan]";
     mes "\"I hope you are satisfied with your forest bow. It is one of my best works.\"";
     next;
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
-            "I am!", -,
+            "I am!", L_Close,
             "Have you seen anything strange recently that might be connected to the robberies?", L_NohMask_Answer;
-    close;
 
 L_NohMask_Answer:
     mes "[Alan]";
     mes "\"No.\"";
-    close;
+    goto L_Close;
 
 L_No_Log:
     mes "[Alan]";
     mes "\"Where should I look at? You don't have a raw log.\"";
+    goto L_Close;
+
+L_Close:
+    set @inspector, 0;
     close;
 
 S_Update_Var:

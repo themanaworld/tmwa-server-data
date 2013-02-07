@@ -1,26 +1,32 @@
 // Girl sitting on bench
 
 009-1.gat,88,27,0|script|Sabine|106,{
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
     mes "[Sabine]";
     mes "\"Isn't this place pretty? I love hanging out here!\"";
     next;
-    if (Inspector == 1) goto L_NohMask;
-    close;
+    if (@inspector != 1)
+        goto L_Close;
 
-L_NohMask:
     menu
         "Have you seen anything strange lately?", L_NohMask_Strange,
         "Do you know anything about the recent robberies?", L_NohMask_Robbery,
-        "Yes, it is.", -;
-    close;
+        "Yes, it is.", L_Close;
 
 L_NohMask_Strange:
     mes "[Sabine]";
     mes "\"I haven't seen anything strange.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Robbery:
     mes "[Sabine]";
     mes "\"No, sorry.\"";
+    goto L_Close;
+
+L_Close:
+    set @inspector, 0;
     close;
 }

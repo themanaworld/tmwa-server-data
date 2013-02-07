@@ -1,12 +1,16 @@
 //
 
 001-2.gat,34,25,0|script|Troupe Leader|165,{
-    if (Inspector == 4) goto L_NohMask_Troupe;
-    if (Inspector == 13) goto L_NohMask_Found;
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    if (@inspector == 4) goto L_NohMask_Troupe;
+    if (@inspector == 13) goto L_NohMask_Found;
 
     mes "[Troupe Leader]";
     mes "\"Hello. I'm the leader of a traveling theater troupe. We'll be staying here in Tulimshar for a while.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Troupe:
     mes "[Troupe Leader]";
@@ -15,19 +19,19 @@ L_NohMask_Troupe:
     menu
         "Any ideas on who might have taken it?", L_NohMask_Idea,
         "Are you sure one of your troupe members didn't hide it and commit those robberies?", L_NohMask_Accuse,
-        "Hmm...", -;
-    close;
+        "Hmm...", L_Close;
 
 L_NohMask_Idea:
-    set Inspector, 5;
+    set @inspector, 5;
+    callsub S_Update_Mask;
     mes "[Troupe Leader]";
     mes "\"Hm...I did see an old man hang out near the theater after our last show.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Accuse:
     mes "[Troupe Leader]";
     mes "\"I am absolutely positive. None of my troupe have left the city since we got here. Good day!\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Found:
     mes "[Troupe Leader]";
@@ -36,16 +40,25 @@ L_NohMask_Found:
     if (@inventorylist_count == 100) goto L_NohMask_TooMany;
     mes "[1500 experience points]";
     getexp 1500, 0;
-    set Inspector, 14;
+    set @inspector, 14;
+    callsub S_Update_Mask;
     getitem "NohMask", 1;
     next;
     mes "[Troupe Leader]";
     mes "\"We don't need it anymore. We're doing different shows here.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_TooMany:
     next;
     mes "[Troupe Leader]";
     mes "\"Except, you don't seem to have any room for it. I'll hold onto it for you until you do have room.\"";
+    goto L_Close;
+
+L_Close:
+    set @inspector, 0;
     close;
+
+S_Update_Mask:
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (@inspector << NIBBLE_3_SHIFT);
+    return;
 }

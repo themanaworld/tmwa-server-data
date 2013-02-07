@@ -1,24 +1,30 @@
 009-1.gat,81,41,0|script|Milly|114,{
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
     mes "[Milly]";
     mes "\"Hello.\"";
     next;
-    if (Inspector == 1) goto L_NohMask;
-    close;
+    if (@inspector != 1)
+        goto L_Close;
 
-L_NohMask:
     menu
         "Have you seen anything strange lately?", L_NohMask_Strange,
         "Do you know anything about the recent robberies?", L_NohMask_Robbery,
-        "Hello", -;
-    close;
+        "Hello.", L_Close;
 
 L_NohMask_Strange:
     mes "[Milly]";
     mes "\"I haven't seen anything strange.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Robbery:
     mes "[Milly]";
     mes "\"No, sorry.\"";
+    goto L_Close;
+
+L_Close:
+    set @inspector, 0;
     close;
 }

@@ -1,25 +1,29 @@
 //
 
 009-2.gat,24,99,0|script|Inspector#Hurnscald|150,{
-    if (Inspector == 0 && BaseLevel >= 30) goto L_NohMask_Start;
-    if (Inspector == 1) goto L_NohMask_AskVillage;
-    if (Inspector == 2) goto L_NohMask_OldWoman;
-    if (Inspector == 3) goto L_NohMask_TheaterMask;
-    if (Inspector == 4) goto L_NohMask_TravelingTroupe;
-    if (Inspector == 5) goto L_NohMask_OldMan;
-    if (Inspector == 6) goto L_NohMask_OldMan_2;
-    if (Inspector == 7) goto L_NohMask_Alibi;
-    if (Inspector == 8) goto L_NohMask_Alibi_2;
-    if (Inspector == 9) goto L_NohMask_Alibi_3;
-    if (Inspector == 10) goto L_NohMask_Satchel;
-    if (Inspector == 11) goto L_NohMask_Basement;
-    if (Inspector == 12) goto L_NohMask_Note;
-    if (Inspector == 13) goto L_NohMask_TravelingTroupe_2;
-    if (Inspector == 14) goto L_NohMask_Over;
-    if (Inspector == 15) goto L_NohMask_End;
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    if (@inspector == 0 && BaseLevel >= 30) goto L_NohMask_Start;
+    if (@inspector == 1) goto L_NohMask_AskVillage;
+    if (@inspector == 2) goto L_NohMask_OldWoman;
+    if (@inspector == 3) goto L_NohMask_TheaterMask;
+    if (@inspector == 4) goto L_NohMask_TravelingTroupe;
+    if (@inspector == 5) goto L_NohMask_OldMan;
+    if (@inspector == 6) goto L_NohMask_OldMan_2;
+    if (@inspector == 7) goto L_NohMask_Alibi;
+    if (@inspector == 8) goto L_NohMask_Alibi_2;
+    if (@inspector == 9) goto L_NohMask_Alibi_3;
+    if (@inspector == 10) goto L_NohMask_Satchel;
+    if (@inspector == 11) goto L_NohMask_Basement;
+    if (@inspector == 12) goto L_NohMask_Note;
+    if (@inspector == 13) goto L_NohMask_TravelingTroupe_2;
+    if (@inspector == 14) goto L_NohMask_Over;
+    if (@inspector == 15) goto L_NohMask_End;
     mes "[Inspector]";
     mes "\"I'm sorry, but I'm busy looking into this string of robberies.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Start:
     mes "\"Hmm...what to do.\"";
@@ -29,97 +33,110 @@ L_NohMask_Start:
     mes "\"You look capable, will you help me solve these robberies?\"";
     next;
     menu
-        "Yes", L_NohMask_Accept,
-        "No", -;
-    close;
+        "Yes.", L_NohMask_Accept,
+        "No.", L_Close;
 
 L_NohMask_Accept:
-    set Inspector, 1;
+    set @inspector, 1;
+    callsub S_Update_Mask;
     mes "[Inspector]";
     mes "\"Ok then. I'd like you to ask the villagers about the recent string of robberies.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_AskVillage:
     mes "[Inspector]";
     mes "\"Please continue talking to the villagers.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_OldWoman:
     mes "[Inspector]";
     mes "\"Hm...I don't know if I trust her eyesight or memory. See if someone else knows anything.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_TheaterMask:
-    set Inspector, 4;
+    set @inspector, 4;
+    callsub S_Update_Mask;
     mes "[Inspector]";
     mes "\"Someone in a theater mask, eh? There was a traveling theater troupe in town recently, but they've moved on to Tulimshar. Please go talk to their leader about this.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_TravelingTroupe:
     mes "[Inspector]";
     mes "\"Please go talk to the leader of the traveling troupe about the theater mask.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_OldMan:
-    set Inspector, 6;
+    set @inspector, 6;
+    callsub S_Update_Mask;
     mes "[Inspector]";
     mes "\"Hm...an old man? Could you interrogate him for me?\"";
-    close;
+    goto L_Close;
 
 L_NohMask_OldMan_2:
     mes "[Inspector]";
     mes "\"Have you talked with the old man yet?\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Alibi:
     mes "[Inspector]";
     mes "\"Can you verify that with his wife?\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Alibi_2:
-    set Inspector, 9;
+    set @inspector, 9;
+    callsub S_Update_Mask;
     mes "[Inspector]";
     mes "\"Hm...then it couldn't be him. I'm not sure where to go from here, maybe you can find something else. Try talking to everyone again.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Alibi_3:
     mes "[Inspector]";
     mes "\"Made any progress yet?\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Satchel:
     mes "[Inspector]";
     mes "\"Then go north and investigate!\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Basement:
     mes "[Inspector]";
     mes "\"Did you look over the basement?\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Note:
-    set Inspector, 13;
+    set @inspector, 13;
+    callsub S_Update_Mask;
     mes "[Inspector]";
     mes "\"What a strange note. I'll keep track of this, while you return the mask to the troupe.\"";
     mes "";
     mes "\"By the way, stay sharp! I may call upon you again.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_TravelingTroupe_2:
     mes "[Inspector]";
     mes "\"Please return the mask to the traveling troupe.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Over:
-    set Inspector, 15;
+    set @inspector, 15;
+    callsub S_Update_Mask;
     mes "[Inspector]";
     mes "\"My men have found all of the stolen items. They were all in the mining camp. We still don't know who did it.\"";
     mes "[2500 experience points]";
     getexp 2500, 0;
-    close;
+    goto L_Close;
 
 L_NohMask_End:
     mes "[Inspector]";
     mes "\"Remember to stay sharp. I might need your help on another case.\"";
+    goto L_Close;
+
+L_Close:
+    set @inspector, 0;
     close;
+
+S_Update_Mask:
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (@inspector << NIBBLE_3_SHIFT);
+    return;
 }

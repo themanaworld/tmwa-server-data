@@ -1,26 +1,30 @@
 //
 
 018-2.gat,50,24,0|script|Receptionist|108,{
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
     mes "[Receptionist]";
     mes "\"Welcome to the mining camp!";
     mes "Do you need anything?\"";
     next;
 
 L_Menu:
-    if (Inspector == 10)
+    if (@inspector == 10)
         menu
             "Why was a mine setup here?", L_Mine,
             "Can I go into the mine?", L_Enter,
             "Did the company build this building?", L_Building,
             "Did you hear a commotion here the other night?", L_NohMask,
-            "Thank you, no.", -;
-    if (Inspector != 10)
+            "Thank you, no.", L_Close;
+    if (@inspector != 10)
         menu
             "Why was a mine setup here?", L_Mine,
             "Can I go into the mine?", L_Enter,
             "Did the company build this building?", L_Building,
-            "Thank you, no.", -;
-    close;
+            "Thank you, no.", L_Close;
+    goto L_Close;
 
 L_Mine:
     mes "[Receptionist]";
@@ -57,4 +61,8 @@ L_Question_End:
     mes "\"Do you need anything else?\"";
     next;
     goto L_Menu;
+
+L_Close:
+    set @inspector, 0;
+    close;
 }

@@ -15,6 +15,8 @@
 
 // Lumberjack
 009-1.gat,40,45,0|script|Jack|141,{
+    callfunc "ClearVariables";
+
     set @RAWLOGS_AMOUNT, 40;
     set @SHIELD_COST, 5000;
     set @QUEST_SHIELD_EXP, 2500;
@@ -28,6 +30,8 @@
     set @Q_Forestbow, ((QUEST_Forestbow_state & @Q_Forestbow_MASK) >> @Q_Forestbow_SHIFT);
     set @Q_Woodenshield, ((QUEST_Forestbow_state & @Q_Woodenshield_MASK) >> @Q_Woodenshield_SHIFT);
 
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
     if (@Q_Woodenshield >= 3) goto L_Shield_state_3;
     if (@Q_Woodenshield == 2) goto L_Shield_state_2;
     if (@Q_Woodenshield == 1) goto L_Shield_state_1;
@@ -35,9 +39,11 @@
 
     mes "[Jack Lumber]";
     mes "\"Hello there, my name is Jack Lumber, the enemy of all trees.  If you need some firewood just let me know.\"";
-    if (Inspector == 1) callsub S_NohMask_Ask;
+    if (@inspector == 1)
+        callsub S_NohMask_Ask;
     next;
-    if (@Q_Forestbow < 1) close;
+    if (@Q_Forestbow < 1)
+        goto L_Close;
     menu
         "I heard you aren't delivering any more living wood. Why not?", -;
     mes "[Jack Lumber]";
@@ -83,15 +89,16 @@
         "Southwest you say? OK, thank you.", -;
     set @Q_Forestbow, 2;
     callsub S_Update_Mask;
-    close;
+    goto L_Close;
 
 L_Bow_state_2:
     // Bow state 4: The player has found a perfect piece of wood.
     if (@Q_Forestbow > 3) goto L_Bow_state_4;
 
     mes "\"Good luck hunting those tree monsters - you will need it.\"";
-    if (Inspector == 1) callsub S_NohMask_Ask;
-    close;
+    if (@inspector == 1)
+        callsub S_NohMask_Ask;
+    goto L_Close;
 
 L_Bow_state_4:
     mes "[Jack Lumber]";
@@ -114,7 +121,7 @@ L_Bow_state_4:
 L_Bow_state_4_reaffirm:
     mes "[Jack Lumber]";
     mes "\"You should go talk to Alan again.\"";
-    close;
+    goto L_Close;
 
 L_Shield_state_0:
     set @Q_Woodenshield, 1;
@@ -134,24 +141,21 @@ L_Shield_state_1:
     mes "[Jack Lumber]";
     mes "\"I have an idea.  What would you say about a new shield?\"";
     next;
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
-            "No thanks.", L_End,
+            "No thanks.", L_Close,
             "Yes, please!", -,
             "Actually, I'd like to know if you've seen any strange happenings in town.", L_NohMask_Answer;
-    if (Inspector != 1)
+    if (@inspector != 1)
         menu
-            "No thanks.", L_End,
+            "No thanks.", L_Close,
             "Yes, please!", -;
     mes "[Jack Lumber]";
     mes "\"All I need is " + @RAWLOGS_AMOUNT + " raw logs.  This needn't be highest-quality wood; pretty much any log you can find should work.   Oh, and I'll also need " + @SHIELD_COST + " GP for other materials.\"";
     next;
     set @Q_Woodenshield, 2;
     callsub S_Update_Mask;
-    close;
-
-L_End:
-    close;
+    goto L_Close;
 
 L_Shield_state_2:
     mes "[Jack Lumber]";
@@ -187,32 +191,31 @@ L_Shield_state_2:
     mes "\"Enjoy your new shield!\"";
     mes "[" + @QUEST_SHIELD_EXP + " experience points]";
     next;
-    goto L_End;
+    goto L_Close;
 
 L_Not_enough_logs:
     mes "[Jack Lumber]";
     mes "\"You don't have enough wood for me to craft this shield; I need a total of " + @RAWLOGS_AMOUNT + " raw logs.\"";
-    close;
+    goto L_Close;
 
 L_Not_enough_money:
     mes "[Jack Lumber]";
     mes "\"You don't have enough gold, I'm afraid.  I need " + @SHIELD_COST + " GP to finish your shield.\"";
-    close;
+    goto L_Close;
 
 L_TooMany:
     mes "[Jack Lumber]";
     mes "\"You don't have enough room for the shield. Come back when you do.\"";
-    close;
+    goto L_Close;
 
 L_Shield_state_3:
     mes "[Jack Lumber]";
     mes "\"I hope that my shield will serve you well!\"";
     next;
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
-            "Me too.", -,
+            "Me too.", L_Close,
             "Have you seen anything that might be connected to the recent robberies in town?", L_NohMask_Answer;
-    close;
 
 S_NohMask_Ask:
     next;
@@ -224,6 +227,10 @@ S_NohMask_Ask:
 L_NohMask_Answer:
     mes "[Jack Lumber]";
     mes "\"Sorry, no.\"";
+    goto L_Close;
+
+L_Close:
+    set @inspector, 0;
     close;
 
 S_Update_Mask:
