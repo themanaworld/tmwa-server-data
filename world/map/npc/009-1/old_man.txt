@@ -1,34 +1,41 @@
 // Old man
 
 009-1.gat,85,51,0|script|Old Man|159,{
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
     mes "[Old Man]";
     mes "\"Don't let those monsters get to you.\"";
     next;
-    if (Inspector == 1) goto L_NohMask_Ask;
-    if (Inspector == 6) goto L_NohMask_Accuse;
-    close;
+    if (@inspector == 1) goto L_NohMask_Ask;
+    if (@inspector == 6) goto L_NohMask_Accuse;
+    goto L_Close;
 
 L_NohMask_Ask:
     menu
         "Have you seen anything strange lately?", L_NohMask_Ask_Nothing,
         "Do you know anything about the recent robberies?", L_NohMask_Ask_Nothing,
-        "I won't, thank you.", -;
-    close;
+        "I won't, thank you.", L_Close;
 
 L_NohMask_Ask_Nothing:
     mes "[Old Man]";
     mes "\"I'm sorry, but I didn't see anything. You should ask my old woman.\"";
-    close;
+    goto L_Close;
 
 L_NohMask_Accuse:
     menu
         "The leader of the troupe said you hung around them a lot while they were in town.", L_NohMask_Accuse_Respond,
-        "I won't, thank you.", -;
-    close;
+        "I won't, thank you.", L_Close;
 
 L_NohMask_Accuse_Respond:
     mes "[Old Man]";
     mes "\"Yes, I hung around the theater a lot. I was an actor when I was younger. But I wasn't there that night. Me and the wife were at home all night.\"";
-    set Inspector, 7;
+    set @inspector, 7;
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (@inspector << NIBBLE_3_SHIFT);
+    goto L_Close;
+
+L_Close:
+    set @inspector, 0;
     close;
 }

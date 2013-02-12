@@ -1,20 +1,26 @@
 // Quest for Fairy Hat and Forest Armor
+// Variables used: nibble 0 of QUEST_Hurnscald
 
 009-2.gat,146,43,0|script|Lena|182,{
 
-    if (TMW_Quest >= 46) goto L_Lena_Done;
-    if (TMW_Quest == 45) goto L_Lena_Success;
-    if (TMW_Quest == 44) goto L_Lena_Bandit_Leader_Fail;
-    if (TMW_Quest == 43) goto L_Lena_Bandit_Leader_Fail;
-    if (TMW_Quest == 42) goto L_Lena_Bandit_Leader;
-    if (TMW_Quest == 41) goto L_Lena_Fairy_Hat;
-    if (TMW_Quest == 40) && (BaseLevel >= 30) goto L_Lena_Start;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_Hurnscald & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if (@state >= 6) goto L_Lena_Done;
+    if (@state == 5) goto L_Lena_Success;
+    if (@state == 4) goto L_Lena_Bandit_Leader_Fail;
+    if (@state == 3) goto L_Lena_Bandit_Leader_Fail;
+    if (@state == 2) goto L_Lena_Bandit_Leader;
+    if (@state == 1) goto L_Lena_Fairy_Hat;
+    if (BaseLevel >= 30) goto L_Lena_Start;
 
     mes "[Lena]";
     mes "\"I got ambushed by a group of bandits and one of them stabbed me pretty good.  Hopefully I heal up soon so I can fight this menace.\"";
     next;
     mes "\"Ah, I wish my dear friend Nickos could be here. He's one of the guards in Tulimshar and he'd know how to deal with those outlaws!\"";
-    close;
+    goto L_Close;
 
 L_Lena_Start:
     mes "[Lena]";
@@ -22,20 +28,20 @@ L_Lena_Start:
     menu
         "Don't worry, I can take out some of these scumbags.", L_Lena_Approves,
         "I think I left my courage in another pair of pants.  See you later!", L_Lena_No_Fan;
-    close;
 
 L_Lena_Approves:
-    set TMW_Quest, 41;
+    set @state, 1;
+    callsub S_Update_Var;
     mes "[Lena]";
     mes "\"You look like you can handle yourself in a fight.  If you can take on this scourge I'll reward you with a hat like mine.  In order to prove your mettle, bring me 10 Bandit Hoods so I know they've met their match.\"";
     areamonster "008-1.gat",25,60,40,65,"Bandit",1064,3, "::";
     areamonster "011-1.gat",35,40,65,60,"Bandit",1064,3, "::";
-    close;
+    goto L_Close;
 
 L_Lena_No_Fan:
     mes "[Lena]";
     mes "\"What will Hurnscald do if these bandits overrun the town?  I hope you reconsider.\"";
-    close;
+    goto L_Close;
 
 L_Lena_Fairy_Hat:
     if (countitem("BanditHood") < 10)
@@ -43,7 +49,8 @@ L_Lena_Fairy_Hat:
     getinventorylist;
     if (@inventorylist_count - (countitem("BanditHood")== 10) > 99)
         goto L_TooMany;
-    set TMW_Quest, 42;
+    set @state, 2;
+    callsub S_Update_Var;
     delitem "BanditHood", 10;
     getitem "FairyHat", 1;
     mes "[Lena]";
@@ -53,12 +60,11 @@ L_Lena_Fairy_Hat:
     menu
         "Consider it done!", L_Lena_Bandit_Leader_Yes,
         "Woah there, that sounds a bit harder than what I can succeed at.", L_Lena_NoWay;
-    close;
 
 L_Lena_NotEnough:
     mes "[Lena]";
     mes "\"You don't have enough Bandit Hoods to prove you are taking care of this threat.  Please come back with 10 Bandit Hoods to show you are taking care of these bandits.\"";
-    close;
+    goto L_Close;
 
 L_Lena_Bandit_Leader:
     mes "[Lena]";
@@ -66,44 +72,54 @@ L_Lena_Bandit_Leader:
     menu
         "Consider it done!", L_Lena_Bandit_Leader_Yes,
         "Woah there, that sounds a bit harder than what I can succeed at.", L_Lena_NoWay;
-    close;
 
 L_Lena_Bandit_Leader_Yes:
-    set TMW_Quest, 43;
+    set @state, 3;
+    callsub S_Update_Var;
     areamonster "008-1.gat",25,60,40,65,"Bandit",1064,3, "::";
     areamonster "011-1.gat",35,40,65,60,"Bandit",1064,3, "::";
     mes "[Lena]";
     mes "\"You have a brave heart.  Though I know you can succeed on your own, I recommend finding others to help you defeat the bandit leader.  I believe he could pose a significant threat to solitary individuals seeking to challenge him.  Good luck!\"";
-    close;
+    goto L_Close;
 
 L_Lena_NoWay:
     mes "[Lena]";
     mes "\"That is too bad.  Feel free to return at any time.  This bandit threat needs to be pushed back.\"";
-    close;
+    goto L_Close;
 
 L_Lena_Bandit_Leader_Fail:
-    set TMW_Quest, 43;
+    set @state, 3;
+    callsub S_Update_Var;
     mes "[Lena]";
     mes "\"You haven't killed the bandit leader yet.  This is a big problem.  Please be careful.\"";
-    close;
+    goto L_Close;
 
 L_Lena_Success:
     getinventorylist;
     if (@inventorylist_count == 100)
         goto L_TooMany;
-    set TMW_Quest, 46;
+    set @state, 6;
+    callsub S_Update_Var;
     getitem "ForestArmor", 1;
     mes "[Lena]";
     mes "\"Excellent!  You killed the bandit leader.  Here is the armor as I promised you.  Safe journeys!\"";
-    close;
+    goto L_Close;
 
 L_Lena_Done:
     mes "[Lena]";
     mes "\"Thank you for all your help.  With your efforts, we can only hope this scourge doesn't see a resurgence.\"";
-    close;
+    goto L_Close;
 
 L_TooMany:
     mes "[Lena]";
     mes "\"You have too many items in your inventory.  Please get rid of something so I can reward you.\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Var:
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    return;
 }

@@ -1,8 +1,12 @@
 //
 
 013-3.gat,28,27,0|script|Chest#DemonMask|111,{
-    if (QUEST_demon_mines < 2) goto L_This_shouldn_t_happen;
-    if (QUEST_demon_mines == 3) goto L_Finished;
+    callfunc "ClearVariables";
+
+    set @state, ((QUEST_Hurnscald & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+
+    if (@state < 2) goto L_This_shouldn_t_happen;
+    if (@state == 3) goto L_Finished;
 
     if (countitem("MaggotSlime") == 0)
         goto L_No_maggot_slime;
@@ -112,97 +116,106 @@
     mes "You managed to perform the ritual and open the chest.";
     getitem "DemonMask", 1;
     mes "You found a demon mask inside.";
-    set QUEST_demon_mines, 3;
-    close;
+    set @state, 3;
+    callsub S_Update_Mask;
+    goto L_Close;
 
 L_No_maggot_slime:
     mes "You do not have any maggot slime.";
-    close;
+    goto L_Close;
 
 L_No_mushroom:
     mes "You do not have a mushroom, neither big, nor small.";
-    close;
+    goto L_Close;
 
 L_No_pink_petal:
     mes "You can't seem to find that pink petal you had.";
-    close;
+    goto L_Close;
 
 L_No_pearl:
     mes "You do not have a pearl, let alone one from the sea.";
-    close;
+    goto L_Close;
 
 L_No_hard_spike:
     mes "You weren't able to find a hard spike in the stuff you brought.";
-    close;
+    goto L_Close;
 
 L_No_raw_log:
     mes "You don't have any wood.";
-    close;
+    goto L_Close;
 
 L_No_pink_antenna:
     mes "You aren't carrying any antenna.";
-    close;
+    goto L_Close;
 
 L_No_tongues:
     mes "You don't have four different snake tongues.";
-    close;
+    goto L_Close;
 
 L_No_treasure_key:
     mes "No treasure chest key, no opening ritual.";
-    close;
+    goto L_Close;
 
 L_No_ash:
     mes "You still need a pile of ash.";
-    close;
+    goto L_Close;
 
 L_No_herbs:
     mes "Four different herbs are needed to get this thing open.";
-    close;
+    goto L_Close;
 
 L_No_bug_leg:
     mes "You do not have part of a bug on you. That is rather odd considering what you went through to get here.";
-    close;
+    goto L_Close;
 
 L_No_lamp:
     mes "You do not have a lamp. Yet, somehow, you were able to get this far into this dark cave.";
-    close;
+    goto L_Close;
 
 L_No_iron_ore:
     mes "\"Rock and metal, as one.\" You don't seem to have anything that fits the bill.";
-    close;
+    goto L_Close;
 
 L_No_stingers:
     mes "Three scorpion deaths are still missing.";
-    close;
+    goto L_Close;
 
 L_No_silk:
     mes "You could not find the womb for a butterfly among your stuff.";
-    close;
+    goto L_Close;
 
 L_No_fur:
     mes "You wonder how you can carry the \"gentle caress of a creature without blemish.\" But you need it to get this thing open.";
-    close;
+    goto L_Close;
 
 L_No_dark_crystal:
     mes "A piece of darkness is missing.";
-    close;
+    goto L_Close;
 
 L_No_water:
     mes "Just one bottle of water and you can start the ritual.";
-    close;
+    goto L_Close;
 
 L_This_shouldn_t_happen:
     warp "013-3.gat", 71, 25;
     // You need to go through the barrier to get to the chest, so this shouldn't happen. So just warp them like the barrier does.
-    close;
+    goto L_Close;
 
 L_Finished:
     mes "[Chest]";
     mes "You already opened this chest.";
-    close;
+    goto L_Close;
 
 L_TooMany:
     mes "[Chest]";
     mes "You don't have room for what ever is inside. Maybe you should try again later.";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Mask:
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_2_MASK)) | (@state << NIBBLE_2_SHIFT);
+    return;
 }

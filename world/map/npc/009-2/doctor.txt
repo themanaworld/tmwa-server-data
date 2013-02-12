@@ -1,6 +1,10 @@
 // Doctor
 
 009-2.gat,148,25,0|script|Doctor|107,{
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
     if (getequipid(equip_head) == 616) goto L_Axe;
     if (getequipid(equip_head) == 621) goto L_Eyepatch;
 
@@ -8,26 +12,27 @@
     mes "\"Hello, can I help you?\"";
     next;
 
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
             "I think I am sick!", L_Cure,
             "No, I feel fine.", -,
             "Have you seen anything strange in town? Anything that might have to do with the robberies?", L_NohMask;
-    if (Inspector != 1)
+    if (@inspector != 1)
         menu
             "I think I am sick!", L_Cure,
             "No, I feel fine.", -;
 
     mes "[Doctor]";
     mes "\"Then please stop wasting my precious time.\"";
-    close;
+    goto L_Close;
 
 L_Cure:
     mes "[Doctor]";
-    if (sc_check(sc_poison)) goto L_CurePoison;
+    if (sc_check(sc_poison))
+        goto L_CurePoison;
     mes "The doctor examines you briefly.";
     mes "\"Nonsense!  You look fine and dandy to me.  All you need is a bit more exercise and fresh fruit in your diet!\"";
-    close;
+    goto L_Close;
 
 L_CurePoison:
     mes "\"Well, well, well!  Look at all those green bubbles coming out of your head; that looks like poisoning to me!  Did you eat something rotten?\"";
@@ -41,7 +46,7 @@ L_CurePoison:
     sc_end(sc_slowpoison);
     mes "*Ouch!*";
     mes "\"Next time, be more careful!  Make sure to cook any meats before you eat them, and don't eat fish once it starts to smell.\"";
-    close;
+    goto L_Close;
 
 L_Axe:
     mes "[Doctor]";
@@ -49,7 +54,7 @@ L_Axe:
     next;
     mes "[Doctor]";
     mes "\"Wait. Thats just a fake. Shame on you!\"";
-    close;
+    goto L_Close;
 
 L_Eyepatch:
     mes "[Doctor]";
@@ -60,7 +65,7 @@ L_Eyepatch:
         "No thank you", -;
     mes "[Doctor]";
     mes "\"If you change your mind, please come back and see me.\"";
-    close;
+    goto L_Close;
 
 L_Eyepatch_GlassEye:
     mes "[Doctor]";
@@ -69,10 +74,14 @@ L_Eyepatch_GlassEye:
     next;
     mes "[Doctor]";
     mes "\"I can't seem to find where I put that box. You should come back later, I may have found them by then.\"";
-    close;
+    goto L_Close;
 
 L_NohMask:
     mes "[Doctor]";
     mes "\"No, I haven't seen anything.\"";
+    goto L_Close;
+
+L_Close:
+    set @inspector, 0;
     close;
 }

@@ -1,6 +1,8 @@
 // Clears old variables
 
 function|script|ClearVariables|{
+    set EasterQuest, 0;
+
     // Halloween 2006
     set HWQUEST1, 0;
     set HWQUEST2, 0;
@@ -45,6 +47,8 @@ function|script|ClearVariables|{
     set XMASQUEST18, 0;
     set XMASQUEST19, 0;
     set XMASQUEST20, 0;
+
+    set QUEST_Halloween07_state, 0;
 
     set QUEST_xmas07_state, 0;
     set QUEST_xmas07_milk, 0;
@@ -94,6 +98,19 @@ function|script|ClearVariables|{
     set Xmas2010, 0;
     set Golbenez_Inn_Cost, 0;
 
+    set QUEST_Easter11, 0;
+
+    // contains bad karma information
+    // set hw2011, 0;
+
+    set xmas11, 0;
+
+    set QUEST_Easter12, 0;
+
+    set xmas2012, 0;
+
+    set QUEST_clothdyer_angus, 0;
+
     // Tulimshar and Mine Variables which aren't used anymore
     set Scorp, 0;
     set Bugleg, 0;
@@ -105,6 +122,16 @@ function|script|ClearVariables|{
     set LastHiss, 0;
     // quest was turned into a Daily Quest, so the variable isn't needed anymore
     set CaveSnakeLamp, 0;
+
+    // move Scythe quest into bitmasked variable QUEST_Hurnscald
+    if (QUEST_Scythe_state)
+        set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_1_MASK)) | (QUEST_Scythe_state << NIBBLE_1_SHIFT);
+    set QUEST_Scythe_state, 0;
+
+    // move Demon Mask quest into bitmasked variable QUEST_Hurnscald
+    if (QUEST_demon_mines)
+        set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_2_MASK)) | (QUEST_demon_mines << NIBBLE_2_SHIFT);
+    set QUEST_demon_mines, 0;
 
     //These lines are needed to migrate stuff from variables to flags
     if (Open_Underground_Palace_Barrier)
@@ -123,6 +150,10 @@ function|script|ClearVariables|{
         set FLAGS, FLAGS | FLAG_SANTAS_HELPER;
     set ChristmasQuest2, 0;
 
+    if (ChestQuest)
+        set FLAGS, FLAGS | FLAG_HURNSMINE_CHEST;
+    set ChestQuest, 0;
+
     if (#BankAccount < 0)
         goto FixBank;
 
@@ -140,6 +171,56 @@ FixBank:
 L_Fix_Full:
     set Zeny, Zeny + #BankAccount;
     set #BankAccount, 0;
+    return;
+}
+
+// The variable TMW_Quest was used to save the progress in several subquests linearly.
+// The subquests are moved to different nibbles of other variables
+// to make it possible to do some of the quests in parallel.
+function|script|ClearVarTMW_Quest|{
+
+    if (TMW_Quest == 0) goto L_Done;
+    if (TMW_Quest <= 6)  goto L_Bernard_Mikhail;
+    if (TMW_Quest <= 8)  goto L_Sarah;
+    if (TMW_Quest <= 10)  goto L_Vincent;
+    if (TMW_Quest <= 12)  goto L_Sandra;
+    if (TMW_Quest <= 40)  goto L_Desert;
+
+L_Bandit:
+// move Bandit subquest into Nibble 0 of QUEST_Hurnscald
+    set @bandit, TMW_Quest - 40;
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@bandit << NIBBLE_0_SHIFT));
+    set TMW_Quest, 40;
+    set @bandit, 0;
+L_Desert:
+// move guard and miner subquest into Byte 2 (Nibble 4 and 5) of QUEST_SouthTulimshar
+    set @miners, TMW_Quest - 12;
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@miners << BYTE_2_SHIFT));
+    set TMW_Quest, 12;
+    set @miners, 0;
+L_Sandra:
+// move Sandra subquest into Nibble 3 of QUEST_SouthTulimshar
+    set @sandra, TMW_Quest - 10;
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_3_MASK) | (@sandra << NIBBLE_3_SHIFT));
+    set TMW_Quest, 10;
+    set @sandra, 0;
+L_Vincent:
+// move Vincent subquest into Nibble 2 of QUEST_SouthTulimshar
+    set @vincent, TMW_Quest - 8;
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_2_MASK) | (@vincent << NIBBLE_2_SHIFT));
+    set TMW_Quest, 8;
+    set @vincent, 0;
+L_Sarah:
+// move Sarah subquest into Nibble 1 of QUEST_SouthTulimshar
+    set @sarah, TMW_Quest - 6;
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_1_MASK) | (@sarah << NIBBLE_1_SHIFT));
+    set TMW_Quest, 6;
+    set @sarah, 0;
+L_Bernard_Mikhail:
+// move Bernard and Mikhail subquest into Nibble 0 of QUEST_SouthTulimshar
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (TMW_Quest << NIBBLE_0_SHIFT));
+    set TMW_Quest, 0;
+L_Done:
     return;
 }
 

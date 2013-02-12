@@ -2,29 +2,33 @@
 // Authors: Ali-G, enchilado, Jenalya
 
 018-2.gat,85,23,0|script|Malek|109,{
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
 
     set @MIN_GEM_AMOUNT, 7;
 
-    if (Inspector == 10) goto L_NohMask;
+    if (@inspector == 10) goto L_NohMask;
 
     mes "[Malek]";
     mes "\"Hi, can I help you at all?\"";
     menu
         "I'm looking for someone able to make gem powder.", L_GemPowder,
-        "I was just having a look, have a nice day.", L_abort;
+        "I was just having a look, have a nice day.", L_Close;
 
 L_NohMask:
     mes "[Malek]";
     mes "\"Hi, can I help you at all?\"";
     menu
         "I'm looking for someone able to make gem powder.", L_GemPowder,
-        "I was just having a look, have a nice day.", L_abort,
+        "I was just having a look, have a nice day.", L_Close,
         "The inspector sent me here to investigate.", L_Investigation;
 
 L_Investigation:
-    set Inspector, 11;
+    set @inspector, 11;
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (@inspector << NIBBLE_3_SHIFT);
     mes "\"Yeah, we did hear a commotion. We thought we heard someone go down to the basement, but we checked the whole place over and didn't see anything out of the ordinary.\"";
-    close;
+    goto L_Close;
 
 L_GemPowder:
     mes "[Malek]";
@@ -32,15 +36,15 @@ L_GemPowder:
     mes "\"Do you want me to make any for you?\"";
     menu
         "Yes, I really need some.", L_GemPowderStart,
-        "Actually, I don't want anything. Have a nice day.", L_abort;
+        "Actually, I don't want anything. Have a nice day.", L_Close;
 
 L_GemPowderStart:
     mes "[Malek]";
     mes "\"Well, I can do that. Bring me a gem and I'll make you some powder - hope you don't mind if I keep a little as payment!\"";
     menu
         "I've got some gems.", L_Check_Gems,
-        "I'll be back with a gem soon.", L_abort,
-        "Actually, I prefer my gems whole. Thanks anyway.", L_abort;
+        "I'll be back with a gem soon.", L_Close,
+        "Actually, I prefer my gems whole. Thanks anyway.", L_Close;
 
 L_Check_Gems:
     mes "[Malek]";
@@ -104,7 +108,8 @@ L_Choose_Gem:
         @menuitems$[5], -,
         @menuitems$[6], -;
     set @menu, @menu - 1;
-    if (@menu >= @c) close;
+    if (@menu >= @c)
+        goto L_Close;
     if (@menuid[@menu] == 0)
         set @gem$, "Diamond";
     if (@menuid[@menu] == 1)
@@ -118,7 +123,7 @@ L_Choose_Gem:
     if (@menuid[@menu] == 5)
         set @gem$, "Amethyst";
     if (@menuid[@menu] == 6)
-        goto L_abort;
+        goto L_Close;
 
     getinventorylist;
     if (countitem(@gem$) < 1)
@@ -145,18 +150,19 @@ L_Choose_Gem:
     mes "\"Do you need me to make any more?\"";
     menu
         "Yes please.", L_Check_Gems,
-        "No thank you, this is enough.", L_abort;
+        "No thank you, this is enough.", L_Close;
 
 L_TooMany:
     mes "[Malek]";
     mes "\"Doesn't look like you've got room for this powder. Come back when you do.\"";
-    close;
+    goto L_Close;
 
 L_no_gem:
     mes "[Malek]";
     mes "\"You don't have that gem.\"";
-    close;
+    goto L_Close;
 
-L_abort:
+L_Close:
+    set @inspector, 0;
     close;
 }

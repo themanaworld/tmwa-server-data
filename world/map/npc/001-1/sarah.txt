@@ -1,37 +1,29 @@
-//
+// Variables used: nibble 1 of QUEST_SouthTulimshar
 
 001-1.gat,137,78,0|script|Sarah|106,{
-    if (TMW_Quest >= 8) goto L_Done;
-    if (TMW_Quest == 7) goto L_Progress;
-    if (TMW_Quest == 6) goto L_Start;
-    if (TMW_Quest < 6) goto L_Convince_Sarah_First;
 
-    // If this is shown, something is wrong with the above case handling.
-    mes "Sarah looks confused.";
-    goto L_Close;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
 
-L_Convince_Sarah_First:
+    set @state, ((QUEST_SouthTulimshar & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+
+    if (@state >= 2) goto L_Done;
+    if (@state == 1) goto L_Progress;
+
     mes "[Sarah]";
     mes "\"Boy, am I hungry or what!\"";
     next;
-    mes "\"The girl suddenly looks at you suspiciously.\"";
-    next;
-    mes "\"My mommy says not to talk to strangers!\"";
-    goto L_Close;
 
-L_Start:
     set @TEMP, rand(2);
     if(@TEMP == 0) goto L_Opening0;
     if(@TEMP == 1) goto L_Opening1;
 
 L_Opening0:
-    mes "[Sarah]";
     mes "\"Cherry Cake is the best!\"";
     next;
     goto L_Ask;
 
 L_Opening1:
-    mes "[Sarah]";
     mes "\"Mmm, Cherry Cake...  I love it!\"";
     next;
     goto L_Ask;
@@ -46,16 +38,15 @@ L_Req0:
     mes "[Sarah]";
     mes "\"Yippee!  Bring me a piece of Cherry Cake, and I'll give you a nice hat!\"";
     next;
-    goto L_Set;
-
-L_Set:
-    set TMW_Quest,7;
+    set @state, 1;
+    callsub S_Update_Var;
     mes "[Sarah]";
     mes "\"Please bring it to me!\"";
     goto L_Close;
 
 L_Progress:
-    if (countitem("CherryCake") < 1) goto L_NotEnough;
+    if (countitem("CherryCake") < 1)
+        goto L_NotEnough;
     mes "[Sarah]";
     mes "\"Whee!\"";
     next;
@@ -64,8 +55,9 @@ L_Progress:
     getinventorylist;
     if ((@inventorylist_count - (countitem("CherryCake") == 1)) > 99) goto L_TooMany;
     delitem "CherryCake", 1;
-    getitem "serfhat", 1;
-    set TMW_Quest, 8;
+    getitem "SerfHat", 1;
+    set @state, 2;
+    callsub S_Update_Var;
     goto L_Close;
 
 L_NotEnough:
@@ -81,6 +73,7 @@ L_Done:
 
 L_Close:
     set @TEMP, 0;
+    set @state, 0;
     close;
 
 L_TooMany:
@@ -88,4 +81,8 @@ L_TooMany:
     mes "[Sarah]";
     mes "\"You don't have room for my reward.  I'll wait until you do.\"";
     goto L_Close;
+
+S_Update_Var:
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_1_MASK) | (@state << NIBBLE_1_SHIFT));
+    return;
 }

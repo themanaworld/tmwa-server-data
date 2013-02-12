@@ -1,22 +1,37 @@
 // East sandstorm guard
+// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
 
 002-1.gat,106,76,0|script|Stewen|123,{
 
-    if (TMW_Quest == 16) goto L_TMW_Quest_Received;
-    if (TMW_Quest == 15) goto L_TMW_Quest;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+
+    if (@state == 4) goto L_TMW_Quest_Received;
+    if (@state == 3) goto L_TMW_Quest;
 
     mes "[Stewen]";
     mes "\"I'm keeping a watchful eye on the monsters to the east so they don't threaten Tulimshar's citizens.  They are pretty strong.\"";
-    close;
+    goto L_Close;
 
 L_TMW_Quest:
-    set TMW_Quest, 16;
+    set @state, 4;
+    callsub S_Update_Var;
     mes "[Stewen]";
     mes "\"I don't get a break?!  Lieutenant Dausen needs to ask the Wizard's Council for more help out here.  Either that or give me a raise!  Oh well.  Thanks for letting me know.\"";
-    close;
+    goto L_Close;
 
 L_TMW_Quest_Received:
     mes "[Stewen]";
     mes "\"Thanks again for letting me know Lieutenant Dausen isn't letting me take a break.  Once I get out of here, I'll let him know I want a raise!\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Var:
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
+    return;
 }

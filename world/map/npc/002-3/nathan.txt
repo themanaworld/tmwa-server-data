@@ -1,76 +1,87 @@
-//
+// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
 
 002-3.gat,35,35,6|script|Nathan|109,{
 
-    if (TMW_Quest >= 32) goto L_Nathan_Complete;
-    if (TMW_Quest == 31) goto L_Nathan_UGQ_Naem;
-    if (TMW_Quest == 30) goto L_Nathan_Help_Cool;
-    if (TMW_Quest == 29) goto L_Nathan_Help_Done;
-    if (TMW_Quest == 28) goto L_Nathan_Waits_3;
-    if (TMW_Quest == 27) goto L_Nathan_Help_3;
-    if (TMW_Quest == 26) goto L_Nathan_Waits_2;
-    if (TMW_Quest == 25) goto L_Nathan_Help_2;
-    if (TMW_Quest == 24) goto L_Nathan_Waits_1;
-    if (TMW_Quest == 23) goto L_Nathan_Help_1;
-    if (TMW_Quest == 21) goto L_Nathan_Cool;
-    if (TMW_Quest == 20) goto L_Nathan_Okay;
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+
+    if (@state >= 20) goto L_Nathan_Complete;
+    if (@state == 19) goto L_Nathan_UGQ_Naem;
+    if (@state == 18) goto L_Nathan_Help_Cool;
+    if (@state == 17) goto L_Nathan_Help_Done;
+    if (@state == 16) goto L_Nathan_Waits_3;
+    if (@state == 15) goto L_Nathan_Help_3;
+    if (@state == 14) goto L_Nathan_Waits_2;
+    if (@state == 13) goto L_Nathan_Help_2;
+    if (@state == 12) goto L_Nathan_Waits_1;
+    if (@state == 11) goto L_Nathan_Help_1;
+    if (@state == 9) goto L_Nathan_Cool;
+    if (@state == 8) goto L_Nathan_Okay;
 
     mes "[Nathan the Miner]";
     mes "\"It's very dangerous in here.  We had a big earthquake here just recently, too...  so be careful!\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Okay:
-    set TMW_Quest, 21;
+    set @state, 9;
+    callsub S_Update_Var;
     mes "[Nathan]";
     mes "\"Hey there!  Just mining away down here.  You say Nickos was worried about us?  Nothing down here we can't handle, but you should try to be safe down here yourself.  The monsters can be rather aggressive.  Come to think of it, you might want to check on Naem to make sure he's okay.  You can find him in the southeast parts of the mine.\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Cool:
     mes "[Nathan]";
     mes "\"Hey, be careful down here, the monsters can be rather aggressive!  You might want to check on Naem too.  He's at the southeast parts of the mine.\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Help_1:
-    set TMW_Quest, 24;
+    set @state, 12;
+    callsub S_Update_Var;
     mes "[Nathan]";
     mes "\"Oh, hey again!  Nickos told you we need some help down here too?  Yeah, Naem could use a spare pair of hands moving his bags of ore to me.  He's got a lot of work built up.  Just go talk to him and he'll give you the bags.  You might have to make a few trips, but I'll make it worth your troubles.\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Waits_1:
     mes "[Nathan]";
     mes "\"Naem could use some help moving his bags of ore to me.  He's got a lot of work built up.  Just go talk to him and he'll give you the bags.  You might have to make a few trips, but I'll make it worth your troubles.\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Help_2:
-    set TMW_Quest, 26;
+    set @state, 14;
+    callsub S_Update_Var;
     mes "You give the bag of ore to Nathan";
     next;
     mes "[Nathan]";
     mes "\"Ah, thank you.  Just a couple more and we'll have caught up!\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Waits_2:
     mes "[Nathan]";
     mes "\"Just a couple more and we'll be all caught up!\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Help_3:
-    set TMW_Quest, 28;
+    set @state, 16;
+    callsub S_Update_Var;
     mes "You hand the bag of ore to Nathan.";
     next;
     mes "[Nathan]";
     mes "\"Just one more bag and you'll be done!\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Waits_3:
     mes "[Nathan]";
     mes "\"Just get one more bag of ore from Naem and bring it to me and you'll be done.\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Help_Done:
     getinventorylist;
-    if (@inventorylist_count == 100) goto L_Nathan_TooMany;
-    set TMW_Quest, 30;
+    if (@inventorylist_count == 100)
+        goto L_Nathan_TooMany;
+    set @state, 18;
+    callsub S_Update_Var;
     getitem "MinersHat", 1;
     mes "[Nathan]";
     mes "You hand the bag of ore to Nathan.";
@@ -78,25 +89,33 @@ L_Nathan_Help_Done:
     mes "\"Ah, that should be it!  Thank you for your help.  Here, take this Miner's Hat.  You're a real miner now!\"";
     next;
     mes "\"Oh, and I noticed a problem with these angry scorpions down here, they seem to make things much more difficult.  Maybe you could tell Nickos about it on your way out?\"";
-    close;
+    goto L_Close;
 
 L_Nathan_TooMany:
     mes "[Nathan]";
     mes "\"You have too many items for me to give you a reward.\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Help_Cool:
     mes "[Nathan]";
     mes "\"Be safe down here, it's dangerous for the unexperienced.  Mining is a dangerous job, but somebody's got to do it!\"";
-    close;
+    goto L_Close;
 
 L_Nathan_UGQ_Naem:
     mes "[Nathan]";
     mes "\"Thanks for thinning down the angry scorpion population.  It sure has made mining a little easier down here!  Oh, you say Nickos has given you permission to check out the underground palace?  Talk to Naem, he's got the key and the code.\"";
-    close;
+    goto L_Close;
 
 L_Nathan_Complete:
     mes "[Nathan]";
     mes "\"Mining is a dangerous job, but somebody's got to do it!\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Var:
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
+    return;
 }

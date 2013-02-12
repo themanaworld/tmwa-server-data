@@ -1,15 +1,18 @@
 //
 
 018-3.gat,75,123,0|script|#DemonMineBookcase1|127,{
-    if (QUEST_demon_mines == 0) goto L_Search;
+    callfunc "ClearVariables";
+
+    set @state, ((QUEST_Hurnscald & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+
+    if (@state == 0) goto L_Search;
 
     mes "You see nothing different about the bookcase.";
     mes "Do you want to search it again anyways?";
     next;
     menu
-        "Yes", L_Search,
-        "No", -;
-    close;
+        "Yes.", L_Search,
+        "No.", L_Close;
 
 L_Search:
     mes "After searching the bookcase, you were able to find a few passages that you can read.";
@@ -50,7 +53,17 @@ L_Search:
     mes "";
     mes "You begin to wonder if you read that list right.";
     next;
-    if (QUEST_demon_mines == 0)
-        set QUEST_demon_mines, 1;
+    if (@state != 0)
+        goto L_Close;
+    set @state, 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
     close;
+
+S_Update_Mask:
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_2_MASK)) | (@state << NIBBLE_2_SHIFT);
+    return;
 }

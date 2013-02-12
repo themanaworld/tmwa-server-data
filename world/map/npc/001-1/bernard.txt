@@ -1,10 +1,16 @@
-//
+// Variables used: nibble 0 of QUEST_SouthTulimshar
 
 001-1.gat,37,44,0|script|Bernard|117,{
-    if(TMW_Quest >= 4) goto L_Done2;
-    if(TMW_Quest == 3) goto L_Progress2;
-    if(TMW_Quest == 2) goto L_Done1;
-    if(TMW_Quest == 1) goto L_Progress;
+
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    set @state, ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if(@state >= 4) goto L_Done2;
+    if(@state == 3) goto L_Progress2;
+    if(@state == 2) goto L_Done1;
+    if(@state == 1) goto L_Progress;
 
     set @TEMP, rand(2);
     if(@TEMP == 0) goto L_Opening0;
@@ -45,7 +51,8 @@ L_Req1:
     goto L_Set;
 
 L_Set:
-    set TMW_Quest,1;
+    set @state, 1;
+    callsub S_Update_Var;
     mes "[Bernard]";
     mes "\"Please bring it to me!\"";
     goto L_Close;
@@ -60,7 +67,10 @@ L_Progress:
     delitem "RoastedMaggot", 1;
     getexp 100, 0;
     getitem "CherryCake", 5;
-    set TMW_Quest, 2;
+    set @state, 2;
+    callsub S_Update_Var;
+    next;
+    mes "\"Now let's see...\"";
     goto L_Close;
 
 L_Progress2:
@@ -73,7 +83,8 @@ L_Progress2:
     delitem "MaggotSlime", 3;
     getexp 100, 0;
     getitem "Beer", 3;
-    set TMW_Quest, 4;
+    set @state, 4;
+    callsub S_Update_Var;
     goto L_Close;
 
 L_NotEnough:
@@ -93,7 +104,8 @@ L_Done1:
     next;
     mes "\"I need 3 Maggot Slimes for that.\"";
     mes "\"Bring them to me, and I'll give you something nice.\"";
-    set TMW_Quest,3;
+    set @state, 3;
+    callsub S_Update_Var;
     goto L_Close;
 
 L_Done2:
@@ -105,6 +117,7 @@ L_Done2:
 
 L_Close:
     set @TEMP, 0;
+    set @state, 0;
     close;
 
 L_TooMany:
@@ -112,4 +125,8 @@ L_TooMany:
     mes "[Bernard]";
     mes "\"You don't have room for my reward.  I'll wait until you do.\"";
     goto L_Close;
+
+S_Update_Var:
+    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    return;
 }

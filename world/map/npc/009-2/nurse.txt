@@ -28,6 +28,8 @@
         goto L_TrickOrTreat;
 
 L_Begin:
+    callfunc "ClearVariables";
+
     set @SNAKET_AMOUNT, 5;
     set @BSCORPIONST_AMOUNT, 10;
     // This quest can be done very often: so give less xp
@@ -45,6 +47,8 @@ L_Begin:
     set @Q_poison_SHIFT, NIBBLE_7_SHIFT;
     set @Q_poison, (QUEST_Forestbow_state & @Q_poison_MASK) >> @Q_poison_SHIFT;
 
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
     if (@Q_poison == 7) goto state7;
     if (@Q_poison == 6) goto state6;
     if (@Q_poison == 5) goto state5;
@@ -59,25 +63,25 @@ L_Usual:
     mes "\"How can I help you?\"";
     next;
 
-    if (Inspector == 1)
+    if (@inspector == 1)
         menu
             "Oooh, these wounds! They hurt so much!", L_Heal,
             "I don't feel so well, I might be sick.", L_Doctor,
             "Have you seen anything out of the ordinary?", L_NohMask,
             "No, I'm fine.", -;
-    if (Inspector != 1)
+    if (@inspector != 1)
         menu
             "Oooh, these wounds! They hurt so much!", L_Heal,
             "I don't feel so well, I might be sick.", L_Doctor,
             "No, I'm fine.", -;
     mes "[Nurse]";
     mes "\"Then I would ask you to leave. There are people who really need our help.\"";
-    close;
+    goto L_Close;
 
 L_Doctor:
     mes "[Nurse]";
     mes "\"Then you should better see the doctor. He is usually in his office on the 3rd floor.\"";
-    close;
+    goto L_Close;
 
 L_Heal:
     if (BaseLevel > 20) goto L_NoHeal;
@@ -85,19 +89,19 @@ L_Heal:
     mes "\"Here, let me heal you.\"";
     next;
     heal 10000, 10000;
-    close;
+    goto L_Close;
 
 L_NoHeal:
     mes "[Nurse]";
     mes "\"I'm sorry but I'm here only to help young people.";
     mes "Your level is already higher than 20.";
     mes "You can get some rest in the inn near here.\"";
-    close;
+    goto L_Close;
 
 L_NohMask:
     mes "[Nurse]";
     mes "\"I'm too busy here to observe the town.\"";
-    close;
+    goto L_Close;
 
 state0:
     mes "[Nurse]";
@@ -124,7 +128,7 @@ L_firstquest:
 
 L_ExplainAgain1:
     mes "\"Please bring me five tongues of snakes and ten stingers of black scorpions.\"";
-    close;
+    goto L_Close;
 
 state1:
     mes "[Nurse]";
@@ -134,7 +138,7 @@ state1:
         "Actually, I have another question.", L_Usual,
         "Sorry, I forgot. What shall I bring you?", L_ExplainAgain1,
         "I have what you asked for.", -,
-        "I'm still working on that.", quit;
+        "I'm still working on that.", L_Close;
     if (countitem("SnakeTongue") < @SNAKET_AMOUNT || countitem("BlackScorpionStinger") < @BSCORPIONST_AMOUNT)
         goto L_NotEnough;
     delitem "SnakeTongue", @SNAKET_AMOUNT;
@@ -150,7 +154,7 @@ state1:
 
 L_ExplainAgain2:
     mes "\"Please bring me ten acorns, five red apples, five green apples and also five oranges. And we need some small healing potions. They will be useful to hold off the baneful effects. Three of them will be enough, I guess.\"";
-    close;
+    goto L_Close;
 
 state2:
     mes "You look at the nurse, who seems to be really tired, with shadows under her eyes. When she recognizes you, she smiles.";
@@ -161,7 +165,7 @@ state2:
         "Actually, I have another question.", L_Usual,
         "I have a bad memory. Can you tell me again what we need?", L_ExplainAgain2,
         "I managed to get everything we need.", -,
-        "I will go and get it.", quit;
+        "I will go and get it.", L_Close;
     if (countitem("Acorn") < @ACORNS_AMOUNT
         || countitem("GreenApple") < @GREENAPPLE_AMOUNT
         || countitem("RedApple") < @REDAPPLE_AMOUNT
@@ -199,7 +203,7 @@ L_Chemistry:
     mes "\"If we make a mistake, this might be exhausting and painful, so you should rest a while and prepare yourself.\"";
     next;
     mes "\"Come back when you feel ready for that task.\"";
-    close;
+    goto L_Close;
 
 state3:
     mes "[Nurse]";
@@ -378,7 +382,7 @@ l_hl_m_vn:
     // bye bye player!
     heal -Hp, 0;
     // close instead of telling how much stabilizer is needed
-    close;
+    goto L_Close;
     // goto check_st;
 
 l_hl_l_vn:
@@ -426,13 +430,13 @@ allcorrect:
     setskill SKILL_RESIST_POISON, 1;
     set @Q_poison, 7;
     callsub S_Update_Var;
-    close;
+    goto L_Close;
 
 notallcorrect:
     mes "[Nurse]";
     mes "\"It didn't work. You are a really brave person. Now you should rest and recover. I hope you won't give up now. Please come back later, so we can try it again.\"";
     next;
-    close;
+    goto L_Close;
 
 state4:
     mes "The nurse has a worried look in her face.";
@@ -500,9 +504,10 @@ L_NotEnough:
     if (@Q_poison == 2)
         goto L_ExplainAgain2;
     // the following close *should* never be reached, but who knows, whoever will mess this script up!
-    close;
+    goto L_Close;
 
-quit:
+L_Close:
+    set @inspector, 0;
     close;
 
 S_Update_Var:
