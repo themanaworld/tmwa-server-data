@@ -144,12 +144,13 @@ L_Shield_state_1:
     if (@inspector == 1)
         menu
             "No thanks.", L_Close,
-            "Yes, please!", -,
+            "Yes, please!", L_Yes,
             "Actually, I'd like to know if you've seen any strange happenings in town.", L_NohMask_Answer;
-    if (@inspector != 1)
-        menu
-            "No thanks.", L_Close,
-            "Yes, please!", -;
+    menu
+        "No thanks.", L_Close,
+        "Yes, please!", L_Yes;
+
+L_Yes:
     mes "[Jack Lumber]";
     mes "\"All I need is " + @RAWLOGS_AMOUNT + " raw logs.  This needn't be highest-quality wood; pretty much any log you can find should work.   Oh, and I'll also need " + @SHIELD_COST + " GP for other materials.\"";
     next;
@@ -211,12 +212,15 @@ L_TooMany:
 L_Shield_state_3:
     mes "[Jack Lumber]";
     mes "\"I hope that my shield will serve you well!\"";
+    if (@inspector != 1)
+        goto L_Close;
     next;
-    if (@inspector == 1)
-        menu
-            "Me too.", L_Close,
-            "Have you seen anything that might be connected to the recent robberies in town?", L_NohMask_Answer;
+    menu
+        "Me too.", L_Close,
+        "Have you seen anything that might be connected to the recent robberies in town?", L_NohMask_Answer;
 
+// This is an ugly violation of the scripting standards,
+// but it's somewhat complicated to fix.
 S_NohMask_Ask:
     next;
     menu
