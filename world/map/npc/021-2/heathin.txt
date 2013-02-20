@@ -19,7 +19,7 @@
     if (HEATHIN_QUEST == 4) && (BaseLevel >= 80) goto L_Heathin_Terranite_Hood_Ready;
     if (HEATHIN_QUEST == 3) && (BaseLevel >= 80) goto L_Heathin_Terranite_Hood_Forge;
     if (HEATHIN_QUEST == 2) && (BaseLevel >= 80) goto L_Heathin_Terranite_Hood;
-    if (HEATHIN_QUEST == 2) && (BaseLevel >= 60)goto L_Heathin_Ring_Thanks;
+    if (HEATHIN_QUEST == 2) && (BaseLevel >= 60) goto L_Heathin_Ring_Thanks;
     if (HEATHIN_QUEST == 1) && (BaseLevel >= 60) goto L_Heathin_Ring_Award;
     if (BaseLevel >= 60) goto L_Heathin_Start;
 
@@ -69,8 +69,11 @@ L_Heathin_Interested:
 
 L_Heathin_Ring_Award:
     if ( (Zeny < 100000)
-        | (countitem ("Coal") < 50) )
+        || (countitem ("Coal") < 50) )
             goto L_Heathin_Ring_Wait;
+    getinventorylist;
+    if ((checkweight("SimpleRing", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
     set HEATHIN_QUEST, 2;
     set Zeny, Zeny - 100000;
     delitem "Coal", 50;
@@ -132,8 +135,8 @@ L_Heathin_Terranite_Yes:
 
 L_Heathin_Terranite_Hood_Forge:
     if ( (Zeny < 200000)
-        | (countitem("Coal") < 100)
-        | (countitem("TerraniteOre") < 10) )
+        || (countitem("Coal") < 100)
+        || (countitem("TerraniteOre") < 10) )
             goto L_Heathin_Terranite_Hood_Wait;
     set HEATHIN_QUEST, 4;
     delitem "Coal", 100;
@@ -149,6 +152,9 @@ L_Heathin_Terranite_Hood_Wait:
     close;
 
 L_Heathin_Terranite_Hood_Ready:
+    getinventorylist;
+    if ((checkweight("TerraniteHelmet", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
     set HEATHIN_QUEST, 5;
     getitem "TerraniteHelmet", 1;
     mes "[Heathin]";
@@ -165,8 +171,8 @@ L_Heathin_Terranite_Legs:
 
 L_Heathin_Terranite_Legs_Forge:
     if ( (Zeny < 400000)
-        | (countitem("Coal") < 200)
-        | (countitem("TerraniteOre") < 30) )
+        || (countitem("Coal") < 200)
+        || (countitem("TerraniteOre") < 30) )
             goto L_Heathin_Terranite_Legs_Wait;
     set HEATHIN_QUEST, 7;
     delitem "Coal", 200;
@@ -182,6 +188,9 @@ L_Heathin_Terranite_Legs_Wait:
     close;
 
 L_Heathin_Terranite_Legs_Ready:
+    getinventorylist;
+    if ((checkweight("TerraniteLegs", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
     set HEATHIN_QUEST, 8;
     getitem "TerraniteLegs", 1;
     mes "[Heathin]";
@@ -198,8 +207,8 @@ L_Heathin_Terranite_Chest_Armor:
 
 L_Heathin_Terranite_Chest_Armor_Forge:
     if ( (Zeny < 500000)
-        | (countitem("Coal") < 250)
-        | (countitem("TerraniteOre") < 40) )
+        || (countitem("Coal") < 250)
+        || (countitem("TerraniteOre") < 40) )
             goto L_Heathin_Terranite_Chest_Armor_Wait;
     set HEATHIN_QUEST, 10;
     delitem "Coal", 250;
@@ -215,6 +224,9 @@ L_Heathin_Terranite_Chest_Armor_Wait:
     close;
 
 L_Heathin_Terranite_Chest_Armor_Ready:
+    getinventorylist;
+    if ((checkweight("TerraniteChestArmor", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
     set HEATHIN_QUEST, 11;
     getitem "TerraniteChestArmor", 1;
     mes "[Heathin]";
@@ -246,8 +258,8 @@ L_Heathin_Terranite_Arrows_Yes:
 
 L_Heathin_Terranite_Arrows_Forge:
     if ( (Zeny < @TARROW_REQ_GP)
-        | (countitem("Coal") < @TARROW_REQ_COAL)
-        | (countitem("TerraniteOre") < @TARROW_REQ_TERRA_ORE) )
+        || (countitem("Coal") < @TARROW_REQ_COAL)
+        || (countitem("TerraniteOre") < @TARROW_REQ_TERRA_ORE) )
             goto L_Heathin_Terranite_Arrows_Wait;
     set HEATHIN_QUEST, 13;
     delitem "Coal", @TARROW_REQ_COAL;
@@ -263,8 +275,11 @@ L_Heathin_Terranite_Arrows_Wait:
     close;
 
 L_Heathin_Terranite_Arrows_Ready:
-    getitem "TerraniteArrow", 1000;
+    getinventorylist;
+    if ((checkweight("TerraniteArrow", 1000) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
     set HEATHIN_QUEST, 14;
+    getitem "TerraniteArrow", 1000;
     mes "[Heathin]";
     mes "\"All done, here you go!  I hope you like them.  I am still working on my commission, but if you ever need any more Terranite Arrows, just come on by with "+@TARROW_REQ_COAL+" Coal, "+@TARROW_REQ_TERRA_ORE+" Terranite Ore and "+@TARROW_REQ_GP+" gold pieces and I will make another 1,000 arrows for you.  By now I have enough Terranite Ore in reserve that you can just trade me my requirements to keep my resources up.  Thank you for all your efforts!\"";
     close;
@@ -284,9 +299,12 @@ L_Heathin_Terranite_Arrows_Trade_No:
 
 L_Heathin_Terranite_Arrows_Trade_Yes:
     if ( (Zeny < @TARROW_REQ_GP)
-        | (countitem("Coal") < @TARROW_REQ_COAL)
-        | (countitem("TerraniteOre") < @TARROW_REQ_TERRA_ORE) )
+        || (countitem("Coal") < @TARROW_REQ_COAL)
+        || (countitem("TerraniteOre") < @TARROW_REQ_TERRA_ORE) )
             goto L_Heathin_Terranite_Arrows_Trade_Wait;
+    getinventorylist;
+    if ((checkweight("TerraniteArrow", 1500) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
     delitem "Coal", @TARROW_REQ_COAL;
     delitem "TerraniteOre", @TARROW_REQ_TERRA_ORE;
     set Zeny, Zeny - @TARROW_REQ_GP;
@@ -300,4 +318,10 @@ L_Heathin_Terranite_Arrows_Trade_Wait:
     mes "[Heathin]";
     mes "\"It seems that you do not have the necessary resources for me to trade you.  Please come back with "+@TARROW_REQ_COAL+" Coal, "+@TARROW_REQ_TERRA_ORE+" Terranite Ore and "+@TARROW_REQ_GP+" gold pieces if you want another 1,000 Terranite Arrows.\"";
     close;
+
+L_InventoryNoSpace:
+    mes "[Heathin]";
+    mes "\"Hm no. You can't carry this right now. Make some room and come back.\"";
+    close;
+
 }
