@@ -110,7 +110,8 @@ class TxtLink(object):
     def __init__(self, stack):
         self.stack = stack
     def __format__(self, target):
-        return '@@{link}|{text}@@'.format(link=target, text=target)
+        # the field labeled 'bug' should not be necessary ...
+        return '@@{link}|{text}@@{bug}'.format(link=target, text=target, bug=self.stack[-1])
 
 class TxtSignature(object):
     __slots__ = ('stack')
