@@ -110,7 +110,7 @@ class TxtLink(object):
     def __init__(self, stack):
         self.stack = stack
     def __format__(self, target):
-        return '##3' + target + self.stack[-1]
+        return '@@{link}|{text}@@'.format(link=target, text=target)
 
 class TxtSignature(object):
     __slots__ = ('stack')
