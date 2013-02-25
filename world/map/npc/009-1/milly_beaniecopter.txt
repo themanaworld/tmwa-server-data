@@ -1,6 +1,26 @@
+// Milly is involved in:
+// Beanie-Copter quest
+// Story and dialogs: veryape
+// Scripting: Jenalya
+//
+// Inspector quest
+
 009-1.gat,81,41,0|script|Milly|114,{
 
-THIS DIALOUGE IS INTENDED FOR CHARACHTERS WITH LEVEL <40 OR FIRST TIME DIALOGUE
+    set @got_boneknife, ((QUEST_Forestbow_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT) >= 4;
+    set @got_setzer,  ((QUEST_Forestbow_state & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT) >= 8;
+    set @saved_rossy, (FLAGS & FLAG_ROSSI_COMPLETED);
+    set @saved_cindy, ((QUEST_Nivalis_state & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT) >= 4;
+
+    if (FLAGS & FLAG_GOT_BEANIEHAT) goto L_FinishedGood;
+    if (FLAGS & FLAG_DECLINED_BEANIEHAT) goto L_FinishedBad;
+
+    if (@saved_rossy && @saved_cindy && @got_setzer && (BOSS_POINTS >= 5000)) goto L_OfferCap;
+    if (@got_setzer)    goto L_GotSetzer;
+    if (@saved_cindy)   goto L_SavedCindy;
+    if (@saved_rossy)   goto L_SavedRossy;
+    if (@got_boneknife) goto L_GotBoneKnife;
+    if (BaseLevel > 40) goto L_NoKnifeYet;
 
     mes "[Milly]";
     mes "\"Hello traveler, welcome to Hurnscald.\"";
@@ -15,7 +35,7 @@ THIS DIALOUGE IS INTENDED FOR CHARACHTERS WITH LEVEL <40 OR FIRST TIME DIALOGUE
 L_Where:
     mes "[Milly]";
     mes "\"You really ought to go see him! He is usually at the inn in the north-west part of town. If you are lucky he might tell you a story about his adventures.\"";
-    close;
+    goto L_Close;
 
 L_Care:
     mes "[Milly]";
@@ -28,10 +48,9 @@ L_Care:
 L_MetKfahr:
     mes "[Milly]";
     mes "\"Oh, I hope you stayed and listened to his stories about his adventures.\"";
-    close;
+    goto L_Close;
 
-FOR CHARACHTERS WITH LVL 40+ WHO HAS NOT DONE THE BONE KNIFE QUEST
-
+L_NoKnifeYet:
     mes "[Milly]";
     mes "\"Hi again.\"";
     next;
@@ -58,7 +77,7 @@ L_HintKnife:
 L_Unsure:
     mes "[Milly]";
     mes "\"You better hurry up before he changes his mind!\"";
-    close;
+    goto L_Close;
 
 L_True:
     mes "[Milly]";
@@ -76,8 +95,7 @@ L_NoHelp:
     mes "\"You better learn from the wise and accept help from those who offer it.\"";
     goto L_Unsure;
 
-THIS PART IS INTENDED FOR CHARACHTER WITH LVL 40+ WHO HAS DONE THE BONE KNIFE QUEST
-
+L_GotBoneKnife:
     mes "[Milly]";
     mes "\"Hi. I heard that you got an exotic knife from Kfahr.\"";
     next;
@@ -87,7 +105,8 @@ THIS PART IS INTENDED FOR CHARACHTER WITH LVL 40+ WHO HAS DONE THE BONE KNIFE QU
         "Haven't I already?", L_ShowKnifeAgain;
 
 L_ShowKnife:
-    // TODO: inventory check if the player really has the knife
+    if (countitem("BoneKnife") < 1)
+        goto L_ShowKnifeNo;
     mes "[Milly]";
     mes "\"Wow! That is a knife fitting a real adventurer!\"";
     next;
@@ -96,7 +115,7 @@ L_ShowKnife:
     mes "\"You should be honoured that he is treating you his knife like this.\"";
     next;
     mes "\"What a hero...\"";
-    close;
+    goto L_Close;
 
 L_ShowKnifeAgain:
     mes "[Milly]";
@@ -110,15 +129,8 @@ L_ShowKnifeAgain:
     next;
     mes "\"Please let me see it!\"";
     menu
-        "Okay.", L_ShowKnifeOk,
+        "Okay.", L_ShowKnife,
         "Enough is enough.", L_ShowKnifeNo;
-
-L_ShowKnifeOk:
-    mes "[Milly]";
-    mes "\"Wooha, it is even better than I remembered it.\"";
-    next;
-    mes "\"Thanks for showing it to me, goodbye.\"";
-    close;
 
 L_ShowKnifeNo:
     mes "[Milly]";
@@ -127,9 +139,9 @@ L_ShowKnifeNo:
     mes "\"Otherwise you are just a bore...\"";
     next;
     mes "\"Don't be boring!\"";
-    close;
+    goto L_Close;
 
-THIS PART IS INTENDED FOR A CHARACHTER THAT HAS COMPLETED THE ROSSY QUEST
+L_SavedRossy:
     mes "[Milly]";
     mes "\"Hi friend!\"";
     next;
@@ -153,16 +165,16 @@ L_Loudmouth:
     mes "\"A little modesty would be a fitting characteristic for you. You are talking as if you think that you are the equal of Kfahr.\"";
     next;
     mes "\"I think you should show a little more respect when you are this close to legendary heroes.\"";
-    close;
+    goto L_Close;
 
 L_Modesty:
     mes "[Milly]";
     mes "\"Wow, you have been very helpful and unselfish risking your own safety for the sake of others! Thanks to that Julia is back and Olana is able to sleep at night.\"";
     next;
     mes "\"If you continue with those kinds of deeds you might earn your place in the history books of Hurnscald!\"";
-    close;
+    goto L_Close;
 
-THIS PART IS INTENDED FOR A CHARACHTER THAT HAS COMPLETED THE CINDY QUEST
+L_SavedCindy:
     mes "[Milly]";
     mes "\"Hi!\"";
     next;
@@ -191,21 +203,14 @@ L_HeroGrowing:
     next;
     mes "\"As things are shaping up you certainly are becoming something of a idol for us kids. At school the kids gossip about you, you're fastly becoming one of the most admired people around...\"";
     next;
-    mes "\"I'm excited to hear about your actions again soon.\"";
-    close;
-
-THIS PART IS INTENDED FOR A PLAYER THAT HAS DONE CINDY & ROSSY BUT HAS NOT YET MADE THE SETZER QUEST
-
-    mes "[Milly]";
-    mes "\"Hello!";
-    mes "Since you've proven yourself with your great acts I'll let you in on some gossip I've heard.\"";
+    mes "\"Since you've proven yourself with your great acts I'll let you in on exciting rumor I've heard.\"";
     next;
     mes "\"I've heard that Nicholas has learned new techniques in forging and weapon smithing. He is now able to improve a small sword into what is called a Setzer.\"";
     next;
     mes "\"Go talk to him and hear if he can help you get hold of one of these weapons.\"";
-    close;
+    goto L_Close;
 
-THIS PART IS INTENDED FOR A PLAYER AFTER HE HAS COMPLETED THE SETZER QUEST
+L_GotSetzer:
     mes "[Milly]";
     mes "\"Hello!\"";
     next;
@@ -214,10 +219,9 @@ THIS PART IS INTENDED FOR A PLAYER AFTER HE HAS COMPLETED THE SETZER QUEST
     mes "\"And the fact that Kfahr helped you means he really rates you as a fellow adventurer!\"";
     next;
     mes "\"Praise does not get much better than that around here. He knows a good adventurer when he see one, you must have impressed him!\"";
-    close;
-
-THIS PART IS INTENDED FOR A PLAYER THAT HAS DONE THE ABOVE AND IS LVL 90 BUT HAS NOT GOT 5000 BOSS POINTS
-    mes "[Milly]";
+    if (!@saved_cindy || !@saved_rossy)
+        goto L_Close;
+    next;
     mes "\"To be honest you are fast becoming my favored hero, even... dare I say it? Even more so than Kfahr.\"";
     next;
     mes "\"Your good deeds and your skill is undisputable! However...\"";
@@ -233,9 +237,9 @@ THIS PART IS INTENDED FOR A PLAYER THAT HAS DONE THE ABOVE AND IS LVL 90 BUT HAS
     mes "\"For my generation you are the true hero, please prove the elders wrong by showing them that you are fearless!\"";
     next;
     mes "\"Good luck and good bye!\"";
-    close;
+    goto L_Close;
 
-THIS PART IS INTENDED FOR A PLAYER THAT HAS DONE ALL OF THE ABOVE IS LVL 90+ AND HAS 5000 BOSS POINTS
+L_OfferCap:
     mes "[Milly]";
     mes "\"Hi there, hero of Hurnscald!\"";
     next;
@@ -260,16 +264,16 @@ L_Cap:
     mes "[Milly]";
     mes "\"Wow, thanks for accepting my gift, it is so pleasing to know that you have the exact same cap as me!\"";
     getinventorylist;
-    // TODO: insert item name
-    if (@inventorylist_count == 100 && countitem(XXX) == 0)
+    if (@inventorylist_count == 100 || (checkweight("BeanieCopterCap", 1) == 0))
         goto L_TooMany;
-    getitem XXX, 1;
+    getitem "BeanieCopterCap", 1;
+    set FLAGS, FLAGS | FLAG_GOT_BEANIEHAT;
     next;
     mes "She is giggeling with exitement.";
     next;
     mes "[Milly]";
     mes "\"Come see me anytime! Goodbye!\"";
-    close;
+    goto L_Close;
 
 L_Idiot:
     mes "[Milly]";
@@ -284,22 +288,30 @@ L_BadBye:
     mes "\"I guess they were right, you're not any great hero! I'll give it to Kfahr instead!\"";
     next;
     mes "\"Please keep on travelling so I don't have to see you around here. It makes me sad to see you, everytime I do I'll remember how wrong I was about you.\"";
-    close;
+    set FLAGS, FLAGS | FLAG_DECLINED_BEANIEHAT;
+    goto L_Close;
 
 L_TooMany:
     mes "[Milly]";
     mes "\"You don't have any space left to carry it, go put some stuff in the storage and come back!\"";
-    close;
+    goto L_Close;
 
-INTENDED FOR SOMEONE THAT HAS COMPLETED ALL THE ABOVE AND RECIEVED THE CAP
+L_FinishedGood:
     mes "[Milly]";
     mes "\"Hi there, my hero!\"";
     next;
     mes "\"Wear the copter beany cap in good health! See you around!\"";
-    close;
+    goto L_Close;
 
-INTENDED FOR SOMEONE THAT TURNED DOWN THE CAP
+L_FinishedBad:
     mes "[Milly]";
     mes "\"Won't you continue your travels soon?\"";
+    goto L_Close;
+
+L_Close:
+    set @got_boneknife, 0;
+    set @got_setzer, 0;
+    set @saved_rossy, 0;
+    set @saved_cindy, 0;
     close;
 }
