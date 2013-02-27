@@ -6,6 +6,9 @@
 // Inspector quest
 
 009-1.gat,81,41,0|script|Milly|114,{
+    callfunc "ClearVariables";
+
+    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
 
     set @got_boneknife, ((QUEST_Forestbow_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT) >= 4;
     set @got_setzer,  ((QUEST_Forestbow_state & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT) >= 8;
@@ -25,6 +28,9 @@
     mes "[Milly]";
     mes "\"Hello traveler, welcome to Hurnscald.\"";
     next;
+    if (@inspector == 1)
+        callsub S_InspectorQuest;
+
     mes "\"Have you met Kfahr yet? He is the greatest hero that ever walked the land of Hurnscald!\"";
     menu
         "Hi! No, I haven't seen him.", L_Where,
@@ -54,6 +60,9 @@ L_NoKnifeYet:
     mes "[Milly]";
     mes "\"Hi again.\"";
     next;
+    if (@inspector == 1)
+        callsub S_InspectorQuest;
+
     mes "\"Have you talked to Kfahr lately?\"";
     menu
         "Yes.", L_TalkKfahr,
@@ -97,9 +106,13 @@ L_NoHelp:
 
 L_GotBoneKnife:
     mes "[Milly]";
-    mes "\"Hi. I heard that you got an exotic knife from Kfahr.\"";
+    mes "\"Hi there.\"";
     next;
-    mes "\"Would you care to show it for me?\"";
+    if (@inspector == 1)
+        callsub S_InspectorQuest;
+
+    mes "\"I heard that you got an exotic knife from Kfahr.";
+    mes "Would you care to show it for me?\"";
     menu
         "Sure.", L_ShowKnife,
         "Haven't I already?", L_ShowKnifeAgain;
@@ -145,6 +158,9 @@ L_SavedRossy:
     mes "[Milly]";
     mes "\"Hi friend!\"";
     next;
+    if (@inspector == 1)
+        callsub S_InspectorQuest;
+
     mes "\"Word is all around Hurnscald of your great act of helping my friends Rossy and Julia!\"";
     next;
     mes "\"Not only did you help Rossy, you saved her sister Julia from that Fey Element. That was a real act of heroism!\"";
@@ -178,6 +194,9 @@ L_SavedCindy:
     mes "[Milly]";
     mes "\"Hi!\"";
     next;
+    if (@inspector == 1)
+        callsub S_InspectorQuest;
+
     mes "\"Are the rumors true?\"";
     next;
     mes "\"Word is going around that you saved a girl called Cindy who was captured by Yetis in Nivalis, and that you arranged a rescue party getting her back from a deep Yeti inhibited cave.\"";
@@ -214,6 +233,9 @@ L_GotSetzer:
     mes "[Milly]";
     mes "\"Hello!\"";
     next;
+    if (@inspector == 1)
+        callsub S_InspectorQuest;
+
     mes "\"I heard that you got hold of a Setzer!\"";
     next;
     mes "\"And the fact that Kfahr helped you means he really rates you as a fellow adventurer!\"";
@@ -243,6 +265,9 @@ L_OfferCap:
     mes "[Milly]";
     mes "\"Hi there, hero of Hurnscald!\"";
     next;
+    if (@inspector == 1)
+        callsub S_InspectorQuest;
+
     mes "\"You really have proven yourself over and over. There is no way someone could say you're not the equal of Kfahr!\"";
     next;
     mes "\"Now even the grownups are respecting you as a hero as great as Kfahr!\"";
@@ -300,12 +325,20 @@ L_FinishedGood:
     mes "[Milly]";
     mes "\"Hi there, my hero!\"";
     next;
+    if (@inspector == 1)
+        callsub S_InspectorQuest;
+
     mes "\"Wear the copter beany cap in good health! See you around!\"";
     goto L_Close;
 
 L_FinishedBad:
     mes "[Milly]";
     mes "\"Won't you continue your travels soon?\"";
+    next;
+    if (@inspector == 1)
+        callsub S_InspectorQuest;
+
+    mes "Milly looks away sadly.";
     goto L_Close;
 
 L_Close:
@@ -313,5 +346,27 @@ L_Close:
     set @got_setzer, 0;
     set @saved_rossy, 0;
     set @saved_cindy, 0;
+    set @inspector, 0;
     close;
+
+S_InspectorQuest:
+    menu
+        "Have you seen anything strange lately?", L_NohMask_Strange,
+        "Do you know anything about the recent robberies?", L_NohMask_Robbery,
+        "Hello.", L_Return;
+
+L_NohMask_Strange:
+    mes "[Milly]";
+    mes "\"I haven't seen anything strange.\"";
+    next;
+    goto L_Return;
+
+L_NohMask_Robbery:
+    mes "[Milly]";
+    mes "\"No, sorry.\"";
+    next;
+    goto L_Return;
+
+L_Return:
+    return;
 }
