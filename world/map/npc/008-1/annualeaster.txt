@@ -13,7 +13,7 @@ function|script|AnnualEasterEvent|{
 
     // prevent players having level 19 or less to get anything:
     if (BaseLevel < 20)
-        goto L_End2;
+        goto L_EndTooYoung;
 
     // prevent clicking multiple times:
     if (gettimetick(2) < @eastertimepenalty + $@EASTER_FOUND_WAIT_TIME)
@@ -24,7 +24,7 @@ function|script|AnnualEasterEvent|{
     set $@peopleFoundEggs[@EasterEggID], $@peopleFoundEggs[@EasterEggID]+1;
 
     // give a small reward:
-
+    message strcharinfo(0), "You found something!";
     set @tmp, getarraysize($@SmallAnnualEasterItems$);
     set @random, rand(@tmp + 2);
     if (@random  < @tmp)     getitem $@SmallAnnualEasterItems$[@random], rand(1, 2);
@@ -65,6 +65,7 @@ NoEasterEgg:
     // now hand out the specific item:
     set @rewardindex, @rewardindex % getarraysize($@FinalAnnualEasterReward$);
     getitem $@FinalAnnualEasterReward$[@rewardindex], 1;
+    message strcharinfo(0), "This is really special. You won't find anything like this again.";
     goto L_End1;
 
 S_Read_Annual_Quest:
@@ -75,8 +76,15 @@ S_Update_Annual_Quest:
     set Annual_Quest, (Annual_Quest & ~(BYTE_1_MASK) | (@easter_year << BYTE_1_SHIFT));
     return;
 
+L_EndTooYoung:
+    message strcharinfo(0), "The nest is empty.";
+    goto L_End1;
+
 L_End2:
-    message strcharinfo(0), "Why are these empty?";
+    message strcharinfo(0), "Don't be greedy! You just found something a moment ago.";
+    set @eastertimepenalty, @eastertimepenalty + 5;
+    if (@eastertimepenalty > gettimetick(2))
+        set @eastertimepenalty, gettimetick(2);
 L_End1:
     set @rewardindex, 0;
     set @easter_year, 0;
@@ -106,7 +114,7 @@ L_End1:
     end;
 
 onInit:
-    set $@EASTER_FOUND_WAIT_TIME, 30;
+    set $@EASTER_FOUND_WAIT_TIME, 15;
     set $@EASTER_FINAL_REW_INV_CHANCE, 35;
     set $@EASTER_EGG_INV_CHANCE, 750;
 
@@ -136,9 +144,7 @@ OnTimer1000:
 
     // an egg can be 'found' multiple times, make this number of possible findings
     // depend on the number of players currently on the map.
-    set $@AEASTER_mapcount, getmapusers("008-1.gat");
-    if ($@AEASTER_mapcount > 9)
-        set $@AEASTER_mapcount, 6 + $@AEASTER_mapcount / 3;
+    set $@AEASTER_mapcount, 1 + getmapusers("008-1.gat") / 3;
 
     set $@isEaster, 0;
     if ((gettime(6) == 3 && gettime(5) > 22) || (gettime(6) == 4 && gettime(5) < 25) || debug)
