@@ -64,8 +64,6 @@ L_Try_Cage:
     set $@FIGHT_YETI_WAVE, 0;
     set $@YETI_COUNT, 1;
     set $@FIGHT_YETI_PLAYER_COUNT, getmapusers("031-4.gat");
-    // this yeti is spawned because of some timing problems
-    // without it, the first and second wave start nearly the same time
     areamonster "031-4.gat", 0, 0, 95, 91, "", 1072, 1, "Cindy::onPetDeath";
 
     initnpctimer;
@@ -154,7 +152,7 @@ L_CaveLogic:
     if ($@FIGHT_YETI_PLAYER_COUNT <= 0)
         goto L_CleanUp;
     set $@FIGHT_YETI_ROUND_TIMER, $@FIGHT_YETI_ROUND_TIMER + 5; // Advance 5 seconds
-    if (mobcount("031-4.gat", "Cindy::onPetDeath") <= 0)
+    if (mobcount("031-4.gat", "Cindy::onPetDeath") < 0)
         goto L_NextWave;
     if ($@FIGHT_YETI_ROUND_TIMER + $@FIGHT_YETI_ROUND_PEN >= 120)
         goto L_NextWave;
@@ -236,7 +234,7 @@ L_CleanUp:
     areatimer "031-4.gat", 0, 0, 95, 91, 10, "Cindy::onReward";
     set $@FIGHT_YETI_STATUS, 0;
     set $@FIGHT_YETI_PLAYER_COUNT, 0;
-    set $@FIGHT_YETI_WAVE, 1;
+    set $@FIGHT_YETI_WAVE, 0;
     set $@FIGHT_YETI_ROUND_TIMER, 0;
     set $@YETI_COUNT, 0;
     set $@FIGHT_YETI_ROUND_PEN, 0;
