@@ -334,12 +334,30 @@ L_FinishedGood:
 
 L_FinishedBad:
     mes "[Milly]";
-    mes "\"Won't you continue your travels soon?\"";
+    mes "\"Oh, it's you. I suppose you're here to make fun of my hat again.\"";
     next;
     if (@inspector == 1)
         callsub S_InspectorQuest;
+    mes "\"Won't you continue your travels soon?\"";
+    menu
+        "That's what I'm going to do.", -,
+        "I'm really sorry. Of course I want your hat!", L_Apologize;
 
     mes "Milly looks away sadly.";
+    goto L_Close;
+
+L_Apologize:
+    getinventorylist;
+    if (@inventorylist_count == 100 || (checkweight("BeanieCopterCap", 1) == 0))
+        goto L_TooMany;
+    getitem "BeanieCopterCap", 1;
+    set FLAGS, FLAGS | FLAG_GOT_BEANIEHAT;
+    set FLAGS, FLAGS & ~FLAG_DECLINED_BEANIEHAT;
+
+    mes "Milly looks surprised.";
+    next;
+    mes "[Milly]";
+    mes "\"Oh, I... uh, thank you! I knew it! I knew such a heroic person as you can't be that mean.\"";
     goto L_Close;
 
 L_Close:
