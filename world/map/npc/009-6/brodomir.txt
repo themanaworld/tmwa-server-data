@@ -85,8 +85,6 @@ L_Item:
         "I changed my mind, forget it.", L_Close;
     if ($@BRODOMIR_PVP_STATUS == 1)
         goto L_Wait;
-    if (getareausers("009-6.gat", 20, 20, 80, 80, 1) < 3)
-        goto L_NotEnoughPlayers;
     if (countitem(@brodomir_item$) < @brodomir_item_amount)
         goto L_NoItem;
     delitem @brodomir_item$, @brodomir_item_amount;
@@ -111,8 +109,6 @@ L_Pay:
         goto L_TooCheap;
     if ($@BRODOMIR_PVP_STATUS == 1)
         goto L_Wait;
-    if (getareausers("009-6.gat", 20, 20, 80, 80, 1) < 3)
-        goto L_NotEnoughPlayers;
     if (Zeny < @brodomir_money)
         goto L_NotEnoughMoney;
     set Zeny, Zeny - @brodomir_money;
@@ -122,15 +118,17 @@ L_Go:
     set $@BRODOMIR_ITEM$, @brodomir_item$;
     set $@BRODOMIR_ITEM_AMOUNT, @brodomir_item_amount;
     set $@BRODOMIR_MONEY, @brodomir_money;
+    set $@brodomir_delay_seconds, 600;
     set $@BRODOMIR_PVP_STATUS, 1;
-    mapannounce "009-6.gat", "In 5 minutes I will bring you all to the PvP cave. If there are less than 3 players here the event will not start.", 0;
+    announce "Brodomir: In "+$@brodomir_delay_seconds/60+" minutes, I will start a PvP tournament, if at least 3 fighters are present. Make your way in Hurnscald Underground Caves!", 0;
     if ($@BRODOMIR_ITEM_AMOUNT > 0)
-        mapannounce "009-6.gat", "The winner will receive 150GP per player and " + $@BRODOMIR_ITEM_AMOUNT + $@BRODOMIR_ITEM$ + ".", 0;
+        announce "Brodomir: The winner will receive 150GP per fighter and " + $@BRODOMIR_ITEM_AMOUNT + " " + $@BRODOMIR_ITEM$ + ".", 0;
     if ($@BRODOMIR_MONEY > 0)
-        mapannounce "009-6.gat", "The winner will receive " + $@BRODOMIR_MONEY + "GP and additionally 150GP per player.", 0;
+        announce "Brodomir: The winner will receive " + $@BRODOMIR_MONEY + "GP and additionally 150GP per fighter.", 0;
     mes "[Brodomir]";
-    mes "\"In 5 minutes I will bring you all to the PvP cave. If there are less than 3 players here the event will not start and your money will be lost.\"";
-    set $@BRODOMIR_START_TIME, gettimetick(2) + 300;
+    mes "\"In "+$@brodomir_delay_seconds/60+" minutes I will bring you all to the PvP cave. If there are less than 3 players here the event will not start and your money will be lost.\"";
+    set $@BRODOMIR_START_TIME, gettimetick(2) + $@brodomir_delay_seconds;
+    set $@brodomir_delay_seconds, 0;
     initnpctimer;
     goto L_Close;
 
@@ -141,6 +139,7 @@ L_Wait:
         mes "\"Just a little longer. I will bring you there in " + $@brodomir_seconds + " seconds.\"";
     if ($@brodomir_seconds/60 > 0)
         mes "\"Just a little longer. I will bring you there in " + $@brodomir_seconds/60 + " minute(s).\"";
+    set $@brodomir_seconds, 0;
     goto L_Close;
 
 OnTimer5000:
@@ -157,8 +156,6 @@ L_Warp:
     set $@BRODOMIR_PVP_STATUS, $@BRODOMIR_PVP_STATUS + 1;
     set $@BRODOMIR_PLAYERS, getareausers("009-6.gat", 20, 20, 80, 80, 1);
     mapwarp "009-6.gat", "009-5.gat", 0, 0;
-    if ($@BRODOMIR_ITEM_AMOUNT > 0)
-        mapannounce "009-6.gat", "The last one standing will receive 150GP per player and " + $@BRODOMIR_ITEM_AMOUNT + $@BRODOMIR_ITEM$ + ".", 0;
     mapannounce "009-5.gat", "PvP On!", 0;
     pvpon "009-5.gat";
     end;
@@ -200,11 +197,6 @@ L_Dead:
 L_End:
     mapwarp "009-5.gat", "009-6.gat", 36, 42;
     goto L_Cleanup;
-
-L_NotEnoughPlayers:
-    mes "[Brodomir]";
-    mes "\"There aren't enough players here to start.\"";
-    goto L_Close;
 
 L_Alreadystarted:
     mes "[Brodomir]";
