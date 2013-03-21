@@ -36,8 +36,5 @@ echo "##9 Latest client version: ##6$cur_version\n \n";
 echo "##7 TMW Staff will never ask you for your password.\n";
 echo "##7 Anyone doing so is trying to scam you.\n \n";
 
-echo "##1 Sharing an account to a computer system is like sharing\n";
-echo "##1 your underwear.##0\n \n##0\n";
-
 print file_get_contents("news.txt");
 ?>
