@@ -15,6 +15,8 @@ function|script|AnnualEasterEvent|{
     if (BaseLevel < 20)
         goto L_EndTooYoung;
 
+    if (@eastertimepenalty == 0)
+        goto L_WarmUp;
     // prevent clicking multiple times:
     if (gettimetick(2) < @eastertimepenalty + $@EASTER_FOUND_WAIT_TIME)
         goto L_End2;
@@ -32,6 +34,7 @@ function|script|AnnualEasterEvent|{
     if (@random  < @tmp)     getitem $@SmallAnnualEasterItems$[@random], rand(1, 2);
     if (@random == @tmp)     getexp rand(200), 0;
     if (@random == @tmp + 1) set Zeny, Zeny + rand(50);
+    misceffect FX_GETITEM, strcharinfo(0);
 
     // give out a better reward occasionally:
     // standard case is branch taken, so only if rand yields 0, medium rewarding.
@@ -40,6 +43,7 @@ function|script|AnnualEasterEvent|{
 
     set @random, rand(getarraysize($@MediumAnnualEasterRewards$));
     getitem $@MediumAnnualEasterRewards$[@random], 1;
+    misceffect FX_GETITEM, strcharinfo(0);
 
 NoEasterEgg:
 
@@ -70,6 +74,7 @@ NoEasterEgg:
     // now hand out the specific item:
     set @rewardindex, @rewardindex % getarraysize($@FinalAnnualEasterReward$);
     getitem $@FinalAnnualEasterReward$[@rewardindex], 1;
+    misceffect FX_GETITEM, strcharinfo(0);
     message strcharinfo(0), "This is really special. You won't find anything like this again.";
     goto L_End1;
 
@@ -83,6 +88,13 @@ S_Update_Annual_Quest:
 
 L_EndTooYoung:
     message strcharinfo(0), "The nest is empty.";
+    goto L_End1;
+
+L_WarmUp:
+    set @eastertimepenalty, gettimetick(2);
+    getitem "GreenApple", 1;
+    misceffect FX_GETITEM, strcharinfo(0);
+    message strcharinfo(0), "Hmmm eggs! Maybe you can find something nice there!";
     goto L_End1;
 
 L_End2:
