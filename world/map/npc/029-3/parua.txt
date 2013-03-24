@@ -166,6 +166,8 @@ L_NextRound:
         goto L_CleanUp;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_LEVEL;
 
+    areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::onNewRound";
+
     mapannounce "029-1.gat", "Parua: The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive." , 0;
     mapannounce "029-3.gat", "Parua: The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive." , 0;
 
@@ -267,6 +269,23 @@ L_MOB6:
 onTick:
     if (isdead()) end;
     set $@FIGHT_CAVE_PLAYER_COUNT, $@FIGHT_CAVE_PLAYER_COUNT + 1;
+    end;
+
+// called on each player when a new round begins
+onNewRound:
+    // TODO initialization and clean-up of the variables
+    if (isdead())
+        end;
+    set @candor_oldx, @candor_x;
+    set @candor_oldy, @candor_y;
+    set @candor_x, getx();
+    set @candor_y, gety();
+    if (!(@candor_oldx == @candor_x && @candor_oldy == @candor_y))
+        end;
+    @candor_poscounter, @candor_poscounter + 1;
+    sc_start sc_poison, 1, 20;
+    heal -20 * @candor_poscounter, 0;
+    message strcharinfo(0), "The evil energy of this place hurts you. You should keep moving!";
     end;
 
 onPetDeath:
