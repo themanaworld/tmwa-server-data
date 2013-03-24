@@ -166,6 +166,8 @@ L_NextRound:
         goto L_CleanUp;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_LEVEL;
 
+    areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::onNewRound";
+
     mapannounce "029-1.gat", "Parua: The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive." , 0;
     mapannounce "029-3.gat", "Parua: The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive." , 0;
 
@@ -269,6 +271,24 @@ onTick:
     set $@FIGHT_CAVE_PLAYER_COUNT, $@FIGHT_CAVE_PLAYER_COUNT + 1;
     end;
 
+// called on each player when a new round begins
+onNewRound:
+    if (isdead())
+        end;
+    if ($@FIGHT_CAVE_LEVEL < 600)
+        end;
+    set @candor_oldx, @candor_x;
+    set @candor_oldy, @candor_y;
+    set @candor_x, getx();
+    set @candor_y, gety();
+    if (!(@candor_oldx == @candor_x && @candor_oldy == @candor_y))
+        goto L_IdleCheckPassed;
+    set @candor_idle_counter, @candor_idle_counter + 1;
+    sc_start sc_poison, 1, @candor_idle_counter*25;
+    percentheal -20 * @candor_idle_counter, 0;
+    message strcharinfo(0), "The evil energy of this place hurts you. You should keep moving!";
+    end;
+
 onPetDeath:
     end;
 
@@ -298,10 +318,26 @@ L_CleanUp_Announcement:
     setnpctimer 0;
     end;
 
-onReward:
-    if (isdead()) end;
-    set BOSS_POINTS, BOSS_POINTS + 100;
-    message strcharinfo(0), "You gain 100 Boss Points giving you a total of " + BOSS_POINTS + ".";
+OnPCDieEvent:
+    // fall through L_CleanUp_Player
+
+L_CleanUp_Player:
+    set @candor_oldx, 0;
+    set @candor_oldy, 0;
+    set @candor_x, 0;
+    set @candor_y, 0;
+    set @candor_idle_counter, 0;
     end;
 
+L_IdleCheckPassed:
+    //FIXME we could do that, but I'd say, let's be severe.
+    //set @candor_idle_counter, 0;
+    end;
+
+onReward:
+    if (isdead())
+        end;
+    set BOSS_POINTS, BOSS_POINTS + 100;
+    message strcharinfo(0), "You gain 100 Boss Points giving you a total of " + BOSS_POINTS + ".";
+    goto L_CleanUp_Player;
 }
