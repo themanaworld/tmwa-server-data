@@ -1,9 +1,22 @@
+MAPSDIR          := client-data/maps
+MINIMAPSDIR      := client-data/graphics/minimaps
+MINIMAP_TILESIZE := 2
+
+
+MAPS             := $(wildcard $(MAPSDIR)/*.tmx)
+MINIMAPS         := $(addprefix $(MINIMAPSDIR)/,$(notdir $(MAPS:.tmx=.png)))
+
 .PHONY: all maps conf mobxp mobxp-impl indent indent-items indent-mobs
 # Can't be parallel due to the mobxp/indent-mobs conflict
 .NOTPARALLEL:
 all: maps conf
 maps:
 	tools/tmx_converter.py client-data/ world/map/
+
+$(MINIMAPSDIR)/%.png: $(MAPSDIR)/%.tmx
+	tmxrasterizer --tilesize $(MINIMAP_TILESIZE) --anti-aliasing $< $@
+
+minimaps: $(MINIMAPS)
 
 % : | %.example
 	cp "$|" "$@"
