@@ -38,6 +38,21 @@
     set @AMOUNT_HARDSPIKE, 5;
     set @AMOUNT_ANGRYSTINGER, 5;
     set @RECOMPENSATION_4, 40000;
+    // fifth flower
+    set @AMOUNT_ACORN, 20;
+    set @AMOUNT_PEARL, 3;
+    set @AMOUNT_BLACKSTINGER, 5;
+    set @RECOMPENSATION_5, 80000;
+
+    set @REWARD_MONEY, 100000;
+    set @REWARD_EXP, 100000;
+
+    if (OrumQuest == 32) goto L_Done;
+
+    if (OrumQuest == 31) goto L_PlacedFifthFlower;
+    if (OrumQuest == 30) goto L_PlaceFifthFlower;
+    if (OrumQuest == 29) goto L_FailedFifthFlower;
+    if (OrumQuest == 28) goto L_FifthFlower;
 
     if (OrumQuest == 27) goto L_PlacedFourthFlower;
     if (OrumQuest == 26) goto L_PlaceFourthFlower;
@@ -551,7 +566,190 @@ L_PlaceFourthFlower: // 26: Completed difficult minigame and got task to place t
 
 L_PlacedFourthFlower: // 27: Placed fourth magical flower
     mes "[Orum]";
-    mes "TODO next";
+    mes "\"Oh, almost! Only the last flower needs to be placed. Don't loose concentration now!";
+    mes "This last flower is the most complicated one. Pay attention.\"";
+    menu
+        "Tell me what you need!", -,
+        "Why do you want to summon so many beings?", L_AskReason;
+
+    set OrumQuest, 28;
+    goto L_FifthFlower;
+
+L_AskReason:
+    mes "[Orum]";
+    mes "\"Let's say... it's about paying back an old debt.";
+    mes "I'll give you a hint: think about what's in the middle of the pentagram. Or rather who is.\"";
+    next;
+    mes "\"However, let's get back to business!\"";
+    set OrumQuest, 28;
+    next;
+    goto L_FifthFlower;
+
+L_FifthFlower: // 28: Got task to bring materials for fifth magical flower
+    mes "[Orum]";
+    mes "\"For the last flower we need " + @AMOUNT_ACORN + " Acorns, " + @AMOUNT_PEARL + " Pearls, " + @AMOUNT_BLACKSTINGER + " Black Scorpion Stingers and 1 Red Rose.\"";
+    menu
+        "Here it is.", -,
+        "Understood.", L_Close,
+        "Sagatha is the target of the spell, right?", L_AskSagatha;
+
+    if ((countitem("Acorn") < @AMOUNT_ACORN)
+        || (countitem("Pearl") < @AMOUNT_PEARL)
+        || (countitem("BlackScorpionStinger") < @AMOUNT_BLACKSTINGER)
+        || (countitem("RedRose") < 1))
+        goto L_NoItem;
+
+    delitem "Acorn", @AMOUNT_ACORN;
+    delitem "Pearl", @AMOUNT_PEARL;
+    delitem "BlackScorpionStinger", @AMOUNT_BLACKSTINGER;
+    delitem "RedRose", 1;
+
+    mes "Orum takes the materials and takes a deep breath. Then he prepares them similiarly to the materials for the other flowers.";
+    mes "[Orum]";
+    mes "\"Well. Basically, we need to do the same as with the other flowers. But we need to be careful, this mixture is a bit more delicate. Would you like to do the add the rheological additive or mix the pulvers?\"";
+    menu
+        "I'll handle the additive.", L_Additive,
+        "Let me mix the pulvers.", L_Pulvers;
+
+L_Additive:
+    mes "Orum agrees and starts mixing the powders. You're ready to pour in the additive once the mixture reached a high level of bubbling.";
+    next;
+    mes "But the next dash of powder Orum adds causes the mixture to sputter, and you get something on your hand!";
+    heal -5, 0;
+    menu
+        "Ouch!",-,
+        "AAh!", -,
+        "Urgh!", -;
+    mes "As you step back from the caldron you jostle Orum, and the Red Rose falls out of his pocket into the caldron.";
+    goto L_FlowerHat;
+
+L_Pulvers:
+    mes "You start mixing together the powders. It bubbles much more than during the previous brewing.";
+    next;
+    mes "The next dash of powder you add causes the mixture to sputter, and some of it gets on Orums hand! He screams and jumps back while waving around his hand.";
+    next;
+    mes "This causes the flower to fall out of his pocket, landing exactly in the caldron.";
+    next;
+    mes "Orum stares at it.";
+    goto L_FlowerHat;
+
+L_FlowerHat:
+    mes "[Orum]";
+    mes "\"Fool! See what you've done! It's ruined!\"";
+    next;
+    mes "\"Though we have enough of the materials left to start over... Here, take this garbage out and get a new Red Rose!\"";
+    getitem "RoseHat", 1; // TODO: add item to database
+    set OrumQuest, 29;
+    goto L_Close;
+
+L_AskSagatha:
+    mes "[Orum]";
+    mes "\"Ah, clever. Yes, you're right.";
+    mes "That self-righteous forest witch thinks she's better than other people. And she thinks that gives her the right to stick her nose into other mages' businesses.\"";
+    next;
+    mes "\"And even worse, she thinks she can PUNISH other mages for actions she considers wrong - \"";
+    mes "[Waric]";
+    mes "\"Orum! You don't need to get into the details with this.\"";
+    next;
+    mes "[Orum]";
+    mes "\"Oh, eh, of course. However, we'll teach her a lesson.";
+    mes "And you are going to help us.\"";
+    goto L_Close;
+
+L_FailedFifthFlower: // 29: Failed unbeatable minigame and got the flower hat
+    mes "[Orum]";
+    mes "\"Did you get a new Red Rose, so we can finally create the last magical flower?\"";
+    menu
+        "Yes.",  -,
+        "Not yet.", L_Close,
+        "Will those monsters hurt Sagatha? Or... kill her?", L_AskHurtSagatha;
+
+    if (countitem("RedRose") < 1)
+        goto L_NoItem;
+
+    delitem "RedRose", 1;
+    mes "[Orum]";
+    mes "\"Finally! This time I'll do it all by myself. Step back with your clumsy fingers, so it doesn't get ruined again.\"";
+    next;
+    mes "You watch while Orum carefully prepares the last magic flower.";
+    next;
+    getitem "BlueRose", 1; // TODO: replace with magical flower artefact
+    set OrumQuest, 30;
+    mes "[Orum]";
+    mes "\"Here it is. We're almost done. Don't mess it up!\"";
+    next;
+L_WayFifthFlower:
+    mes "[Orum]";
+    mes "\"To place the last flower, go East and follow the road. At some point it might be difficult to get through, since the road isn't used anymore, and the forest is growing back.";
+    mes "But you have to find a way and reach a clearing with some very old and big tree. There you'll find another prepared spot with some flowers.\"";
+    goto L_Close;
+
+L_AskHurtSagatha:
+    mes "[Orum]";
+    mes "\"Oh, are you getting afraid? I thought you want to support us.\"";
+    next;
+    mes "\"However, no need to worry. Sagatha is much too powerful to get seriously injured by this, sadly.\"";
+    next;
+    mes "\"If we'd want to actually harm her, we'd need to summon some greater powers. But that'd be risky in the best case, and devastatingly costly in the worst.\"";
+    next;
+    mes "\"Unless... I assume you're not open to donating your soul for a pact with a higher astral being, are you?\"";
+    goto L_Close;
+
+L_PlaceFifthFlower: // 30: Got task to place the fifth flower
+    mes "[Orum]";
+    mes "\"What are you waiting for? We've almost reached our goal! Go and place the last magical flower to finish the pentagram!\"";
+    menu
+        "Yes.", L_Close,
+        "Where do I have to place it?", L_WayFifthFlower,
+        "Please keep calm, but I lost the flower.", -;
+
+    mes "[Orum]";
+    mes "\"Lost it? You incompetent excuse of a servant! What do you think you're doing?\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_5 + " GP, and I'm going to allow you to continue helping us. You also have to bring the needed materials for a new flower.\"";
+    menu
+        "Ok, here it is.", -,
+        "What materials do we need?", L_MaterialFifth,
+        "That's too expensive!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_5)
+        goto L_NoMoney;
+    if ((countitem("Acorn") < @AMOUNT_ACORN)
+        || (countitem("Pearl") < @AMOUNT_PEARL)
+        || (countitem("BlackScorpionStinger") < @AMOUNT_BLACKSTINGER)
+        || (countitem("RedRose") < 1))
+        goto L_NoItem;
+
+    set Zeny, Zeny - @RECOMPENSATION_5;
+    delitem "Acorn", @AMOUNT_ACORN;
+    delitem "Pearl", @AMOUNT_PEARL;
+    delitem "BlackScorpionStinger", @AMOUNT_BLACKSTINGER;
+    delitem "RedRose", 1;
+    getitem "BlueRose", 1; // TODO: replace with magical flower artefact
+
+    mes "Orum takes the material and prepares a new flower.";
+    mes "[Orum]";
+    mes "\"Here is another one. Don't mess it up this time, understood?\"";
+    goto L_Close;
+
+L_MaterialFifth:
+    mes "[Orum]";
+    mes "\"For the last flower we need " + @AMOUNT_ACORN + " Acorns, " + @AMOUNT_PEARL + " Pearls, " + @AMOUNT_BLACKSTINGER + " Black Scorpion Stingers and 1 Red Rose.\"";
+    goto L_Close;
+
+L_PlacedFifthFlower: // 31: Placed fifth flower
+    mes "[Orum]";
+    mes "\"Hahahaha! Wonderful! We were able to her Sagatha's screaming and ranting here in the cave!\"";
+    next;
+    mes "\"Well done, really. I think you've earned yourself a small reward. Here, take this.\"";
+    set Zeny, Zeny + @REWARD_MONEY;
+    getexp @REWARD_EXP, 0;
+    set OrumQuest, 32;
+    goto L_Close;
+
+L_Done:
+    mes "[Orum]";
+    mes "\"Ah, I still can't stop smiling when I remember Sagatha's reaction. You've done a very good job.\"";
     goto L_Close;
 
 L_NoRecompensation:
@@ -587,5 +785,11 @@ L_Close:
     set @colorLevel, 0;
     set @goodColor, 0;
     cleararray @colorLevels$[0], "", 7;
+    set @AMOUNT_ACORN, 0;
+    set @AMOUNT_PEARL, 0;
+    set @AMOUNT_BLACKSTINGER, 0;
+    set @RECOMPENSATION_5, 0;
+    set @REWARD_MONEY, 0;
+    set @REWARD_EXP, 0;
     close;
 }
