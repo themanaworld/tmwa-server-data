@@ -1,6 +1,7 @@
 //  Hetchel the Silk Weaver
-//  bh28, GPLv2
-//  Graphics by ChefChelios CC BY SA
+//  bh28, 
+//  2013-03, GPLv2.
+//  original graphics by ChefChelios CC BY SA & GPLv2 (cf. Client Data).
 //  Hetchel is referred to by Lora Tay.
 //  She weaves and sells standard double elbow square silk sheets.
 //  She could also sell, dyed sheets, Silk robes from Lora Tay.
@@ -43,7 +44,7 @@ L_WG_quest_not_done:
 
 L_main_menu:
     mes "[Hetchel the weaver]";
-    mes "\"I have some silk sheets: double-elbow squares";
+    mes "I have some silk sheets: double-elbow squares";
     menu
         "I'm not interested at the moment, maybe later; thanks anyway.", L_end,
         "Can I buy some?", -;
@@ -64,7 +65,6 @@ L_sheet_menu:
         "Oops! Sorry, I'll come back soon with them.", L_end;
     next;
 
-L_sheet:
     mes "How many would you like?";
     input @SheetCount;
     if (@SheetCount == 0)
@@ -74,7 +74,7 @@ L_sheet:
     if (Zeny < @SheetCount * @SHEET_ZENY)
         goto L_sheet_missing_Zeny;
     getinventorylist;
-    if (@inventorylist_count == 100 && countitem("SilkCocoon") > @SheetCount * @SHEET_COCOONS_NR)
+    if (@inventorylist_count == 100 && countitem("SilkSheet") < 1 && countitem("SilkCocoon") > @SheetCount * @SHEET_COCOONS_NR)
         goto L_TooMany;
     set Zeny, Zeny - @SheetCount * @SHEET_ZENY;
     delitem "SilkCocoon", @SheetCount * @SHEET_COCOONS_NR;
@@ -105,7 +105,7 @@ L_how_many_cocoons:
 
 L_sheet_no_cocoon:
     mes "[Hetchel the Weaver]";
-    mes "\"You don't have any cocoon? I'm sorry I can't do anything for you.\"";
+    mes "You don't have any cocoon? I'm sorry I can't do anything for you.";
     menu
         "I'll seek for them.", L_end,
         "Where can I get cocoons?", -;
@@ -126,13 +126,14 @@ L_sheet_no_cocoon:
 //L_robe_menu:
 //    goto L_main_menu;
 
-L_zero_sheet;
+L_zero_sheet:
+    mes "[Hetchel the Weaver]";
     mes "It's the best way to get quickly served!";
     goto L_end;
 
 L_TooMany:
     mes "[Hetchel the Weaver]";
-    mes "\"Your bag hasn't room enough. Store some things and come back.\"";
+    mes "Your bag hasn't room enough. Store some things and come back.";
 
 L_end:
     set @SHEET_COCOONS_NR, 0;
