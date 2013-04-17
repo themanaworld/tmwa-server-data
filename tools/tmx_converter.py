@@ -32,6 +32,7 @@ import base64
 import zlib
 
 dump_all = False # wall of text
+check_mobs = True # mob_db.txt
 
 # lower case versions of everything except 'spawn' and 'warp'
 other_object_types = set([
@@ -54,6 +55,7 @@ MESSAGE = 'This file is generated automatically. All manually changes will be re
 CLIENT_MAPS = 'maps'
 SERVER_WLK = 'data'
 SERVER_NPCS = 'npc'
+SERVER_MOB_DB = 'db/mob_db.txt'
 NPC_MOBS = '_mobs.txt'
 NPC_WARPS = '_warps.txt'
 NPC_IMPORTS = '_import.txt'
@@ -243,6 +245,15 @@ class ContentHandler(xml.sax.ContentHandler):
                 mob_id = obj.monster_id
                 if mob_id < 1000:
                     mob_id += 1002
+                if check_mobs:
+                    try:
+                        name = mob_names[mob_id]
+                    except KeyError:
+                        print('Warning: unknown mob ID: %d (%s)' % (mob_id, obj.name))
+                    else:
+                        if name != obj.name:
+                            print('Warning: wrong mob name: %s (!= %s)' % (obj.name, name))
+                            obj.name = name
                 self.mob_ids.add(mob_id)
                 self.mobs.write(
                     SEPARATOR.join([
@@ -302,6 +313,19 @@ def main(argv):
     tmx_dir = posixpath.join(client_data, CLIENT_MAPS)
     wlk_dir = posixpath.join(server_data, SERVER_WLK)
     npc_dir = posixpath.join(server_data, SERVER_NPCS)
+    if check_mobs:
+        global mob_names
+        mob_names = {}
+        with open(posixpath.join(server_data, SERVER_MOB_DB)) as mob_db:
+            for line in mob_db:
+                if not line.strip():
+                    continue
+                if line.startswith('#'):
+                    continue
+                if line.startswith('//'):
+                    continue
+                k, v, _ = line.split(',', 2)
+                mob_names[int(k)] = v.strip()
 
     npc_master = []
 
