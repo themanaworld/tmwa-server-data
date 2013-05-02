@@ -1,0 +1,119 @@
+// Author: Jenalya
+// $@Flower_Pentagram_Time saves the time when the last summoning happened
+// TODO: think whether the 5 spawns of the endpoints also need a moblimit protection
+
+056-1.gat,62,31,0|script|#FlowerPentagram5|400,{
+goto L_Place;
+    if (OrumQuest >= 31) goto L_PlacedFifthFlower;
+
+    if (OrumQuest == 30) goto L_FifthFlower;
+
+    message strcharinfo(0), "Something is odd with this place.";
+    end;
+
+L_FifthFlower:
+    mes "This have to be the place for the last magical flower. When you place it, the pentagram will be completed.";
+    menu
+        "Place the flower.", -,
+        "Leave.", L_Close;
+
+    if (isin("056-1.gat", 61, 30, 63, 32))
+        goto L_Place;
+
+    mes "This doesn't work, you're too far away.";
+    goto L_Close;
+
+L_Place:
+    mes "Nervous of what's going to happen, you take the last of the flowers and put it into place.";
+    next;
+    mes "Tension builds up around you, much stronger than all the times before. It pressures your head, your nose starts bleeding.";
+    heal -5, 0;
+    next;
+    callfunc "FlowerPentagramCount";
+    if (($@Flower_Pentagram_Time > gettimetick(2) - 3600) && ($@Flower_Pentagram_Mobcount > 5)) // TODO: balance treshold
+        goto L_TooEarly;
+    set $@Flower_Pentagram_Time, gettimetick(2);
+//    if ((countitem("TODO:name") < 1))
+//        goto L_NoFlower;
+//    delitem "TODO:name", 1;
+
+    mes "The moment you think you can't endure it anymore, the webbing of the world seems to tear apart.";
+    set OrumQuest, 31;
+    close2;
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1105, 3, "#FlowerPentagram5::OnSquirrelDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1106, 2, "#FlowerPentagram5::OnMushroomDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1107, 3, "#FlowerPentagram5::OnBlueparDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1104, 2, "#FlowerPentagram5::OnMoubooDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1003, 3, "#FlowerPentagram5::OnScorpionDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1004, 2, "#FlowerPentagram5::OnRScorpionDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1057, 2, "#FlowerPentagram5::OnAScorpionDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1009, 2, "#FlowerPentagram5::OnBScorpionDeath";
+    set @value, 15;
+    callfunc "QuestSagathaAnnoy";
+    set @value, 0;
+    donpcevent "#FlowerPentagram::OnSummon";
+    end;
+
+OnSquirrelDeath:
+    set @mobID, 1105;
+    callfunc "MobPoints";
+    end;
+
+OnMushroomDeath:
+    set @mobID, 1106;
+    callfunc "MobPoints";
+    end;
+
+OnBlueparDeath:
+    set @mobID, 1107;
+    callfunc "MobPoints";
+    end;
+
+OnMoubooDeath:
+    set @mobID, 1104;
+    callfunc "MobPoints";
+    end;
+
+OnScorpionDeath:
+    set @mobID, 1003;
+    callfunc "MobPoints";
+    end;
+
+OnRScorpionDeath:
+    set @mobID, 1004;
+    callfunc "MobPoints";
+    end;
+
+OnAScorpionDeath:
+    set @mobID, 1057;
+    callfunc "MobPoints";
+    end;
+
+OnBScorpionDeath:
+    set @mobID, 1009;
+    callfunc "MobPoints";
+    end;
+
+L_TooEarly:
+    mes "Then everything calms down again and then tension vanishes. You're unsure what's going on.";
+    next;
+    mes "You pick up the flower again.";
+    next;
+    mes "Looking at the place more closely, it seems another summoning has happened just before, leaving the path between this world and the astral plane drained and exhausted.";
+    next;
+    mes "You should wait a while until it recovers, or go and search the creatures that got summoned.";
+    goto L_Close;
+
+L_NoFlower:
+    mes "You reach into your pocket, but you can't find the flower! You're so close to completing you task.";
+    mes "How could you loose the last flower? If you can't get it back, you have to tell Orum.";
+    goto L_Close;
+
+L_PlacedFifthFlower:
+    mes "This is the place where you put the last one of Orum's magical flowers.";
+    mes "But after the pentagram was finished and the summoning happened, everything is back to normal with this spot.";
+    goto L_Close;
+
+L_Close:
+    close;
+}
