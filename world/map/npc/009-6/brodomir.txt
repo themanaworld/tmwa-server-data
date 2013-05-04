@@ -170,7 +170,7 @@ L_Warp:
 
 L_Warpfail:
     mapannounce "009-6.gat", "There are not enough players around to start!", 0;
-    if ($@BRODOMIR_ITEM_AMOUNT == 0)
+    if ($@BRODOMIR_ITEM_AMOUNT == 0 || $@BRODOMIR_ITEM$ == "")
         goto L_Cleanup;
     if (attachrid($@BRODOMIR_SPONSOR) == 0)
         goto L_SkipItemback;
@@ -199,6 +199,8 @@ onReward:
         goto L_Dead;
     message strcharinfo(0), "Congratulations you won!";
     set Zeny, Zeny + ($@BRODOMIR_MONEY + 150 * $@BRODOMIR_PLAYERS);
+    if ($@BRODOMIR_ITEM_AMOUNT == 0 || $@BRODOMIR_ITEM$ == "")
+        goto L_SkipItem;
 
     // we need this loop because for items that can't be stacked, getitem will stack them nevertheless
 L_Getitem:
@@ -207,6 +209,7 @@ L_Getitem:
     if ($@BRODOMIR_ITEM_AMOUNT > 0)
         goto L_Getitem;
 
+L_SkipItem:
     set $@BRODOMIR_ITEM$, "";
     set $@BRODOMIR_SPONSOR, 0;
     set $@BRODOMIR_MONEY, 0;
