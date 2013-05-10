@@ -15,10 +15,10 @@ L_Error:
 
 function|script|SetTorchColor|{
     if (@Torch < 0 || @Torch > 2) goto L_Error;
-    if (@Color < 1 || @Color > 12) goto L_Error2;
+    if (@TorchColor < 1 || @TorchColor > 12) goto L_Error2;
 
     set @Mask, (15 << (4 * @Torch));
-    set OrumQuestTorch, (OrumQuestTorch & (~(@Mask))) | @Color << (4 * @Torch);
+    set OrumQuestTorch, (OrumQuestTorch & (~(@Mask))) | @TorchColor << (4 * @Torch);
     return;
 
 L_Error:
@@ -45,10 +45,10 @@ L_Error:
 
 function|script|SetTorchIntensity|{
     if (@Torch < 0 || @Torch > 2) goto L_Error;
-    if (@Intensity < 0 || @Intensity > 2) goto L_Error2;
+    if (@TorchIntensity < 0 || @TorchIntensity > 2) goto L_Error2;
 
     set @Mask, (15 << (4 * (@Torch + 3)));
-    set OrumQuestTorch, (OrumQuestTorch & (~(@Mask))) | @Intensity << (4 * (@Torch + 3));
+    set OrumQuestTorch, (OrumQuestTorch & (~(@Mask))) | @TorchIntensity << (4 * (@Torch + 3));
     return;
 
 L_Error:
@@ -99,23 +99,23 @@ function|script|InRangeTorch3|{
     close;
 }
 
-// First Torch
-009-4.gat,68,21,0|script|Torch|400,{
-    callfunc "InRangeTorch1";
-    callfunc "DoneWithTorches";
+function|script|TorchLoop|{
+    // Variables used here:
+    // @Torch - pass before calling
+    // @TorchColor - initialized here, updated throughout
+    // @TorchIntensity - initialized here, updated throughout
+    callfunc "GetTorchColor";
+    callfunc "GetTorchIntensity";
 
-    set @Torch, 0;
-    callfunc("GetTorchColor");
-    callfunc("GetTorchIntensity");
-
-    set @lastColor, @TorchColor;
-    setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
-    setarray @intensities$,"calm","bright","blinding";
+    setarray @colors$, "transparent",
+        "red", "dark orange", "orange", "light orange",
+        "yellow", "light green", "green", "dark green",
+        "blue", "dark purple", "purple", "light purple";
+    setarray @intensities$, "calm", "bright", "blinding";
     mes "Looking closely you notice that this torch is not like the others. This one has a " + @intensities$[@TorchIntensity] + " " + @colors$[@TorchColor] + " tint to it.";
     goto L_Color_Loop;
 
 L_Color_Loop:
-    callfunc("GetTorchColor");
     menu
         "Add Red Powder", L_Use_Red,
         "Add Yellow Powder", L_Use_Yellow,
@@ -127,66 +127,123 @@ L_Color_Loop:
 L_Use_Red:
     if (countitem("RedPowder") < 1)
         goto L_No_Powder;
-    if (@TorchColor > 6 && @TorchColor < 12)
-        set @Color, @TorchColor + 1;
-    if (@TorchColor < 6 && @TorchColor > 1)
-        set @Color, @TorchColor - 1;
-    if (@TorchColor == 12)
-        set @Color, 1;
-    if (@TorchColor == 0)
-        set @Color, 1;
-    callfunc("SetTorchColor");
     delitem "RedPowder", 1;
+
+    // 0 1 2 3 4 5 6 7 8 9 a b c
+    // T R   o   Y   g   B   p
+    //   ^ < < < < , X . > > > >
+    if (@TorchColor == 1)
+        goto L_Wrong_Color;
+    if (2 <= @TorchColor && @TorchColor <= 5)
+        goto L_Color_Dec;
+    if (@TorchColor == 6)
+        goto L_Color_Dec_Wrong;
+    if (@TorchColor == 7)
+        goto L_Wrong_Color;
+    if (@TorchColor == 8)
+        goto L_Color_Inc_Wrong;
+    if (9 <= @TorchColor && @TorchColor <= 12)
+        goto L_Color_Inc;
+
+    // work around an old bug
+    if (@TorchColor == 0)
+        set @TorchColor, 1;
     goto L_Show_Color;
 
 L_Use_Yellow:
     if (countitem("YellowPowder") < 1)
         goto L_No_Powder;
-    if (@TorchColor < 10 && @TorchColor > 5)
-        set @Color, @TorchColor - 1;
-    if (@TorchColor >= 1 && @TorchColor < 5)
-        set @Color, @TorchColor + 1;
-    if (@TorchColor == 0)
-        set @Color, 5;
-    callfunc("SetTorchColor");
     delitem "YellowPowder", 1;
+
+    // 0 1 2 3 4 5 6 7 8 9 a b c
+    // T R   o   Y   g   B   p
+    //   > > > > ^ < < < < , X .
+    if (1 <= @TorchColor && @TorchColor <= 4)
+        goto L_Color_Inc;
+    if (@TorchColor == 5)
+        goto L_Wrong_Color;
+    if (6 <= @TorchColor && @TorchColor <= 9)
+        goto L_Color_Dec;
+    if (@TorchColor == 10)
+        goto L_Color_Dec_Wrong;
+    if (@TorchColor == 11)
+        goto L_Wrong_Color;
+    if (@TorchColor == 12)
+        goto L_Color_Inc_Wrong;
+
+    // work around an old bug
+    if (@TorchColor == 0)
+        set @TorchColor, 5;
     goto L_Show_Color;
 
 L_Use_Blue:
     if (countitem("BluePowder") < 1)
         goto L_No_Powder;
-    if (@TorchColor > 4 && @TorchColor < 9)
-        set @Color, @TorchColor + 1;
-    if (@TorchColor <= 12 && @TorchColor > 9)
-        set @Color, @TorchColor - 1;
-    if (@TorchColor == 1)
-        set @Color, 12;
-    if (@TorchColor == 0)
-        set @Color, 9;
-    callfunc("SetTorchColor");
     delitem "BluePowder", 1;
+
+    // 0 1 2 3 4 5 6 7 8 9 a b c
+    // T R   o   Y   g   B   p
+    //   < , X . > > > > ^ < < <
+    if (@TorchColor == 1)
+        goto L_Color_Dec;
+    if (@TorchColor == 2)
+        goto L_Color_Dec_Wrong;
+    if (@TorchColor == 3)
+        goto L_Wrong_Color;
+    if (@TorchColor == 4)
+        goto L_Color_Inc_Wrong;
+    if (5 <= @TorchColor && @TorchColor <= 8)
+        goto L_Color_Inc;
+    if (@TorchColor == 9)
+        goto L_WrongColor;
+    if (10 <= @TorchColor && @TorchColor <= 12)
+        goto L_Color_Dec;
+
+    // work around an old bug
+    if (@TorchColor == 0)
+        set @TorchColor, 9;
     goto L_Show_Color;
 
 L_No_Powder:
     mes "You notice you're all out of that color of powder. Perhaps Orum can make you some more.";
     close;
 
+L_Color_Dec:
+    set @TorchColor, @TorchColor - 1;
+    if (@TorchColor == 0)
+        set @TorchColor, 12;
+    goto L_Show_Color;
+
+L_Color_Dec_Wrong:
+    set @TorchColor, @TorchColor - 1;
+    if (@TorchColor == 0)
+        set @TorchColor, 12;
+    goto L_Wrong_Color;
+
+L_Color_Inc_Wrong:
+    set @TorchColor, @TorchColor + 1;
+    if (@TorchColor == 13)
+        set @TorchColor, 1;
+    goto L_Wrong_Color;
+
+L_Color_Inc:
+    set @TorchColor, @TorchColor + 1;
+    if (@TorchColor == 13)
+        set @TorchColor, 1;
+    goto L_Show_Color;
+
 L_Show_Color:
-    callfunc("GetTorchColor");
-    callfunc("GetTorchIntensity");
-    if (@TorchColor == @lastColor)
-        goto L_Wrong_Color;
+    callfunc "SetTorchColor";
     misceffect 5;
-    set @lastColor, @TorchColor;
     mes "As your pour the powder into the flame you can see its tint transform to a " + @intensities$[@TorchIntensity] + " " + @colors$[@TorchColor] + ".";
     goto L_Color_Loop;
 
 L_Wrong_Color:
-    set @Intensity, @TorchIntensity + 1;
-    if (@Intensity > 2)
+    callfunc "SetTorchColor";
+    set @TorchIntensity, @TorchIntensity + 1;
+    if (@TorchIntensity > 2)
         goto L_Failed;
-    callfunc("SetTorchIntensity");
-    callfunc("GetTorchIntensity");
+    callfunc "SetTorchIntensity";
     misceffect 5;
     mes "As you pour the powder into the flame it flares violently for a moment and then turns into a " + @intensities$[@TorchIntensity] + " " + @colors$[@TorchColor] + ".";
     goto L_Color_Loop;
@@ -195,10 +252,20 @@ L_Failed:
     mes "As you pour the powder into the flame it flares violently before bursting into your face!";
     misceffect 5;
     misceffect 16;
-    set @Intensity, 0;
-    callfunc("SetTorchIntensity");
+    set @TorchIntensity, 0;
+    callfunc "SetTorchIntensity";
     heal -Hp, 0;
     close;
+}
+
+// First Torch
+009-4.gat,68,21,0|script|Torch|400,{
+    callfunc "InRangeTorch1";
+    callfunc "DoneWithTorches";
+
+    set @Torch, 0;
+    callfunc "TorchLoop";
+    // unreachable
 }
 
 // Second Torch
@@ -207,101 +274,9 @@ L_Failed:
     callfunc "DoneWithTorches";
 
     set @Torch, 1;
-    callfunc("GetTorchColor");
-    callfunc("GetTorchIntensity");
-
-    set @lastColor, @TorchColor;
-    setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
-    mes "Looking closely you notice that this torch is not like the others. This one has a " + @intensities$[@TorchIntensity] + " " + @colors$[@TorchColor] + " tint to it.";
-    goto L_Color_Loop;
-
-L_Color_Loop:
-    callfunc("GetTorchColor");
-    menu
-        "Add Red Powder", L_Use_Red,
-        "Add Yellow Powder", L_Use_Yellow,
-        "Add Blue Powder", L_Use_Blue,
-        "Leave it alone.", -;
-    mes "The flame flickers as if it's laughing at you.";
-    close;
-
-L_Use_Red:
-    if (countitem("RedPowder") < 1)
-        goto L_No_Powder;
-    if (@TorchColor > 6 && @TorchColor < 12)
-        set @Color, @TorchColor + 1;
-    if (@TorchColor < 6 && @TorchColor > 1)
-        set @Color, @TorchColor - 1;
-    if (@TorchColor == 12)
-        set @Color, 1;
-    if (@TorchColor == 0)
-        set @Color, 1;
-    callfunc("SetTorchColor");
-    delitem "RedPowder", 1;
-    goto L_Show_Color;
-
-L_Use_Yellow:
-    if (countitem("YellowPowder") < 1)
-        goto L_No_Powder;
-    if (@TorchColor < 10 && @TorchColor > 5)
-        set @Color, @TorchColor - 1;
-    if (@TorchColor >= 1 && @TorchColor < 5)
-        set @Color, @TorchColor + 1;
-    if (@TorchColor == 0)
-        set @Color, 5;
-    callfunc("SetTorchColor");
-    delitem "YellowPowder", 1;
-    goto L_Show_Color;
-
-L_Use_Blue:
-    if (countitem("BluePowder") < 1)
-        goto L_No_Powder;
-    if (@TorchColor > 4 && @TorchColor < 9)
-        set @Color, @TorchColor + 1;
-    if (@TorchColor <= 12 && @TorchColor > 9)
-        set @Color, @TorchColor - 1;
-    if (@TorchColor == 1)
-        set @Color, 12;
-    if (@TorchColor == 0)
-        set @Color, 9;
-    callfunc("SetTorchColor");
-    delitem "BluePowder", 1;
-    goto L_Show_Color;
-
-L_No_Powder:
-    mes "You notice you're all out of that color powder. Perhaps Orum can make you some more.";
-    close;
-
-L_Show_Color:
-    callfunc("GetTorchColor");
-    callfunc("GetTorchIntensity");
-    if (@TorchColor == @lastColor)
-        goto L_Wrong_Color;
-    misceffect 5;
-    set @lastColor, @TorchColor;
-    mes "As your pour the powder into the flame you can see its tint transform to a " + @intensities$[@TorchIntensity] + " " + @colors$[@TorchColor] + ".";
-    goto L_Color_Loop;
-
-L_Wrong_Color:
-    set @Intensity, @TorchIntensity + 1;
-    if (@Intensity > 2)
-        goto L_Failed;
-    callfunc("SetTorchIntensity");
-    callfunc("GetTorchIntensity");
-    misceffect 5;
-    mes "As you pour the powder into the flame it flares violently for a moment and then turns into a " + @intensities$[@TorchIntensity] + " " + @colors$[@TorchColor] + ".";
-    goto L_Color_Loop;
-
-L_Failed:
-    mes "As you pour the powder into the flame it flares violently before bursting into your face!";
-    misceffect 5;
-    misceffect 16;
-    set @Intensity, 0;
-    callfunc("SetTorchIntensity");
-    heal -Hp, 0;
-    close;
+    callfunc "TorchLoop";
+    // unreachable
 }
-
 
 // Third Torch
 009-4.gat,33,86,0|script|Torch|400,{
@@ -309,96 +284,6 @@ L_Failed:
     callfunc "DoneWithTorches";
 
     set @Torch, 2;
-    callfunc("GetTorchColor");
-    callfunc("GetTorchIntensity");
-
-    set @lastColor, @TorchColor;
-    setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
-    setarray @intensities$,"calm","bright","blinding";
-    mes "Looking closely you notice that this torch is not like the others. This one has a " + @intensities$[@TorchIntensity] + " " + @colors$[@TorchColor] + " tint to it.";
-    goto L_Color_Loop;
-
-L_Too_Far:
-    mes "You're too far away to do anything with that torch.";
-    close;
-
-L_Color_Loop:
-    callfunc("GetTorchColor");
-    menu
-        "Add Red Powder", L_Use_Red,
-        "Add Yellow Powder", L_Use_Yellow,
-        "Add Blue Powder", L_Use_Blue,
-        "Leave it alone.", -;
-    mes "The flame flickers as if it's laughing at you.";
-    close;
-
-L_Use_Red:
-    if (countitem("RedPowder") < 1)
-        goto L_No_Powder;
-    if (@TorchColor > 6 && @TorchColor < 12)
-        set @Color, @TorchColor + 1;
-    if (@TorchColor < 6 && @TorchColor > 1)
-        set @Color, @TorchColor - 1;
-    if (@TorchColor == 12)
-        set @Color, 1;
-    callfunc("SetTorchColor");
-    delitem "RedPowder", 1;
-    goto L_Show_Color;
-
-L_Use_Yellow:
-    if (countitem("YellowPowder") < 1)
-        goto L_No_Powder;
-    if (@TorchColor < 10 && @TorchColor > 5)
-        set @Color, @TorchColor - 1;
-    if (@TorchColor >= 1 && @TorchColor < 5)
-        set @Color, @TorchColor + 1;
-    callfunc("SetTorchColor");
-    delitem "YellowPowder", 1;
-    goto L_Show_Color;
-
-L_Use_Blue:
-    if (countitem("BluePowder") < 1)
-        goto L_No_Powder;
-    if (@TorchColor > 4 && @TorchColor < 9)
-        set @Color, @TorchColor + 1;
-    if (@TorchColor <= 12 && @TorchColor > 9)
-        set @Color, @TorchColor - 1;
-    if (@TorchColor == 1)
-        set @Color, 12;
-    callfunc("SetTorchColor");
-    delitem "BluePowder", 1;
-    goto L_Show_Color;
-
-L_No_Powder:
-    mes "You notice you're all out of that color powder. Perhaps Orum can make you some more.";
-    close;
-
-L_Show_Color:
-    callfunc("GetTorchColor");
-    callfunc("GetTorchIntensity");
-    if (@TorchColor == @lastColor)
-        goto L_Wrong_Color;
-    misceffect 5;
-    set @lastColor, @TorchColor;
-    mes "As your pour the powder into the flame you can see its tint transform to a " + @intensities$[@TorchIntensity] + " " + @colors$[@TorchColor] + ".";
-    goto L_Color_Loop;
-
-L_Wrong_Color:
-    set @Intensity, @TorchIntensity + 1;
-    if (@Intensity > 2)
-        goto L_Failed;
-    callfunc("SetTorchIntensity");
-    callfunc("GetTorchIntensity");
-    misceffect 5;
-    mes "As you pour the powder into the flame it flares violently for a moment and then turns into a " + @intensities$[@TorchIntensity] + " " + @colors$[@TorchColor] + ".";
-    goto L_Color_Loop;
-
-L_Failed:
-    mes "As you pour the powder into the flame it flares violently before bursting into your face!";
-    misceffect 5;
-    misceffect 16;
-    set @Intensity, 0;
-    callfunc("SetTorchIntensity");
-    heal -Hp, 0;
-    close;
+    callfunc "TorchLoop";
+    // unreachable
 }

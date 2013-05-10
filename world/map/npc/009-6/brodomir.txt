@@ -87,7 +87,15 @@ L_Item:
         goto L_Wait;
     if (countitem(@brodomir_item$) < @brodomir_item_amount)
         goto L_NoItem;
-    delitem @brodomir_item$, @brodomir_item_amount;
+
+    // we need this loop because for items that can't be stacked, delitem can only delete a single one
+    set @loopcounter, @brodomir_item_amount;
+L_Delitem:
+    delitem @brodomir_item$, 1;
+    set @loopcounter, @loopcounter - 1;
+    if (@loopcounter > 0)
+        goto L_Delitem;
+
     set $@BRODOMIR_SPONSOR, getcharid(3);
     goto L_Go;
 
@@ -162,10 +170,19 @@ L_Warp:
 
 L_Warpfail:
     mapannounce "009-6.gat", "There are not enough players around to start!", 0;
-    if ($@BRODOMIR_ITEM_AMOUNT == 0)
+    if ($@BRODOMIR_ITEM_AMOUNT == 0 || $@BRODOMIR_ITEM$ == "")
         goto L_Cleanup;
-    if (attachrid($@BRODOMIR_SPONSOR) != 0)
-        getitem $@BRODOMIR_ITEM$, $@BRODOMIR_ITEM_AMOUNT;
+    if (attachrid($@BRODOMIR_SPONSOR) == 0)
+        goto L_SkipItemback;
+
+    // we need this loop because for items that can't be stacked, getitem will stack them nevertheless
+L_GetitemLoop:
+    getitem $@BRODOMIR_ITEM$, 1;
+    set $@BRODOMIR_ITEM_AMOUNT, $@BRODOMIR_ITEM_AMOUNT - 1;
+    if ($@BRODOMIR_ITEM_AMOUNT > 0)
+        goto L_GetitemLoop;
+
+L_SkipItemback:
     set $@BRODOMIR_ITEM_AMOUNT, 0;
     set $@BRODOMIR_ITEM$, "";
     set $@BRODOMIR_SPONSOR, 0;
@@ -182,8 +199,17 @@ onReward:
         goto L_Dead;
     message strcharinfo(0), "Congratulations you won!";
     set Zeny, Zeny + ($@BRODOMIR_MONEY + 150 * $@BRODOMIR_PLAYERS);
-    getitem $@BRODOMIR_ITEM$, $@BRODOMIR_ITEM_AMOUNT;
-    set $@BRODOMIR_ITEM_AMOUNT, 0;
+    if ($@BRODOMIR_ITEM_AMOUNT == 0 || $@BRODOMIR_ITEM$ == "")
+        goto L_SkipItem;
+
+    // we need this loop because for items that can't be stacked, getitem will stack them nevertheless
+L_Getitem:
+    getitem $@BRODOMIR_ITEM$, 1;
+    set $@BRODOMIR_ITEM_AMOUNT, $@BRODOMIR_ITEM_AMOUNT - 1;
+    if ($@BRODOMIR_ITEM_AMOUNT > 0)
+        goto L_Getitem;
+
+L_SkipItem:
     set $@BRODOMIR_ITEM$, "";
     set $@BRODOMIR_SPONSOR, 0;
     set $@BRODOMIR_MONEY, 0;
