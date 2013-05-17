@@ -328,11 +328,13 @@ def main(argv):
                 mob_names[int(k)] = v.strip()
 
     npc_master = []
+    map_basenames = []
 
     for arg in os.listdir(tmx_dir):
         base, ext = posixpath.splitext(arg)
 
         if ext == '.tmx':
+            map_basenames.append(base)
             tmx = posixpath.join(tmx_dir, arg)
             wlk = posixpath.join(wlk_dir, base + '.wlk')
             this_map_npc_dir = posixpath.join(npc_dir, base)
@@ -344,6 +346,9 @@ def main(argv):
                         xml.sax.parse(tmx, ContentHandler(wlk, this_map_npc_dir, mobs, warps, imports))
             npc_master.append('import: %s\n' % posixpath.join(SERVER_NPCS, base, NPC_IMPORTS))
 
+    with open(posixpath.join(wlk_dir, 'resnametable.txt'), 'w') as resname:
+        for base in sorted(map_basenames):
+            resname.write('%s.gat#%s.wlk#\n' % (base, base))
     with open(posixpath.join(npc_dir, NPC_MASTER_IMPORTS), 'w') as out:
         out.write('// %s\n\n' % MESSAGE)
         npc_master.sort()
