@@ -8,6 +8,7 @@
 //      0: Broadcasts not running
 //      1: Broadcasts running
 // $@GMSA_MSG$: the message to be broadcasted
+// $@GMSA_MAX: the number of times the broadcast will be performed, if > 0
 // $@GMSA_TICK: broadcast the message every $@GMSA_TICK hours
 // $@GMSA_CURRENT_TICK: internal counter incremented every hour
 
@@ -72,7 +73,15 @@ L_CreateBroadcast:
 
     next;
     mes "[GM Scheduled Broadcasts Board]";
-    mes "The current message will be broadcasted every " + $@GMSA_TICK + " hour(s):";
+    mes "If you want the message to be broadcasted a limited number of times, enter its value. Keep 0 otherwise:";
+    input $@GMSA_MAX;
+
+    next;
+    mes "[GM Scheduled Broadcasts Board]";
+    if ($@GMSA_MAX == 0)
+        mes "The current message will be broadcasted every " + $@GMSA_TICK + " hour(s):";
+    if ($@GMSA_MAX > 0)
+        mes "The current message will be broadcasted every " + $@GMSA_TICK + " hour(s), up to " + $@GMSA_MAX + " times:";
     mes $@GMSA_MSG$;
     next;
     mes "Is this correct?";
@@ -80,7 +89,7 @@ L_CreateBroadcast:
         "No. I'll retry.", L_CreateBroadcast,
         "No", L_Close,
         "Yes. Broadcast this. (the first broadcast will happen in " + $@GMSA_TICK + " hour(s).)", L_StartBroadcast,
-        "Yes. Broadcast this, and make a broadcast right now.", L_StartBroadcast2;
+        "Yes. Broadcast this, and make an extra broadcast right now.", L_StartBroadcast2;
 
 L_InvalidBroadcastMessage:
     mes "[GM Scheduled Broadcasts Board]";
@@ -112,14 +121,19 @@ L_ManualBroadcast:
     goto L_Close;
 
 L_StopBroadcast:
+    callsub S_StopBroadcast;
+    mes "Done.";
+    goto L_Close;
+
+S_StopBroadcast:
     stopnpctimer;
     setnpctimer 0;
     set $@GMSA_STATUS, 0;
     set $@GMSA_MSG$, "";
     set $@GMSA_TICK, 0;
+    set $@GMSA_MAX, 0;
     set $@GMSA_CURRENT_TICK, 0;
-    mes "Done.";
-    goto L_Close;
+    return;
 
 L_StartBroadcast2:
     if ($@GMSA_STATUS == 1)
@@ -140,8 +154,6 @@ L_Abort:
     goto L_Close;
 
 L_Close:
-    set @gmsa_msg$, "";
-    set @gmsa_tick, 0;
     close;
 
 OnTimer3600000:
@@ -151,6 +163,9 @@ OnTimer3600000:
         end;
     callsub S_PerformBroadcast;
     set $@GMSA_CURRENT_TICK, 0;
+    set $@GMSA_MAX, $@GMSA_MAX - 1;
+    if ($@GMSA_MAX == 0)
+        callsub S_StopBroadcast;
     end;
 
 }
