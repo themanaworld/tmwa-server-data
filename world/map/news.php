@@ -8,7 +8,7 @@ $cur_version = '0.6.1';
 // utility functions
 function failure_headers()
 {
-    header('HTTP/1.0 403 Forbidden');
+    header('HTTP/1.0 403 Upgrade your client');
     common_headers();
 }
 
