@@ -23,7 +23,7 @@ indent-items: tools/aligncsv
 indent-mobs: tools/aligncsv
 	tools/aligncsv world/map/db/mob_db.txt
 
-world/map/news.txt world/map/news.html: tools/news.py tools/_news_colors.py world/map/news.d/*
+world/map/news.txt world/map/news.html: tools/news.py tools/_news_colors.py world/map/news.d/* world/map/news.d/
 	tools/news.py world/map/ world/map/news.d/
 
 news: world/map/news.txt world/map/news.html

@@ -3,62 +3,67 @@ function|script|EvilObelisk|{
     mes "(A mystical aura surrounds this stone.  It seems to crave money.)";
     next;
 
+    set @cost_jacko, 6500;
+    set @cost_gy1, 4000;
+    set @cost_gy2, 3000;
+    set @cost_skull, 2800;
+    set @cost_snake, 2500;
+
     menu
-        "Pay it 200,000 gold", L_JACKO,
-        "Pay it 100,000 gold", L_GRAVEYARD1,
-        "Pay it 75,000 gold", L_GRAVEYARD2,
-        "Pay it 50,000 gold", L_SKULL,
-        "Pay it 25,000 gold", L_SNAKE,
-        "Don't pay it anything.", -;
-    close;
-    return;
+        "Don't pay it anything.", -,
+        "Pay it " + @cost_jacko + " gold.", L_JACKO,
+        "Pay it " + @cost_gy1 + " gold.", L_GRAVEYARD1,
+        "Pay it " + @cost_gy2 + " gold.", L_GRAVEYARD2,
+        "Pay it " + @cost_skull + " gold.", L_SKULL,
+        "Pay it " + @cost_snake + " gold.", L_SNAKE;
+    goto L_Close;
 
 L_JACKO:
-    if (Zeny < 200000)
+    if (Zeny < @cost_jacko)
         goto L_NotEnough;
-    set Zeny, Zeny - 200000;
+    set Zeny, Zeny - @cost_jacko;
     set @mob_id, 1022;
-    set @mob_count, rand(2) + 1;
+    set @mob_count, rand(1,2);
     goto L_Summon;
 
 L_GRAVEYARD1:
-    if (Zeny < 100000)
+    if (Zeny < @cost_gy1)
         goto L_NotEnough;
     set @temp, rand(2);
     if(@temp == 0)
         set @mob_id, 1036;  // Zombie
     if(@temp == 1)
         set @mob_id, 1045;  // Fallen
-    set @mob_count, rand(2) + 1;
-    set Zeny, Zeny - 100000;
+    set @mob_count, rand(1,2);
+    set Zeny, Zeny - @cost_gy1;
     goto L_Summon;
 
 L_GRAVEYARD2:
-    if (Zeny < 75000)
+    if (Zeny < @cost_gy2)
         goto L_NotEnough;
     set @temp, rand(2);
     if(@temp == 0)
         set @mob_id, 1044;  // Lady Skelly
     if(@temp == 1)
         set @mob_id, 1043;  // Normal Skelly
-    set @mob_count, rand(2) + 1;
-    set Zeny, Zeny - 75000;
+    set @mob_count, rand(1,2);
+    set Zeny, Zeny - @cost_gy2;
     goto L_Summon;
 
 L_SKULL:
-    if (Zeny < 50000)
+    if (Zeny < @cost_skull)
         goto L_NotEnough;
     set @temp, rand(2);
     if(@temp == 0)
         set @mob_id, 1024;  // Poison
     if(@temp == 1)
         set @mob_id, 1023;  // Fire
-    set @mob_count, rand(4) + 1;
-    set Zeny, Zeny - 50000;
+    set @mob_count, rand(1,4);
+    set Zeny, Zeny - @cost_skull;
     goto L_Summon;
 
 L_SNAKE:
-    if (Zeny < 25000)
+    if (Zeny < @cost_snake)
         goto L_NotEnough;
     set @temp, rand(4);
     if(@temp == 0)
@@ -69,17 +74,24 @@ L_SNAKE:
         set @mob_id, 1010;  // Normal
     if(@temp == 3)
         set @mob_id, 1021;  // Cave
-    set @mob_count, rand(4) + 1;
-    set Zeny, Zeny - 25000;
+    set @mob_count, rand(1,4);
+    set Zeny, Zeny - @cost_snake;
     goto L_Summon;
 
 L_Summon:
-    monster @map$, @x, @y, "Evil", @mob_id, @mob_count;
-    close;
-    return;
+    areamonster @map$, @x0, @y0, @x1, @y1, "Evil", @mob_id, @mob_count;
+    goto L_Close;
 
 L_NotEnough:
     mes "You don't have that much money";
-    close;
+    goto L_Close;
+
+L_Close:
+    set @cost_jacko, 0;
+    set @cost_gy1, 0;
+    set @cost_gy2, 0;
+    set @cost_skull, 0;
+    set @cost_snake, 0;
     return;
+
 }

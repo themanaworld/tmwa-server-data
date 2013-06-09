@@ -2,6 +2,9 @@
 
     set @ROBE_COCOONS_NR, 150; // must be multiple of ten
     set @ROBE_ZENY, 10000;
+    set @ROBE_SHEETS_NR, 6;      // number of silk sheets required for the silk robe. Must be less than 10.
+    set @ROBE_SHEETS_ZENY, 6000; // price of the silk robe when bringing silk sheets.
+    set @Robe_with_sheets, 0;    // will be set to 1 if silk robe is made with sheets
     set @FINEDRESS_COCOONS, 180;
     set @SORCERER_ROBE_SEW_ZENY, 25000;
     set @SORCERER_ROBE_NUM_COTTON_CLOTH, 2;
@@ -683,13 +686,13 @@ L_robe:
     mes "[Lora Tay the Seamstress]";
     mes "\"A robe?  Well, as long as you're not asking me to make it out of cotton...\"";
     next;
-    if (countitem("SilkCocoon") == 0)
+    if (countitem("SilkCocoon")== 0 && countitem("SilkSheet")== 0)
         goto L_robe_nosilk;
 
 L_robe_menu:
     menu
         "Here, I have some silk cocoons!", -,
-        "Here, I have some silk sheets!", L_robe_nosilk,
+        "Here, I have some silk sheets!", L_robe_sheets,
         "Where can I find silk?", L_where_silk,
         "How much silk do you need?", L_how_much_silk,
         "Oh, never mind.", L_main_menu;
@@ -723,10 +726,33 @@ L_robe_menu:
         goto L_TooMany;
     set Zeny, Zeny - @ROBE_ZENY;
     delitem "SilkCocoon", @ROBE_COCOONS_NR;
-    getitem "SilkRobe", 1;
     mes "[Lora Tay the Seamstress]";
     mes "The seamstress puts your cocoons and GP away, takes your measurements and pulls out several silk sheets.  She asks you to stretch out your arms, then pins the silk sheets in place all over your body.";
     next;
+    goto L_get_robe;
+
+L_robe_sheets:
+    set @Robe_with_sheets, 1;
+    mes "[Lora Tay the Seamstress]";
+    mes "\"Let's see... " + @ROBE_SHEETS_NR + " silk sheets and " + @ROBE_SHEETS_ZENY + " GP should just about cover that.\"";
+    next;
+    menu
+        "I'm not interested.", L_main_menu,
+        "Very well then, here you are.", -;
+    if (countitem("SilkSheet") < @ROBE_SHEETS_NR)
+        goto L_robe_missing_sheets;
+    if (Zeny < @ROBE_SHEETS_ZENY)
+        goto L_robe_sheet_missing_Zeny;
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitem("SilkSheet") > @ROBE_SHEETS_NR)
+        goto L_TooMany;
+    set Zeny, Zeny - @ROBE_SHEETS_ZENY;
+    delitem "SilkSheet", @ROBE_SHEETS_NR;
+    mes "[Lora Tay the Seamstress]";
+    mes "The seamstress puts your GP away, takes your measurements and puts the silk sheets on the table.  She asks you to stretch out your arms, then pins the silk sheets in place all over your body.";
+    next;
+    
+L_get_robe:
     mes "[Lora Tay the Seamstress]";
     mes "She proceeds to make a number of mysterious marks on the sheets with a charcoal pen.  Meanwhile, your arms are getting tired, but you're afraid to lower them-- she used a lot of pins to put everything into place, and you lost track of where they went...";
     next;
@@ -736,7 +762,15 @@ L_robe_menu:
     next;
     mes "[Lora Tay the Seamstress]";
     mes "She then treats the seams with some odorless liquid, making them vanish completely.  Finally she hands you the finished robe.";
+    getitem "SilkRobe", 1;
+    if (@Robe_with_sheets == 1) 
+        goto L_robe_sheet_end;
     mes "\"Here you are now, this will fit.  And don't you dare tell anyone that I did this!  I'm not about to start a silk cocoon collection!\"";
+    next;
+    goto L_main_menu;
+
+L_robe_sheet_end:
+    mes "\"Here you are now, this will fit. Thank you for bringing the sheets. People are so lazy nowadays! \"";
     next;
     goto L_main_menu;
 
@@ -750,6 +784,19 @@ L_robe_missing_cocoons:
 L_robe_missing_Zeny:
     mes "[Lora Tay the Seamstress]";
     mes "\"No, no no.  The way this works is that you give me the GP first and I give you the robe afterwards.  You're " + (@ROBE_ZENY - Zeny) + " GP short, so come back when you can afford the robe!\"";
+    next;
+    goto L_main_menu;
+
+L_robe_missing_sheets:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"" + @ROBE_SHEETS_NR + " silk sheets is what I said, not " + countitem("SilkSheet") + ".";
+    mes @ROBE_SHEETS_NR + " is " + (10-@ROBE_SHEETS_NR) + " less than you have fingers, in case that helps.\"";
+    next;
+    goto L_main_menu;
+
+L_robe_sheet_missing_Zeny:
+    mes "[Lora Tay the Seamstress]";
+    mes "\"No, no no.  The way this works is that you give me the GP first and I give you the robe afterwards.  You're " + (@ROBE_SHEETS_ZENY - Zeny) + " GP short, so come back when you can afford the robe!\"";
     next;
     goto L_main_menu;
 
@@ -776,6 +823,11 @@ L_robe_nosilk:
     goto L_main_menu;
 
 L_end:
+    set @ROBE_COCOONS_NR, 0; 
+    set @ROBE_ZENY, 0;
+    set @ROBE_SHEETS_NR, 0;
+    set @ROBE_SHEETS_ZENY, 0;
+    set @Robe_with_sheets, 0;
     close;
 
 // Input: @items (array of items you want to choose from)

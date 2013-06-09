@@ -1,0 +1,144 @@
+//  Hetchel the Silk Weaver
+//  bh28, 
+//  2013-03, GPLv2.
+//  
+//  Hetchel is referred to by Lora Tay.
+//  She weaves and sells standard double elbow square silk sheets.
+//  She could also sell, dyed sheets, Silk robes from Lora Tay.
+//  (6000 with cocoons, 40000 (?) with no cocoons).
+//
+//  Hetchel's workshop is actually under repair, Shé'll be back in 021-2 when workers have finished their job.
+//
+//  QUEST_WG_state: Global variable indicating winter gloves status. 
+//  Lora Tay proposes silk Robe if (QUEST_WG_state>= 11).
+//  @SHEET_COCOONS_NR : Number of cocoons required per sheet.
+//  Might ne calculated from @ROBE_COCOONS_NR/@ROBE_SHEETS_NR
+//  Actually: 150∕6 = 25
+//  @SHEET_ZENY       : Money to pay per sheet: A sixth of 10000-2*500-6000
+//  @SheetCount Number of sheets to buy (variable).
+
+021-1.gat,120,39,0|script|Hetchel|376,{
+    set @SHEET_COCOONS_NR, 25;
+    set @SHEET_ZENY, 500;
+    set @SheetCount, 0;
+
+    if (QUEST_WG_state < 11)
+        goto L_WG_quest_not_done;
+    mes "[Hetchel the weaver]";
+    mes "\"Hello I am Hetchel, I weave fine textiles, what can I do for you?\"";
+    menu
+        "Sorry to bother, I'm just visiting.", L_end,
+        "I am looking for silk sheets, Lora Tay told me that I could find some in this market. Can you help?", -;
+    next;
+    goto L_main_menu;
+
+L_WG_quest_not_done:
+    mes "[Hetchel the weaver]";
+    mes "\"Hello I am Hetchel, I weave fine textiles.";
+    mes "My best client is Lora Tay, at Dimond's.";
+    mes "What can I do for you?\"";
+    menu
+        "Sorry to bother, I'm new to this country, just visting.", L_end,
+        "What are you selling?", -;
+    next;
+
+L_main_menu:
+    mes "[Hetchel]";
+    mes "\"I have some silk sheets: double-elbow squares.\"";
+    menu
+        "I'm not interested at the moment, maybe later; thanks anyway.", L_end,
+        "Can I buy some?", -;
+//        "Do you have any silk robe I could buy?", L_robe,
+//        "Goodbye.", L_end;
+    mes "[Hetchel]";
+    mes "\"Sure but you need to provide raw materials.";
+    mes "I'll need " + @SHEET_COCOONS_NR +" silk cocoons per sheet,";
+    mes "and also " + @SHEET_ZENY +" GP per sheet for my work.\"";
+    next;
+    if (countitem("SilkCocoon") == 0)
+        goto L_sheet_no_cocoon;
+
+L_sheet_menu:
+    menu
+        "I have what you asked for.", -,
+        "Sorry I didn't pay attention enough, what do you need?", L_how_many_cocoons,
+        "Oops! Sorry, I'll come back soon with them.", L_end;
+    next;
+    mes "[Hetchel]";
+    mes "\"How many would you like?\"";
+    input @SheetCount;
+    if (@SheetCount == 0)
+        goto L_zero_sheet;
+    if (countitem("SilkCocoon") < @SheetCount * @SHEET_COCOONS_NR)
+        goto L_sheet_missing_cocoons;
+    if (Zeny < @SheetCount * @SHEET_ZENY)
+        goto L_sheet_missing_Zeny;
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitem("SilkSheet") < 1 && countitem("SilkCocoon") > @SheetCount * @SHEET_COCOONS_NR)
+        goto L_TooMany;
+    set Zeny, Zeny - @SheetCount * @SHEET_ZENY;
+    delitem "SilkCocoon", @SheetCount * @SHEET_COCOONS_NR;
+    getitem "Silksheet", @SheetCount;
+    mes "[Hetchel]";
+    mes "\"Thank you, I hope the sheets will fit your needs.";
+    mes "Please greet Lora for me when you see her.\"";
+    emotion EMOTE_HAPPY;
+    goto L_end;
+
+L_sheet_missing_cocoons:
+    mes "[Hetchel]";
+    mes "\"I'm sorry, but I need " + @SheetCount * @SHEET_COCOONS_NR + ", not " + countitem("SilkCocoon") + ".\"";
+    goto L_end;
+
+L_sheet_missing_Zeny:
+    mes "[Hetchel]";
+    mes "\"No, no no. The way this works is that you give me the GP first and I give you the sheets afterwards.";
+    mes "You're " + (@SheetCount * @SHEET_ZENY - Zeny) + " GP short, so come back when you can afford the sheets you asked for!\"";
+    goto L_end;
+
+L_how_many_cocoons:
+    mes "[Hetchel]";
+    mes "\"I need an average of " + @SHEET_COCOONS_NR + " cocoons per sheet";
+    mes "and also " + @SHEET_ZENY + " GP per sheet for my work.\"";
+    next;
+    goto L_sheet_menu;
+
+L_sheet_no_cocoon:
+    mes "[Hetchel]";
+    mes "\"You don't have any cocoon? I'm sorry I can't do anything for you.\"";
+    menu
+        "I'll seek for them.", L_end,
+        "Where can I get cocoons?", -;
+    next;
+    mes "[Hetchel]";
+    mes "\"Silk cocoons come from Silkworms. Silkworms live in the woodland area around Hurnscald.";
+    mes "Silkworms like especially woods and dark areas. You can go there by ferry.\"";
+    goto L_end;
+
+//L_robe:
+//    mes "[Hetchel]";
+//    mes "\"I am not a seamstress but I have a few silk robes from Lora Tay left.";
+//    mes "It is not your size as Lora made them for me, but Tondar was kind enough";
+//    mes "to cast a spell on it, so that it will fit to you as soon as you wear it.";
+//    mes "However his prices are not that low.\"";
+//    next;
+//
+//L_robe_menu:
+//    goto L_main_menu;
+
+L_zero_sheet:
+    mes "[Hetchel]";
+    mes "\"It's the best way to get quickly served!\"";
+    goto L_end;
+
+L_TooMany:
+    mes "[Hetchel]";
+    mes "\"Your bag hasn't room enough. Store some things and come back.\"";
+
+L_end:
+    set @SHEET_COCOONS_NR, 0;
+    set @SHEET_ZENY, 0;
+    set @SheetCount, 0;
+    close;
+}
+
