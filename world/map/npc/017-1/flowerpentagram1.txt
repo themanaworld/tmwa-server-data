@@ -23,6 +23,13 @@ L_FirstFlower:
     goto L_Close;
 
 L_Place:
+    set @localMonsterCount,
+        mobcount("017-1.gat", "#FlowerPentagram1::OnSquirrelDeath") +
+        mobcount("017-1.gat", "#FlowerPentagram1::OnScorpionDeath") +
+        2; // the mobcount function has an offset of -1, so we add 2 to have the actual amount of monsters
+    if (@localMonsterCount > 2)
+        goto L_MonstersAlive;
+
     if (countitem("OrangeSummonFlower") < 1)
         goto L_NoFlower;
     delitem "OrangeSummonFlower", 1;
@@ -46,6 +53,13 @@ OnScorpionDeath:
     callfunc "MobPoints";
     end;
 
+L_MonstersAlive:
+    mes "As you get closer to the place, you feel an unnerving presence.";
+    mes "The place has recently been used to summon something! And the beings are still near!";
+    next;
+    mes "You should get rid of them before attempting the summoning yourself.";
+    goto L_Close;
+
 L_NoFlower:
     mes "You don't have the flower with you. Where did you put it?";
     mes "If you can't find it again, you'll have to tell Orum.";
@@ -62,5 +76,6 @@ L_PlacedFifthFlower:
     goto L_Close;
 
 L_Close:
+    set @localMonsterCount, 0;
     close;
 }

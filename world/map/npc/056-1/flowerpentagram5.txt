@@ -1,6 +1,5 @@
 // Author: Jenalya
 // $@Flower_Pentagram_Time saves the time when the last summoning happened
-// TODO: think whether the 5 spawns of the endpoints also need a moblimit protection
 
 056-1.gat,62,31,0|script|#FlowerPentagram5|400,{
 goto L_Place;
@@ -24,6 +23,19 @@ L_FifthFlower:
     goto L_Close;
 
 L_Place:
+    set @localMonsterCount,
+        mobcount("013-1.gat", "#FlowerPentagram5::OnSquirrelDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnMushroomDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnBlueparDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnMoubooDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnScorpionDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnRScorpionDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnAScorpionDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnBScorpionDeath") +
+        8; // the mobcount function has an offset of -1, so we add 8 to have the actual amount of monsters
+    if (@localMonsterCount > 4)
+        goto L_MonstersAlive;
+
     mes "Nervous of what's going to happen, you take the last of the flowers and put it into place.";
     next;
     mes "Tension builds up around you, much stronger than all the times before. It pressures your head, your nose starts bleeding.";
@@ -104,6 +116,13 @@ L_TooEarly:
     mes "You should wait a while until it recovers, or go and search the creatures that got summoned.";
     goto L_Close;
 
+L_MonstersAlive:
+    mes "As you get closer to the place, you feel an unnerving presence.";
+    mes "The place has recently been used to summon something! And the beings are still near!";
+    next;
+    mes "You should get rid of them before attempting the summoning yourself.";
+    goto L_Close;
+
 L_NoFlower:
     mes "You reach into your pocket, but you can't find the flower! You're so close to completing you task.";
     mes "How could you loose the last flower? If you can't get it back, you have to tell Orum.";
@@ -115,5 +134,6 @@ L_PlacedFifthFlower:
     goto L_Close;
 
 L_Close:
+    set @localMonsterCount, 0;
     close;
 }
