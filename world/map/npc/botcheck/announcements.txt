@@ -7,6 +7,7 @@
 // $@GMSA_STATUS values:
 //      0: Broadcasts not running
 //      1: Broadcasts running
+// $@GMSA_NAME$: the GM/Admin who created the broadcast, if any
 // $@GMSA_MSG$: the message to be broadcasted
 // $@GMSA_MAX: the number of times the broadcast will be performed, if > 0
 // $@GMSA_TICK: broadcast the message every $@GMSA_TICK hours
@@ -28,7 +29,7 @@ L_InfoBroadcast:
     set @next_broadcast_m, (@next_broadcast_ts - @next_broadcast_h*3600)/60;
 
     mes "[GM Scheduled Broadcasts Board]";
-    mes "The current message is broadcasted every " + $@GMSA_TICK + " hour(s):";
+    mes $@GMSA_NAME$ + " scheduled the current message, every " + $@GMSA_TICK + " hour(s):";
     mes $@GMSA_MSG$;
     next;
     if (@next_broadcast_h > 0)
@@ -129,6 +130,7 @@ S_StopBroadcast:
     stopnpctimer;
     setnpctimer 0;
     set $@GMSA_STATUS, 0;
+    set $@GMSA_NAME$, "";
     set $@GMSA_MSG$, "";
     set $@GMSA_TICK, 0;
     set $@GMSA_MAX, 0;
@@ -143,6 +145,7 @@ L_StartBroadcast:
     if ($@GMSA_STATUS == 1)
         goto L_Abort;
     set $@GMSA_STATUS, 1;
+    set $@GMSA_NAME$, strcharinfo(0);
     set $@GMSA_CURRENT_TICK, 0;
     initnpctimer;
     mes "Done.";
@@ -150,7 +153,7 @@ L_StartBroadcast:
 
 L_Abort:
     mes "[GM Scheduled Broadcasts Board]";
-    mes "Another GM has created a scheduled broadcast just before you, hence yours will abort.";
+    mes $@GMSA_NAME$ + " has created a scheduled broadcast just before you, hence yours will abort.";
     goto L_Close;
 
 L_Close:
