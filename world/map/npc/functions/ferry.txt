@@ -5,6 +5,7 @@ function|script|Ferry|{
         goto L_LowerCost;
     set @cost_tulimshar, 500;
     set @cost_hurnscald, 500;
+    set @cost_nivalis, 500;
 
 L_Start:
     set @cost_candor, 1500;
@@ -19,6 +20,7 @@ L_PlainMenu:
     menu
         "Tulimshar (" + @cost_tulimshar + "GP)", L_Tulimshar,
         "Hurnscald (" + @cost_hurnscald + "GP)", L_Hurnscald,
+        "Nivalis (" + @cost_nivalis + "GP)", L_Nivalis,
         "Nevermind", -;
     goto L_Close;
 
@@ -26,6 +28,7 @@ L_MenuWithCandor:
     menu
         "Tulimshar (" + @cost_tulimshar + "GP)", L_Tulimshar,
         "Hurnscald (" + @cost_hurnscald + "GP)", L_Hurnscald,
+        "Nivalis (" + @cost_nivalis + "GP)", L_Nivalis,
         "Candor (" + @cost_candor + "GP)", L_Candor,
         "Nevermind", -;
     goto L_Close;
@@ -50,6 +53,16 @@ L_Hurnscald:
     warp "008-1.gat", 137, 64;
     goto L_Close;
 
+L_Nivalis:
+    if (@loc == DOCK_nivalis)
+        goto L_AlreadyThere;
+    if (Zeny < @cost_nivalis)
+        goto L_NotEnoughGP;
+
+    set Zeny, Zeny - @cost_nivalis;
+    warp "031-1.gat", 95, 118;
+    goto L_Close;
+
 L_Candor:
     if (@loc == DOCK_candor)
         goto L_AlreadyThere;
@@ -71,12 +84,14 @@ L_NotEnoughGP:
 L_LowerCost:
     set @cost_tulimshar, 250;
     set @cost_hurnscald, 250;
+    set @cost_nivalis, 250;
     goto L_Start;
 
 L_Close:
     set @cost_tulimshar, 0;
     set @cost_hurnscald, 0;
     set @cost_candor, 0;
+    set @cost_nivalis, 0;
     set @loc, 0;
     close;
 }
