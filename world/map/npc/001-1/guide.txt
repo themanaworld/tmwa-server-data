@@ -4,9 +4,13 @@
     // This line is only relevant for players, who started before the timestamp was introduced.
     // Set the graduation cap flag at the right position.
     // It is a bugfix
-    if ((TUT_var < 4) && (TUT_var & 2)) set FLAGS, FLAGS|FLAG_GOT_GRADUATIONCAP;
+    if ((TUT_var < 4) && (TUT_var & 2))
+        set FLAGS, FLAGS|FLAG_GOT_GRADUATIONCAP;
 
-    if ((TUT_var != 0) && !(FLAGS & FLAG_GOT_GRADUATIONCAP) && BaseLevel >= 10) callsub S_Grad;
+    if ((TUT_var != 0) && !(FLAGS & FLAG_GOT_GRADUATIONCAP) && BaseLevel >= 10)
+        goto L_Grad;
+
+L_DoneGrad:
     mes "[Ian the Guide]";
     mes "\"Would you like to know about something?\"";
     next;
@@ -160,7 +164,7 @@ L_Know:
     mes "\"But remember, the game isn't fun when you already know what to do. Use it well or you will lose interest in playing The Mana World! Please help by reporting anything that is unclear, outdated or that needs to be seen on our forums at http://forums.themanaworld.org.\"";
     close;
 
-S_Grad:
+L_Grad:
     getinventorylist;
     if (@inventorylist_count == 100) goto L_TooMany;
     mes "[Ian the Guide]";
@@ -168,11 +172,11 @@ S_Grad:
     getitem "GraduationCap", 1;
     set FLAGS, FLAGS | FLAG_GOT_GRADUATIONCAP;
     next;
-    return;
+    goto L_DoneGrad;
 
 L_TooMany:
     mes "[Ian the Guide]";
     mes "\"I wanted to give you something, but you don't have room for it.\"";
     next;
-    return;
+    goto L_DoneGrad;
 }
