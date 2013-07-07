@@ -20,6 +20,8 @@
 ##    You should have received a copy of the GNU General Public License
 ##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cgi
+
 __all__ = ['make_html_colors_dict', 'make_txt_colors_dict']
 
 class Color(object):
@@ -49,6 +51,7 @@ class HtmlDate(object):
 class HtmlLink(object):
     __slots__ = ()
     def __format__(self, target):
+        target = cgi.escape(target, True)
         return '<a href="%s">%s</a>' % (target, target)
 
 class HtmlSignature(object):

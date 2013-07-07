@@ -28,7 +28,8 @@
 //  6: the player saved the farmer from the pumpkin invasion (all pumpkins / mobs killed)
 //  10: the player failed to save the farmer from the pumpkin invasion (player left the map, died -- logging off is allowed however)
 
-function|script|HalloweenQuestWaterPumpkins|{
+function|script|HalloweenQuestWaterPumpkins|,
+{
     if (Quest_Halloween != 5 || $@HalloweenQuest_PumpkinHunter$ != "")
         end;
     set $@HalloweenQuest_PumpkinHunter$, strcharinfo(0);
@@ -36,7 +37,8 @@ function|script|HalloweenQuestWaterPumpkins|{
     end;
 }
 
-011-1.gat,94,38,0|script|Oscar|142,{
+011-1.gat,94,38,0|script|Oscar|142,
+{
     // Check we are at the good time of the year
     if (!(gettime(6) == 11 && (gettime(5) >= 4 && gettime(5) <= 30))) goto L_NoEvent;
     // Check halloween quest has been done or not.
@@ -297,7 +299,7 @@ L_QuestAlreadyDone:
     mes "That was interesting, but really, fruits are more quiet!\"";
     goto L_End;
 
-onInit:
+OnInit:
     set $@halloween_num_seeds, 12;
     set $@halloween_num_water_bottles, 15;
     set $@halloween_num_pumpkins, $@halloween_num_seeds * 4;
@@ -310,8 +312,8 @@ OnTimer3000:
         end;
     callsub S_CheckPlayer;
     set $@HalloweenQuest_PumpkinsTimer, $@HalloweenQuest_PumpkinsTimer + 1;
-    if (mobcount("011-1.gat", "Oscar::onPD")  < 0 &&
-        mobcount("011-1.gat", "Oscar::onPDP") < 0 &&
+    if (mobcount("011-1.gat", "Oscar::OnPD")  < 0 &&
+        mobcount("011-1.gat", "Oscar::OnPDP") < 0 &&
         $@HalloweenQuest_PumpkinsCount <= 0)
         goto L_AllPumpkinsDead;
     // A quick "cheer up"
@@ -327,14 +329,14 @@ OnTimer3000:
 
 L_TrySpawnPumpkin:
     if ($@HalloweenQuest_PumpkinsCount > 0)
-        areamonster "011-1.gat", 97, 40, 101, 44, "", 1063, 1, "Oscar::onPD";
+        areamonster "011-1.gat", 97, 40, 101, 44, "", 1063, 1, "Oscar::OnPD";
     setnpctimer 0;
     end;
 
 OnTimer2500:
     if ($@HalloweenQuest_PumpkinsState != 0)
         end;
-    areamonster "011-1.gat", 97, 40, 101, 44, "", 1063, 2, "Oscar::onPD";
+    areamonster "011-1.gat", 97, 40, 101, 44, "", 1063, 2, "Oscar::OnPD";
     end;
 
 OnTimer6000:
@@ -346,7 +348,7 @@ OnTimer6000:
     setnpctimer 0;
     end;
 
-onPD:
+OnPD:
     if (strcharinfo(0) != $@HalloweenQuest_PumpkinHunter$)
         goto L_KillBadHunter;
     set $@HalloweenQuest_PumpkinsCount, $@HalloweenQuest_PumpkinsCount - 1;
@@ -367,18 +369,18 @@ onPD:
         getitem "PumpkinHelmet", 1;
     // huntsman spider x1
     if (@halloween_rand < (15*BaseLevel)/100)
-        areamonster "011-1.gat", 97, 40, 101, 44, "", 1083, 1, "Oscar::onPDP";
+        areamonster "011-1.gat", 97, 40, 101, 44, "", 1083, 1, "Oscar::OnPDP";
     // Or spider x1
     if (@halloween_rand >= (15*BaseLevel)/100 && @halloween_rand < (75*BaseLevel)/100)
-        areamonster "011-1.gat", 97, 40, 101, 44, "", 1012, 1, "Oscar::onPDP";
+        areamonster "011-1.gat", 97, 40, 101, 44, "", 1012, 1, "Oscar::OnPDP";
     // Or archant x2
     if (@halloween_rand >= (75*BaseLevel)/100)
-        areamonster "011-1.gat", 97, 40, 101, 44, "", 1060, 2, "Oscar::onPDP";
+        areamonster "011-1.gat", 97, 40, 101, 44, "", 1060, 2, "Oscar::OnPDP";
 
     set @halloween_rand, 0;
     end;
 
-onPDP:
+OnPDP:
     end;
 
 L_KillBadHunter:
@@ -433,8 +435,8 @@ L_Success:
     goto L_Clean;
 
 L_Clean:
-    killmonster "011-1.gat", "Oscar::onPD";
-    killmonster "011-1.gat", "Oscar::onPDP";
+    killmonster "011-1.gat", "Oscar::OnPD";
+    killmonster "011-1.gat", "Oscar::OnPDP";
     set $@HalloweenQuest_PumpkinHunter$, "";
     set $@HalloweenQuest_PumpkinsCount, 0;
     set $@HalloweenQuest_PumpkinsState, 0;

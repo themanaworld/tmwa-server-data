@@ -92,10 +92,9 @@ PROCEDURE gain_heal_xp(value, # How many HP we healed
           IF target <> caster
           THEN gain_experience(caster, base_exp_factor * extract_healer_experience(target, value), 0, 1);
 
-PROCEDURE gain_xp(gain) =
+PROCEDURE gain_xp(gain, index) =
           IF (level + 3 > skill(caster, MAGIC)) # Level 4 and 5 magic users don't gain anything from spell levels 0 resp. 0+1
           THEN (
-                index = spell_index(self_spell);
                 last_index = (script_int(caster, SCRIPT_XP) >> SCRIPT_LASTSPELL_SHIFT) & SCRIPT_LASTSPELL_MASK;
                 last_xp = (script_int(caster, SCRIPT_XP) >> SCRIPT_XP_SHIFT) & SCRIPT_XP_MASK;
                 IF (index != last_index)
@@ -293,7 +292,7 @@ SPELL transmute-wood-to-figurine (name : STRING) : "#T00" =
                             EFFECT CALL adjust_spellpower(school);
                             CALL default_effect();
                             CALL create_item("MoubooFigurine", 1, "WarpedLog", 40);
-                            CALL gain_xp(1);
+                            CALL gain_xp(1, 0);
              | REQUIRE name = "lurk" =>
                             EFFECT CALL adjust_spellpower(school);
                             CALL default_effect();
@@ -311,7 +310,7 @@ SPELL make-sulphur : "#T01" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL create_item("SulphurPowder", 1 + spellpower / 100 + (random(max(1, 800 - spellpower)) / 180), "PileOfAsh", 50);
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 1);
 
 SPELL lesser-heal (target : STRING) : "#L00" =
       LET level = 0
@@ -333,7 +332,7 @@ SPELL lesser-heal (target : STRING) : "#L00" =
                             THEN ABORT;)
                     CALL gain_heal_xp(min(200, max_hp(target) - hp(target)), 1, 2, 2); # report half values for non-instaheal
                     CALL heal(target, 200);
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 2);
 
 
 SPELL flare-dart : "#W00" =
@@ -349,7 +348,7 @@ SPELL flare-dart : "#W00" =
                     CALL install_attack_spell(3 + spellpower / 50,
                                          1200,
                                          4, 31);
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 3);
              ATTRIGGER CALL attack_check(target);
                        CALL elt_damage (target, damage, damage_bonus, ELT_WATER, ELT_FIRE, 15);
 
@@ -363,13 +362,13 @@ SPELL magic-blade : "#W01" =
                             EFFECT CALL adjust_spellpower(WAR);
                                    CALL default_effect();
                                    CALL install_melee_spell(10 + spellpower / 15, 1200, 30);
-                                   CALL gain_xp(1);
+                                   CALL gain_xp(1, 4);
                             ATTRIGGER CALL melee_damage(target, 60, 5 + str(caster));
               | COMPONENTS ["Knife"] =>
                             EFFECT CALL adjust_spellpower(WAR);
                                    CALL default_effect();
                                    CALL install_melee_spell(10 + spellpower / 15, 1200, 30);
-                                   CALL gain_xp(1);
+                                   CALL gain_xp(1, 5);
                             ATTRIGGER CALL melee_damage(target, 40, 5 + str(caster));
              )
 
@@ -393,7 +392,7 @@ SPELL grow-mauve : "#N01" =
           COMPONENTS ["MauveHerb", "Root"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 6);
                     spawn(rbox(location, 2), caster, 1029, 1, skill(caster, school) / 2 + 1, 10000);
 
 SPELL grow-alizarin : "#N02" =
@@ -404,7 +403,7 @@ SPELL grow-alizarin : "#N02" =
           COMPONENTS ["AlizarinHerb", "Root"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 7);
                     spawn(rbox(location, 2), caster, 1032, 1, skill(caster, school) / 2 + 1, 10000);
 
 SPELL grow-gamboge : "#N03" =
@@ -415,7 +414,7 @@ SPELL grow-gamboge : "#N03" =
           COMPONENTS ["GambogeHerb", "Root"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 8);
                     spawn(rbox(location, 2), caster, 1031, 1, skill(caster, school) / 2 + 1, 10000);
 
 SPELL grow-cobalt : "#N04" =
@@ -426,7 +425,7 @@ SPELL grow-cobalt : "#N04" =
           COMPONENTS ["CobaltHerb", "Root"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 9);
                     spawn(rbox(location, 2), caster, 1030, 1, skill(caster, school) / 2 + 1, 10000);
 
 
@@ -437,7 +436,7 @@ LOCAL SPELL summon-maggots : "#A00" =
           REQUIRE skill(caster, MAGIC) > level,
           COMPONENTS ["MaggotSlime", "Root"])
           => EFFECT CALL adjust_spellpower(school);
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 10);
                     CALL summon_spell(1002,
                                       1 + ((sqrt(spellpower) + (spellpower / 15)) / 5),
                                       5000 - (spellpower * 5),
@@ -473,7 +472,7 @@ SPELL make-arrows : "#T10" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL create_item("Arrow", 1 + spellpower / 40 + (random(max(1, 800 - spellpower)) / 80), "WarpedLog", 500);
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 11);
 
 SPELL make-shirt : "#T11" =
       LET level = 1
@@ -485,7 +484,7 @@ SPELL make-shirt : "#T11" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL create_item("CottonShirt", 1, "CottonCloth", 425);
-                    CALL gain_xp(2);
+                    CALL gain_xp(2, 12);
 
 SPELL make-tanktop : "#T12" =
       LET level = 1
@@ -497,7 +496,7 @@ SPELL make-tanktop : "#T12" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL create_item("TankTop", 1, "CottonCloth", 350);
-                    CALL gain_xp(2);
+                    CALL gain_xp(2, 13);
 
 SPELL make-short-tanktop : "#T13" =
       LET level = 1
@@ -509,7 +508,7 @@ SPELL make-short-tanktop : "#T13" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL create_item("ShortTankTop", 1, "CottonCloth", 250);
-                    CALL gain_xp(2);
+                    CALL gain_xp(2, 14);
 
 SPELL make-iron-powder : "#T14" =
       LET level = 1
@@ -521,7 +520,7 @@ SPELL make-iron-powder : "#T14" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL create_item("IronPowder", 1 + spellpower / 140 + (random(max(1, 900 - spellpower)) / 220), "IronOre", 700);
-                    CALL gain_xp(3);
+                    CALL gain_xp(3, 15);
 
 SPELL make-concentration-potion : "#T15" =
       LET level = 1
@@ -537,7 +536,7 @@ SPELL make-concentration-potion : "#T15" =
                                       2000);
                     IF (success)
                     THEN CALL set_var(MAGIC_FLAGS, 1, MFLAG_MADE_CONC_POTION_SHIFT, 1);
-                    CALL gain_xp(4);
+                    CALL gain_xp(4, 16);
 
 SPELL merge-concentration-potions : "#T16" =
       LET level = 1
@@ -552,7 +551,7 @@ SPELL merge-concentration-potions : "#T16" =
                     message (caster, "success = " + success);
                     IF (success)
                     THEN CALL set_var(MAGIC_FLAGS, 1, MFLAG_MADE_CONC_POTION_SHIFT, 1);
-                    CALL gain_xp(4);
+                    CALL gain_xp(4, 17);
 
 
 SPELL lay-on-hands (target : STRING) : "#L10" =
@@ -597,7 +596,7 @@ SPELL lay-on-hands (target : STRING) : "#L10" =
                     CALL gain_heal_xp(power, 1, 1, 3);
                     CALL quickheal(target, power);
                     status_change(caster, SC_HALT_REGENERATE, 0, 0, 0, 0, 10000);
-                    CALL gain_xp(min(4, payment / 100));
+                    CALL gain_xp(min(4, payment / 100), 18);
 
 SPELL lightning-strike : "#W10" =
       LET level = 1
@@ -612,7 +611,7 @@ SPELL lightning-strike : "#W10" =
                     CALL install_attack_spell(1 + spellpower / 90,
                                               3000,
                                               8, 31);
-                    CALL gain_xp(2);
+                    CALL gain_xp(2, 19);
              ATTRIGGER CALL attack_check(target);
                        in_rain = 0;
                        area = location(caster);
@@ -660,7 +659,7 @@ LOCAL SPELL arrow-hail : "#W11" =
 
                 damage = 125;
                 damage_bonus = spellpower / 5;
-                CALL gain_xp(2);
+                CALL gain_xp(2, 20);
                 FOR i = 0 TO spellpower / 8 DO (
                     FOR j = 0 TO 2 DO (
                         location = random_location(area);
@@ -706,7 +705,7 @@ SPELL flying-backpack (target : PC) : "#N10" =
                 THEN sfx(caster, 2, 0);
                 status_change(target, SC_FLYING_BACKPACK, 0, 0, 0, 0, 5000 + (spellpower * 500));
                 message (target, "Your backpack is lifted by a mystical force; you no longer feel it pressing on your back.");
-                CALL gain_xp(1);
+                CALL gain_xp(1, 21);
          ATEND message (target, "Your backpack is no longer levitating.");
                sfx(target, 2, 0);
 
@@ -725,7 +724,7 @@ SPELL protect (target : PC) : "#N11" =
                 THEN CALL default_effect();
                 status_change(target, SC_PHYS_SHIELD, 5 + max(15, spellpower / 20), 0, 0, 0, 5000 + (spellpower * 1000));
                 message (target, "You feel more protected.");
-                CALL gain_xp(2);
+                CALL gain_xp(2, 22);
          ATEND message (target, "You feel less protected.");
                sfx(target, 111, 0);
 
@@ -740,7 +739,7 @@ SPELL happy-curse (target : PC) : "#N12" =
       => EFFECT CALL adjust_spellpower(school);
                 CALL default_effect();
                 FOR i = 0 TO (spellpower / 10) DO (emote(target, 3); WAIT 500;);
-                CALL gain_xp(1);
+                CALL gain_xp(1, 23);
 
 LOCAL SPELL rain : "#N13" =
       LET level = 1
@@ -758,7 +757,7 @@ LOCAL SPELL rain : "#N13" =
                                 THEN (message (caster, "A nearby raincloud absorbs your magic.");
                                       ABORT;)
 
-                CALL gain_xp(1);
+                CALL gain_xp(1, 24);
                 range = min(MAX_RAIN_SPELL_RADIUS, 3 + min(spellpower, 200) / 30);
                 area = rbox(location(caster), range);
                 IF (is_in(location(npc("#DruidTree0#_M")), area)
@@ -847,7 +846,7 @@ SPELL barrier (target : PC) : "#A10" =
                 THEN CALL default_effect();
                 status_change(target, SC_MBARRIER, 20 + max(30, spellpower / 8), 0, 0, 0, 2000 + (spellpower * 200));
                 message (target, "You are surrounded by a magical barrier.");
-                CALL gain_xp(3);
+                CALL gain_xp(3, 25);
          ATEND message (target, "Your magical barrier dissipates.");
                sfx(target, SFX_UNBARRIER, 0);
 
@@ -861,7 +860,7 @@ LOCAL SPELL summon-spiky-mushrooms : "#A11" =
           COMPONENTS ["HardSpike", "Root"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 26);
                     CALL summon_spell(1019, 1 + spellpower / 120, 5000 - (spellpower * 9), spellpower * 400, 2);
 
 LOCAL SPELL summon-fluffies : "#A12" =
@@ -873,7 +872,7 @@ LOCAL SPELL summon-fluffies : "#A12" =
           COMPONENTS ["WhiteFur", "Root"])
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 27);
                     CALL summon_spell(1020, 1 + spellpower / 170 + spellpower / 430, 5000 - (spellpower * 8), spellpower * 350, 3);
 
 
@@ -925,7 +924,7 @@ SPELL enchant-lifestone : "#G12" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     create_item(caster, "Lifestone", 1);
-                    CALL gain_xp(1);
+                    CALL gain_xp(1, 28);
 
 SPELL sense-spouse : "#G13" =
       LET level = 1
@@ -977,7 +976,7 @@ SPELL hide (target : PC) : "#A13" =
                 IF (caster <> target)
                 THEN CALL default_effect();
                 status_change(target, SC_HIDE, 0, 0, 0, 0, 5000 + (spellpower * 2500));
-                CALL gain_xp(2);
+                CALL gain_xp(2, 29);
                 message(target, "You are hidden!");
                 IF (caster <> target) THEN message(caster, "You hid someone!");
           ATEND message(target, "You are no longer hidden.");
@@ -1000,7 +999,7 @@ SPELL cure-poison (target : PC) : "#L20" =
                 IF (running_status_update (target, SC_POISON))
                 THEN (CALL gain_heal_xp(40, 1, 2, 2);
                       stop_status_change (target, SC_POISON);
-                      CALL gain_xp(2);
+                      CALL gain_xp(2, 30);
                       IF caster <> target
                       THEN sfx(target, SFX_HEAL, 0););
 
