@@ -1,16 +1,88 @@
 // Author: Jenalya
+// Current state: only dialog, magic teaching not finished
+// Waric is intended to teach the player some dark magic spells
+// in case the player is not a follower of Sagatha and can't become
+// one anymore (killed the wounded mouboo or cut the druid tree).
+// Waric would teach the spells based on the progress in the pentagram
+// creation, but save which spells were taught in a different variable.
 
 017-4.gat,216,36,0|script|Waric|153,{
 
-    if (OrumQuest > 15) goto L_Spells;
+    set @mouboo_status, ((QUEST_MAGIC & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT) & 3;
+    set @killed_mouboo, 0;
+    if ((@mouboo_status == 1) || (@mouboo_status == 2))
+        set @killed_mouboo, 1;
+    set @mouboo_status, 0;
+
+    if (MAGIC_FLAGS & MFLAG_DID_CUTTREE)
+        set @cut_tree, 1;
+
+    set @sagatha_follower, (QUEST_MAGIC & (NIBBLE_4_MASK | NIBBLE_5_MASK)) >> NIBBLE_4_SHIFT;
+
+    if (OrumQuest > 30) goto L_Flower5;
+    if (OrumQuest > 26) goto L_Flower4;
+    if (OrumQuest > 23) goto L_Flower3;
+    if (OrumQuest > 20) goto L_Flower2;
+    if (OrumQuest > 17) goto L_Flower1;
+    if (OrumQuest > 15) goto L_Mistrust;
 
     mes "[Waric]";
     mes "\"You! You're really more insistent than it's good for you...\"";
     mes "He turns towards Orum.";
     next;
     mes "[Waric]";
-    mes "\"It seems your ridiculous Guarding Spirit failed his task...";
+    mes "\"It seems your ridiculous Guarding Spirit failed his task.";
     mes "Deal with this, we really can't afford more of this distractions.\"";
+    goto L_Close;
+
+L_Mistrust:
+    mes "[Waric]";
+    mes "\"So you say you want to help us? You don't look very competent.";
+    mes "Also, I don't see what motivates you to do this.\"";
+    next;
+    mes "\"Show your usefulness, then I might take you serious.\"";
+    goto L_Close;
+
+L_Flower1:
+    mes "[Waric]";
+    mes "\"You placed the first flower. I'm surprised, I didn't expect you to actually stay and be useful.\"";
+    goto L_Close;
+    // TODO: enable this when adding the spells
+    // also add logic to the other label's dialogs/eventually change their dialog to fit better
+    if (!getskilllv(SKILL_MAGIC))
+        goto L_Close;
+    menu
+        "Can you teach me some magic?", -,
+        "Of course!", L_Close;
+
+    if (@sagatha_follower)
+        goto L_Sagatha;
+    if (!@killed_mouboo && !@cut_tree)
+        goto L_Undecided;
+    mes "[Waric]";
+    mes "\"Hm. Actually, I could do that. You seem to have some potential.";
+    mes "But first go on with the next summoning artifact.\"";
+    goto L_Close;
+
+L_Flower2:
+    mes "[Waric]";
+    mes "\"You placed the second flower? It seems Orum's choice of tools is better than expected.\"";
+    goto L_Close;
+
+L_Flower3:
+    mes "[Waric]";
+    mes "\"I saw that you helped to create the third flower which you just placed. Good.\"";
+    goto L_Close;
+
+L_Flower4:
+    mes "[Waric]";
+    mes "\"We're very close to reach our goal, now that you've placed the fourth flower. Keep it up.\"";
+    goto L_Close;
+
+L_Flower5:
+    mes "[Waric]";
+    mes "\"Hahaha, excellent. You handled the creation of our pentagram very well. I'll keep that in mind.";
+    mes "I advised Orum to give you some reward, did you already talk to him?\"";
     goto L_Close;
 
 L_Spells:
@@ -19,7 +91,22 @@ L_Spells:
     // doesn't trust the player at all if player is follower of sagatha
     goto L_Close;
 
+L_Undecided:
+    mes "[Waric]";
+    mes "\"Well. I could. But I'm not sure you're trustworthy.\"";
+    next;
+    mes "\"How can I know you're not going to run to Sagatha with what I'd teach you?\"";
+    goto L_Close;
+
+L_Sagatha:
+    mes "[Waric]";
+    mes "\"You're already a student of Sagatha. I won't teach you anything.\"";
+    goto L_Close;
+
 L_Close:
+    set @killed_mouboo, 0;
+    set @cut_tree, 0;
+    set @sagatha_follower, 0;
     close;
 }
 
