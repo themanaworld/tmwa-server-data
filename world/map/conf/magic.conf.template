@@ -3,48 +3,48 @@ obscure_chance = 95
 min_casttime = 200
 
 # Schools of magic
-CONST MAGIC	= 340
-CONST LIFE	= 341
-CONST WAR 	= 342
-CONST TRANSMUTE	= 343
-CONST NATURE	= 344
-CONST ASTRAL	= 345
+CONST MAGIC     = 340
+CONST LIFE      = 341
+CONST WAR       = 342
+CONST TRANSMUTE = 343
+CONST NATURE    = 344
+CONST ASTRAL    = 345
 
 # Elements
-CONST ELT_NEUTRAL	= 0
-CONST ELT_WATER		= 1
-CONST ELT_EARTH		= 2
-CONST ELT_FIRE		= 3
-CONST ELT_WIND		= 4
-CONST ELT_POISON	= 5
-CONST ELT_SHADOW	= 6
-CONST ELT_HOLY		= 7
-CONST ELT_GHOST		= 8
-CONST ELT_UNDEAD	= 9
+CONST ELT_NEUTRAL       = 0
+CONST ELT_WATER         = 1
+CONST ELT_EARTH         = 2
+CONST ELT_FIRE          = 3
+CONST ELT_WIND          = 4
+CONST ELT_POISON        = 5
+CONST ELT_SHADOW        = 6
+CONST ELT_HOLY          = 7
+CONST ELT_GHOST         = 8
+CONST ELT_UNDEAD        = 9
 
 # Status effects
-CONST SC_POISON			= 132
-CONST SC_SHEARED		= 194 # This is the same as SC_HIDE, since mobs can't hide and shearing is only used for mobs.  Feel free to fix!
-CONST SC_HIDE			= 194
-CONST SC_HALT_REGENERATE	= 195
-CONST SC_FLYING_BACKPACK	= 196
-CONST SC_MBARRIER		= 197
-CONST SC_HASTE			= 198
-CONST SC_PHYS_SHIELD		= 199
+CONST SC_POISON                 = 132
+CONST SC_SHEARED                = 194 # This is the same as SC_HIDE, since mobs can't hide and shearing is only used for mobs.  Feel free to fix!
+CONST SC_HIDE                   = 194
+CONST SC_HALT_REGENERATE        = 195
+CONST SC_FLYING_BACKPACK        = 196
+CONST SC_MBARRIER               = 197
+CONST SC_HASTE                  = 198
+CONST SC_PHYS_SHIELD            = 199
 
-CONST SO_GMINVISIBLE		= 4096
+CONST SO_GMINVISIBLE            = 4096
 
 # Special effects
-CONST SFX_DEFAULT	= 10
-CONST SFX_SUMMON_START	= 21
-CONST SFX_SUMMON_FIRE	= 22
-CONST SFX_TELEPORT	= 24
-CONST SFX_RAIN		= 25
-CONST SFX_HIT		= 25
-CONST SFX_ARROW_HAIL	= 27
-CONST SFX_BARRIER	= 10
-CONST SFX_UNBARRIER	= 10
-CONST SFX_HEAL		= 3
+CONST SFX_DEFAULT       = 10
+CONST SFX_SUMMON_START  = 21
+CONST SFX_SUMMON_FIRE   = 22
+CONST SFX_TELEPORT      = 24
+CONST SFX_RAIN          = 25
+CONST SFX_HIT           = 25
+CONST SFX_ARROW_HAIL    = 27
+CONST SFX_BARRIER       = 10
+CONST SFX_UNBARRIER     = 10
+CONST SFX_HEAL          = 3
 
 CONST MAX_RAIN_SPELL_RADIUS = 15
 
@@ -63,8 +63,8 @@ CONST SCRIPT_HEALSPELL_MASK  = 0xff
 CONST SCRIPT_HEALSPELL_SHIFT = 24
 CONST DEBUG = 0
 
-CONST ATTACK_ICON_GENERIC	= 2000
-CONST ATTACK_ICON_SHEARING	= 2001
+CONST ATTACK_ICON_GENERIC       = 2000
+CONST ATTACK_ICON_SHEARING      = 2001
 
 # Default sfx on caster
 PROCEDURE default_effect() =
@@ -210,10 +210,10 @@ PROCEDURE summon_spell(mob_id, count, delay, lifetime, control_level) =
                 count, lifetime);
 
 PROCEDURE abort_on_area_shield(pos) =
-	  IF (is_exterior(pos) = 1 && (map_nr(pos) = 1 # Tulimshar
+          IF (is_exterior(pos) = 1 && (map_nr(pos) = 1 # Tulimshar
                                      ||map_nr(pos) = 9 # Hurnscald
                                      ||map_nr(pos) = 20)) # Nivalis
-	  THEN (message(caster, "A powerful magic drains your spell just as it is beginning to take shape!");
+          THEN (message(caster, "A powerful magic drains your spell just as it is beginning to take shape!");
                 ABORT;)
 
 
@@ -381,7 +381,7 @@ SPELL aggravate : "#N00" =
                     CALL default_effect();
                     FOREACH MOB target IN rbox(location(caster), 2 + spellpower / 50) DO
                             IF line_of_sight(location(caster), location(target))
-			    THEN (CALL sfx_generic(target);
+                            THEN (CALL sfx_generic(target);
                                   aggravate(target, 0, caster);)
 
 SPELL grow-mauve : "#N01" =
@@ -570,7 +570,7 @@ SPELL lay-on-hands (target : STRING) : "#L10" =
                                 && not (is_equipped(pc(target), "MagicGMTopHat"))
                               ))
           => EFFECT CALL adjust_spellpower(school);
-		    IF (not (target)) THEN ABORT;
+                    IF (not (target)) THEN ABORT;
                     IF failed(pc(target))
                       THEN (IF ((target = "mouboo" || target = "Mouboo")
                                  && (rdistance(location(caster), location(npc("Mouboo"))) < 2 + (spellpower / 100)))
@@ -666,7 +666,7 @@ LOCAL SPELL arrow-hail : "#W11" =
                         sfx(location, SFX_ARROW_HAIL, 0);
                         done = 0;
                         FOREACH TARGET target IN rbox(location, 0) DO (
-                      	        injure(caster, target, damage + random(damage_bonus) + random(damage_bonus), 0);
+                                injure(caster, target, damage + random(damage_bonus) + random(damage_bonus), 0);
                                 done = 1;
                                 BREAK;
                         )
@@ -816,15 +816,15 @@ SPELL shear : "#N14" =
                          IF running_status_update(target, SC_SHEARED)
                          THEN ABORT;
                          status_change(target, SC_SHEARED, 0, 0, 0, 0, 600000); # 10 minutes
-                         CALL shear-drop("Fluffy", "Fluffy",			"WhiteFur", 300);
-                         CALL shear-drop("EasterFluffy", "Easter Fluffy",	"WhiteFur", 300);
-                         CALL shear-drop("SpikyMushroom", "Spiky Mushroom",	"HardSpike", 250);
-                         CALL shear-drop("Mouboo", "Mouboo",			"CottonCloth", 175);
-                         CALL shear-drop("Cobalt", "CobaltPlant",		"CobaltHerb", 700);
-                         CALL shear-drop("Alizarin", "AlizarinPlant",		"AlizarinHerb", 700);
-                         CALL shear-drop("Gamboge", "GambogePlant",		"GambogeHerb", 700);
-                         CALL shear-drop("Mauve", "MauvePlant",			"MauveHerb", 700);
-                         CALL shear-drop("SilkWorm", "Silkworm",		"SilkCocoon", 300);
+                         CALL shear-drop("Fluffy", "Fluffy",                    "WhiteFur", 300);
+                         CALL shear-drop("EasterFluffy", "Easter Fluffy",       "WhiteFur", 300);
+                         CALL shear-drop("SpikyMushroom", "Spiky Mushroom",     "HardSpike", 250);
+                         CALL shear-drop("Mouboo", "Mouboo",                    "CottonCloth", 175);
+                         CALL shear-drop("Cobalt", "CobaltPlant",               "CobaltHerb", 700);
+                         CALL shear-drop("Alizarin", "AlizarinPlant",           "AlizarinHerb", 700);
+                         CALL shear-drop("Gamboge", "GambogePlant",             "GambogeHerb", 700);
+                         CALL shear-drop("Mauve", "MauvePlant",                 "MauveHerb", 700);
+                         CALL shear-drop("SilkWorm", "Silkworm",                "SilkCocoon", 300);
                          IF ((name = "Fluffy" || name = "Mouboo") && random(2))
                          THEN { set @value, 1; callfunc "QuestSagathaHappy"; };
                     )
@@ -1037,7 +1037,7 @@ SPELL summon-partner : "#A23" =
           REQUIRE skill(caster, school) > level,
           REQUIRE is_married(caster),
           REQUIRE is_equipped(caster, "WeddingRing"))
-	=> EFFECT CALL adjust_spellpower(school);
+        => EFFECT CALL adjust_spellpower(school);
                   CALL default_effect();
                   IF (failed (partner (caster)))
                   THEN message (caster, "You call out for your partner, but there is no response.");
@@ -1068,7 +1068,7 @@ SPELL shroud : "#N40" =
       IN (MANA 40, CASTTIME 400,
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level)
-	=> EFFECT CALL default_effect();
+        => EFFECT CALL default_effect();
                   shroud(caster, 0x04);
 
 SPELL teleport (destination : STRING) : "#A40" =
@@ -1079,7 +1079,7 @@ SPELL teleport (destination : STRING) : "#A40" =
           # CATALYST ["TeleportCrystal"],
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level)
-	=> EFFECT CALL default_effect();
+        => EFFECT CALL default_effect();
                   WAIT 1000 + (200000 / (spellpower + 10));
                   sfx(location(caster), SFX_TELEPORT, 200);
                   warp(caster, random_location(anchor(destination)));
@@ -1164,32 +1164,32 @@ PROCEDURE debug_mod(name, delta) =
           ELSE message(caster, "Unknown");
 
 SPELL debug-up1 (name : STRING) : "debug+1" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 1);
 
 SPELL debug-down1 (name : STRING) : "debug-1" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 0 - 1);
 
 SPELL debug-up16 (name : STRING) : "debug+16" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 16);
 
 SPELL debug-down16 (name : STRING) : "debug-16" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 0 - 16);
 
 SPELL debug-up256 (name : STRING) : "debug+256" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 256);
 
 SPELL debug-down256 (name : STRING) : "debug-256" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 0 - 256);
 
 SPELL debug-reset : "debug-reset" =
       REQUIRE DEBUG
-	=> EFFECT set_script_variable(caster, "QUEST_MAGIC", 0);
+        => EFFECT set_script_variable(caster, "QUEST_MAGIC", 0);
                   set_script_variable(caster, "QUEST_MAGIC2", 0);
                   set_script_variable(caster, "MAGIC_FLAGS", 0);
                   set_script_variable(caster, "MAGIC_EXP", 0);
@@ -1294,7 +1294,7 @@ NONMAGIC SILENT SPELL marriage (target : PC) : "marry" =
 LOCAL SPELL mouboo-groan : "#g" =
       (MANA 1,
        REQUIRE name_of(caster) = "MOUBOOTAUR") =>
-      	EFFECT FOREACH PC p IN rbox(location(caster), 200) DO
+        EFFECT FOREACH PC p IN rbox(location(caster), 200) DO
                distance = rdistance(location(caster), location(p));
                IF (distance < 15)
                THEN message(p, "The moubootaur's groaning rings in your ears!");
@@ -1306,9 +1306,9 @@ LOCAL SPELL mouboo-groan : "#g" =
 LOCAL SPELL mouboo-smell : "#s" =
       (MANA 1,
        REQUIRE name_of(caster) = "MOUBOOTAUR") =>
-      	EFFECT WAIT 30000;
+        EFFECT WAIT 30000;
                FOREACH PC p IN rbox(location(caster), 30) DO
-               		message(p, "You notice a strange smell all around you.");
+                        message(p, "You notice a strange smell all around you.");
 
 
 CONST E10_FLAG_USED_FREE_WARP_SHIFT = 17
@@ -1481,7 +1481,7 @@ NONMAGIC SILENT SPELL world-shift : "#S00" =
         (map_nr(location(caster)) != 5698) # Do not allow if player is in botcheck area
         )
      => ((REQUIRE rdistance(location(caster), @("028-1.gat", 69, 70)) < 5) =>
-     	         EFFECT sfx(location(caster), SFX_TELEPORT, 200);
+                 EFFECT sfx(location(caster), SFX_TELEPORT, 200);
                         WAIT 8000;
                         { savepoint "009-1", 52, 39; };
                         warp(caster, @("009-1.gat", 55, 37));
