@@ -966,7 +966,8 @@ SPELL shear : "#N14" =
                          CALL shear-drop("Gamboge", "GambogePlant",             "GambogeHerb", 700);
                          CALL shear-drop("Mauve", "MauvePlant",                 "MauveHerb", 700);
                          CALL shear-drop("SilkWorm", "Silkworm",                "SilkCocoon", 300);
-                         IF ((name = "Fluffy" || name = "Mouboo") && random(2))
+                         CALL shear-drop("Pinkie", "Pinkie",                    "PinkAntenna", 180);
+                         IF ((name = "Fluffy" || name = "Mouboo" || name = "Pinkie") && random(2))
                          THEN { set @value, 1; callfunc "QuestSagathaHappy"; };
                     )
 
@@ -1014,8 +1015,31 @@ LOCAL SPELL summon-fluffies : "#A12" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL gain_xp(1, 27);
-                    CALL summon_spell(1020, 1 + spellpower / 170 + spellpower / 430, 5000 - (spellpower * 8), spellpower * 350, 3);
+                    CALL summon_spell(1020, 1 + spellpower / 170 + spellpower / 430, 5000 - (spellpower * 8), spellpower * 350, 2);
 
+LOCAL SPELL summon-mouboo : "#A14" =
+      LET level = 1
+        school = ASTRAL
+      IN (MANA 35, CASTTIME 20000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["MoubooFigurine", "Root"])
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                CALL gain_xp(2, 37);
+                CALL summon_dark_spell(1028, 1 + spellpower / 270 , 4000 - (spellpower * 9), spellpower * 100, 2);
+
+LOCAL SPELL summon-pinkie : "#A15" =
+      LET level = 1
+        school = ASTRAL
+      IN (MANA 35, CASTTIME 20000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["PinkAntenna", "Root"])
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                CALL gain_xp(2, 38);
+                CALL summon_dark_spell(1018, 1 + spellpower / 120, 5000 - (spellpower * 9), spellpower * 150, 2);
 
 SPELL detect-players : "#G10" =
       LET level = 1

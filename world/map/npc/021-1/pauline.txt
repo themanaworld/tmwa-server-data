@@ -1,0 +1,296 @@
+//Author: tux9th
+//This is the continuation of Astral Magic Level 2.
+//This uses the QUEST_MAGIC2 variable Nibble 4.
+//Quest States:
+//  @pauline_state 1: Got Magic, started to talk to her about Magic.
+//  @pauline_state 2: Finished Talking to her about new Astral Spells, learnt invocations.
+//  @pauline_state 3: Told her the correct ingredients to the Mouboo summon spell.
+//  @pauline_state 4: Told her the correct ingredients to the Pinkie summon spell.
+//
+//Variables:
+//  @pauline_ingredient1$   First ingredient input.
+//  @pauline_ingredient2$   Second ingredient input.
+//  @pauline_REWARD         amount of XP gained for telling her ingredients for each spell.
+
+021-1.gat,55,66,0|script|Pauline|208,
+{
+
+//Bitmasking
+// QUEST_MAGIC2 - Nibble4
+    set @Pauline_MASK, NIBBLE_4_MASK;
+    set @Pauline_SHIFT, NIBBLE_4_SHIFT;
+
+    set @pauline_state, ((QUEST_MAGIC2 & @Pauline_MASK) >> @Pauline_SHIFT);
+
+//Bitmasks END
+
+    set @pauline_REWARD, 10000;
+
+    if (@pauline_state == 4)    goto L_MoreMagic;
+    if (@pauline_state == 3)    goto L_KnowIngredientsPinkie;
+    if (@pauline_state == 2)    goto L_Ingredients;
+    if (@pauline_state == 1)    goto L_Back;
+
+    if (getskilllv(SKILL_MAGIC_ASTRAL) > 0)
+        goto L_Magic;
+    mes "[Pauline]";
+    mes "\"I've mastered several schools of magic and fought the Yeti in Kaizei.\"";
+    next;
+    mes "\"The path of magic is a long and difficult one.\"";
+    goto L_Close;
+
+L_Magic:
+    mes "[Pauline]";
+    mes "\"Ah. I see you are skilled in the Art of Astral Magic.\"";
+    mes "\"Who taught you?\"";
+    menu
+        "I learnt it myself!", -,
+        "Sagatha is my teacher.", L_Sagatha,
+        "You must be mistaken.", L_Close;
+    mes "\"You did? Not bad. I guess then there is nothing I can teach you. Or are you interested in sharing knowledge?\"";
+    menu
+        "Yes, please.", L_Spells,
+        "No, thanks.", L_Close;
+
+L_Sagatha:
+    mes "[Pauline]";
+    mes "\"Ah, that Witch!\"";
+    mes "\"Very well.\"";
+    next;
+    mes "\"Do you want me to teach you things Sagatha doesn't know yet?\"";
+    next;
+    menu
+        "Yes.", L_Spells,
+        "No.", L_Close;
+
+L_Back:
+    mes "[Pauline]";
+    mes "\"So, you're back. Are you ready to share knowledge now?\"";
+    menu
+        "Yes.", L_Spells,
+        "No.", L_Close;
+
+L_Spells:
+    set @pauline_state, 1;
+    callsub S_Update_Mask;
+    mes "[Pauline]";
+    mes "\"Okay.\"";
+    mes "\"Not long ago I discovered some new caves near Tulimshar. In an abandond chamber I found some paintings on the wall.\"";
+    next;
+    mes "\"They weren't typical for this region, so I examined them closely. I found some invocations I have never heard before.\"";
+    mes "\"I thought that they would fit better into the Woodland area. I could only decipher two invocations so far. Those are two spells used to summon creatures.\"";
+    next;
+    mes "\"One was for summoning Mouboos and the other one was for summoning Pinkies.\"";
+    mes "\"Have you ever heared about those?\"";
+    next;
+    menu
+        "Yes. I thought you had something new to tell. [Walk Away]", L_Close,
+        "No, tell me more.", -;
+    mes "[Pauline]";
+    mes "\"Well I could only read the invocations. So I don't exactly know what kind of ingredients you are going to need.\"";
+    mes "\"The first one for the mouboo was " + getspellinvocation("summon-mouboo") + " and the one for the pinkie was " + getspellinvocation("summon-pinkie") +".\"";
+    next;
+    mes "\"For the pinkie spell my suggestion is to try similar ingredients to the other Astral spells. Try a root and some item typical for pinkies.\"";
+    mes "\"The mouboo spell might be more complicated. From what I could translate, one of the spell components is crafted by magic.\"";
+    next;
+    mes "\"When you find the right ingredients, come back and bring them to me to try those spells out.\"";
+    next;
+    mes "\"Goodbye.\"";
+    set @pauline_state, 2;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Ingredients:
+    mes "[Pauline]";
+    mes "\"Hello, have you found out what ingredients to use yet?\"";
+    menu
+        "Yes.", L_KnowIngredientsMouboo,
+        "No.", -;
+    mes "\"Okay. Come back as soon as you know.\"";
+    goto L_Close;
+
+L_KnowIngredientsMouboo:
+    mes "\"Did you bring them?\"";
+    menu
+        "Yes." , -,
+        "No.", L_ComeBackLater;
+    mes "\"Then tell me the ingredients for the mouboo summoning spell and give them to me. Start with the first ingredient and then tell me the second one separately.\"";
+    next;
+    mes "This is case sensitive. Also do not enter whitespaces.";
+    next;
+    input @pauline_ingredient1$;
+    mes "Next ingredient.";
+    input @pauline_ingredient2$;
+    if (@pauline_ingredient1$ == "")
+        goto L_Wrong;
+    if (@pauline_ingredient2$ == "")
+        goto L_Wrong;
+    if (countitem(@pauline_ingredient1$) < 1)
+        goto L_NotEnough;
+    if (countitem(@pauline_ingredient2$) < 1)
+        goto L_NotEnough;
+    mes "\"Do you want to give me these items?\"";
+    menu
+        "No.", L_ComeBackLater,
+        "Yes.", -;
+    delitem @pauline_ingredient1$, 1;
+    delitem @pauline_ingredient2$, 1;
+    mes "\"Okay let me try this.\"";
+    if (@pauline_ingredient1$ == "Root")
+        goto L_Pass1Mouboo;
+    if (@pauline_ingredient1$ == "MoubooFigurine")
+        goto L_Pass2Mouboo;
+    goto L_DidNotWorkMouboo;
+
+L_DidNotWorkMouboo:
+    mes "The Witch takes " + @pauline_ingredient1$ + " and " + @pauline_ingredient2$ + " and puts them together calling " + getspellinvocation("summon-mouboo") + ".";
+    mes "Nothing happens.";
+    mes "[Pauline]";
+    mes "\"It seems you did not tell me the correct ingredients. Come back when you find the correct ones.\"";
+    goto L_Close;
+
+L_Pass1Mouboo:
+    if (@pauline_ingredient2$ == "MoubooFigurine")
+        goto L_TrySpellMouboo;
+    goto L_DidNotWorkMouboo;
+
+L_Pass2Mouboo:
+    if (@pauline_ingredient2$ == "Root")
+        goto L_TrySpellMouboo;
+    goto L_DidNotWorkMouboo;
+
+L_TrySpellMouboo:
+    mes "The Witch takes " + @pauline_ingredient1$ + " and " + @pauline_ingredient2$ + " and puts them together calling " + getspellinvocation("summon-mouboo") + ".";
+    monster "021-1.gat", 55,68, "Good", 1028, 1;
+    mes "[Pauline]";
+    mes "\"It worked!\"";
+    set @pauline_state, 3;
+    callsub S_Update_Mask;
+    getexp @pauline_REWARD, 0;
+    goto L_Close;
+
+L_KnowIngredientsPinkie:
+    mes "[Pauline]";
+    mes "\"Now give me the ingredients for the pinkie spell.\"";
+    next;
+    mes "This is case sensitive. Also do not enter whitespaces.";
+    input @pauline_ingredient1$;
+    mes "Next ingredient.";
+    input @pauline_ingredient2$;
+    if (@pauline_ingredient1$ == "")
+        goto L_Wrong;
+    if (@pauline_ingredient2$ == "")
+        goto L_Wrong;
+    if (countitem(@pauline_ingredient1$) < 1)
+        goto L_NotEnough;
+    if (countitem(@pauline_ingredient2$) < 1)
+        goto L_NotEnough;
+    mes "\"Do you want to give me these items?\"";
+    menu
+        "No.", L_ComeBackLater,
+        "Yes.", -;
+    delitem @pauline_ingredient1$, 1;
+    delitem @pauline_ingredient2$, 1;
+    mes "\"Okay, let me try this.\"";
+    if (@pauline_ingredient1$ == "Root")
+        goto L_Pass1Pinkie;
+    if (@pauline_ingredient1$ == "PinkAntenna")
+        goto L_Pass2Pinkie;
+    goto L_DidNotWorkPinkie;
+
+L_DidNotWorkPinkie:
+    mes "The Witch takes " + @pauline_ingredient1$ + " and " + @pauline_ingredient2$ + " and puts them together calling " + getspellinvocation("summon-pinkie") + ".";
+    mes "Nothing happens.";
+    mes "[Pauline]";
+    mes "\"It seems you did not tell me the correct ingredients. Come back when you find the correct ones.\"";
+    goto L_Close;
+
+L_Pass1Pinkie:
+    if (@pauline_ingredient2$ == "PinkAntenna")
+        goto L_TrySpellPinkie;
+    goto L_DidNotWorkPinkie;
+
+L_Pass2Pinkie:
+    if (@pauline_ingredient2$ == "Root")
+        goto L_TrySpellPinkie;
+    goto L_DidNotWorkPinkie;
+
+L_TrySpellPinkie:
+    mes "The Witch takes " + @pauline_ingredient1$ + " and " + @pauline_ingredient2$ + " and puts them together calling " + getspellinvocation("summon-pinkie") + ".";
+    monster "021-1.gat", 54,68, "Good", 1018, 1;
+    mes "[Pauline]";
+    mes "\"It worked!\"";
+    set @pauline_state, 4;
+    callsub S_Update_Mask;
+    getexp @pauline_REWARD, 0;
+    goto L_Close;
+
+L_MoreMagic:
+    mes "[Pauline]";
+    mes "\"Thanks for telling me the ingredients. As soon as I find out more about those wall paintings I will let you know.\"";
+    goto L_Close;
+
+L_Wrong:
+    mes "The Witch looks at you and snorts.";
+    mes "[Pauline]";
+    mes "\"You told me the wrong ingredients. Come back as soon as you know the correct ones.\"";
+    goto L_Close;
+
+L_NotEnough:
+    mes "[Pauline]";
+    mes "\"Hey, you don't have this with you!\"";
+    mes "\"Come back when you have the right ingredients.\"";
+    goto L_Close;
+
+L_ComeBackLater:
+    mes "[Pauline]";
+    mes "\"Then come back later.\"";
+    goto L_Close;
+
+L_Close:
+    set @pauline_ingredient1$, "";
+    set @pauline_ingredient2$, "";
+    set @pauline_state, 0;
+    set @pauline_REWARD, 0;
+    close;
+
+//Bitmasks
+S_Update_Mask:
+    set QUEST_MAGIC2,
+        (QUEST_MAGIC2 & ~(@Pauline_MASK))
+            | (@pauline_state << @Pauline_SHIFT);
+    return;
+}
+
+021-1.gat,53,66,0|script|PaulineDebug|208,
+{
+//load Bitmasks;
+    set @Pauline_MASK, NIBBLE_4_MASK;
+    set @Pauline_SHIFT, NIBBLE_4_SHIFT;
+
+    set @pauline_state, ((QUEST_MAGIC2 & @Pauline_MASK) >> @Pauline_SHIFT);
+
+    mes "Reset Quest State";
+    mes @pauline_state;
+    menu
+        "Yes.", -,
+        "No.", L_Close;
+    set @pauline_state, 0;
+    callsub S_Update_Mask;
+    mes "Done";
+    close;
+
+L_Close:
+    set @pauline_state, 0;
+    close;
+
+S_Update_Mask:
+    set QUEST_MAGIC2,
+        (QUEST_MAGIC2 & ~(@Pauline_MASK))
+            | (@pauline_state << @Pauline_SHIFT);
+    return;
+
+OnInit:
+    if (!debug)
+        disablenpc "PaulineDebug";
+}
