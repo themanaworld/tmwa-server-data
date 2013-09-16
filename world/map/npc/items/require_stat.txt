@@ -1,31 +1,18 @@
 // ------------------------------------------------------------
 // Variables passed to this script:
-//  @slotId   The slot in which the item would have been equipped in. This is passed automagically when called in an equip script.
-//  @bStat$    The stat to check against. Can be Str, Agi, Vit, Int, Dex, Luk.
+//  @slotId   The slot in which the item would have been equipped in.
+//            This is passed automagically when called in an equip script.
+//  @bStat    The stat to check against.
+//            Usually one of: bStr, bAgi, bVit, bInt, bDex, bLuk;
+//            but can be anything that works with readparam().
 //  @minbStatVal The minimum stat value to accept this item.
 // ------------------------------------------------------------
 
 function|script|RequireStat|,
 {
-    if (@bStat$ == "" || @minbStatVal < 0) goto L_Return;
-    set @bStatVal, 0;
-    if (@bStat$ == "Str")
-        set @bStatVal, readparam(bStr);
-    if (@bStat$ == "Agi")
-        set @bStatVal, readparam(bAgi);
-    if (@bStat$ == "Vit")
-        set @bStatVal, readparam(bVit);
-    if (@bStat$ == "Dex")
-        set @bStatVal, readparam(bDex);
-    if (@bStat$ == "Int")
-        set @bStatVal, readparam(bInt);
-    if (@bStat$ == "Luk")
-        set @bStatVal, readparam(bLuk);
-    if (@bStatVal >= @minbStatVal) goto L_Return;
+    set @bStatVal, readparam(@bStat);
     // If the requirement isn't met, then we end the script.
     // Hence, subsequent item modifiers won't be applied.
-    end;
-
-L_Return:
-    return;
+    if (@bStatVal < @minbStatVal)
+        end;
 }
