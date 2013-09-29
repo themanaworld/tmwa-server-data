@@ -64,6 +64,10 @@ def make_html_colors_dict():
         'date': HtmlDate(),
         'link': HtmlLink(),
         'author': HtmlSignature(),
+        'ul' : '<ul>',
+        '/ul': '</ul>',
+        'li' : '<li>',
+        '/li': '</li>',
     }
     for k, v in color_dict.items():
         r[k] = '<font color="#%06x">' % v.rgb
@@ -76,30 +80,37 @@ def make_txt_colors_dict():
     return dict(generate_txt_colors())
 
 class StackPusher(object):
-    __slots__ = ('stack', 'txt')
-    def __init__(self, stack, txt):
-        self.stack = stack
+    __slots__ = ('tag_stack', 'tag', 'txt_stack', 'txt')
+    def __init__(self, tag_stack, tag, txt_stack, txt):
+        self.tag_stack = tag_stack
+        self.tag = tag
+        self.txt_stack = txt_stack
         self.txt = txt
     def __format__(self, fmt):
         assert fmt == ''
-        txt = self.txt
-        self.stack.append(txt)
-        return txt
+        self.tag_stack.append(self.tag)
+        if self.txt_stack is not None:
+            self.txt_stack.append(self.txt)
+        return self.txt
 
 class StackPopper(object):
-    __slots__ = ('stack', 'txt')
-    def __init__(self, stack, txt):
-        self.stack = stack
+    __slots__ = ('tag_stack', 'tag', 'txt_stack', 'txt')
+    def __init__(self, tag_stack, tag, txt_stack, txt):
+        self.tag_stack = tag_stack
+        self.tag = tag
+        self.txt_stack = txt_stack
         self.txt = txt
     def __format__(self, fmt):
         assert fmt == ''
-        txt = self.txt
-        if len(self.stack) <= 1:
-            raise SyntaxError('Unmatched {/%s}' % txt)
-        prev = self.stack.pop()
-        if txt != prev:
-            raise SyntaxError('Mismatched {/%s} from {%s}' % (txt, prev))
-        return self.stack[-1]
+        if len(self.tag_stack) <= 0:
+            raise SyntaxError('Unmatched {/%s}' % self.tag)
+        prev = self.tag_stack.pop()
+        if self.tag != prev:
+            raise SyntaxError('Mismatched {/%s} from {%s}' % (self.tag, prev))
+        if self.txt_stack is not None:
+            self.txt_stack.pop()
+            return self.txt_stack[-1]
+        return self.txt
 
 class TxtDate(object):
     __slots__ = ('stack')
@@ -124,10 +135,18 @@ class TxtSignature(object):
         return '-##2' + author + self.stack[-1]
 
 def generate_txt_colors():
-    stack = ['##0'] # don't let stack become empty
+    tag_stack = []
+    color_stack = ['##0'] # don't let color stack become empty
     for k,v in color_dict.items():
-        yield k, StackPusher(stack, v.txt)
-        yield '/' + k, StackPopper(stack, v.txt)
-    yield 'date', TxtDate(stack)
-    yield 'link', TxtLink(stack)
-    yield 'author', TxtSignature(stack)
+        yield k, StackPusher(tag_stack, k, color_stack, v.txt)
+        e = '/' + k
+        yield e, StackPopper(tag_stack, k, color_stack, v.txt)
+    yield 'date', TxtDate(color_stack)
+    yield 'link', TxtLink(color_stack)
+    yield 'author', TxtSignature(color_stack)
+
+    yield 'ul', StackPusher(tag_stack, 'ul', None, '')
+    yield '/ul', StackPopper(tag_stack, 'ul', None, '')
+
+    yield 'li', StackPusher(tag_stack, 'li', None, '* ')
+    yield '/li', StackPopper(tag_stack, 'li', None, '')
