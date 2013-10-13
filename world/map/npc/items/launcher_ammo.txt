@@ -1,0 +1,55 @@
+// ------------------------------------------------------------
+// Ammo Needs to know Launcher and vice versa.
+//
+// Behavior:
+// Ammo is always unequipped
+//
+// Variables passed to this script:
+//
+// @LauncherType, @AmmoType
+//
+// ------------------------------------------------------------
+
+function|script|CheckLauncher|,
+{
+    // Need to check if this is still equipped later.
+    set @LauncherTypeId, @itemId;
+    // If no Ammo equipped Hide LauncherType Until it's Needed.
+    if (!(@LauncherNoAmmoType) || (@LauncherType != @LauncherNoAmmoType))
+        set @LauncherNoAmmoType, @LauncherType;
+    set @LauncherType, 0;
+    return;
+}
+
+function|script|CheckAmmo|,
+{
+    // Iterates over all slots to check for equipment
+    // Allows Armor to effect Ammo and equip slots to move
+    set @EquipSlotCheck, 0;
+
+L_EquipCheck:
+    if (@EquipSlotCheck == 11)
+        goto L_CheckAmmo;
+    if (@LauncherTypeId == getequipid(@EquipSlotCheck))
+       goto L_LauncherEquipped;
+
+L_EquipInc:
+    set @EquipSlotCheck, @EquipSlotCheck + 1;
+    goto L_EquipCheck;
+
+L_LauncherEquipped:
+    set @LauncherType, @LauncherNoAmmoType;
+
+L_CheckAmmo:
+    // Check If Launcher Matches Ammo or is No Longer equipped.
+    if ((@LauncherType == @AmmoType) || (@LauncherType == 0))
+        goto L_Return;
+
+L_Unequip:
+    callfunc "UnequipLater";
+
+L_Return:
+    set @LauncherType, 0;
+    set @AmmoType, 0;
+    return;
+}
