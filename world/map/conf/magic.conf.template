@@ -47,6 +47,7 @@ CONST SFX_BARRIER       = 10
 CONST SFX_UNBARRIER     = 10
 CONST SFX_HEAL          = 3
 CONST SFX_LIGHTNING     = 18
+CONST SFX_HEAT          = 116
 
 CONST MAX_RAIN_SPELL_RADIUS = 15
 
@@ -911,7 +912,14 @@ LOCAL SPELL rain : "#N13" =
                 THEN {
                     callfunc "HalloweenQuestWaterPumpkins";
                 };
+                strength = spellpower;
                 FOR i = 0 TO (spellpower / 3) DO (
+                    FOREACH SPELL s IN area DO
+                                    IF (name_of(s) = "heat")
+                                    THEN (message (caster, "A heat wave is drying up your raincloud.");
+                                          strength = (strength - (spellpower/6));)
+                    IF (strength < 1)
+                    THEN (ABORT;);
                     FOR j = 0 TO min(spellpower / 2, 200) / 100 DO (
                         location = random_location(area);
                         sfx(location, SFX_RAIN, 0);
@@ -971,6 +979,41 @@ SPELL shear : "#N14" =
                     )
 
 
+LOCAL SPELL heat : "#N15" =
+      LET level = 1
+          school = NATURE
+      IN (MANA 17, CASTTIME 3000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          REQUIRE is_exterior(location(caster)),
+          (REQUIRE skill(caster, school) > 3 OR COMPONENTS ["BottleOfSand"]))
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                CALL abort_on_area_shield(location(caster));
+                FOREACH SPELL s IN rbox(location(caster), MAX_RAIN_SPELL_RADIUS + 1) DO
+                                IF (s <> self_invocation) && (name_of(s) = "heat")
+                                THEN (message (caster, "A nearby heat wave absorbs your spell.");
+                                      ABORT;)
+                CALL gain_xp(1, 24);
+                range = min(MAX_RAIN_SPELL_RADIUS, 3 + min(spellpower, 200) / 30);
+                area = rbox(location(caster), range);
+                strength = spellpower;
+                FOR i = 0 TO (spellpower / 3) DO (
+                    FOREACH SPELL s IN area DO
+                                    IF (name_of(s) = "rain")
+                                    THEN (message (caster, "Your heat wave is drying up a raincloud.");
+                                          strength = (strength - (spellpower/6));)
+                    IF (strength < 1)
+                    THEN (ABORT;);
+                    sfx(location, SFX_HEAT, 0);
+                    FOR j = 0 TO min(spellpower / 2, 200) / 100 DO (
+                        location = random_location(area);
+                        FOREACH TARGET target IN rbox(location, 1) DO
+                            IF element(target) = ELT_WATER
+                            THEN injure(caster, target, 2 + random(5 + spellpower / 15), 0);
+                    )
+                    WAIT 400 + random(100);
+                );
 
 SPELL barrier (target : PC) : "#A10" =
       LET level = 1
