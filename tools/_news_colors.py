@@ -59,11 +59,19 @@ class HtmlSignature(object):
     def __format__(self, author):
         return '-<font color="#009000">%s</font>' % author
 
+class HtmlTitle(object):
+    __slots__ = ()
+    def __format__(self, title):
+        # no color here
+        # (we really need someone to do CSS)
+        return '<b>%s</b>' % title
+
 def make_html_colors_dict():
     r = {
         'date': HtmlDate(),
         'link': HtmlLink(),
         'author': HtmlSignature(),
+        'title': HtmlTitle(),
         'ul' : '<ul>',
         '/ul': '</ul>',
         'li' : '<li>',
@@ -134,6 +142,13 @@ class TxtSignature(object):
     def __format__(self, author):
         return '-##2' + author + self.stack[-1]
 
+class TxtTitle(object):
+    __slots__ = ('stack')
+    def __init__(self, stack):
+        self.stack = stack
+    def __format__(self, title):
+        return '##7' + title + self.stack[-1]
+
 def generate_txt_colors():
     tag_stack = []
     color_stack = ['##0'] # don't let color stack become empty
@@ -144,6 +159,7 @@ def generate_txt_colors():
     yield 'date', TxtDate(color_stack)
     yield 'link', TxtLink(color_stack)
     yield 'author', TxtSignature(color_stack)
+    yield 'title', TxtTitle(color_stack)
 
     yield 'ul', StackPusher(tag_stack, 'ul', None, '')
     yield '/ul', StackPopper(tag_stack, 'ul', None, '')
