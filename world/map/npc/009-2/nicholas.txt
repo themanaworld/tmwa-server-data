@@ -16,6 +16,8 @@
     set @SETZER_XP, 100000;
     set @SHIELD_XP, 20000;
 
+    set @SETZER_MIN_LEVEL, 70;
+
     set @SHIELD_INITIAL, 0;
     set @SHIELD_KNOWS_PATCH, 1; // knows that a leather patch is needed
     set @SHIELD_COMPLETED, 2; // shield completed once
@@ -340,6 +342,10 @@ L_SetzerQuest:
         goto L_SetzerNoMonsterOil;
     if (countitem("ShortSword") < 1)
         goto L_SetzerNoSword;
+
+    // Block until lvl 70
+    if (BaseLevel < @SETZER_MIN_LEVEL)
+        goto L_SetzerNotExperienced;
     // No inventory check needed, as the short sword is removed, opening a slot
 
     mes "[Nicholas]";
@@ -388,6 +394,19 @@ L_SetzerNoMonsterOil:
 L_SetzerNoSword:
     mes "[Nicholas]";
     mes "\"I will need your old Short Sword as a basis.  Please bring it to me first.\"";
+    close;
+
+L_SetzerNotExperienced:
+    mes "[Nicholas]";
+    mes "\"Okay, you seem to have everything. Hmmm...\"";
+    next;
+    mes "Nicholas takes a deep look at you. He takes a moment, scratches his chin and nods";
+    next;
+    mes "[Nicholas]";
+    mes "\"You see, this is one of the best pieces of weaponry around here.";
+    mes "However I don't think you're experienced enough to handle this without killing yourself.\"";
+    next;
+    mes "\"Keep your stuff for now. I'll consider making this awesome weapon later when you're apt enough.\"";
     close;
 
 L_end:
