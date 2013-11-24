@@ -6,7 +6,7 @@ botcheck.gat,0,0,0|script|UnequipCB|-1,-1,-1
 {
 
 OnUnequip:
-    unequipbyid (@unequip_slot -1);
+    unequipbyid (@unequip_slot - 1);
     set @unequip_slot, 0;
     end;
 }
@@ -14,11 +14,11 @@ OnUnequip:
 // Paired with unequipcb
 function|script|UnequipLater|,
 {
-    if(@unequip_slot)
+    // if there are multiple items that want to be removed,
+    // only schedule one timer - scripts will be called again
+    if (@unequip_slot)
         goto L_Return;
-    goto L_ReturnTimer;
 
-L_ReturnTimer:
     set @unequip_slot, (@slotId + 1);
     addtimer 0, "UnequipCB::OnUnequip";
 

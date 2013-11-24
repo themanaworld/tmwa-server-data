@@ -2,9 +2,10 @@
 // Ammo Needs to know Launcher and vice versa.
 //
 // Behavior:
-// Ammo is always unequipped
+//  - If only one is equipped, do nothing
+//  - If incompatible launcher and ammo are equipped, unequip the ammo
 //
-// Variables passed to this script:
+// Variables passed to these scripts:
 //
 // @LauncherType, @AmmoType
 //
@@ -12,14 +13,8 @@
 
 function|script|CheckLauncher|,
 {
-    set @AmmoEquip, (getequipid(equip_arrow) + 1);
-    if (@AmmoEquip)
-        goto L_Return;
-
-L_NoAmmoEquip:
-    set @LauncherType, 0;
-
-L_Return:
+    if (getequipid(equip_arrow) == -1)
+        set @LauncherType, 0;
     return;
 }
 
@@ -28,9 +23,10 @@ function|script|CheckAmmo|,
     if ((@LauncherType == @AmmoType) || (!@LauncherType))
         goto L_Return;
 
-L_Unequip:
     callfunc "UnequipLater";
 
 L_Return:
+    set @LauncherType, 0;
+    set @AmmoType, 0;
     return;
 }
