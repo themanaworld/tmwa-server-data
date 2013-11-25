@@ -7,10 +7,12 @@
 #include <vector>
 #include <string>
 
-// this configuration puts 3-6 spaces between entries (excluding headers)
+// this configuration puts 2-5 spaces between entries (excluding headers)
 // and rounds the start of each field up to 4, for easier manual indenting
-const size_t min_pad = 3;
+// but force each field to be at least size 8
+const size_t min_pad = 2;
 const size_t align_pad = 4;
+const size_t min_size = 8;
 
 void add_pieces(std::vector<std::string>& line, std::vector<size_t>& sizes)
 {
@@ -39,6 +41,8 @@ void add_pieces(std::vector<std::string>& line, std::vector<size_t>& sizes)
             line[i].resize(--elt_size);
         // mandatory padding and comma
         elt_size += min_pad + 1;
+        if (elt_size < min_size)
+            elt_size = min_size;
         if (elt_size > sizes[i])
             // always true if we expanded sizes
             sizes[i] = elt_size;
