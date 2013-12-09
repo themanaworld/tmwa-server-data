@@ -7,41 +7,41 @@
     mes "\"Welcome, dear wanderer! Come into my humble home. Take a rest, eat and drink.\"";
     next;
     menu
-        "Thanks, that's very kind of you!",thanks,
-        "Can you teach me magic?", L_teach_rude,
-        "Oh, shut up!",shutup;
-    close;
+        "Thanks, that's very kind of you!", L_Thanks,
+        "Can you teach me magic?", L_TeachRude,
+        "Oh, shut up!", L_ShutUp;
+    goto L_Close;
 
-L_teach_rude:
+L_TeachRude:
     mes "[Old Wizard]";
     mes "\"I certainly could, but I already have an apprentice.\"";
-    close;
+    goto L_Close;
 
-shutup:
+L_ShutUp:
     mes "[Old Wizard]";
     mes "\"That attitude isn't going to get you very far, my dear.\"";
-    close;
+    goto L_Close;
 
-thanks:
+L_Thanks:
     mes "[Old Wizard]";
     mes "\"Behind this door, my apprentice will serve you.\"";
     next;
     if (@has_magic)
         menu
-            "Alright.",ok,
-            "I am studying magic, can you help?", L_new_student,
-            "Your apprentice? ... No thanks.",nothx;
+            "Alright.", L_Agree,
+            "I am studying magic, can you help?", L_NewStudent,
+            "Your apprentice? ... No thanks.", L_Decline;
     if (!@has_magic)
         menu
-            "Alright.",ok,
-            "Your apprentice? ... No thanks.",nothx;
+            "Alright.", L_Agree,
+            "Your apprentice? ... No thanks.", L_Decline;
 
-nothx:
+L_Decline:
     mes "[Old Wizard]";
     mes "\"Goodbye, then!\"";
-    close;
+    goto L_Close;
 
-L_new_student:
+L_NewStudent:
     mes "[Old Wizard]";
     mes "\"Studying is always an excellent use of one's mind! I fear that I can't offer too much assistance to you, however. But if you are interested, I could perhaps teach you a simple spell?\"";
     next;
@@ -49,15 +49,15 @@ L_new_student:
     // check if the player has the knowledge of any skill
     if (!(getskilllv(SKILL_POOL)))
         menu
-            "That would be very kind of you!", L_teachspell,
-            "No, but thank you!", nothx;
+            "That would be very kind of you!", L_TeachSpell,
+            "No, but thank you!", L_Decline;
     if (getskilllv(SKILL_POOL))
         menu
-            "That would be very kind of you!", L_teachspell,
-            "Actually I am looking for someone teaching me some more magic skills.", L_astralsoul,
-            "No, but thank you!", nothx;
+            "That would be very kind of you!", L_TeachSpell,
+            "Actually I am looking for someone teaching me some more magic skills.", L_AstralSoul,
+            "No, but thank you!", L_Decline;
 
-L_teachspell:
+L_TeachSpell:
     mes "[Old Wizard]";
     mes "\"This one may not seem too powerful, but it can be quite handy; it's the 'hide' spell. It will shield you from some forms of detection magic.\"";
     next;
@@ -71,12 +71,12 @@ L_teachspell:
     mes "\"You may find it useful for getting a little peace and quiet at times, but it can also get in the way of friends trying to find you, so use it with care.\"";
     next;
     if (getskilllv(SKILL_MAGIC_ASTRAL) >= 2)
-        close;
+        goto L_Close;
     mes "[Old Wizard]";
     mes "\"I'm not sure if you are experienced enough to cast it yet, though.  You may need to first learn astral magic.\"";
-    close;
+    goto L_Close;
 
-L_astralsoul:
+L_AstralSoul:
     mes "[Old Wizard]";
     mes "\"Oh yes, there are lots of ways to improve your magic. Skills -some people say mental focus for that- are another way to improve your magic. Of course learning more and more spells is also a need for good mages.\"";
     next;
@@ -85,7 +85,7 @@ L_astralsoul:
     mes "\"To do so, I am in need of a pearl and about 100 acorns.\"";
     menu
         "Here we go.", -,
-        "Ok be right back. I'll get them", nothx;
+        "Ok be right back. I'll get them", L_Decline;
     if (countitem("Pearl") < 1 || countitem("Acorn") < 100) goto L_NotEnough;
     delitem "Pearl", 1;
     delitem "Acorn", 100;
@@ -106,19 +106,23 @@ L_astralsoul:
     mes "\"Now go and try to find someone who can actually activate that focus.\"";
     next;
     mes "\"You have the powers to focus on magic, but you need to get magic focused now.\"";
-    close;
+    goto L_Close;
 
 L_NotEnough:
     mes "[Old Wizard]";
     mes "\"Please learn to count.\"";
     next;
     mes "\"When you are done with that, come back again.\"";
-    close;
+    goto L_Close;
 
-ok:
+L_Agree:
     mes "[Old Wizard]";
     mes "\"Beware the flying notes though, some of them are really dangerous. I haven't been able to persuade them to get back into their book. And avoid the mirror, it's been acting strange lately.\"";
     next;
     mes "\"Oh, and please don't take my apprentice too seriously. He still has a lot to learn.\"";
+    goto L_Close;
+
+L_Close:
+    set @has_magic, 0;
     close;
 }
