@@ -25,6 +25,7 @@ indent-mobs: tools/aligncsv
 
 world/map/news.txt world/map/news.html: tools/news.py tools/_news_colors.py world/map/news.d/* world/map/news.d/
 	tools/news.py world/map/ world/map/news.d/
+	chmod a+r world/map/news.txt world/map/news.html
 
 news: world/map/news.txt world/map/news.html
 updates:
