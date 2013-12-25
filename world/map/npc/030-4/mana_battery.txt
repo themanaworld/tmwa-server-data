@@ -1,0 +1,384 @@
+// Annual Xmas Battle
+// Author: Jenalya, shamelessly adapted by Chayenne, wushin
+
+// Variables:
+// @xmas_battle_side: if set its "naughty path" if not set "nice path"
+// XmasBattleStatus:
+// 0 battle not started
+// 1 battle easy good
+// 2 battle hard good
+// 3 battle easy bad
+// 4 battle hard bad
+// basically its this:
+// Announcements depend on wether starter was naughty/nice path
+// mobs are not yet balanced, they also depend on battle mode
+// only nutcrackers need to be killed ( I hope )
+
+// player gets state set to finished for winning the battle once and mode bit set on easy/hard accordingly
+// every player *is* allowed to restart the quest ONCE himself if he hasnt started it himself yet
+
+//TODO Balance mobs for level 50/candor (with assistance, i dont care if a speed archer cant solo that thing)
+//TODO Add an icreasing particle effect to the chest, move it half a tile right
+// and make it one of those lab tables from the slime quests
+
+030-4.gat,32,21,0|script|AniManOMat|400,
+{
+    set $@XmasBattleStatusClone, 0;
+    callfunc "XmasStates";
+    set @xmas_battle_side, 0;
+    if (@xmas_side)
+        set @xmas_battle_side, 1;
+    if ($@XmasBattleStatus)
+        goto L_BattleInProgress;
+    if (@xmas_state < $@xmas_boss_door_open_state)
+        goto L_ThrowOut;
+    if ((@xmas_boss_start) && (@xmas_state > $@xmas_boss_door_open_state))
+        goto L_Helper;
+    if (@xmas_state == $@xmas_boss_door_open_state)
+        goto L_InitiateBattle;
+    goto L_InitiateBattle;
+
+L_InitiateBattle:
+    callfunc "XmasSetBossStart";
+    if(@xmas_battle_side)
+        goto L_BattleBad;
+    goto L_BattleGood;
+
+L_BattleBad:
+    mes "[Orum's Homunculus]";
+    mes "\"So this is where this whole shallow charade will end...\"";
+    mes "\"Good. Are you ready to get this over with?\"";
+    menu
+        "Huh? Sure, why not.", -,
+        "Wait a sec.", L_Close,
+        "Well... since you ask... I prefer to leave now, this is way to dangerous. I have responsibities.", L_Coward;
+    mes "[Orums Homunculus]";
+    mes "\"Okay now listen closely, at least for once.\"";
+    mes "\"Put the mana battery into that vessel in front of you.\"";
+    next;
+    menu
+        "Ok.", -,
+        "No way, I prefer to leave. Now!", L_Coward,
+        "Give me a second, I need to consider my options.", L_Close;
+    mes "You carefully install the Mana Battery as good as you can manage.";
+    mes "As you bend over, you notice a strong sulphur odour coming from the crate";
+    next;
+    mes "[Orum]";
+    mes "\"Ok. now this should be enough.\"";
+    mes "\"Get out of here, before the bomb explodes!.\"";
+    menu
+        "Agreed.", L_StartBad,
+        "You know what? If I pull this lever this should become HUGE! (Beware! that's dangerous)", L_StartBadHard;
+
+L_BattleGood:
+    mes "You stare into a box that even through your unexperienced eyes looks less than secure to harbour such a powerful device as the mana battery is.";
+    menu
+        "Ok, this should be where the battery belongs.", L_StartGood,
+        "No WAY! I am not going to put my life in danger", L_Close,
+        "Ok that does it, I am going to leave! I cannot be responsible for blowing up the entire mana world.", L_Coward,
+        "I studied magic and this looks all wrong. (Beware! that's dangerous)", L_StartGoodHard;
+    goto L_Close;
+
+L_StartGood:
+    if ($@XmasBattleStatus)
+        goto L_BattleInProgress;
+    set $@XmasBattleStatus, 1;
+    goto L_Start;
+    goto L_Close;
+
+L_StartGoodHard:
+    if ($@XmasBattleStatus)
+        goto L_BattleInProgress;
+    callsub S_CheckHardReq;
+    delitem $@xmas_boss_req$[ @xmas_battle_side ], $@xmas_boss_amount[ @xmas_battle_side ];
+    mes "You pour a handfull of " + $@xmas_boss_req$[@xmas_battle_side] + " over the Mana Battery.";
+    set $@XmasBattleStatus, 2;
+    goto L_Start;
+
+L_StartBad:
+    if ($@XmasBattleStatus)
+        goto L_BattleInProgress;
+    set $@XmasBattleStatus, 3;
+    goto L_Start;
+
+L_StartBadHard:
+    if ($@XmasBattleStatus)
+        goto L_BattleInProgress;
+    callsub S_CheckHardReq;
+    delitem $@xmas_boss_req$[ @xmas_battle_side ], $@xmas_boss_amount[ @xmas_battle_side ];
+    mes "You pour a handfull of " + $@xmas_boss_req$[@xmas_battle_side] + " over the Mana Battery.";
+    set $@XmasBattleStatus, 4;
+    goto L_Start;
+
+L_Start:
+    set $@XmasBattleStatusClone, $@XmasBattleStatus;
+    mes "You struggle a little with your task, since the mana battery doesn't seem to fit in as smooth as you expected it.";
+    next;
+    mes "W00t!";
+    next;
+    mes "Now it is glowing wildly";
+    next;
+    mes "it seems like this will not turn out as planned, Look this Guard of Honour is going crazy!";
+    next;
+    npctalk "The Guards are out of control!";
+    set $@XmasBossRound, 0;
+    set $@XmasBossPlayerCount, getmapusers("030-4.gat");
+    areamonster "030-4.gat", 20, 21, 40, 40, "", 1114, 1, "AniManOMat::OnGuardDeath";
+    initnpctimer;
+    goto L_Close;
+
+L_ThrowOut:
+    // if the player didnt get a bomb yet
+    mes "This looks dangerous. Come back when you are prepared";
+    warp "030-2",151,25;
+    next;
+    goto L_Close;
+
+L_Coward:
+    //Player chose to cancel
+    mes "What a pitty now you still have a bomb in your hands but...";
+    mes "As you wish.";
+    next;
+    warp "030-2",151,25;
+    goto L_Close;
+
+L_Helper:
+    //Player used up his own chance to start
+    mes "mmh the AniManOMat is empty again, maybe we should try with a different mana battery.";
+    menu
+        "No I prefer to leave now, get me out of here.", L_Quit,
+        "Wait let me check if i can fix this ...(Beware!)", L_Repeat,
+        "Why would I do that? Aaaah... Nevermind.", -;
+    goto L_Close;
+
+L_Repeat:
+    //Player wants to try again on hard mode again
+    callsub S_CheckHardReq;
+    delitem $@xmas_boss_req$[ @xmas_battle_side ], $@xmas_boss_amount[ @xmas_battle_side ];
+    set $@XmasBattleStatus, (2 * (@xmas_battle_side)) + 2;
+    goto L_Start;
+
+L_Quit:
+   warp "030-2",151,25;
+   goto L_Close;
+
+L_BattleInProgress:
+    mes "The mana battery looks like it is about to explode. You better take cover!";
+    goto L_Close;
+
+L_Close:
+    callsub S_ClearVariables;
+    close;
+
+    // per NPC logic
+OnTimer5000:
+    setnpctimer 0;
+    if ($@XmasBattleStatus) goto L_CaveLogic;
+
+L_Return_1:
+    set $@XmasBossPlayerCount, 0;
+    areatimer "030-4.gat", 0, 0, 60, 60, 10, "AniManOMat::OnTick";
+    end;
+
+L_CaveLogic:
+    if ($@XmasBossPlayerCount < 1)
+        goto L_AllDead;
+    set $@BombTimer, $@BombTimer + 5; // Advance 5 seconds
+    if (mobcount("030-4.gat", "AniManOMat::OnGuardDeath") <= 0)
+        goto L_NextWave;
+    if ($@BombTimer >= 120)
+        goto L_NextWave;
+    goto L_Return_1;
+
+L_NextWave:
+    set $@BombTimer, 0;
+    set $@XmasBossRound, $@XmasBossRound + 1;
+    if (($@XmasBossRound > 10)  && (mobcount("030-4.gat", "AniManOMat::OnGuardDeath") < 0))
+        goto L_Finished;
+    // Break/LastChance(s)
+    if (($@XmasBossRound > 10)  && ($@XmasBossRound <= 12))
+        goto L_Return_1;
+    //KillerWaves
+    if ($@XmasBossRound > 12)
+        areamonster "030-4.gat", 0, 0, 50, 50, "", 1114, $@XmasBossRound*2 + $@XmasBossPlayerCount*3, "AniManOMat::OnGuardDeath";
+    //Normal Waves 1 to 10
+    // Guard Amount doubles if on hard mode
+    set $@GuardAmount, 1 + (8 + ($@XmasBossRound) + (2 * $@XmasBossPlayerCount)) / 8;
+    set $@SkullAmount, 1 + ($@GuardAmount * $@GuardAmount) / 4;
+
+    if ($@GuardAmount > 15)
+        set $@GuardAmount, 15;
+
+    //Obliatory Guard Of Honour in the Southern Hallway
+    areamonster "030-4.gat", 30, 43, 39, 49, "", 1114, $@GuardAmount, "AniManOMat::OnGuardDeath";
+    //CopperSlimes, I love Copper Slimes anywhere anytime
+    areamonster "030-4.gat", 20, 21, 49, 49, "", 1098, rand(2,7), "AniManOMat::All1";
+    //IceSkulls for hard mode in room 3 and 4
+    if ($@XmasBattleStatus == 2 || $@XmasBattleStatus == 4)
+        areamonster "030-4.gat", 20, 32, 28, 39, "", 1085, $@SkullAmount / 2, "AniManOMat::OnGuardDeath";
+    if ($@XmasBattleStatus == 2 || $@XmasBattleStatus == 4)
+        areamonster "030-4.gat", 41, 32, 49, 39, "", 1085, $@SkullAmount / 2 + 1, "AniManOMat::OnGuardDeath";
+    //Angry Sea Slimes for Easy Mode in Nice Version in Room 3,4,5,6
+    if ($@XmasBattleStatus == 1)
+        areamonster "030-4.gat", 20, 32, 28, 49, "", 1109, $@SkullAmount, "AniManOMat::OnGuardDeath";
+    if ($@XmasBattleStatus == 1)
+        areamonster "030-4.gat", 41, 32, 49, 49, "", 1109, $@SkullAmount, "AniManOMat::OnGuardDeath";
+    //Candied Slimes for Nice Mode in Rooms 1 and 2
+    if ($@XmasBattleStatus == 1 || $@XmasBattleStatus == 2)
+        areamonster "030-4.gat", 20, 21, 28, 28, "", 1111, ($@XmasBossRound / 2) + 1, "AniManOMat::OnGuardDeath";
+    if ($@XmasBattleStatus == 1 || $@XmasBattleStatus == 2)
+        areamonster "030-4.gat", 41, 21, 49, 28, "", 1111, ($@XmasBossRound / 2) + 2, "AniManOMat::OnGuardDeath";
+    //Bluepars for Easy mode in Naughty Variant in Rooms 3,4,5,6
+    if ($@XmasBattleStatus == 3)
+        areamonster "030-4.gat", 20, 32, 28, 49, "", 1107, $@SkullAmount, "AniManOMat::OnGuardDeath";
+    if ($@XmasBattleStatus == 3)
+        areamonster "030-4.gat", 41, 32, 49, 49, "", 1107, $@SkullAmount, "AniManOMat::OnGuardDeath";
+    // Wicked Mushrooms for Naughty Mode in Rooms 1 and 2
+    if ($@XmasBattleStatus == 3 || $@XmasBattleStatus == 4)
+        areamonster "030-4.gat", 20, 21, 28, 28, "", 1106, $@XmasBossRound + ($@XmasBossRound / 2), "AniManOMat::OnGuardDeath";
+    if ($@XmasBattleStatus == 3 || $@XmasBattleStatus == 4)
+        areamonster "030-4.gat", 41, 21, 49, 28, "", 1106, $@XmasBossRound, "AniManOMat::OnGuardDeath";
+
+    set $@msgnumber, (2 * $@XmasBossRound) + (($@XmasBattleStatus - 1) >> 1);
+    set $@msg$, $@XmasBossMes$[ $@msgnumber ];
+    set $@msgnumber, 0;
+    if ($@XmasBossRound > 10) goto L_Return_1;
+    callsub S_Announce;
+    goto L_Return_1;
+
+OnTick:
+    if (isdead()) end;
+    set $@XmasBossPlayerCount, $@XmasBossPlayerCount + 1;
+    end;
+
+OnAll1:
+    end;
+
+OnGuardDeath:
+    end;
+
+L_AllDead:
+    set $@msg$, $@xmas_final_announce$[ ($@XmasBattleStatus - 1) / 2 ];
+    callsub S_Announce;
+    goto L_CleanUp;
+
+L_Finished:
+    set $@msg$, $@xmas_final_announce$[ (($@XmasBattleStatus - 1) / 2) + 2 ];
+    callsub S_Announce;
+    goto L_CleanUp;
+
+L_CleanUp:
+    areatimer "030-4.gat", 0, 0, 50, 50, 10, "AniManOMat::OnReward";
+    set $@XmasBattleStatus, 0;
+    set $@XmasBossPlayerCount, 0;
+    set $@XmasBossRound, 0;
+    set $@BombTimer, 0;
+    set $@GuardAmount, 0;
+    set $@SkullAmount, 0;
+    killmonster "030-4.gat", "AniManOMat::OnGuardDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnReward:
+    if (isdead())
+        end;
+    if (($@XmasBattleStatusClone % 2) == 0)
+        set XMASTIME, XMASTIME | $@xmas_boss_hero_bit;
+    set @bonus, (BaseLevel/3);
+    set DailyQuestBonus, DailyQuestBonus + @bonus;
+    message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained.";
+    set @xmas_state, (XMASTIME & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+    if (@xmas_state != $@xmas_boss_door_open_state )
+        goto L_End;
+    set @xmas_state, $@xmas_reward_start;
+    callfunc "XmasSetState";
+    set @xmas_state, 0;
+    set @karma_bonus, $@xmas_boss_bonus;
+    message strcharinfo(0), "Wow, what happened here?.";
+    goto L_End;
+
+L_End:
+    if ((($@XmasBattleStatus - 1) / 2) == 0) goto L_EndNice;
+    goto L_EndNaughty;
+
+L_EndNaughty:
+    callfunc "XmasNaughty";
+    callsub S_ClearVariables;
+    end;
+
+L_EndNice:
+    callfunc "XmasNice";
+    callsub S_ClearVariables;
+    end;
+
+OnInit:
+    set $@XmasBattleStatus, 0;
+    setarray $@XmasBossMes$,
+    "", // unused
+    "", // unused
+    "Scrrreeeeeeeeeeeeeeeeeeeeeaaaaaaaaaaaaaaaaaaaaatch",
+    "Scrrreeeeeeeeeeeeeeeeeeeeeaaaaaaaaaaaaaaaaaaaaatch",
+    "Santa : HELP!",
+    "Orums Homunculus : I think they know what we are up to!",
+    "Avalia : Oh no! This is going to blow up",
+    "Orums Homunculus : The Door is locked you idiot, fight for your life.",
+    "Avalia : Guards of Honor I demand you: STOP!",
+    "Orums Homunculus : Okay, this is somewhat funny... why are they coming back?!?",
+    "Avalia : You brave fighters! Deactivate the nutcrackers! they are out of control!",
+    "Orums Homunculus : The good news is: if we make it this time we will never have to do that again!",
+    "Avalia : Oh boy we are so screwed.",
+    "Orums Homunculus : Report: I am an Idiot",
+    "Avalia : Quick, we need to kill the nutcrackers, before they ruin everything we've been working for.",
+    "Orums Homunculus : Strange they are getting more and not less.",
+    "Avalia : Oh no, they are too powerful. Fight my warriors, Fight for the spirit of Christmas.",
+    "Orums Homunculus : If I was smart enough to stop talking, it would have happened already..",
+    "Avalia : I cannot believe it, this is makeing them stronger. More and more of them are comeing.",
+    "Orums Homunculus : I think we are almost done, the bomb should explode any second.",
+    "Avalia : Those poor creatures. Just kill them all.",
+    "Orums Homunculus : A N Y  S E C O N D.",
+    "Avalia : Oh well... just try again, I trust in you.",
+    "Orum's Homunculus : just lol.",
+    "Avalia : Wow! You saved christmas.",
+    "Orum's Homunculus : Yep, it's over... and strange enough you survived.";
+
+    setarray $@xmas_final_announce$,
+        "Avalia : Oh no, not only did you slay half my Guard of Honour, but also the issue was not fixed, try to install the battery again!",
+        "Orum's Homunculus : Boy are you lame. So what now? The battery is still not placed! Go try again!",
+        "Avalia : W00t you actually made it through. I think now that the manabattery lost some of its abundant power this seems to have given those nutcrackers that didn't go crazy a good boost of life energy. Thank you for your help all and come see me for a reward.",
+        "Orum's Homunculus : Good. They are dead. Now GET OUT OF THERE, this bomb is dangerous!";
+    end;
+
+S_Announce:
+    mapannounce "030-4.gat", $@msg$, 0;
+    mapannounce "030-3.gat", $@msg$, 0;
+    mapannounce "030-2.gat", $@msg$, 0;
+    mapannounce "030-1.gat", $@msg$, 0;
+    set $@msg$, "";
+    return;
+
+S_CheckHardReq:
+    if (BaseLevel < $@BossHardLevel)
+        goto L_NotHighEnough;
+    if (countitem($@xmas_boss_req$[ @xmas_battle_side ]) < $@xmas_boss_amount[ @xmas_battle_side ])
+        goto L_NotEnoughItems;
+    goto L_Return;
+
+L_NotEnoughItems:
+    mes "Nono, you need to bring " + $@xmas_boss_amount[ @xmas_battle_side ] + " " + $@xmas_boss_req$[ @xmas_battle_side ] + "s.";
+    goto L_Close;
+
+L_NotHighEnough:
+    mes "\"Err no sweetie, you don't. just do it the normal way.\"";
+    goto L_Close;
+
+L_Return:
+    return;
+
+S_ClearVariables:
+    set @xmas_battle_side, 0;
+    set @bonus, 0;
+    set @xmas_state, 0;
+    set @karma_bonus, 0;
+    return;
+}

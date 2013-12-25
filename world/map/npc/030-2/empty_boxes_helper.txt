@@ -1,0 +1,68 @@
+// Annual Xmas
+// author: Jenalya, wushin
+// Urmas asks for raw logs to make empty presents boxes
+// later he can be asked for those boxes to put toys in
+
+030-2.gat,140,41,0|script|Urmas|328,
+{
+    callfunc "XmasStates";
+
+    if($@xmas_time)
+        goto L_XmasMain;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[Urmas]";
+    mes "\"It's nice to not need to find logs in such a hurry. I always seem to have problems every year.\"";
+    goto L_Close;
+
+L_XmasMain:
+    if (@xmas_helper_bit) goto L_Helping;
+
+    mes "[Urmas]";
+    mes "\"Don't stand in the way! We have some serious problems here.\"";
+    goto L_Close;
+
+L_Helping:
+    mes "[Urmas]";
+    mes "\"Ah, I see you're one of the seasonal helpers. Ok, listen to me.";
+    mes "\"We have a shortage on the empty present boxes. Don't ask me how that can happen!";
+    mes "Those paper-shufflers up there probably messed up the ordering or something. Pah.\"";
+    next;
+    mes "\"However, we need to fix it. I have only a few boxes left.";
+    mes "Bring me some wood, so I can make new boxes out of it.";
+    mes $@xmas_log_amount + " Raw Logs will do for one box.\"";
+    mes "";
+    if (countitem("RawLog") < $@xmas_log_amount)
+        mes "\"But I see you do not have enough with you anyway. Come back with some material please.\"";
+    if (countitem("RawLog") < $@xmas_log_amount) goto L_Close;
+    next;
+    mes "\"How many boxes do you need?\"";
+    input @amount;
+    if (@amount <= 0)
+        goto L_Close;
+    if (countitem("RawLog") < (@amount * $@xmas_log_amount))
+        goto L_NoItems;
+    getinventorylist;
+    if (@inventorylist_count > 100)
+        goto L_FullInv;
+    delitem "RawLog", (@amount * $@xmas_log_amount);
+    mes "[Urmas]";
+    mes "\"Alright! Good job, kid. I'll start to make some more boxes now.";
+    mes "Here, take this in the meanwhile and put some toys in it.\"";
+    getitem "OpenPresentBox", @amount;
+    goto L_Close;
+
+L_FullInv:
+    mes "\"You need some space to put the empty boxes.\"";
+    goto L_Close;
+
+L_NoItems:
+    mes "[Urmas]";
+    mes "\"Eh? Are you kidding?\"";
+    goto L_Close;
+
+L_Close:
+    set @amount, 0;
+    close;
+}

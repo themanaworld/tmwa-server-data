@@ -1,0 +1,142 @@
+// author: Jenalya, wushin
+// Reino asks for reed bundles and water to make wrapping paper
+// also for some dyes to make them colorful
+// later he can be asked for those papers to wrap boxes
+
+030-2.gat,140,31,0|script|Reino|328,
+{
+    callfunc "XmasStates";
+
+    if($@xmas_time)
+        goto L_XmasMain;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[Reino]";
+    mes "\"Hrmm... I forgot what the real color of my hand was... \"";
+    goto L_Close;
+
+L_XmasMain:
+    if (@xmas_helper_bit) goto L_Helping;
+
+    mes "[Reino]";
+    mes "\"Excuse me, but please don't interrupt. We're all very busy.\"";
+    goto L_Close;
+
+L_Helping:
+    mes "[Reino]";
+    mes "\"Oh, I see you're here to help. Maybe you can assist me with a problem we have.";
+    mes "We're nearly out of wrapping paper for the present boxes.";
+    mes "That's very very bad. Can you imagine how it would look if the presents didn't have wrapping paper?\"";
+    next;
+    mes "\"So, eh, I can only give you some of the remaining wrapping paper if you bring me the needed material to make new wrapping paper.";
+    mes "For making one roll of wrapping paper, I need " + $@xmas_reed_amount + " Reed Bundles, " + $@xmas_water_amount + " Bottle of Water and some dye to make it colored.\"";
+    next;
+L_Again:
+    mes "\"Let's see... These are the regulations for wrapping paper colors and designs for this year. Tell me which you want.\"";
+    mes "He shows you an official looking piece of paper.";
+    menu
+        "White dotted (" + $@xmas_poa_amount +" Piles of Ash)", L_White,
+        "Yellow dotted (" + $@xmas_wrap_yellow_amount + " Yellow Dyes)", L_Yellow,
+        "Blue dotted (" + $@xmas_wrap_ltblue_amount + " Light Blue Dyes)", L_Blue,
+        "Purple striped (" + $@xmas_wrap_purple_amount + " Purple Dye)", L_Purple,
+        "Green (" + $@xmas_wrap_green_amount + " Green Dye)", L_Green,
+        "Why do you have a regulation for wrapping papers?!", L_Regulation,
+        "I'm on my way.",L_Close;
+
+L_White:
+getinventorylist;
+    if (@inventorylist_count == 100 || (checkweight("WhiteWrap", $@xmas_wrap_reward) == 0))
+        goto L_FullInv;
+    if ((countitem("ReedBundle") < $@xmas_reed_amount) || (countitem("BottleOfWater") < $@xmas_water_amount) || (countitem("PileOfAsh") < $@xmas_poa_amount))
+        goto L_NoItems;
+    delitem "ReedBundle", $@xmas_reed_amount;
+    delitem "BottleOfWater", $@xmas_water_amount;
+    delitem "PileOfAsh", $@xmas_poa_amount;
+    getitem "WhiteWrap", $@xmas_wrap_reward;
+    mes "[Reino]";
+    mes "\"This one is classical.\"";
+    goto L_MadePaper;
+
+L_Yellow:
+    getinventorylist;
+    if (@inventorylist_count == 100 || (checkweight("YellowWrap", $@xmas_wrap_reward) == 0))
+        goto L_FullInv;
+    if ((countitem("ReedBundle") < $@xmas_reed_amount) || (countitem("BottleOfWater") < $@xmas_water_amount) || (countitem("YellowDye") < $@xmas_wrap_yellow_amount))
+        goto L_NoItems;
+    delitem "ReedBundle", $@xmas_reed_amount;
+    delitem "BottleOfWater", $@xmas_water_amount;
+    delitem "YellowDye", $@xmas_wrap_yellow_amount;
+    getitem "YellowWrap", $@xmas_wrap_reward;
+    mes "[Reino]";
+    mes "\"Right, bright paper brings good vibes.\"";
+    goto L_MadePaper;
+
+L_Blue:
+    getinventorylist;
+    if (@inventorylist_count == 100 || (checkweight("BlueWrap", $@xmas_wrap_reward) == 0))
+        goto L_FullInv;
+    if ((countitem("ReedBundle") < $@xmas_reed_amount) || (countitem("BottleOfWater") < $@xmas_water_amount) || (countitem("LightBlueDye") < $@xmas_wrap_ltblue_amount))
+        goto L_NoItems;
+    delitem "ReedBundle", $@xmas_reed_amount;
+    delitem "BottleOfWater", $@xmas_water_amount;
+    delitem "LightBlueDye", $@xmas_wrap_ltblue_amount;
+    getitem "BlueWrap", $@xmas_wrap_reward;
+    mes "[Reino]";
+    mes "\"Plain and simple. Here.\"";
+    goto L_MadePaper;
+
+L_Purple:
+    getinventorylist;
+    if (@inventorylist_count == 100 || (checkweight("PurpleWrap", $@xmas_wrap_reward) == 0))
+        goto L_FullInv;
+    if ((countitem("ReedBundle") < $@xmas_reed_amount) || (countitem("BottleOfWater") < $@xmas_water_amount) || (countitem("PurpleDye") < $@xmas_wrap_purple_amount))
+        goto L_NoItems;
+    delitem "ReedBundle", $@xmas_reed_amount;
+    delitem "BottleOfWater", $@xmas_water_amount;
+    delitem "PurpleDye", $@xmas_wrap_purple_amount;
+    getitem "PurpleWrap", $@xmas_wrap_reward;
+    mes "[Reino]";
+    mes "\"Mh, personally I don't like it that much, but here you go.\"";
+    goto L_MadePaper;
+
+L_Green:
+    getinventorylist;
+    if (@inventorylist_count == 100 || (checkweight("GreenWrap", $@xmas_wrap_reward) == 0))
+        goto L_FullInv;
+    if ((countitem("ReedBundle") < $@xmas_reed_amount) || (countitem("BottleOfWater") < $@xmas_water_amount) || (countitem("GreenDye") < $@xmas_wrap_green_amount))
+        goto L_NoItems;
+    delitem "ReedBundle", $@xmas_reed_amount;
+    delitem "BottleOfWater", $@xmas_water_amount;
+    delitem "GreenDye", $@xmas_wrap_green_amount;
+    getitem "GreenWrap", $@xmas_wrap_reward;
+    mes "[Reino]";
+    mes "\"Yeah, this is really Christmas-styled.\"";
+    goto L_MadePaper;
+
+L_MadePaper:
+    next;
+    mes "\"Do you need more wrapping paper?\"";
+    menu
+        "Yes.",L_Again,
+        "No, I have all I need.",L_Close;
+
+L_Regulation:
+    mes "Reino seems irritated.";
+    mes "[Reino]";
+    mes "\"Well, because, ah - there would be total chaos without regulations!";
+    mes "You know, this Christmas business requires a lot of coordination. Things have to be well-ordered.\"";
+    goto L_Close;
+
+L_FullInv:
+    mes "\"You need some space to put the wrapping paper.\"";
+    goto L_Close;
+
+L_NoItems:
+    mes "[Reino]";
+    mes "\"Oh? It seems you don't have the required items.\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}

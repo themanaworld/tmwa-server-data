@@ -1,0 +1,48 @@
+// This file is part of Christmas Event
+// author: Jenalya, Chayenne, cinderweb, wushin
+// please see #XmasConfig
+// TODO: Make Helpers static functions
+
+function|script|XmasHelperPoints|,
+{
+    set @xmas_helper_count, 0;
+    set @xmas_helper_loop, 0;
+    if((@xmas_helper_done_state) || !(@xmas_helper_start_state))
+        goto L_Return;
+
+L_Loop:
+    if(XMASTIME & $@xmas_helper_list[@xmas_helper_loop])
+        goto L_AddOne;
+    goto L_LoopAgain;
+
+L_AddOne:
+    set @xmas_helper_count, (@xmas_helper_count + 1);
+    goto L_LoopAgain;
+
+L_LoopAgain:
+    if((@xmas_helper_loop + 1) == getarraysize($@xmas_helper_list))
+        goto L_HelperTally;
+    set @xmas_helper_loop, (@xmas_helper_loop + 1);
+    goto L_Loop;
+
+L_HelperTally:
+    if(@xmas_helper_count == $@xmas_perfect_helpers_count)
+        goto L_PerfectHelpers;
+    if(@xmas_helper_count > $@xmas_required_helpers_count)
+        goto L_SetHelperState;
+    goto L_Return;
+
+L_PerfectHelpers:
+    set XMASTIME, XMASTIME | $@xmas_all_helpers_bit;
+    goto L_SetHelperState;
+
+L_SetHelperState:
+    set @xmas_state, $@xmas_helpers_done_state;
+    callfunc "XmasSetState";
+    goto L_Return;
+
+L_Return:
+    set @xmas_helper_count, 0;
+    set @xmas_helper_loop, 0;
+    return;
+}
