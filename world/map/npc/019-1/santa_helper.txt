@@ -1,11 +1,14 @@
 // Author: accoring to git history probably Jaxad
+// and extended by wushin to be included in the annual
 // quest made seasonal and adapted to new scripting standards by Jenalya
 
 019-1.gat,74,75,0|script|Santa's Helper|105,
 {
     callfunc "ClearVariables";
-    if (FLAGS & FLAG_SANTAS_HELPER) goto L_Done;
-    if ((gettime(6) == 12) || ((gettime(6) == 1) && (gettime(5) < 7))) goto L_Quest;
+    callfunc "XmasStates";
+
+    if (($@xmas_time) && (@xmas_sh_done)) goto L_Done;
+    if ($@xmas_time) goto L_Quest;
 
     mes "[Santa's Helper]";
     mes "\"Ah, isn't it peaceful here? Around Christmas time we always have problems with some slimy monsters.";
@@ -17,10 +20,6 @@
     goto L_Close;
 
 L_Quest:
-    set @purple_amount, 25;
-    set @blue_amount, 20;
-    set @green_amount, 5;
-
     mes "[Santa's Helper]";
     mes "\"Hello my young friend.";
     mes "Would you like to help me?\"";
@@ -30,44 +29,48 @@ L_Quest:
     mes "If you help me, I'll give you something very nice\"";
     next;
 
-L_M:
+L_Menu:
     menu
-        "I have some present boxes", L_Y,
-        "Hmm, see you later", L_N,
-        "What you need exactly?", L_R;
+        "I have some present boxes", L_Yes,
+        "Hmm, see you later", L_No,
+        "What you need exactly?", L_Help;
 
-L_Y:
+L_Yes:
     mes "[Santa's Helper]";
     mes "\"Hmm, let me check what you have.\"";
     next;
-    if (countitem("PurplePresentBox") < @purple_amount)
+    if (countitem("PurplePresentBox") < $@xmas_sh_purple_amount)
         goto L_NoItem;
-    if (countitem("BluePresentBox") < @blue_amount)
+    if (countitem("BluePresentBox") < $@xmas_sh_blue_amount)
         goto L_NoItem;
-    if (countitem("GreenPresentBox") < @green_amount)
+    if (countitem("GreenPresentBox") < $@xmas_sh_green_amount)
         goto L_NoItem;
     getinventorylist;
-    if (@inventorylist_count > 99)
+    set @SantasHelper_Reward$, $@SantasHelper_Annual_Reward$[ rand(getarraysize($@SantasHelper_Annual_Reward$)) ];
+    if ((@inventorylist_count > 99) || (checkweight(@SantasHelper_Reward$, 1) == 0))
         goto L_TooMany;
     mes "[Santa's Helper]";
     mes "\"Great! Here is something for you\"";
-    delitem "PurplePresentBox", @purple_amount;
-    delitem "BluePresentBox", @blue_amount;
-    delitem "GreenPresentBox", @green_amount;
-    getitem "TurtleneckSweater", 1;
-    set FLAGS, FLAGS | FLAG_SANTAS_HELPER;
+    delitem "PurplePresentBox", $@xmas_sh_purple_amount;
+    delitem "BluePresentBox", $@xmas_sh_blue_amount;
+    delitem "GreenPresentBox", $@xmas_sh_green_amount;
+    getitem @SantasHelper_Reward$, 1;
+    set @SantasHelper_Reward$, "";
+    set XMASTIME, XMASTIME | $@xmas_sh_bit;
+    set @karma_bonus, $@xmas_karma_bonus;
+    callfunc "XmasNice";
     goto L_Close;
 
-L_R:
+L_Help:
     mes "[Santa's Helper]";
     mes "\"I need:";
-    mes @purple_amount + " Purple Present Boxes";
-    mes @blue_amount + " Blue Present Boxes";
-    mes @green_amount + " Green Present Boxes\"";
+    mes $@xmas_sh_purple_amount + " Purple Present Boxes";
+    mes $@xmas_sh_blue_amount + " Blue Present Boxes";
+    mes $@xmas_sh_green_amount + " Green Present Boxes\"";
     next;
-    goto L_M;
+    goto L_Menu;
 
-L_N:
+L_No:
     mes "[Santa's Helper]";
     mes "\"Enjoy your holidays and I wish you a happy Christmas!\"";
     goto L_Close;
@@ -89,8 +92,5 @@ L_TooMany:
     goto L_Close;
 
 L_Close:
-    set @purple_amount, 0;
-    set @blue_amount, 0;
-    set @green_amount, 0;
     close;
 }

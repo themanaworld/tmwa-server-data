@@ -1,0 +1,104 @@
+// Annual Christmas
+// author: Jenalya, wushin
+
+030-2.gat,25,35,0|script|Vellamo|328,
+{
+    callfunc "XmasStates";
+
+    if($@xmas_time)
+        goto L_XmasMain;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[Vellamo]";
+    mes "\"Candy Stock is built back up. Though... the more we store the more they want...\"";
+    goto L_Close;
+
+L_XmasMain:
+    if (XMASTIME & $@xmas_helper_bit_storage) goto L_Candy;
+    if (@xmas_helper_bit) goto L_Helping;
+
+    mes "[Vellamo]";
+    mes "\"Sorry, too busy to chat right now. The chief has got me working overtime for the holidays.\"";
+    close;
+
+L_Helping:
+    mes "[Vellamo]";
+    mes "\"Oh, hello. Visitors usually don't come down here in the basement. Here we store several things, materials for the presents, the finished presents, supplies.\"";
+    menu
+        "Nice. I have to go.", L_Close,
+        "Do you need help with anything?", -;
+    mes "[Vellamo]";
+    mes "\"Oh? You want to help us? Actually, there is one thing you could do. Did you see those weird slimes out there on the snow fields? Argh, I hate those creatures, last year they invaded the entire basement...\"";
+    next;
+    mes "\"However, this year they tried again, but I was able to hold them off. They just managed to devour most of our candy supplies.\"";
+    next;
+    mes "\"So in case you find some of the Candies, feel free to bring them back. Ismo will give you some reward for them.\"";
+    set XMASTIME, XMASTIME | ($@xmas_helper_bit_storage);
+    goto L_Close;
+
+L_Candy:
+    mes "[Vellamo]";
+    mes "\"Ah, welcome back. When you have found some of the candy, please give it to Ismo.\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}
+
+030-2.gat,33,29,0|script|Ismo|329,
+{
+    callfunc "XmasStates";
+
+    if(($@xmas_time) && (XMASTIME & $@xmas_helper_bit_storage))
+        goto L_Helping;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[Ismo]";
+    mes "\"Hello. I'm helping Vellamo. He's the storage administrator.\"";
+    goto L_Close;
+
+L_Helping:
+    mes "[Ismo]";
+    mes "\"Did you get back some candy from the slimes?\"";
+    next;
+    menu
+        "Give " + $@xmas_good_friendly_name$, L_GoodCandy,
+        "Give " + $@xmas_bad_friendly_name$ + "(What? how mean!).", L_BadCandy;
+
+L_BadCandy:
+    set @dq_level, $@xmas_bad_level;
+    set @dq_cost, $@xmas_bad_cost;
+    set @dq_count, $@xmas_bad_count;
+    set @dq_name$, $@xmas_bad_name$;
+    set @dq_friendly_name$, $@xmas_bad_friendly_name$;
+    set @dq_money, $@xmas_bad_money;
+    set @dq_exp, $@xmas_bad_exp;
+
+    callfunc "DailyQuest";
+    if (countitem(@dq_name$) < @dq_count)
+        goto L_Close;
+    set @karma_bonus, $@xmas_karma_bonus;
+    callfunc "XmasNaughty";
+    goto L_Close;
+
+L_GoodCandy:
+    set @dq_level, $@xmas_good_level;
+    set @dq_cost, $@xmas_good_cost;
+    set @dq_count, $@xmas_good_count;
+    set @dq_name$, $@xmas_good_name$;
+    set @dq_friendly_name$, $@xmas_good_friendly_name$;
+    set @dq_money, $@xmas_good_money;
+    set @dq_exp, $@xmas_good_exp;
+
+    callfunc "DailyQuest";
+    if (countitem(@dq_name$) < @dq_count)
+        goto L_Close;
+    set @karma_bonus, $@xmas_karma_bonus;
+    callfunc "XmasNice";
+    goto L_Close;
+
+L_Close:
+    close;
+}

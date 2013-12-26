@@ -1,0 +1,102 @@
+// Annual Xmas
+// author: Jenalya, wushin, Chayenne
+// Osmo asks for some White Fur which is used for bedding some presents in the boxes
+// can be sabotaged by given Cloth instead
+
+030-2.gat,37,77,0|script|Osmo|328,
+{
+    callfunc "XmasStates";
+
+    if($@xmas_time)
+        goto L_XmasMain;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[Osmo]";
+    mes "\"It's nice to relax and not have to worry about Xmas.\"";
+    mes "\"All that rush to gather those furs kills me every year.\"";
+    goto L_Close;
+
+L_XmasMain:
+    if (XMASTIME & $@xmas_helper_bit_bed_ends) goto L_Done;
+    if (XMASTIME & $@xmas_helper_bit_bed_starts) goto L_Bedding;
+    if (@xmas_helper_bit) goto L_Helping;
+
+    mes "[Osmo]";
+    mes "\"What? Uh, excuse me, I have some work to do.\"";
+    goto L_Close;
+
+L_Helping:
+    mes "[Osmo]";
+    mes "\"You came in at just the right moment. I was informed that our bedding material for fragile presents is nearly depleted.";
+    mes "Could you bring me " + $@xmas_bedding_amount + " White Furs?\"";
+    next;
+    mes "[Osmo]";
+    mes "\"Take care that it's real White Fur.";
+    mes "Other materials tend to go out of place in the present box, leaving the fragile content unprotected from any pushes.\"";
+    set XMASTIME, XMASTIME | $@xmas_helper_bit_bed_starts;
+    goto L_Close;
+
+L_Bedding:
+    mes "[Osmo]";
+    mes "\"Ah, you're back. Do you have the " + $@xmas_bedding_amount + " White Fur needed as bedding for fragile presents?\"";
+    if ((countitem("WhiteFur") >= $@xmas_bedding_amount) && (countitem("CottonCloth") >= $@xmas_bedding_amount))
+        menu
+            "Yeah, here it is. (Give the White Fur.)",L_Fur,
+            "Sure, here it is. (Give the Cotton Cloth.)",L_Cloth,
+            "No, I'm still working on that.",L_Close;
+    if (countitem("WhiteFur") >= $@xmas_bedding_amount)
+        menu
+            "Yeah, here it is. (Give the White Fur.)",L_Fur,
+            "No, I'm still working on that.",L_Close;
+    if (countitem("CottonCloth") >= $@xmas_bedding_amount)
+        menu
+            "Sure, here it is. (Give the Cotton Cloth.)",L_Cloth,
+            "No, I'm still working on that.",L_Close;
+    if ((countitem("WhiteFur") < $@xmas_bedding_amount) && (countitem("CottonCloth") < $@xmas_bedding_amount))
+        menu
+            "No.", L_Close;
+    goto L_Close;
+
+L_Fur:
+    if (countitem("WhiteFur") < $@xmas_bedding_amount)
+        goto L_NoItems;
+    delitem "WhiteFur", $@xmas_bedding_amount;
+    set XMASTIME, XMASTIME | $@xmas_helper_bit_bed_ends;
+    set @karma_bonus, $@xmas_karma_bonus;
+    callfunc "XmasNice";
+    callfunc "XmasXpReward";
+    mes "[Osmo]";
+    mes "\"Wonderful! Thanks for your effort.\"";
+    goto L_Close;
+
+L_Cloth:
+    if (countitem("CottonCloth") < $@xmas_bedding_amount)
+        goto L_NoItems;
+    delitem "CottonCloth", $@xmas_bedding_amount;
+    set XMASTIME, XMASTIME &~ $@xmas_helper_bit_bed_starts;
+    set XMASTIME, XMASTIME | $@xmas_helper_bit_bed_ends;
+    set @karma_bonus, $@xmas_karma_bonus;
+    callfunc "XmasNaughty";
+    callfunc "XmasXpReward";
+    mes "He doesn't notice that you're giving him Cotton Cloth.";
+    mes "[Osmo]";
+    mes "\"Wonderful! Thanks for your effort.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Osmo]";
+    if (!(@xmas_helper_bedding))
+        mes "\"The Fur you brought me isn't working very well.\"";
+    if (@xmas_helper_bedding)
+        mes "\"Thanks for helping out with the bedding material.\"";
+    goto L_Close;
+
+L_NoItems:
+    mes "[Osmo]";
+    mes "\"Where do you have it? Is this a joke?\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}

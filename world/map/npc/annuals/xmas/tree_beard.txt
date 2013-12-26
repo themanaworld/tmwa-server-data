@@ -1,0 +1,107 @@
+// Annual Xmas Environment changes
+020-1.gat,90,78,0|script|#Tree|380,
+{
+    end;
+}
+
+020-1.gat,90,78,0|script|#XmasTree|379,
+{
+    end;
+}
+
+020-1.gat,90,79,0|script|Present#1|386,
+{
+    callfunc "XmasStates";
+    callfunc "XmasMainItemReward";
+    close;
+}
+
+009-1.gat,54,38,0|script|#TreeNoSnow|382,
+{
+    end;
+}
+
+009-1.gat,54,38,0|script|#XmasTreeNoSnow|381,
+{
+    end;
+}
+
+009-1.gat,54,39,0|script|Present#2|386,
+{
+    callfunc "XmasStates";
+    callfunc "XmasMainItemReward";
+    close;
+}
+
+001-1.gat,41,45,0|script|#PalmTree|384,
+{
+    end;
+}
+
+001-1.gat,41,46,0|script|Present#3|386,
+{
+    callfunc "XmasStates";
+    callfunc "XmasMainItemReward";
+    close;
+}
+
+001-1.gat,41,45,0|script|#XmasPalmTree|383,
+{
+    end;
+}
+
+function|script|SpawnMobs|,
+{
+    cmdothernpc "XmasSpawnManager", "SpawnStart";
+    return;
+}
+
+function|script|PresentHandler|,
+{
+    if($@xmas_time == $@xmas_reward_time)
+        goto L_DeliverPresents;
+    goto L_DisablePresents;
+
+L_DeliverPresents:
+    enablenpc "Present#1";
+    enablenpc "Present#2";
+    enablenpc "Present#3";
+    goto L_Return;
+
+L_DisablePresents:
+    disablenpc "Present#1";
+    disablenpc "Present#2";
+    disablenpc "Present#3";
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function|script|ReplaceTrees|,
+{
+    if($@xmas_time)
+        goto L_XmasTree;
+    goto L_Tree;
+
+L_XmasTree:
+    disablenpc "#Tree";
+    enablenpc "#XmasTree";
+    disablenpc "#TreeNoSnow";
+    enablenpc "#XmasTreeNoSnow";
+    disablenpc "#PalmTree";
+    enablenpc "#XmasPalmTree";
+    goto L_Return;
+
+L_Tree:
+    disablenpc "#XmasTree";
+    enablenpc "#Tree";
+    disablenpc "#XmasTreeNoSnow";
+    enablenpc "#TreeNoSnow";
+    disablenpc "#XmasPalmTree";
+    enablenpc "#PalmTree";
+    goto L_Return;
+
+L_Return:
+    return;
+}
