@@ -9,6 +9,7 @@
 // 2 battle hard good
 // 3 battle easy bad
 // 4 battle hard bad
+// 5 battle time out
 // basically its this:
 // Announcements depend on wether starter was naughty/nice path
 // mobs are not yet balanced, they also depend on battle mode
@@ -203,7 +204,7 @@ L_NextWave:
         areamonster "030-4.gat", 0, 0, 50, 50, "", 1114, $@XmasBossRound*2 + $@XmasBossPlayerCount*3, "AniManOMat::OnGuardDeath";
     //Normal Waves 1 to 10
     // Guard Amount doubles if on hard mode
-    set $@GuardAmount, 1 + (8 + ($@XmasBossRound) + (2 * $@XmasBossPlayerCount)) / 8;
+    set $@GuardAmount, 1 + (6 + ($@XmasBossRound) + (2 * $@XmasBossPlayerCount)) / 7;
     set $@SkullAmount, 1 + ($@GuardAmount * $@GuardAmount) / 4;
 
     if ($@GuardAmount > 15)
@@ -237,7 +238,7 @@ L_NextWave:
     if ($@XmasBattleStatus == 3 || $@XmasBattleStatus == 4)
         areamonster "030-4.gat", 20, 21, 28, 28, "", 1106, $@XmasBossRound + ($@XmasBossRound / 2), "AniManOMat::OnGuardDeath";
     if ($@XmasBattleStatus == 3 || $@XmasBattleStatus == 4)
-        areamonster "030-4.gat", 41, 21, 49, 28, "", 1106, $@XmasBossRound, "AniManOMat::OnGuardDeath";
+        areamonster "030-4.gat", 41, 21, 49, 28, "", 1106, $@XmasBossRound + ($@XmasBossRound / 2), "AniManOMat::OnGuardDeath";
 
     set $@msgnumber, (2 * $@XmasBossRound) + (($@XmasBattleStatus - 1) >> 1);
     set $@msg$, $@XmasBossMes$[ $@msgnumber ];
@@ -285,10 +286,10 @@ OnReward:
         end;
     if (($@XmasBattleStatusClone % 2) == 0)
         set XMASTIME, XMASTIME | $@xmas_boss_hero_bit;
-    set @bonus, (BaseLevel/3);
-    set DailyQuestBonus, DailyQuestBonus + @bonus;
-    message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained.";
     set @xmas_state, (XMASTIME & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT;
+    set @bonus, (55 - (BaseLevel / 2));
+    set DailyQuestBonus, DailyQuestBonus + @bonus;
+    message strcharinfo(0), "You feel a temporary rush of power and zest for action.";
     if (@xmas_state != $@xmas_boss_door_open_state )
         goto L_End;
     set @xmas_state, $@xmas_reward_start;
@@ -319,7 +320,7 @@ OnInit:
     "", // unused
     "Scrrreeeeeeeeeeeeeeeeeeeeeaaaaaaaaaaaaaaaaaaaaatch",
     "Scrrreeeeeeeeeeeeeeeeeeeeeaaaaaaaaaaaaaaaaaaaaatch",
-    "Santa : HELP!",
+    "Avalia: Oh ooooh...",
     "Orums Homunculus : I think they know what we are up to!",
     "Avalia : Oh no! This is going to blow up",
     "Orums Homunculus : The Door is locked you idiot, fight for your life.",
@@ -351,9 +352,7 @@ OnInit:
 
 S_Announce:
     mapannounce "030-4.gat", $@msg$, 0;
-    mapannounce "030-3.gat", $@msg$, 0;
     mapannounce "030-2.gat", $@msg$, 0;
-    mapannounce "030-1.gat", $@msg$, 0;
     set $@msg$, "";
     return;
 
