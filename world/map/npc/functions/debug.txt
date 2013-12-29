@@ -546,6 +546,7 @@ L_MagicSkills:
     set @trans, getskilllv(SKILL_MAGIC_TRANSMUTE);
     set @nature, getskilllv(SKILL_MAGIC_NATURE);
     set @astral, getskilllv(SKILL_MAGIC_ASTRAL);
+    set @dark, getskilllv(SKILL_MAGIC_DARK);
     menu
         "Overview of my magical skills.", L_MagicSkillsOverview,
         "Get magic skills.", L_ChangeMagicSkills,
@@ -564,6 +565,7 @@ L_MagicSkillsOverview:
     mes "Your level in the transmutation magic skill is " + @trans + ".";
     mes "Your level in the nature magic skill is " + @nature + ".";
     mes "Your level in the astral magic skill is " + @astral + ".";
+    mes "Your level in the dark magic skill is " + @dark + ".";
     next;
     goto L_MagicSkills;
 
@@ -574,7 +576,8 @@ L_MagicExperience:
         && @war == 0
         && @trans == 0
         && @nature == 0
-        && @astral == 0)
+        && @astral == 0
+        && @dark == 0)
             goto L_NoMagicSkills;
 
     goto L_ChangeMagicExperience;
@@ -605,6 +608,7 @@ L_ChangeMagicSkills:
         "Transmutation Magic.", L_ChangeTransmutationMagicSkill,
         "Nature Magic.", L_ChangeNatureMagicSkill,
         "Astral Magic.", L_ChangeAstralMagicSkill,
+        "Dark Magic.", L_ChangeDarkMagicSkill,
         "Back to the magic skills menu.", L_MagicSkills,
         "Close.", -;
     close;
@@ -771,6 +775,33 @@ L_ChangeAstralMagicSkill2:
     next;
     goto L_MagicSkills;
 
+L_ChangeDarkMagicSkill:
+    mes "Your level in the dark magic skill is " + @dark + ". What do you want to do?";
+    menu
+        "Get level 0.", -,
+        "Get level 1.", L_ChangeDarkMagicSkill1,
+        "Get level 2.", L_ChangeDarkMagicSkill2;
+    if (@menu == 1)
+        setskill SKILL_MAGIC_DARK, 0;
+    mes "Dark Magic skill changed to level 0.";
+    next;
+    goto L_MagicSkills;
+
+L_ChangeDarkMagicSkill1:
+    setskill SKILL_MAGIC_DARK, 1;
+    mes "Dark Magic skill changed to level 1.";
+    next;
+    goto L_MagicSkills;
+
+L_ChangeDarkMagicSkill2:
+    setskill SKILL_MAGIC_DARK, 2;
+    if (@mexp < 100)
+        set @mexp, 100;
+    callsub S_Update_Mask;
+    mes "Dark Magic skill changed to level 2.";
+    next;
+    goto L_MagicSkills;
+
 S_Update_Mask:
     set MAGIC_EXPERIENCE,
         (MAGIC_EXPERIENCE & ~(@debug_mask))
@@ -784,6 +815,7 @@ L_GetAllMagic:
     setskill SKILL_MAGIC_TRANSMUTE, 2;
     setskill SKILL_MAGIC_NATURE, 2;
     setskill SKILL_MAGIC_ASTRAL, 2;
+    setskill SKILL_MAGIC_DARK, 2;
     set @mexp, 8000;
     callsub S_Update_Mask;
     mes "Magic skills added.";
@@ -797,6 +829,7 @@ L_ResetMagicSkills:
     setskill SKILL_MAGIC_TRANSMUTE, 0;
     setskill SKILL_MAGIC_NATURE, 0;
     setskill SKILL_MAGIC_ASTRAL, 0;
+    setskill SKILL_MAGIC_DARK, 0;
     set @mexp, 0;
     callsub S_Update_Mask;
     mes "Magic skills removed.";
@@ -820,6 +853,7 @@ L_AddAll:
     setskill SKILL_MAGIC_TRANSMUTE, 2;
     setskill SKILL_MAGIC_NATURE, 2;
     setskill SKILL_MAGIC_ASTRAL, 2;
+    setskill SKILL_MAGIC_DARK, 2;
     set @mexp, 8000;
     resetstatus;
     set BaseLevel, 99;
@@ -849,6 +883,7 @@ L_ResetAll:
     setskill SKILL_MAGIC_TRANSMUTE, 0;
     setskill SKILL_MAGIC_NATURE, 0;
     setskill SKILL_MAGIC_ASTRAL, 0;
+    setskill SKILL_MAGIC_DARK, 0;
     set @mexp, 0;
     callsub S_Update_Mask;
     resetstatus;

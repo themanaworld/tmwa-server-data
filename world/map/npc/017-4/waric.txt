@@ -1,0 +1,403 @@
+// Author: Jenalya
+// Current state: only dialog, magic teaching not finished
+// Waric is intended to teach the player some dark magic spells
+// in case the player is not a follower of Sagatha and can't become
+// one anymore (killed the wounded mouboo or cut the druid tree).
+// Waric would teach the spells based on the progress in the pentagram
+// creation, but save which spells were taught in a different variable.
+// Author: tux9th
+// Editing a few things and creating the Quests for Dark Magic school and spells
+// OrumQuest State 32 - had the talk about Dark Magic with Waric.
+// OrumQuest State 33 - Completed the long talk with Waric
+// OrumQuest State 34 - Aborted the oath of dark magic once
+// OrumQuest State 35 - Aborted the oath of dark magic twice - cannot learn dark magic anymore.
+// OrumQuest State 36 - Learned Dark Magic Skill.
+// OrumQuest State 37 - Learned summon wicked mushroom.
+// OrumQuest State 38 - Learned toxic dart.
+// OrumQuest State 39 - Talked about summoning Snakes, get ingredients.
+// OrumQuest State 40 - Given ingredients for Snake spell.
+// OrumQuest State 41 - Learned Summon snake
+// When extending these Quest Variable to 51 all of the other dark magic spells will be available. Keep this in mind.
+
+017-4.gat,216,36,0|script|Waric|153,
+{
+    set @mouboo_status, ((QUEST_MAGIC & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT) & 3;
+    set @killed_mouboo, 0;
+    if ((@mouboo_status == 1) || (@mouboo_status == 2))
+        set @killed_mouboo, 1;
+    set @mouboo_status, 0;
+
+    if (MAGIC_FLAGS & MFLAG_DID_CUTTREE)
+        set @cut_tree, 1;
+
+    set @sagatha_follower, (QUEST_MAGIC & (NIBBLE_4_MASK | NIBBLE_5_MASK)) >> NIBBLE_4_SHIFT;
+    if (OrumQuest > 40) goto L_MoreMagic;
+    if (OrumQuest > 39) goto L_SnakesSpell;
+    if (OrumQuest > 38) goto L_SnakesIngredients;
+    if (OrumQuest > 37) goto L_Snakes;
+    if (OrumQuest > 36) goto L_ToxicDart;
+    if (OrumQuest > 35) goto L_Mushroom;
+    if (OrumQuest > 34) goto L_Banished;
+    if (OrumQuest > 33) goto L_LastChance;
+    if (OrumQuest > 32) goto L_BackforOath;
+    if (OrumQuest > 31) goto L_DarkMagic;
+    if (OrumQuest > 30) goto L_Flower5;
+    if (OrumQuest > 26) goto L_Flower4;
+    if (OrumQuest > 23) goto L_Flower3;
+    if (OrumQuest > 20) goto L_Flower2;
+    if (OrumQuest > 17) goto L_Flower1;
+    if (OrumQuest > 15) goto L_Mistrust;
+
+    mes "[Waric]";
+    mes "\"You! You really are far too persistent to know what is good for you!\"";
+    mes "He turns towards Orum.";
+    next;
+    mes "[Waric]";
+    mes "\"It seems your ridiculous Guarding Spirit has failed at his task.";
+    mes "Deal with this. We cannot afford any more of these distractions.\"";
+    goto L_Close;
+
+L_Mistrust:
+    mes "[Waric]";
+    mes "\"So, you say you want to help us? You do not look very competent.";
+    mes "Also, I do not see what motivation you have to help.\"";
+    next;
+    mes "\"Demonstrate your worth and I might take you seriously.\"";
+    goto L_Close;
+
+L_Flower1:
+    mes "[Waric]";
+    mes "\"You placed the first flower. Why, I am surprised! I did not expect you to actually stay and become useful.\"";
+    if (!(getskilllv(SKILL_MAGIC)))
+        goto L_Close;
+    menu
+        "Can you teach me some magic?", -,
+        "Of course!", L_Close;
+
+    if (@sagatha_follower)
+        goto L_Sagatha;
+    if (!@killed_mouboo && !@cut_tree)
+        goto L_Undecided;
+    mes "[Waric]";
+    mes "\"Hmm. I suppose I could do that. You seem to have some potential.";
+    mes "First, proceed with the task given by Orum.\"";
+    goto L_Close;
+
+L_Flower2:
+    mes "[Waric]";
+    mes "\"You placed the second flower? It seems Orum's choice of tools is better than expected.\"";
+    goto L_Close;
+
+L_Flower3:
+    mes "[Waric]";
+    mes "\"I saw that you helped to create and place the third flower. Good.\"";
+    goto L_Close;
+
+L_Flower4:
+    mes "[Waric]";
+    mes "\"Now that you have placed the fourth flower, we are very close to reaching our goal. Keep it up.\"";
+    goto L_Close;
+
+L_Flower5:
+    mes "[Waric]";
+    mes "\"Hahaha, excellent. You handled the creation of our pentagram very well. I will be keeping that in mind.";
+    mes "I have advised Orum to give you a reward. Go now and speak with him.\"";
+    goto L_Close;
+
+L_DarkMagic:
+    mes "[Waric]";
+    mes "\"So, you have gotten your reward and finished the task Orum had for you. Very good.\"";
+    menu
+        "Can you teach me some magic?", -,
+        "I'm great or what!", L_Close;
+    if (@sagatha_follower)
+        goto L_Sagatha;
+    if (!@killed_mouboo && !@cut_tree)
+        goto L_Undecided;
+    mes "[Waric]";
+    mes "\"You appear to be trustworthy. I will allow you to become my apprentice.\"";
+    mes "\"I will teach you the basics of the branch of magic I practice. It is called Dark Magic. Very few people know of its existence these days, and hardly anyone is capable of teaching it.\"";
+    mes "\"You are very lucky that fate has brought us together.\"";
+    next;
+    mes "[Waric]";
+    mes "\"You cut the tree to please the Earth Spirit. You chose the Dark Side of magic, and this cannot be undone.\"";
+    mes "\"Dark Magic draws its power from hate and anger. Your magic will be stronger against good creatures, and weaker against the undead and the corrupt.\"";
+    next;
+    mes "\"Once you start practicing Dark Magic, using certain spells will be painful. Everything comes with a price.\"";
+    next;
+    mes "[Waric]";
+    mes "\"So, now that you know more about Dark Magic, are you still willing to become my apprentice?\"";
+    mes "\"Once you cross this line, there is no going back. Keep this in mind!\"";
+    set OrumQuest, 33;
+    menu
+        "I'll have to think about it.", L_ComeBackLater,
+        "Yes.", L_Oath;
+
+L_DarkTalkAgain:
+    mes "The old wizard seems to be annoyed.";
+    mes "[Waric]";
+    mes "\"Very well. Once you start practicing Dark Magic, certain spells will be painful to cast. Your magic will be stronger against good creatures, and weaker against the undead and the corrupt.\"";
+    next;
+    mes "\"When you cross this line, there is no going back. Remember that!\"";
+    mes "\"So, are you ready to become my apprentice?\"";
+    next;
+    menu
+        "No.", L_ComeBackLater,
+        "Yes. I want to be your apprentice.", L_Oath;
+
+L_BackforOath:
+    mes "[Waric]";
+    mes "\"Ah, you're back. Have you decided yet if you want to become my apprentice?\"";
+    menu
+        "No." , L_ComeBackLater,
+        "Please, tell me about Dark Magic again.", L_DarkTalkAgain,
+        "Yes. I want to be your apprentice.", L_Oath;
+
+L_LastChance:
+    mes "Waric looks at you, with despise evident on his face.";
+    next;
+    mes "[Waric]";
+    mes "\"I knew you were a coward.\"";
+    mes "\"I will give you one last chance to take the oath. If you refuse this time as well, I will no longer teach you.\"";
+    next;
+    mes "\"If you are still not sure, I will give you some time to reconsider, but if you start the ritual and run away, you are dead to me!\"";
+    next;
+    menu
+        "I am ready to take the oath. [last chance!]", -,
+        "I have to reconsider.", L_ComeBackLater;
+    mes "[Waric]";
+    mes "\"If you stop during the oath again, I will not teach you anything. If you are not sure whether you want to become my apprentice or not, take more time to reconsider. However, this is your last chance to do so.\"";
+    next;
+    menu
+        "I have to reconsider.", L_ComeBackLater,
+        "I am ready to take the oath. [last chance!]", L_Oath;
+    goto L_Close;
+
+L_Oath:
+    mes "[Waric]";
+    mes "\"Now say the oath of the Dark.\"";
+    next;
+    mes "Suddenly the room turns darker and writing penned in flames appears in front of you. You feel yourself shaking and shivering.";
+    next;
+    mes "As Waric yells, the walls tremble.";
+    mes "[Waric]";
+    mes "\"Read it!\"";
+    mes "The sound of his voice echoes in the cave.";
+    next;
+    mes "You start to read the letters, but your throat closes up and you have a hard time speaking the words out loud.";
+    next;
+    mes "I swear to darkness and hate.";
+    mes "Destruction shall be my guide.";
+    mes "I shall not be the cure to poison,";
+    mes "but the salt to an open wound.";
+    mes "Sickness and death I shall spread,";
+    mes "take the food from those unfed.";
+    mes "Nothing is to be loved, everything has to end.";
+    mes "I shall prevail, other shall perish.";
+    next;
+    mes "Warric screams at your silence.";
+    mes "[Waric]";
+    mes "\Say it! Say it now!\"";
+    next;
+    menu
+        "[Say the oath]", -,
+        "I can't say this, it's too much for me!", L_NoOath;
+    mes "As you speak the words written in flames, you feel all of your positive feelings drain away. You no longer love, you're no longer happy. You feel indifferent to the world. But there is also a newfound feeling of power in you. You feel capable of doing anything.";
+    set @SUP_id, SKILL_MAGIC_DARK;
+    set @SUP_name$, "Dark Magic";
+    set @SUP_xp, 150000;
+    set @SUP_lvl, 2;
+    callfunc "SkillUp";
+    next;
+    percentheal 100, 0;
+    percentheal -99, 0;
+    mes "You feel completely exhausted.";
+    set OrumQuest, 36;
+    goto L_Close;
+
+L_NoOath:
+    mes "Waric mumbles something. You guess it's a magic spell.";
+    warp "005-3.gat", 86 , 33;
+    percentheal 100, 0;
+    percentheal -50, 0;
+    set OrumQuest, OrumQuest + 1;
+    goto L_Close;
+
+L_Mushroom:
+    mes "[Waric]";
+    mes "\"Now that you are a student of mine, I will teach you some spells.\"";
+    next;
+    mes "\"We will start with an easy one. I will teach you how to summon a wicked mushroom.\"";
+    mes "\"The spell consumes a Small Mushroom and a Dark Crystal. Shove the Dark Crystal into the Small Mushroom and yell " + getspellinvocation("summon-wickedmushroom") +".\"";
+    next;
+    mes "\"A wicked mushroom will appear to fight for you.\"";
+    set OrumQuest, 37;
+    goto L_Close;
+
+L_ToxicDart:
+    mes "[Waric]";
+    mes "\"Welcome back, apprentice.\"";
+    mes "\"Are you read for another spell?\"";
+    menu
+        "No, I still have to practice the first one.", L_Close,
+        "Yes. Show me some more!", -;
+    mes "[Waric]";
+    mes "\"Very well.  This spell is more complex than the last one. It is called toxic dart. Only your peers are susceptible to the dart's poison. If you hit an animal the dart will injure it, but the poison will not work.\"";
+    next;
+    mes "\"You have to use two roots for this spell. First you have to take one root and break off all the root hair. Shape it into  a stick, if you will. Then put it on top of the other root and form an arrow-like structure.\"";
+    next;
+    mes "\"Once this is done you have to throw it in the air and scream " + getspellinvocation("toxic-dart") + " and the two roots will turn into toxic darts, a projectile you can throw.\"";
+    next;
+    mes "\"If you want to learn more, come back later.\"";
+    set OrumQuest, 38;
+    goto L_Close;
+
+L_Snakes:
+    mes "Waric nods at you.";
+    mes "[Waric]";
+    mes "\"Have you practiced enough?\"";
+    menu
+        "Yes, I'm an outstanding Dark Mage!", -,
+        "No. I'm too lazy.", L_ComeBackLater;
+    mes "[Waric]";
+    mes "\"Very well. I shall teach you another spell.\"";
+    mes "\"This one is so complex that I have to show it to you before explaining it further. Bring me a snake egg and a root.\"";
+    next;
+    mes "\"Off you go now. Bring me the ingredients.\"";
+    set OrumQuest, 39;
+    goto L_Close;
+
+L_SnakesIngredients:
+    set OrumQuest, 39;
+    mes "[Waric]";
+    mes "\"Did you bring one Dark Crystal and a Snake Egg?\"";
+    menu
+        "Yes, I have what you want.", -,
+        "No, I need more time.", L_NoItem;
+    if ((countitem("DarkCrystal") < 0)
+        || (countitem("SnakeEgg") < 0))
+        goto L_NoItem;
+    delitem "DarkCrystal", 1;
+    delitem "SnakeEgg", 1;
+    mes "[Waric]";
+    mes "\"Observe!\"";
+    next;
+    mes "The wizard takes the crystal and the egg, mumbling something you don't understand. Suddenly, he throws the egg into the air and throws the crystal right through it midair.";
+    next;
+    mes "The Egg cracks open and a living snake comes out of the egg.";
+    next;
+    monster "017-4.gat", 217,36, "Evil", 1010, 1;
+    mes "The wizard looks at you, his eyes flashing, and laughs diabolically.";
+    set OrumQuest, 40;
+    goto L_Close;
+
+L_SnakesSpell:
+    mes "[Waric]";
+    mes "\"Did you see how this spell is cast?\"";
+    menu
+        "Yes. What did you mumble?", -,
+        "No. Could you show me again?", L_SnakesAgain;
+    mes "[Waric]";
+    mes "\"I said " + getspellinvocation("summon-snakes") + ".\"";
+    mes "\"Have fun with those spells and use them to cause hate, anger and death.\"";
+    set OrumQuest, 41;
+    goto L_Close;
+
+L_SnakesAgain:
+    mes "[Waric]";
+    mes "\"Do you really want me to show you the spell again? You will have to bring new ingredients.\"";
+    menu
+        "No.", L_SnakesSpell,
+        "Yes.", L_SnakesIngredients;
+    goto L_Close;
+
+L_ComeBackLater:
+    mes "[Waric]";
+    mes "\"Then come back later.\"";
+    goto L_Close;
+
+L_MoreMagic:
+    mes "[Waric]";
+    mes "\"Hello, apprentice.\"";
+    mes "\"You must practice more! I will teach you more spells once you have mastered the ones I have already demonstrated.\"";
+    next;
+    menu
+        "Can you tell me the invocations for the spells you taught me again?", -,
+        "Thanks, master. I will come back later", L_Close;
+    mes "[Waric]";
+    mes "\"Yes, of course.\"";
+    mes "\"To summon the snakes use " + getspellinvocation("summon-snakes") + ".\"";
+    mes "\"Say " + getspellinvocation("toxic-dart") + " to make your roots into toxic darts.\"";
+    mes "\"And the first spell, to summon wicked mushrooms, is " + getspellinvocation("summon-wickedmushroom") + ".\"";
+    next;
+    mes "\"Now leave. Spread chaos with the spells I have taught you!\"";
+    goto L_Close;
+
+L_Undecided:
+    mes "[Waric]";
+    mes "\"Well, I could. However, I am not sure you are trustworthy.\"";
+    next;
+    mes "\"How do I know you will not run off to Sagatha with what I would be teaching you?\"";
+    goto L_Close;
+
+L_Sagatha:
+    mes "[Waric]";
+    mes "\"You are already a student of Sagatha. I will not teach you anything!\"";
+    goto L_Close;
+
+L_Banished:
+    mes "The wizard looks at you with despise.";
+    mes "[Waric]";
+    mes "\"How did you...\"";
+    percentheal -100, 0;
+    goto L_Close;
+
+L_NoItem:
+ mes "[Waric]";
+ mes "\"Why are you wasting my time? Come back when you got everything I need.\"";
+ goto L_Close;
+
+L_Close:
+    set @killed_mouboo, 0;
+    set @cut_tree, 0;
+    set @sagatha_follower, 0;
+    set @SUP_id, 0;
+    set @SUP_name$, "";
+    set @SUP_lvl, 0;
+    set @SUP_xp, 0;
+    close;
+}
+
+017-1.gat,74,32,0|script|DebugFlowerP|153,
+{
+    mes "Debug options for Orum's quest:";
+    menu
+        "Candle Helmet done.", L_CandleHelmet,
+        "Input quest variable.", L_Var,
+        "Show current quest state.", L_CurrentState,
+        "Reset quest.", L_Reset,
+        "Nevermind.", L_Close;
+
+L_CandleHelmet:
+    set OrumQuest, 14;
+    goto L_Close;
+
+L_Var:
+    input OrumQuest;
+    goto L_Close;
+
+L_CurrentState:
+    mes "The value of the quest variable OrumQuest is currently " + OrumQuest + ".";
+    goto L_Close;
+
+L_Reset:
+    set OrumQuest, 0;
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "DebugFlowerP";
+}

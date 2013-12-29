@@ -1,0 +1,800 @@
+// Author: Jenalya
+// Quest states:
+// 14: Completed first part of the quest
+// 15: Persuaded the Guarding Spirit to let you into the cave
+// 16: Got task to bring materials for first magical flower
+// 17: Got task to place the first magical flower
+// 18: Placed first magical flower
+// 19: Got task to bring materials for second magical flower
+// 20: Got task to place the second magical flower
+// 21: Placed second magical flower
+// 22: Got task to bring materials for third magical flower
+// 23: Completed easy minigame and got task to place the third magical flower
+// 24: Placed third magical flower
+// 25: Got task to bring materials for fourth magical flower
+// 26: Completed difficult minigame and got task to place the fourth magical flower
+// 27: Placed fourth magical flower
+// 28: Got task to bring materials for fifth magical flower
+// 29: Failed unbeatable minigame and got the flower hat
+// 30: Got task to place the fifth flower
+// 31: Placed fifth flower
+// 32: Got reward
+
+017-4.gat,211,32,0|script|Orum|158,
+{
+    // first flower
+    set @AMOUNT_SMALLMUSHROOM, 5;
+    set @AMOUNT_ASH, 5;
+    set @RECOMPENSATION_1, 5000;
+    // second flower
+    set @AMOUNT_PINKPETAL, 5;
+    set @AMOUNT_STINGER, 5;
+    set @RECOMPENSATION_2, 10000;
+    // third flower
+    set @AMOUNT_WHITEFUR, 5;
+    set @AMOUNT_REDSTINGER, 5;
+    set @RECOMPENSATION_3, 20000;
+    // fourth flower
+    set @AMOUNT_HARDSPIKE, 5;
+    set @AMOUNT_ANGRYSTINGER, 5;
+    set @RECOMPENSATION_4, 40000;
+    // fifth flower
+    set @AMOUNT_ACORN, 20;
+    set @AMOUNT_PEARL, 3;
+    set @AMOUNT_BLACKSTINGER, 5;
+    set @RECOMPENSATION_5, 80000;
+
+    set @REWARD_MONEY, 100000;
+    set @REWARD_EXP, 100000;
+
+    if (OrumQuest > 31) goto L_Done;
+
+    if (OrumQuest == 31) goto L_PlacedFifthFlower;
+    if (OrumQuest == 30) goto L_PlaceFifthFlower;
+    if (OrumQuest == 29) goto L_FailedFifthFlower;
+    if (OrumQuest == 28) goto L_FifthFlower;
+
+    if (OrumQuest == 27) goto L_PlacedFourthFlower;
+    if (OrumQuest == 26) goto L_PlaceFourthFlower;
+    if (OrumQuest == 25) goto L_FourthFlower;
+
+    if (OrumQuest == 24) goto L_PlacedThirdFlower;
+    if (OrumQuest == 23) goto L_PlaceThirdFlower;
+    if (OrumQuest == 22) goto L_ThirdFlower;
+
+    if (OrumQuest == 21) goto L_PlacedSecondFlower;
+    if (OrumQuest == 20) goto L_PlaceSecondFlower;
+    if (OrumQuest == 19) goto L_SecondFlower;
+
+    if (OrumQuest == 18) goto L_PlacedFirstFlower;
+    if (OrumQuest == 17) goto L_PlaceFirstFlower;
+    if (OrumQuest == 16) goto L_FirstFlower;
+
+    if (OrumQuest == 15) goto L_InitialTalk;
+
+    goto L_Banish;
+
+L_InitialTalk: // 15: Persuaded the Guarding Spirit to let you into the cave
+    mes "[Orum]";
+    mes "\"I... My Guarding Spirit... You... What...\"";
+    mes "[Waric]";
+    mes "\"Pull yourself together!\"";
+    next;
+    mes "[Orum]";
+    mes "\"Y-yes, master.\"";
+    mes "He turns to you.";
+    mes "\"I told you not to follow us! Are you so eager to die?\"";
+    menu
+        "I'm here to offer my services...", -,
+        "Ha! You thought you could hide from me?", L_Banish,
+        "Keep calm, I want to work with you.", -,
+        "D-d-die?!", L_Banish;
+
+    mes "[Orum]";
+    mes "\"You want to help us?\"";
+    mes "Waric raises his eyebrows.";
+    next;
+    mes "[Orum]";
+    mes "\"I don't think that's a good idea.\"";
+    menu
+        "You won't know until you try.", -,
+        "You have no choice, I've found your hideout!", L_Banish;
+
+    mes "[Orum]";
+    mes "\"Well, why not? Here is a simple enough task to prove you're serious.";
+    mes "Bring me " + @AMOUNT_SMALLMUSHROOM + " Small Mushrooms, " + @AMOUNT_ASH + " Piles of Ash and one Orange Tulip.\"";
+
+    set OrumQuest, 16;
+    menu
+        "Sure!", L_Close,
+        "Why do you need that?", -;
+
+    mes "[Orum]";
+    mes "\"Don't ask stupid questions! Do as you're told.\"";
+    mes "...";
+    mes "\"Those things are ingredients for a magical artifact. You don't need to know more at the moment.\"";
+    goto L_Close;
+
+L_Banish:
+    mes "[Orum]";
+    mes "\"This will be the last mistake you did...\"";
+    mes "He starts mumbling under his breath and you suddenly feel weirdly weightless. Your vision fades...";
+    mes "The last thing you hear is Waric shouting something about untalented apprentices.";
+    set Hp, 1 + rand(5);
+    warp "017-1.gat", 0, 0;
+    goto L_Close;
+
+L_FirstFlower: // 16: Got task to bring materials for first magical flower
+    mes "[Orum]";
+    mes "\"So? Where are the " + @AMOUNT_SMALLMUSHROOM + " Small Mushrooms, " + @AMOUNT_ASH + " Piles of Ash and Orange Tulip you should've brought?\"";
+    menu
+        "I have everything you want!", -,
+        "I don't have it yet.", L_Close;
+
+    if ((countitem("SmallMushroom") < @AMOUNT_SMALLMUSHROOM)
+        || (countitem("PileOfAsh") < @AMOUNT_ASH)
+        || (countitem("OrangeTulip") < 1))
+        goto L_NoItem;
+
+    delitem "SmallMushroom", @AMOUNT_SMALLMUSHROOM;
+    delitem "PileOfAsh", @AMOUNT_SMALLMUSHROOM;
+    delitem "OrangeTulip", 1;
+    getitem "OrangeSummonFlower", 1;
+    set OrumQuest, 17;
+
+    mes "Orum takes the items and starts crushing them, using a very old-looking mortar and pestle. As they turn into a fine powder, he mixes some of it together in the cauldron and finally dips the tulip into it, mumbling enchantements. The tulip changes its appearance. Then he hands it over to you.";
+    mes "[Orum]";
+    mes "\"Phew, done. Now I feel exhausted. You need to place it at its destination.\"";
+    next;
+L_WayFirstFlower:
+    mes "\"We prepared a place for this in the forest outside the caves. When you leave the cave, go a couple of steps to the east and you'll find a spot of grass with flowers on a small hill. You have to place it there, right in the middle.\"";
+    goto L_Close;
+
+L_PlaceFirstFlower: // 17: Got task to place the first magical flower
+    mes "[Orum]";
+    mes "\"Go ahead and place the first magical flower.\"";
+    menu
+        "Okay, I'll do that.", L_Close,
+        "Could you explain where to place it, one more time?", L_WayFirstFlower,
+        "I... I lost it.", -;
+
+    mes "[Orum]";
+    mes "\"What?! I can't believe this! How could you handle a powerful magical artifact in such a careless way?\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_1 + " GP, and I'm going to allow you to continue helping us. So?\"";
+    menu
+        "Okay.", -,
+        "No way, that's too much!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_1)
+        goto L_NoMoney;
+    set Zeny, Zeny - @RECOMPENSATION_1;
+    set OrumQuest, 16;
+
+    mes "[Orum]";
+    mes "\"Very well. Now bring me " + @AMOUNT_SMALLMUSHROOM + " Small Mushrooms, " + @AMOUNT_ASH + " Piles of Ash and one Orange Tulip again, so we can start over.\"";
+    goto L_Close;
+
+L_PlacedFirstFlower: // 18: Placed first magical flower
+    mes "[Orum]";
+    mes "\"I felt the eruption of magical power when you placed it! Wonderful! Let's start with the next one right now.\"";
+    menu
+        "Okay, what should I do now?", -,
+        "Weird monsters appeared when I placed it!", L_AskMonsters;
+
+    set OrumQuest, 19;
+    goto L_SecondFlower;
+
+L_AskMonsters:
+    mes "[Orum]";
+    mes "\"Oh, right. Well, that was to be expected, some of the power seeped out when you placed it. I hope those monsters didn't harm you.";
+    mes "However, we should continue.\"";
+    set OrumQuest, 19;
+    next;
+    goto L_SecondFlower;
+
+L_SecondFlower: // 19: Got task to bring materials for second magical flower
+    mes "[Orum]";
+    mes "\"Bring me " + @AMOUNT_PINKPETAL + " Pink Petals, " + @AMOUNT_STINGER + " Scorpion Stingers and one Pink Tulip.\"";
+    menu
+        "I have it.", -,
+        "All right, I'll get it.", L_Close,
+        "What's the purpose of this?", L_AskPurpose;
+
+    if ((countitem("PinkPetal") < @AMOUNT_PINKPETAL)
+        || (countitem("ScorpionStinger") < @AMOUNT_STINGER)
+        || (countitem("PinkTulip") < 1))
+        goto L_NoItem;
+
+    delitem "PinkPetal", @AMOUNT_PINKPETAL;
+    delitem "ScorpionStinger", @AMOUNT_STINGER;
+    delitem "PinkTulip", 1;
+    getitem "PurpleSummonFlower", 1;
+    set OrumQuest, 20;
+
+    mes "Orum starts to work on the materials you've gathered, in the same manner he did the first time. Suddenly something from the mortar gets on his hand and it makes a nasty sizzling noise. He yells in pain, clutching his hand to his chest. After cleaning his hand he continues. In the end he gives you another magical flower while rubbing his hand.";
+    next;
+    mes "[Orum]";
+    mes "\"Ouch, it still hurts. I need some time to recover. In the meantime, go and place the flower.\"";
+    next;
+L_WaySecondFlower:
+    mes "[Orum]";
+    mes "\"The next spot is in the Woodland Hills. When you leave our caves, go south until you come out of the forest. Then walk west, past the hut of that old man.";
+    mes "The spot where you have to place it is on higher ground, so you'll have to find a way through the caves to reach it.\"";
+    goto L_Close;
+
+L_AskPurpose:
+    mes "[Orum]";
+    mes "\"Purpose? Well... We're building a pentagram.\"";
+    goto L_Close;
+
+L_PlaceSecondFlower: // 20: Got task to place the second magical flower
+    mes "[Orum]";
+    mes "\"Go and place the second magical flower.\"";
+    menu
+        "I'm on my way.", L_Close,
+        "Where do I have to put it again?", L_WaySecondFlower,
+        "Sorry, I've lost it.", -;
+
+    mes "[Orum]";
+    mes "\"What?! You incompetent dunderhead! I got hurt while creating this powerful magical artifact and you managed to lose it!?\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_2 + " GP, and I'm going to allow you to continue helping us. So?\"";
+    menu
+        "Ok.", -,
+        "No way, that's too much!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_2)
+        goto L_NoMoney;
+    set Zeny, Zeny - @RECOMPENSATION_2;
+    set OrumQuest, 19;
+
+    mes "[Orum]";
+    mes "\"Okay, now that this is settled, bring me " + @AMOUNT_PINKPETAL + " Pink Petals, " + @AMOUNT_STINGER + " Scorpion Stingers and one Pink Tulip again.\"";
+    goto L_Close;
+
+L_PlacedSecondFlower: // 21: Placed second magical flower
+    mes "[Orum]";
+    mes "\"Very good. You placed the second flower, right? I could feel it here.";
+    mes "Everything is going very well.\"";
+    mes "Orum grins contently.";
+    menu
+        "What do you need next?", -,
+        "How can we build a pentagram by randomly planting flowers?", L_AskPentagram;
+
+    set OrumQuest, 22;
+    goto L_ThirdFlower;
+
+L_AskPentagram:
+    mes "[Orum]";
+    mes "\"Randomly? The spots for the flowers have been very carefully chosen! You see, it's going to be a very LARGE pentagram.\"";
+    set OrumQuest, 22;
+    next;
+    goto L_ThirdFlower;
+
+L_ThirdFlower: // 22: Got task to bring materials for third magical flower
+    mes "[Orum]";
+    mes "\"Now we need " + @AMOUNT_WHITEFUR + " White Furs, " + @AMOUNT_REDSTINGER + " Red Scorpion Stingers and one White Tulip.\"";
+    menu
+        "I got everything you want.", -,
+        "I'm still trying to gather what you need.", L_Close,
+        "And what is the pentagram going to do?", L_AskPentaEffect;
+
+    if ((countitem("WhiteFur") < @AMOUNT_WHITEFUR)
+        || (countitem("RedScorpionStinger") < @AMOUNT_REDSTINGER)
+        || (countitem("WhiteTulip") < 1))
+        goto L_NoItem;
+
+    delitem "WhiteFur", @AMOUNT_WHITEFUR;
+    delitem "RedScorpionStinger", @AMOUNT_REDSTINGER;
+    delitem "WhiteTulip", 1;
+
+    mes "Orum takes the materials out of your hands and starts preparing them.";
+    mes "[Orum]";
+    mes "\"This time you're going to help me. It's safer when I don't have to handle all of it myself. Okay, listen.\"";
+    next;
+    mes "\"Here is the rheological additive that you have to pour on it when the reaction between the powders is on its peak level. I'm going to slowly add a little more of the powder, which will make it react faster. Got it?\"";
+    menu
+        "Rheo-what?", -,
+        "Okay, let's try.", -,
+        "I'm not sure I understand...", -;
+
+    mes "[Orum]";
+    mes "\"Well, just pour when it's bubbling really hard.\"";
+    mes "He starts to mix the powders together in the caldron.";
+    next;
+
+    setarray @bubblingLevels$, "calmly", "slightly", "noticeably", "heavily";
+    set @bubblingLevel, rand(10);
+
+L_EasyMinigame:
+    mes "The mixture is bubbling " + @bubblingLevels$[@bubblingLevel/7] + ". What do you want to do?";
+    menu
+        "Wait.", -,
+        "Pour.", L_EasyCheck;
+
+    if (@menu == 1)
+        set @bubblingLevel, @bubblingLevel + rand(1,10);
+    if (@bubblingLevel > 27)
+        goto L_EasyTooHigh;
+    mes "Orum adds some more powder.";
+    goto L_EasyMinigame;
+
+L_EasyCheck:
+    set @bubblingLevel, @bubblingLevel + 3 - rand(7);
+    if (@bubblingLevel < 21)
+        goto L_EasyTooEarly;
+    if (@bubblingLevel > 27)
+        goto L_EasyTooLate;
+    goto L_EasySuccess;
+
+L_EasyTooLate:
+    mes "You are about to pour in the additive, but just before you do it...";
+    next;
+    goto L_EasyTooHigh;
+
+L_EasyTooHigh:
+    mes "Suddenly the mixture glows brightly. Then it calms down very quickly and turns into a weird greyish color.";
+    mes "[Orum]";
+    mes "\"Are you sleeping? Now it's ruined. You waited too long.\"";
+    next;
+    mes "\"You have to collect all the ingredients again, now.\"";
+    goto L_Close;
+
+L_EasyTooEarly:
+    mes "You pour the liquid Orum gave you into the mixture.";
+    mes "It stops bubbling and gets thicker... and thicker... and thicker...";
+    mes "[Orum]";
+    mes "\"No! That was too early. Look at what you've done! It's hard as a rock now.\"";
+    next;
+    mes "\"How annoying! You have to gather new ingredients.\"";
+    goto L_Close;
+
+L_EasySuccess:
+    getitem "WhiteSummonFlower", 1;
+    set OrumQuest, 23;
+
+    mes "As you pour the liquid into the bubbling mixture, it calms down and becomes viscous. Orum takes the tulip and dips it into the mixture.";
+    mes "[Orum]";
+    mes "\"Excellent! Here it is.\"";
+    next;
+L_WayThirdFlower:
+    mes "[Orum]";
+    mes "\"This flower needs to be placed on top of the Hurnscald mines. It might be a bit hard to reach, but I'm sure you'll do fine.\"";
+    goto L_Close;
+
+L_AskPentaEffect:
+    mes "[Orum]";
+    mes "\"Don't you know anything about Astral magic? A pentagram is used for summoning, of course.\"";
+    goto L_Close;
+
+L_PlaceThirdFlower: // 23: Completed easy minigame and got task to place the third magical flower
+    mes "[Orum]";
+    mes "\"What are you waiting for? Place the third flower where it's supposed to go.\"";
+    menu
+        "Okay.", L_Close,
+        "I forgot where to put it.", L_WayThirdFlower,
+        "Unfortunately... I don't have it anymore.", -;
+
+    mes "Orum sighs.";
+    mes "[Orum]";
+    mes "\"I hope this is a joke. No, you're serious? What impudence! This was a valuable and powerful magical artifact.\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_3 + " GP, and I'm going to allow you to continue helping us. So?\"";
+    menu
+        "Here it is.", -,
+        "That's too much!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_3)
+        goto L_NoMoney;
+    set Zeny, Zeny - @RECOMPENSATION_3;
+    set OrumQuest, 22;
+
+    mes "[Orum]";
+    mes "\"Once again we need " + @AMOUNT_WHITEFUR + " White Furs, " + @AMOUNT_REDSTINGER + " Red Scorpion Stingers and one White Tulip.\"";
+    goto L_Close;
+
+L_PlacedThirdFlower: // 24: Placed third magical flower
+    mes "[Orum]";
+    mes "\"We're making very good progress. Now that you've placed the third magical flower, only two more are left.";
+    mes "But we shouldn't become careless now, with each flower the procedure gets more difficult.\"";
+    menu
+        "Understood! What's next?", -,
+        "What are we going to summon with that pentagram?", L_AskSummon;
+
+    set OrumQuest, 25;
+    goto L_FourthFlower;
+
+L_AskSummon:
+    mes "[Orum]";
+    mes "\"Beings from the astral plane, of course. Some of them are already coming through the rift when you place the flowers.";
+    mes "But that is NOTHING compared to what will happen when the pentagram is complete! Hahaha!\"";
+    set OrumQuest, 25;
+    next;
+    goto L_FourthFlower;
+
+L_FourthFlower: // 25: Got task to bring materials for fourth magical flower
+    mes "[Orum]";
+    mes "\"Now we need " + @AMOUNT_HARDSPIKE + " Hard Spikes, " + @AMOUNT_ANGRYSTINGER + " Angry Scorpion Stingers and one Yellow Rose.\"";
+    menu
+        "I managed to get everything.", -,
+        "I'll go and gather the items.", L_Close,
+        "Won't it be dangerous to summon so many aggressive monsters?", L_AskDanger;
+
+    if ((countitem("HardSpike") < @AMOUNT_HARDSPIKE)
+        || (countitem("AngryScorpionStinger") < @AMOUNT_ANGRYSTINGER)
+        || (countitem("YellowRose") < 1))
+        goto L_NoItem;
+
+    delitem "HardSpike", @AMOUNT_HARDSPIKE;
+    delitem "AngryScorpionStinger", @AMOUNT_ANGRYSTINGER;
+    delitem "YellowRose", 1;
+
+    mes "Orum takes the materials and starts to pulverize them once again. You notice that his movements are slower this time and he seems to be really concentrating.";
+    mes "[Orum]";
+    mes "\"Okay. We're going to do it together again, but this time we'll switch the roles. You're going to mix the powders and I'm going to pour the rheological additive into the mixture.\"";
+    next;
+    mes "\"This is because... ahm, because you will learn something from it, yes.";
+    mes "But remember to handle the powders carefuly, they're highly vitriolic.\"";
+    next;
+    mes "\"You have two powders, one of them will make the mixture turn yellow, the other one will make it turn red.";
+    mes "You need to make it a clear, strong orange and hold that for a moment. That way I'll have enough time to pour the rheological additive.\"";
+    menu
+        "Let's try it.", -,
+        "I'm not sure what to do...", -;
+
+    mes "[Orum]";
+    mes "\"Just use the red powder when it's too bright, and the yellow powder when it's too dark. And be careful how much powder you use. The mixture will randomly fluctuate a bit, too, so keep that in mind.\"";
+    mes "He mixes together a few of each ingredients and then hands you two small bowls with the powders.";
+    next;
+
+    setarray @colorLevels$, "red", "light red", "dark orange", "orange",  "light orange", "dark yellow", "yellow";
+    set @colorLevel, rand(49);
+    set @goodColor, 0;
+
+L_HardMinigame:
+    mes "The color of the mixture is " + @colorLevels$[@colorLevel/7] + ". What do you want to do?";
+    menu
+        "Add a small portion of Red Powder.", -,
+        "Add a large portion of Red Powder.", -,
+        "Add a small portion of Yellow Powder.", -,
+        "Add a large portion of Yellow Powder.", -;
+
+    if (@menu == 1)
+        set @colorLevel, @colorLevel - rand(1,3);
+    if (@menu == 2)
+        set @colorLevel, @colorLevel - rand(6,8);
+    if (@menu == 3)
+        set @colorLevel, @colorLevel + rand(1,3);
+    if (@menu == 4)
+        set @colorLevel, @colorLevel + rand(6,8);
+
+    if (@colorLevel > 48)
+        goto L_TooYellow;
+    if (@colorLevel < 0)
+        goto L_TooRed;
+
+    mes "Due to your addition, the mixture is now " + @colorLevels$[@colorLevel/7] + ".";
+
+    if ((@colorLevel > 20) && (@colorLevel < 28))
+        goto L_Good;
+
+L_HardRandom:
+    set @colorLevel, @colorLevel + 3 - rand(6);
+    mes "The mixture sizzles and bubbles.";
+
+    if ((@colorLevel < 21) || (@colorLevel > 27))
+        set @goodColor, 0;
+
+    if (@colorLevel > 48)
+        goto L_TooYellow;
+    if (@colorLevel < 0)
+        goto L_TooRed;
+    next;
+    goto L_HardMinigame;
+
+L_Good:
+    set @goodColor, @goodColor + 1;
+    if (@goodColor == 3)
+        goto L_HardSuccess;
+    mes "Hold it like this for a moment!";
+    next;
+    goto L_HardRandom;
+
+L_TooYellow:
+    next;
+    mes "The mixture can't get any more yellow. The bubbling increases and most of the liquid quickly turns into steam that makes you cough.";
+    goto L_HardTooExtreme;
+L_TooRed:
+    next;
+    mes "The mixture can't get any more red. Suddenly, the bubbling gets even more violent. It seems to be corroding the cauldron! Orum hastily pours the rheological additive on it to make it stop.";
+    goto L_HardTooExtreme;
+
+L_HardTooExtreme:
+    mes "[Orum]";
+    mes "\"What are you doing? It is supposed to turn orange. You have to use both powders for that!\"";
+    next;
+    mes "\"This is ruined now. Go and collect new ingredients.\"";
+    goto L_Close;
+
+L_HardSuccess:
+    getitem "YellowSummonFlower", 1;
+    set OrumQuest, 26;
+
+    mes "Orum pours the rheological additive on the mixture and then dips the flower into the cauldron.";
+    mes "[Orum]";
+    mes "\"Excellent! Wonderful. Here's the flower. I need to clean up the cauldron, so in the meantime go place the flower.\"";
+    next;
+L_WayFourthFlower:
+    mes "[Orum]";
+    mes "\"To find the place: go south after leaving our cave, and then follow the path to the east. Watch out for that nasty forest witch living there, she doesn't like humans.";
+    mes "You have to place the flower on a small island in front of the coast. To get there, you have to find a way through the caves that connect it with the mainland.\"";
+    goto L_Close;
+
+L_AskDanger:
+    mes "[Orum]";
+    mes "\"Dangerous? Well, not really, since Waric and I are going to stay here in the cave.\"";
+    menu
+        "That's... very comforting.", -,
+        "And what about everyone outside? Like me!?", -;
+
+    mes "[Orum]";
+    mes "\"Umm, well. You won't be in the center of it where the monsters will appear, of course.";
+    mes "And you can handle a few of them, right?\"";
+    goto L_Close;
+
+L_PlaceFourthFlower: // 26: Completed difficult minigame and got task to place the fourth magical flower
+    mes "[Orum]";
+    mes "\"I can't wait! Everything is going so well! Why are you wasting time? Go and place the fourth magical flower!\"";
+    menu
+        "All right.", L_Close,
+        "Please describe where to place it again.", L_WayFourthFlower,
+        "The magical flower... I lost it.", -;
+
+    mes "Orum shakes his head in disbelief.";
+    mes "[Orum]";
+    mes "\"Lost it? Unbelievable! How could you lose it?\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_4 + " GP, and I will to allow you to continue helping us. So?\"";
+    menu
+        "Here it is.", -,
+        "That's too expensive!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_4)
+        goto L_NoMoney;
+    set Zeny, Zeny - @RECOMPENSATION_4;
+    set OrumQuest, 25;
+
+    mes "[Orum]";
+    mes "\"Now bring " + @AMOUNT_HARDSPIKE + " Hard Spikes, " + @AMOUNT_ANGRYSTINGER + " Angry Scorpion Stingers and one Yellow Rose again.\"";
+    goto L_Close;
+
+L_PlacedFourthFlower: // 27: Placed fourth magical flower
+    mes "[Orum]";
+    mes "\"Oh, almost! Only the last flower needs to be placed. Don't lose your focus now!";
+    mes "This last flower is the most complicated one. Pay attention.\"";
+    menu
+        "Tell me what you need!", -,
+        "Why do you want to summon so many beings?", L_AskReason;
+
+    set OrumQuest, 28;
+    goto L_FifthFlower;
+
+L_AskReason:
+    mes "[Orum]";
+    mes "\"Let's say... it's about paying back an old debt.";
+    mes "I'll give you a hint: think about what's in the center of the pentagram. Or rather who is.\"";
+    next;
+    mes "\"Anyway, let's get back to business!\"";
+    set OrumQuest, 28;
+    next;
+    goto L_FifthFlower;
+
+L_FifthFlower: // 28: Got task to bring materials for fifth magical flower
+    mes "[Orum]";
+    mes "\"For the last flower we need " + @AMOUNT_ACORN + " Acorns, " + @AMOUNT_PEARL + " Pearls, " + @AMOUNT_BLACKSTINGER + " Black Scorpion Stingers and 1 Red Rose.\"";
+    menu
+        "Here it is.", -,
+        "Understood.", L_Close,
+        "Sagatha is the target of the spell, right?", L_AskSagatha;
+
+    if ((countitem("Acorn") < @AMOUNT_ACORN)
+        || (countitem("Pearl") < @AMOUNT_PEARL)
+        || (countitem("BlackScorpionStinger") < @AMOUNT_BLACKSTINGER)
+        || (countitem("RedRose") < 1))
+        goto L_NoItem;
+
+    delitem "Acorn", @AMOUNT_ACORN;
+    delitem "Pearl", @AMOUNT_PEARL;
+    delitem "BlackScorpionStinger", @AMOUNT_BLACKSTINGER;
+    delitem "RedRose", 1;
+
+    mes "Orum takes the materials and draws a deep breath. He then begins to prepare them similarly to the materials for the other flowers.";
+    mes "[Orum]";
+    mes "\"Well, basically, we need to do the same as with the other flowers. We need to be careful, however, because this mixture is a bit more delicate. Would you like to do the add the rheological additive or mix the powders?\"";
+    menu
+        "I'll handle the additive.", L_Additive,
+        "Let me mix the powders.", L_Pulvers;
+
+L_Additive:
+    mes "Orum agrees and starts mixing the powders. You're ready to pour in the additive once the mixture reached a high level of bubbling.";
+    next;
+    mes "The next dash of powder Orum adds causes the mixture to sputter and splash. Some of the hot liquid lands on the back of your hand!";
+    heal -5, 0;
+    menu
+        "Ouch!",-,
+        "Aah!", -,
+        "Urgh!", -;
+    mes "As you step back from the cauldron you jostle Orum, and the Red Rose falls out of his pocket into the cauldron.";
+    goto L_FlowerHat;
+
+L_Pulvers:
+    mes "You start mixing the powders together. It bubbles much more than during the previous brewing.";
+    next;
+    mes "The next dash of powder you add causes the mixture to bubble and splash. Some of the hot liquid lands on Orum's hand! He screams and jumps back while waving his hand around.";
+    next;
+    mes "This causes the flower to fall out of his pocket, landing right into the cauldron.";
+    next;
+    mes "Orum stares at it.";
+    goto L_FlowerHat;
+
+L_FlowerHat:
+    mes "[Orum]";
+    mes "\"Fool! See what you've done? It's ruined!\"";
+    next;
+    mes "\"Though, we still have enough of the materials left to start over. Here, take this garbage out and get a new Red Rose!\"";
+    getitem "RedRoseHat", 1;
+    set OrumQuest, 29;
+    goto L_Close;
+
+L_AskSagatha:
+    mes "[Orum]";
+    mes "\"Ah, clever. Yes, you're right.";
+    mes "That self-righteous forest witch thinks she's better than other people. She thinks that gives her the right to stick her nose into other mages' affairs.\"";
+    next;
+    mes "\"What's even worse, she thinks she can punish other mages for actions she considers wrong - \"";
+    mes "[Waric]";
+    mes "\"Orum! You do not need to get into the details of this.\"";
+    next;
+    mes "[Orum]";
+    mes "\"Oh, heh, of course. However, we'll teach her a lesson.";
+    mes "You are going to help us.\"";
+    goto L_Close;
+
+L_FailedFifthFlower: // 29: Failed unbeatable minigame and got the flower hat
+    mes "[Orum]";
+    mes "\"Did you get a new Red Rose, so we can create the last magical flower?\"";
+    menu
+        "Yes.",  -,
+        "Not yet.", L_Close,
+        "Will those monsters hurt Sagatha? Or kill her?", L_AskHurtSagatha;
+
+    if (countitem("RedRose") < 1)
+        goto L_NoItem;
+
+    delitem "RedRose", 1;
+    mes "[Orum]";
+    mes "\"Finally! This time I'll do it all by myself. You and your clumsy fingers need to take a step back so it won't get ruined again.\"";
+    next;
+    mes "You watch while Orum carefully prepares the last magic flower.";
+    next;
+    getitem "RedSummonFlower", 1;
+    set OrumQuest, 30;
+    mes "[Orum]";
+    mes "\"Here it is. We're almost done. Don't mess it up!\"";
+    next;
+L_WayFifthFlower:
+    mes "[Orum]";
+    mes "\"To place the last flower: go east and follow the road. At some point it might be difficult to get through, since the road isn't used anymore, and the forest is growing back.";
+    mes "But you have to find a way and reach a clearing with a very old and tall tree. There you'll find another prepared spot with some flowers.\"";
+    goto L_Close;
+
+L_AskHurtSagatha:
+    mes "[Orum]";
+    mes "\"Oh, are you getting scared? I thought you wanted to support us.\"";
+    next;
+    mes "\"However, no need to worry. Sagatha is much too powerful to get seriously injured by this, sadly.\"";
+    next;
+    mes "\"If wanted to actually harm her, we'd need to summon some greater powers. That'd be risky in the best case, and devastatingly costly in the worst.\"";
+    next;
+    mes "\"Unless... well, I assume you're not open to donating your soul for a pact with a higher astral being, are you?\"";
+    goto L_Close;
+
+L_PlaceFifthFlower: // 30: Got task to place the fifth flower
+    mes "[Orum]";
+    mes "\"What are you waiting for? We've almost reached our goal! Go and place the last magical flower to finish the pentagram!\"";
+    menu
+        "Yes.", L_Close,
+        "Where do I have to place it?", L_WayFifthFlower,
+        "Please keep calm, but I lost the flower.", -;
+
+    mes "[Orum]";
+    mes "\"Lost it? You incompetent excuse for a servant! What do you think you're doing?\"";
+    next;
+    mes "\"This behaviour shouldn't remain unpunished. Pay a recompensation fee of " + @RECOMPENSATION_5 + " GP, and I'm going to allow you to continue helping us. You also have to bring the necessary materials for a new flower.\"";
+    menu
+        "Okay, here it is.", -,
+        "What materials do we need?", L_MaterialFifth,
+        "That's too expensive!", L_NoRecompensation;
+
+    if (Zeny < @RECOMPENSATION_5)
+        goto L_NoMoney;
+    if ((countitem("Acorn") < @AMOUNT_ACORN)
+        || (countitem("Pearl") < @AMOUNT_PEARL)
+        || (countitem("BlackScorpionStinger") < @AMOUNT_BLACKSTINGER)
+        || (countitem("RedRose") < 1))
+        goto L_NoItem;
+
+    set Zeny, Zeny - @RECOMPENSATION_5;
+    delitem "Acorn", @AMOUNT_ACORN;
+    delitem "Pearl", @AMOUNT_PEARL;
+    delitem "BlackScorpionStinger", @AMOUNT_BLACKSTINGER;
+    delitem "RedRose", 1;
+    getitem "RedSummonFlower", 1;
+
+    mes "Orum takes the materials and prepares a new flower.";
+    mes "[Orum]";
+    mes "\"Here is another flower. Don't mess it up this time, understood?\"";
+    goto L_Close;
+
+L_MaterialFifth:
+    mes "[Orum]";
+    mes "\"For the last flower we need " + @AMOUNT_ACORN + " Acorns, " + @AMOUNT_PEARL + " Pearls, " + @AMOUNT_BLACKSTINGER + " Black Scorpion Stingers and 1 Red Rose.\"";
+    goto L_Close;
+
+L_PlacedFifthFlower: // 31: Placed fifth flower
+    mes "[Orum]";
+    mes "\"Hahahaha! Wonderful! We were able to hear Sagatha's screaming and ranting here in the cave!\"";
+    next;
+    mes "\"Well done, really. I think you've earned yourself a small reward. Here, take this.\"";
+    set Zeny, Zeny + @REWARD_MONEY;
+    getexp @REWARD_EXP, 0;
+    set OrumQuest, 32;
+    goto L_Close;
+
+L_Done:
+    mes "[Orum]";
+    mes "\"Ah, whenever I think of Sagatha's reaction, it brings a smile to my face. You've done a very good job.\"";
+    goto L_Close;
+
+L_NoRecompensation:
+    mes "[Orum]";
+    mes "\"Well, you could still try to recover the magical flower instead. It's your decision.\"";
+    goto L_Close;
+
+L_NoMoney:
+    mes "[Orum]";
+    mes "\"Hey, you don't have enough money!\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Orum]";
+    mes "\"Hey, you don't have it!\"";
+    goto L_Close;
+
+L_Close:
+    set @AMOUNT_SMALLMUSHROOM, 0;
+    set @AMOUNT_ASH, 0;
+    set @RECOMPENSATION_1, 0;
+    set @AMOUNT_PINKPETAL, 0;
+    set @AMOUNT_STINGER, 0;
+    set @RECOMPENSATION_2, 0;
+    set @AMOUNT_WHITEFUR , 0;
+    set @AMOUNT_REDSTINGER , 0;
+    set @RECOMPENSATION_3, 0;
+    set @bubblingLevel, 0;
+    cleararray @bubblingLevels$[0], "", 4;
+    set @AMOUNT_HARDSPIKE , 0;
+    set @AMOUNT_ANGRYSTINGER , 0;
+    set @RECOMPENSATION_4, 0;
+    set @colorLevel, 0;
+    set @goodColor, 0;
+    cleararray @colorLevels$[0], "", 7;
+    set @AMOUNT_ACORN, 0;
+    set @AMOUNT_PEARL, 0;
+    set @AMOUNT_BLACKSTINGER, 0;
+    set @RECOMPENSATION_5, 0;
+    set @REWARD_MONEY, 0;
+    set @REWARD_EXP, 0;
+    close;
+}

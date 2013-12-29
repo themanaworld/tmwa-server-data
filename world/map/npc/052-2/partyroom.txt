@@ -149,7 +149,7 @@ OnTimer5500:
 
 OnTimer9000:
     if ($@illia_level_7_progress != 1) end;
-    set $@illia_luvia_trance_delay, 900; // 15 minutes before turning in trance mode
+    set $@illia_luvia_trance_delay, 480; // 8 minutes before turning in trance mode
     set $@illia_witch_guard_threshold, 30 + ($Illia_Luvia_Harvest*3)/5;
     if ($@illia_witch_guard_threshold > 100)
         set $@illia_witch_guard_threshold, 100;
@@ -216,11 +216,11 @@ OnDeath:
         end;
     set $@illia_level_7_progress, 4;
     killmonster "052-2.gat", "#LuviaDaemon::OnWGD";
-    mapannounce "052-2.gat", "Luvia: How? By mere humans! But we will see again! Enjoy your victory while it lasts, " + $@ILLIA_HERO$ + "!!", 0;
-    set @illia_bp, $Illia_Luvia_Harvest * 16 / 10 + 120;
-    set BOSS_POINTS, BOSS_POINTS + @illia_bp;
-    message strcharinfo(0), "You gain " + @illia_bp + " Boss Points giving you a total of " + BOSS_POINTS + ".";
-    set @illia_bp, 0;
+    mapannounce "052-2.gat", "Luvia : How? By mere humans! But we will see again! Enjoy your victory while it lasts, " + $@ILLIA_HERO$ + "!!", 0;
+
+    set $@illia_bp, $Illia_Luvia_Harvest * 16 / 10 + 120;
+    areatimer "052-2.gat", 73, 11, 115, 49, 0, "#LuviaDaemon::OnBP";
+
     areatimer "052-2.gat", 73, 11, 115, 49, 2000, "#LuviaDaemon::OnW00t";
 
     set $@illia_progress, 8;
@@ -242,11 +242,16 @@ OnDeath:
 
     // Extend the time limit of +7 mins to leave enough time to pick
     // the rewards even if close to the time limit
-    set $@illia_max_time, $@illia_max_time + 420;
+    set $@illia_max_time, $@illia_max_time + 300;
 
     // Record how many times the quest was finished
     set $Illia_Win_Counter, $Illia_Win_Counter + 1;
 
+    end;
+
+OnBP:
+    set BOSS_POINTS, BOSS_POINTS + $@illia_bp;
+    message strcharinfo(0), "You gain " + $@illia_bp + " Boss Points giving you a total of " + BOSS_POINTS + ".";
     end;
 
 OnWGD:

@@ -1,0 +1,139 @@
+// Author: Jenalya
+// $@Flower_Pentagram_Time saves the time when the last summoning happened
+
+056-1.gat,62,31,0|script|#FlowerPentagram5|400,
+{
+    if (OrumQuest >= 31) goto L_PlacedFifthFlower;
+
+    if (OrumQuest == 30) goto L_FifthFlower;
+
+    message strcharinfo(0), "Something is odd about this place.";
+    end;
+
+L_FifthFlower:
+    mes "This has to be the spot for the last magical flower. When you place it, the pentagram will be completed.";
+    menu
+        "Place the flower.", -,
+        "Leave.", L_Close;
+
+    if (isin("056-1.gat", 61, 30, 63, 32))
+        goto L_Place;
+
+    mes "This isn't working, you're too far away.";
+    goto L_Close;
+
+L_Place:
+    set @localMonsterCount,
+        mobcount("013-1.gat", "#FlowerPentagram5::OnSquirrelDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnMushroomDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnBlueparDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnMoubooDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnScorpionDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnRScorpionDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnAScorpionDeath") +
+        mobcount("013-1.gat", "#FlowerPentagram5::OnBScorpionDeath") +
+        8; // the mobcount function has an offset of -1, so we add 8 to have the actual amount of monsters
+    if (@localMonsterCount > 4)
+        goto L_MonstersAlive;
+
+    mes "Nervous about what's going to happen, you take the last of the flowers and put it into its place.";
+    next;
+    mes "Tension builds up around you, much stronger than before. You can feel it compressing your head, and a liquid warmth spreads under your nose, leaving a metallic taste on your lips.";
+    heal -5, 0;
+    next;
+    callfunc "FlowerPentagramCount";
+    if (($@Flower_Pentagram_Time > gettimetick(2) - 3600) && ($@Flower_Pentagram_Mobcount > 15))
+        goto L_TooEarly;
+    set $@Flower_Pentagram_Time, gettimetick(2);
+    if (countitem("RedSummonFlower") < 1)
+        goto L_NoFlower;
+    delitem "RedSummonFlower", 1;
+
+    mes "The pressure builds to the point where you don't think you can endure it any longer; the fabric that binds your consciousness together seemingly unravels.";
+    set OrumQuest, 31;
+    close2;
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1105, 3, "#FlowerPentagram5::OnSquirrelDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1106, 2, "#FlowerPentagram5::OnMushroomDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1107, 3, "#FlowerPentagram5::OnBlueparDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1104, 2, "#FlowerPentagram5::OnMoubooDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1003, 3, "#FlowerPentagram5::OnScorpionDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1004, 2, "#FlowerPentagram5::OnRScorpionDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1057, 2, "#FlowerPentagram5::OnAScorpionDeath";
+    areamonster "056-1.gat", 56, 26, 80, 46, "", 1009, 2, "#FlowerPentagram5::OnBScorpionDeath";
+    set @value, 15;
+    callfunc "QuestSagathaAnnoy";
+    set @value, 0;
+    donpcevent "#FlowerPentagram::OnSummon";
+    end;
+
+OnSquirrelDeath:
+    set @mobID, 1105;
+    callfunc "MobPoints";
+    end;
+
+OnMushroomDeath:
+    set @mobID, 1106;
+    callfunc "MobPoints";
+    end;
+
+OnBlueparDeath:
+    set @mobID, 1107;
+    callfunc "MobPoints";
+    end;
+
+OnMoubooDeath:
+    set @mobID, 1104;
+    callfunc "MobPoints";
+    end;
+
+OnScorpionDeath:
+    set @mobID, 1003;
+    callfunc "MobPoints";
+    end;
+
+OnRScorpionDeath:
+    set @mobID, 1004;
+    callfunc "MobPoints";
+    end;
+
+OnAScorpionDeath:
+    set @mobID, 1057;
+    callfunc "MobPoints";
+    end;
+
+OnBScorpionDeath:
+    set @mobID, 1009;
+    callfunc "MobPoints";
+    end;
+
+L_TooEarly:
+    mes "Suddenly, everything calms down again and the tension vanishes. You find yourself confused about what's going on.";
+    next;
+    mes "You pick up the flower again.";
+    next;
+    mes "Looking at the place more closely, it seems another summoning has happened just before, leaving the pathway between this world and the astral plane drained and exhausted.";
+    next;
+    mes "You should wait a while until it recharges, or go and search for the creatures that were summoned.";
+    goto L_Close;
+
+L_MonstersAlive:
+    mes "As you get closer to the place, you feel an unnerving presence.";
+    mes "This place has recently been used to summon something! And the beings are still nearby!";
+    next;
+    mes "You should get rid of them before attempting the summoning yourself.";
+    goto L_Close;
+
+L_NoFlower:
+    mes "You reach into your pocket, but you can't find the flower! You're so close to completing your task.";
+    mes "How could you lose the last flower? If you can't get it back, you have to tell Orum.";
+    goto L_Close;
+
+L_PlacedFifthFlower:
+    mes "This is where you placed the last of Orum's magical flowers.";
+    mes "However, now that the summoning spell has been cast, everything is back to normal here.";
+    goto L_Close;
+
+L_Close:
+    set @localMonsterCount, 0;
+    close;
+}

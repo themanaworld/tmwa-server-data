@@ -1,0 +1,94 @@
+// Author: Jenalya
+
+017-4.gat,173,47,0|script|#Guarding Spirit#_M|204,0,0
+{
+
+L_Talk:
+    if (OrumQuest == 35)
+        goto L_Block;
+    if (OrumQuest < 14)
+        goto L_Block;
+    if (OrumQuest > 14)
+        goto L_Chat;
+
+    mes "[Guarding Spirit]";
+    mes "\"Hold there! My master does not wish to be disturbed! I cannot let you enter.\"";
+    menu
+        "Who is your master?", L_Master,
+        "But I have important things I need to discuss with your master!", L_Helped,
+        "Oh, so he's finally back?", L_Back,
+        "Okay, okay.", L_Close;
+
+L_Back:
+    mes "[Guarding Spirit]";
+    mes "\"Yes, he was gone for quite a while. When he arrived home, he had a rather frightening looking guy with him.\"";
+    next;
+    mes "\"Ahem, I mean, yes Mortal. He came back to his residence and does not wish to interact with those below his status. Leave!\"";
+    goto L_Close;
+
+L_Master:
+    mes "[Guarding Spirit]";
+    mes "\"He is a powerful wizard. He can force the very elements to obey his will! He regularly communes with demons and higher beings from the astral plane, such as myself.\"";
+    next;
+    mes "\"Mankind knows his name as 'Orum'.\"";
+    menu
+        "Hey, I helped him out some while ago!", L_Helped,
+        "Orum? That guy who feels weary due to some transmutation spells?", L_Disrespectful,
+        "Then I better respect his wish and leave!", L_Close;
+
+L_Disrespectful:
+    mes "[Guarding Spirit]";
+    mes "\"What are you saying? Who are you to mock my Master?! You will regret that!\"";
+    set Hp, 1 + Hp/5;
+    goto L_Close;
+
+L_Helped:
+    mes "[Guarding Spirit]";
+    mes "\"Really? That sounds implausible to me.\"";
+    next;
+    mes "\"Why would my master mess around with such a puny mortal as yourself?\"";
+    menu
+        "I'd like to offer him my humble services...", L_Pass,
+        "Listen, he'll get angry if you don't let me pass. ", L_Pass,
+        "You're right, I was just bluffing.", L_Close;
+
+L_Pass:
+    mes "[Guarding Spirit]";
+    mes "\"Alright, I will let you pass.\"";
+    next;
+    mes "\"Remember that when you speak with him, do so with respect for someone befitting his status.\"";
+    set OrumQuest, 15;
+    warp "017-4.gat", 201, 26;
+    goto L_Close;
+
+L_Block:
+    mes "[Guarding Spirit]";
+    mes "\"Stop, mortal! I cannot let you pass!\"";
+    menu
+        "What? Who are you?", -,
+        "Why?", -,
+        "Ok...", L_Close;
+    mes "[Guarding Spirit]";
+    mes "\"My master summoned me for the sole purpose of preventing anyone else from entering his refuge.";
+    mes "I'll stand guard and protect it with all my power!\"";
+    next;
+    mes "\"If I fail, he will punish me. I do not like being punished by his magic, it hurts.\"";
+    goto L_Close;
+
+L_Chat:
+    mes "[Guarding Spirit]";
+    mes "Oh, it's you. You may enter.";
+    // TODO: more chat, maybe depending on the quest progress?
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnTouch:
+    if (OrumQuest < 15)
+        goto L_Talk;
+    if (OrumQuest == 35)
+        goto L_Block;
+    warp "017-4.gat", 201, 26;
+    end;
+}

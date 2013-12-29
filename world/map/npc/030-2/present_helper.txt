@@ -1,0 +1,87 @@
+// Annual Xmas
+// Author: wushin
+// Present Reclaimation
+
+030-2.gat,47,82,0|script|Jonanthan|328,
+{
+    callfunc "XmasStates";
+
+    if($@xmas_time)
+        goto L_XmasMain;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[Jonathan]";
+    mes "\"Hello! Welcome to the reclamation department.\"";
+    mes "\"Lucky all the presents stolen have been replaced. Save any you find. You never know what we will need to replace next year.\"";
+    goto L_Close;
+
+L_XmasMain:
+    mes "[Jonathan]";
+    mes "\"Hello! Welcome to the reclamation department.\"";
+
+    if(@xmas_helper_bit) goto L_Helping;
+
+    mes "\"We are incredibly busy right now, monsters have stolen some of our presents.\"";
+    mes "\"I must go inform Chief Warrick immediately.\"";
+    goto L_Close;
+
+L_Helping:
+    mes "\"Here we take back any presents stolen from us by those nasty creatures.\"";
+    next;
+
+L_Main:
+    mes "\"Did you find any presents you would like to return?\"";
+    next;
+    menu
+        "No, I just wanted to say hello.",-,
+        $@xmas_present_amount + " Purple present boxes.",L_Purple,
+        $@xmas_present_amount + " Blue present boxes.",L_Blue,
+        $@xmas_present_amount + " Green present boxes.",L_Green,
+        $@xmas_present_amount + " Yellow present boxes.",L_Yellow,
+        $@xmas_present_amount + " White present boxes.",L_White;
+    goto L_Close;
+
+L_Purple:
+    set @karma_bonus, $@xmas_karma_bonus;
+    set @present_name$, "PurplePresentBox";
+    goto L_RewardIncrease;
+
+L_Blue:
+    set @karma_bonus, $@xmas_karma_bonus;
+    set @present_name$, "BluePresentBox";
+    goto L_RewardIncrease;
+
+L_Green:
+    set @karma_bonus, $@xmas_karma_bonus;
+    set @present_name$, "GreenPresentBox";
+    goto L_RewardIncrease;
+
+L_Yellow:
+    set @karma_bonus, 2;
+    set @present_name$, "YellowPresentBox";
+    goto L_RewardIncrease;
+
+L_White:
+    set @karma_bonus, 2;
+    set @present_name$, "WhitePresentBox";
+    goto L_RewardIncrease;
+
+L_RewardIncrease:
+    if ($@xmas_present_amount > countitem(@present_name$))
+        goto L_NotEnough;
+    mes "\"Oh, thank you!\"";
+    delitem @present_name$, $@xmas_present_amount;
+    callfunc "XmasNice";
+    goto L_Close;
+
+L_NotEnough:
+    mes "\"I am sorry, but you don't have enough presents to return.\"";
+    goto L_Main;
+
+L_Close:
+    mes "\"See You later!\"";
+    set @present_name$, "";
+    close;
+}
+

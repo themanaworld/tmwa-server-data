@@ -1,0 +1,124 @@
+// Author: Jenalya
+
+055-1.gat,141,89,0|script|#FlowerPentagram4|400,
+{
+    if (OrumQuest >= 31) goto L_PlacedFifthFlower;
+
+    if (OrumQuest > 26) goto L_PlacedFourthFlower;
+    if (OrumQuest == 26) goto L_FourthFlower;
+
+    message strcharinfo(0), "Something is odd about this place.";
+    end;
+
+L_FourthFlower:
+    mes "This is the spot where you have to place the fourth of Orum's magical flowers.";
+    menu
+        "Place the flower.", -,
+        "Leave.", L_Close;
+
+    if (isin("055-1.gat", 140, 88, 142, 90))
+        goto L_Place;
+
+    mes "This isn't working, you're too far away.";
+    goto L_Close;
+
+L_Place:
+    set @localMonsterCount,
+        mobcount("055-1.gat", "#FlowerPentagram4::OnSquirrelDeath") +
+        mobcount("055-1.gat", "#FlowerPentagram4::OnMushroomDeath") +
+        mobcount("055-1.gat", "#FlowerPentagram4::OnBlueparDeath") +
+        mobcount("055-1.gat", "#FlowerPentagram4::OnMoubooDeath") +
+        mobcount("055-1.gat", "#FlowerPentagram4::OnScorpionDeath") +
+        mobcount("055-1.gat", "#FlowerPentagram4::OnRScorpionDeath") +
+        mobcount("055-1.gat", "#FlowerPentagram4::OnAScorpionDeath") +
+        mobcount("055-1.gat", "#FlowerPentagram4::OnBScorpionDeath") +
+        8; // the mobcount function has an offset of -1, so we add 8 to have the actual amount of monsters
+    if (@localMonsterCount > 4)
+        goto L_MonstersAlive;
+
+    if (countitem("YellowSummonFlower") < 1)
+        goto L_NoFlower;
+    delitem "YellowSummonFlower", 1;
+    mes "Worried about what will shift from the astral plane this time, you prepare yourself and put the flower in place.";
+    mes "As expected, you feel the magical tension building up. They're coming.";
+    set OrumQuest, 27;
+    close2;
+    areamonster "055-1.gat", 133, 87, 144, 99, "", 1105, 1, "#FlowerPentagram4::OnSquirrelDeath";
+    areamonster "055-1.gat", 133, 87, 144, 99, "", 1106, 1, "#FlowerPentagram4::OnMushroomDeath";
+    areamonster "055-1.gat", 133, 87, 144, 99, "", 1107, 2, "#FlowerPentagram4::OnBlueparDeath";
+    areamonster "055-1.gat", 133, 87, 144, 99, "", 1104, 2, "#FlowerPentagram4::OnMoubooDeath";
+    areamonster "055-1.gat", 133, 87, 144, 99, "", 1003, 2, "#FlowerPentagram4::OnScorpionDeath";
+    areamonster "055-1.gat", 133, 87, 144, 99, "", 1004, 2, "#FlowerPentagram4::OnRScorpionDeath";
+    areamonster "055-1.gat", 133, 87, 144, 99, "", 1057, 2, "#FlowerPentagram4::OnAScorpionDeath";
+    areamonster "055-1.gat", 133, 87, 144, 99, "", 1009, 1, "#FlowerPentagram4::OnBScorpionDeath";
+    set @value, 15;
+    callfunc "QuestSagathaAnnoy";
+    set @value, 0;
+    end;
+
+OnSquirrelDeath:
+    set @mobID, 1105;
+    callfunc "MobPoints";
+    end;
+
+OnMushroomDeath:
+    set @mobID, 1106;
+    callfunc "MobPoints";
+    end;
+
+OnBlueparDeath:
+    set @mobID, 1107;
+    callfunc "MobPoints";
+    end;
+
+OnMoubooDeath:
+    set @mobID, 1104;
+    callfunc "MobPoints";
+    end;
+
+OnScorpionDeath:
+    set @mobID, 1003;
+    callfunc "MobPoints";
+    end;
+
+OnRScorpionDeath:
+    set @mobID, 1004;
+    callfunc "MobPoints";
+    end;
+
+OnAScorpionDeath:
+    set @mobID, 1057;
+    callfunc "MobPoints";
+    end;
+
+OnBScorpionDeath:
+    set @mobID, 1009;
+    callfunc "MobPoints";
+    end;
+
+L_MonstersAlive:
+    mes "As you get closer to the place, you feel an unnerving presence.";
+    mes "This place has recently been used to summon something! And the beings are still nearby!";
+    next;
+    mes "You should get rid of them before attempting the summoning yourself.";
+    goto L_Close;
+
+L_NoFlower:
+    mes "You search your belongings for the magical flower. Where is it?";
+    mes "If you lost it, you should talk to Orum again.";
+    goto L_Close;
+
+L_PlacedFourthFlower:
+    mes "You placed the fourth of Orum's magical flowers here.";
+    mes "You can still feel the magical power shimmering around this place, waiting to be unleashed.";
+    goto L_Close;
+
+L_PlacedFifthFlower:
+    mes "This is where you placed the fourth of Orum's magical flowers.";
+    mes "However, now that the summoning spell has been cast, everything is back to normal here.";
+    goto L_Close;
+
+L_Close:
+    set @localMonsterCount, 0;
+    close;
+}

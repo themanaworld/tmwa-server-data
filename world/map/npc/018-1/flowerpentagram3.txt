@@ -1,0 +1,110 @@
+// Author: Jenalya
+
+018-1.gat,83,29,0|script|#FlowerPentagram3|400,
+{
+    if (OrumQuest >= 31) goto L_PlacedFifthFlower;
+
+    if (OrumQuest > 23) goto L_PlacedThirdFlower;
+    if (OrumQuest == 23) goto L_ThirdFlower;
+
+    message strcharinfo(0), "Something is odd about this place.";
+    end;
+
+L_ThirdFlower:
+    mes "You recognize this place as the spot where Orum wants you to place the third of his magical flowers.";
+    menu
+        "Place the flower.", -,
+        "Leave.", L_Close;
+
+    if (isin("018-1.gat", 82, 28, 84, 30))
+        goto L_Place;
+
+    mes "This isn't working, you're too far away.";
+    goto L_Close;
+
+L_Place:
+    set @localMonsterCount,
+        mobcount("018-1.gat", "#FlowerPentagram3::OnSquirrelDeath") +
+        mobcount("018-1.gat", "#FlowerPentagram3::OnMushroomDeath") +
+        mobcount("018-1.gat", "#FlowerPentagram3::OnBlueparDeath") +
+        mobcount("018-1.gat", "#FlowerPentagram3::OnScorpionDeath") +
+        mobcount("018-1.gat", "#FlowerPentagram3::OnRScorpionDeath") +
+        mobcount("018-1.gat", "#FlowerPentagram3::OnAScorpionDeath") +
+        6; // the mobcount function has an offset of -1, so we add 6 to have the actual amount of monsters
+    if (@localMonsterCount > 4)
+        goto L_MonstersAlive;
+
+    if (countitem("WhiteSummonFlower") < 1)
+        goto L_NoFlower;
+    delitem "WhiteSummonFlower", 1;
+    mes "Knowing what will happen, you prepare yourself for a fight. Then you go ahead with the ritual and place the magical flower.";
+    mes "You feel the now familiar tension around you. Here they come.";
+    set OrumQuest, 24;
+    close2;
+    areamonster "018-1.gat", 73, 22, 89, 36, "", 1105, 1, "#FlowerPentagram3::OnSquirrelDeath";
+    areamonster "018-1.gat", 73, 22, 89, 36, "", 1106, 2, "#FlowerPentagram3::OnMushroomDeath";
+    areamonster "018-1.gat", 73, 22, 89, 36, "", 1107, 1, "#FlowerPentagram3::OnBlueparDeath";
+    areamonster "018-1.gat", 73, 22, 89, 36, "", 1003, 2, "#FlowerPentagram3::OnScorpionDeath";
+    areamonster "018-1.gat", 73, 22, 89, 36, "", 1004, 1, "#FlowerPentagram3::OnRScorpionDeath";
+    areamonster "018-1.gat", 73, 22, 89, 36, "", 1057, 2, "#FlowerPentagram3::OnAScorpionDeath";
+    set @value, 15;
+    callfunc "QuestSagathaAnnoy";
+    set @value, 0;
+    end;
+
+OnSquirrelDeath:
+    set @mobID, 1105;
+    callfunc "MobPoints";
+    end;
+
+OnMushroomDeath:
+    set @mobID, 1106;
+    callfunc "MobPoints";
+    end;
+
+OnBlueparDeath:
+    set @mobID, 1107;
+    callfunc "MobPoints";
+    end;
+
+OnScorpionDeath:
+    set @mobID, 1003;
+    callfunc "MobPoints";
+    end;
+
+OnRScorpionDeath:
+    set @mobID, 1004;
+    callfunc "MobPoints";
+    end;
+
+OnAScorpionDeath:
+    set @mobID, 1057;
+    callfunc "MobPoints";
+    end;
+
+L_MonstersAlive:
+    mes "As you get closer to the place, you feel an unnerving presence.";
+    mes "This place has recently been used to summon something! And the beings are still nearby!";
+    next;
+    mes "You should get rid of them before attempting the summoning yourself.";
+    goto L_Close;
+
+L_NoFlower:
+    mes "You reach into your inventory to take out the flower and place it, but you can't find it!";
+    mes "Did you lose it somewhere along the way? If you can't find it, go talk to Orum again.";
+    goto L_Close;
+
+L_PlacedThirdFlower:
+    mes "You placed the third of Orum's magical flowers on this spot.";
+    mes "You can feel the magical power around the place, waiting to be unleashed.";
+    goto L_Close;
+
+L_PlacedFifthFlower:
+    mes "You remember this place. You placed the third of Orum's magical flowers here.";
+    mes "However, now that the summoning spell has been cast, everything is back to normal here.";
+    goto L_Close;
+
+L_Close:
+    set @localMonsterCount, 0;
+    close;
+}

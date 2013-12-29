@@ -1,0 +1,96 @@
+// Author: Jenalya
+
+012-1.gat,143,70,0|script|#FlowerPentagram2|400,
+{
+    if (OrumQuest >= 31) goto L_PlacedFifthFlower;
+
+    if (OrumQuest > 20) goto L_PlacedSecondFlower;
+    if (OrumQuest == 20) goto L_SecondFlower;
+
+    message strcharinfo(0), "There is something odd about this place.";
+    end;
+
+L_SecondFlower:
+    mes "Orum described this place. You have to place the second magical flower here.";
+    menu
+        "Place the flower.", -,
+        "Leave.", L_Close;
+
+    if (isin("012-1.gat", 142, 69, 144, 71))
+        goto L_Place;
+
+    mes "This isn't working, you're too far away.";
+    goto L_Close;
+
+L_Place:
+    set @localMonsterCount,
+        mobcount("012-1.gat", "#FlowerPentagram2::OnSquirrelDeath") +
+        mobcount("012-1.gat", "#FlowerPentagram2::OnMushroomDeath") +
+        mobcount("012-1.gat", "#FlowerPentagram2::OnScorpionDeath") +
+        mobcount("012-1.gat", "#FlowerPentagram2::OnRScorpionDeath") +
+        4; // the mobcount function has an offset of -1, so we add 4 to have the actual amount of monsters
+    if (@localMonsterCount > 2)
+        goto L_MonstersAlive;
+
+    if (countitem("PurpleSummonFlower") < 1)
+        goto L_NoFlower;
+    delitem "PurpleSummonFlower", 1;
+    mes "Remembering what happened the last time, you take a careful look around. Everything's calm. You proceed to place the second flower.";
+    mes "Sensing a certain tension build up around you, you can't help but feel alarmed.";
+    set OrumQuest, 21;
+    close2;
+    areamonster "012-1.gat", 140, 64, 146, 73, "", 1105, 2, "#FlowerPentagram2::OnSquirrelDeath";
+    areamonster "012-1.gat", 140, 64, 146, 73, "", 1106, 2, "#FlowerPentagram2::OnMushroomDeath";
+    areamonster "012-1.gat", 140, 64, 146, 73, "", 1003, 2, "#FlowerPentagram2::OnScorpionDeath";
+    areamonster "012-1.gat", 140, 64, 146, 73, "", 1004, 2, "#FlowerPentagram2::OnRScorpionDeath";
+    set @value, 15;
+    callfunc "QuestSagathaAnnoy";
+    set @value, 0;
+    end;
+
+OnSquirrelDeath:
+    set @mobID, 1105;
+    callfunc "MobPoints";
+    end;
+
+OnMushroomDeath:
+    set @mobID, 1106;
+    callfunc "MobPoints";
+    end;
+
+OnScorpionDeath:
+    set @mobID, 1003;
+    callfunc "MobPoints";
+    end;
+
+OnRScorpionDeath:
+    set @mobID, 1004;
+    callfunc "MobPoints";
+    end;
+
+L_MonstersAlive:
+    mes "As you get closer to the place, you feel an unnerving presence.";
+    mes "This place has recently been used to summon something! And the beings are still nearby!";
+    next;
+    mes "You should get rid of them before attempting the summoning yourself.";
+    goto L_Close;
+
+L_NoFlower:
+    mes "You look into your pocket, but the flower isn't there. Where did you put it?";
+    mes "If you can't find it, you should talk to Orum again.";
+    goto L_Close;
+
+L_PlacedSecondFlower:
+    mes "You placed the second of Orum's magical flowers on this spot.";
+    mes "You can still feel the magical power shimmering around this place, waiting to be unleashed.";
+    goto L_Close;
+
+L_PlacedFifthFlower:
+    mes "This is where you placed the second of Orum's magical flowers.";
+    mes "However, now that the summoning spell has been cast, everything is back to normal here.";
+    goto L_Close;
+
+L_Close:
+    set @localMonsterCount, 0;
+    close;
+}

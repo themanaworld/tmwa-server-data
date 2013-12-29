@@ -1,0 +1,82 @@
+// Spawns mobs
+
+019-1.gat,0,0,0|script|XmasSpawnManager|400,
+{
+
+OnCommandSpawnStart:
+    if ($@xmas_spawn_started)
+        goto L_End;
+    set $@xmas_spawn_started, 1;
+    goto L_InitSpawn;
+
+L_InitSpawn:
+    initnpctimer;
+    set $@xmas_current_count, 0;
+    set $@xmas_map_loop, 0;
+    goto L_StartLoop;
+
+L_StartLoop:
+    set $@xmas_mob_lck, 1;
+    set $@mob_count, mobcount($@xmas_map_spawns$[$@xmas_map_loop], "XmasSpawnCounter#" + $@xmas_map_loop + "::OnTally");
+    set $@spawn_amount, ($@xmas_mob_counts[$@xmas_map_loop] - ($@mob_count + 1));
+    if ($@spawn_amount)
+        goto L_Spawn;
+    goto L_NextMap;
+
+L_Spawn:
+    areamonster $@xmas_map_spawns$[$@xmas_map_loop], $@xmas_spawn_x1, $@xmas_spawn_y1, $@xmas_spawn_x2, $@xmas_spawn_y2, $@xmas_mob_names$[$@xmas_map_loop], $@xmas_mob_spawns[$@xmas_map_loop], $@spawn_amount, "XmasSpawnCounter#" + $@xmas_map_loop + "::OnTally";
+    set $@xmas_current_count, ($@xmas_current_count + $@spawn_amount);
+    goto L_NextMap;
+
+L_NextMap:
+    if (($@xmas_map_loop + 1) == getarraysize($@xmas_map_spawns$))
+        goto L_End;
+    set $@xmas_map_loop, ($@xmas_map_loop + 1);
+    goto L_StartLoop;
+
+OnCommandTally:
+    set $@xmas_map_loop, 0;
+    set $@xmas_current_count, ($@xmas_current_count - 1);
+    if (($@xmas_current_count < $@xmas_respawn_count) && !($@xmas_mob_lck))
+        goto L_StartLoop;
+    goto L_End;
+
+OnTimer110000:
+    initnpctimer;
+    goto L_StartLoop;
+
+L_End:
+    set $@mob_count, 0;
+    set $@spawn_amount, 0;
+    set $@xmas_mob_lck, 0;
+    set $@xmas_map_loop, 0;
+    end;
+}
+
+019-1.gat,0,0,0|script|XmasSpawnCounter#0|400,
+{
+OnTally:
+    cmdothernpc "XmasSpawnManager", "Tally";
+    end;
+}
+
+019-3.gat,0,0,0|script|XmasSpawnCounter#1|400,
+{
+OnTally:
+    cmdothernpc "XmasSpawnManager", "Tally";
+    end;
+}
+
+030-1.gat,0,0,0|script|XmasSpawnCounter#2|400,
+{
+OnTally:
+    cmdothernpc "XmasSpawnManager", "Tally";
+    end;
+}
+
+030-3.gat,0,0,0|script|XmasSpawnCounter#3|400,
+{
+OnTally:
+    cmdothernpc "XmasSpawnManager", "Tally";
+    end;
+}

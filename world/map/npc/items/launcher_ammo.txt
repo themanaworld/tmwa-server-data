@@ -1,0 +1,32 @@
+// ------------------------------------------------------------
+// Ammo Needs to know Launcher and vice versa.
+//
+// Behavior:
+//  - If only one is equipped, do nothing
+//  - If incompatible launcher and ammo are equipped, unequip the ammo
+//
+// Variables passed to these scripts:
+//
+// @LauncherType, @AmmoType
+//
+// ------------------------------------------------------------
+
+function|script|CheckLauncher|,
+{
+    if (getequipid(equip_arrow) == -1)
+        set @LauncherType, 0;
+    return;
+}
+
+function|script|CheckAmmo|,
+{
+    if ((@LauncherType == @AmmoType) || (!@LauncherType))
+        goto L_Return;
+
+    callfunc "UnequipLater";
+
+L_Return:
+    set @LauncherType, 0;
+    set @AmmoType, 0;
+    return;
+}

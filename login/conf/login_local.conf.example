@@ -1,27 +1,47 @@
 // Athena Login Server local configuration file.
- 
-// Port to bind Login Server to (always binds to all IP addresses)
+
+// Port to bind Login Server to (always binds to all IPv4 addresses)
 login_port: 6901
 
-// Whether remote administration is enabled or disabled (1 for enabled, 0 for disabled)
-admin_state: 1
+// Whether remote administration is enabled or disabled
+admin_state: yes
 
-// Administrative password, used by ladmin (perl software) to connect remotely to server.
-// NOTICE: If you enable remote administration, you should change its value for security
+// Administrative password, used by ladmin to connect remotely to server.
+// NOTICE: You should change its value for security.
+// This is also in ladmin_local.conf
 admin_pass: admin
 
-// Indicate the IP that the server accepts for remote administration.
-// put: 'all', or 'xxx.xxx.' (begin of an ip finished by '.' or a complete ip),
-//      or a network and its mask (example: '123.456.789.012/24' or '123.456.789.012/255.255.255.0')
-//      or 'clear' to suppress previous parameter (use it in import file mainly)
-// Add as many IP's as you wish.
-ladminallowip: all
+// List of IPs that the server accepts for remote administration.
+// This can be repeated, with one entry per line.
+// Each line can be an IP prefix (xxx.xxx.), a full IP, or a network/mask.
+// Particularly, it *cannot* be a hostname.
+// The special value 'all' allows all IPs.
+// The special value 'clear' empties the list (useful for includes).
+// Note: internally this is called 'access_ladmin'.
+//ladminallowip: all
+//ladminallowip: clear
+ladminallowip: 127.0.0.1
 
-// Gamemaster password, used with the @gm command to obtain GM commands (level of gm set with level_new_gm parameter).
+// Gamemaster password, used with the @gm command to obtain GM commands
 // NOTICE: You should also change this one.
 gm_pass: gm
 
+// GM level granted to people using @gm (with the correct password).
+// Builtin default is 60; setting it to 0 will disable the command.
+// To work, @gm also needs to be level 0 in atcommand_local.conf,
+// and atcommand_gm_only needs to be off in battle_local.conf
+level_new_gm: 0
+
 // Update host
-// Tells the client that an alternative updatehost is available if the client
-// supports this. If left out nothing will be sent. max length 127.
-update_host: http://updates.themanaworld.org/
+// If not empty, send address for client to download data.
+// This must contain news.txt and resources.xml
+update_host: http://tmwdata.org/updates/
+
+// Which world should appear first to the players.
+// see server_name in world/conf/char_local.conf
+main_server: The Mana World
+
+// Server Communication username and password.
+// This used to be in save/account.txt, but this is better.
+userid: s1
+passwd: p1

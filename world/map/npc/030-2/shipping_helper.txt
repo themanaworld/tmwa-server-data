@@ -1,0 +1,119 @@
+// Annual Xmas
+// Author: Jenalya, wushin
+
+030-2.gat,30,88,0|script|Mo|328,
+{
+    set $@npc_name$, "Mo";
+    callfunc "helpersPacking";
+    close;
+}
+
+030-2.gat,33,88,0|script|Lorrie|329,
+{
+    set $@npc_name$, "Lorrie";
+    callfunc "helpersPacking";
+    close;
+}
+
+030-2.gat,37,88,0|script|Curlee|329,
+{
+    set $@npc_name$, "Curlee";
+    callfunc "helpersPacking";
+    close;
+}
+
+function|script|helpersPacking|,
+{
+    callfunc "XmasStates";
+
+    if($@xmas_time)
+        goto L_XmasMain;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[" + $@npc_name$ + "]";
+    mes "\"Boy it sure is grand to goof off all day with no presents to wrap.\"";
+    goto L_Close;
+
+L_XmasMain:
+    mes "[" + $@npc_name$ + "]";
+    mes "Hello, hello, hello!";
+
+    if(@xmas_helper_bit) goto L_Helping;
+
+    mes "\"Real busy now, gotta go or the boss will have my head. Back to work knuckleheads!\"";
+    goto L_Close;
+
+L_Helping:
+    mes "\"I am " + $@npc_name$ + ". We are in charge of getting all the presents together, but we messed up and now all our supplies are ruined. Can you help us out?\"";
+    mes "\"We need wrapping paper and empty boxes! We can provide the gifts!\"";
+    next;
+
+L_Main:
+    mes "\"Do you have any supplies we can use?\"";
+    next;
+    menu
+        "What? err... I just wanted to say hello.",-,
+        "Purple Wrapping Paper and an empty box.",L_Purple,
+        "Blue Wrapping Paper and an empty box.",L_Blue,
+        "Green Wrapping Paper and an empty box.",L_Green,
+        "Yellow Wrapping Paper and an empty box.",L_Yellow,
+        "White Wrapping Paper and an empty box.",L_White;
+    goto L_Close;
+
+L_Purple:
+    set @wrap$, "PurpleWrap";
+    set @present_name$, "PurplePresentBox";
+    goto L_Gift;
+
+L_Blue:
+    set @wrap$, "BlueWrap";
+    set @present_name$, "BluePresentBox";
+    goto L_Gift;
+
+L_Green:
+    set @wrap$, "GreenWrap";
+    set @present_name$, "GreenPresentBox";
+    goto L_Gift;
+
+L_Yellow:
+    set @wrap$, "YellowWrap";
+    set @present_name$, "YellowPresentBox";
+    goto L_Gift;
+
+L_White:
+    set @wrap$, "WhiteWrap";
+    set @present_name$, "WhitePresentBox";
+    goto L_Gift;
+
+L_Gift:
+    if ($@xmas_wrap_amount > countitem(@wrap$))
+        goto L_NotEnough;
+    if ($@xmas_empty_box_amount > countitem("OpenPresentBox"))
+        goto L_NotEnough;
+    getinventorylist;
+    if ((@inventorylist_count == 100) || (checkweight(@present_name$, $@xmas_wrap_reward) == 0))
+        goto L_FullInv;
+    delitem "OpenPresentBox", $@xmas_empty_box_amount;
+    delitem @wrap$, $@xmas_wrap_amount;
+    getitem @present_name$, $@xmas_ship_present_amount;
+    goto L_Give;
+
+L_Give:
+    mes "\"Ok, here is the present. Make sure to drop these off at the warehouse.\"";
+    goto L_Main;
+
+L_NotEnough:
+    mes "\"O wiseguy, huh? Why don't you come back when you got all the supplies you knucklehead.\"";
+    goto L_Main;
+
+L_FullInv:
+    mes "\"Where you going to put this? In your ear? Come back when you have more space in your inventory.\"";
+    goto L_Main;
+
+L_Close:
+    mes "\"Ok, back to work you two, we have to make up lost time for your antics.\"";
+    set @wrap$, "";
+    set @present_name$, "";
+    close;
+}

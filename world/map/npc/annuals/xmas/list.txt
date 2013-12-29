@@ -1,0 +1,102 @@
+// This file is part of Christmas Event
+// author: Jenalya, Chayenne, cinderweb, wushin
+// please see #XmasConfig
+
+function|script|XmasCheckList|,
+{
+    set @xmas_list_count, 0;
+    set @xmas_list_loop, 0;
+
+    if((@xmas_list_deliver) || !(@xmas_list_gather))
+        goto L_Return;
+
+L_Loop:
+    if(XMASTIME & $@xmas_child_list[@xmas_list_loop])
+        goto L_AddOne;
+    goto L_LoopAgain;
+
+L_AddOne:
+    set @xmas_list_count, (@xmas_list_count + 1);
+    goto L_LoopAgain;
+
+L_LoopAgain:
+    if((@xmas_list_loop + 1) == getarraysize($@xmas_child_list))
+        goto L_ListTally;
+    set @xmas_list_loop, (@xmas_list_loop + 1);
+    goto L_Loop;
+
+L_ListTally:
+    if(@xmas_list_count == $@xmas_perfect_list_count)
+        goto L_PerfectList;
+    if(@xmas_list_count > $@xmas_required_list_count)
+        goto L_SetListState;
+    goto L_Return;
+
+L_PerfectList:
+    set XMASTIME, XMASTIME | $@xmas_all_lists_bit;
+    goto L_SetListState;
+
+L_SetListState:
+    set @xmas_state, $@xmas_list_complete_state;
+    callfunc "XmasSetState";
+    goto L_Return;
+
+L_Return:
+    set @xmas_list_loop, 0;
+    return;
+}
+
+function|script|XmasList|,
+{
+    callfunc "XmasStates";
+
+    if(($@xmas_time) && (@xmas_list_gather) && !(@xmas_list_complete))
+        goto L_QuestTime;
+    goto L_Return;
+
+L_QuestTime:
+    if(XMASTIME & $@xmas_child_list[@child_number])
+        goto L_Return;
+    goto L_GetList;
+
+L_GetList:
+    menu
+        "Hey, I have come to collect your wish list for Santa", L_List,
+        "Oh sorry, what were you going to say?", L_Return;
+
+L_List:
+    mes "[" + $@xmas_child_list_name$[@child_number] + "]";
+    mes "Here is my list. Make sure it gets delivered, please!";
+    next;
+    mes "You store " + $@xmas_child_list_name$[@child_number] + "'s wish list carefully in a hidden pocket of your backpack.";
+    set XMASTIME, XMASTIME | $@xmas_child_list[@child_number];
+    callfunc "XmasXpReward";
+    menu
+        "I really should be going.", L_Return;
+
+L_Return:
+    return;
+}
+
+function|script|XmasListList|,
+{
+    set @xmas_list_loop, 0;
+    set @xmas_child_loop, 0;
+
+L_Loop:
+    set @xmas_child_loop, ($@xmas_child_list[@xmas_list_loop]);
+    if ((XMASTIME & @xmas_child_loop) != 0) goto L_LoopAgain;
+    mes "\"" + $@xmas_child_list_name$[@xmas_list_loop] + "\"";
+    next;
+    goto L_LoopAgain;
+
+L_LoopAgain:
+    if((@xmas_list_loop + 1) == getarraysize($@xmas_child_list_name$))
+        goto L_Return;
+    set @xmas_list_loop, (@xmas_list_loop + 1);
+    goto L_Loop;
+
+L_Return:
+    set @xmas_list_loop, 0;
+    return;
+}

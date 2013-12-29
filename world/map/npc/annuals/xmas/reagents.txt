@@ -1,0 +1,142 @@
+// This file is part of Christmas Event
+// author: Jenalya, Chayenne, cinderweb, wushin
+// please see #XmasConfig
+
+function|script|CheckReagents|,
+{
+    set @xmas_reagent_loop, 0;
+    if((@xmas_reagent_done_state) || !(@xmas_reagent_start_state))
+        goto L_Return;
+    if(@xmas_side)
+        goto L_OneLoop;
+    goto L_ZeroLoop;
+
+L_ZeroLoop:
+    if(countitem($@xmas_zero_reagents$[@xmas_reagent_loop]) >= $@xmas_zero_reagents_amounts[@xmas_reagent_loop])
+        goto L_ZeroLoopAgain;
+    goto L_Return;
+
+L_ZeroLoopAgain:
+    if((@xmas_reagent_loop + 1) == getarraysize($@xmas_zero_reagents$))
+        goto L_AllReagents;
+    set @xmas_reagent_loop, (@xmas_reagent_loop + 1);
+    goto L_ZeroLoop;
+
+L_OneLoop:
+    if(countitem($@xmas_one_reagents$[@xmas_reagent_loop]) >= $@xmas_one_reagents_amounts[@xmas_reagent_loop])
+        goto L_OneLoopAgain;
+    goto L_Return;
+
+L_OneLoopAgain:
+    if((@xmas_reagent_loop + 1) == getarraysize($@xmas_one_reagents$))
+        goto L_AllReagents;
+    set @xmas_reagent_loop, (@xmas_reagent_loop + 1);
+    goto L_OneLoop;
+
+L_AllReagents:
+    set @xmas_state, $@xmas_reagents_done;
+    callfunc "XmasSetState";
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function|script|DeleteReagents|,
+{
+    set @xmas_reagent_loop, 0;
+    if(@xmas_side)
+        goto L_OneLoop;
+    goto L_ZeroLoop;
+
+L_ZeroLoop:
+    delitem $@xmas_zero_reagents$[@xmas_reagent_loop], $@xmas_zero_reagents_amounts[@xmas_reagent_loop];
+
+L_ZeroLoopAgain:
+    if((@xmas_reagent_loop + 1) == getarraysize($@xmas_zero_reagents$))
+        goto L_Return;
+    set @xmas_reagent_loop, (@xmas_reagent_loop + 1);
+    goto L_ZeroLoop;
+
+L_OneLoop:
+    delitem $@xmas_one_reagents$[@xmas_reagent_loop], $@xmas_one_reagents_amounts[@xmas_reagent_loop];
+
+L_OneLoopAgain:
+    if((@xmas_reagent_loop + 1) == getarraysize($@xmas_one_reagents$))
+        goto L_Return;
+    set @xmas_reagent_loop, (@xmas_reagent_loop + 1);
+    goto L_OneLoop;
+
+L_Return:
+    return;
+}
+
+function|script|ListReagents|,
+{
+    set @xmas_reagent_loop, 0;
+    mes "\"I'm going to need \"";
+    next;
+
+    if(@xmas_side)
+        goto L_OneLoop;
+    goto L_ZeroLoop;
+
+L_ZeroLoop:
+    mes "\"" + $@xmas_zero_reagents_amounts[@xmas_reagent_loop] + " " + $@xmas_zero_reagents_names$[@xmas_reagent_loop] + "\"";
+    next;
+
+L_ZeroLoopAgain:
+    if((@xmas_reagent_loop + 1) == getarraysize($@xmas_zero_reagents$))
+        goto L_AllReagents;
+    set @xmas_reagent_loop, (@xmas_reagent_loop + 1);
+    goto L_ZeroLoop;
+
+L_OneLoop:
+    mes "\"" + $@xmas_one_reagents_amounts[@xmas_reagent_loop] + " " + $@xmas_one_reagents_names$[@xmas_reagent_loop] + "\"";
+    next;
+
+L_OneLoopAgain:
+    if((@xmas_reagent_loop + 1) == getarraysize($@xmas_one_reagents$))
+        goto L_AllReagents;
+    set @xmas_reagent_loop, (@xmas_reagent_loop + 1);
+    goto L_OneLoop;
+
+L_AllReagents:
+    return;
+}
+
+function|script|BadPowderMake|,
+{
+    if(countitem("PileOfAsh") < ($@xmas_red_amount + $@xmas_yellow_amount))
+        goto L_NotEnough;
+    if(countitem("RedDye") < $@xmas_red_amount)
+        goto L_NotEnough;
+    if(countitem("YellowDye") < $@xmas_yellow_amount)
+        goto L_NotEnough;
+    getinventorylist;
+    if (@inventorylist_count > 100)
+        goto L_FullInv;
+    goto L_MakePowder;
+
+L_MakePowder:
+    delitem "PileOfAsh", ($@xmas_red_amount + $@xmas_yellow_amount);
+    delitem "RedDye", $@xmas_red_amount;
+    delitem "YellowDye", $@xmas_yellow_amount;
+    getitem "RedPowder", $@xmas_red_amount;
+    getitem "YellowPowder", $@xmas_yellow_amount;
+    mes "\"Here is your powder, now move!\"";
+    goto L_Return;
+
+L_FullInv:
+    mes "\"... Excuse me but where did you expect you were going to hold these powders...\"";
+    mes "\"WAIT! no, I don't want to know. Just come back when you have some room.\"";
+    goto L_Return;
+
+L_NotEnough:
+    mes "\"You don't have enough of eagents to make the powders.\"";
+    mes "\"To replace the glitter we will need get " + ($@xmas_red_amount + $@xmas_yellow_amount) + " Piles of Ash, " + $@xmas_red_amount + " Red Dyes and " + $@xmas_yellow_amount + " Yellow Dyes\"";
+    goto L_Return;
+
+L_Return:
+    return;
+}

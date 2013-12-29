@@ -1,0 +1,90 @@
+026-1.gat,24,37,0|script|Munro|183,
+{
+    mes "[Munro]";
+    mes "\"Whoh dude...\"";
+    next;
+    mes "[Munro]";
+    mes "\"Man.. I don't know how I got here.. freaky..\"";
+    next;
+    mes "[Munro]";
+    mes "\"Hey dude, what's that on your face? It's creeping me out!\"";
+    menu
+        "There is nothing on my face..", L_Nothing,
+        "What, This skin?",-;
+    mes "[Munro]";
+    mes "\"Skin? Whoh far-out man.. This must be that weirdo place my brother Parua told me about..\"";
+    next;
+    mes "Munro stares at you vacantly for a moment";
+    next;
+    mes "Munro's eye-holes suddenly seem more aware";
+    next;
+    mes "[Munro]";
+    mes "\"WHOH! SKIN? d.....dude! How can you stand having that stuff all over you? That's gotta suck!\"";
+    next;
+    mes "[Munro]";
+    mes "\"Here dude.. Take this. It won't get rid of that groady skin but it'll at least make you LOOK normal..\"";
+    getitem "SkeletonCharm",1;
+    next;
+    mes "[Munro]";
+    mes "\"I have a lot of these man.. a LOT. Take all you want man.. Just remember they only work when I'm around to power them. Freaky-deaky skull power you know?\"";
+    close;
+    goto L_Exit;
+
+L_Nothing:
+    mes "[Munro]";
+    mes "\"Oh.. ok dude! Whatever you say!\"";
+    goto L_Exit;
+
+L_Exit:
+    close;
+}
+
+026-1.gat,25,37,0|script|#AnnualHalloween|-1,
+{
+    end;
+
+OnInit:
+    if (debug >= 2) end;
+    initnpctimer;
+    end;
+
+OnTimer1000:
+    set $@isHalloween, 0;
+    if ((gettime(6) == 10 && gettime(5) >= 27) || (gettime(6) == 11 && gettime(5) <= 5))
+        set $@isHalloween, 1;
+
+    if (gettime(6) == 12 && gettime(5) >= 23 && gettime(5) <= 26)
+        set $@isHalloween, 1;
+
+    if ($@isHalloween)
+        goto L_enablemunro;
+
+    goto L_disablemunro;
+
+
+L_enablemunro:
+    enablenpc "Munro";
+    goto L_End;
+
+L_disablemunro:
+    disablenpc "Munro";
+
+L_End:
+    setnpctimer 0;
+    end;
+}
+
+
+function|script|CheckMunro|,
+{
+    if ((gettime(6) == 10 && gettime(5) >= 27) || (gettime(6) == 11 && gettime(5) <= 5))
+        goto L_Return;
+
+    if (gettime(6) == 12 && gettime(5) >= 23 && gettime(5) <= 26)
+        goto L_Return;
+
+    callfunc "UnequipLater";
+
+L_Return:
+    return;
+}

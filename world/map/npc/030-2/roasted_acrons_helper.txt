@@ -1,0 +1,82 @@
+// Annual Xmas
+// author: Jenalya, wushin
+
+030-2.gat,89,23,0|script|Verneri|334,
+{
+    callfunc "XmasStates";
+
+    if((@xmas_state >= $@xmas_helpers_start_state) && ($@xmas_time))
+        goto L_XmasMain;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[Verneri]";
+    mes "\"Nothing like the getting past the holiday rush to make you dread next season.\"";
+    goto L_Close;
+
+L_XmasMain:
+    mes "[Verneri]";
+    mes "\"Hm? I'm currently having a break. It's really nice here at the fireplace, isn't it?\"";
+    next;
+    mes "\"Ah, I remember when I was a child we used to roast acorns at the fireplace. We dunked them into Iron Potion and then put them over the fire for a while. That gave a tasty icing.\"";
+    menu
+        "Let's roast some.", -,
+        "Children's stuff...", L_Close;
+
+    mes "[Verneri]";
+    mes "\"Well, if you get some Acorns and Iron Potions, we can do that.\"";
+    mes "\"With one Iron Potion we can ice about " + $@xmas_acorn_amount + " Acorns.\"";
+    next;
+    mes "[Verneri]";
+    mes "\"Do you have everything we need? Shall we start?\"";
+    menu
+        "Sure!", L_Roast,
+        "I need to get the ingredients.", L_Close;
+
+L_Roast:
+    if (countitem("Acorn") < $@xmas_acorn_amount || countitem("IronPotion") < $@xmas_iron_potion_amount)
+        goto L_NoItems;
+
+    getinventorylist;
+    if (@inventorylist_count > 100)
+        goto L_FullInv;
+    delitem "IronPotion", $@xmas_iron_potion_amount;
+    delitem "Acorn", $@xmas_acorn_amount;
+
+    mes "Verneri takes the Iron Potion and the Acorns from you. He pours the potion into some bowl and adds the Acorns.";
+    mes "Then he puts the bowl over the fire, stirring it every now and then. After a while it starts to smell really tasty.";
+    next;
+    mes "[Verneri]";
+    mes "\"Here we are! Let me take one of them, ok?\"";
+    mes "He carefully takes one of the roasted acorns and eats it.";
+    next;
+
+    mes "[Verneri]";
+    mes "\"Ouch, hot. But tasty! Some of them might be burnt, I'll throw those away.\"";
+    set XMASTIME, XMASTIME | $@xmas_helper_bit_acorns;
+    set @karma_bonus, $@xmas_karma_bonus;
+    callfunc "XmasNice";
+    getitem "RoastedAcorn", rand(($@xmas_acorn_amount / 2), $@xmas_acorn_amount);
+    menu
+        "Let's roast some more.", L_Roast,
+        "Thank you.", L_Close;
+
+L_RoastAcornAgain:
+    mes "[Verneri]";
+    mes "\"Hello again. Do you want to roast some more acorns? They're delicious, right? Maybe we should do this every year.\"";
+    menu
+        "Not now.", L_Close,
+        "Yes, I brought the ingredients.", L_Roast;
+
+L_FullInv:
+    mes "\"You need some space to put the roasted acorns.\"";
+    goto L_Close;
+
+L_NoItems:
+    mes "[Verneri]";
+    mes "\"You need to bring at least one Iron Potion and " + $@xmas_acorn_amount + " Acorns.\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}

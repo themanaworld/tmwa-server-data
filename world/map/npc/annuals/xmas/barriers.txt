@@ -1,0 +1,161 @@
+// This file is part of Christmas Event
+// author: Jenalya, Chayenne, cinderweb, wushin
+// please see #XmasConfig
+
+function|script|ThrowOutTheBum|,
+{
+    if((@xmas_thrown_out) && ($@xmas_time))
+        goto L_SideOut;
+    goto L_Return;
+
+L_SideOut:
+    if(@xmas_helper_start_state)
+        goto L_Warp;
+    goto L_Hint;
+
+L_Hint:
+    message strcharinfo(0), "I said get out! We've got no time for your kind here.";
+    mes "[Orum's Homunculus]";
+    mes "\"What are you doing? Come, see me in the caves below!\"";
+    mes "\"I said go north till you reach the snoman. Then head into the cave to the east.\"";
+    warp "030-1",99,55;
+    close;
+
+L_Warp:
+    message strcharinfo(0), "I said get out, We've no time for your kind here.";
+    warp "030-1",99,55;
+    end;
+
+L_Return:
+    return;
+}
+
+// Annual Xmas Boss Fight Door
+030-2.gat,153,21,0|script|#DarkDoor|45,0,0,
+{
+    callfunc "XmasStates";
+
+    if((@xmas_boss_door_state) && ($@xmas_time))
+        goto L_XmasMain;
+    goto L_NotActive;
+
+L_XmasMain:
+    mes "You get the strange sensation that this might go terribly wrong. You had better bring some of your strongest comrades to help you in that case.";
+    mes "Open the warehouse door?";
+    menu
+        "Yes, I feel brave.", L_Open,
+        "No, It's quite nice out here.", L_Close;
+
+L_Open:
+    if ($@XmasBattleStatus) goto L_BattleInProgress;
+    warp "030-4.gat",34,48;
+    goto L_Close;
+
+L_BattleInProgress:
+    mes "You can hear shouts and screams of despair from behind the door. But trying to open it fails.";
+    next;
+    mes "You will have to wait till someone from the inside opens the door again.";
+    goto L_Close;
+
+L_NotActive:
+    message strcharinfo(0), "This door appears locked by magical forces.";
+    end;
+
+L_Close:
+    close;
+}
+
+// Annual Xmas secret passage to a trapdoor in Santa's Inn Basement
+
+030-3.gat,100,49,0|script|SmallCrack#XmasPassage|400,0,1,
+{
+    callfunc "XmasStates";
+
+    if((@xmas_basement_passage) && ($@xmas_time))
+        goto L_XmasMain;
+    goto L_NotActive;
+
+L_NotActive:
+    mes "You don't notice anything special.";
+    goto L_Close;
+
+L_XmasMain:
+    mes "You notice a small creak in the wall, what do you want to do?";
+    next;
+
+L_EnterDialogue:
+    menu
+      "Nothing.", L_Close,
+      "Bang my head against it repeatedly.", L_Tux9th,
+      "Oh, not very much, I do not see anynthing there.", L_Close,
+      "Hit it with my strong fist.", L_Enter;
+
+L_Tux9th:
+   itemheal -20, 0;
+   message strcharinfo(0), "Ouch, that hurt!";
+   setlook LOOK_HAIR_STYLE, rand(20);
+   goto L_Fail;
+
+L_Enter:
+   if (getequipid(equip_hand1) > 0 || getequipid(equip_hand2) > 0) goto L_Sword;
+   if (getequipid(equip_gloves) <= 0) goto L_Gloves;
+   goto L_QueryWarp;
+
+L_Sword:
+   mes "That is not your fist silly,";
+   mes "use your fist, alright?";
+   goto L_Close;
+
+L_Gloves:
+   mes "Wow! Next time you plan to hit a wall,";
+   mes "you had better equip some decent gloves in advance.";
+   itemheal -20, 0;
+   message strcharinfo(0), "Ouch, that hurt!";
+   goto L_QueryWarp;
+
+L_QueryWarp:
+   mes "You gaze into a black hole, do you want to enter?";
+   mes " ";
+   menu
+      "Yes", L_Warp,
+      "No", L_Close;
+   goto L_Close;
+
+L_Warp:
+   warp "030-2.gat",47,44;
+   goto L_Close;
+
+L_Fail:
+   mes "Seems like that won't work out as you planned.";
+   goto L_Close;
+
+L_Close:
+    close;
+}
+
+// Annual Xmas Escape Hatch
+030-2.gat,48,44,0|script|#BasementDoor|45,0,0,
+{
+    callfunc "XmasStates";
+
+    if((@xmas_basement_passage) && ($@xmas_time))
+        goto L_XmasMain;
+    goto L_NotActive;
+
+L_XmasMain:
+    mes "Descend into the caves?";
+    menu
+        "Yes.", L_Open,
+        "No.", L_Close;
+
+L_Open:
+    warp "030-3.gat",100,50;
+    goto L_Close;
+
+L_NotActive:
+    message strcharinfo(0), "This door appears locked by magical forces.";
+    end;
+
+L_Close:
+    close;
+}

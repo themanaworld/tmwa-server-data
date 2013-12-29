@@ -1,0 +1,81 @@
+// Author: Jenalya
+
+017-1.gat,95,42,0|script|#FlowerPentagram1|400,
+{
+    if (OrumQuest >= 31) goto L_PlacedFifthFlower;
+
+    if (OrumQuest > 17) goto L_PlacedFirstFlower;
+    if (OrumQuest == 17) goto L_FirstFlower;
+
+    message strcharinfo(0), "Something is odd about this place.";
+    end;
+
+L_FirstFlower:
+    mes "This looks like the place Orum described.";
+    menu
+        "Place the flower.", -,
+        "Leave.", L_Close;
+
+    if (isin("017-1.gat", 94, 41, 96, 43))
+        goto L_Place;
+
+    mes "You're too far away.";
+    goto L_Close;
+
+L_Place:
+    set @localMonsterCount,
+        mobcount("017-1.gat", "#FlowerPentagram1::OnSquirrelDeath") +
+        mobcount("017-1.gat", "#FlowerPentagram1::OnScorpionDeath") +
+        2; // the mobcount function has an offset of -1, so we add 2 to have the actual amount of monsters
+    if (@localMonsterCount > 2)
+        goto L_MonstersAlive;
+
+    if (countitem("OrangeSummonFlower") < 1)
+        goto L_NoFlower;
+    delitem "OrangeSummonFlower", 1;
+    mes "You carefully place the magic flower on the marked spot. You feel some tension in the air around you.";
+    set OrumQuest, 18;
+    close2;
+    areamonster "017-1.gat", 91, 37, 101, 46, "", 1105, 2, "#FlowerPentagram1::OnSquirrelDeath";
+    areamonster "017-1.gat", 91, 37, 101, 46, "", 1003, 3, "#FlowerPentagram1::OnScorpionDeath";
+    set @value, 15;
+    callfunc "QuestSagathaAnnoy";
+    set @value, 0;
+    end;
+
+OnSquirrelDeath:
+    set @mobID, 1105;
+    callfunc "MobPoints";
+    end;
+
+OnScorpionDeath:
+    set @mobID, 1003;
+    callfunc "MobPoints";
+    end;
+
+L_MonstersAlive:
+    mes "As you get closer to the place, you feel an unnerving presence.";
+    mes "This place has recently been used to summon something! And the beings are still nearby!";
+    next;
+    mes "You should get rid of them before attempting the summoning yourself.";
+    goto L_Close;
+
+L_NoFlower:
+    mes "You don't have the flower with you. Where did you put it?";
+    mes "If you can't find it, you should talk to Orum again.";
+    goto L_Close;
+
+L_PlacedFirstFlower:
+    mes "You placed the first of Orum's magical flowers on this spot.";
+    mes "You can still feel the magical power shimmering around this place, waiting to be unleashed.";
+    goto L_Close;
+
+L_PlacedFifthFlower:
+    mes "This is where you placed the first of Orum's magical flowers.";
+    mes "However, now that the summoning spell has been cast, everything is back to normal here.";
+    goto L_Close;
+
+L_Close:
+    set @localMonsterCount, 0;
+    close;
+}

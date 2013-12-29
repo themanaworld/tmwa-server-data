@@ -1,3 +1,72 @@
 //
 
-012-1.gat,36,99,0|shop|Blossom|163,RedRose :-1,PinkRose :-1,YellowRose :-1,WhiteRose :-1,OrangeRose :-1,DarkRedRose :-1,RedTulip :-1,PinkTulip :-1,YellowTulip :-1,WhiteTulip :-1,OrangeTulip :-1
+012-1.gat,36,99,0|shop|#FlowerShop|127,RedRose :-1,PinkRose :-1,YellowRose :-1,WhiteRose :-1,OrangeRose :-1,DarkRedRose :-1,RedTulip :-1,PinkTulip :-1,YellowTulip :-1,WhiteTulip :-1,OrangeTulip :-1
+
+012-1.gat,36,99,0|script|Blossom|163,
+{
+    mes "[Blossom]";
+    mes "\"Hello, would you like to buy some flowers?\"";
+    menu
+        "Sure.", L_Shop,
+        "Not right now.", L_Close,
+        "Can I trade this Rose Hat for a differently colored one?", L_RoseHat;
+
+L_Shop:
+    shop "#FlowerShop";
+
+L_RoseHat:
+    set @base_id, 897;
+    mes "[Blossom]";
+    mes "\"Certainly, which color do you have?\"";
+    menu
+        "A red one.", -,
+        "A white one.", -,
+        "A pink one.", -,
+        "A yellow one.", -,
+        "An orange one.", -,
+        "A blue one.", -;
+    set @have_id, @base_id + @menu - 1;
+
+    mes "[Blossom]";
+    mes "\"And which color would you like?\"";
+    menu
+        "A red one.", -,
+        "A white one.", -,
+        "A pink one.", -,
+        "A yellow one.", -,
+        "An orange one.", -,
+        "A blue one.", -;
+    set @receive_id, @base_id + @menu - 1;
+
+    if (@have_id == @receive_id)
+        goto L_SameColor;
+    if (countitem(@have_id) < 1)
+        goto L_NoItem;
+    delitem @have_id, 1;
+    getitem @receive_id, 1;
+    mes "[Blossom]";
+    mes "\"Here it is.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Blossom]";
+    mes "\"Oh, you don't have a Rose Hat in that color.";
+    mes "Did you mean a different color?\"";
+    menu
+        "Yes, I meant a different color.", L_RoseHat,
+        "No, I changed my mind.", L_Close;
+
+L_SameColor:
+    mes "[Blossom]";
+    mes "\"Oh, you already have a hat in that color.";
+    mes "Did you want something else?\"";
+    menu
+        "Yes, let me pick a different color.", L_RoseHat,
+        "No, I changed my mind.", L_Close;
+
+L_Close:
+    set @base_id, 0;
+    set @have_id, 0;
+    set @receive_id, 0;
+    close;
+}

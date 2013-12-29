@@ -3,48 +3,50 @@ obscure_chance = 95
 min_casttime = 200
 
 # Schools of magic
-CONST MAGIC	= 340
-CONST LIFE	= 341
-CONST WAR 	= 342
-CONST TRANSMUTE	= 343
-CONST NATURE	= 344
-CONST ASTRAL	= 345
+CONST MAGIC     = 340
+CONST LIFE      = 341
+CONST WAR       = 342
+CONST TRANSMUTE = 343
+CONST NATURE    = 344
+CONST ASTRAL    = 345
+CONST DARK      = 346
 
 # Elements
-CONST ELT_NEUTRAL	= 0
-CONST ELT_WATER		= 1
-CONST ELT_EARTH		= 2
-CONST ELT_FIRE		= 3
-CONST ELT_WIND		= 4
-CONST ELT_POISON	= 5
-CONST ELT_SHADOW	= 6
-CONST ELT_HOLY		= 7
-CONST ELT_GHOST		= 8
-CONST ELT_UNDEAD	= 9
+CONST ELT_NEUTRAL       = 0
+CONST ELT_WATER         = 1
+CONST ELT_EARTH         = 2
+CONST ELT_FIRE          = 3
+CONST ELT_WIND          = 4
+CONST ELT_POISON        = 5
+CONST ELT_SHADOW        = 6
+CONST ELT_HOLY          = 7
+CONST ELT_GHOST         = 8
+CONST ELT_UNDEAD        = 9
 
 # Status effects
-CONST SC_POISON			= 132
-CONST SC_SHEARED		= 194 # This is the same as SC_HIDE, since mobs can't hide and shearing is only used for mobs.  Feel free to fix!
-CONST SC_HIDE			= 194
-CONST SC_HALT_REGENERATE	= 195
-CONST SC_FLYING_BACKPACK	= 196
-CONST SC_MBARRIER		= 197
-CONST SC_HASTE			= 198
-CONST SC_PHYS_SHIELD		= 199
+CONST SC_POISON                 = 132
+CONST SC_SHEARED                = 194 # This is the same as SC_HIDE, since mobs can't hide and shearing is only used for mobs.  Feel free to fix!
+CONST SC_HIDE                   = 194
+CONST SC_HALT_REGENERATE        = 195
+CONST SC_FLYING_BACKPACK        = 196
+CONST SC_MBARRIER               = 197
+CONST SC_HASTE                  = 198
+CONST SC_PHYS_SHIELD            = 199
 
-CONST SO_GMINVISIBLE		= 4096
+CONST SO_GMINVISIBLE            = 4096
 
 # Special effects
-CONST SFX_DEFAULT	= 10
-CONST SFX_SUMMON_START	= 21
-CONST SFX_SUMMON_FIRE	= 22
-CONST SFX_TELEPORT	= 24
-CONST SFX_RAIN		= 25
-CONST SFX_HIT		= 25
-CONST SFX_ARROW_HAIL	= 27
-CONST SFX_BARRIER	= 10
-CONST SFX_UNBARRIER	= 10
-CONST SFX_HEAL		= 3
+CONST SFX_DEFAULT       = 10
+CONST SFX_SUMMON_START  = 21
+CONST SFX_SUMMON_FIRE   = 22
+CONST SFX_TELEPORT      = 24
+CONST SFX_RAIN          = 25
+CONST SFX_HIT           = 25
+CONST SFX_ARROW_HAIL    = 27
+CONST SFX_BARRIER       = 10
+CONST SFX_UNBARRIER     = 10
+CONST SFX_HEAL          = 3
+CONST SFX_LIGHTNING     = 18
 
 CONST MAX_RAIN_SPELL_RADIUS = 15
 
@@ -63,8 +65,8 @@ CONST SCRIPT_HEALSPELL_MASK  = 0xff
 CONST SCRIPT_HEALSPELL_SHIFT = 24
 CONST DEBUG = 0
 
-CONST ATTACK_ICON_GENERIC	= 2000
-CONST ATTACK_ICON_SHEARING	= 2001
+CONST ATTACK_ICON_GENERIC       = 2000
+CONST ATTACK_ICON_SHEARING      = 2001
 
 # Default sfx on caster
 PROCEDURE default_effect() =
@@ -72,6 +74,9 @@ PROCEDURE default_effect() =
 
 PROCEDURE sfx_generic(target) =
           sfx(target, SFX_DEFAULT, 0);
+
+PROCEDURE sfx_lightning(target) =
+          sfx(target, SFX_LIGHTNING, 0);
 
 PROCEDURE set_var(name, mask, shift, value) =
           set_script_variable(caster, name, script_int(caster, name) & (neg (mask << shift)) | ((value & mask) << shift));
@@ -209,11 +214,20 @@ PROCEDURE summon_spell(mob_id, count, delay, lifetime, control_level) =
                 if_then_else(skill(caster, ASTRAL) >= control_level, 2, 1), # pets when level is high enough
                 count, lifetime);
 
+PROCEDURE summon_dark_spell(mob_id, count, delay, lifetime, control_level) =
+          CALL default_effect();
+          sfx(location, SFX_SUMMON_START, 0);
+          WAIT delay;
+          sfx(location, SFX_SUMMON_FIRE, 0);
+          spawn(rbox(location, 2), caster, mob_id,
+                if_then_else(skill(caster, DARK) >= control_level, 2, 1), # pets when level is high enough
+                count, lifetime);
+
 PROCEDURE abort_on_area_shield(pos) =
-	  IF (is_exterior(pos) = 1 && (map_nr(pos) = 1 # Tulimshar
+          IF (is_exterior(pos) = 1 && (map_nr(pos) = 1 # Tulimshar
                                      ||map_nr(pos) = 9 # Hurnscald
                                      ||map_nr(pos) = 20)) # Nivalis
-	  THEN (message(caster, "A powerful magic drains your spell just as it is beginning to take shape!");
+          THEN (message(caster, "A powerful magic drains your spell just as it is beginning to take shape!");
                 ABORT;)
 
 
@@ -332,6 +346,8 @@ SPELL lesser-heal (target : STRING) : "#L00" =
                             THEN ABORT;)
                     CALL gain_heal_xp(min(200, max_hp(target) - hp(target)), 1, 2, 2); # report half values for non-instaheal
                     CALL heal(target, 200);
+                        IF skill(caster, DARK) > 1
+                        THEN status_change(caster, SC_HALT_REGENERATE, 0, 0, 0, 0, 2000);
                     CALL gain_xp(1, 2);
 
 
@@ -381,7 +397,7 @@ SPELL aggravate : "#N00" =
                     CALL default_effect();
                     FOREACH MOB target IN rbox(location(caster), 2 + spellpower / 50) DO
                             IF line_of_sight(location(caster), location(target))
-			    THEN (CALL sfx_generic(target);
+                            THEN (CALL sfx_generic(target);
                                   aggravate(target, 0, caster);)
 
 SPELL grow-mauve : "#N01" =
@@ -570,7 +586,7 @@ SPELL lay-on-hands (target : STRING) : "#L10" =
                                 && not (is_equipped(pc(target), "MagicGMTopHat"))
                               ))
           => EFFECT CALL adjust_spellpower(school);
-		    IF (not (target)) THEN ABORT;
+                    IF (not (target)) THEN ABORT;
                     IF failed(pc(target))
                       THEN (IF ((target = "mouboo" || target = "Mouboo")
                                  && (rdistance(location(caster), location(npc("Mouboo"))) < 2 + (spellpower / 100)))
@@ -595,7 +611,14 @@ SPELL lay-on-hands (target : STRING) : "#L10" =
                     )
                     CALL gain_heal_xp(power, 1, 1, 3);
                     CALL quickheal(target, power);
-                    status_change(caster, SC_HALT_REGENERATE, 0, 0, 0, 0, 10000);
+                    t = 5000; # with dark magic skill you pay 1/20 of max hp but the regenerate cooldown is cut in half
+                        school = DARK;
+                        h = (max_hp(caster) / 20) * -1;
+                        IF skill(caster, school) > level
+                        THEN itemheal(caster, h, 0);
+                        IF skill(caster, school) > level
+                        THEN t = 10000;
+                    status_change(caster, SC_HALT_REGENERATE, 0, 0, 0, 0, t);
                     CALL gain_xp(min(4, payment / 100), 18);
 
 SPELL lightning-strike : "#W10" =
@@ -666,7 +689,7 @@ LOCAL SPELL arrow-hail : "#W11" =
                         sfx(location, SFX_ARROW_HAIL, 0);
                         done = 0;
                         FOREACH TARGET target IN rbox(location, 0) DO (
-                      	        injure(caster, target, damage + random(damage_bonus) + random(damage_bonus), 0);
+                                injure(caster, target, damage + random(damage_bonus) + random(damage_bonus), 0);
                                 done = 1;
                                 BREAK;
                         )
@@ -690,6 +713,121 @@ SPELL magic-knuckles : "#W12" =
                     str = str(caster);
                     CALL install_melee_spell(10 + spellpower / 10, 1300, 34);
              ATTRIGGER CALL melee_damage(target, 30, 5 + (str * 2));
+
+#SPELL death-wave : "#D10" =
+#      LET level = 1
+#          school = DARK
+#      IN (MANA 75, CASTTIME 10000,
+#          REQUIRE skill(caster, MAGIC) > level,
+#          REQUIRE skill(caster, school) > level,
+#          REQUIRE (script_int(caster, "OrumQuest") > 50),
+#          COMPONENTS [5 * 704])
+#      => EFFECT CALL adjust_spellpower(school);
+#                CALL default_effect();
+#                CALL gain_xp(3, 30);
+#                sfx(location, SFX_SUMMON_START, 0);
+#                WAIT 500;
+#                sfx(location, SFX_SUMMON_FIRE, 0);
+#                          IF hp(caster) < 220
+#                          THEN itemheal(caster, -220, 0);
+#                        h = (hp(caster) / 2) * -1;
+#                        itemheal(caster, h, 0);
+#                        d = level(caster);
+#                        damage = spellpower;
+#                        damage_bonus = sqrt(spellpower) * 2;
+#                        FOREACH MOB target IN rbox(location(caster), d / 20) DO
+#                                (CALL elt_damage(target, damage, damage_bonus, ELT_HOLY, ELT_SHADOW, 15 + random(5));)
+
+LOCAL SPELL summon-snakes : "#D11" =
+      LET level = 1
+          school = DARK
+      IN (MANA 40, CASTTIME 15000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          REQUIRE (script_int(caster, "OrumQuest") > 40),
+          COMPONENTS ["DarkCrystal", "SnakeEgg"])
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                CALL gain_xp(3, 31);
+                CALL summon_dark_spell(1010, 1 + spellpower / 300, 4000 - (spellpower * 9), spellpower * 80, 2);
+
+#LOCAL SPELL summon-black-scorpions : "#D12" =
+#      LET level = 1
+#        school = DARK
+#      IN (MANA 40, CASTTIME 15000,
+#          REQUIRE skill(caster, MAGIC) > level,
+#          REQUIRE skill(caster, school) > level,
+#          REQUIRE (script_int(caster, "OrumQuest") > 50),
+#          COMPONENTS ["Root", "BlackScorpionStinger"])
+#      => EFFECT CALL adjust_spellpower(school);
+#                CALL default_effect();
+#                CALL gain_xp(3, 32);
+#                CALL summon_dark_spell(1009, 1 + spellpower / 300, 4000 - (spellpower * 9), spellpower * 80, 2);
+
+#LOCAL SPELL summon-skeletons : "#D13" = # only release this if content has been adjusted or mob has been replaced with a nerfed one
+#      LET level = 1
+#        school = DARK
+#      IN (MANA 50, CASTTIME 17000,
+#          REQUIRE skill(caster, MAGIC) > level,
+#          REQUIRE skill(caster, school) > level,
+#          REQUIRE (script_int(caster, "OrumQuest") > 50),
+#          COMPONENTS ["Bone", "DarkCrystal"])
+#      => EFFECT CALL adjust_spellpower(school);
+#                CALL default_effect();
+#                CALL gain_xp(3, 33);
+#                CALL summon_dark_spell(1043, spellpower / 325, 4000 - (spellpower * 9), spellpower * 70, 2);
+
+#SPELL shadow-strike : "#D14" =
+#      LET level = 1
+#        school = DARK
+#      IN (MANA 20, CASTTIME 1300,
+#          REQUIRE skill(caster, MAGIC) > level,
+#          REQUIRE skill(caster, DARK) > 0,
+#          REQUIRE (script_int(caster, "OrumQuest") > 50),
+#          (REQUIRE skill(caster, school) > 2 OR COMPONENTS ["DarkCrystal"]))
+#      => EFFECT CALL adjust_spellpower(school);
+#                CALL default_effect();
+#                damage = spellpower / 2;
+#                damage_bonus = 1 + (spellpower - 150);
+#                CALL install_attack_spell(1 + spellpower / 100, 2800, 8, 31);
+#                  IF hp(caster) > 170
+#                  THEN itemheal(caster, -160, 0);
+#                CALL gain_xp(3, 34);
+#                ATTRIGGER CALL attack_check(target);
+#                CALL elt_damage (target, damage, damage_bonus, ELT_HOLY, ELT_SHADOW, 15 + random(5));
+
+SPELL toxic-dart : "#D15" =
+      LET level = 1
+        school = DARK
+      IN (MANA 15, CASTTIME 500,
+          REQUIRE (script_int(caster, "OrumQuest") > 37),
+          REQUIRE skill(caster, MAGIC) > level,
+          (REQUIRE skill(caster, school) > 2 OR COMPONENTS [2 * "Root"]))
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                damage = 5 * sqrt(spellpower);
+                damage_bonus = 5 + level(caster) / 3;
+                CALL install_attack_spell(3 + spellpower / 75,
+                                            1200,
+                                            4, 31);
+                CALL gain_xp(3, 35);
+                ATTRIGGER CALL attack_check(target);
+                CALL elt_damage (target, damage, damage_bonus, ELT_NEUTRAL, ELT_POISON, 15);
+                    IF (is_pc(target) && caster <> target)
+                    THEN status_change(target, SC_POISON, 5 + max(15, spellpower / 15), 0, 0, 0, 5000 + (spellpower * 1200));
+
+LOCAL SPELL summon-wickedmushroom : "#D16" =
+      LET level = 1
+        school = DARK
+      IN (MANA 35, CASTTIME 15000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE (script_int(caster, "OrumQuest") > 36),
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["SmallMushroom", "DarkCrystal"])
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                CALL gain_xp(3, 36);
+                CALL summon_dark_spell(1106, 1 + spellpower / 250 , 4000 - (spellpower * 9), spellpower * 80, 2);
 
 SPELL flying-backpack (target : PC) : "#N10" =
       LET level = 1
@@ -738,7 +876,9 @@ SPELL happy-curse (target : PC) : "#N12" =
           REQUIRE rdistance(location(target), location(caster)) < 1 + spellpower / 100)
       => EFFECT CALL adjust_spellpower(school);
                 CALL default_effect();
-                FOR i = 0 TO (spellpower / 10) DO (emote(target, 3); WAIT 500;);
+                    IF (skill(caster, DARK) > 1)
+                    THEN FOR i = 0 TO (spellpower / 10) DO (emote(target, 5); WAIT 500;)
+                    ELSE FOR i = 0 TO (spellpower / 10) DO (emote(target, 3); WAIT 500;);
                 CALL gain_xp(1, 23);
 
 LOCAL SPELL rain : "#N13" =
@@ -816,16 +956,17 @@ SPELL shear : "#N14" =
                          IF running_status_update(target, SC_SHEARED)
                          THEN ABORT;
                          status_change(target, SC_SHEARED, 0, 0, 0, 0, 600000); # 10 minutes
-                         CALL shear-drop("Fluffy", "Fluffy",			"WhiteFur", 300);
-                         CALL shear-drop("EasterFluffy", "Easter Fluffy",	"WhiteFur", 300);
-                         CALL shear-drop("SpikyMushroom", "Spiky Mushroom",	"HardSpike", 250);
-                         CALL shear-drop("Mouboo", "Mouboo",			"CottonCloth", 175);
-                         CALL shear-drop("Cobalt", "CobaltPlant",		"CobaltHerb", 700);
-                         CALL shear-drop("Alizarin", "AlizarinPlant",		"AlizarinHerb", 700);
-                         CALL shear-drop("Gamboge", "GambogePlant",		"GambogeHerb", 700);
-                         CALL shear-drop("Mauve", "MauvePlant",			"MauveHerb", 700);
-                         CALL shear-drop("SilkWorm", "Silkworm",		"SilkCocoon", 300);
-                         IF ((name = "Fluffy" || name = "Mouboo") && random(2))
+                         CALL shear-drop("Fluffy", "Fluffy",                    "WhiteFur", 300);
+                         CALL shear-drop("EasterFluffy", "Easter Fluffy",       "WhiteFur", 300);
+                         CALL shear-drop("SpikyMushroom", "Spiky Mushroom",     "HardSpike", 250);
+                         CALL shear-drop("Mouboo", "Mouboo",                    "CottonCloth", 175);
+                         CALL shear-drop("Cobalt", "CobaltPlant",               "CobaltHerb", 700);
+                         CALL shear-drop("Alizarin", "AlizarinPlant",           "AlizarinHerb", 700);
+                         CALL shear-drop("Gamboge", "GambogePlant",             "GambogeHerb", 700);
+                         CALL shear-drop("Mauve", "MauvePlant",                 "MauveHerb", 700);
+                         CALL shear-drop("SilkWorm", "Silkworm",                "SilkCocoon", 300);
+                         CALL shear-drop("Pinkie", "Pinkie",                    "PinkAntenna", 180);
+                         IF ((name = "Fluffy" || name = "Mouboo" || name = "Pinkie") && random(2))
                          THEN { set @value, 1; callfunc "QuestSagathaHappy"; };
                     )
 
@@ -873,8 +1014,31 @@ LOCAL SPELL summon-fluffies : "#A12" =
           => EFFECT CALL adjust_spellpower(school);
                     CALL default_effect();
                     CALL gain_xp(1, 27);
-                    CALL summon_spell(1020, 1 + spellpower / 170 + spellpower / 430, 5000 - (spellpower * 8), spellpower * 350, 3);
+                    CALL summon_spell(1020, 1 + spellpower / 170 + spellpower / 430, 5000 - (spellpower * 8), spellpower * 350, 2);
 
+LOCAL SPELL summon-mouboo : "#A14" =
+      LET level = 1
+        school = ASTRAL
+      IN (MANA 35, CASTTIME 20000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["MoubooFigurine", "Root"])
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                CALL gain_xp(2, 37);
+                CALL summon_spell(1028, 1 + spellpower / 270 , 4000 - (spellpower * 9), spellpower * 100, 2);
+
+LOCAL SPELL summon-pinkie : "#A15" =
+      LET level = 1
+        school = ASTRAL
+      IN (MANA 35, CASTTIME 20000,
+          REQUIRE skill(caster, MAGIC) > level,
+          REQUIRE skill(caster, school) > level,
+          COMPONENTS ["PinkAntenna", "Root"])
+      => EFFECT CALL adjust_spellpower(school);
+                CALL default_effect();
+                CALL gain_xp(2, 38);
+                CALL summon_spell(1018, 1 + spellpower / 120, 5000 - (spellpower * 9), spellpower * 150, 2);
 
 SPELL detect-players : "#G10" =
       LET level = 1
@@ -898,20 +1062,6 @@ SPELL detect-players : "#G10" =
                     IF message = ""
                     THEN message(caster, "You sense no-one else nearby.");
                     ELSE message(caster, "You sense the following: " + message);
-
-SPELL reveal : "#G11" =
-      LET level = 1
-          school = MAGIC
-      IN (MANA 18, CASTTIME 3000,
-          REQUIRE skill(caster, MAGIC) > level,
-          REQUIRE skill(caster, school) > level)
-          => EFFECT CALL adjust_spellpower(school);
-                    CALL default_effect();
-             FOREACH PC target IN rbox(location(caster), 1 + spellpower / 100)
-             DO IF has_shroud(target) && level(caster) * 2 > level(target)
-                THEN (unshroud(target);
-                      sfx(target, SFX_DEFAULT, 500);)
-
 
 SPELL enchant-lifestone : "#G12" =
       LET level = 1
@@ -1037,7 +1187,7 @@ SPELL summon-partner : "#A23" =
           REQUIRE skill(caster, school) > level,
           REQUIRE is_married(caster),
           REQUIRE is_equipped(caster, "WeddingRing"))
-	=> EFFECT CALL adjust_spellpower(school);
+        => EFFECT CALL adjust_spellpower(school);
                   CALL default_effect();
                   IF (failed (partner (caster)))
                   THEN message (caster, "You call out for your partner, but there is no response.");
@@ -1068,7 +1218,7 @@ SPELL shroud : "#N40" =
       IN (MANA 40, CASTTIME 400,
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level)
-	=> EFFECT CALL default_effect();
+        => EFFECT CALL default_effect();
                   shroud(caster, 0x04);
 
 SPELL teleport (destination : STRING) : "#A40" =
@@ -1079,7 +1229,7 @@ SPELL teleport (destination : STRING) : "#A40" =
           # CATALYST ["TeleportCrystal"],
           REQUIRE skill(caster, MAGIC) > level,
           REQUIRE skill(caster, school) > level)
-	=> EFFECT CALL default_effect();
+        => EFFECT CALL default_effect();
                   WAIT 1000 + (200000 / (spellpower + 10));
                   sfx(location(caster), SFX_TELEPORT, 200);
                   warp(caster, random_location(anchor(destination)));
@@ -1164,32 +1314,32 @@ PROCEDURE debug_mod(name, delta) =
           ELSE message(caster, "Unknown");
 
 SPELL debug-up1 (name : STRING) : "debug+1" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 1);
 
 SPELL debug-down1 (name : STRING) : "debug-1" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 0 - 1);
 
 SPELL debug-up16 (name : STRING) : "debug+16" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 16);
 
 SPELL debug-down16 (name : STRING) : "debug-16" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 0 - 16);
 
 SPELL debug-up256 (name : STRING) : "debug+256" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 256);
 
 SPELL debug-down256 (name : STRING) : "debug-256" =
-	REQUIRE DEBUG
+        REQUIRE DEBUG
         => EFFECT CALL debug_mod(name, 0 - 256);
 
 SPELL debug-reset : "debug-reset" =
       REQUIRE DEBUG
-	=> EFFECT set_script_variable(caster, "QUEST_MAGIC", 0);
+        => EFFECT set_script_variable(caster, "QUEST_MAGIC", 0);
                   set_script_variable(caster, "QUEST_MAGIC2", 0);
                   set_script_variable(caster, "MAGIC_FLAGS", 0);
                   set_script_variable(caster, "MAGIC_EXP", 0);
@@ -1294,7 +1444,7 @@ NONMAGIC SILENT SPELL marriage (target : PC) : "marry" =
 LOCAL SPELL mouboo-groan : "#g" =
       (MANA 1,
        REQUIRE name_of(caster) = "MOUBOOTAUR") =>
-      	EFFECT FOREACH PC p IN rbox(location(caster), 200) DO
+        EFFECT FOREACH PC p IN rbox(location(caster), 200) DO
                distance = rdistance(location(caster), location(p));
                IF (distance < 15)
                THEN message(p, "The moubootaur's groaning rings in your ears!");
@@ -1306,9 +1456,9 @@ LOCAL SPELL mouboo-groan : "#g" =
 LOCAL SPELL mouboo-smell : "#s" =
       (MANA 1,
        REQUIRE name_of(caster) = "MOUBOOTAUR") =>
-      	EFFECT WAIT 30000;
+        EFFECT WAIT 30000;
                FOREACH PC p IN rbox(location(caster), 30) DO
-               		message(p, "You notice a strange smell all around you.");
+                        message(p, "You notice a strange smell all around you.");
 
 
 CONST E10_FLAG_USED_FREE_WARP_SHIFT = 17
@@ -1481,7 +1631,7 @@ NONMAGIC SILENT SPELL world-shift : "#S00" =
         (map_nr(location(caster)) != 5698) # Do not allow if player is in botcheck area
         )
      => ((REQUIRE rdistance(location(caster), @("028-1.gat", 69, 70)) < 5) =>
-     	         EFFECT sfx(location(caster), SFX_TELEPORT, 200);
+                 EFFECT sfx(location(caster), SFX_TELEPORT, 200);
                         WAIT 8000;
                         { savepoint "009-1", 52, 39; };
                         warp(caster, @("009-1.gat", 55, 37));
