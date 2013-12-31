@@ -112,7 +112,6 @@ L_StartBadHard:
     goto L_Start;
 
 L_Start:
-    set $@XmasBattleStatusClone, $@XmasBattleStatus;
     mes "You struggle a little with your task, since the mana battery doesn't seem to fit in as smooth as you expected it.";
     next;
     mes "W00t!";
@@ -122,6 +121,7 @@ L_Start:
     mes "it seems like this will not turn out as planned, Look this Guard of Honour is going crazy!";
     next;
     npctalk "The Guards are out of control!";
+    set $@XmasBattleStatusClone, $@XmasBattleStatus;
     set $@XmasBossRound, 0;
     set $@XmasBossPlayerCount, getmapusers("030-4.gat");
     areamonster "030-4.gat", 20, 21, 40, 40, "", 1114, 1, "AniManOMat::OnGuardDeath";
@@ -213,7 +213,7 @@ L_NextWave:
     //Obliatory Guard Of Honour in the Southern Hallway
     areamonster "030-4.gat", 30, 43, 39, 49, "", 1114, $@GuardAmount, "AniManOMat::OnGuardDeath";
     //CopperSlimes, I love Copper Slimes anywhere anytime
-    areamonster "030-4.gat", 20, 21, 49, 49, "", 1098, rand(2,7), "AniManOMat::All1";
+    areamonster "030-4.gat", 20, 21, 49, 49, "", 1098, rand(2,7), "AniManOMat::OnGuardDeath";
     //IceSkulls for hard mode in room 3 and 4
     if ($@XmasBattleStatus == 2 || $@XmasBattleStatus == 4)
         areamonster "030-4.gat", 20, 32, 28, 39, "", 1085, $@SkullAmount / 2, "AniManOMat::OnGuardDeath";
@@ -250,9 +250,6 @@ L_NextWave:
 OnTick:
     if (isdead()) end;
     set $@XmasBossPlayerCount, $@XmasBossPlayerCount + 1;
-    end;
-
-OnAll1:
     end;
 
 OnGuardDeath:
@@ -313,7 +310,23 @@ L_EndNice:
     callsub S_ClearVariables;
     end;
 
+OnCommandChamberReset:
+    areatimer "030-4.gat", 0, 0, 50, 50, 10, "AniManOMat::OnReward";
+    set $@XmasBattleStatus, 0;
+    set $@XmasBossPlayerCount, 0;
+    set $@XmasBossRound, 0;
+    set $@BombTimer, 0;
+    set $@GuardAmount, 0;
+    set $@SkullAmount, 0;
+    killmonster "030-4.gat", "AniManOMat::OnGuardDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    goto L_Restart;
+
 OnInit:
+    goto L_Restart;
+
+L_Restart:
     set $@XmasBattleStatus, 0;
     setarray $@XmasBossMes$,
     "", // unused
