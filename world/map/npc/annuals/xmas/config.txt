@@ -268,10 +268,15 @@ L_Main:
     if($@xmas_debug == $@xmas_reward_time)
         goto L_RewardTime;
 
-    if((gettime(6) == $@xmas_reward_start_month && gettime(5) >= $@xmas_reward_start_day)
-        || (gettime(6) == $@xmas_end_month && gettime(5) <= $@xmas_reward_end_day))
+    if((gettime(6) == $@xmas_reward_start_month && gettime(5) >= $@xmas_reward_start_day 
+            && (gettime(5) <= $@xmas_reward_end_day && $@xmas_reward_start_month == $@xmas_end_month
+                || !($@xmas_reward_start_month == $@xmas_end_month)))
+        || (gettime(6) == $@xmas_end_month && gettime(5) <= $@xmas_reward_end_day 
+            && (gettime(5) >= $@xmas_reward_start_day && $@xmas_reward_start_month == $@xmas_end_month 
+                || !($@xmas_reward_start_month == $@xmas_end_month)))
+        || (gettime(6) < $@xmas_end_month && gettime(6) > $@xmas_reward_start_month))
         goto L_RewardTime;
-    if(gettime(6) == $@xmas_start_month)
+    if((gettime(6) >= $@xmas_start_month) || (gettime(6) <= $@xmas_end_month && gettime(5) <= $@xmas_reward_start_day))
         goto L_EventTime;
 
 L_NoEventTime:
