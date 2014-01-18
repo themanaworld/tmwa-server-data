@@ -18,7 +18,6 @@
 // player gets state set to finished for winning the battle once and mode bit set on easy/hard accordingly
 // every player *is* allowed to restart the quest ONCE himself if he hasnt started it himself yet
 
-//TODO Balance mobs for level 50/candor (with assistance, i dont care if a speed archer cant solo that thing)
 //TODO Add an icreasing particle effect to the chest, move it half a tile right
 // and make it one of those lab tables from the slime quests
 
@@ -85,7 +84,7 @@ L_BattleGood:
 L_StartGood:
     if ($@XmasBattleStatus)
         goto L_BattleInProgress;
-    set $@XmasBattleStatus, 1;
+    set @xmas_battle_status, 1;
     goto L_Start;
     goto L_Close;
 
@@ -95,13 +94,13 @@ L_StartGoodHard:
     callsub S_CheckHardReq;
     delitem $@xmas_boss_req$[ @xmas_battle_side ], $@xmas_boss_amount[ @xmas_battle_side ];
     mes "You pour a handfull of " + $@xmas_boss_req$[@xmas_battle_side] + " over the Mana Battery.";
-    set $@XmasBattleStatus, 2;
+    set @xmas_battle_status, 2;
     goto L_Start;
 
 L_StartBad:
     if ($@XmasBattleStatus)
         goto L_BattleInProgress;
-    set $@XmasBattleStatus, 3;
+    set @xmas_battle_status, 3;
     goto L_Start;
 
 L_StartBadHard:
@@ -110,7 +109,7 @@ L_StartBadHard:
     callsub S_CheckHardReq;
     delitem $@xmas_boss_req$[ @xmas_battle_side ], $@xmas_boss_amount[ @xmas_battle_side ];
     mes "You pour a handfull of " + $@xmas_boss_req$[@xmas_battle_side] + " over the Mana Battery.";
-    set $@XmasBattleStatus, 4;
+    set @xmas_battle_status, 4;
     goto L_Start;
 
 L_Start:
@@ -123,6 +122,9 @@ L_Start:
     mes "it seems like this will not turn out as planned, Look this Guard of Honour is going crazy!";
     next;
     npctalk "The Guards are out of control!";
+    if ($@XmasBattleStatus)
+        goto L_BattleAlreadyStarted;
+    set $@XmasBattleStatus, @xmas_battle_status;
     set $@XmasBattleStatusClone, $@XmasBattleStatus;
     set $@XmasBossRound, 0;
     set $@XmasBossPlayerCount, getmapusers("030-4.gat");
@@ -133,8 +135,8 @@ L_Start:
 L_ThrowOut:
     // if the player didnt get a bomb yet
     mes "This looks dangerous. Come back when you are prepared";
-    warp "030-2",151,25;
     next;
+    warp "030-2",151,25;
     goto L_Close;
 
 L_Coward:
@@ -160,7 +162,7 @@ L_Repeat:
         goto L_BattleInProgress;
     callsub S_CheckHardReq;
     delitem $@xmas_boss_req$[ @xmas_battle_side ], $@xmas_boss_amount[ @xmas_battle_side ];
-    set $@XmasBattleStatus, (2 * (@xmas_battle_side)) + 2;
+    set @xmas_battle_status, (2 * (@xmas_battle_side)) + 2;
     goto L_Start;
 
 L_Quit:
@@ -176,6 +178,10 @@ L_CoolDown:
 
 L_BattleInProgress:
     mes "The mana battery looks like it is about to explode. You better take cover!";
+    goto L_Close;
+
+L_BattleAlreadyStarted:
+    mes "Seems like someone was faster than you.";
     goto L_Close;
 
 L_Close:
@@ -211,10 +217,10 @@ L_NextWave:
     if (($@XmasBossRound > 10)  && ((mobcount("030-4.gat", "AniManOMat::OnGuardDeath") + 1) == 0))
         goto L_Finished;
     // Break/LastChance(s)
-    if (($@XmasBossRound > 10)  && ($@XmasBossRound <= 12))
+    if (($@XmasBossRound > 10)  && ($@XmasBossRound <= 16))
         goto L_Return_1;
     //KillerWaves
-    if ($@XmasBossRound > 12)
+    if ($@XmasBossRound > 16)
         areamonster "030-4.gat", 0, 0, 50, 50, "", 1114, $@XmasBossRound*2 + $@XmasBossPlayerCount*3, "AniManOMat::OnGuardDeath";
     //Normal Waves 1 to 10
     // Guard Amount doubles if on hard mode
@@ -354,7 +360,7 @@ L_Restart:
     "", // unused
     "Scrrreeeeeeeeeeeeeeeeeeeeeaaaaaaaaaaaaaaaaaaaaatch",
     "Scrrreeeeeeeeeeeeeeeeeeeeeaaaaaaaaaaaaaaaaaaaaatch",
-    "Avalia: Oh ooooh...",
+    "Avalia: I am getting a weird sensation ... ",
     "Orums Homunculus : I think they know what we are up to!",
     "Avalia : Oh no! This is going to blow up",
     "Orums Homunculus : The Door is locked you idiot, fight for your life.",
@@ -368,7 +374,7 @@ L_Restart:
     "Orums Homunculus : Strange they are getting more and not less.",
     "Avalia : Oh no, they are too powerful. Fight my warriors, Fight for the spirit of Christmas.",
     "Orums Homunculus : If I was smart enough to stop talking, it would have happened already..",
-    "Avalia : I cannot believe it, this is makeing them stronger. More and more of them are comeing.",
+    "Avalia : I cannot believe it, this is making them stronger. More and more of them are coming.",
     "Orums Homunculus : I think we are almost done, the bomb should explode any second.",
     "Avalia : Those poor creatures. Just kill them all.",
     "Orums Homunculus : A N Y  S E C O N D.",
@@ -399,7 +405,7 @@ L_Restart:
     end;
 
 S_Announce:
-    mapannounce "030-4.gat", "Danger Cell Activated. Zone " + $@DangerCellNumber + " activated. Have a Merry Christmas!", 0;
+    mapannounce "030-4.gat", "Danger Cell Activated. Zone " + $@DangerCellNumber + " activated.", 0;
     mapannounce "030-4.gat", $@msg$, 0;
     mapannounce "030-2.gat", $@msg$, 0;
     set $@msg$, "";
@@ -427,6 +433,7 @@ S_ClearVariables:
     set @xmas_battle_side, 0;
     set @bonus, 0;
     set @xmas_state, 0;
+    set @xmas_battle_status, 0;
     set @karma_bonus, 0;
     return;
 }
@@ -435,12 +442,12 @@ S_ClearVariables:
 {
     end;
 OnCommandCoolDown:
+    set $@XmasBattleStatus, 0;
     set $@XmasBattleCoolDown, 1;
     initnpctimer;
     end;
-
-OnTimer30000:
-    set $@XmasBattleStatus, 0;
+    
+OnTimer120000:
     set $@XmasBattleCoolDown, 0;
     stopnpctimer;
     end;
