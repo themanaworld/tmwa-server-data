@@ -27,6 +27,8 @@
     set $@XmasBattleStatusClone, 0;
     callfunc "XmasStates";
     set @xmas_battle_side, 0;
+    if ($@XmasBattleCoolDown)
+        goto L_CoolDown;
     if (@xmas_side)
         set @xmas_battle_side, 1;
     if ($@XmasBattleStatus)
@@ -154,6 +156,8 @@ L_Helper:
 
 L_Repeat:
     //Player wants to try again on hard mode again
+    if ($@XmasBattleStatus)
+        goto L_BattleInProgress;
     callsub S_CheckHardReq;
     delitem $@xmas_boss_req$[ @xmas_battle_side ], $@xmas_boss_amount[ @xmas_battle_side ];
     set $@XmasBattleStatus, (2 * (@xmas_battle_side)) + 2;
@@ -162,6 +166,13 @@ L_Repeat:
 L_Quit:
    warp "030-2",151,25;
    goto L_Close;
+
+L_CoolDown:
+    mes "The AniManOMat is too hot to handle right now, you should wait a bit to try a new battery.";
+    menu
+        "No I prefer to leave now, get me out of here.", L_Quit,
+        "Ughhh, but I'm certain this time the battery will work!", -;
+    goto L_Close;
 
 L_BattleInProgress:
     mes "The mana battery looks like it is about to explode. You better take cover!";
@@ -174,7 +185,9 @@ L_Close:
     // per NPC logic
 OnTimer5000:
     setnpctimer 0;
-    if ($@XmasBattleStatus) goto L_CaveLogic;
+    if ($@XmasBattleStatus)
+        goto L_CaveLogic;
+    goto L_CleanUp;
 
 L_Return_1:
     set $@XmasBossPlayerCount, 0;
@@ -185,7 +198,7 @@ L_CaveLogic:
     if ($@XmasBossPlayerCount < 1)
         goto L_AllDead;
     set $@BombTimer, $@BombTimer + 5; // Advance 5 seconds
-    if (mobcount("030-4.gat", "AniManOMat::OnGuardDeath") <= 0)
+    if ((mobcount("030-4.gat", "AniManOMat::OnGuardDeath") + 1) == 0)
         goto L_NextWave;
     if ($@BombTimer >= 120)
         goto L_NextWave;
@@ -193,8 +206,9 @@ L_CaveLogic:
 
 L_NextWave:
     set $@BombTimer, 0;
+    set $@DangerCellNumber, rand(8);
     set $@XmasBossRound, $@XmasBossRound + 1;
-    if (($@XmasBossRound > 10)  && (mobcount("030-4.gat", "AniManOMat::OnGuardDeath") < 0))
+    if (($@XmasBossRound > 10)  && ((mobcount("030-4.gat", "AniManOMat::OnGuardDeath") + 1) == 0))
         goto L_Finished;
     // Break/LastChance(s)
     if (($@XmasBossRound > 10)  && ($@XmasBossRound <= 12))
@@ -250,6 +264,14 @@ L_NextWave:
 OnTick:
     if (isdead()) end;
     set $@XmasBossPlayerCount, $@XmasBossPlayerCount + 1;
+    if(isin("030-4.gat", $@DangerCellX1[$@DangerCellNumber], $@DangerCellY1[$@DangerCellNumber], $@DangerCellX2[$@DangerCellNumber], $@DangerCellY2[$@DangerCellNumber]))
+        goto L_DangerCell;
+    end;
+
+L_DangerCell:
+    message strcharinfo(0), "Target Aquired. Locking on Now.";
+    misceffect 10001, strcharinfo(0);
+    percentheal -20, 0;
     end;
 
 OnGuardDeath:
@@ -267,7 +289,6 @@ L_Finished:
 
 L_CleanUp:
     areatimer "030-4.gat", 0, 0, 50, 50, 10, "AniManOMat::OnReward";
-    set $@XmasBattleStatus, 0;
     set $@XmasBossPlayerCount, 0;
     set $@XmasBossRound, 0;
     set $@BombTimer, 0;
@@ -275,7 +296,7 @@ L_CleanUp:
     set $@SkullAmount, 0;
     killmonster "030-4.gat", "AniManOMat::OnGuardDeath";
     stopnpctimer;
-    setnpctimer 0;
+    cmdothernpc "#XmasChamberCooler", "CoolDown";
     end;
 
 OnReward:
@@ -361,9 +382,24 @@ L_Restart:
         "Orum's Homunculus : Boy are you lame. So what now? The battery is still not placed! Go try again!",
         "Avalia : W00t you actually made it through. I think now that the manabattery lost some of its abundant power this seems to have given those nutcrackers that didn't go crazy a good boost of life energy. Thank you for your help all and come see me for a reward.",
         "Orum's Homunculus : Good. They are dead. Now GET OUT OF THERE, this bomb is dangerous!";
+    // Danger Cells to attack sitters
+    // 0: 19,20,29,29
+    // 1: 30,20,40,29
+    // 2: 41,20,50,29
+    // 3: 19,31,29,40
+    // 4: 30,31,40,40
+    // 5: 41,31,50,40
+    // 6: 19,42,29,50
+    // 7: 30,42,40,50
+    // 8: 41,42,50,50
+    setarray $@DangerCellX1, 19, 30, 41, 19, 30, 41, 19, 30, 41;
+    setarray $@DangerCellY1, 20, 20, 20, 31, 31, 31, 42, 42, 42;
+    setarray $@DangerCellX2, 29, 40, 50, 29, 40, 50, 29, 40, 50;
+    setarray $@DangerCellY2, 29, 29, 29, 40, 40, 40, 50, 50, 50;
     end;
 
 S_Announce:
+    mapannounce "030-4.gat", "Danger Cell Activated. Zone " + $@DangerCellNumber + " activated. Have a Merry Christmas!", 0;
     mapannounce "030-4.gat", $@msg$, 0;
     mapannounce "030-2.gat", $@msg$, 0;
     set $@msg$, "";
@@ -393,4 +429,19 @@ S_ClearVariables:
     set @xmas_state, 0;
     set @karma_bonus, 0;
     return;
+}
+
+030-4.gat,0,0,0|script|#XmasChamberCooler|-1,
+{
+    end;
+OnCommandCoolDown:
+    set $@XmasBattleCoolDown, 1;
+    initnpctimer;
+    end;
+
+OnTimer30000:
+    set $@XmasBattleStatus, 0;
+    set $@XmasBattleCoolDown, 0;
+    stopnpctimer;
+    end;
 }
