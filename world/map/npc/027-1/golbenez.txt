@@ -38,15 +38,23 @@ L_Weak:
 // Golbenez resets the graveyard monsters when no players are present
 // He's such an evil guy!
 OnInit:
+    set $@GY_HAS_ALIVES, 1;
     if (debug >= 2) end;
     initnpctimer;
+    areatimer "027-1.gat", 0, 0, 120, 120, 10, "#Golbenez#_M::OnTick";
     end;
 
 OnTimer10000:
-    if (getmapusers("027-1.gat") == 0)
-        killmonsterall "027-1.gat";
-
     setnpctimer 0;
+    if ($@GY_HAS_ALIVES == 0)
+        killmonsterall "027-1.gat";
+    set $@GY_HAS_ALIVES, 0;
+    areatimer "027-1.gat", 0, 0, 149, 119, 10, "#Golbenez#_M::OnTick";
+    end;
+
+OnTick:
+    if (isdead()) end;
+    set $@GY_HAS_ALIVES, 1;
     end;
 }
 
