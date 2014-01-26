@@ -19,6 +19,8 @@ L_Close:
 
 048-2.gat,28,30,0|script|Parcival|153,
 {
+    set @sandreward, 5000;
+
     mes "[Parcival]";
     mes "\"Hello young one. Did you also come here to see the library?\"";
     menu
@@ -31,12 +33,53 @@ L_Close:
     next;
     mes "[Parcival]";
     mes "\"I'll probably have to leave and come back another time. But I want to warm up first.\"";
+    if (FLAGS & FLAG_GAVE_SAND) goto L_SkipMenu;
+    mes "\"Are you cold too?\"";
+    menu
+        "Yes", L_Cold,
+        "No", -;
     next;
     mes "\"I wonder what they did... I can still feel some distortion in the magic pattern within this mansion. I mean, it's twisted anyway, because the Sages have their houses in a shifted dimension - that's why it is so much larger in the inside than from the outside.\"";
     next;
     mes "\"But there's something else... Well, I've heard about the research being done here. Seems there's some very advanced magic involved.\"";
     goto L_Close;
 
+L_Cold:
+    mes "[Parcival]";
+    mes "\"I invented a really nice spell. It keps you warm even in the coldest blizzard. It might, if you're strong enough drive away rainclouds.\"";
+    next;
+    mes "\"It's a rather simple Nature Magic spell. Just take a Bottle of Sand and empty it in the air then say " + getspellinvocation("heat") + ".\"";
+    next;
+    mes "\"I would use it but I ran out of Sand and it is hard to find in this snowland.\"";
+    mes "\"You wouldn't happen to have some on you, would you?\"";
+    menu
+        "Yes, here have one", L_GiveSand,
+        "No sorry.", - ;
+    goto L_Close;
+
+L_GiveSand:
+    if (countitem("BottleOfSand") < 1)
+        goto L_NotEnough;
+    delitem "BottleOfSand", 1;
+    set FLAGS, FLAGS | FLAG_GAVE_SAND;
+    mes "[Parcival]";
+    mes "\"Thank you very much\"";
+    mes "\"Here have some Gold for your trouble\"";
+    set Zeny, Zeny + @sandreward;
+    goto L_Close;
+
+L_NotEnough:
+    mes "[Parcival]";
+    mes "\"Oh you don't have one with you. Well come back anytime you got one to give away.\"";
+    goto L_Close;
+
+L_SkipMenu:
+    mes "\"I wonder what they did... I can still feel some distortion in the magic pattern within this mansion. I mean, it's twisted anyway, because the Sages have their houses in a shifted dimension - that's why it is so much larger in the inside than from the outside.\"";
+    next;
+    mes "\"But there's something else... Well, I've heard about the research being done here. Seems there's some very advanced magic involved.\"";
+    goto L_Close;
+
 L_Close:
+    set @sandreward, 0;
     close;
 }
