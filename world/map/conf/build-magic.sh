@@ -1,20 +1,19 @@
 #! /bin/bash
 
-RSCRIPT="spells-build"
+OUTPUT=magic-secrets.conf
+INPUT=$OUTPUT.template
+RSCRIPT=secrets-build
 
 if ! grep -q -s '/bin/sed' $RSCRIPT; then
     echo '#! /bin/sed -f' > $RSCRIPT;
     chmod a+x $RSCRIPT
 fi
 
-for n in `grep -o '"#..."' magic.conf.template`; do
+for n in `grep -o '"#..."' $INPUT`; do
     if ! grep -q $n $RSCRIPT; then
-        CHANGES=1
+        echo "New secret ${n} needs to be set in $RSCRIPT!"
         echo "s/${n}/${n}/" >> $RSCRIPT;
     fi
 done
 
-if [ x$CHANGES == x1 ]
-then echo "${RSCRIPT} has been updated; please provide invocations for spells and/or teleport anchors.";
-else ./$RSCRIPT magic.conf.template > magic.conf;
-fi
+./$RSCRIPT $INPUT > $OUTPUT
