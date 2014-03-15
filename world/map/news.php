@@ -39,7 +39,8 @@ function handle_tmw($agent)
 {
     failure_headers();
     echo "##1 The client you're using is really old!\n",
-         "##1 Please upgrade to a Mana or ManaPlus client.\n",
+         "##1 Please upgrade to the ManaPlus client.\n",
+         "##1 http://manaplus.org/\n",
          "##1     TMW Staff\n \n";
 }
 
@@ -52,13 +53,18 @@ function handle_mana($agent, $min_version)
     {
         failure_headers();
         echo "##1 The client you're using is no longer\n".
-             "##1 supported! Please upgrade to $min_version or\n".
-             "##1 higher, or use ManaPlus!\n \n".
+             "##1 supported! Please upgrade to ManaPlus\n".
+             "##1 http://manaplus.org/\n \n".
              "##1     TMW Staff\n \n";
     }
     else
     {
         common_headers();
+        echo "##1 The client you're using is at end of life,\n".
+             "##1 and will no longer be supported as of April 8.\n".
+             "##1 Please upgrade to ManaPLus\n".
+             "##1 http://manaplus.org/\n",
+             "##1     TMW Staff\n \n";
     }
 }
 
