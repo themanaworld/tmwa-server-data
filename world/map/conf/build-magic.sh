@@ -1,6 +1,6 @@
 #! /bin/bash
 
-OUTPUT=magic-secrets.conf
+OUTPUT=magic-secrets.sex
 INPUT=$OUTPUT.template
 RSCRIPT=secrets-build
 
