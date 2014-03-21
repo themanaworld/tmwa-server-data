@@ -1,15 +1,17 @@
-" Special-purpose globals"
+"Special-purpose globals"
 (SET obscure_chance 95)
-" Schools of magic"
 (SET min_casttime 200)
+
+"Schools of magic"
 (CONST MAGIC 340)
 (CONST LIFE 341)
 (CONST WAR 342)
 (CONST TRANSMUTE 343)
 (CONST NATURE 344)
 (CONST ASTRAL 345)
-" Elements"
 (CONST DARK 346)
+
+"Elements"
 (CONST ELT_NEUTRAL 0)
 (CONST ELT_WATER 1)
 (CONST ELT_EARTH 2)
@@ -19,19 +21,20 @@
 (CONST ELT_SHADOW 6)
 (CONST ELT_HOLY 7)
 (CONST ELT_GHOST 8)
-" Status effects"
 (CONST ELT_UNDEAD 9)
+
+"Status effects"
 (CONST SC_POISON 132)
-" This is the same as SC_HIDE, since mobs can't hide and shearing is only used for mobs.  Feel free to fix!"
-(CONST SC_SHEARED 194)
+(CONST SC_SHEARED 194) "This is the same as SC_HIDE, since mobs can't hide and shearing is only used for mobs.  Feel free to fix!"
 (CONST SC_HIDE 194)
 (CONST SC_HALT_REGENERATE 195)
 (CONST SC_FLYING_BACKPACK 196)
 (CONST SC_MBARRIER 197)
 (CONST SC_HASTE 198)
 (CONST SC_PHYS_SHIELD 199)
-" Special effects"
 (CONST SO_GMINVISIBLE 4096)
+
+"Special effects"
 (CONST SFX_DEFAULT 10)
 (CONST SFX_SUMMON_START 21)
 (CONST SFX_SUMMON_FIRE 22)
@@ -43,9 +46,11 @@
 (CONST SFX_UNBARRIER 10)
 (CONST SFX_HEAL 3)
 (CONST SFX_LIGHTNING 18)
+
+"Magic Spell Const"
+(CONST MIN_MARRY_LEVEL 32)
 (CONST MAX_RAIN_SPELL_RADIUS 15)
-" Increase up to 5 as each new magic level is completed."
-(CONST MAX_MAGIC_LEVEL 2)
+(CONST MAX_MAGIC_LEVEL 2) "Increase up to 5 as each new magic level is completed."
 (CONST MAGIC_FLAGS "MAGIC_FLAGS")
 (CONST MFLAG_MADE_CONC_POTION 16384)
 (CONST MFLAG_MADE_CONC_POTION_SHIFT 14)
@@ -58,18 +63,23 @@
 (CONST SCRIPT_HEALSPELL_SHIFT 24)
 (CONST DEBUG 0)
 (CONST ATTACK_ICON_GENERIC 2000)
-" Default sfx on caster"
 (CONST ATTACK_ICON_SHEARING 2001)
+(CONST E10_FLAG_USED_FREE_WARP_SHIFT 17)
+
+"Default sfx on caster"
 (PROCEDURE default_effect ()
     (sfx caster
         (+
             (- school MAGIC)
             2)
         0))
+
 (PROCEDURE sfx_generic (target)
     (sfx target SFX_DEFAULT 0))
+
 (PROCEDURE sfx_lightning (target)
     (sfx target SFX_LIGHTNING 0))
+
 (PROCEDURE set_var (name mask shift value)
     (set_script_variable caster name
         (|
@@ -80,10 +90,11 @@
             (<<
                 (& value mask)
                 shift))))
-" How many HP we healed"
-" how many life magic experience points we can potentially gain"
-" 1 for instaheal, 2 for slow heal"
-" factor for how many base experience points (max) the player should be allowed to gain"
+
+"value is How many HP we healed"
+"gain is how many life magic experience points we can potentially gain"
+"heal_xp_value_divisor is 1 for instaheal, 2 for slow heal"
+"base_exp_factor is the factor for how many base experience points (max) the player should be allowed to gain"
 (PROCEDURE gain_heal_xp (value gain heal_xp_value_divisor base_exp_factor)
     (SET last_heal_xp
         (&
@@ -114,9 +125,9 @@
                 (extract_healer_experience target value))
             0
             1)))
-" Level 4 and 5 magic users don't gain anything from spell levels 0 resp. 0+1"
-" Some variation observed"
+
 (PROCEDURE gain_xp (gain index)
+    "Level 4 and 5 magic users don't gain anything from spell levels 0 resp. 0+1"
     (IF (>
             (+ level 3)
             (skill caster MAGIC))
@@ -134,7 +145,7 @@
                         SCRIPT_XP_SHIFT)
                     SCRIPT_XP_MASK))
             (IF (!= index last_index)
-                (BLOCK
+                (BLOCK "Some variation observed"
                     (SET xp
                         (+ last_xp gain))
                     (IF (> xp SCRIPT_XP_MASK)
@@ -147,7 +158,7 @@
                 (IF DEBUG
                     (message caster
                         (+ "Re-cast same spell, xp remain at " last_xp)))))))
-" Increase spellpower by school and general magic skill"
+
 (PROCEDURE create_item (good_item count bad_item difficulty)
     (SET success 1)
     (SET score
@@ -206,7 +217,8 @@
                                 (random 3)
                                 0)
                             (create_item caster bad_item 1))))))))
-" Below, we adjust by special items"
+
+"Increase spellpower by school and general magic skill"
 (PROCEDURE adjust_spellpower (school)
     (SET experience
         (&
@@ -221,6 +233,7 @@
                     (skill caster MAGIC)
                     (skill caster school))
                 10)))
+    "Below, we adjust by special items"
     (IF (&&
             (not
                 (failed target))
@@ -242,7 +255,7 @@
                             "WeddingRing")
                         (SET spellpower
                             (+ spellpower 50))))))))
-" Goes through instaheal instead of itemheal"
+
 (PROCEDURE heal (target max_heal)
     (CALL default_effect)
     (IF (!= caster target)
@@ -256,13 +269,15 @@
                 (* max_heal power)
                 250)))
     (itemheal target power 0))
-" Can attack the target? Imports attack_range from dynamic environment"
+
+"Goes through instaheal instead of itemheal"
 (PROCEDURE quickheal (target power)
     (CALL default_effect)
     (IF (!= caster target)
         (sfx target SFX_HEAL 0))
     (instaheal target power 0))
-" Cause elemental damage.  bonus_elt grants an attack bonus, malus_elt reduces the attack. `effect' is the sfx ID."
+
+"Can attack the target? Imports attack_range from dynamic environment"
 (PROCEDURE attack_check (target)
     (IF (not
             (line_of_sight
@@ -276,7 +291,8 @@
                     (location target))
                 attack_range))
         (ABORT)))
-"message(caster, \"bonus=\" + (element(target) = bonus_elt) + \" malus=\" + (element(target) = malus_elt) + \" damage=\" + damage + \" + r(\" + dmgplus + \") -> \" + d);"
+
+"Cause elemental damage.  bonus_elt grants an attack bonus, malus_elt reduces the attack. `effect' is the sfx ID."
 (PROCEDURE elt_damage (target damage dmgplus bonus_elt malus_elt effect)
     (SET d
         (+ damage
@@ -297,6 +313,7 @@
                 4)))
     (sfx target effect 0)
     (injure caster target d 0))
+
 (PROCEDURE melee_damage (target damage dmgplus)
     (CALL attack_check target)
     (SET d
@@ -312,6 +329,7 @@
             evade)
         (SET d 0))
     (injure caster target d 0))
+
 (PROCEDURE install_attack_spell (charges base_delay range attack_animation)
     (CALL default_effect)
     (SET attack_range range)
@@ -326,9 +344,10 @@
         ATTACK_ICON_GENERIC
         attack_animation
         0))
+
 (PROCEDURE install_melee_spell (charges base_delay attack_animation)
     (CALL install_attack_spell charges base_delay 1 attack_animation))
-" pets when level is high enough"
+
 (PROCEDURE summon_spell (mob_id count delay lifetime control_level)
     (CALL default_effect)
     (sfx location SFX_SUMMON_START 0)
@@ -345,8 +364,8 @@
             2
             1)
         count
-        lifetime))
-" pets when level is high enough"
+        lifetime)) "pets when level is high enough"
+
 (PROCEDURE summon_dark_spell (mob_id count delay lifetime control_level)
     (CALL default_effect)
     (sfx location SFX_SUMMON_START 0)
@@ -363,13 +382,8 @@
             2
             1)
         count
-        lifetime))
-" Tulimshar"
-" Hurnscald"
-" Nivalis"
-"--------------------------------------------------------------------------------"
-" Level 0 spells"
-"--------------------------------------------------------------------------------"
+        lifetime)) "pets when level is high enough"
+
 (PROCEDURE abort_on_area_shield (pos)
     (IF (&&
             (==
@@ -386,11 +400,13 @@
                 (==
                     (map_nr pos)
                     20)))
-        (BLOCK
+        (BLOCK "1 is Tulimshar, 9 is Hurnscald and 20 is Nivalis"
             (message caster "A powerful magic drains your spell just as it is beginning to take shape!")
             (ABORT))))
-" This duplicates the table in mana-seed.txt"
-"Randomness:  jitter a bit at the transitions to give more precise information if used frequently"
+
+"--------------------------------------------------------------------------------"
+"Level 0 spells"
+"--------------------------------------------------------------------------------"
 (SPELL () ask-magic-exp "#abizit" ()
     (LET level 0)
     (LET school MAGIC)
@@ -417,7 +433,7 @@
                     (== experience SCRIPT_XP_MASK)
                     (> level 4))
                 (message caster "You are as proficient at magic as you can possibly be.")
-                (BLOCK
+                (BLOCK "This duplicates the table in mana-seed.txt"
                     (IF (> level 4)
                         (SET max_experience SCRIPT_XP_MASK)
                         (IF (== level 4)
@@ -433,7 +449,7 @@
                                 (* 10 experience)
                                 (random
                                     (/ max_experience 30)))
-                            max_experience))
+                            max_experience)) "Randomness:  jitter a bit at the transitions to give more precise information if used frequently"
                     (IF (>= ratio 45)
                         (message caster
                             (+ "Magic flows naturally from you, readily and with ease. Your understanding of what you can currently control at present is flawless, far beyond your requirements to cast magic at this level."
@@ -469,6 +485,7 @@
                                                                 (IF (>= ratio 1)
                                                                     (message caster "You feel quite overwhelmed by your magic, but are beginning to see patterns.")
                                                                     (message caster "You feel completely overwhelmed by your magic."))))))))))))))))))
+
 (SPELL () transmute-wood-to-figurine "#parum" (STRING name)
     (LET level 0)
     (LET school TRANSMUTE)
@@ -498,6 +515,7 @@
                     (CALL default_effect)
                     (CALL create_item "WarpedLog" 1 "WarpedLog" 40)
                     (message caster "You have no idea what a Skrytlurk looks like."))))))
+
 (SPELL () make-sulphur "#gole" ()
     (LET level 0)
     (LET school TRANSMUTE)
@@ -525,7 +543,7 @@
                 "PileOfAsh"
                 50)
             (CALL gain_xp 1 1))))
-" report half values for non-instaheal"
+
 (SPELL () lesser-heal "#lum" (STRING target)
     (LET level 0)
     (LET school LIFE)
@@ -568,7 +586,10 @@
                                         (npc "Mouboo")))
                                 (+ 2
                                     (/ spellpower 100))))
-                        (SCRIPT "{ mes \"Your spell seems to have no effect on the mouboo.\"; close; }")
+                        (SCRIPT "{
+                            mes \"Your spell seems to have no effect on the mouboo.\";
+                            close;
+                        }")
                         (SET target caster)))
                 (BLOCK
                     (SET target
@@ -582,13 +603,14 @@
                         (hp target)))
                 1
                 2
-                2)
+                2) "report half values for non-instaheal"
             (CALL heal target 200)
             (IF (>
                     (skill caster DARK)
                     1)
                 (status_change caster SC_HALT_REGENERATE 0 0 0 0 2000))
             (CALL gain_xp 1 2))))
+
 (SPELL () flare-dart "#flar" ()
     (LET level 0)
     (LET school WAR)
@@ -628,6 +650,7 @@
             (ATTRIGGER
                 (CALL attack_check target)
                 (CALL elt_damage target damage damage_bonus ELT_WATER ELT_FIRE 15)))))
+
 (SPELL () magic-blade "#chiza" ()
     (LET level 0)
     (LET school WAR)
@@ -670,6 +693,7 @@
                         (CALL melee_damage target 40
                             (+ 5
                                 (str caster)))))))))
+
 (SPELL () aggravate "#itenplz" ()
     (LET level 0)
     (LET school NATURE)
@@ -695,6 +719,7 @@
                     (BLOCK
                         (CALL sfx_generic target)
                         (aggravate target 0 caster)))))))
+
 (SPELL () grow-mauve "#modrilax" ()
     (LET level 0)
     (LET school NATURE)
@@ -722,6 +747,7 @@
                         2)
                     1)
                 10000))))
+
 (SPELL () grow-alizarin "#modriphoo" ()
     (LET level 0)
     (LET school NATURE)
@@ -749,6 +775,7 @@
                         2)
                     1)
                 10000))))
+
 (SPELL () grow-gamboge "#modriyikam" ()
     (LET level 0)
     (LET school NATURE)
@@ -776,6 +803,7 @@
                         2)
                     1)
                 10000))))
+
 (SPELL () grow-cobalt "#modrisump" ()
     (LET level 0)
     (LET school NATURE)
@@ -803,6 +831,7 @@
                         2)
                     1)
                 10000))))
+
 (SPELL (LOCAL) summon-maggots "#kalmurk" ()
     (LET level 0)
     (LET school ASTRAL)
@@ -830,9 +859,7 @@
                 (+ 10000
                     (* spellpower 50))
                 1))))
-"--------------------------------------------------------------------------------"
-" Level 1 spells"
-"--------------------------------------------------------------------------------"
+
 (SPELL () detect-magic "#miteyo" ()
     (LET level 0)
     (LET school MAGIC)
@@ -866,6 +893,10 @@
                     (location caster)
                     range) (IF (!= s self_invocation)
                     (sfx s SFX_DEFAULT 0))))))
+
+"--------------------------------------------------------------------------------"
+"Level 1 spells"
+"--------------------------------------------------------------------------------"
 (SPELL () make-arrows "#kularzufrill" ()
     (LET level 1)
     (LET school TRANSMUTE)
@@ -897,6 +928,7 @@
                 "WarpedLog"
                 500)
             (CALL gain_xp 1 11))))
+
 (SPELL () make-shirt "#patmuploo" ()
     (LET level 1)
     (LET school TRANSMUTE)
@@ -919,6 +951,7 @@
             (CALL default_effect)
             (CALL create_item "CottonShirt" 1 "CottonCloth" 425)
             (CALL gain_xp 2 12))))
+
 (SPELL () make-tanktop "#patloree" ()
     (LET level 1)
     (LET school TRANSMUTE)
@@ -941,6 +974,7 @@
             (CALL default_effect)
             (CALL create_item "TankTop" 1 "CottonCloth" 350)
             (CALL gain_xp 2 13))))
+
 (SPELL () make-short-tanktop "#patviloree" ()
     (LET level 1)
     (LET school TRANSMUTE)
@@ -963,6 +997,7 @@
             (CALL default_effect)
             (CALL create_item "ShortTankTop" 1 "CottonCloth" 250)
             (CALL gain_xp 2 14))))
+
 (SPELL () make-iron-powder "#zukminbirf" ()
     (LET level 1)
     (LET school TRANSMUTE)
@@ -994,6 +1029,7 @@
                 "IronOre"
                 700)
             (CALL gain_xp 3 15))))
+
 (SPELL () make-concentration-potion "#loshira" ()
     (LET level 1)
     (LET school TRANSMUTE)
@@ -1032,6 +1068,7 @@
             (IF success
                 (CALL set_var MAGIC_FLAGS 1 MFLAG_MADE_CONC_POTION_SHIFT 1))
             (CALL gain_xp 4 16))))
+
 (SPELL () merge-concentration-potions "#skrimp" ()
     (LET level 1)
     (LET school TRANSMUTE)
@@ -1057,8 +1094,7 @@
             (IF success
                 (CALL set_var MAGIC_FLAGS 1 MFLAG_MADE_CONC_POTION_SHIFT 1))
             (CALL gain_xp 4 17))))
-" Pay at least 40%"
-" with dark magic skill you pay 1/20 of max hp but the regenerate cooldown is cut in half"
+
 (SPELL () lay-on-hands "#inma" (STRING target)
     (LET level 1)
     (LET school LIFE)
@@ -1132,9 +1168,9 @@
                         (BLOCK
                             (SET needed 1000)
                             (SCRIPT "{
-                                   set @spell, 1;
-                                   callfunc \"QuestMoubooHeal\";
-                                  }"))
+                                set @spell, 1;
+                                callfunc \"QuestMoubooHeal\";
+                            }"))
                         (ABORT)))
                 (BLOCK
                     (SET target
@@ -1148,7 +1184,7 @@
                     (- 200
                         (+
                             (vit caster)
-                            (/ spellpower 10)))))
+                            (/ spellpower 10))))) "Pay at least 40%"
             (SET payment
                 (/
                     (* needed pay_fraction)
@@ -1169,7 +1205,7 @@
                             pay_fraction))))
             (CALL gain_heal_xp power 1 1 3)
             (CALL quickheal target power)
-            (SET t 5000)
+            (SET t 5000) "with dark magic skill you pay 1/20 of max hp but the regenerate cooldown is cut in half"
             (SET school DARK)
             (SET h
                 (*
@@ -1190,7 +1226,7 @@
                 (min 4
                     (/ payment 100))
                 18))))
-" caster standing in the rain?  This is going to be fun."
+
 (SPELL () lightning-strike "#ingrav" ()
     (LET level 1)
     (LET school WAR)
@@ -1252,7 +1288,7 @@
                                 (SET in_rain
                                     (| in_rain 2))))))
                 (IF (& in_rain 1)
-                    (BLOCK
+                    (BLOCK "caster standing in the rain?  This is going to be fun."
                         (SET used 0)
                         (FOREACH TARGET t area
                             (IF (>
@@ -1291,6 +1327,7 @@
                     (CALL elt_damage target damage damage_bonus ELT_EARTH ELT_WIND
                         (+ 17
                             (random 3))))))))
+
 (SPELL (LOCAL) arrow-hail "#frillyar" ()
     (LET level 1)
     (LET school WAR)
@@ -1391,6 +1428,7 @@
                             (+ 250
                                 (random 50))
                             (random 50))))))))
+
 (SPELL () magic-knuckles "#upmarmu" ()
     (LET level 1)
     (LET school WAR)
@@ -1426,6 +1464,7 @@
                 (CALL melee_damage target 30
                     (+ 5
                         (* str 2)))))))
+
 (SPELL (LOCAL) summon-snakes "#halhiss" ()
     (LET level 1)
     (LET school DARK)
@@ -1457,6 +1496,7 @@
                     (* spellpower 9))
                 (* spellpower 80)
                 2))))
+
 (SPELL () toxic-dart "#phlex" ()
     (LET level 1)
     (LET school DARK)
@@ -1513,6 +1553,7 @@
                         0
                         (+ 5000
                             (* spellpower 1200))))))))
+
 (SPELL (LOCAL) summon-wickedmushroom "#helorp" ()
     (LET level 1)
     (LET school DARK)
@@ -1544,6 +1585,7 @@
                     (* spellpower 9))
                 (* spellpower 80)
                 2))))
+
 (SPELL () flying-backpack "#plugh" (PC target)
     (LET level 1)
     (LET school NATURE)
@@ -1586,6 +1628,7 @@
             (ATEND
                 (message target "Your backpack is no longer levitating.")
                 (sfx target 2 0)))))
+
 (SPELL () protect "#betsanc" (PC target)
     (LET level 1)
     (LET school NATURE)
@@ -1639,6 +1682,7 @@
             (ATEND
                 (message target "You feel less protected.")
                 (sfx target 111 0)))))
+
 (SPELL () happy-curse "#joyplim" (PC target)
     (LET level 1)
     (LET school NATURE)
@@ -1685,7 +1729,7 @@
                         (emote target 3)
                         (WAIT 500))))
             (CALL gain_xp 1 23))))
-" Halloween quest"
+
 (SPELL (LOCAL) rain "#kaflosh" ()
     (LET level 1)
     (LET school NATURE)
@@ -1758,7 +1802,7 @@
                         7))
                 (SCRIPT "{
                     callfunc \"HalloweenQuestWaterPumpkins\";
-                }"))
+                }")) "Halloween quest"
             (FOR i 0
                 (/ spellpower 3)
                 (BLOCK
@@ -1786,6 +1830,7 @@
                     (WAIT
                         (+ 400
                             (random 100))))))))
+
 (PROCEDURE shear-drop (target target2 item prob)
     (IF (||
             (== target name)
@@ -1793,6 +1838,7 @@
         (BLOCK
             (IF (< score prob)
                 (drop_item_for place item 1 60000 caster 5000)))))
+
 (PROCEDURE shear-drop2 (target target2 item prob item2 prob2)
     (IF (||
             (== target name)
@@ -1802,6 +1848,7 @@
                 (drop_item_for place item 1 60000 caster 5000)
                 (CALL shear-drop target target2 item2
                     (+ prob2 prob))))))
+
 (PROCEDURE shear-drop3 (target target2 item prob item2 prob2 item3 prob3)
     (IF (||
             (== target name)
@@ -1813,8 +1860,7 @@
                     (+ prob2 prob)
                     item3
                     (+ prob3 prob))))))
-" lower score -> more valuable item"
-" 10 minutes"
+
 (SPELL () shear "#chipchip" ()
     (LET level 1)
     (LET school NATURE)
@@ -1841,7 +1887,7 @@
                         (SET score
                             (random
                                 (- 1000
-                                    (random spellpower))))
+                                    (random spellpower)))) "lower score -> more valuable item"
                         (SET name
                             (name_of target))
                         (SET place
@@ -1851,7 +1897,7 @@
                                     1)))
                         (IF (running_status_update target SC_SHEARED)
                             (ABORT))
-                        (status_change target SC_SHEARED 0 0 0 0 600000)
+                        (status_change target SC_SHEARED 0 0 0 0 600000) "10 minutes"
                         (CALL shear-drop "Fluffy" "Fluffy" "WhiteFur" 300)
                         (CALL shear-drop "EasterFluffy" "Easter Fluffy" "WhiteFur" 300)
                         (CALL shear-drop "SpikyMushroom" "Spiky Mushroom" "HardSpike" 250)
@@ -1869,7 +1915,11 @@
                                         (== name "Mouboo"))
                                     (== name "Pinkie"))
                                 (random 2))
-                            (SCRIPT "{ set @value, 1; callfunc \"QuestSagathaHappy\"; }"))))))))
+                            (SCRIPT "{
+                                set @value, 1;
+                                callfunc \"QuestSagathaHappy\";
+                            }"))))))))
+
 (SPELL () barrier "#asorm" (PC target)
     (LET level 1)
     (LET school ASTRAL)
@@ -1923,6 +1973,7 @@
             (ATEND
                 (message target "Your magical barrier dissipates.")
                 (sfx target SFX_UNBARRIER 0)))))
+
 (SPELL (LOCAL) summon-spiky-mushrooms "#kalrenk" ()
     (LET level 1)
     (LET school ASTRAL)
@@ -1950,6 +2001,7 @@
                     (* spellpower 9))
                 (* spellpower 400)
                 2))))
+
 (SPELL (LOCAL) summon-fluffies "#kalakarenk" ()
     (LET level 1)
     (LET school ASTRAL)
@@ -1979,6 +2031,7 @@
                     (* spellpower 8))
                 (* spellpower 350)
                 2))))
+
 (SPELL (LOCAL) summon-mouboo "#kalboo" ()
     (LET level 1)
     (LET school ASTRAL)
@@ -2006,6 +2059,7 @@
                     (* spellpower 9))
                 (* spellpower 100)
                 2))))
+
 (SPELL (LOCAL) summon-pinkie "#kalgina" ()
     (LET level 1)
     (LET school ASTRAL)
@@ -2033,6 +2087,7 @@
                     (* spellpower 9))
                 (* spellpower 150)
                 2))))
+
 (SPELL () detect-players "#inwilt" ()
     (LET level 1)
     (LET school MAGIC)
@@ -2083,6 +2138,7 @@
                 (message caster "You sense no-one else nearby.")
                 (message caster
                     (+ "You sense the following: " message))))))
+
 (SPELL () enchant-lifestone "#manpahil" ()
     (LET level 1)
     (LET school MAGIC)
@@ -2109,6 +2165,7 @@
             (CALL default_effect)
             (create_item caster "Lifestone" 1)
             (CALL gain_xp 1 28))))
+
 (SPELL () sense-spouse "#inzuwilt" ()
     (LET level 1)
     (LET school MAGIC)
@@ -2240,9 +2297,7 @@
                                                 " in the ")
                                             dir)
                                         "."))))))))))
-"--------------------------------------------------------------------------------"
-" Level 2 spells"
-"--------------------------------------------------------------------------------"
+
 (SPELL () hide "#anwiltyp" (PC target)
     (LET level 1)
     (LET school ASTRAL)
@@ -2286,6 +2341,10 @@
                 (message caster "You hid someone!"))
             (ATEND
                 (message target "You are no longer hidden.")))))
+
+"--------------------------------------------------------------------------------"
+"Level 2 spells"
+"--------------------------------------------------------------------------------"
 (SPELL () cure-poison "#anju" (PC target)
     (LET level 2)
     (LET school LIFE)
@@ -2320,7 +2379,7 @@
                     (CALL gain_xp 2 30)
                     (IF (!= caster target)
                         (sfx target SFX_HEAL 0)))))))
-"WAIT 500;"
+
 (SPELL () fire-ball "#flarfol" ()
     (LET level 2)
     (LET school WAR)
@@ -2366,6 +2425,7 @@
                 (CALL attack_check target)
                 (SET loc
                     (location target))
+                (DISABLED (WAIT 500))
                 (sfx loc 16 0)
                 (FOREACH TARGET target
                     (rbox loc radius)
@@ -2386,9 +2446,7 @@
                                 ELT_WATER
                                 ELT_FIRE
                                 15))))))))
-"--------------------------------------------------------------------------------"
-" Level 4 spells"
-"--------------------------------------------------------------------------------"
+
 (SPELL () summon-partner "#kalzumin" ()
     (LET level 2)
     (LET school ASTRAL)
@@ -2460,6 +2518,10 @@
                                     (partner caster)
                                     dest)
                                 (sfx dest SFX_TELEPORT 0)))))))))
+
+"--------------------------------------------------------------------------------"
+"Level 4 spells"
+"--------------------------------------------------------------------------------"
 (SPELL () shroud "#anwilvimar" ()
     (LET level 4)
     (LET school NATURE)
@@ -2478,11 +2540,7 @@
         (EFFECT
             (CALL default_effect)
             (shroud caster 0x04))))
-" COMPONENT [\"EtherEssence\"],"
-" CATALYST [\"TeleportCrystal\"],"
-"--------------------------------------------------------------------------------"
-" Debug keywords"
-"--------------------------------------------------------------------------------"
+
 (SPELL () teleport "#vorp" (STRING destination)
     (LET level 4)
     (LET school ASTRAL)
@@ -2490,6 +2548,8 @@
         (GUARD
             (MANA 80)
             (CASTTIME 400)
+            (DISABLED (COMPONENT "EtherEssence"))
+            (DISABLED (CATALYST "TeleportCrystal"))
             (REQUIRE
                 (>
                     (skill caster MAGIC)
@@ -2512,6 +2572,10 @@
                 (random_location
                     (anchor destination)))
             (sfx caster SFX_TELEPORT 200))))
+
+"--------------------------------------------------------------------------------"
+"Debug keywords"
+"--------------------------------------------------------------------------------"
 (SPELL () debug "debug" ()
     (=>
         (REQUIRE DEBUG)
@@ -2865,32 +2929,38 @@
                                                                                                                         (IF (== name "elanore-sub")
                                                                                                                             (CALL debug_xmod "QUEST_MAGIC2" 0xf 12 delta)
                                                                                                                             (message caster "Unknown"))))))))))))))))))))))))))))))))
+
 (SPELL () debug-up1 "debug+1" (STRING name)
     (=>
         (REQUIRE DEBUG)
         (EFFECT
             (CALL debug_mod name 1))))
+
 (SPELL () debug-down1 "debug-1" (STRING name)
     (=>
         (REQUIRE DEBUG)
         (EFFECT
             (CALL debug_mod name
                 (- 0 1)))))
+
 (SPELL () debug-up16 "debug+16" (STRING name)
     (=>
         (REQUIRE DEBUG)
         (EFFECT
             (CALL debug_mod name 16))))
+
 (SPELL () debug-down16 "debug-16" (STRING name)
     (=>
         (REQUIRE DEBUG)
         (EFFECT
             (CALL debug_mod name
                 (- 0 16)))))
+
 (SPELL () debug-up256 "debug+256" (STRING name)
     (=>
         (REQUIRE DEBUG)
         (EFFECT
+
             (CALL debug_mod name 256))))
 (SPELL () debug-down256 "debug-256" (STRING name)
     (=>
@@ -2898,9 +2968,7 @@
         (EFFECT
             (CALL debug_mod name
                 (- 0 256)))))
-"--------------------------------------------------------------------------------"
-" Special-purpose quasispells"
-"--------------------------------------------------------------------------------"
+
 (SPELL () debug-reset "debug-reset" ()
     (=>
         (REQUIRE DEBUG)
@@ -2913,8 +2981,10 @@
                 0)
             (set_script_variable caster "MAGIC_EXP"
                 0))))
-(CONST MIN_MARRY_LEVEL 32)
-" no valid target or tried to marry self?"
+
+"--------------------------------------------------------------------------------"
+"Special-purpose quasispells"
+"--------------------------------------------------------------------------------"
 (SPELL (NONMAGIC SILENT) marriage "marry" (PC target)
     (=>
         (GUARD
@@ -2934,7 +3004,7 @@
                             4)))))
         (EFFECT
             (IF (== target caster)
-                (ABORT))
+                (ABORT)) "no valid target or tried to marry self?"
             (IF (<
                     (level caster)
                     MIN_MARRY_LEVEL)
@@ -3003,8 +3073,8 @@
                 close;
 
                 L_yes:
-                if marriage(@caster_name$)
-                     announce @caster_name$ + \" and \" + strcharinfo(0) + \" are now married!\", 0;
+                    if marriage(@caster_name$)
+                        announce @caster_name$ + \" and \" + strcharinfo(0) + \" are now married!\", 0;
                 close;
               }")
             (IF (not
@@ -3013,6 +3083,7 @@
                     (+
                         (name_of target)
                         " turned down your marriage offer."))))))
+
 (SPELL (LOCAL) mouboo-groan "#g" ()
     (=>
         (GUARD
@@ -3035,6 +3106,7 @@
                 (IF (< distance 70)
                     (message p "You hear a loud groaning noise, not far away...")
                     (message p "You hear an odd groaning noise in the distance..."))))))
+
 (SPELL (LOCAL) mouboo-smell "#s" ()
     (=>
         (GUARD
@@ -3050,16 +3122,7 @@
                     (location caster)
                     30)
                 (message p "You notice a strange smell all around you.")))))
-(CONST E10_FLAG_USED_FREE_WARP_SHIFT 17)
-" Travel only works when you have both helped the doctor at least thrice and have defeated the invader - top level requirement."
-" Allow unlimited travel with the petal"
-" Do not allow if player is in Illia island"
-" Do not allow if player is in botcheck area"
-" Store this value."
-" Cancel teleport if the player took damage during channel time (hacky, but for most purposes should work.)"
-" Allow for one free warp home without the petal"
-" Store this value."
-" Cancel teleport if the player took damage during channel time (hacky, but for most purposes should work.)"
+
 (SPELL (NONMAGIC SILENT) world-shift "#alonzialonzo" ()
     (=>
         (GUARD
@@ -3078,7 +3141,7 @@
                                 (script_int caster "Easter_2010_QuestState")
                                 7)
                             3)
-                        2))))
+                        2))) "Travel only works when you have both helped the doctor at least thrice and have defeated the invader - top level requirement." )
         (|
             (=>
                 (GUARD
@@ -3093,7 +3156,7 @@
                             (!=
                                 (map_nr
                                     (location caster))
-                                5698))))
+                                5698))) "Allow unlimited travel with the petal, 52 Do not allow if player is in Illia island, 5698 Do not allow if player is in botcheck area" )
                 (|
                     (=>
                         (GUARD
@@ -3109,7 +3172,9 @@
                                 SFX_TELEPORT
                                 200)
                             (WAIT 8000)
-                            (SCRIPT "{ savepoint \"009-1\", 52, 39; }")
+                            (SCRIPT "{
+                                savepoint \"009-1\", 52, 39;
+                            }")
                             (warp caster
                                 (@ "009-1.gat" 55 37))
                             (sfx
@@ -3125,7 +3190,7 @@
                                     28)))
                         (EFFECT
                             (SET inithp
-                                (hp caster))
+                                (hp caster)) "Store this value."
                             (sfx
                                 (location caster)
                                 SFX_TELEPORT
@@ -3154,8 +3219,10 @@
                             (IF (<
                                     (hp caster)
                                     inithp)
-                                (ABORT))
-                            (SCRIPT "{ savepoint \"028-1\", 69, 71; }")
+                                (ABORT)) "Cancel teleport if the player took damage during channel time (hacky, but for most purposes should work.)"
+                            (SCRIPT "{
+                                savepoint \"028-1\", 69, 71;
+                            }")
                             (warp caster
                                 (@ "028-1.gat" 69 70))
                             (sfx
@@ -3180,7 +3247,9 @@
                             SFX_TELEPORT
                             200)
                         (WAIT 8000)
-                        (SCRIPT "{ savepoint \"009-1\", 52, 39; }")
+                        (SCRIPT "{
+                            savepoint \"009-1\", 52, 39;
+                        }")
                         (warp caster
                             (@ "009-1.gat" 55 37))
                         (sfx
@@ -3201,10 +3270,10 @@
                                             (script_int caster "Easter_2010_QuestState")
                                             17)
                                         1)
-                                    0))))
+                                    0))) "Allow for one free warp home without the petal" )
                     (EFFECT
                         (SET inithp
-                            (hp caster))
+                            (hp caster)) "Store this value."
                         (sfx
                             (location caster)
                             SFX_TELEPORT
@@ -3233,18 +3302,21 @@
                         (IF (<
                                 (hp caster)
                                 inithp)
-                            (ABORT))
+                            (ABORT)) "Cancel teleport if the player took damage during channel time (hacky, but for most purposes should work.)"
                         (set_script_variable caster "Easter_2010_QuestState"
                             (|
                                 (script_int caster "Easter_2010_QuestState")
                                 (<< 1 17)))
-                        (SCRIPT "{ savepoint \"028-1\", 69, 70; }")
+                        (SCRIPT "{
+                            savepoint \"028-1\", 69, 70;
+                        }")
                         (warp caster
                             (@ "028-1.gat" 69 70))
                         (sfx
                             (location caster)
                             SFX_TELEPORT
                             200)))))))
+
 (SPELL (NONMAGIC SILENT) easter-get-debug "#e" (PC p)
     (=>
         (GUARD
@@ -3257,14 +3329,15 @@
                         (name_of caster)
                         "Xakelbael the Dark"))))
         (EFFECT
-            (SCRIPT "{ message strcharinfo(0), \"Global state egg1: \" + $Easter_2010_Egg_Loc_State1;
-             message strcharinfo(0), \"Global state egg2: \" + $Easter_2010_Egg_Loc_State2;
-             message strcharinfo(0), \"Global state egg3: \" + $Easter_2010_Egg_Loc_State3;
-             message strcharinfo(0), \"Global state egg4: \" + $Easter_2010_Egg_Loc_State4;
-             message strcharinfo(0), \"Global state egg5: \" + $Easter_2010_Egg_Loc_State5;
-             message strcharinfo(0), \"Global npc state1: \" + $Easter_2010_Npc_State1;
-             message strcharinfo(0), \"Global npc state2: \" + $Easter_2010_Npc_State2;
-           }")
+            (SCRIPT "{
+                message strcharinfo(0), \"Global state egg1: \"+ $Easter_2010_Egg_Loc_State1;
+                message strcharinfo(0), \"Global state egg2: \"+ $Easter_2010_Egg_Loc_State2;
+                message strcharinfo(0), \"Global state egg3: \"+ $Easter_2010_Egg_Loc_State3;
+                message strcharinfo(0), \"Global state egg4: \"+ $Easter_2010_Egg_Loc_State4;
+                message strcharinfo(0), \"Global state egg5: \"+ $Easter_2010_Egg_Loc_State5;
+                message strcharinfo(0), \"Global npc state1: \"+ $Easter_2010_Npc_State1;
+                message strcharinfo(0), \"Global npc state2: \"+ $Easter_2010_Npc_State2;
+            }")
             (message caster
                 (+ "Local state egg1: "
                     (script_int p "Easter_2010_EggState1")))
@@ -3283,6 +3356,7 @@
             (message caster
                 (+ "Local state quest: "
                     (script_int p "Easter_2010_QuestState"))))))
+
 (PROCEDURE hug_tree (target)
     (IF (||
             (||
@@ -3302,9 +3376,10 @@
                 (== target "Druid"))
             (== target "Druid*"))
         (SCRIPT "{
-                    set @flag, 2;
-                    callfunc \"QuestTreeTrigger\";
-                }")))
+            set @flag, 2;
+            callfunc \"QuestTreeTrigger\";
+        }")))
+
 (SPELL (NONMAGIC) hug0 "hug" (STRING target)
     (=>
         (REQUIRE
@@ -3323,6 +3398,7 @@
                     1)))
         (EFFECT
             (CALL hug_tree target))))
+
 (SPELL (NONMAGIC) hug1 "*hug*" (STRING target)
     (=>
         (REQUIRE
@@ -3341,6 +3417,7 @@
                     1)))
         (EFFECT
             (CALL hug_tree target))))
+
 (SPELL (NONMAGIC) hug2 "*hug" (STRING target)
     (=>
         (REQUIRE
@@ -3359,6 +3436,7 @@
                     1)))
         (EFFECT
             (CALL hug_tree target))))
+
 (SPELL (NONMAGIC) hug3 "hugs" (STRING target)
     (=>
         (REQUIRE
@@ -3377,6 +3455,7 @@
                     1)))
         (EFFECT
             (CALL hug_tree target))))
+
 (SPELL (NONMAGIC) hug4 "*hugs*" (STRING target)
     (=>
         (REQUIRE
@@ -3395,9 +3474,7 @@
                     1)))
         (EFFECT
             (CALL hug_tree target))))
-"--------------------------------------------------------------------------------"
-" Teleport anchors"
-"--------------------------------------------------------------------------------"
+
 (SPELL (NONMAGIC) hug5 "*hugs" (STRING target)
     (=>
         (REQUIRE
@@ -3416,56 +3493,66 @@
                     1)))
         (EFFECT
             (CALL hug_tree target))))
+
+"--------------------------------------------------------------------------------"
+"Teleport anchors"
+"--------------------------------------------------------------------------------"
 (TELEPORT-ANCHOR tulimshar "tulimshar"
     (@+
         (@ "001-1.gat" 43 66)
         3
         3))
+
 (TELEPORT-ANCHOR hurnscald "hurnscald"
     (@+
         (@ "009-1.gat" 55 37)
         3
         3))
+
 (TELEPORT-ANCHOR nivalis "nivalis"
     (@+
         (@ "020-1.gat" 75 63)
         19
         12))
+
 (TELEPORT-ANCHOR wizardhut "##00"
     (@+
         (@ "013-1.gat" 41 92)
         3
         3))
+
 (TELEPORT-ANCHOR pachua "##01"
     (@+
         (@ "006-1.gat" 22 101)
         3
         3))
+
 (TELEPORT-ANCHOR desert "##02"
     (@+
         (@ "005-1.gat" 160 64)
         5
         5))
+
 (TELEPORT-ANCHOR forest "##03"
     (@+
         (@ "015-1.gat" 35 35)
         40
         40))
+
 (TELEPORT-ANCHOR snakecave "##04"
     (@+
         (@ "011-4.gat" 50 75)
         3
         3))
+
 (TELEPORT-ANCHOR dimondscove "##05"
     (@+
         (@ "010-2.gat" 23 79)
         3
         3))
+
 "--------------------------------------------------------------------------------"
-" Illia spell"
-"--------------------------------------------------------------------------------"
-"--------------------------------------------------------------------------------"
-" Kill the GM event spell"
+"Illia spell"
 "--------------------------------------------------------------------------------"
 (SPELL (NONMAGIC) illia0 "#catalazuli" ()
     (=>
@@ -3478,13 +3565,17 @@
                 0))
         (EFFECT
             (SCRIPT "{
-                                                    callfunc \"StartChannelling\";
-                                                }"))))
+                callfunc \"StartChannelling\";}
+            "))))
+
+"--------------------------------------------------------------------------------"
+"Kill the GM event spell"
+"--------------------------------------------------------------------------------"
 (SPELL (NONMAGIC) killgm0 "#pullrabbit" ()
     (=>
         (REQUIRE
             (is_equipped caster "MagicGMTopHat"))
         (EFFECT
             (SCRIPT "{
-                                                    callfunc \"ActivateMagicGMTophat\";
-                                                }"))))
+                callfunc \"ActivateMagicGMTophat\";
+            }"))))
