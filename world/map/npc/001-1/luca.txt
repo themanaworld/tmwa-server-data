@@ -47,8 +47,10 @@ L_teach:
     mes "\"If you want, I can help with that!\"";
     next;
     menu
-        "Sure, that sounds fun!", -,
+        "Sure, that sounds fun!", L_Next,
         "I'm not interested.", L_Nev;
+
+L_Next:
     mes "[Luca the Hunter]";
     mes "\"All right! It's not all that easy, though. First you have to learn how to focus. That's because you can learn many skills, but you can't focus on all of them all the time.\"";
     next;
@@ -58,9 +60,10 @@ L_teach:
     menu
         "Yeah!", L_teach0_follow,
         "Certainly!", L_teach0_follow,
-        "Wait... what do you mean?", -,
-        "Please explain some more.", -,
+        "Wait... what do you mean?", L_CallExplain,
+        "Please explain some more.", L_CallExplain,
         "No.", L_Nev;
+L_CallExplain:
     callsub S_explain;
 
 L_teach0_follow:
@@ -138,13 +141,15 @@ S_explain:
     mes "[Luca the Hunter]";
     mes "\"Alright, what do you want to know?\"";
     next;
+    goto L_Explain_loop;
 
-S_explain_loop:
+L_Explain_loop:
     menu
         "What's skill focus?", L_explain_focus,
         "What skills are there?", L_explain_skills,
         "How do skills work?", L_explain_work,
-        "Thanks, I think I got it!", -;
+        "Thanks, I think I got it!", L_Return;
+L_Return:
     return;
 
 L_explain_focus:
@@ -170,7 +175,7 @@ L_explain_focus:
     next;
     mes "\"For unfocusing you need to bring a potion; a special potion. That potion is not the easiest to get, but I am sure you are able to.\"";
     next;
-    goto S_explain_loop;
+    goto L_Explain_loop;
 
 L_explain_skills:
     mes "[Luca the Hunter]";
@@ -185,7 +190,7 @@ L_explain_skills:
     mes "[Luca the Hunter]";
     mes "\"Other than that, just ask around! There have to be some people who can teach you something...\"";
     next;
-    goto S_explain_loop;
+    goto L_Explain_loop;
 
 L_explain_work:
     mes "[Luca the Hunter]";
@@ -205,12 +210,13 @@ L_explain_work:
     mes "\"She always would have one cactus potion too many... but she was an amazing teacher.\"";
     mes "He nods emphatically.";
     next;
-    goto S_explain_loop;
+    goto L_Explain_loop;
 
 L_teachmore:
     mes "[Luca the Hunter]";
     mes "\"Good to see you again!\"";
     next;
+    goto L_teachmore2;
 
 L_teachmore2:
     setarray @choices, 0,0,0,0,0;
@@ -232,6 +238,7 @@ L_teachmore2:
     set @choices[@choice_nr], @C_focus;
     set @choice$[@choice_nr], "I would like to focus.";
     set @choice_nr, @choice_nr + 1;
+    goto L_teachmore2_nof;
 
 L_teachmore2_nof:
     getactivatedpoolskilllist;
@@ -239,6 +246,7 @@ L_teachmore2_nof:
     set @choices[@choice_nr], @C_unfocus;
     set @choice$[@choice_nr], "I would like to unfocus.";
     set @choice_nr, @choice_nr + 1;
+    goto L_teachmore2_nounf;
 
 L_teachmore2_nounf:
     if (!(getskilllv(SKILL_BRAWLING)))
@@ -256,6 +264,7 @@ L_teachmore2_nounf:
     set @choices[@choice_nr], @C_focusoverview;
     set @choice$[@choice_nr], "Can you tell me what skills I'm currently focused on?";
     set @choice_nr, @choice_nr + 1;
+    goto L_teachmore2_noovv;
 
 L_teachmore2_noovv:
     set @choices[@choice_nr], @C_nvm;
@@ -263,12 +272,13 @@ L_teachmore2_noovv:
     set @choice_nr, @choice_nr + 1;
 
     menu
-        @choice$[0],-,
-        @choice$[1],-,
-        @choice$[2],-,
-        @choice$[3],-,
-        @choice$[4],-;
+        @choice$[0],L_MenuItems,
+        @choice$[1],L_MenuItems,
+        @choice$[2],L_MenuItems,
+        @choice$[3],L_MenuItems,
+        @choice$[4],L_MenuItems;
 
+L_MenuItems:
     set @menu, @menu - 1;
     if (@choices[@menu] == 0) goto L_Close;
     if (@choices[@menu] == @C_focus) goto L_focus;
@@ -290,15 +300,16 @@ L_focus:
     set @skilllist_name$[@skilllist_count], "Nevermind";
     set @skilllist_name$[@skilllist_count + 1], "";
     menu
-        @skilllist_name$[0], -,
-        @skilllist_name$[1], -,
-        @skilllist_name$[2], -,
-        @skilllist_name$[3], -,
-        @skilllist_name$[4], -,
-        @skilllist_name$[5], -,
-        @skilllist_name$[6], -,
-        @skilllist_name$[7], -;
+        @skilllist_name$[0], L_MenuItems1,
+        @skilllist_name$[1], L_MenuItems1,
+        @skilllist_name$[2], L_MenuItems1,
+        @skilllist_name$[3], L_MenuItems1,
+        @skilllist_name$[4], L_MenuItems1,
+        @skilllist_name$[5], L_MenuItems1,
+        @skilllist_name$[6], L_MenuItems1,
+        @skilllist_name$[7], L_MenuItems1;
 
+L_MenuItems1:
     set @menu, @menu - 1;
     if (@skilllist_id[@menu] == 0) goto L_teachmore2;
 
@@ -322,9 +333,8 @@ L_unfocus:
     mes "\"The potion is called Grimace of Dementia. So the alchemist will know for sure.\"";
     set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_UNFOCUS_RECIPE;
     menu
-        "Ok, I will get a Grimace of Dementia potion", -,
-        "Alright, be right back!", -;
-    goto L_Close;
+        "Ok, I will get a Grimace of Dementia potion", L_Close,
+        "Alright, be right back!", L_Close;
 
 L_nopotion:
     mes "[Luca the Hunter]";
@@ -346,15 +356,16 @@ L_unfocus_menu:
     set @skilllist_name$[@skilllist_count], "Nevermind";
     set @skilllist_name$[@skilllist_count + 1], "";
     menu
-        @skilllist_name$[0], -,
-        @skilllist_name$[1], -,
-        @skilllist_name$[2], -,
-        @skilllist_name$[3], -,
-        @skilllist_name$[4], -,
-        @skilllist_name$[5], -,
-        @skilllist_name$[6], -,
-        @skilllist_name$[7], -;
+        @skilllist_name$[0], L_MenuItems2,
+        @skilllist_name$[1], L_MenuItems2,
+        @skilllist_name$[2], L_MenuItems2,
+        @skilllist_name$[3], L_MenuItems2,
+        @skilllist_name$[4], L_MenuItems2,
+        @skilllist_name$[5], L_MenuItems2,
+        @skilllist_name$[6], L_MenuItems2,
+        @skilllist_name$[7], L_MenuItems2;
 
+L_MenuItems2:
     set @menu, @menu - 1;
     if (@skilllist_id[@menu] == 0) goto L_teachmore2;
 
@@ -376,6 +387,7 @@ L_focus_overview:
 L_focus_overview1:
     mes "[Luca the Hunter]";
     set @message$, "\"At the moment you are focused on ";
+    goto L_focus_overview2;
 
 L_focus_overview2:
     set @skilllist_count, @skilllist_count-1;

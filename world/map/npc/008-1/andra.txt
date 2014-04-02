@@ -11,13 +11,17 @@
     mes "\"Hello, my name is Andra. You see those nice trees? I planted every single one of them! I'm very proud of my work!\"";
     next;
     menu
-        "Nice! I imagine you planted them a long time ago, right?", -,
+        "Nice! I imagine you planted them a long time ago, right?", L_Next,
         "Sorry, but I'm not interested in plants and trees.", L_DislikePlants;
+
+L_Next:
     mes "[Andra]";
     mes "\"That is the fun part... It took only some months... and look how healthy and beautiful they are!\"";
     next;
     menu
-        "How is that possible?", -;
+        "How is that possible?", L_Next1;
+
+L_Next1:
     mes "[Andra]";
     mes "\"A few years ago, a nice woman from Tulimshar did something amazing to the land around here... I guess her name was Eomie. I have no idea what she did, but since she worked on this land, everything you plant here will grow really fast!\"";
     next;
@@ -26,18 +30,24 @@
     mes "And she also told me that this soil is so fertile because it has a lot of nutrients not only on this side, but everywhere. So it is certain that all soil in this place will become weaker if we let a lot of unfertilized spots...\"";
     next;
     menu
-        "That sounds bad! But you just need to keep planting, right?", -;
+        "That sounds bad! But you just need to keep planting, right?", L_Next2;
+
+L_Next2:
     mes "[Andra]";
     mes "\"Exactly! But it is a big place. And I don't have too much money to buy seeds. If only I could find someone who could help me... ah... I know you are probably busy, but since you are here, would you like to help me in this noble task?\"";
     menu
-        "Of course! What can I do to help you?", -,
+        "Of course! What can I do to help you?", L_Next3,
         "Not right now, I'm really busy.", L_Busy;
+
+L_Next3:
     mes "[Andra]";
     mes "\"Yay! I knew you would help me! I just need seeds and water... I think " + @seeds_amount + " Grass Seeds and " + @water_amount + " Bottle(s) of Water should be enough to grow some plants on the place. If you give the items, you can let the rest with me.\"";
     next;
     menu
         "I don't have it right now, but I will come back later.", L_Close,
-        "Here are the seeds and the water.", -;
+        "Here are the seeds and the water.", L_Next4;
+
+L_Next4:
     if (countitem("BottleOfWater") < @water_amount || countitem("GrassSeed") < @seeds_amount) goto L_NotEnough;
     if ($@spawned_plants >= $@MAX_GLOBAL_PLANTS) goto L_Gather;
     mes "[Andra]";
@@ -48,6 +58,7 @@
     set FLAGS, FLAGS | FLAG_ANDRA_HELPED;
     mes "Andra pours some water in a lot of different places and then throws some seeds to the sky. The wind carries some of them really far from her.";
     close2;
+    goto L_PreSummon;
 
 L_PreSummon:
     set $@andra_status, 1;
@@ -61,6 +72,7 @@ OnTimer1000:
     if (attachrid(getcharid(3,$@farmer$)) == 0)
         goto L_Spawn1000;
     message strcharinfo(0), "Andra: I think some plants will grow almost instantly! Just Watch...";
+    goto L_Spawn1000;
 
 L_Spawn1000:
     set $@spawned_plants, $@spawned_plants + $@PLANTS_PER_SEED;
@@ -84,6 +96,7 @@ OnTimer7000:
     if (attachrid(getcharid(3,$@farmer$)) == 0)
         goto L_Spawn7000;
     message strcharinfo(0), "Andra: Good... Just take a walk and you will be able to see how your seeds turned into some nice looking plants.";
+    goto L_Spawn7000;
 
 L_Spawn7000:
     set $@spawned_plants, $@spawned_plants + $@PLANTS_PER_SEED;
@@ -98,8 +111,10 @@ L_Return:
     mes "\"Hi " + strcharinfo(0) + ", good to see you! You came back to help me again?\"";
     next;
     menu
-        "Yes, and I already have the seeds and the water.", -,
+        "Yes, and I already have the seeds and the water.", L_Next5,
         "No, I just wanted to say hello.", L_Bye;
+
+L_Next5:
     if ($@spawned_plants >= $@MAX_GLOBAL_PLANTS) goto L_Gather;
     if (countitem("BottleOfWater") < @water_amount || countitem("GrassSeed") < @seeds_amount) goto L_NotEnough;
     delitem "BottleOfWater", @water_amount;
@@ -153,4 +168,5 @@ L_TooYoung:
 OnInit:
     set $@PLANTS_PER_SEED, 3;
     set $@MAX_GLOBAL_PLANTS, 100; // You can plant only if the amount of plants currently in the map is < than this value.
+    end;
 }

@@ -35,16 +35,20 @@ L_message:
     mes "That strange voice seems to be coming from inside your head!";
     next;
     menu
-        "Who, me?", -,
+        "Who, me?", L_Next,
         "Leave me alone!", L_Close,
         "Aaah! I'm hearing voices!", L_silly_close;
+
+L_Next:
     mes "[Well]";
     mes "\"I'm in here, in the well, talking to you!  If I'm not very mistaken, you are a powerful wizard-to-be, except that nobody has showed you how to properly do magic yet!\"";
     next;
     menu
-        "Who are you?", -,
+        "Who are you?", L_Next1,
         "Aaaah!  The voices are after me!", L_silly_close,
         "Whatever it is, I'm not interested.", L_Close;
+
+L_Next1:
     mes "[Earth Spirit]";
     mes "\"I'm an earth spirit; my name isn't important... all that matters is that I like you, and that I will help you become a powerful wizard if you help me.  Just a fair deal, no more than that...\"";
     next;
@@ -57,14 +61,14 @@ L_wb:
     mes "[Earth Spirit]";
     mes "\"It's excellent to see you again!\"";
     next;
+    goto L_main;
 
 L_main:
     menu
         "How did you get trapped?", L_Q_trapped,
         "Can you teach me magic and spells?", L_Q_magic,
         "What do you know about...", L_Q,
-        "Goodbye!", -;
-    goto L_Close;
+        "Goodbye!", L_Close;
 
 L_Q_trapped:
     mes "[Earth Spirit]";
@@ -93,14 +97,18 @@ L_Q_magic:
     menu
         "No way.", L_silly_close,
         "Sure.", L_Q_tree_ok,
-        "Why that particular tree?", -;
+        "Why that particular tree?", L_Next2;
+
+L_Next2:
     mes "[Earth Spirit]";
     mes "\"Oh, you and your questions!  Well, that tree was a druid once, so the branches contain a bit of its lifeforce.  And that's useful.\"";
     next;
     menu
         "Yuck.", L_silly_close,
         "Sure, whatever.", L_Q_tree_ok,
-        "Isn't that like cutting off someone's arm?", -;
+        "Isn't that like cutting off someone's arm?", L_Next3;
+
+L_Next3:
     mes "[Earth Spirit]";
     mes "\"Oooh... now come on!  Don't be so sentimental.  He turned himself into a tree, he can hardly expect everyone to leave him alone.\"";
     next;
@@ -125,12 +133,13 @@ L_Q_magic_1:
     mes "\"Yes, yes, if you bring me the branch and the money, then I will!\"";
     next;
     menu
-        "Here are the branch and the money.", -,
+        "Here are the branch and the money.", L_Next4,
         "How much money did you want again?", L_Q_tree_howmuch,
         "How can I cut it?", L_Q_tree_how,
         "Where was the tree again?", L_Q_tree_where,
         "What is that tree?", L_Q_tree_what;
 
+L_Next4:
     if (countitem("DruidTreeBranch") < 1) goto L_Q_tree_none;
     if (!(MAGIC_FLAGS & MFLAG_DID_CUTTREE)) goto L_Q_tree_dry;
     if (Zeny < 100000) goto L_Q_tree_nomoney;
@@ -163,9 +172,10 @@ L_Q_magic_2:
     mes "\"Yes, of course!  For just 20,000 GP I will teach you your first spell!\"";
     next;
     menu
-        "Here you are.", -,
+        "Here you are.", L_Next5,
         "No.", L_main;
 
+L_Next5:
     if (Zeny < 20000) goto L_no20k;
 
     set Zeny, Zeny - 20000;
@@ -181,9 +191,10 @@ L_Q_magic_3:
     mes "\"But yes, yes!  Only 20,000 GP, once again, and I will teach you a far more useful spell!\"";
     next;
     menu
-        "Here you are.", -,
+        "Here you are.", L_Next6,
         "No.", L_main;
 
+L_Next6:
     if (Zeny < 20000) goto L_no20k;
     set Zeny, Zeny - 20000;
     mes "[Earth Spirit]";
@@ -252,7 +263,8 @@ L_silly_close:
         mes "[Earth Spirit]";
     if (!(MAGIC_FLAGS & MFLAG_KNOWS_IMP))
         mes "[Well]";
-        mes "\"Silly " + @s$ + ".\"";
+    mes "\"Silly " + @s$ + ".\"";
+    goto L_Close;
 
 L_Close:
     set @Q_MASK, 0;
@@ -279,9 +291,11 @@ S_update_var:
 005-1.gat,118,70,0|script|#EarthImp0#_M|400,
 {
     callfunc "EarthImpTouch";
+    end;
 }
 
 005-1.gat,119,70,0|script|#EarthImp1#_M|400,
 {
     callfunc "EarthImpTouch";
+    end;
 }

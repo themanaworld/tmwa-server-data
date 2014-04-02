@@ -210,7 +210,9 @@
     next;
     mes "\"Well, that was the poem.  What do you think of it?\"";
     menu
-        "It was a bit long and kind of hard to understand, but thanks for reading.", -;
+        "It was a bit long and kind of hard to understand, but thanks for reading.", L_Next;
+
+L_Next:
     mes "[Shannon]";
     mes "\"Well, thanks for coming to the supper.  Also, thanks for helping me make it through the poem.  Here, take this hat.  When you wear it, wear it with the class you showed me today.  Happy Burns' Supper!\"";
     getinventorylist;
@@ -380,8 +382,7 @@ event_done:
     next;
     mes "\"Well, that was the poem.  What do you think of it?\"";
     menu
-        "It was a bit long and kind of hard to understand, but thanks for reading.", -;
-    close;
+        "It was a bit long and kind of hard to understand, but thanks for reading.", leave;
 
 L_Full_Inv:
     mes "[Shannon]";
@@ -408,6 +409,7 @@ food_menu:
     set @choice_idx[@choices_nr], @C_steak;
     set @choice$[@choices_nr], "Offer him a steak.";
     set @choices_nr, @choices_nr + 1;
+    goto L_nosteaks;
 
 L_nosteaks:
     if (countitem("ChickenLeg") == 0)
@@ -415,6 +417,7 @@ L_nosteaks:
     set @choice_idx[@choices_nr], @C_chickenleg;
     set @choice$[@choices_nr], "Offer him a chicken leg.";
     set @choices_nr, @choices_nr + 1;
+    goto L_nochickenleg;
 
 L_nochickenleg:
     if (countitem("RedApple") == 0)
@@ -422,6 +425,7 @@ L_nochickenleg:
     set @choice_idx[@choices_nr], @C_redapple;
     set @choice$[@choices_nr], "Offer him a red apple.";
     set @choices_nr, @choices_nr + 1;
+    goto L_noredapple;
 
 L_noredapple:
     if (countitem("GreenApple") == 0)
@@ -429,6 +433,7 @@ L_noredapple:
     set @choice_idx[@choices_nr], @C_greenapple;
     set @choice$[@choices_nr], "Offer him a green apple.";
     set @choices_nr, @choices_nr + 1;
+    goto L_nogreenapple;
 
 L_nogreenapple:
     if (countitem("Beer") == 0)
@@ -436,24 +441,26 @@ L_nogreenapple:
     set @choice_idx[@choices_nr], @C_beer;
     set @choice$[@choices_nr], "Offer him a beer.";
     set @choices_nr, @choices_nr + 1;
+    goto L_nobeer;
 
 L_nobeer:
     set @choice_idx[@choices_nr], @C_nevermind;
     set @choice$[@choices_nr], "Leave";
 
     menu
-        @choice$[0],-,
-        @choice$[1],-,
-        @choice$[2],-,
-        @choice$[3],-,
-        @choice$[4],-,
-        @choice$[5],-,
-        @choice$[6],-,
-        @choice$[7],-,
-        @choice$[8],-,
-        @choice$[9],-,
-        @choice$[10],-;
+        @choice$[0],L_MenuItems,
+        @choice$[1],L_MenuItems,
+        @choice$[2],L_MenuItems,
+        @choice$[3],L_MenuItems,
+        @choice$[4],L_MenuItems,
+        @choice$[5],L_MenuItems,
+        @choice$[6],L_MenuItems,
+        @choice$[7],L_MenuItems,
+        @choice$[8],L_MenuItems,
+        @choice$[9],L_MenuItems,
+        @choice$[10],L_MenuItems;
 
+L_MenuItems:
     set @choose, @menu - 1;
     if (@choice_idx[@choose] == 0)
         goto leave;
@@ -572,5 +579,6 @@ leave:
     set @npcname$, "Basil the Inn Keeper";
     set @cost, 200;
     callfunc "Inn";
+    end;
 }
 

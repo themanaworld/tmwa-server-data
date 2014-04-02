@@ -37,6 +37,7 @@
         mes "\"Hello! What brings you here?\"";
     next;
     set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_WYARA;
+    goto L_Main;
 
 L_Main:
     if (!@has_magic && (MAGIC_FLAGS & MFLAG_TOUCHED_MANASEED))
@@ -45,14 +46,13 @@ L_Main:
             "Can you help me use the mana seed?", L_Q_manaseed_unabsorbed,
             "Can you help me learn magic?", L_Magic,
             "I would like to buy potions.", L_Shop,
-            "Bye!", -;
-    if (!(!@has_magic && (MAGIC_FLAGS & MFLAG_TOUCHED_MANASEED)))
+            "Bye!", L_Close;
+    //else
         menu
             "What do you know about...", L_Question,
             "Can you help me learn magic?", L_Magic,
             "I would like to buy potions.", L_Shop,
-            "Bye!", -;
-    close;
+            "Bye!", L_Close;
 
 L_Shop:
     mes "[Wyara the Witch]";
@@ -129,7 +129,6 @@ L_Q_manapotion:
     menu
         "Sure!", L_make_manapotion,
         "No.", L_Main;
-    goto L_Main;
 
 L_manapotion_toomany:
     mes "[Wyara the Witch]";
@@ -205,14 +204,14 @@ L_Magic:
     mes "[Wyara the Witch]";
     mes "\"Perhaps I can help you a little, but I am not a master of any school of magic.\"";
     next;
+    goto L_Magic_main;
 
 L_Magic_main:
     menu
         "Can you explain magic to me?", L_Magic_explain,
         "Can you teach me a spell?", L_Magic_spell,
         "Can you train me?", L_Magic_train,
-        "Never mind.", -;
-    goto L_Main;
+        "Never mind.", L_Main;
 
 L_Magic_explain:
     mes "[Wyara the Witch]";
@@ -242,6 +241,7 @@ L_Magic_spell3:
     if (getskilllv(SKILL_MAGIC) < 2)
         mes "\"You are not powerful enough to use it yet, though; you will first have to absorb more magic from the mana seed.\"";
     next;
+    goto L_Magic_spell2;
 
 L_Magic_spell2:
     mes "[Wyara the Witch]";
@@ -284,6 +284,7 @@ L_Magic_train_wb:
         goto L_Magic_train_evil;
     mes "\"Ah, yes, your training...\"";
     next;
+    goto L_Magic_train_dispatch;
 
 L_Magic_train_dispatch:
     if (@Q_status == @STATUS_PURIFY_TWICE)
@@ -304,6 +305,7 @@ L_Magic_train_dispatch:
     next;
     set @Q_status, @STATUS_PURIFY_EXPLAINED;
     callsub S_update_var;
+    goto L_Magic_purify_explained;
 
 L_Magic_purify_explained:
     if (countitem("PurificationPotion"))
@@ -315,7 +317,9 @@ L_Magic_purify_explained:
     menu
         "I shall get them later.", L_Magic_main,
         "Booring.", L_Magic_main,
-        "Here they are.", -;
+        "Here they are.", L_Next;
+
+L_Next:
     getinventorylist;
     if ((@inventorylist_count == 100) && (countitem("MauveHerb") > 20) && (countitem("MaggotSlime") > 20))
         goto L_Magic_purify_nospace;
@@ -329,6 +333,7 @@ L_Magic_purify_explained:
     mes "[Wyara the Witch]";
     mes "Wyara grinds the leaves and mixes them with the slime, boils them, then speaks a brief incantation over them and hands you the result.";
     next;
+    goto L_Magic_purify_doit;
 
 L_Magic_purify_doit:
     mes "[Wyara the Witch]";
@@ -360,7 +365,9 @@ L_Magic_purify_once:
     menu
         "I'll do that later.", L_Main,
         "No way.", L_Main,
-        "Here you are.", -;
+        "Here you are.", L_Next1;
+
+L_Next1:
     getinventorylist;
     if ((@inventorylist_count == 100) && (countitem("MauveHerb") > 20) && (countitem("MaggotSlime") > 20))
         goto L_Magic_purify_nospace;
@@ -374,6 +381,7 @@ L_Magic_purify_once:
     mes "[Wyara the Witch]";
     mes "Wyara brews another purification potion.";
     next;
+    goto L_Magic_purify_doit2;
 
 L_Magic_purify_doit2:
     mes "[Wyara the Witch]";
@@ -389,8 +397,10 @@ L_Magic_purify_done:
     mes "\"Please sit down and touch the ground.\"";
     next;
     menu
-        "Very well.", -,
+        "Very well.", L_Next2,
         "No way!", L_Magic_purify_abort;
+
+L_Next2:
     mes "[Wyara the Witch]";
     mes "You sit down and touch the ground, and so does Wyara.";
     next;
@@ -421,12 +431,14 @@ L_Magic_train_no:
     mes "[Wyara the Witch]";
     mes "\"I can't teach you anything at this time.  Perhaps Sagatha can help you, but I'm not sure if she will accept you as a student.\"";
     next;
+    goto L_Magic_train_sagatha;
 
 L_Magic_train_sagatha:
     menu
         "OK.", L_Magic_main,
-        "How can I convince her to accept me?", -;
+        "How can I convince her to accept me?", L_Next3;
 
+L_Next3:
     callfunc "SagathaStatus";
     mes "[Wyara the Witch]";
     if (@evil)
@@ -452,8 +464,10 @@ L_Magic_train_sagatha:
     set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_DRUIDTREE;
     menu
         "What is that tree?", L_Magic_train_tree_backgd,
-        "How should I tend to it?", -,
+        "How should I tend to it?", L_Next4,
         "Nah.", L_Magic_main;
+
+L_Next4:
     mes "[Wyara the Witch]";
     mes "\"The tree has been there alone and unattended for a long time; what he needs most is water and affection.  Give him both.\"";
     next;
@@ -494,14 +508,14 @@ L_Magic_train_tree_backgd:
     mes "[Wyara the Witch]";
     mes "\"Please give him water, for he is always in need of it, and thank him for his sacrifice.  It is all we can do for him now.\"";
     next;
+    goto L_Magic_tree_menu;
 
 L_Magic_tree_menu:
     menu
         "How should I give him water?", L_Magic_tree_water,
         "How should I thank him?", L_Magic_tree_remind,
-        "I will.", -,
-        "No.", -;
-    goto L_Magic_main;
+        "I will.", L_Magic_main,
+        "No.", L_Magic_main;
 
 L_Magic_tree_water:
     mes "[Wyara the Witch]";
@@ -528,6 +542,9 @@ L_Magic_train_sagatha_lvl1:
     mes "\"Well, you're still a bit of a beginner, so I don't think she will accept you yet.  Maybe you can absorb some more power from the mana seed?  If you can grow your magical powers a little, I might be able to help you.\"";
     next;
     goto L_Magic_main;
+
+L_Close:
+    close;
 
 S_update_var:
     set QUEST_MAGIC2, (QUEST_MAGIC2 & ~(@Q_MASK) | (@Q_status << @Q_SHIFT));

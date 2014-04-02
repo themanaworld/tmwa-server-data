@@ -91,23 +91,21 @@
         mes "\"Hello, " +  @type$ + ", did you come from Tulimshar? Because you have a nice tan. \"";
     menu
         "Yes, I'm from Tulimshar", L_exotic,
-        "Well, I just like sunbathing", -,
-        "Good bye", -;
-    close;
+        "Well, I just like sunbathing", L_Close,
+        "Good bye", L_Close;
 
 L_KnowAlready:
         mes @npcname$;
         mes "\"I love Tulimshar's stuff.  I'm collecting souvenirs from Tulimshar to help remind me of all the great times I had there.  If you give me an interesting item from the area, I'll give you a nice reward.  So, you have a new item?\"";
     goto L_startitem;
-    close;
 
 L_exotic:
         mes @npcname$;
         mes "\"I said that because I love Tulimshar's stuff...I'm collecting souvenirs from Tulimshar to help remind me of all the great times I had there.  If you give me an interesting item maybe I can give you a nice reward. But I don't need a lot, I just need one of each item.\"";
-    menu    "I have some items on me maybe you'll like them ", L_startitem,
-            "Don't touch my stuff!", -,
-            "I'll get them. Bye.", -;
-    close;
+    menu
+        "I have some items on me maybe you'll like them ", L_startitem,
+        "Don't touch my stuff!", L_Close,
+        "I'll get them. Bye.", L_Close;
 
 L_startitem:
     setarray @exotic_item$, "", "", "", "", "", "", "";
@@ -118,56 +116,64 @@ L_startitem:
     set @exotic_item$[@c], "a Desert Hat ?";
     set @menuid[@c], 0;
     set @c, @c + 1;
+    goto L_DesertShirt;
 
 L_DesertShirt:
     if (countitem("DesertShirt") < 1 || @Q_status & (1<<@BIT_DESERTSHIRT) ) goto L_SerfHat;
     set @exotic_item$[@c], "a Desert Shirt ?";
     set @menuid[@c], 1;
     set @c, @c + 1;
+    goto L_SerfHat;
 
 L_SerfHat:
     if (countitem("SerfHat") < 1 || @Q_status & (1<<@BIT_SERFHAT) ) goto L_tongue;
     set @exotic_item$[@c], "a Serf Hat ?";
     set @menuid[@c], 2;
     set @c, @c + 1;
+    goto L_tongue;
 
 L_tongue:
     if (countitem("MountainSnakeTongue") < 1 || @Q_status & (1<<@BIT_MS_TONGUE)) goto L_egg;
     set @exotic_item$[@c], "a Mountain Snake Tongue ?";
     set @menuid[@c], 3;
     set @c, @c + 1;
+    goto L_egg;
 
 L_egg:
     if (countitem("MountainSnakeEgg") < 1 || @Q_status & (1<<@BIT_MS_EGG)) goto L_Skin;
     set @exotic_item$[@c], "a Mountain Snake Egg?";
     set @menuid[@c], 4;
     set @c, @c + 1;
+    goto L_Skin;
 
 L_Skin:
     if (countitem("SnakeSkin") < 1 || @Q_status & (1<<@BIT_SNAKESKIN)) goto L_bugleg;
     set @exotic_item$[@c], "a Snake Skin?";
     set @menuid[@c], 5;
     set @c, @c + 1;
+    goto L_bugleg;
 
 L_bugleg:
     if (countitem("BugLeg") < 1 || @Q_status & (1<<@BIT_BUGLEG)) goto L_NeverMind;
     set @exotic_item$[@c], "a Bug Leg?";
     set @menuid[@c], 6;
     set @c, @c + 1;
+    goto L_NeverMind;
 
 L_NeverMind:
     set @exotic_item$[@c], "Nevermind";
     set @menuid[@c], 6;
 //menu for the item
     menu
-        @exotic_item$[0], -,
-        @exotic_item$[1], -,
-        @exotic_item$[2], -,
-        @exotic_item$[3], -,
-        @exotic_item$[4], -,
-        @exotic_item$[5], -,
-        @exotic_item$[6], -;
+        @exotic_item$[0], L_MenuItems,
+        @exotic_item$[1], L_MenuItems,
+        @exotic_item$[2], L_MenuItems,
+        @exotic_item$[3], L_MenuItems,
+        @exotic_item$[4], L_MenuItems,
+        @exotic_item$[5], L_MenuItems,
+        @exotic_item$[6], L_MenuItems;
 
+L_MenuItems:
     set @menu, @menu -1;
 
     if (@menuid[@menu] == 0) goto L_DesertHat_Item;
@@ -342,9 +348,11 @@ L_2_talk2:
 L_2_talk3:
     menu        "Ok, I am a professional in doing such things", L_2_professional,
         "Hey do you really mean it? ", L_2_professional,
-        "You calmed down again?", -,
+        "You calmed down again?", L_Close,
         "Oh a packrat! By the way, is that trash over there yours?", L_2_name,
-        "Nevermind", -;
+        "Nevermind", L_Close;
+
+L_Close:
     mes @npcname$;
     mes "\"Get out of my way, prank!\"";
     close;
@@ -371,8 +379,10 @@ L_2_name:
     mes @npcname$;
     mes "\"What is your name again?\"";
 
-    menu    "I am sorry for the joke... Please forgive me", -,
-            "They call me Mistakes. I am a professional killer as well. You heard about that business in the terranite cave?", -;
+    menu    "I am sorry for the joke... Please forgive me", L_Next,
+            "They call me Mistakes. I am a professional killer as well. You heard about that business in the terranite cave?", L_Next;
+
+L_Next:
     mes @npcname$;
     mes "\"Alright, I see. Ok maybe I really need to calm down. Please leave me alone... I will try to calm down, ok?\"";
     close;

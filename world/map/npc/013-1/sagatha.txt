@@ -12,6 +12,7 @@ function|script|QuestSagathaHappy|,
 
 L_zero:
     set @unhappiness, 0;
+    goto L_write;
 
 L_write:
     set QUEST_MAGIC, (QUEST_MAGIC & ~NIBBLE_3_MASK) | (@unhappiness << NIBBLE_3_SHIFT);
@@ -30,6 +31,7 @@ function|script|QuestSagathaAnnoy|,
 
 L_max:
     set @unhappiness, 15;
+    goto L_write;
 
 L_write:
     set QUEST_MAGIC, (QUEST_MAGIC & ~NIBBLE_3_MASK) | (@unhappiness << NIBBLE_3_SHIFT);
@@ -43,6 +45,7 @@ function|script|SagathaStatus|,
         goto L_next;
     set @value, 15;
     callfunc "QuestSagathaAnnoy";
+    goto L_next;
 
 L_next:
     set @mexp, MAGIC_EXPERIENCE & 65535;
@@ -109,10 +112,12 @@ L_next:
         mes "She looks at you impassively.";
     next;
     menu
-        "Who are you?", -,
+        "Who are you?", L_Next,
         "What's your name?", L_intro_name,
         "Hello!  My name is " + strcharinfo(0) + ".", L_intro_givename,
         "Goodbye.", L_close;
+
+L_Next:
     mes "[Witch]";
     mes "\"I am what you humans call a witch.  I am a human who has chosen all living creatures as what you call family.\"";
     next;
@@ -120,7 +125,6 @@ L_next:
         "No, I mean... what's your name?", L_intro_name,
         "Hello!  My name is " + strcharinfo(0) + ".", L_intro_givename,
         "Uh.... goodbye.", L_close;
-    close;
 
 L_hat_attack:
     mes "The witch seems to be trembling with disgust as she stares at your headgear.";
@@ -151,8 +155,7 @@ L_intro_givename:
     next;
     menu
         "What's yours?", L_intro_name,
-        "Uhm... bye.", -;
-    close;
+        "Uhm... bye.", L_close;
 
 L_evil:
     mes "The witch's eyes flare up in anger as she notices you, and she turns away from you.";
@@ -173,6 +176,7 @@ L_wb:
     if (@good == 0)
         mes "Sagatha glances at you, suspicion evident in her eyes.";
     next;
+    goto L_main;
 
 L_main:
     if (@Q_status)
@@ -181,13 +185,12 @@ L_main:
             "Can you teach me more magic?", L_teach,
             "What do you know about...", L_Question,
             "Goodbye.", L_close;
-    if (!@Q_status)
+    //else
         menu
             "Can you explain magic to me?", L_explain_magic,
             "Can you teach me magic?", L_teach_initial,
             "What do you know about...", L_Question,
             "Goodbye.", L_close;
-    close;
 
 L_teach_initial:
     if (@good < 2)

@@ -34,6 +34,8 @@
 
 -|script|#businessmanNTconfig|-1,
 {
+    end;
+
 OnInit:
     // Nibble 4
     set $@knowYanisNT,   0x10000;
@@ -92,7 +94,9 @@ OnInit:
     mes "\"Ah, are you the room service? I've some requests.\"";
     menu
         "Sure, what can I do for you?",L_Luggage,
-        "No, I'm not!",-;
+        "No, I'm not!",L_Next;
+
+L_Next:
     mes "[Kylian]";
     mes "\"Too bad. Would you be interested in earning some quick money with some errands regardless?\"";
     menu
@@ -113,8 +117,10 @@ L_Suitcase: // @state >= 1, but below 3
     if (@state != 2)
         goto L_Close;
     menu
-        "Here it is.",-,
+        "Here it is.",L_Continue,
         "I'm on my way, don't worry.",L_Close;
+
+L_Continue:
     if (countitem("LeatherSuitcase") < 1)
         goto L_NoItem;
     delitem "LeatherSuitcase", 1;
@@ -131,14 +137,18 @@ L_Suitcase: // @state >= 1, but below 3
     mes "In case you don't like them, you could also bring them to the Tulimshar bakery. I heard they use them to make some special flour.\"";
     getitem "Acorn", @acorn_amount;
     next;
+    goto L_ShopLicense;
+
 L_ShopLicense: // @state == 3
     mes "[Kylian]";
     mes "\"I'm a salesman and came to Tulimshar because I'm thinking about establishing a shop here. While I'm going through my papers, could you find out who I have to talk to about opening a shop in this city?\"";
     if (!(QUEST_NorthTulimshar & $@knowYanisNT))
         goto L_Close;
     menu
-        "You need to talk to Yanis in the government building.",-,
+        "You need to talk to Yanis in the government building.",L_GovBuild,
         "I'll see what I can do.",L_Close;
+
+L_GovBuild:
     set Zeny, Zeny + @license_money;
     getexp @license_exp, 0;
     set @state, 4;
@@ -148,6 +158,8 @@ L_ShopLicense: // @state == 3
     mes "\"Ah, excellent. That's very helpful. Could you tell me how to get to that building?\"";
     mes "You explain the way to the building.";
     next;
+    goto L_LicenseDone;
+
 L_LicenseDone: // the player didn't log out yet after telling about Yanis
     mes "[Kylian]";
     mes "\"I need to prepare my papers now. I might have some more questions later.\"";
@@ -159,8 +171,10 @@ L_SightSeeing: // @state == 4 and logged out sometime between getting to that st
     if (!(QUEST_NorthTulimshar & $@knowWeellosNT))
         goto L_Close;
     menu
-        "There is a very old historic building not far from here.",-,
+        "There is a very old historic building not far from here.",L_HistBuild,
         "I don't know, but will have a look around.",L_Close;
+
+L_HistBuild:
     set Zeny, Zeny + @sightseeing_money;
     getexp @sightseeing_exp, 0;
     set @state, 5;
@@ -169,19 +183,25 @@ L_SightSeeing: // @state == 4 and logged out sometime between getting to that st
     mes "\"This sounds interesting. Please tell me the way.\"";
     mes "You tell him how to get to the historic building.";
     next;
+    goto L_Food;
+
 L_Food: // @state == 5
     mes "[Kylian]";
     mes "\"While I'm out, I could also get something to eat. Maybe some typical dish for this region. Do you have a good suggestion for that?\"";
     if (@bernard < 4) // didn't yet help Bernard to make his soup
         goto L_Close;
     menu
-        "Bernard on the bazaar makes a great soup.",-,
+        "Bernard on the bazaar makes a great soup.",L_SoupBer,
         "No idea, I'll try to find out.",L_Close;
+
+L_SoupBer:
     set Zeny, Zeny + @food_money;
     getexp @food_exp, 0;
     set @state, 6;
     callsub S_Update_Mask;
     set @KylianNTSightSeeing, 1;
+    goto L_SightSeeingDone;
+
 L_SightSeeingDone:
     mes "[Kylian]";
     mes "\"I'm going to see the historic building you told me about and try this local soup on the bazaar. Thank you for the suggestions.\"";
@@ -195,8 +215,10 @@ L_Casino: // @state == 6 and logged out sometime between getting to that state a
     if (!(QUEST_NorthTulimshar & $@knowCasinoNT))
         goto L_Close;
     menu
-        "Of course! The casino!",-,
+        "Of course! The casino!",L_CasinoFound,
         "Not really.",L_Close;
+
+L_CasineFound:
     set Zeny, Zeny + @casino_money;
     getexp @casino_exp, 0;
     set @state, 7;
@@ -205,14 +227,18 @@ L_Casino: // @state == 6 and logged out sometime between getting to that state a
     mes "\"Oh, there's a casino in this city? That's a wonderful thing. Where can I find it?\"";
     mes "You explain how to get to the casino.";
     next;
+    goto L_Clothes;
+
 L_Clothes: // @state == 7
     mes "[Kylian]";
     mes "\"I should get proper clothing before I go to the casino tonight. Do you know a reputable shop where clothing of high quality is sold?\"";
     if (!(QUEST_NorthTulimshar & $@knowLatoyNT))
         goto L_Close;
     menu
-        "At the market near the harbor district...",-,
+        "At the market near the harbor district...",L_HarborDistrict,
         "Mh, I don't know.",L_Close;
+
+L_HarborDistrict:
     set Zeny, Zeny + @clothes_money;
     getexp @clothes_exp, 0;
     set @state, 8;
@@ -241,6 +267,7 @@ L_DesertHat: // @state == 8
     set @state, 9;
     callsub S_Update_Mask;
     next;
+    goto L_Done;
 
 L_Done:
     mes "[Kylian]";

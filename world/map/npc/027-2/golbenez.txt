@@ -50,16 +50,20 @@
     mes "[Golbenez]";
     mes "\"How do you like my place of leisure, mortal?\"";
     menu
-        "What is this place? Why is it full of dead people?",-,
+        "What is this place? Why is it full of dead people?",L_WhatPlace,
         "You look different here. Nice horns.",L_Horns,
         "I'm enjoying myself, thanks for asking.",L_Close;
+
+L_WhatPlace:
     mes "[Golbenez]";
     mes "\"Mortal, this is beyond your comprehension. Do not worry about it and enjoy your time.\"";
 
     if (@lover < 2)
         goto L_Close;
     menu
-        "I want to know. Try me.",-;
+        "I want to know. Try me.",L_WantKnow;
+
+L_WantKnow:
     mes "Golbenez takes a piercing look at you.";
     mes "[Golbenez]";
     mes "\"Fine.\"";
@@ -71,14 +75,15 @@
     mes "[Golbenez]";
     mes "\"Unfortunately, it got destroyed. I had no choice but to take the memories from the dead and recreate this place.\"";
     menu
-        "What do you mean by 'playground?'",-,
-        "Recreate? What do you mean by that?",-;
+        "What do you mean by 'playground?'",L_WantGoOn,
+        "Recreate? What do you mean by that?",L_WantGoOn;
+
+L_WantGoOn:
     mes "[Golbenez]";
     mes "\"As I said, you do not understand. You are starting to bore me. Leave.\"";
 
     set @state, 1;
     callsub S_Update_Mask;
-
     goto L_Close;
 
 L_Back:
@@ -91,8 +96,10 @@ L_Memory:
     mes "[Golbenez]";
     mes "\"Mortal, you are back. Are you going to bore me with other stupid questions?\"";
     menu
-        "I want to know what happened in the inn, before it was destroyed.",-,
+        "I want to know what happened in the inn, before it was destroyed.",L_KnowDestroy,
         "Nevermind.",L_Close;
+
+L_KnowDestroy:
     if ((@woman >= 7)
         && (@lover >= 3)
         && (@husband >= 4))
@@ -109,9 +116,11 @@ L_Detective:
     next;
     mes "\"The only thing you would have to do is promise me your soul.\"";
     menu
-        "No!",-,
-        "That's too expensive. Make another offer.",-,
-        "My soul?!",-;
+        "No!",L_WantsSoul,
+        "That's too expensive. Make another offer.",L_WantsSoul,
+        "My soul?!",L_WantsSoul;
+
+L_WantsSoul:
     mes "Golbenez giggles, a strange and somewhat unnerving sound from such a being.";
     mes "[Golbenez]";
     mes "\"You should have seen your face. Really, mortals can be so funny.\"";
@@ -129,8 +138,10 @@ L_Reid:
             "What do you need them for?",L_Why_Stuff,
             "I'm working on that.",L_Close;
     menu
-        "Here you go.",-,
+        "Here you go.",L_GiveRags,
         "I'm working on that.",L_Close;
+
+L_GiveRags:
     if (countitem("OrangeCake") < 1)
         goto L_No_Cake;
     if (countitem("RottenRags") < @ROTTENRAGS_AMOUNT)
@@ -148,9 +159,11 @@ L_Reid:
     set @state, 3;
     callsub S_Update_Mask;
     menu
-        "Can I see it again?",-,
-        "Wow, that was interesting.",-,
-        "Why do you collect such personal memories?",-;
+        "Can I see it again?",L_CollectMem,
+        "Wow, that was interesting.",L_CollectMem,
+        "Why do you collect such personal memories?",L_CollectMem;
+
+L_CollectMem:
     mes "Golbenez throws you an amused look.";
     next;
     mes "[Golbenez]";
@@ -169,8 +182,10 @@ L_Hamond:
             "Not yet.",L_Close;
     menu
         "I want to see Reid's memory again.",L_R_Again,
-        "I have what you want.",-,
+        "I have what you want.",L_GiveEar,
         "I'm working on that.",L_Close;
+
+L_GiveEar:
     if (countitem("ChocolateCake") < 1)
         goto L_No_Cake;
     if (countitem("UndeadEar") < @UNDEADEAR_AMOUNT)
@@ -205,8 +220,10 @@ L_Savaric:
     menu
         "I want to see Reid's memory again.",L_R_Again,
         "I want to see Hamond's memory again.",L_H_Again,
-        "I got what you want.",-,
+        "I got what you want.",L_GiveEye,
         "I'm working on that.",L_Close;
+
+L_GiveEye:
     if (countitem("AppleCake") < 1)
         goto L_No_Cake;
     if (countitem("UndeadEye") < @UNDEADEYE_AMOUNT)
@@ -224,8 +241,10 @@ L_Savaric:
     mes "[Golbenez]";
     mes "\"Humans can be so amusing!\"";
     menu
-        "YOU CRUEL MONSTER!",-,
-        "I agree. What a bunch of idiots.",-;
+        "YOU CRUEL MONSTER!",L_MonsterIdiots,
+        "I agree. What a bunch of idiots.",L_MonsterIdiots;
+
+L_MonsterIdiots:
     mes "Golbenez's mouth twists into something resembling a smile.";
     mes "[Golbenez]";
     mes "\"Oh, thank you.\"";
@@ -241,18 +260,19 @@ L_All:
         "I want to see Hamond's memory again.",L_H_Again,
         "I want to see Savaric's memory again.",L_S_Again,
         "Nevermind.",L_Close;
-    goto L_Close;
 
 L_Negotiate:
     mes "Golbenez's eyes are glowing greedily.";
     mes "[Golbenez]";
     mes "\"Did you come back to see the memories again? Or are you going to offer me another deal?\"";
     menu
-        "I want Savaric's soul back.",-,
+        "I want Savaric's soul back.",L_WantSoulBack,
         "I want to see Reid's memory again.",L_R_Again,
         "I want to see Hamond's memory again.",L_H_Again,
         "I want to see Savaric's memory again.",L_S_Again,
         "Nevermind.",L_Close;
+
+L_WantSoulBack:
     mes "[Golbenez]";
     mes "\"Savaric's soul, yes. It is a pretty nice soul, you know. From a mage... no, even better... from a lovestruck mage. It is valuable.\"";
     next;
@@ -260,8 +280,10 @@ L_Negotiate:
     next;
     menu
         "What about another cake?",L_Cake,
-        "I'm not sure. What do you want?",-,
+        "I'm not sure. What do you want?",L_GetSoul,
         "No.",L_Close;
+
+L_GetSoul:
     mes "[Golbenez]";
     mes "\"Bring me a soul of at least equal power to the mage's. I do not care about its origin.\"";
     set @state, 6;
@@ -271,15 +293,17 @@ L_Negotiate:
 L_Soul:
     mes "[Golbenez]";
     mes "\"So, did you get a soul for me?\"";
+    goto L_Soul_Try;
 
 L_Soul_Try:
     if (countitem("JackOSoul") < 1)
         menu
             "I'll go and get one.",L_Close;
     menu
-        "What about this Jack O Soul?",-,
+        "What about this Jack O Soul?",L_TryThisSoul,
         "I'll go and try to find a soul.",L_Close;
 
+L_TryThisSoul:
     if (countitem("JackOSoul") < 1)
         goto L_Betray;
     delitem "JackOSoul", 1;

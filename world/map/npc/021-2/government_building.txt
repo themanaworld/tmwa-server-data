@@ -6,6 +6,7 @@
     mes "[Estard]";
     mes "\"Hello what can I do for you?\"";
     next;
+    goto L_main;
 
 L_main:
     if (getpartnerid2())
@@ -13,14 +14,12 @@ L_main:
 
     menu
         "I'm looking at getting married.", L_marry,
-        "Nothing, I guess.", -;
-    close;
+        "Nothing, I guess.", L_Close;
 
 L_main_married:
     menu
         "I'd like a divorce.", L_divorce,
-        "Nothing, I guess.", -;
-    close;
+        "Nothing, I guess.", L_Close;
 
 L_marry:
     if (BaseLevel < WEDDING_MIN_LEVEL)
@@ -32,8 +31,7 @@ L_marry:
     mes "\"Are you sure you want to get married? It'll cost " + WEDDING_FEE + " GP.\"";
     menu
         "Yes", L_marry_do,
-        "No", -;
-    close;
+        "No", L_Close;
 
 L_marry_do:
     callsub S_give_rings;
@@ -49,8 +47,7 @@ L_marry_too_young:
 
     menu
         "Can I at least get wedding rings?", L_get_rings,
-        "Thanks anyways.", -;
-    close;
+        "Thanks anyways.", L_Close;
 
 L_marry_too_poor:
     mes "[Estard]";
@@ -63,12 +60,11 @@ L_get_rings:
 
     if (Zeny < WEDDING_FEE)
         menu
-            "Thanks anyways. I don't have enough with me.", -;
-    if (Zeny >= WEDDING_FEE)
+            "Thanks anyways. I don't have enough with me.", L_Close;
+    //else
         menu
             "I'll buy a pair.", L_get_rings_pay,
-            "Thanks anyways.", -;
-    close;
+            "Thanks anyways.", L_Close;
 
 L_get_rings_pay:
     callsub S_give_rings;
@@ -88,8 +84,7 @@ L_divorce:
     next;
     menu
         "I am sure I want it.", L_do_divorce,
-        "I don't want it.", -;
-    close;
+        "I don't want it.", L_Close;
 
 L_do_divorce:
     if (Zeny < @divorce_cost)
@@ -126,6 +121,9 @@ L_no_room_for_rings:
     mes "\"You don't have enough room to carry these rings.\"";
     close;
 
+L_Close:
+    close;
+
 S_give_rings:
     if (Zeny < WEDDING_FEE)
         goto L_not_enough_money;
@@ -154,23 +152,21 @@ S_give_rings:
         goto L_Base_Menu;
     if (BaseLevel >= 10)
         goto L_Can_Party;
+    goto L_Base_Menu;
 
 L_Base_Menu:
     menu
-        "Nothing, I guess.", -;
-    close;
+        "Nothing, I guess.", L_Close;
 
 L_Can_Party:
     menu
         "I'd like to get a party permit.", L_Get_Party,
-        "Nothing, I guess.", -;
-    close;
+        "Nothing, I guess.", L_Close;
 
 L_Can_Make_Party:
     menu
         "I'd like to get a party creator permit.", L_Get_Make_Party,
-        "Nothing, I guess.", -;
-    close;
+        "Nothing, I guess.", L_Close;
 
 L_Get_Party:
     mes "[Tathin]";
@@ -178,8 +174,7 @@ L_Get_Party:
     next;
     menu
         "OK", L_Give_Party,
-        "No thank you", -;
-    close;
+        "No thank you", L_Close;
 
 L_Give_Party:
     if (Zeny < 10)
@@ -199,8 +194,7 @@ L_Get_Make_Party:
     next;
     menu
         "OK", L_Give_Make_Party,
-        "No thank you", -;
-    close;
+        "No thank you", L_Close;
 
 L_Give_Make_Party:
     if (Zeny < 50)
@@ -214,6 +208,9 @@ L_Give_Make_Party:
 L_NotEnoughMoney:
     mes "[Tathin]";
     mes "\"You don't have enough GP\"";
+    close;
+
+L_Close:
     close;
 }
 

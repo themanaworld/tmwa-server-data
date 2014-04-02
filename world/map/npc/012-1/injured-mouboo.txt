@@ -67,14 +67,14 @@ S_update_var:
     mes "[Injured Mouboo]";
     mes "You notice a mouboo lying on the ground, groaning, as if in pain.";
     next;
+    goto L_menu;
 
 L_menu:
     menu
         "Examine the mouboo", L_examine,
         "Give the mouboo something", L_give,
         "Kill the mouboo", L_kill,
-        "Leave", -;
-    close;
+        "Leave", L_Close;
 
 L_examine:
     mes "[Injured Mouboo]";
@@ -87,7 +87,6 @@ L_examine:
     menu
         "Yes.", L_pickup_alive,
         "No.", L_menu;
-    goto L_menu;
 
 L_pickup_alive:
     mes "[Injured Mouboo]";
@@ -107,6 +106,7 @@ L_give:
 
     set @n, 0;
     set @ct, 0;
+    goto L_nloop;
 
 L_nloop:
     set @k$, @items$[@n];
@@ -118,6 +118,7 @@ L_nloop:
     set @menuNames$[@ct], @k$;
     set @choice_eat[@ct], @itemeat[@n];
     set @ct, @ct + 1;
+    goto L_nloop_skip;
 
 L_nloop_skip:
     set @n, @n+1;
@@ -127,20 +128,21 @@ L_nloop_skip:
     set @menuItems$[@ct], "Nevermind";
 
     menu
-        @menuItems$[0], -,
-        @menuItems$[1], -,
-        @menuItems$[2], -,
-        @menuItems$[3], -,
-        @menuItems$[4], -,
-        @menuItems$[5], -,
-        @menuItems$[6], -,
-        @menuItems$[7], -,
-        @menuItems$[8], -,
-        @menuItems$[9], -,
-        @menuItems$[10], -,
-        @menuItems$[11], -,
-        @menuItems$[12], -;
+        @menuItems$[0], L_MenuItems,
+        @menuItems$[1], L_MenuItems,
+        @menuItems$[2], L_MenuItems,
+        @menuItems$[3], L_MenuItems,
+        @menuItems$[4], L_MenuItems,
+        @menuItems$[5], L_MenuItems,
+        @menuItems$[6], L_MenuItems,
+        @menuItems$[7], L_MenuItems,
+        @menuItems$[8], L_MenuItems,
+        @menuItems$[9], L_MenuItems,
+        @menuItems$[10], L_MenuItems,
+        @menuItems$[11], L_MenuItems,
+        @menuItems$[12], L_MenuItems;
 
+L_MenuItems:
     set @menu, @menu - 1;
     if (@menu == @ct)
         goto L_menu;
@@ -166,6 +168,7 @@ L_consume:
 
 L_do_heal:
     callfunc "QuestMoubooHeal";
+    goto L_kill;
 
 L_kill:
     mes "[Injured Mouboo]";
@@ -184,6 +187,7 @@ L_kill_success:
     set @Q_status, @STATE_KILLED_MOUBOO;
     callsub S_update_var;
     next;
+    goto L_dead;
 
 L_dead:
     mes "[Dead Mouboo]";
@@ -209,6 +213,9 @@ L_nopickup:
 L_healed:
     mes "[Mouboo]";
     mes "The mouboo is sleeping soundly, smiling in its dreams.";
+    close;
+
+L_Close:
     close;
 
 S_update_var:

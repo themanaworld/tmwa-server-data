@@ -77,29 +77,36 @@ L_After_Welcome:
     mes "\"Please enjoy yourself!\"";
     if (BaseLevel < @minLevel)
             goto L_Close;
+    goto L_Ask_Dead;
 
 L_Ask_Dead:
     if (BaseLevel < 85)
             goto L_Close;
 
     menu
-        "What happened to you?", - ,
+        "What happened to you?", L_Next,
         "Thank you, I'll surely enjoy my visit.", L_Close;
+
+L_Next:
     mes "[Reid's Ghost]";
     mes "\"What happened to me? What do you mean?\"";
     menu
-        "Ahm, you don't look very well - actually, you look dead.",-,
-        "You don't seem to be in the best condition.",-,
-        "You are dead!",-;
+        "Ahm, you don't look very well - actually, you look dead.",L_Next1,
+        "You don't seem to be in the best condition.",L_Next1,
+        "You are dead!",L_Next1;
+
+L_Next1:
     mes "Reid looks down at her body and turns even more pale, if this is possible.";
     next;
     mes "[Reid's Ghost]";
     mes "\"OH?\"";
     next;
     menu
-        "I'm sorry. I didn't know you weren't aware of that.",-,
-        "Yes - do you understand my question now?",-,
+        "I'm sorry. I didn't know you weren't aware of that.",L_Next2,
+        "Yes - do you understand my question now?",L_Next2,
         "Shall I help you to find out what happened to you?", L_Offer_Help1;
+
+L_Next2:
     mes "[Reid's Ghost]";
     mes "\"I'm dead? But why? And why am I still here?\"";
     next;
@@ -116,10 +123,11 @@ L_Offer_Help2:
             "Shall I help you to find out what happened to you?", L_Offer_Help1,
             "Hi. I found this in the main hall. Do you know to whom it belongs?", L_Ring,
             "I don't want to bother you.", L_Close;
+    goto L_Skip1;
 
 L_Skip1:
     menu
-        "Shall I help you to find out what happened to you?", -,
+        "Shall I help you to find out what happened to you?", L_Offer_Help1,
         "I don't want to bother you.", L_Close;
 
 L_Offer_Help1:
@@ -166,6 +174,7 @@ L_Check_Tears:
     mes "[Reid's Ghost]";
     mes "\"These tears.. how they shimmer in the candle light. Yes, it seems you are serious about your offer. I think maybe you have the sensibility to help me find out the real meaning behind this terrible feeling.\"";
     next;
+    goto L_Ask_Life;
 
 L_Ask_Life:
     mes "[Reid's Ghost]";
@@ -177,11 +186,14 @@ L_Ask_Life:
             "Please tell me about your life. Maybe this will give us a clue about what happened.",L_Skip2,
             "Hi. I found this in the main hall. Do you know to whom it belongs?", L_Ring,
             "I need to think about that.", L_Close;
+    goto L_Skip2;
 
 L_Skip2:
     menu
-        "Please tell me about your life. Maybe this will give us a clue about what happened.",-,
+        "Please tell me about your life. Maybe this will give us a clue about what happened.",L_Next4,
         "I need to think about that.", L_Close;
+
+L_Next4:
     mes "[Reid's Ghost]";
     mes "\"About my life? Well, ok.\"";
     next;
@@ -201,8 +213,10 @@ L_Skip2:
     next;
     mes "\"That was a very hard time.\"";
     menu
-        "Yes, yes, but what about your life shortly before you died?",-,
-        "I can imagine. I'm very sorry for you",-;
+        "Yes, yes, but what about your life shortly before you died?",L_Next5,
+        "I can imagine. I'm very sorry for you",L_Next5;
+
+L_Next5:
     mes "She doesn't seem to pay much attention to what you say.";
     next;
     mes "\"But Hamond, my friend since I was a child, helped me in those bad times. We built up the inn again and we - we married.\"";
@@ -214,6 +228,7 @@ L_Skip2:
 
     set @state, 5;
     callsub S_Update_Mask;
+    goto L_Check_Kid;
 
 L_Check_Kid:
     if (@kidstate == 5)
@@ -229,6 +244,7 @@ L_Check_Kid:
 
     mes "\"What I'm going to tell you is very personal, but your acts have shown me that you're a person I can trust. You kindly asked me about that ring you have found... and also, even my son, who is always so reserved with strangers, came to me and spent a long time telling me a lot of nice things about you. So I will tell you about my sad love.\"";
     next;
+    goto L_LoveStory;
 
 L_Lovestory:
     mes "[Reid's Ghost]";
@@ -269,9 +285,10 @@ L_Savaric:
     mes "\"Now you know about my recent past and... and my twisted feelings.\"";
     next;
     menu
-        "Yes, I feel very sorry for you.",-,
+        "Yes, I feel very sorry for you.",L_Next6,
         "Savaric seems to be a really hot guy, making you so compliant.",L_Tease;
 
+L_Next6:
     mes "[Reid's Ghost]";
     mes "\"Oh, thank you.\"";
     if (@golbanez < 5)
@@ -279,8 +296,9 @@ L_Savaric:
             "But I still didn't find out what happened. I'll return when I have news.",L_Close;
     menu
         "But I still didn't find out what happened. I'll return when I have news.",L_Close,
-        "I found out what happened to you and this place. I'll tell you.",-;
+        "I found out what happened to you and this place. I'll tell you.",L_Next7;
 
+L_Next7:
     mes "You explain to her about Golbenez, Savaric and the memories you have seen.";
     next;
     mes "[Reid's Ghost]";
@@ -303,15 +321,15 @@ L_Sorry:
             menu
                 "Savaric asked me to give you something.",L_Diamond,
                 "Hamond sent me to bring you this.",L_Ruby,
-                "Nevermind.",-;
+                "Nevermind.",L_Close;
     if (@lover == 4 && (countitem("Diamond") >= @DIAMOND_AMOUNT))
         menu
             "Savaric asked me to give you something.",L_Diamond,
-            "Nevermind.",-;
+            "Nevermind.",L_Close;
     if (@husband == 5 && (countitem("Ruby") >= @RUBY_AMOUNT))
         menu
             "Hamond sent me to bring you this.",L_Ruby,
-            "Nevermind.",-;
+            "Nevermind.",L_Close;
     goto L_Close;
 
 L_Diamond:
@@ -345,6 +363,7 @@ L_Ruby:
 L_Kidding:
     mes "[Reid's Ghost]";
     mes "\"Are you kidding? You don't have the items you are talking about. This is not funny.\"";
+    goto L_Tease;
 
 L_Tease:
     mes "[Reid's Ghost]";
@@ -361,6 +380,7 @@ L_Thanks:
     set @state, 11;
     callsub S_Update_Mask;
     next;
+    goto L_Mylarin;
 
 L_Mylarin:
     mes "[Reid's Ghost]";
@@ -376,8 +396,7 @@ L_Happy:
     mes "\"Thank you for all you've done.\"";
     menu
         "Can you tell me again about the powder you gave me?",L_Mylarin,
-        "I'm glad I could help.",-;
-    goto L_Close;
+        "I'm glad I could help.",L_Close;
 
 L_Not_Enough_Tears:
     mes "[Reid's Ghost]";

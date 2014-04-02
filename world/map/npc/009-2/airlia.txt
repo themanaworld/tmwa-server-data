@@ -43,6 +43,7 @@
     if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED) goto L_Rewarded;
     if (QUEST_Airlia == @Q_STATUS_HELP_AIRLIA) goto L_Fetch;
     if (QUEST_Graveyard_Caretaker > @Q_STATUS_RECIEVED_FIRST_LETTER) goto L_Airlia_intro;
+    goto L_Caretaker;
 
 L_Caretaker:
     mes "[Airlia]";
@@ -50,13 +51,16 @@ L_Caretaker:
     next;
     if (QUEST_Graveyard_Caretaker < @Q_STATUS_RECIEVED_FIRST_LETTER)
         menu
-            "Sorry, no.", -,
+            "Sorry, no.", L_Next,
             "My what?", L_Caretaker_mount;
-    if (QUEST_Graveyard_Caretaker == @Q_STATUS_RECIEVED_FIRST_LETTER)
+    //else ==
         menu
-            "Sorry, no.", -,
+            "Sorry, no.", L_Next,
             "I have a letter from your father.", L_Caretaker_first_reward,
             "My what?", L_Caretaker_mount;
+    goto L_Next;
+
+L_Next:
     mes "[Airlia]";
     mes "\"Nobody ever does...\"";
     close;
@@ -107,8 +111,11 @@ L_Airlia_intro:
 
     if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
         menu
-            "...", -,
+            "...", L_Next3,
             "Oh, I have a letter from him.", L_Caretaker_later_rewards;
+    goto L_Next3;
+
+L_Next3:
     mes "[Airlia]";
     mes "\"You know, there are many who believe that each time the undead rise after being killed, they lose mana.";
     mes "Eventually, there will not be enough mana for them to rise again and they can be at rest. Do you believe this is true?\"";
@@ -116,7 +123,9 @@ L_Airlia_intro:
     menu
         "I believe so, yes.", L_Airlia_intro_mana_loss,
         "Maybe...", L_Airlia_intro_mana_loss,
-        "No, that is not proven.", -;
+        "No, that is not proven.", L_Next1;
+
+L_Next1:
     mes "[Airlia]";
     mes "\"Oh...\"";
     close;
@@ -129,8 +138,7 @@ L_Airlia_intro_mana_loss:
     menu
         "...", L_Airlia_intro_fou,
         "I have heard of them.", L_Airlia_intro_fou,
-        "Keep up the good work. I have to go now, bye.", -;
-    close;
+        "Keep up the good work. I have to go now, bye.", L_Close;
 
 L_Airlia_intro_fou:
     mes "[Airlia]";
@@ -139,18 +147,19 @@ L_Airlia_intro_fou:
     menu
         "Of course I will.", L_Airlia_intro_fight,
         "Sure, I guess.", L_Airlia_intro_fight,
-        "Thanks, but no thanks. I have other business to attend to.", -;
-    close;
+        "Thanks, but no thanks. I have other business to attend to.", L_Close;
 
 L_Airlia_intro_fight:
     mes "[Airlia]";
     mes "\"Great, just kill any of the undead creatures you can and bring me proof of your work, and I will put in a word for you with the guild.\"";
     next;
     menu
-        "I'm on it.", -,
+        "I'm on it.", L_Next2,
         "What sort of proof?", L_Airlia_intro_proof;
+
+L_Next2:
     set QUEST_Airlia, @Q_STATUS_HELP_AIRLIA;
-    close;
+    goto L_Close;
 
 L_Airlia_intro_proof:
     mes "[Airlia]";
@@ -170,31 +179,14 @@ L_Fetch:
 
     if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
         menu
-            "You are welcome.", -,
+            "You are welcome.", L_Close,
             "I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
     if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
         menu
-            "You are welcome.", -,
+            "You are welcome.", L_Close,
             "I have another letter from your father.", L_Caretaker_later_rewards,
             "I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
-
-    // The following checks are REDUNDANT
-    // The only way to get to this lable is after a check for QUEST_Airlia == @Q_STATUS_HELP_AIRLIA
-    // Incase you weren't paying attention: @Q_STATUS_HELP_AIRLIA = 1 < @Q_STATUS_INITIAL_FETCH_REWARDED
-    // Note: proper handling of the first case is done above.
-    //       The second case never gets executed anyway and not handled.
-    //
-    //if (QUEST_Airlia < @Q_STATUS_INITIAL_FETCH_REWARDED)
-    //    menu
-    //        "You are welcome.", -,
-    //        "I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
-    //
-    //if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED)
-    //    menu
-    //        "You are welcome.", -,
-    //        "I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
-
-    close;
+    goto L_Close;
 
 L_Fetch_initial_reward:
     if (countitem(@FETCH_LABEL_INITIAL$) < @FETCH_AMOUNT_INITIAL) goto L_Fetch_not_enough;
@@ -240,12 +232,15 @@ L_Rewarded:
     next;
     if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
         menu
-            "You are welcome.", -,
+            "You are welcome.", L_Close,
             "I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
     if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
         menu
-            "You are welcome.", -,
+            "You are welcome.", L_Close,
             "I have another letter from your father.", L_Caretaker_later_rewards,
             "I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
+    goto L_Close;
+
+L_Close:
     close;
 }

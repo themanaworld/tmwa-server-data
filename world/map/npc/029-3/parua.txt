@@ -9,16 +9,21 @@
     mes "[Parua]";
     mes "\"Do you dare challenge the power that sleeps here?\"";
     menu "No, I'll let it sleep.", L_Exit,
-         "Ha! What's the worst it could do?", -,
+         "Ha! What's the worst it could do?", L_Next,
          "Actually, I want to leave, but I'm stuck!", L_Stuck;
+
+L_Next:
     mes "[Parua]";
     mes "\"Very well, for a fee of 20,000 GP, I will awaken that power.\"";
     menu "No, what a ripoff!", L_Exit,
-         "Fine, here you go.", -;
+         "Fine, here you go.", L_Fine;
+
+L_Fine:
     if ($@FIGHT_CAVE_STATUS == 1)
         goto L_AlreadyStarted;
     if (Zeny >= 20000 + 3000)
         goto L_CallPlayers;
+    goto L_Paying;
 
 L_Paying:
     if (getmapusers("029-3.gat") < 5)
@@ -29,6 +34,7 @@ L_Paying:
     if ($@FIGHT_CAVE_STATUS != 0)
         close;
     set Zeny, Zeny - 20000;
+    goto L_StartFight;
 
 L_StartFight:
     if (getmapusers("029-3.gat") < 5)
@@ -45,7 +51,9 @@ L_CallPlayers:
     mes "\"Good... Your money will be very useful. I can awaken this power right now, if you want, or, for an additional fee of 3,000 GP, I can help you gather some of your friends to help you in this battle. What will it be?\"";
     menu
         "We are OK. Just do it!", L_Paying,
-        "I will accept your help.", -;
+        "I will accept your help.", L_AcceptHelp;
+
+L_AcceptHelp:
     mes "[Parua]";
     mes "\"OK, I can make up to 3 announcements to the people of this world, letting them know that you are about to challenge the powers that sleep in this cave! If you want the fight to start in 5 minutes, I will make one announcement, if it is 10 minutes, I will make 2 announcements, and if it is to start in 15 minutes, it will be 3 announcements.\"";
     next;
@@ -53,10 +61,12 @@ L_CallPlayers:
     next;
     mes "\"So, when should it start?\"";
     menu
-        "In 5 minutes.", -,
-        "In 10 minutes.", -,
-        "In 15 minutes.", -,
+        "In 5 minutes.", L_TimeFightStart,
+        "In 10 minutes.", L_TimeFightStart,
+        "In 15 minutes.", L_TimeFightStart,
         "I don't want to wait. Let's start it now!", L_Paying;
+
+L_TimeFightStart:
 // Do not charge the money if the fight or the announces were already started by someone else
     if ($@FIGHT_CAVE_STATUS != 0)
         close;
@@ -127,7 +137,6 @@ L_Warp:
 
 L_Exit:
     close;
-    end;
 
 // Fight logic
 OnTimer5000:
@@ -136,6 +145,7 @@ OnTimer5000:
         goto L_CaveLogic;
     if ($@FIGHT_CAVE_STATUS >= 2)
         goto L_GlobalAnnounce;
+    goto L_Return_1;
 
 L_Return_1:
     set $@FIGHT_CAVE_PLAYER_COUNT, 0;
@@ -178,6 +188,7 @@ L_NextRound:
     set $@MOB_4_SUMMON, 0;
     set $@MOB_5_SUMMON, 0;
     set $@MOB_6_SUMMON, 0;
+    goto L_Summon;
 
 L_Summon:
     if ($@FIGHT_CAVE_POINTS >= 243
@@ -297,6 +308,7 @@ OnInit:
     if (debug >= 2) end;
     initnpctimer;
     stopnpctimer;
+    goto L_CleanUp;
 
 L_CleanUp:
     npctalk "Game Over";
@@ -321,7 +333,7 @@ L_CleanUp_Announcement:
     end;
 
 OnPCDieEvent:
-    // fall through L_CleanUp_Player
+    goto L_CleanUp_Player;
 
 L_CleanUp_Player:
     set @candor_oldx, 0;

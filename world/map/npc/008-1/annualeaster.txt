@@ -43,6 +43,7 @@ function|script|AnnualEasterEvent|,
     set @random, rand(getarraysize($@MediumAnnualEasterRewards$));
     getitem $@MediumAnnualEasterRewards$[@random], 1;
     misceffect FX_GETITEM, strcharinfo(0);
+    goto NoEasterEgg;
 
 NoEasterEgg:
 
@@ -101,6 +102,8 @@ L_End2:
     set @eastertimepenalty, @eastertimepenalty + 5;
     if (@eastertimepenalty > gettimetick(2))
         set @eastertimepenalty, gettimetick(2);
+    goto L_End1;
+
 L_End1:
     set @rewardindex, 0;
     set @easter_year, 0;
@@ -114,18 +117,21 @@ L_End1:
 {
     set @EasterEggID, 0;
     callfunc("AnnualEasterEvent");
+    end;
 }
 
 008-1.gat,65,40,0|script|#TestEgg1|375,
 {
     set @EasterEggID, 1;
     callfunc("AnnualEasterEvent");
+    end;
 }
 
 008-1.gat,65,40,0|script|#TestEgg2|375,
 {
     set @EasterEggID, 2;
     callfunc("AnnualEasterEvent");
+    end;
 }
 
 
@@ -198,6 +204,7 @@ L_done_update:
     set $@EggID, 2;
     callsub S_relocateEasterEgg;
     // intentional fallthrough to L_End
+    goto L_End;
 
 L_End:
     set $@AEASTER_mapcount, 0;
@@ -225,6 +232,7 @@ S_relocateEasterEgg:
 
     set $@eastereggPos, rand(getarraysize($@easteregg_posx));
     npcwarp $@easteregg_posx[$@eastereggPos], $@easteregg_posy[$@eastereggPos], "#TestEgg" + $@EggID;
+    goto L_Return;
 
 L_Return:
     return;

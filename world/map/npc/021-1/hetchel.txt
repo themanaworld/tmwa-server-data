@@ -29,9 +29,7 @@
     mes "\"Hello I am Hetchel, I weave fine textiles, what can I do for you?\"";
     menu
         "Sorry to bother, I'm just visiting.", L_end,
-        "I am looking for silk sheets, Lora Tay told me that I could find some in this market. Can you help?", -;
-    next;
-    goto L_main_menu;
+        "I am looking for silk sheets, Lora Tay told me that I could find some in this market. Can you help?", L_main_menu;
 
 L_WG_quest_not_done:
     mes "[Hetchel the weaver]";
@@ -40,17 +38,18 @@ L_WG_quest_not_done:
     mes "What can I do for you?\"";
     menu
         "Sorry to bother, I'm new to this country, just visting.", L_end,
-        "What are you selling?", -;
-    next;
+        "What are you selling?", L_main_menu;
 
 L_main_menu:
     mes "[Hetchel]";
     mes "\"I have some silk sheets: double-elbow squares.\"";
     menu
         "I'm not interested at the moment, maybe later; thanks anyway.", L_end,
-        "Can I buy some?", -;
-//        "Do you have any silk robe I could buy?", L_robe,
+        "Can I buy some?", L_Next;
+//        "Do you have a silk robe I could buy?", L_robe,
 //        "Goodbye.", L_end;
+
+L_Next:
     mes "[Hetchel]";
     mes "\"Sure but you need to provide raw materials.";
     mes "I'll need " + @SHEET_COCOONS_NR +" silk cocoons per sheet,";
@@ -58,13 +57,15 @@ L_main_menu:
     next;
     if (countitem("SilkCocoon") == 0)
         goto L_sheet_no_cocoon;
+    goto L_sheet_menu;
 
 L_sheet_menu:
     menu
-        "I have what you asked for.", -,
+        "I have what you asked for.", L_Next1,
         "Sorry I didn't pay attention enough, what do you need?", L_how_many_cocoons,
         "Oops! Sorry, I'll come back soon with them.", L_end;
-    next;
+
+L_Next1:
     mes "[Hetchel]";
     mes "\"How many would you like?\"";
     input @SheetCount;
@@ -109,8 +110,9 @@ L_sheet_no_cocoon:
     mes "\"You don't have any cocoon? I'm sorry I can't do anything for you.\"";
     menu
         "I'll seek for them.", L_end,
-        "Where can I get cocoons?", -;
-    next;
+        "Where can I get cocoons?", L_Next2;
+
+L_Next2:
     mes "[Hetchel]";
     mes "\"Silk cocoons come from Silkworms. Silkworms live in the woodland area around Hurnscald.";
     mes "Silkworms like especially woods and dark areas. You can go there by ferry.\"";
@@ -135,6 +137,7 @@ L_zero_sheet:
 L_TooMany:
     mes "[Hetchel]";
     mes "\"Your bag hasn't room enough. Store some things and come back.\"";
+    goto L_end;
 
 L_end:
     set @SHEET_COCOONS_NR, 0;

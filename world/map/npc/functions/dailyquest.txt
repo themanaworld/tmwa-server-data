@@ -47,6 +47,7 @@ function|script|DailyQuestPoints|,
     if (DailyQuestPoints > BaseLevel)
         set DailyQuestPoints, BaseLevel;
     // fallthrough to bonus, which *is* allowed to push DailyQuestPoints above BaseLevel
+    goto L_Bonus;
 
 L_Bonus:
     set DailyQuestPoints, DailyQuestPoints + DailyQuestBonus;
@@ -67,9 +68,10 @@ function|script|DailyQuest|,
     mes "\"If you bring me " + @dq_count + " " + @dq_friendly_name$ + ", I will give you a reward.\"";
     menu
         "I have what you want.", L_Trade,
-        "Ok, I'll get to work.", -,
-        "Nah, I'm not going to help you.", -;
+        "Ok, I'll get to work.", L_Next,
+        "Nah, I'm not going to help you.", L_Next;
 
+L_Next:
     set @dq_return, 1;
     goto L_Exit;
 
@@ -91,6 +93,7 @@ L_Trade:
     mes "";
     mes "[" + @dq_money + " money]";
     mes "[" + @dq_exp + " experience points]";
+    goto L_Exit_Good;
 
 L_Exit_Good:
     set @dq_return, 4;

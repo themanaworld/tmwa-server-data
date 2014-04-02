@@ -12,6 +12,7 @@
 
     if (QUEST_MIRIAM_cheat != 0) goto L_warp_cheat;
     if (QUEST_MIRIAM_start != 0) goto L_smoke;
+    goto L_Begin;
 
 L_Begin:
     mes "[Chief Pachua]";
@@ -26,6 +27,7 @@ L_Begin:
     mes "";
     mes "\"For generations my tribe has been crafting special clothes out of different items.\"";
     next;
+    goto L_Check_Shops;
 
 L_Check_Shops:
     if((countitem("JeansShorts") > 0 && countitem("SnakeSkin") > 9) && (countitem("FancyHat") > 0 && countitem("SnakeSkin") > 1)) goto L_Super_store;
@@ -39,7 +41,7 @@ L_Check_Shops:
     if (@wants_leather_patch)
         menu
             "Wait, can you make a leather patch for me?", L_leather_patch,
-            "OK, bye.", -;
+            "OK, bye.", L_Close;
     goto L_Close;
 
 S_CheckStuff:
@@ -64,7 +66,7 @@ L_Super_store:
             "Snake Skin Chaps sound good.", L_BuyChaps,
             "Can you make a leather patch?", L_leather_patch,
             "Not now, maybe later.", L_NoDeal;
-    if (!@wants_leather_patch)
+    //else
         menu
             "Cowboy hat, please.", L_BuyCowboy,
             "Snake Skin Chaps sound good.", L_BuyChaps,
@@ -86,7 +88,7 @@ L_Cowboy_store:
             "Yes, that's fine.", L_BuyCowboy,
             "Can you make a leather patch?", L_leather_patch,
             "On second thought, maybe later.", L_NoDeal;
-    if (!@wants_leather_patch)
+    //else
         menu
             "Yes, that's fine.", L_BuyCowboy,
             "On second thought, maybe later.", L_NoDeal;
@@ -106,7 +108,7 @@ L_Chaps_store:
         menu
             "Yes, that's fine.", L_BuyChaps,
             "On second thought, maybe later.", L_NoDeal;
-    if (@wants_leather_patch)
+    //else
         menu
             "Yes, that's fine.", L_BuyChaps,
             "Can you make a leather patch?", L_leather_patch,
@@ -147,10 +149,11 @@ L_leather_patch:
     mes "\"If you just want a piece of leather, then yes, I can make that.  Bring me a snake skin and " + @LEATHER_PATCH_PRICE + " GP.\"";
     next;
     menu
-        "Here you are.", -,
+        "Here you are.", L_Next,
         "OK, I'll be back later.", L_Close,
         "That's too expensive!.", L_NoDeal;
 
+L_Next:
     if (countitem("SnakeSkin") < 1) goto L_NoSkins;
     if (Zeny < @LEATHER_PATCH_PRICE) goto L_NoMoney;
     getinventorylist;
@@ -247,16 +250,23 @@ L_Basket:
     mes "\"Maybe if you bring me the right materials I can make something for you.\"";
     next;
     menu
-        "Do you work only with clothes? Because I was looking for a basket.", -;
+        "Do you work only with clothes? Because I was looking for a basket.", L_Next1;
+
+L_Next1:
     mes "\"A basket? In our tribe, we craft baskets of all kinds using only reeds. This basket, you need it to carry your items?\"";
     menu
-        "No. It is for the Easter Bunny. I offered to get him one.", -;
+        "No. It is for the Easter Bunny. I offered to get him one.", L_Next2;
+
+L_Next2:
     mes "\"I appreciate your attitude. Maybe I can help you with that.\"";
     menu
-        "I would be really grateful if you could do that!", -,
+        "I would be really grateful if you could do that!", L_Next3,
         "Nah, I decided not to do that stupid quest.", L_Close,
         "I would prefer to talk to you about other stuff.", L_Begin; //should go to pachuas's regular chat
+
+L_Next3:
     set QUEST_Easter11, 2;
+    goto L_MakeBasket;
 
 L_MakeBasket:
     mes "[Chief Pachua]";
@@ -265,14 +275,15 @@ L_MakeBasket:
     mes "\"5 bundles should do it.\"";
     mes "\"You should be able to get those from mouboos as they graze.\"";
     menu
-        "I have the Reeds!", -,
+        "I have the Reeds!", L_Next4,
         "Ok, I will be back soon", L_Close,
         "I changed my mind, forget about it", L_Close,
         "Can I talk to you about another stuff?", L_Begin; //should go to pachuas's regular chat
 
+L_Next4:
     if(countitem("ReedBundle") < 5) goto L_EasterNotEnough;
-    if(countitem("ReedBundle") >= 5) goto L_EasterEnough;
-    goto L_Close;
+    //else
+                                     goto L_EasterEnough;
 
 L_EasterNotEnough:
     mes "[Chief Pachua]";

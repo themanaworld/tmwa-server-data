@@ -5,6 +5,7 @@ function|script|Banker|,
     if (BankAccount == 0)
         goto L_Start;
     callsub S_MoveAccount;
+    goto L_Start;
 
 L_Start:
     mes "[" + @npcname$ + "]";
@@ -18,7 +19,6 @@ L_Start:
         "Check my balance", L_Balance,
         "Change Bank Options", L_Change,
         "Nevermind", L_Nev;
-    close;
 
 // need to close window before opening storage.
 L_Storage:
@@ -43,8 +43,7 @@ L_Dep:
         "1,000,000 GP", L_Dep_1kk,
         "All of my money", L_Dep_All,
         "I've changed my mind", L_Start,
-        "Quit", -;
-    return;
+        "Quit", L_Return;
 
 L_Dep_Input:
     input @Amount;
@@ -56,8 +55,7 @@ L_Dep_Input:
         "Go back", L_Start,
         "Try again", L_Dep_Input,
         "Deposit all", L_Dep_All,
-        "Nevermind", -;
-    goto L_Nev;
+        "Nevermind", L_Nev;
 
 L_Dep_5k:
     if (Zeny<5000)
@@ -111,6 +109,7 @@ L_Dep_All:
     if (Zeny<1)
         goto L_NoMoney;
     set @Amount, Zeny;
+    goto L_Dep_Continue;
 
 L_Dep_Continue:
     if (Zeny < @Amount)
@@ -134,8 +133,7 @@ L_With:
         "1,000,000 GP", L_With_1kk,
         "All of my money", L_With_All,
         "I've changed my mind", L_Start,
-        "Quit", -;
-    return;
+        "Quit", L_Return;
 
 L_With_Input:
     input @Amount;
@@ -147,8 +145,7 @@ L_With_Input:
         "Go back", L_Start,
         "Try again", L_With_Input,
         "Withdraw all", L_With_All,
-        "Nevermind", -;
-    goto L_Nev;
+        "Nevermind", L_Nev;
 
 L_With_5k:
     if (#BankAccount < 5000)
@@ -202,6 +199,7 @@ L_With_All:
     if (#BankAccount < 0)
         goto L_NoMoney;
     set @Amount, #BankAccount;
+    goto L_With_Continue;
 
 L_With_Continue:
     if (#BankAccount < @Amount)
@@ -248,4 +246,7 @@ L_Change_Storage:
 L_Change_Bank:
     set #BankOptions, (#BankOptions ^ OPT_BANK_CLOSE);
     goto L_Start;
+
+L_Return:
+    return;
 }

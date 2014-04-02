@@ -53,6 +53,7 @@
     if (@Q_poison == 2) goto state2;
     if (@Q_poison == 1) goto state1;
     if (getskilllv(SKILL_POOL)) goto state0;
+    goto L_Usual;
 
 L_Usual:
     mes "[Nurse]";
@@ -64,12 +65,14 @@ L_Usual:
             "Oooh, these wounds! They hurt so much!", L_Heal,
             "I don't feel so well, I might be sick.", L_Doctor,
             "Have you seen anything out of the ordinary?", L_NohMask,
-            "No, I'm fine.", -;
-    if (@inspector != 1)
+            "No, I'm fine.", L_Next;
+    //else
         menu
             "Oooh, these wounds! They hurt so much!", L_Heal,
             "I don't feel so well, I might be sick.", L_Doctor,
-            "No, I'm fine.", -;
+            "No, I'm fine.", L_Next;
+
+L_Next:
     mes "[Nurse]";
     mes "\"Then I would ask you to leave. There are people who really need our help.\"";
     goto L_Close;
@@ -111,7 +114,9 @@ state0:
     next;
     menu
         "I will do what I can. What do you need?", L_firstquest,
-        "I'm really sorry, but I don't think I can help you.", -;
+        "I'm really sorry, but I don't think I can help you.", L_Next1;
+
+L_Next1:
     mes "\"That is disagreeable to hear. Maybe I can find another person to take this task.\"";
     next;
     goto L_Usual;
@@ -121,6 +126,7 @@ L_firstquest:
     callsub S_Update_Var;
     mes "\"That's great! First, I need some parts of the poisonous creatures.\"";
     next;
+    goto L_ExplainAgain1;
 
 L_ExplainAgain1:
     mes "\"Please bring me five tongues of snakes and ten stingers of black scorpions.\"";
@@ -133,8 +139,10 @@ state1:
     menu
         "Actually, I have another question.", L_Usual,
         "Sorry, I forgot. What shall I bring you?", L_ExplainAgain1,
-        "I have what you asked for.", -,
+        "I have what you asked for.", L_Next2,
         "I'm still working on that.", L_Close;
+
+L_Next2:
     if (countitem("SnakeTongue") < @SNAKET_AMOUNT || countitem("BlackScorpionStinger") < @BSCORPIONST_AMOUNT)
         goto L_NotEnough;
     delitem "SnakeTongue", @SNAKET_AMOUNT;
@@ -147,6 +155,7 @@ state1:
     next;
     mes "\"But there are some other things we will need in any case. It would be courteous if you could get them meanwhile.\"";
     next;
+    goto L_ExplainAgain2;
 
 L_ExplainAgain2:
     mes "\"Please bring me ten acorns, five red apples, five green apples and also five oranges. And we need some small healing potions. They will be useful to hold off the baneful effects. Three of them will be enough, I guess.\"";
@@ -160,8 +169,10 @@ state2:
     menu
         "Actually, I have another question.", L_Usual,
         "I have a bad memory. Can you tell me again what we need?", L_ExplainAgain2,
-        "I managed to get everything we need.", -,
+        "I managed to get everything we need.", L_Next3,
         "I will go and get it.", L_Close;
+
+L_Next3:
     if (countitem("Acorn") < @ACORNS_AMOUNT
         || countitem("GreenApple") < @GREENAPPLE_AMOUNT
         || countitem("RedApple") < @REDAPPLE_AMOUNT
@@ -176,6 +187,7 @@ state2:
     getexp @QUEST2_EXP, 0;
     set @Q_poison, 3;
     callsub S_Update_Var;
+    goto L_Chemistry;
 
 L_Chemistry:
     callsub L_Shuffle_Need;
@@ -207,7 +219,7 @@ state3:
     next;
     menu
         "Actually, I have another question.", L_Usual,
-        "Yes, let us begin.",-;
+        "Yes, let us begin.",L_Exp_Game;
 
 L_Exp_Game:
     mes "[Nurse]";
@@ -225,7 +237,7 @@ L_Exp_Game:
     next;
     menu
         "Please explain it again.", L_Exp_Game,
-        "Alright.", -;
+        "Alright.", L_Game;
 
 L_Game:
     set @Q_poison, @Q_poison + 1;
@@ -271,6 +283,7 @@ L_Game:
         mes "\"I see that the healing potions are needed at least " + @hlNeed/@stNeed + " times as much as the stabilizer.\"";
     if ((@hlNeed/@stNeed > 1 ) || (@stNeed/@hlNeed > 1 ))
         next;
+    goto L_choosePut;
 
 L_choosePut:
     set @max, @count+@offset-1;

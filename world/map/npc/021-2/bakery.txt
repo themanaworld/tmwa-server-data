@@ -11,6 +11,7 @@
 //    if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 10) goto L_ChocMouboo;
 //    if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 11) goto L_MakeChocMouboo;
 //    if (gettime(6) == @month && gettime(5) >= @start_day && gettime(5) <= @end_day && QUEST_Easter11 == 12) goto L_SeeBunny;
+    goto L_Begin;
 
 L_Begin:
     mes "[Riskim]";
@@ -50,8 +51,10 @@ L_lace_chococake:
     next;
     menu
         "Thanks!  Let me have a look around...", L_end,
-        "Can you put this potion into a Chocolate Cake?", -,
+        "Can you put this potion into a Chocolate Cake?", L_Next,
         "Goodbye!", L_end;
+
+L_Next:
     mes "[Riskim]";
     mes "";
     mes "As you show Riskim the potion, he leans back, away from it.";
@@ -66,8 +69,10 @@ L_lace_chococake:
     next;
     menu
         "I will get them for you.", L_end,
-        "Here you are!", -,
+        "Here you are!", L_Continue,
         "Maybe later.", L_end;
+
+L_Continue:
     if (countitem("ChocolateBar") < 10)
         goto L_lacking_ingredients;
     if (countitem("MopoxCurePotion") < 1)
@@ -107,8 +112,10 @@ L_lace_cupcake:
     next;
     menu
         "Thanks!  Let me have a look around...", L_end,
-        "Can you put this potion into an Orange Cupcake?", -,
+        "Can you put this potion into an Orange Cupcake?", L_More,
         "Goodbye!", L_end;
+
+L_More:
     mes "[Riskim]";
     mes "";
     mes "\"Orange Cupcakes?  Oh dear... I'm sorry, but I have a very bad orange allergy.\"";
@@ -117,6 +124,7 @@ L_lace_cupcake:
     mes "";
     mes "\"Perhaps the Chef at Dimond's Cove can help you?  We get all our cupcakes from him.\"";
     next;
+    goto L_End;
 
 L_End:
     close;
@@ -127,16 +135,23 @@ L_ChocMouboo:
     mes "\"Welcome to our bakery! Here you will find the best cakes in Tulimshar. And don't leave before you try one of our delicious Chocolate Pinkies!\"";
     next;
     menu
-        "Excuse me, sir? Did you say Chocolate Pinkies?", -;
+        "Excuse me, sir? Did you say Chocolate Pinkies?", L_Next1;
+
+L_Next1:
     mes "\"Yes! But there is no need to be alarmed, it is just plain chocolate molded in the shape of a small pinkie...\"";
     next;
     menu
-        "Do you have one in the shape of a mouboo? The Easter Bunny needs one.", -;
+        "Do you have one in the shape of a mouboo? The Easter Bunny needs one.", L_Next2;
+
+L_Next2:
     mes "\"The Easter Bunny? Interesting... I think I can help you make a Chocolate Mouboo.\"";
     menu
         "Nah, I decided not to do that stupid quest.", L_End,
-        "I would really appreciate that!", -;
+        "I would really appreciate that!", L_SetEasterBit;
+
+L_SetEasterBit:
     set QUEST_Easter11, 11;
+    goto L_MakeChocMouboo;
 
 L_MakeChocMouboo:
     mes "[Riskim]";
@@ -147,13 +162,15 @@ L_MakeChocMouboo:
     mes "\"I will also need a Mouboo Figurine to hollow out and use as a mold.\"";
     mes "\"Any mage should be able to make you one out of a log, if you ask.\"";
     menu
-        "I have everything you need.", -,
+        "I have everything you need.", L_HaveEverything,
         "Ok, I will be back soon.", L_End,
         "I changed my mind, forget about it.", L_End;
 
+L_HaveEverything:
     if(countitem("ChocolateBar") < 5
         || countitem("MoubooFigurine") < 1)
             goto L_EasterNotEnough;
+    goto L_EasterEnough;
 
 L_EasterEnough:
     getinventorylist;

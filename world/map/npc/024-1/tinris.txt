@@ -49,7 +49,9 @@
     if (@state != 1)
         goto L_Close;
     menu
-        "The farmer Anwar sent me to ask for exactly that! Can you give me something for his field?",-;
+        "The farmer Anwar sent me to ask for exactly that! Can you give me something for his field?",L_Next;
+
+L_Next:
     mes "[Tinris]";
     mes "\"Well... in principle yes. I can try to prepare something for him. But...\"";
     next;
@@ -65,8 +67,10 @@ L_Annual: // @state == 2
     mes "[Tinris]";
     mes "\"Hello, did you get the Chocolate Cake for my girlfriend? After that I can focus on creating some magic fertilizer for you.\"";
     menu
-        "Fresh from the bakery!",-,
+        "Fresh from the bakery!",L_FreshFrom,
         "I didn't get it yet.",L_Close;
+
+L_FreshFrom:
     if (countitem("ChocolateCake") < 1)
         goto L_NoItem;
     delitem "ChocolateCake", 1;
@@ -77,13 +81,17 @@ L_Annual: // @state == 2
     mes "\"Oh, thank you! You saved me!";
     mes "All right, now we can start with the magic fertilizer.\"";
     next;
+    goto L_FirstTry;
+
 L_FirstTry: // @state == 3
     mes "[Tinris]";
     mes "\"You need to bring me some ingredients.";
     mes "The ingredients are " + @slime_amount1 + " Maggot Slimes, " + @bugleg_amount1 + " Bug Legs, " + @stinger_amount1 + " Scorpion Stingers and " + @ash_amount1 + " Piles of Ash.\"";
     menu
-        "I have it.",-,
+        "I have it.",L_Continue,
         "Ok, I'll go and get it.",L_Close;
+
+L_Continue:
     if ((countitem("MaggotSlime") < @slime_amount1) || (countitem("BugLeg") < @bugleg_amount1) || (countitem("ScorpionStinger") < @stinger_amount1) || (countitem("PileOfAsh") < @ash_amount1))
         goto L_NoItem;
     delitem "MaggotSlime", @slime_amount1;
@@ -107,16 +115,22 @@ L_FirstTryDone: // @state >= 4 but below 6
     if (@state != 5)
         goto L_Close;
     menu
-        "I did, the plants went brown and shriveled.",-;
+        "I did, the plants went brown and shriveled.",L_More;
+
+L_More:
     set @state, 6;
     callsub S_Update_Mask;
+    goto L_SecondTry;
+
 L_SecondTry: // @state == 6
     mes "[Tinris]";
     mes "\"Oh no! All right, we need to do another try.";
     mes "Bring me " + @slime_amount2 + " Maggot Slimes, " + @bugleg_amount2 + " Bug Legs, " + @stinger_amount2 + " Scorpion Stingers, " + @ash_amount2 + " Piles of Ash and " + @cactusp_amount + " Cactus Potion.\"";
     menu
-        "Here it is.",-,
+        "Here it is.",L_HereItIs,
         "Ok, I'll go and get it.",L_Close;
+
+L_HereItIs:
     if ((countitem("MaggotSlime") < @slime_amount2) || (countitem("BugLeg") < @bugleg_amount2) || (countitem("ScorpionStinger") < @stinger_amount2) || (countitem("PileOfAsh") < @ash_amount2) || (countitem("CactusPotion") < @cactusp_amount))
         goto L_NoItem;
     delitem "MaggotSlime", @slime_amount2;
@@ -153,8 +167,10 @@ L_GiveGift: // @state == 11
     mes "[Tinris]";
     mes "\"Ah, did Anwar try the new fertilizer?\"";
     menu
-        "Yes, it works great and he asked me to give you this Green V-Neck Sweater he made.",-,
+        "Yes, it works great and he asked me to give you this Green V-Neck Sweater he made.",L_ItWorksGreat,
         "Not yet.",L_Close;
+
+L_ItWorksGreat:
     if (countitem("GreenVNeckSweater") < 1)
         goto L_NoItem;
     delitem "GreenVNeckSweater", 1;

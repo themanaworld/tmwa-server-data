@@ -20,13 +20,16 @@
     mes "\"Are you feeling better?\"";
     next;
     menu
-        "Yes, thank you.",-,
-        "Yeah, but all my stuff is gone.",-;
+        "Yes, thank you.",L_Next,
+        "Yeah, but all my stuff is gone.",L_Next;
+
+L_Next:
     mes "[Tanisha]";
     mes "\"I'm glad you're feeling better. It was really bad luck what happened to you.";
     mes "Hey, I have an idea.\"";
     next;
     set tanisha, 1;
+    goto L_Maggots;
 
 L_Maggots:
     mes "[Tanisha]";
@@ -37,8 +40,10 @@ L_Maggots:
     mes "What do you say?\"";
     next;
     menu
-        "Sure!",-,
+        "Sure!",L_Continue,
         "That's your job.",L_Close;
+
+L_Continue:
     mes "[Tanisha]";
     mes "\"Wonderful!\"";
     // since the check happens here, it is actually possible to have
@@ -46,7 +51,7 @@ L_Maggots:
     // but that's not a BIG problem
     if (getareausers("042-2.gat", 30, 85, 36, 89) >= $@Maggot_MaxHunters)
         goto L_Crowded;
-    next;
+    goto L_Fight_Again;
 
 L_Fight_Again:
     mes "\"Ok, listen what to do.";
@@ -71,6 +76,7 @@ L_GetFightItems:
     getitem "Knife", 1;
     getitem "SlingShot", 1;
     getitem "SlingBullet", 100;
+    goto L_ContinueFight;
 
 L_ContinueFight:
     set tanisha, 2;
@@ -79,6 +85,7 @@ L_ContinueFight:
     if (getareausers("042-2.gat", 30, 85, 36, 89) == 0)
         initnpctimer;
     warp "042-2.gat", 33, 87;
+    goto L_Summon;
 
 L_Summon:
     areamonster "042-2.gat", 30, 85, 36, 89, "", 1002, 1, "Tanisha::OnMaggotDeath";
@@ -93,6 +100,7 @@ L_Stats:
     next;
     mes "\"Press F2 or click the Status button in the bar at the upper right to see your status window. There you can distribute your points on six different properties.\"";
     next;
+    goto L_StatsRe;
 
 L_StatsRe:
     mes "\"Strength makes you hit harder and you can carry more weight.\"";
@@ -118,6 +126,7 @@ L_StatsRe:
 
     if (tanisha != 3)
         goto L_Close;
+    goto L_Money;
 
 L_Money:
     next;
@@ -126,6 +135,7 @@ L_Money:
     mes "You can have my pocket money. Here.\"";
     set Zeny, Zeny + 5;
     next;
+    goto L_Advice;
 
 L_Advice:
     mes "\"When you go to Tulimshar, you should see Bernard. He can make a delicious soup!";
@@ -235,8 +245,10 @@ L_Fail:
     mes "Do you want to try it again?\"";
     next;
     menu
-        "Sure!", -,
+        "Sure!", L_TryAgain,
         "No, I need a rest.", L_Close;
+
+L_TryAgain:
     if (getareausers("042-2.gat", 30, 85, 36, 89) >= $@Maggot_MaxHunters)
         goto L_Crowded;
     goto L_Fight_Again;
@@ -299,4 +311,5 @@ L_Close:
 OnInit:
     set $@Maggot_MaxHunters, 4;
     areamonster "042-2.gat", 30, 85, 36, 89, "", 1002, 1, "Tanisha::OnMaggotDeath";
+    end;
 }

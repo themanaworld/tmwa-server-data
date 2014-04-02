@@ -33,8 +33,7 @@
     mes "Jump in the waterfall?";
     menu
         "Yes", L_Warp,
-        "No", -;
-    close;
+        "No", L_Close;
 
 OnTimer1000:
     npctalk "Youuuuuuu... Bring me souls... " + $@illia_num_sealed_souls + " fresh souls... Nooooow. And you shall paaass.";
@@ -85,7 +84,7 @@ L_GiveTask:
     areamonster "051-1.gat", 138, 34, 145, 41, "", 1096, 5, "IlliaDMobs051-1::On1096";
     // Start timed messages
     initnpctimer;
-    close;
+    goto L_Close;
 
 L_GiveSouls:
     if (strcharinfo(0) != $@ILLIA_HERO$)
@@ -94,13 +93,12 @@ L_GiveSouls:
     mes "\"Give me the souuuuuuls... Noooooooow!!\"";
     menu
         "Please, have a look at these.", L_CheckSouls,
-        "Sorry, I don't have any.", -;
-    close;
+        "Sorry, I don't have any.", L_Close;
 
 L_GiveSoulsToHero:
     mes "[Cursed Waterfall]";
     mes "\"Who are you?.... I want the souuuuuuls from " + $@ILLIA_HERO$ + "!\"";
-    close;
+    goto L_Close;
 
 L_CheckSouls:
     if (countitem ("SealedSoul") < $@illia_num_sealed_souls)
@@ -127,17 +125,19 @@ L_CheckSouls:
 
     // Display an effect to show the waterfall opens itself / kills remaining monsters
     misceffect FX_MEDIUM_BLINDINGLIGHT;
-    close;
+    goto L_Close;
 
 L_NotEnough:
     mes "[Cursed Waterfall]";
     mes "\"Moooooooooore... Give me more...\"";
-    close;
+    goto L_Close;
 
 L_Warp:
     warp "052-1.gat", 23, 52;
     // Count the player who reached the island.
     set $@illia_players_in_luvia_territory, $@illia_players_in_luvia_territory + 1;
-    close;
+    goto L_Close;
 
+L_Close:
+    close;
 }

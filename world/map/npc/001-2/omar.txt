@@ -40,8 +40,7 @@ function|script|KadiyaSubquestConsts|,
     menu
         "Well met!  May I ask who you are?", L_omar,
         "What's wrong with your daughter?", L_kadiya_sick,
-        "Thank you!", -;
-    goto L_Close;
+        "Thank you!", L_Close;
 
 L_omar:
     mes "[Omar]";
@@ -58,8 +57,9 @@ L_kadiya_sick:
         "Have you asked Elanore the healer?", L_sick_elanore,
         "How about the Hurnscald hospital?", L_sick_hospital,
         "Can I help?", L_sick_self,
-        "I'm sorry to hear that.", -;
+        "I'm sorry to hear that.", L_Next;
 
+L_Next:
     mes "[Omar]";
     mes "\"Well, she is a strong girl.  I am sure that she will get over it eventually.\"";
     mes "He smiles, but you see doubt in his eyes.";
@@ -121,7 +121,9 @@ L_cured_choice:
     menu
         "Oh, it was nothing.", L_cured_nothing,
         "I didn't do it alone; Elanore helped.", L_cured_elanore,
-        "That will be 5000 GP.", -;
+        "That will be 5000 GP.", L_Next1;
+
+L_Next1:
     mes "[Omar]";
     mes "\"Ah, certainly.\"";
     mes "He hands you a small bag of money.";
@@ -209,6 +211,7 @@ S_update_var:
     set @choice_idx[@choices_nr], @M_POTION;
     set @choice$[@choices_nr], "This potion will cure your illness!";
     set @choices_nr, @choices_nr + 1;
+    goto L_M_no_cure;
 
 L_M_no_cure:
     if ((countitem("LacedChocolateCake") == 0) || (@Q_status != @Q_STATUS_WANTS_CHOCOCAKE))
@@ -216,6 +219,7 @@ L_M_no_cure:
     set @choice_idx[@choices_nr], @M_CHOCOCAKE;
     set @choice$[@choices_nr], "Would you like special chocolate cake?";
     set @choices_nr, @choices_nr + 1;
+    goto L_M_no_chococake;
 
 L_M_no_chococake:
     if ((countitem("LacedOrangeCupcake") == 0) || (@Q_status != @Q_STATUS_WANTS_ORANGECUPCAKE))
@@ -223,6 +227,7 @@ L_M_no_chococake:
     set @choice_idx[@choices_nr], @M_CUPCAKE;
     set @choice$[@choices_nr], "Would you like special orange cupcake?";
     set @choices_nr, @choices_nr + 1;
+    goto L_M_no_cupcake;
 
 L_M_no_cupcake:
     set @choice_idx[@choices_nr], 0;
@@ -230,13 +235,14 @@ L_M_no_cupcake:
     set @choices_nr, @choices_nr + 1;
 
     menu
-        @choice$[0], -,
-        @choice$[1], -,
-        @choice$[2], -,
-        @choice$[3], -,
-        @choice$[4], -,
-        @choice$[5], -;
+        @choice$[0], L_MenuItems,
+        @choice$[1], L_MenuItems,
+        @choice$[2], L_MenuItems,
+        @choice$[3], L_MenuItems,
+        @choice$[4], L_MenuItems,
+        @choice$[5], L_MenuItems;
 
+L_MenuItems:
     set @choice, @choice_idx[@menu - 1];
 
     if (@choice == @M_NAME) goto L_name;

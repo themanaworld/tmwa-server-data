@@ -46,26 +46,33 @@
     if (@state != 7)
         goto L_Close;
     menu
-        "I have this magic fertilizer from Tinris and need a spell cast on it.",-;
+        "I have this magic fertilizer from Tinris and need a spell cast on it.",L_Next;
+
+L_Next:
     mes "[Eomie]";
     mes "\"Oh? I see, that's a difficult task.";
     mes "I'd be glad to help you, but unfortunately I can't interrupt the magic I use to keep this spot of grass alive.\"";
     next;
     mes "\"It's unusually hot at the moment, even for this desert area. It might have something to do with the aftereffects of the earthquake.\"";
     menu
-        "Isn't there any possibility?",-;
+        "Isn't there any possibility?",L_Continue;
+
+L_Continue:
     mes "She hesitates.";
     set @state, 8;
     callsub S_Update_Mask;
+    goto L_GetStuff;
+
 L_GetStuff: // @state == 8
     mes "[Eomie]";
     mes "\"I could try to interrupt my spells to be able to cast the spell on the fertilizer, but then I need to prepare the grass for this.";
     mes "Bring me " + @grass_amount + " Grass Seeds, " + @water_amount + " Bottles of Water and " + @ice_amount + " Ice Cubes.\"";
     menu
-        "I have it.",-,
+        "I have it.",L_More,
         "Where can I get Grass Seeds?",L_Hurnscald,
         "How can I get Ice Cubes? We're in the desert!",L_Mine,
         "Ok, I'll go and get it.",L_Close;
+L_More:
     if ((countitem("GrassSeed") < @grass_amount) || (countitem("BottleOfWater") < @water_amount) || (countitem("IceCube") < @ice_amount))
         goto L_NoItem;
     delitem "GrassSeed", @grass_amount;
@@ -107,8 +114,10 @@ L_CastedSpell: // @state >= 9 but below 14
     if (@state != 13)
         goto L_Close;
     menu
-        "It was and he created this Silk Headband as a present for you.",-,
+        "It was and he created this Silk Headband as a present for you.",L_Present,
         "(Mumble something and leave)",L_Close;
+
+L_Present:
     if (countitem("SilkHeadband") < 1)
         goto L_NoItem;
     delitem "SilkHeadband", 1;
@@ -148,16 +157,23 @@ L_Grass:
     mes "\"I maintain this little spot of grass in the desert.\"";
     next;
     menu
-        "It looks beautiful. I wish I could find a Grass Liner like this.", -;
+        "It looks beautiful. I wish I could find a Grass Liner like this.", L_LookGrass;
+
+L_LookGrass:
     mes "\"A Grass Liner? Last year I helped the Easter Bunny with a Grass Liner for his basket... It was really easy...  Is this liner for yourself?\"";
     next;
     menu
-        "No. Actually, it is for the Easter Bunny again...", -;
+        "No. Actually, it is for the Easter Bunny again...", L_NoBunny;
+
+L_NoBunny:
     mes "\"Why didn't you say so before? I can help you make the Grass Liner for the basket if you wish.\"";
     menu
-        "I would really appreciate that!", -,
+        "I would really appreciate that!", L_WouldNot,
         "Nah, I decided not to do that stupid quest.", L_End;
+
+L_WouldNot:
     set QUEST_Easter11, 5;
+    goto L_MakeGrass;
 
 L_MakeGrass:
     mes "[Eomie]";
@@ -166,10 +182,11 @@ L_MakeGrass:
     mes "\"I think 5 seeds should be enough.\"";
     mes "\"Squirrels tend to pick those up as they gather food.\"";
     menu
-        "I have some seeds...", -,
+        "I have some seeds...", L_SomeSeeds,
         "Ok, I will be back soon.", L_End,
         "I changed my mind, forget about it.", L_End;
 
+L_SomeSeeds:
     if(countitem("GrassSeed") < 5)
         goto L_EasterNotEnough;
     if(countitem("GrassSeed") >= 5)

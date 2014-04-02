@@ -26,7 +26,6 @@
     menu
         "Yeah, sure.",L_Items,
         "No.",L_Close;
-    goto L_Close;
 
 L_Items:
     if (countitem("IronIngot") < @IRONINGOT) goto L_No_Item;
@@ -41,6 +40,7 @@ L_Items:
     next;
     mes "\"I have a lot of work to do now. But before you leave...\"";
     next;
+    goto L_Towel;
 
 L_Towel:
     getinventorylist;
@@ -84,6 +84,7 @@ L_Towel:
     callfunc "StrangerQuiz";
     if (("###" + @answer$ == @quizanswer$))
         goto L_Right_Answer_Easy;
+    goto L_Easy_Skip4;
 
 L_Easy_Skip4:
     if (@easy_answers_amount[@random] < 3)
@@ -92,6 +93,7 @@ L_Easy_Skip4:
     callfunc "StrangerQuiz";
     if (("###" + @answer$ == @quizanswer$))
         goto L_Right_Answer_Easy;
+    goto L_Easy_Skip3;
 
 L_Easy_Skip3:
     set @quizparam$, "towelanswer0" + @random + "b";
@@ -138,6 +140,7 @@ L_Right_Answer_Easy:
     callfunc "StrangerQuiz";
     if (("###" + @answer$ == @quizanswer$))
         goto L_Right_Answer_Medium;
+    goto L_Medium_Skip4;
 
 L_Medium_Skip4:
     if (@medium_answers_amount[@random] < 3)
@@ -146,6 +149,7 @@ L_Medium_Skip4:
     callfunc "StrangerQuiz";
     if (("###" + @answer$ == @quizanswer$))
         goto L_Right_Answer_Medium;
+    goto L_Medium_Skip3;
 
 L_Medium_Skip3:
     set @quizparam$, "towelanswer1" + @random + "b";
@@ -188,6 +192,7 @@ L_Right_Answer_Medium:
     callfunc "StrangerQuiz";
     if (("###" + @answer$ == @quizanswer$))
         goto L_Right_Answer_Hard;
+    goto L_Hard_Skip4;
 
 L_Hard_Skip4:
     if (@hard_answers_amount[@random] < 3)
@@ -196,6 +201,7 @@ L_Hard_Skip4:
     callfunc "StrangerQuiz";
     if (("###" + @answer$ == @quizanswer$))
         goto L_Right_Answer_Hard;
+    goto L_Hard_Skip3;
 
 L_Hard_Skip3:
     set @quizparam$, "towelanswer2" + @random + "b";
@@ -228,6 +234,7 @@ L_Right_Answer_Hard:
     getitem "HitchhikersTowel", 1;
     set FLAGS, FLAGS | FLAG_TOWEL_COMPLETED;
     next;
+    goto L_Explain;
 
 L_Explain:
     mes "[Stranger]";
@@ -249,7 +256,7 @@ L_No_Event:
     mes "\"You can read more about that in my favourite book, 'The Hitchhiker's Guide to the Galaxy'.\"";
     if (countitem("HitchhikersTowel") > 0)
         menu
-            "Thanks for the advice.",-,
+            "Thanks for the advice.",L_Close,
             "I have my towel with me too.",L_Dye;
     goto L_Close;
 
@@ -264,8 +271,7 @@ L_Dye:
     menu
         "Oh? Can you explain about it?",L_Explain,
         "I know. Could you dye it for me?",L_Dye_Towel,
-        "It's great, isn't it? I have to go now.",-;
-    goto L_Close;
+        "It's great, isn't it? I have to go now.",L_Close;
 
 L_No_Item:
     mes "[Stranger]";
@@ -283,7 +289,7 @@ L_Event_Done:
     next;
     mes "\"Shall I dye your towel?\"";
     menu
-        "That would be great!",-,
+        "That would be great!",L_Dye_Towel,
         "No, thanks.", L_Close;
 
 L_Dye_Towel:
@@ -302,7 +308,6 @@ L_Dye_Towel:
 //        "Lime",L_Lime,
 //        "Teal",L_Teal,
         "I changed my mind.", L_Close;
-    goto L_Close;
 
 L_Red:
     mes "[Stranger]";

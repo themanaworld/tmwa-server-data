@@ -6,6 +6,7 @@
     mes "A young lady in a long, green dress is overseeing the park.  As she notices you looking at her, she gives you a broad and happy smile.";
     mes "\"Hi there!  I'm Wendy, here for all your marriage needs!\"";
     next;
+    goto L_main;
 
 L_main:
     if (getpartnerid2())
@@ -16,7 +17,6 @@ L_main:
         "How do I get married?", L_explain_marriage,
         "I would like to get married.", L_get_married,
         "Goodbye.", L_end;
-    close;
 
 L_explain_self:
     mes "[Wedding Officiator]";
@@ -54,17 +54,21 @@ L_get_married:
     mes "\"Wow.  So you and your sweetheart are ready to take the big step, then?\"";
     next;
     menu
-        "Yes, we are ready.", -,
+        "Yes, we are ready.", L_Next,
         "On second thought, perhaps not.", L_end;
+
+L_Next:
     mes "[Wedding Officiator]";
     mes "She bounces.";
     mes "\"That's so sweet!  You must really love each other, then...?\"";
     next;
     menu
-        "We certainly do.", -,
-        "Yes, of course.", -,
-        "Please get on with it.", -,
+        "We certainly do.", L_Next1,
+        "Yes, of course.", L_Next1,
+        "Please get on with it.", L_Next1,
         "Hmm.  Let me think about this some more.", L_end;
+
+L_Next1:
     mes "[Wedding Officiator]";
     mes "Wendy blushes.";
     mes "\"Sorry if I am asking so many questions, but I have to make sure, you see... rules and all.  Where were we...\"";
@@ -78,13 +82,14 @@ L_get_married:
     mes "And do both of you feel that you could spend the rest of your time in this mana world together?\"";
     next;
     menu
-        "Yes.", -,
-        "YES.", -,
-        "Absolutely.", -,
-        "Yes. We love each other.", -,
+        "Yes.", L_Next2,
+        "YES.", L_Next2,
+        "Absolutely.", L_Next2,
+        "Yes. We love each other.", L_Next2,
         "This is taking too long.", L_end,
         "No.", L_end;
 
+L_Next2:
     if (Zeny < WEDDING_FEE)
         goto L_too_poor;
     if (BaseLevel < WEDDING_MIN_LEVEL)
@@ -135,7 +140,6 @@ L_main_married:
     menu
         "We are very happy, thanks for asking!", L_farewell,
         "Actually, things aren't so good...", L_talk_divorce;
-    close;
 
 L_farewell:
     mes "[Wedding Officiator]";
@@ -152,7 +156,6 @@ L_talk_divorce:
         "My partner loves someone else.", L_partner_otherlove,
         "I think I love someone else.", L_self_otherlove,
         "We can't agree on who carries the loot.", L_loot;
-    close;
 
 L_nolove:
     mes "[Wedding Officiator]";
@@ -164,8 +167,7 @@ L_nolove:
     next;
     menu
         "We tried that, it didn't work.", L_makesure_divorce,
-        "Perhaps we should give it another try.", -;
-    close;
+        "Perhaps we should give it another try.", L_end;
 
 L_partner_otherlove:
     mes "[Wedding Officiator]";
@@ -174,8 +176,7 @@ L_partner_otherlove:
     next;
     menu
         "I'm sure.  I want a divorce.", L_makesure_divorce,
-        "Perhaps we should discuss this some more first.", -;
-    close;
+        "Perhaps we should discuss this some more first.", L_end;
 
 L_self_otherlove:
     mes "[Wedding Officiator]";
@@ -187,8 +188,7 @@ L_self_otherlove:
     next;
     menu
         "I'm sure.  I want a divorce.", L_makesure_divorce,
-        "Let me think about this more.", -;
-    close;
+        "Let me think about this more.", L_end;
 
 L_loot:
     mes "[Wedding Officiator]";
@@ -197,8 +197,7 @@ L_loot:
     next;
     menu
         "No way.  I want a divorce.", L_makesure_divorce,
-        "Oh... oh!  But of course!", -;
-    close;
+        "Oh... oh!  But of course!", L_end;
 
 L_makesure_divorce:
     set @divorce_cost, DIVORCE_FEE_PER_LEVEL * BaseLevel;
@@ -211,7 +210,6 @@ L_makesure_divorce:
         "Let me think about this again.", L_end,
         "HOW much?  Never mind, then.", L_end,
         "That's OK.  I want the divorce.", L_do_divorce;
-    close;
 
 L_divorce_nomoney:
     mes "[Wedding Officiator]";

@@ -21,9 +21,9 @@
     set @cat, ((Katze & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
 
     if (@cat == 1 && @catNeedsAlone == 0) goto L_NeedsFood;
-    if (@cat == 1) goto L_PreNeedsFood;
+    if (@cat == 1) goto L_NeedsFood;
     if (@cat == 2 && @catNeedsAlone == 0) goto L_NeedsFur;
-    if (@cat == 2) goto L_PreNeedsFur;
+    if (@cat == 2) goto L_NeedsFur;
     if (@cat == 3) goto L_NeedsWood;
     if (@cat == 4 && @catNeedsAlone == 0) goto L_NeedsStuff;
     if (@cat == 4) goto L_PreNeedsStuff;
@@ -31,14 +31,14 @@
     if (@cat == 6 && @catNeedsAlone == 0) goto L_GainEars;
     if (@cat == 6) goto L_PreGainEars;
     if (@cat == 7) goto L_Finished;
+    goto L_NeedsMilk;
 
 L_NeedsMilk:
     mes "[Katze]";
     mes "\"Meow.\"";
     next;
     menu "Throw a stone at the cat.", L_ThrowStone,
-         "Leave the cat alone.", -;
-    goto L_Close;
+         "Leave the cat alone.", L_Close;
 
 L_ThrowStone:
     set @cat, 0;
@@ -49,17 +49,13 @@ L_ThrowStone:
     mes "Yikes, the cat attacked you! Your whole body is scratched. Maybe throwing a stone wasn't such a great idea...";
     goto L_Close;
 
-L_PreNeedsFood:
 L_NeedsFood:
     mes "[Katze]";
     mes "\"Meow, prrrr...\"";
     next;
     menu
         "Throw a stone at the cat.", L_ThrowStone,
-        "Leave the cat alone.", -;
-    goto L_Close;
-
-L_PreNeedsFur:
+        "Leave the cat alone.", L_Close;
 
 L_NeedsFur:
     mes "[Katze]";
@@ -69,11 +65,11 @@ L_NeedsFur:
         menu
             "Make funny movements with the fur near the ground.", L_MoveFur,
             "Throw a stone at the cat.", L_ThrowStone,
-            "Leave the cat alone.", -;
+            "Leave the cat alone.", L_Close;
     if (countitem("WhiteFur") == 0)
         menu
             "Throw a stone at the cat.", L_ThrowStone,
-            "Leave the cat alone.", -;
+            "Leave the cat alone.", L_Close;
     goto L_Close;
 
 L_MoveFur:
@@ -93,7 +89,7 @@ L_NeedsWood:
     if (countitem("RawLog") > 0)
         menu
             "Want this piece of wood?", L_GiveWood,
-            "Ok, see you later.", -;
+            "Ok, see you later.", L_Close;
     goto L_Close;
 
 L_GiveWood:
@@ -125,8 +121,7 @@ L_NeedsStuff2:
     menu
         "Look here.", L_CatChecksStuff,
         "What do you need again?", L_WhatsNeeded,
-        "No, I haven't got everything yet.", -;
-    goto L_Close;
+        "No, I haven't got everything yet.", L_Close;
 
 L_WhatsNeeded:
     mes "[Katze]";
@@ -134,8 +129,7 @@ L_WhatsNeeded:
     next;
     menu
         "Please tell me.", L_Please,
-        "Never mind.", -;
-    goto L_Close;
+        "Never mind.", L_Close;
 
 L_Please:
     mes "[Katze]";

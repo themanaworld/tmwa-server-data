@@ -52,7 +52,6 @@ L_Initial:
         "Nothing in particular.", L_Initial_nothing,
         "I was just exploring...", L_Initial_nothing,
         "I am trying to learn magic!", L_Initial_learn;
-    close;
 
 L_noq:
     mes "[Mystic Sword]";
@@ -74,8 +73,10 @@ L_Initial_learn:
     next;
     menu
         "I am not interested in that.", L_Farewell,
-        "It might be good for me to learn that.", -,
-        "I am quite interested.", -;
+        "It might be good for me to learn that.", L_Next,
+        "I am quite interested.", L_Next;
+
+L_Next:
     mes "[Mystic Sword]";
     mes "\"Why is it that thou seekest this power?\"";
     next;
@@ -85,7 +86,6 @@ L_Initial_learn:
         "To kill!", L_Initial_selfish,
         "I don't know yet...", L_Initial_dontknow,
         "To protect the ones I love!", L_Initial_protect;
-    close;
 
 L_Initial_selfish:
     mes "[Mystic Sword]";
@@ -100,6 +100,7 @@ L_Initial_dontknow:
 L_Initial_protect:
     mes "[Mystic Sword]";
     mes "\"Quite a high and laundable goal thou hast chosen for thyself!  I do hope that thou canst live up to it.\"";
+    goto L_Initial_ok;
 
 L_Initial_ok:
     mes "\"Hark, then, mortal!  For I shall bestow upon thee the secret of the flare dart spell!\"";
@@ -125,7 +126,6 @@ L_FlareStage:
         "Uhm... Hello, Sword?", L_FlareStage_hello,
         "Can you teach me more magic?", L_FlareStage_impolite,
         "Where can I get sulphur powder?", L_FlareStage_impolite;
-    close;
 
 L_FlareStage_impolite:
     mes "[Mystic Sword]";
@@ -141,7 +141,6 @@ L_FlareStage_hello:
         "Can you teach me more magic?", L_FlareStage_moremagic,
         "Where can I find sulphur powder?", L_FlareStage_sulphur,
         "Farewell!", L_Farewell;
-    close;
 
 L_FlareStage_moremagic:
     mes "[Mystic Sword]";
@@ -163,9 +162,8 @@ L_MagicBladeStage:
     mes "\"Dost thou wish to continue thy pursuits of this school of magic?\"";
     next;
     menu
-        "No.", -,
+        "No.", L_Farewell,
         "Yes.", L_Levelup2_yes;
-    goto L_Farewell;
 
 L_Levelup2_yes:
     mes "[Mystic Sword]";
@@ -181,9 +179,10 @@ L_Levelup2_yes:
     mes "\"Thou hast collected " + Mobpt + " Monster Points.  For one thousand of them, I shall admit thee to the school of war magic.\"";
     next;
     menu
-        "OK!", -,
+        "OK!", L_Next1,
         "No... never mind.", L_Farewell;
 
+L_Next1:
     set Mobpt, Mobpt - 1000;
 
     mes "[Mystic Sword]";
@@ -245,13 +244,17 @@ L_L2_W12:
     next;
     menu
         "No.", L_farewell,
-        "Yes.", -;
+        "Yes.", L_Next2;
+
+L_Next2:
     mes "[Mystic Sword]";
     mes "\"Very well.  I shall teach thee another spell, if thou provest thy progress by sacrificing another five thousand monster points.\"";
     next;
     menu
         "No, I don't want that.", L_farewell,
-        "So be it.", -;
+        "So be it.", L_Next3;
+
+L_Next3:
     if (Mobpt < 5000)
         goto L_lacking_mobpoints;
     mes "[Mystic Sword]";
@@ -282,8 +285,10 @@ L_L2_W10:
     mes "\"For this spell, I ask that thou bringest a lump of iron ore.  Thou must also sacrifice ten thousand monster points.\"";
     next;
     menu
-        "OK.", -,
+        "OK.", L_Next4,
         "No way.", L_farewell;
+
+L_Next4:
     if (countitem("IronOre") < 1)
         goto L_no_ore;
     if (MPQUEST && (Mobpt < 10000))

@@ -30,31 +30,38 @@
     if (QUEST_MIRIAM_run != 0) goto L_checktime;
     if (QUEST_MIRIAM_start != 0) goto L_wasting;
     if (QUEST_MIRIAM == 5) goto L_testoffer;
+    goto L_intro;
 
 L_intro:
     mes "You see a woman sitting in the hot sand with eyes wide open... But she does not seem to be looking at something in particular...";
     next;
     menu
-        "Ehr... Hi, my name is " +strcharinfo(0)+ ". Are you OK?",-;
-    next;
+        "Ehr... Hi, my name is " +strcharinfo(0)+ ". Are you OK?",L_Next;
+
+L_Next:
     mes "[Miriam]";
     mes "\"...";
     next;
     menu
-        "Hello?",-;
-    next;
+        "Hello?",L_Continue;
+
+L_Continue:
     mes "[Miriam]";
     mes "\"Yes, I am. Why? Do you think I am not OK? I am OK. You interrupted my meditation. Now I will need hours to calm down and stay quiet! Yes, yes, I know, I'm a fast talker!\"";
     next;
     mes "\"In fact, I am fast in everything I do! I can kill a Mountain Snake before it even starts to think about attacking me! Yes my friend, in a battle, speed is power!";
     next;
     menu
-        "Wow! Very impressi...",-;
+        "Wow! Very impressi...",L_More;
+
+L_More:
     mes "[Miriam]";
     mes "\"Yes, yes, I know. But if there is one thing I am NOT good at, it is meditation! My master said I need to meditate, but... Ohh! So difficult to stay quiet! And when you FINALLY do, someone INTERRUPTS you, asking if you are 'OK'...\"";
     next;
     menu
-        "Oh, I am sorry! I didn't know you were meditating...",-;
+        "Oh, I am sorry! I didn't know you were meditating...",L_WallText;
+
+L_WallText:
     mes "[Miriam]";
     mes "\"You are really sorry? Ok, but that is not enough... I need you to do something for me. As you can imagine, I will need a lot of time to concentrate and get back to the state I was when you interrupted me.\"";
     next;
@@ -63,8 +70,10 @@ L_intro:
     mes "\"So, if you really want to prove that you are sorry, bring me 5 Concentration Potions and 10 Snake Tongues.\"";
     next;
     menu
-        "Ok, but those potions will not help with your mental concent...",-,
+        "Ok, but those potions will not help with your mental concent...",L_MoreTalking,
         "Sorry, but I can't help you right now.",L_canthelp;
+
+L_MoreTalking:
     mes "[Miriam]";
     mes "\"ah, ah, ah... I know what I am doing! Now run and get what I asked.\"";
     set QUEST_MIRIAM, 2;
@@ -90,8 +99,10 @@ L_ask1:
     mes "\"So, you are back... have you changed your mind about my request?\"";
     next;
     menu
-        "Yes, I will get what you want!",-,
+        "Yes, I will get what you want!",L_WillGetItems,
         "No, I have no time right now.",L_canthelp2;
+
+L_WillGetItems:
     set QUEST_MIRIAM, 2;
     mes "\"Good. So, run and get it!\"";
     close;
@@ -103,7 +114,9 @@ L_ask2:
     menu
         "Yes, here it is!",L_getitems,
         "What was that again?", L_ask3,
-        "No, not yet.",-;
+        "No, not yet.",L_Hurry;
+
+L_Hurry:
     mes "\"So please hurry up!\"";
     close;
 
@@ -139,9 +152,10 @@ L_teach:
     mes "\"Hmm... do you think you can learn the special Speed skill?\"";
     next;
     menu
-        "Yes, I am prepared...", -,
+        "Yes, I am prepared...", L_Prepared,
         "I am already fast.", L_notfast;
 
+L_Prepared:
     set @agi, readparam(bAgi);
     set @torso$, getitemname(getequipid(equip_torso));
     set @weight, MaxWeight/Weight;
@@ -193,7 +207,9 @@ L_offer:
     if (!(getskilllv(SKILL_POOL)))
         goto L_noskill;
     menu
-        "Yes, I look really good in this " +@torso$+ ".",-;
+        "Yes, I look really good in this " +@torso$+ ".",L_TorsoNext;
+
+L_TorsoNext:
     mes "[Miriam]";
     mes "\"I see. I like the way you distributed your Character Points too... " +@agi+ " points to Agility! You really know how to prepare yourself for a good fight!\"";
     next;
@@ -202,7 +218,7 @@ L_offer:
     mes "\"So, if you pass a small test I can teach you a skill that will increase your walking speed! You will not be as fast as I am, but I am sure it will be useful.\"";
     next;
     menu
-        "I'm in! What kind of test is it?",-,
+        "I'm in! What kind of test is it?",L_test,
         "I don't think I need more speed right now",L_giveup;
 
 L_test:
@@ -212,9 +228,10 @@ L_test:
     mes "\"If you make it in a good time, I will teach you the special speeding skill. If not, you can always try again. So, are you ready?\"";
     next;
     menu
-        "Yes, let's do it!",-,
+        "Yes, let's do it!",L_LetsDoThis,
         "No, I need to stretch my muscles first!",L_stretch;
 
+L_LetsDoThis:
     close2;
     message strcharinfo(0), "Miriam quickly grabs your arm and pull you to the place where she is sitting.";
     // Warp the player to the place where the NPC is defined, so he can't cheat.
@@ -252,7 +269,9 @@ L_testoffer:
     next;
     menu
         "Yes!",L_test,
-        "Not yet.",-;
+        "Not yet.",L_Close;
+
+L_Close:
     close;
 
 L_warning:
@@ -277,7 +296,7 @@ L_checktime:
         goto L_warning;
     if (QUEST_MIRIAM_run > 210)
         goto L_tryagain;
-    if (QUEST_MIRIAM_run <= 210)
+    //else
         goto L_goodjob;
 
 L_tryagain:

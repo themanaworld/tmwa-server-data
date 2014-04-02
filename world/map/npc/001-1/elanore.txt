@@ -48,10 +48,10 @@ function|script|ElanoreFix|,
     if (sc_check(sc_poison)) goto L_CurePoison;
     if (BaseLevel > 10) goto L_NoHeal;
     set @TEMP,rand(4);
-    if(@TEMP == 0) goto Heal1;
     if(@TEMP == 1) goto Heal2;
     if(@TEMP == 2) goto Heal3;
     if(@TEMP == 3) goto Heal4;
+    goto Heal1;
 
 Heal1:
 
@@ -82,12 +82,11 @@ Heal4:
     goto Heal_L;
 
 Heal_L:
-    set @TEMP,rand(3);
-
-    if(@TEMP == 0) goto Heal_1;
+    set @TEMP,rand(4);
     if(@TEMP == 1) goto Heal_2;
     if(@TEMP == 2) goto Heal_3;
     if(@TEMP == 3) goto Heal_4;
+    goto Heal_1;
 
 Heal_1:
 
@@ -120,6 +119,7 @@ Heal_4:
 L_NoHeal:
     if (MAGIC_FLAGS)
         goto L_Chat;
+    goto L_NoHealMessage;
 
 L_NoHealMessage:
     mes "[Elanore the Healer]";
@@ -132,6 +132,7 @@ L_Chat:
     mes "[Elanore the Healer]";
     mes "\"Hello!  Can I help you?\"";
     next;
+    goto L_Main;
 
 L_Main:
     if (@has_magic && (@Q_status == @STATUS_INITIAL))
@@ -164,6 +165,7 @@ OnPCKillEvent:
 
 L_OnPcKillWipe:
         set @Q_heal_exp, 0;
+    goto L_OnPcKillFinish;
 
 L_OnPcKillFinish:
     set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE & ~(255 << 24)) | (@Q_heal_exp << 24);
@@ -174,11 +176,10 @@ L_Lifestones:
     mes "\"I always need components for my own healing spells.  If you bring me ten gamboge leaves, ten alizarin leaves, ten mauve leaves and ten cobalt leaves, I can make ten lifestones; I will give you half of them.\"";
     next;
     menu
-        "OK, I will get them.", -,
-        "No way!", -,
+        "OK, I will get them.", L_Close,
+        "No way!", L_Close,
         "Here you are!", L_Lifestones_Trade,
         "Can I make them myself?", L_Lifestones_MakeSelf;
-    goto L_Close;
 
 L_Lifestones_Trade:
     if (countitem("MauveHerb") < 10) goto L_Lifestones_Trade_Missing;
@@ -224,6 +225,7 @@ L_Lifestones_Trade_Missing:
 L_Lifestones_MakeSelf:
     mes "[Elanore the Healer]";
     if (@has_magic < 2) goto L_Lifestones_MakeSelf_no;
+    goto L_Lifestones_MakeSelf_yes;
 
 L_Lifestones_MakeSelf_yes:
     mes "\"Oh, but of course!  You are powerful enough to make your own lifestones, using the enchantment '" + getspellinvocation("enchant-lifestone") + "'.  This will consume a bug leg or a maggot slime or one of each of the four healing herbs, though.\"";
@@ -300,6 +302,7 @@ L_Teach_AdvanceTo2_warn:
     mes "[Elanore the Healer]";
     mes "\"But be warned:  you won't be able to use advanced healing magic until you are more capable in your regular magic usage.\"";
     next;
+    goto L_Teach_AdvanceTo2_skip;
 
 L_Teach_AdvanceTo2_skip:
     mes "[Elanore the Healer]";
@@ -376,16 +379,15 @@ L_Teach_Explain3:
     mes "[Elanore the Healer]";
     mes "\"But his daugher has contracted Mopox, so she needs help.  He doesn't trust me, but perhaps he will trust you; you have been helping quite a few people, after all.\"";
     next;
+    goto L_3_menu;
 
 L_3_menu:
     menu
         "What should I do?", L_3_what_to_do,
         "Where can I find the sick girl?", L_3_where,
         "How did you mess up?", L_3_messup,
-        "I will get started right away.", -,
-        "Maybe later.", -;
-
-        goto L_Main;
+        "I will get started right away.", L_Main,
+        "Maybe later.", L_Main;
 
 L_3_what_to_do:
     mes "[Elanore the Healer]";

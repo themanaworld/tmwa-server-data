@@ -76,17 +76,21 @@ L_main_menu:
     if (@Q_status >= @QS_KNOWS_KFAHR)
         goto L_real_main_menu;
     menu
-        "Who are you?", -,
+        "Who are you?", L_Next,
         "Goodbye.", L_end;
+
+L_Next:
     mes "[Kfahr the Warrior]";
     mes "Kfahr laughs again.";
     mes "\"Surely you jest!  You must have heard of Kfahr, Slayer of Toby Rick the Desert Worm, Raider of the Lost Temple, Hero of Tulimshar?\"";
     next;
     menu
-        "Uhm...", -,
-        "Well...", -,
-        "To be quite honest...", -,
+        "Uhm...", L_Next1,
+        "Well...", L_Next1,
+        "To be quite honest...", L_Next1,
         "Excuse me, someone is, er, whispering me...", L_end;
+
+L_Next1:
     mes "[Kfahr the Warrior]";
     mes "\"Ah, I knew it!  So you have come to hear some tales about the dangers of the desert?  You've come to the right man!\"";
     next;
@@ -134,7 +138,6 @@ L_real_main_menu:
         "I want to become as powerful as you!", L_gain_power,
         "Here, have a beer!", L_give_beer,
         "Goodbye!", L_end;
-    close;
 
 L_long_main_menu:
     menu
@@ -146,7 +149,6 @@ L_long_main_menu:
         "Have you fought any Golden Scorpions?", L_golden_scorpion,
         "Here, have a beer!", L_give_beer,
         "Goodbye!", L_end;
-    close;
 
 L_tale_desert_worm:
     set @current_story, 1;
@@ -422,11 +424,10 @@ L_tale_desert_temple:
     mes "\"That was my first real adventure, I think.  Ah, those were exciting days.\"";
     next;
     menu
-        "Wow.", -,
+        "Wow.", L_main_menu,
         "What happened to the tablet?", L_tale_tablet,
         "Did you go there again?", L_tale_temple_again,
         "Zzzzzzz.....", L_end;
-    goto L_main_menu;
 
 L_tale_tablet:
     mes "[Kfahr the Warrior]";
@@ -608,6 +609,7 @@ L_boneknife_quest:
     set @Q_status, @QS_KNIFE_QUEST;
     callsub L_Update_Var;
     next;
+    goto L_boneknife_quest_ip;
 
 L_boneknife_quest_ip:
     mes "[Kfahr the Warrior]";
@@ -642,7 +644,6 @@ L_knife_quest_check:
         "Er, what were those things again?", L_boneknife_quest_ip,
         "No, sorry, I didn't have the time.", L_main_menu,
         "I forgot!  Let me get them right now.", L_end;
-    close;
 
 L_knife_quest_completecheck:
     if (countitem("BlackScorpionStinger") < @BLACK_STINGERS_NR)
@@ -737,7 +738,6 @@ L_stinger_quest_check:
         "Yes, here they are!", L_snakeskins_completecheck,
         "No, sorry, I didn't have the time.", L_main_menu,
         "I forgot!  Let me get them right now.", L_end;
-    close;
 
 L_snakeskins_completecheck:
     if (countitem("SnakeSkin") < @SNAKE_SKINS_NR)
@@ -840,7 +840,9 @@ L_golden_scorpion:
     next;
     menu
         "Never mind, I was just curious.", L_main_menu,
-        "I need a golden scorpion stinger.", -;
+        "I need a golden scorpion stinger.", L_Next2;
+
+L_Next2:
     mes "[Kfahr the Warrior]";
     mes "\"A golden scorpion stinger?  Those are rare and valuable, I hope that you know that!\"";
     if (BaseLevel < 60)
@@ -856,13 +858,13 @@ L_golden_scorpion:
     mes "A mischievous sparkle lightens up in his eyes.";
     mes "\"...if you arm-wrestle me for it!\"";
     next;
+    goto L_golden_scorpion_wrestle_intro;
 
 L_golden_scorpion_wrestle_intro:
     menu
         "Never!", L_main_menu,
         "Wait... what?", L_wrestle_explain,
         "Bring it on!", L_golden_scorpion_wrestle;
-    close;
 
 L_golden_requires_knife_quest_done:
     mes "He hesitates.";
@@ -929,6 +931,7 @@ L_golden_scorpion_wrestle:
 
     set @position, 2;
     set @first_round, 1;
+    goto L_wrestle_loop;
 
 L_wrestle_loop:
     mes "[Arm-wrestling with Kfahr]";
@@ -943,7 +946,6 @@ L_wrestle_loop:
         "Hold!", L_wrestle_hold,
         "Slam!", L_wrestle_slam,
         "Consider your options", L_wrestle_info;
-    close;
 
 L_wrestle_info:
     mes "[Arm-wrestling with Kfahr]";

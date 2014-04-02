@@ -50,9 +50,7 @@ L_End:
     next;
     menu
         "Yes", L_Begin,
-        "No", -;
-    mes "\"As you wish.\"";
-    goto L_Close;
+        "No", L_Close;
 
 L_Begin:
     if(countitem("CasinoCoins") < 15) goto L_NoCoin;
@@ -112,6 +110,7 @@ L_Ace:
         "No", L_End;
 
 L_Close:
+    mes "\"As you wish.\"";
     set @croupier, 0;
     set @player, 0;
     set @tempace, 0;
@@ -129,9 +128,7 @@ L_Close:
         "10 coins", L_b10,
         "50 coins", L_b50,
         "100 coins", L_b100,
-        "Maybe I'll play later", -;
-    mes "Come again.";
-    goto L_Close;
+        "Maybe I'll play later", L_Close;
 
 L_b1:
     set @bet, 1;
@@ -157,11 +154,15 @@ L_Check:
     if(countitem("CasinoCoins") < @bet) goto L_NoCoin;
     delitem "CasinoCoins", @bet;
     menu
-        "Choose a color", -,
+        "Choose a color", L_PickColor,
         "Choose a number", L_Number;
+
+L_PickColor:
     menu
-        "Black", -,
-        "Red", -;
+        "Black", L_Color,
+        "Red", L_Color;
+
+L_Color:
     set @color,rand(2);
     if(@color == 1) goto L_Lost;
     mes "You won!";
@@ -170,11 +171,12 @@ L_Check:
 
 L_Number:
     menu
-        "0", -, "00", -, "1", -, "2", -, "3", -, "4", -, "5", -, "6", -, "7", -, "8", -,
-        "9", -, "10", -, "11", -, "12", -, "13", -, "14", -, "15", -, "16", -, "17", -, "18", -,
-        "19", -, "20", -, "21", -, "22", -, "23", -, "24", -, "25", -, "26", -, "27", -, "28", -,
-        "29", -, "30", -, "31", -, "32", -, "33", -, "34", -, "35", -, "36", -;
+        "0", L_Menuitems, "00", L_Menuitems, "1", L_Menuitems, "2", L_Menuitems, "3", L_Menuitems, "4", L_Menuitems, "5", L_Menuitems, "6", L_Menuitems, "7", L_Menuitems, "8", L_Menuitems,
+        "9", L_Menuitems, "10", L_Menuitems, "11", L_Menuitems, "12", L_Menuitems, "13", L_Menuitems, "14", L_Menuitems, "15", L_Menuitems, "16", L_Menuitems, "17", L_Menuitems, "18", L_Menuitems,
+        "19", L_Menuitems, "20", L_Menuitems, "21", L_Menuitems, "22", L_Menuitems, "23", L_Menuitems, "24", L_Menuitems, "25", L_Menuitems, "26", L_Menuitems, "27", L_Menuitems, "28", L_Menuitems,
+        "29", L_Menuitems, "30", L_Menuitems, "31", L_Menuitems, "32", L_Menuitems, "33", L_Menuitems, "34", L_Menuitems, "35", L_Menuitems, "36", L_Menuitems;
 
+L_Menuitems:
     if (@menu == 1) set @number, 0;
     if (@menu == 2) set @number, 37;
     if (@menu >= 3) set @number, @menu - 2;
@@ -196,6 +198,7 @@ L_Lost:
     goto L_Close;
 
 L_Close:
+    mes "Come again.";
     set @number, 0;
     set @roulette, 0;
     set @color, 0;

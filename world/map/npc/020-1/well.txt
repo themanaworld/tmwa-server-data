@@ -27,18 +27,18 @@
     mes "...";
     menu
         "Throw something in the well.", L_trew,
-        "Leave it alone.", -;
-    close;
+        "Leave it alone.", L_Close;
 
 L_trew:
     mes "What do you want to throw?";
     menu
-        "Maggot slime", -,
-        "A raw log", -,
-        "Pile of ash", -,
-        "Bottle of water", -,
+        "Maggot slime", L_MenuItems,
+        "A raw log", L_MenuItems,
+        "Pile of ash", L_MenuItems,
+        "Bottle of water", L_MenuItems,
         "Leave it alone", L_Close;
 
+L_MenuItems:
     set @menu, @menu - 1;
 
     // little IF to do @quote$ & @Item_ID
@@ -62,10 +62,11 @@ L_trew:
     mes "\" "+ @quote$ +"\"";
     next;
     menu
-        "Who are you?", -,
-        "How did you get there?", -,
-        "Do you need help?", -;
+        "Who are you?", L_MenuItems1,
+        "How did you get there?", L_MenuItems1,
+        "Do you need help?", L_MenuItems1;
 
+L_MenuItems1:
     set @menu, @menu - 1;
         if (@menu == 0)
             set @quote$, "I'll talk about who I am after leaving the well.";
@@ -108,19 +109,24 @@ S_Update_Var:
     if(@Q_status == 2) close;
     if(@Q_status == 1)
         menu
-            "Hello.", -,
+            "Hello.", L_Close,
             "Hello, Can you help me?", L_HELP;
-    close;
+    goto L_Close;
 
 L_HELP:
     mes "[Miler]";
     mes "\"What's the problem?\"";
-    menu "Someone has fallen in the well.", -;
+    menu "Someone has fallen in the well.", L_Next;
+
+L_Next:
     mes "[Miler]";
     mes "\"Ho! I'll help him!\"";
     getexp (BaseLevel * 111), 0;
     set @Q_status, 2;
     callsub S_Update_Var;
+    close;
+
+L_Close:
     close;
 
 S_Update_Var:

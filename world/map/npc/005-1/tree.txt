@@ -10,6 +10,7 @@ function|script|QuestTreeTrigger|,
     if (@Q_status & @flag) goto L_Close;  // already did that
 
     if (@flag == 2) goto L_hug;
+    goto L_cont;
 
 L_cont:
     set @Q_status, @Q_status | @flag;
@@ -73,8 +74,7 @@ L_cut:
     next;
     menu
         "Cut off a branch", L_do_cut,
-        "Leave it alone", -;
-    goto L_Close;
+        "Leave it alone", L_Close;
 
 L_water:
     mes "[Dying Tree]";
@@ -83,8 +83,7 @@ L_water:
     menu
         "Water the tree", L_givewater,
         "Kiss tree", L_kiss,
-        "Leave it alone", -;
-    goto L_Close;
+        "Leave it alone", L_Close;
 
 L_both:
     mes "[Dying Tree]";
@@ -94,8 +93,7 @@ L_both:
         "Water the tree", L_givewater,
         "Kiss tree", L_kiss,
         "Cut off a branch", L_do_cut,
-        "Leave it alone", -;
-    goto L_Close;
+        "Leave it alone", L_Close;
 
 L_givewater:
     if (countitem("BottleOfWater") < 1) goto L_no_water;
@@ -128,9 +126,8 @@ L_do_cut:
     mes "Do you want to continue cutting?";
     next;
     menu
-        "Nah... better not.", -,
+        "Nah... better not.", L_Close,
         "Yes, let's cut!", L_really_cut;
-    goto L_Close;
 
 L_really_cut:
     set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_DID_CUTTREE;
@@ -161,9 +158,11 @@ L_Close:
 005-1.gat,79,41,0|script|#DruidTree0#_M|400,
 {
     callfunc "QuestTreeTouch";
+    end;
 }
 
 005-1.gat,80,41,0|script|#DruidTree1#_M|400,
 {
     callfunc "QuestTreeTouch";
+    end;
 }

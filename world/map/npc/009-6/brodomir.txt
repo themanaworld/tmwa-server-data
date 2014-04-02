@@ -81,9 +81,11 @@ L_Item:
     mes "\"So the prize should be " + @brodomir_item_amount + " " + @brodomir_item$ + "?\"";
     mes "\"In case there aren't enough people to start the fight, I'll try to give it back to you. If you're not here then... well, then I'll keep it for myself.\"";
     menu
-        "Ok.", -,
+        "Ok.", L_Next,
         "No, you missunderstood me.", L_Item,
         "I changed my mind, forget it.", L_Close;
+
+L_Next:
     if ($@BRODOMIR_PVP_STATUS == 1)
         goto L_Wait;
     if (countitem(@brodomir_item$) < @brodomir_item_amount)
@@ -91,6 +93,8 @@ L_Item:
 
     // we need this loop because for items that can't be stacked, delitem can only delete a single one
     set @loopcounter, @brodomir_item_amount;
+    goto L_Delitem;
+
 L_Delitem:
     delitem @brodomir_item$, 1;
     set @loopcounter, @loopcounter - 1;
@@ -177,11 +181,14 @@ L_Warpfail:
         goto L_SkipItemback;
 
     // we need this loop because for items that can't be stacked, getitem will stack them nevertheless
+    goto L_GetitemLoop;
+
 L_GetitemLoop:
     getitem $@BRODOMIR_ITEM$, 1;
     set $@BRODOMIR_ITEM_AMOUNT, $@BRODOMIR_ITEM_AMOUNT - 1;
     if ($@BRODOMIR_ITEM_AMOUNT > 0)
         goto L_GetitemLoop;
+    goto L_SkipItemback;
 
 L_SkipItemback:
     set $@BRODOMIR_ITEM_AMOUNT, 0;
@@ -204,11 +211,14 @@ OnReward:
         goto L_SkipItem;
 
     // we need this loop because for items that can't be stacked, getitem will stack them nevertheless
+    goto L_Getitem;
+
 L_Getitem:
     getitem $@BRODOMIR_ITEM$, 1;
     set $@BRODOMIR_ITEM_AMOUNT, $@BRODOMIR_ITEM_AMOUNT - 1;
     if ($@BRODOMIR_ITEM_AMOUNT > 0)
         goto L_Getitem;
+    goto L_SkipItem;
 
 L_SkipItem:
     set $@BRODOMIR_ITEM$, "";

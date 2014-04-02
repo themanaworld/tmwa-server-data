@@ -108,6 +108,7 @@ L_main_menu:
     set @choice$[@choices_nr], "Can you make my Short Sword better?";
     set @choice_idx[@choices_nr], @CHOICE_SETZER;
     set @choices_nr, 1 + @choices_nr;
+    goto L_main_menu_post_setzer;
 
 L_main_menu_post_setzer:
 
@@ -132,19 +133,21 @@ L_main_menu_post_setzer:
     set @choice$[@choices_nr], "Warlord Helmet (9 Iron Ingots & 18 Coal).";
     set @choice_idx[@choices_nr], @CHOICE_WARLORD;
     set @choices_nr, 1 + @choices_nr;
+    goto L_no_more_helmets;
 
 L_no_more_helmets:
     set @choice$[@choices_nr], "No thanks.";
     set @choice_idx[@choices_nr], @CHOICE_CANCEL;
     set @choices_nr, 1 + @choices_nr;
     menu
-        @choice$[0], -,
-        @choice$[1], -,
-        @choice$[2], -,
-        @choice$[3], -,
-        @choice$[4], -,
-        @choice$[5], -;
+        @choice$[0], L_MenuItems,
+        @choice$[1], L_MenuItems,
+        @choice$[2], L_MenuItems,
+        @choice$[3], L_MenuItems,
+        @choice$[4], L_MenuItems,
+        @choice$[5], L_MenuItems;
 
+L_MenuItems:
     set @menu, @menu - 1;
     if (@menu >= @choices_nr)
     close;
@@ -225,8 +228,10 @@ L_YesShield:
     mes "\"No, this iron is too brittle; for something as large as a shield I need to mix in softer iron.  Can I see if you have anything suitable?\"";
     next;
     menu
-        "Sure, have a look!", -,
+        "Sure, have a look!", L_Next,
         "No.", L_Pass;
+
+L_Next:
     if (countitem("InfantryHelmet") == 1)
         goto L_MoreInfantry;
     if (countitem("InfantryHelmet") == 0)
@@ -240,9 +245,11 @@ L_YesShield:
     callsub L_Update_Var;
     next;
     menu
-        "Here you are!", -,
+        "Here you are!", L_Next1,
         "Where can I get a Leather Patch?", L_WhereLeather,
         "No way.", L_Pass;
+
+L_Next1:
     if (Zeny < 20000)
         goto L_ShieldNoZeny;
     if (countitem("InfantryHelmet") < 2)
@@ -329,9 +336,11 @@ L_SetzerQuest:
     callsub L_Update_Var;
     next;
     menu
-        "Here you are.", -,
+        "Here you are.", L_Next2,
         "Monster oil?  What's that?", L_ExplainMonsterOil,
         "HOW much?  Nevermind then!", L_Pass;
+
+L_Next2:
     if (Zeny < 50000)
         goto L_SetzerNoZeny;
     if ( (countitem("IronIngot") < 3) || (countitem("Coal") < 6) )

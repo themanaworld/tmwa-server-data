@@ -54,6 +54,7 @@
     set @choice_idx[@choices_nr], @C_monster_oil;
     set @choice$[@choices_nr], "I would like to brew Monster Oil.";
     set @choices_nr, @choices_nr + 1;
+    goto L_M_no_monster_oil;
 
 L_M_no_monster_oil:
     if (!@Q_knows_mopox_cure)
@@ -62,6 +63,7 @@ L_M_no_monster_oil:
     set @choice_idx[@choices_nr], @C_mopox_cure;
     set @choice$[@choices_nr], "I would like to brew a Mopox Cure Potion.";
     set @choices_nr, @choices_nr + 1;
+    goto L_M_no_mopox_cure;
 
 L_M_no_mopox_cure:
     if (@inspector != 10)
@@ -70,6 +72,7 @@ L_M_no_mopox_cure:
     set @choice_idx[@choices_nr], @C_nohmask;
     set @choice$[@choices_nr], "Actually...";
     set @choices_nr, @choices_nr + 1;
+    goto L_M_no_inspector;
 
 L_M_no_inspector:
     if (!(MAGIC_FLAGS & MFLAG_KNOWS_UNFOCUS_RECIPE))
@@ -78,6 +81,7 @@ L_M_no_inspector:
     set @choice_idx[@choices_nr], @C_dementiapotion;
     set @choice$[@choices_nr], "I would like to brew a Dementia Potion.";
     set @choices_nr, @choices_nr + 1;
+    goto L_M_no_dempo;
 
 L_M_no_dempo:
     set @choice_idx[@choices_nr], @C_bye;
@@ -85,15 +89,16 @@ L_M_no_dempo:
     set @choices_nr, @choices_nr + 1;
 
     menu
-        @choice$[0], -,
-        @choice$[1], -,
-        @choice$[2], -,
-        @choice$[3], -,
-        @choice$[4], -,
-        @choice$[5], -,
-        @choice$[6], -,
-        @choice$[7], -;
+        @choice$[0], L_MenuItems,
+        @choice$[1], L_MenuItems,
+        @choice$[2], L_MenuItems,
+        @choice$[3], L_MenuItems,
+        @choice$[4], L_MenuItems,
+        @choice$[5], L_MenuItems,
+        @choice$[6], L_MenuItems,
+        @choice$[7], L_MenuItems;
 
+L_MenuItems:
     set @choice, @choice_idx[@menu - 1];
 
     if (@choice == @C_monster_oil)
@@ -111,6 +116,7 @@ L_M_no_dempo:
     set @num, @choice;
     if (@num == 0)
         goto L_close;
+    goto L_brew;
 
 L_brew:
     mes "[Caul]";
@@ -131,6 +137,7 @@ L_brew:
     set @result2, 0;
     set @result3, 0;
     set @result4, 0;
+    goto L_CraftLoop;
 
 L_CraftLoop:
     set @throw, rand(readparam(bInt));
@@ -192,6 +199,7 @@ L_monster_oil_knows_recipe:
     mes "\"Ah, but of course!  Yes, we should be able to brew that here.  Except that... hmm.  Pearl and three black scorpion stingers?  This sounds very dangerous;";
     mes "I fear that I will have to ask you to do this yourself.\"";
     next;
+    goto L_monster_oil_main_menu;
 
 L_monster_oil_main_menu:
     set @main_menu, 1;
@@ -202,7 +210,6 @@ L_monster_oil_main_menu:
         "Let's start!", L_monster_oil_start_brew,
         "Where can I get a golden scorpion stinger?", L_monster_oil_where_gold,
         "I've changed my mind.", L_close;
-    close;
 
 L_monster_oil_why_dangerous:
     mes "[Caul]";
@@ -321,8 +328,9 @@ L_monster_oil_loop:
         "Add cobalt leaf", L_monster_oil_cobalt,
         "Add mauve leaf", L_monster_oil_mauve,
         "Ask Caul for advice", L_monster_oil_explain,
-        "Duck!", -;
+        "Duck!", L_Explodes;
 
+L_Explodes:
     mes "[Brewing monster oil]";
     mes "You throw yourself onto the ground.  Seconds later, the cauldron shakes, and your entire mixture explodes upwards.";
     mes "Caul crawls out from underneath a char.";
@@ -388,6 +396,7 @@ S_monster_oil_random_move:
 
     if (@auto_mode == 1)
         goto L_monster_oil_random_1;
+    goto L_monster_oil_random_0;
 
 L_monster_oil_random_0: // mode 0:  add colour or lighten up
     set @auto_mode, 1;
@@ -506,14 +515,14 @@ L_mopox_cure_start:
     mes "\"The mopox cure potion?  Certainly, if you have all of the ingredients... oh, and make sure to bring water, roots, sulphur powder and Mauve leaves.\"";
     mes "\"This is a very easy one, so I think I should let you do this yourself.  It is very good exercise.\"";
     next;
+    goto L_mopox_cure_overview_menu;
 
 L_mopox_cure_overview_menu:
     menu
         "I'm ready!", L_mopox_cure_setup,
         "What are the ingredients?", L_mopox_cure_ingredients,
         "How does this work?", L_mopox_cure_howto,
-        "I'd rather not try.", -;
-    close;
+        "I'd rather not try.", L_close;
 
 L_mopox_cure_ingredients:
     mes "[Caul]";
@@ -584,6 +593,7 @@ L_mopox_cure_setup:
     if (@stickiness == 3 && @colour == 3)
         set @colour, 4; // don't allow insta-win; it's easy enough.
     set @rounds, 0;
+    goto L_mopox_cure_loop;
 
 L_mopox_cure_loop:
     mes "[Brewing Mopox Cure]";
@@ -602,7 +612,7 @@ L_mopox_cure_loop:
         "Add sulphur powder", L_mopox_B_sulphur,
         "Add mauve", L_mopox_B_mauve,
         "...what should I do again?", L_mopox_reexplain,
-        "Wait", -;
+        "Wait", L_mopox_cure_next;
 
 L_mopox_cure_next:
     set @stickiness, @stickiness + @rounds;
@@ -729,6 +739,7 @@ L_mopox_cure_win:
     getexp @MOPOX_CURE_XP, 0;
     mes "[" + @MOPOX_CURE_XP + " experience points]";
     set QUEST_MAGIC2, (QUEST_MAGIC2 & ~NIBBLE_3_MASK) | (2 << NIBBLE_3_SHIFT); // Make sure we can only get XP for brewing this once
+    goto L_mopox_cure_win_quick;
 
 L_mopox_cure_win_quick:
     close;
@@ -741,8 +752,7 @@ L_DemPotion:
     menu
         "Please explain to me what you know about that potion.", L_explain_dempo,
         "Ok, I will start brewing.", L_brew_dempo_init,
-        "Nevermind", -;
-    close;
+        "Nevermind", L_close;
 
 L_explain_dempo:
     mes "[Caul]";
@@ -825,6 +835,7 @@ L_brew_dempo:
     set @choice_idx[@choices_nr], @C_root;
     set @choice$[@choices_nr], "Add a root";
     set @choices_nr, @choices_nr + 1;
+    goto L_noroots;
 
 L_noroots:
     if (countitem("MauveHerb") == 0)
@@ -832,6 +843,7 @@ L_noroots:
     set @choice_idx[@choices_nr], @C_mauve;
     set @choice$[@choices_nr], "Add a mauve herb";
     set @choices_nr, @choices_nr + 1;
+    goto L_nomauve;
 
 L_nomauve:
     if (countitem("Lifestone") == 0)
@@ -839,6 +851,7 @@ L_nomauve:
     set @choice_idx[@choices_nr], @C_lifestone;
     set @choice$[@choices_nr], "Add a lifestone";
     set @choices_nr, @choices_nr + 1;
+    goto L_nolifestone;
 
 L_nolifestone:
     if (countitem("DiseasedHeart") == 0)
@@ -846,6 +859,7 @@ L_nolifestone:
     set @choice_idx[@choices_nr], @C_diseasedheart;
     set @choice$[@choices_nr], "Add a diseased heart";
     set @choices_nr, @choices_nr + 1;
+    goto L_noheart;
 
 L_noheart:
     if (countitem("Bone") == 0)
@@ -853,6 +867,7 @@ L_noheart:
     set @choice_idx[@choices_nr], @C_bone;
     set @choice$[@choices_nr], "Add a bone";
     set @choices_nr, @choices_nr + 1;
+    goto L_nobone;
 
 L_nobone:
     if (countitem("Skull") == 0)
@@ -860,6 +875,7 @@ L_nobone:
     set @choice_idx[@choices_nr], @C_skull;
     set @choice$[@choices_nr], "Add a skull";
     set @choices_nr, @choices_nr + 1;
+    goto L_noskull;
 
 L_noskull:
     if (countitem("UndeadEar") == 0)
@@ -867,6 +883,7 @@ L_noskull:
     set @choice_idx[@choices_nr], @C_undeadear;
     set @choice$[@choices_nr], "Add an undead ear";
     set @choices_nr, @choices_nr + 1;
+    goto L_noear;
 
 L_noear:
     if (countitem("Pearl") == 0)
@@ -874,24 +891,26 @@ L_noear:
     set @choice_idx[@choices_nr], @C_pearl;
     set @choice$[@choices_nr], "Finalize with a pearl.";
     set @choices_nr, @choices_nr + 1;
+    goto L_nopearl;
 
 L_nopearl:
     set @choice_idx[@choices_nr], @C_nevermind;
     set @choice$[@choices_nr], "Nevermind and leave";
 
     menu
-        @choice$[0],-,
-        @choice$[1],-,
-        @choice$[2],-,
-        @choice$[3],-,
-        @choice$[4],-,
-        @choice$[5],-,
-        @choice$[6],-,
-        @choice$[7],-,
-        @choice$[8],-,
-        @choice$[9],-,
-        @choice$[10],-;
+        @choice$[0],L_MenuItems1,
+        @choice$[1],L_MenuItems1,
+        @choice$[2],L_MenuItems1,
+        @choice$[3],L_MenuItems1,
+        @choice$[4],L_MenuItems1,
+        @choice$[5],L_MenuItems1,
+        @choice$[6],L_MenuItems1,
+        @choice$[7],L_MenuItems1,
+        @choice$[8],L_MenuItems1,
+        @choice$[9],L_MenuItems1,
+        @choice$[10],L_MenuItems1;
 
+L_MenuItems1:
     set @menu, @menu - 1;
     if (@choice_idx[@menu] == 0)
         goto L_brew_dempo;
@@ -984,9 +1003,8 @@ L_ask_quit:
     mes "[Caul]";
     mes "\"The potion is not ready. You can't just leave now!\"";
     menu
-        "Please throw away that stupid potion, I'm in a hurry!", -,
+        "Please throw away that stupid potion, I'm in a hurry!", L_close,
         "Oh you are right, let me finish it.", L_brew_dempo;
-    close;
 
 L_check_explosion:
     // set to range [-50 50];
@@ -999,6 +1017,7 @@ L_check_explosion:
     // square again, so you must be in the middle to get it work there;
     // and multiply with 3 so there is definitly no chance to get it directly after starting
     set @prob, (@prob * @prob) * 2;
+    goto L_check_exp_nof;
 
 L_check_exp_nof:
     // in about 95% of the cases anything is fine, so return.

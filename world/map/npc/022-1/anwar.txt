@@ -19,6 +19,8 @@
 
 -|script|#magicfieldNTconfig|-1,
 {
+    end;
+
 OnInit:
     set $@magicfieldNT_MASK, NIBBLE_3_MASK;
     set $@magicfieldNT_SHIFT, NIBBLE_3_SHIFT;
@@ -48,8 +50,10 @@ OnInit:
     mes "\"Hello. You look like one of those young people who come here to go on an adventure.";
     mes "Would you be interested in doing some small errand for me?\"";
     menu
-        "Sure!",-,
+        "Sure!",L_Sure,
         "I'm busy, sorry.",L_Close;
+
+L_Sure:
     mes "[Anwar]";
     mes "\"That's the spirit! Ok, I'm tired of spending most of my time working on this field. I heard the magicians at the magic school are researching ways to enhance the growth of plants with magic.\"";
     next;
@@ -66,7 +70,9 @@ L_FirstTry: // @state >= 1 but below 5
     if (@state != 4)
         goto L_Close;
     menu
-        "Tinris gave me a magic fertilizer for your field, but he isn't sure if it works.",-;
+        "Tinris gave me a magic fertilizer for your field, but he isn't sure if it works.",L_Next;
+
+L_Next:
     mes "[Anwar]";
     mes "\"Really? Well, let's try it out!\"";
     mes "He takes the fertilizer and starts to bespatter the field.";
@@ -85,7 +91,9 @@ L_SecondTry: // @state >= 5 but below 10
     if (@state != 9)
         goto L_Close;
     menu
-        "Here is another one. Eomie cast a spell on it.",-;
+        "Here is another one. Eomie cast a spell on it.",L_Continue;
+
+L_Continue:
     mes "[Anwar]";
     mes "\"Eomie? I heard she's amazingly skilled with nature magic. I'll try if this works better.\"";
     mes "He takes the fertilizer and puts it on only a few plants, then waits a moment to see the result.";
@@ -97,13 +105,17 @@ L_SecondTry: // @state >= 5 but below 10
     set @state, 10;
     callsub S_Update_Mask;
     next;
+    goto L_GiftMaterial;
+
 L_GiftMaterial: // @state == 10
     mes "[Anwar]";
     mes "\"I want to show my gratitude to Tinris and Eomie. Can you help me once again? I would like to make some clothes for them and need " + @cloth_amount + " pieces of Cotton Cloth and " + @silk_amount + " Silk Cocoons.\"";
     menu
-        "I have it.",-,
+        "I have it.",L_GiveGiftStuff,
         "Where can I get that?",L_Hint,
         "I'll see what I can do.",L_Close;
+
+L_GiveGiftStuff:
     getinventorylist;
     if (@inventorylist_count == 100)
         goto L_Full_Inv;
@@ -138,7 +150,9 @@ L_GiveTinris: // @state >= 11 but below 13
         menu
             "Not yet.",L_Close;
     menu
-        "Yes, he was very happy.",-;
+        "Yes, he was very happy.",L_Happy;
+
+L_Happy:
     getinventorylist;
     if (@inventorylist_count == 100)
         goto L_Full_Inv;
@@ -159,7 +173,9 @@ L_GiveEomie: // @state >= 13 but below 15
         menu
             "Not yet.",L_Close;
     menu
-        "Yes. She asked me to thank you.",-;
+        "Yes. She asked me to thank you.",L_ThankYou;
+
+L_ThankYou:
     mes "Anwar smiles.";
     mes "[Anwar]";
     mes "\"I'm so happy. Thank you so much for your help. I made this for you while you went to see Eomie.\"";
