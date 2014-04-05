@@ -45,14 +45,14 @@
 
     set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
 
-    if (@Q_poison == 7) goto state7;
-    if (@Q_poison == 6) goto state6;
-    if (@Q_poison == 5) goto state5;
-    if (@Q_poison == 4) goto state4;
-    if (@Q_poison == 3) goto state3;
-    if (@Q_poison == 2) goto state2;
-    if (@Q_poison == 1) goto state1;
-    if (getskilllv(SKILL_POOL)) goto state0;
+    if (@Q_poison == 7) goto L_state7;
+    if (@Q_poison == 6) goto L_state6;
+    if (@Q_poison == 5) goto L_state5;
+    if (@Q_poison == 4) goto L_state4;
+    if (@Q_poison == 3) goto L_state3;
+    if (@Q_poison == 2) goto L_state2;
+    if (@Q_poison == 1) goto L_state1;
+    if (getskilllv(SKILL_POOL)) goto L_state0;
     goto L_Usual;
 
 L_Usual:
@@ -101,7 +101,7 @@ L_NohMask:
     mes "\"I'm too busy here to observe the town.\"";
     goto L_Close;
 
-state0:
+L_state0:
     mes "[Nurse]";
     mes "\"Welcome! You really look like a competent person. Maybe you can help to deal with a problem we have.\"";
     next;
@@ -131,7 +131,7 @@ L_ExplainAgain1:
     mes "\"Please bring me five tongues of snakes and ten stingers of black scorpions.\"";
     goto L_Close;
 
-state1:
+L_state1:
     mes "[Nurse]";
     mes "\"You are back, wonderful! Did you get what we need for the antidote?\"";
     next;
@@ -160,7 +160,7 @@ L_ExplainAgain2:
     mes "\"Please bring me ten acorns, five red apples, five green apples and also five oranges. And we need some small healing potions. They will be useful to hold off the baneful effects. Three of them will be enough, I guess.\"";
     goto L_Close;
 
-state2:
+L_state2:
     mes "You look at the nurse, who seems to be really tired, with shadows under her eyes. When she recognizes you, she smiles.";
     mes "[Nurse]";
     mes "\"I managed to extract the poisonous components. We should be able to create an antidote, if you have everything else we need.\"";
@@ -212,7 +212,7 @@ L_Chemistry:
     mes "\"Come back when you feel ready for that task.\"";
     goto L_Close;
 
-state3:
+L_state3:
     mes "[Nurse]";
     mes "\"Hello my friend. You feel prepared to test the antidote?\"";
     next;
@@ -331,22 +331,22 @@ L_choosePut:
     next;
 
     if ( (@hlPut >  @hlNeed) && (@vnPut >  @vnNeed) )
-        goto m_hl_m_vn;
+        goto L_m_hl_m_vn;
     if ( (@hlPut >  @hlNeed) && (@vnPut <= @vnNeed) )
-        goto m_hl_l_vn;
+        goto L_m_hl_l_vn;
     if ( (@hlPut <= @hlNeed) && (@vnPut >  @vnNeed) )
-        goto l_hl_m_vn;
+        goto L_l_hl_m_vn;
     if ( (@hlPut <  @hlNeed) && (@vnPut <  @vnNeed) )
-        goto l_hl_l_vn;
+        goto L_l_hl_l_vn;
 
     mes "You feel quite normal.";
     mes "[Nurse]";
     mes "\"Oh yes, the concentration of the healing potions and the venom extracts seem to be right.\"";
     next;
     set @hl_vn_ok, 1;
-    goto check_st;
+    goto L_check_st;
 
-m_hl_m_vn:
+L_m_hl_m_vn:
     //poison for 3 minutes
     sc_start sc_poison, 1, 20;
     mes "You begin to feel really dizzy. And you feel so light - you can't help yourself and burst out with laughter. What a strange feeling!";
@@ -354,9 +354,9 @@ m_hl_m_vn:
     mes "The nurse looks at you with a really worried look on her face. As you open your mouth to tell her that you feel alright, the content of your stomach finds its way out through your throat and on the floor.";
     next;
     mes "The feeling of happiness disappears, but you seem to be still poisoned.";
-    goto check_st;
+    goto L_check_st;
 
-m_hl_l_vn:
+L_m_hl_l_vn:
     //poison for 1 minute
     sc_start sc_poison, 1, 20;
     mes "You feel the pain of the poison weaken. This seems promising. The thought that you might have been successful makes you feel enormously happy.";
@@ -375,9 +375,9 @@ m_hl_l_vn:
     next;
     mes "\"Very well, you are sober again.\"";
     next;
-    goto check_st;
+    goto L_check_st;
 
-l_hl_m_vn:
+L_l_hl_m_vn:
     // first poison for 10 minutes, player will die anyway
     sc_start sc_poison, 1, 20;
     mes "You feel a sting in your stomach and your heart starts pounding loudly.";
@@ -391,40 +391,40 @@ l_hl_m_vn:
     heal -Hp, 0;
     // close instead of telling how much stabilizer is needed
     goto L_Close;
-    // goto check_st;
+    // goto L_check_st;
 
-l_hl_l_vn:
+L_l_hl_l_vn:
     //poison for 1 minute
     sc_start sc_poison, 1, 20;
     mes "The antidote seems to have no effect.";
-    goto check_st;
+    goto L_check_st;
 
-check_st:
+L_check_st:
     if ( (@stPut < @stNeed) )
-        goto l_st;
+        goto L_l_st;
     if ( (@stPut > @stNeed) )
-        goto m_st;
+        goto L_m_st;
     if (@hl_vn_ok == 1)
-        goto allcorrect;
+        goto L_allcorrect;
 
     mes "[Nurse]";
     mes "\"The amount of the stabilizer seems alright, but we have to think again about the other ingredients.\"";
     next;
-    goto notallcorrect;
+    goto L_notallcorrect;
 
-l_st:
+L_l_st:
     mes "[Nurse]";
     mes "\"It looks like we used not enough of the stabilizer. The antidote will lose its effect after some time.\"";
     next;
-    goto notallcorrect;
+    goto L_notallcorrect;
 
-m_st:
+L_m_st:
     mes "[Nurse]";
     mes "\"It looks like we used too much of the stabilizer. The antidote will turn into venom again after some time.\"";
     next;
-    goto notallcorrect;
+    goto L_notallcorrect;
 
-allcorrect:
+L_allcorrect:
     mes "You feel totally normal again.";
     next;
     mes "[Nurse]";
@@ -440,13 +440,13 @@ allcorrect:
     callsub S_Update_Var;
     goto L_Close;
 
-notallcorrect:
+L_notallcorrect:
     mes "[Nurse]";
     mes "\"It didn't work. You are a really brave person. Now you should rest and recover. I hope you won't give up now. Please come back later, so we can try it again.\"";
     next;
     goto L_Close;
 
-state4:
+L_state4:
     mes "The nurse has a worried look in her face.";
     mes "[Nurse]";
     mes "\"Hello. I hope you recovered well.\"";
@@ -466,7 +466,7 @@ state4:
         "I'm ok. We can try, but please explain again.", L_Exp_Game,
         "Let's start right now.", L_Game;
 
-state5:
+L_state5:
     mes "The nurse looks at you pitifully.";
     mes "[Nurse]";
     mes "\"Hello. I'm really sorry for causing you so much pain.\"";
@@ -486,7 +486,7 @@ state5:
         "I'm ok. We can try, but please explain again.", L_Exp_Game,
         "Let's start right now.", L_Game;
 
-state6:
+L_state6:
     mes "The nurse looks at you pitifully.";
     mes "[Nurse]";
     mes "\"There is not enough stuff left for another try.\"";
@@ -496,7 +496,7 @@ state6:
     callsub S_Update_Var;
     goto L_ExplainAgain1;
 
-state7: // geschafft
+L_state7: // geschafft
     mes "[Nurse]";
     mes "\"Thanks a lot, you can call yourself a true hero now!\"";
     next;

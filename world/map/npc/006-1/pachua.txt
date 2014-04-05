@@ -114,7 +114,7 @@ L_Chaps_store:
 L_BuyChaps:
     if (Zeny < 10000) goto L_NoMoney;
     if (countitem("JeansShorts") < 1) goto L_NoJeans;
-    if (countitem("SnakeSkin") < 10) goto L_NoSkin;
+    if (countitem("SnakeSkin") < 10) goto L_NoSkins;
     set Zeny, Zeny - 10000;
     delitem "SnakeSkin", 10;
     delitem "JeansShorts", 1;
@@ -124,7 +124,7 @@ L_BuyChaps:
 L_BuyCowboy:
     if (Zeny < 5000) goto L_NoMoney;
     if (countitem("FancyHat") < 1) goto L_NoFancy;
-    if (countitem("SnakeSkin") < 2) goto L_NoSkin;
+    if (countitem("SnakeSkin") < 2) goto L_NoSkins;
     set Zeny, Zeny - 5000;
     delitem "SnakeSkin", 2;
     delitem "FancyHat", 1;
@@ -239,81 +239,4 @@ L_warp_cheat:
     message strcharinfo(0), "Pachua releases a ring of smoke towards the sky! But, by the look on his face, you can tell he is suspicious about your methods...";
     set @warp_cheat, 1;
     end;
-
-L_Basket:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"For generations my tribe has been crafting special clothes out of different items.\"";
-    mes "\"Maybe if you bring me the right materials I can make something for you.\"";
-    next;
-    menu
-        "Do you work only with clothes? Because I was looking for a basket.", L_Next1;
-
-L_Next1:
-    mes "\"A basket? In our tribe, we craft baskets of all kinds using only reeds. This basket, you need it to carry your items?\"";
-    menu
-        "No. It is for the Easter Bunny. I offered to get him one.", L_Next2;
-
-L_Next2:
-    mes "\"I appreciate your attitude. Maybe I can help you with that.\"";
-    menu
-        "I would be really grateful if you could do that!", L_Next3,
-        "Nah, I decided not to do that stupid quest.", L_Close,
-        "I would prefer to talk to you about other stuff.", L_Begin; //should go to pachuas's regular chat
-
-L_Next3:
-    set QUEST_Easter11, 2;
-    goto L_MakeBasket;
-
-L_MakeBasket:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"I will need you to gather reeds for me.\"";
-    mes "\"5 bundles should do it.\"";
-    mes "\"You should be able to get those from mouboos as they graze.\"";
-    menu
-        "I have the Reeds!", L_Next4,
-        "Ok, I will be back soon", L_Close,
-        "I changed my mind, forget about it", L_Close,
-        "Can I talk to you about another stuff?", L_Begin; //should go to pachuas's regular chat
-
-L_Next4:
-    if(countitem("ReedBundle") < 5) goto L_EasterNotEnough;
-    goto L_EasterEnough;
-
-L_EasterNotEnough:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"You do not have enough Reed Bundles for me to work with.\"";
-    mes "\"Go gather more.\"";
-    goto L_Close;
-
-L_EasterEnough:
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("ReedBundle") > 5) goto L_EasterTooMany;
-    if(countitem("ReedBundle") < 5) goto L_EasterNotEnough;
-    delitem "ReedBundle", 5;
-    getitem "EasterBasket", 1;
-    set QUEST_Easter11, 3;
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"You have gathered enough reeds for me to make the basket.\"";
-    mes "He skillfully soaks the reeds you brought him,";
-    mes "then swiftly weaves them into a basket shape.";
-    mes "Next, he places the damp basket in the sun to dry for a minute before handing it over to you.";
-    mes "\"Here is your Easter Basket.\"";
-    goto L_Close;
-
-L_EasterTooMany:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"You don't have room for the Easter Basket. Come back later.\"";
-    goto L_Close;
-
-L_SeeBunny:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"You need to return to the Easter Bunny now.\"";
-    next;
-    goto L_Begin;
 }

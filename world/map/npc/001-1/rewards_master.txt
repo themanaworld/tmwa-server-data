@@ -14,7 +14,7 @@
 
     set @i, 0;
     setarray @Menu$, "", "", "", "", "", "", "", "", "", "", "", "";
-    callsub SUB_prep_menu;
+    callsub S_prep_menu;
 
     menu
         @Menu$[0], L_MenuItems,
@@ -43,7 +43,7 @@ L_MenuItems:
 L_Item_Loop:
     if (@rec == @req || Mobpt < tvis) goto L_Item_Done;
 
-    callsub SUB_give_item;
+    callsub S_give_item;
     set @rec, @rec + 1;
     goto L_Item_Loop;
 
@@ -72,7 +72,7 @@ L_Give_all_loop:
     set @gotocounter, @gotocounter - 1;
     if (@gotocounter < 1) goto L_Give_all_next;
     set @itemgiveerror, 0;
-    callsub SUB_give_item;
+    callsub S_give_item;
     if (@itemgiveerror != 0) goto L_Close;
     goto L_Give_all_loop;
 
@@ -98,7 +98,7 @@ L_Close:
 // Subroutines
 //////////////////////////////////////////////////
 
-SUB_prep_menu:
+S_prep_menu:
     set @pts, Mobpt;
     set @dif, tvis;
     goto L_Menu_Loop;
@@ -125,11 +125,11 @@ L_Menu_Done:
     set @Menu$[@i], "No thanks";
     return;
 
-SUB_give_item:
+S_give_item:
     set @itemgiveerror, 0;
     getinventorylist;
-    if (@inventorylist_count == 100) goto SUB_give_noinv;
-    if (Mobpt < tvis) goto SUB_give_nomobpts;
+    if (@inventorylist_count == 100) goto S_give_noinv;
+    if (Mobpt < tvis) goto S_give_nomobpts;
     set Mobpt, Mobpt - tvis;
     set tvis, tvis + 1;
     set @item$, @Items$[rand(getarraysize(@Items$))];
@@ -139,12 +139,12 @@ SUB_give_item:
     mes "You received one " + getitemname(@item$) + "!";
     return;
 
-SUB_give_noinv:
+S_give_noinv:
     mes "Your inventory is full!";
     set @itemgiveerror, 1;
     return;
 
-SUB_give_nomobpts:
+S_give_nomobpts:
     mes "It looks like your Monster Points were over estimated.";
     set @itemgiveerror, 1;
     return;
