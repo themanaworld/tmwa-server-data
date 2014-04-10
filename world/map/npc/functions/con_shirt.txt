@@ -1,0 +1,64 @@
+function|script|Contributor|,
+{
+    mes "[ " + @npcname$ + " ]";
+    mes "";
+    mes "Oh that sounds delightful!.";
+    mes " ";
+    mes "Who would you like to honour for his contributions?";
+    next;
+    input @contributor$;
+    mes "Ah interesting.";
+    mes "When did " + @contributor$ + " help out in the mana world?";
+    menu
+        "This year.", L_Now,
+        "Last year.", L_Previous_Year,
+        @contributor$ +" has been doing that since forever.", L_Guru;
+    next;
+
+    L_Now:
+        set @year, gettime(7);
+        set @year_str$, gettime(7);
+        goto L_CheckGM;
+
+    L_Previous_Year:
+        set @year, gettime(7) - 1;
+        set @year_str$, @year;
+        goto L_CheckGM;
+
+    L_Guru:
+        set @year, 2012;
+        set @year_str$, "the past";
+        goto L_CheckGM;
+
+    L_CheckGM:
+        if (getgmlevel() < 40) goto L_NoGM;
+        goto L_GM;
+
+    L_GM:
+        mes "All right then, here, take this Sweater";
+        mes "and give it to " + @contributor$ + ".";
+        mes "Sadly we are always short on everything these days,";
+        mes "this is pretty much all we can offer as a small gift.";
+        mes @contributor$ + " will hopefully like it anyways.";
+        getinventorylist;
+        if (@inventorylist_count > 99) goto L_FullInv;
+        gmcommand "@l " + strcharinfo(0) + " granted " + @contributor$ + " a Contributor Shirt for " + @year_str$;
+        getitem 1176 + @year - 2012, 1;
+        goto L_Close;
+
+    L_NoGM:
+        mes "[ " + @npcname$ + " ]";
+        mes "";
+        mes "Oh it seems you need to ask a Developer or Game Master of The Mana World to confirm your Petition";
+        mes "But please go and inform one of those so your gratitude does not go unnoticed!";
+        goto L_Close;
+
+    L_FullInv:
+        mes "[ " + @npcname$ + " ]";
+        mes "";
+        mes "I am sorry but you do not have enough room in your inventory.";
+        goto L_Close;
+
+    L_Close:
+        close;
+}

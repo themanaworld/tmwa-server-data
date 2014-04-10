@@ -15,6 +15,7 @@
     set @Q_STATUS_STUDENT3, 7;
     set @Q_STATUS_STUDENT4, 8;
     set @Q_STATUS_STUDENT5, 9;
+    set @Q_STATUS_STUDENT6, 10;
 
 
     set @wants_sulphur, (QUEST_MAGIC & (NIBBLE_6_MASK | NIBBLE_7_MASK)) // war quest
@@ -29,7 +30,7 @@
     set @Q_main_status, @Q_status & 31;
     set @Q_component_quest, @Q_status >> 5;
 
-    set @has_magic, getskilllv(SKILL_MAGIC);
+    set @has_magic, getskilllv(SKIL_MAGIC);
 
     set @address$, "chap";
     if (Sex == 0)
@@ -52,7 +53,11 @@
         "What are you talking about?", L_intro_explain,
         "I don't have any obsidian salt.", L_intro_nopowder,
         "Do I know you?", L_intro_identity,
-        "Goodbye.", L_Close;
+        "Goodbye.", L_NameComplain;
+
+L_NameComplain:
+    set @name_complaint, 0;
+    goto L_intro_explain;
 
 L_intro_explain:
     mes "[Robed Man]";
@@ -508,7 +513,7 @@ L_question:
     goto L_main_menu;
 
 L_Q_astralsoul:
-    if (!(getskilllv(SKILL_ASTRAL_SOUL)))
+    if (!(getskilllv(SKIL_ASTRAL_SOUL)))
         goto L_Q_astralsoul_L;
     next;
     mes "[Auldsbel the Wizard]";
@@ -546,7 +551,7 @@ L_Q_astralsoul_L1:
     mes "Auldsbel mumbles some invocations";
     next;
     set @SUP_lvl, 1;
-    set @SUP_id, SKILL_ASTRAL_SOUL;
+    set @SUP_id, SKIL_ASTRAL_SOUL;
     set @SUP_name$, "Astral Soul";
     set @SUP_xp, 2500;
     callfunc "SkillUp";
@@ -1062,7 +1067,7 @@ L_initiation_check:
     mes "You feel new powers flowing into your body!";
     set @Q_main_status, @Q_STATUS_STUDENT;
     callsub S_update_var;
-    set @SUP_id, SKILL_MAGIC_TRANSMUTE;
+    set @SUP_id, SKIL_MAGIC_TRANSMUTE;
     set @SUP_name$, "Transmutation Magic";
     set @SUP_xp, 5000;
     set @SUP_lvl, 2;
@@ -1074,7 +1079,7 @@ L_student_start:
     if (@mexp < 200) goto L_notready;
         mes "[Auldsbel the Wizard]";
     mes "\"Next, I shall teach you a higher-level transmutation spell.\"";
-    if (getskilllv(SKILL_MAGIC) < 2)
+    if (getskilllv(SKIL_MAGIC) < 2)
         mes "\"Beware, for you will not be able to use it yet; you will first have to gain a greater understanding of magic overall.\"";
     next;
     mes "[Auldsbel the Wizard]";
@@ -1202,7 +1207,7 @@ L_Next12:
     goto L_main_menu;
 
 L_student_3:
-    if (getskilllv(SKILL_MAGIC) < 3)
+    if (getskilllv(SKIL_MAGIC) < 3)
         goto L_magic_skill_insufficient;
     mes "[Auldsbel the Wizard]";
     mes "\"I believe that you may be ready for the next level of transmutation magic!  Let me teach you one last spell that you can handle before your promotion, and if you can cast this one, I will advance you.\"";
@@ -1249,7 +1254,7 @@ L_Next13:
     callsub S_update_var;
     mes "[Auldsbel the Wizard]";
     mes "You feel new powers flowing into your body!";
-    set @SUP_id, SKILL_MAGIC_TRANSMUTE;
+    set @SUP_id, SKIL_MAGIC_TRANSMUTE;
     set @SUP_name$, "Transmutation Magic";
     set @SUP_xp, 30000;
     set @SUP_lvl, 3;

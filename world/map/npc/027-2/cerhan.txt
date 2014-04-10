@@ -1,13 +1,95 @@
-// Author: Jenalya
+// Author: Jenalya, Wushin
+// CRYPT_Quest
+// NIBBLE_0 - (See Alacrius)
+// NIBBLE_1
+// 1 - knows materials
+// 2 - key made
 
 027-2.gat,70,77,0|script|Cerhan|311,
 {
+    // Makes Underworld key
+    set @state, ((CRYPT_Quest & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    set @crafted, ((CRYPT_Quest & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    set @CRYPT_GOLD_REQ, 20000;
+    set @CRYPT_KEY_REQ, 10;
+    set @CRYPT_BONE_REQ, 25;
+    set @CRYPT_SKULL_REQ, 25;
+    set @CRYPT_SOUL_REQ, 5;
+
+    if ( (@state == 1) && (@crafted == 1) )
+        goto L_UnderWorldKey;
+    if ( (@state == 1) && (@crafted == 0) )
+        goto L_CryptMenu;
+
     mes "[Cerhan]";
     mes "\"Ah, hello! It's good to see another normal human at this strange place!\"";
-    next;
     menu
-        "That's true. What are you doing here?",L_Story,
-        "Yes, this place is really strange. I'm going to have another look around.",L_Close;
+        "That's true. What are you doing here?", L_Story,
+        "Yes, this place is really strange. Im going to have another look around.", L_Close;
+
+L_CryptMenu:
+    mes "[Cerhan]";
+    mes "\"Ah, hello! It's good to see another normal human at this strange place!\"";
+    menu
+        "That's true. What are you doing here?", L_Story,
+        "Alacrius told me you knew where to find the Underworld Key.", L_UnderKey,
+        "Yes, this place is really strange. Im going to have another look around.", L_Close;
+
+L_UnderWorldKey:
+    mes "[Cerhan]";
+    mes "\"Ah, hello! It's good to see you again in this strange place!\"";
+    menu
+        "That's true. What are you doing here?", L_Story,
+        "I have the materials, lets make me a key.", L_MakeUKey,
+        "Yes, this place is really strange. Im going to have another look around.", L_Close;
+
+L_MakeUKey:
+    if ( (Zeny < @CRYPT_GOLD_REQ)
+        || (countitem("CryptKey") < @CRYPT_KEY_REQ)
+        || (countitem("Bone") < @CRYPT_BONE_REQ)
+        || (countitem("Skull") < @CRYPT_SKULL_REQ)
+        || (countitem("Soul") < @CRYPT_SOUL_REQ) )
+        goto L_MissingItems;
+    delitem "CryptKey", @CRYPT_KEY_REQ;
+    delitem "Bone", @CRYPT_BONE_REQ;
+    delitem "Skull", @CRYPT_SKULL_REQ;
+    delitem "Soul", @CRYPT_SOUL_REQ;
+    set Zeny, Zeny - @CRYPT_GOLD_REQ;
+    getitem "UnderworldKey", 1;
+    set @crafted, 2;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_MissingItems:
+    mes "[Cerhan]";
+    mes "\"You don't have everything I need. Please don't waste my time.\"";
+    next;
+    goto L_Materials;
+
+//L_InventoryNoSpace:
+//    mes "[Cerhan]";
+//    mes "\"This will be the straw that breaks the adventurers back. Please lighten your load and come back.\"";
+//    next;
+//    goto L_Close;
+
+L_UnderKey:
+    mes "[Cerhan]";
+    mes "\"I doubt you'll find one unless the Reaper has lost his keys again. *Chuckles*\"";
+    next;
+    mes "\"I can try making you one. It's an older recipe this place had lying around. Golbenez must have had dealings with death to create such a place, so I'm not surprized.\"";
+    mes "\"Are you ready for the list of materials?\"";
+    next;
+    goto L_Materials;
+
+L_Materials:
+    mes "[Cerhan]";
+    mes "\"I'll need " + @CRYPT_KEY_REQ + " Crypt Keys, " + @CRYPT_BONE_REQ + " Bones, " + @CRYPT_SKULL_REQ + " Skulls, " + @CRYPT_SOUL_REQ + " Souls  and " + @CRYPT_GOLD_REQ + " Gp for my crafting services.\"";
+    next;
+    mes "\"When you have the materials, please come back and talk to me.\"";
+    if ( (@state == 1) && (@crafted == 0 ) )
+        set @crafted, 1;
+        callsub S_Update_Var;
+    goto L_Close;
 
 L_Story:
     mes "[Cerhan]";
@@ -35,6 +117,18 @@ L_Mylarin:
     mes "\"Please come back, when I'm ready for that. Mylarin dust... amazing.\"";
     goto L_Close;
 
+S_Update_Var:
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_1_MASK) | (@crafted << NIBBLE_1_SHIFT));
+    return;
+
 L_Close:
+    set @state, 0;
+    set @crafted, 0;
+    set @inventorylist_count, 0;
+    set @CRYPT_GOLD_REQ, 0;
+    set @CRYPT_KEY_REQ, 0;
+    set @CRYPT_BONE_REQ, 0;
+    set @CRYPT_SKULL_REQ, 0;
+    set @CRYPT_SOUL_REQ, 0;
     close;
 }

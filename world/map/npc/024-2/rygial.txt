@@ -1,0 +1,112 @@
+// Author: Wushin
+// CRYPTS_Quest
+// NIBBLE_0 - (See Alacrius)
+// NIBBLE_3
+// 1 - knows ingredients
+// 2 - made blood ink
+
+024-2.gat,22,20,0|script|Rygial|360,
+{
+    set @state, ((CRYPT_Quest & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    set @crafted, ((CRYPT_Quest & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+    set @CRYPT_GOLD_REQ, 20000;
+    set @CRYPT_BLSCROP_REQ, 20;
+    set @CRYPT_MOUNTEGG_REQ, 10;
+    set @CRYPT_MSLIME_REQ, 20;
+    set @CRYPT_JARSOFBLOOD_REQ, 5;
+
+    if (isin("024-2.gat", 33, 22, 60, 28))
+        close;
+
+    mes "[Rygial]";
+    mes "\"Ho there traveler! Welcome to the Tulimshar School of Magic.\"";
+    if ( (@state == 1) && (@crafted == 0) )
+        goto L_InkIngred;
+    if ( (@state == 1) && (@crafted == 1) )
+        goto L_MakeInk;
+    goto L_Look;
+
+L_InkIngred:
+    mes "[Rygial]";
+    mes "\"What are you looking for?\"";
+    menu
+        "I need blood ink made.", L_Next,
+        "I'm just looking around.", L_Close;
+
+L_Next:
+    mes "\"Ahh, Blood Ink. Looking to make a contract permanant eh?\"";
+    mes "\"If you want this I'll need you to gather some ingrediants and pay me for my time.\"";
+    goto L_Ingredients;
+
+L_Ingredients:
+    mes "\"I will need " + @CRYPT_BLSCROP_REQ + " Black Scropian Stingers, " + @CRYPT_MOUNTEGG_REQ + " Snake Mountain Eggs, " + @CRYPT_MSLIME_REQ + " Maggot Slimes, For you to fill these " + @CRYPT_JARSOFBLOOD_REQ + " jars with your own blood, and then standard School fee is " + @CRYPT_GOLD_REQ + " for our services.\"";
+    getitem "MTJarofOwnBlood", @CRYPT_JARSOFBLOOD_REQ;
+    next;
+    mes "\"Come back and see me when you have all the ingredients.\"";
+    if ( (@state == 1) && (@crafted == 0 ) )
+        goto L_KnowInk;
+    goto L_Close;
+
+L_KnowInk:
+    set @crafted, 1;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_MakeInk:
+    mes "[Rygial]";
+    mes "\"What are you looking for?\"";
+    menu
+        "I have the ingredients to make Blood Ink.", L_CraftInk,
+        "What do I need again?", L_Ingredients,
+        "I'm just looking around.", L_Close;
+
+L_CraftInk:
+    if ( (Zeny < @CRYPT_GOLD_REQ)
+        || (countitem("BlackScorpionStinger") < @CRYPT_BLSCROP_REQ)
+        || (countitem("MountainSnakeEgg") < @CRYPT_MOUNTEGG_REQ)
+        || (countitem("MaggotSlime") < @CRYPT_MSLIME_REQ)
+        || (countitem("JarofOwnBlood") < @CRYPT_JARSOFBLOOD_REQ) )
+        goto L_MissingItems;
+    delitem "BlackScorpionStinger", @CRYPT_BLSCROP_REQ;
+    delitem "MountainSnakeEgg", @CRYPT_MOUNTEGG_REQ;
+    delitem "MaggotSlime", @CRYPT_MSLIME_REQ;
+    delitem "JarofOwnBlood", @CRYPT_JARSOFBLOOD_REQ;
+    set Zeny, Zeny - @CRYPT_GOLD_REQ;
+    getitem "BloodInk", 1;
+    set @crafted, 2;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_MissingItems:
+    mes "[Rygial]";
+    mes "\"Wait a second, not everything is here. Please get the remaining ingredients.\"";
+    next;
+    goto L_Ingredients;
+
+//L_InventoryNoSpace:
+//    mes "[Rygial]";
+//    mes "\"Even without all that blood missing you have no space for the Blood Ink. Drop something off at the bank and come back.\"";
+//    goto L_Close;
+
+L_Look:
+    mes "[Rygial]";
+    mes "\"What are you looking for?\"";
+    menu
+        "I'm just looking around.", L_Close;
+
+S_Update_Var:
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_3_MASK) | (@crafted << NIBBLE_3_SHIFT));
+    return;
+
+L_Close:
+   set @inventorylist_count, 0;
+   set @state, 0;
+   set @crafted, 0;
+   set @CRYPT_GOLD_REQ, 0;
+   set @CRYPT_BLSCROP_REQ, 0;
+   set @CRYPT_MOUNTEGG_REQ, 0;
+   set @CRYPT_MSLIME_REQ, 0;
+   set @CRYPT_JARSOFBLOOD_REQ, 0;
+   close;
+
+}

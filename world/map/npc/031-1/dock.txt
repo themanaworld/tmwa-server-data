@@ -1,8 +1,45 @@
 // The ferry dock
 
-031-1.gat,105,109,0|script|#nivalisdock|45,6,1,
+// Ferry Sign
+031-1.gat,95,107,0|script|Ferry Schedule#6|398,
 {
-    set @loc, DOCK_nivalis;
-    callfunc "Ferry";
+    callfunc "FerryManifest";
+    end;
+}
+
+031-1.gat,110,108,0|script|#NivalisKoga|395,
+{
+    end;
+}
+
+031-1.gat,105,109,0|script|#NivalisFerry|45,6,1,
+{
+    goto L_Main;
+
+L_Main:
+    callfunc "BoardFerry";
+    close;
+
+OnDockCheck:
+    goto L_Main;
+
+OnCommandCheckDock:
+    areatimer "031-1.gat",96,108,108,110,10,"#NivalisFerry::OnDockCheck";
+    end;
+}
+
+031-1.gat,100,100,0|script|#NivalisDock|45,
+{
+    end;
+
+OnCommandArrive:
+    enablenpc "#NivalisKoga";
+    enablenpc "#NivalisFerry";
+    cmdothernpc "#NivalisFerry", "CheckDock";
+    end;
+
+OnCommandWarp:
+    disablenpc "#NivalisKoga";
+    disablenpc "#NivalisFerry";
     end;
 }

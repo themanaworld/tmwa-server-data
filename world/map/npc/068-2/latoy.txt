@@ -1,0 +1,34 @@
+// A snobby store that won't sell to the player
+// takes part in quest given by 021-2/kylian.txt
+
+// Shop: DesertShirt :-1,SilkRobe :-5,SerfHat :-1,DesertHat :-4
+068-2.gat,92,83,0|shop|#LatoyShop|127,DesertShirt :-1,SilkRobe :-5,SerfHat :-1,DesertHat :-4
+
+068-2.gat,92,83,0|script|Latoy|106,
+{
+    set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@knowLatoyNT;
+    set @kylian, ((QUEST_NorthTulimshar & $@businessmanNT_MASK) >> $@businessmanNT_SHIFT);
+
+    mes "[Latoy]";
+    mes "\"Is there something I can help you with?\"";
+    if (@kylian != 7)
+        goto L_Shop;
+    next;
+    mes "Maybe this is the kind of shop Kylian is looking for?";
+    goto L_Shop;
+
+L_Shop:
+    mes "[Latoy]";
+    mes "\"How would you like to browse my wares?\"";
+    menu
+        "Yes.", L_LatoyShop,
+        "No.", L_Close;
+
+L_LatoyShop:
+    close2;
+    shop "#LatoyShop";
+
+L_Close:
+    set @kylian, 0;
+    close;
+}

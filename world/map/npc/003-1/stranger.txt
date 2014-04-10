@@ -1,17 +1,12 @@
 003-1.gat,35,25,0|script|Stranger|192,
 {
-    set @month, 5;
-    set @start_day, 18;
-    set @end_day, 25;
-    set @IRONINGOT, 5;
-    set @PINKANTENNA, 21;
-    set @EXP, 20000;
+    set @IronIngot, 5;
+    set @PinkAntenna, 21;
+    set @Exp, 20000;
+    setarray @towelReq$, "WhiteHitchhikersTowel","RedHitchhikersTowel","GreenHitchhikersTowel","BlueHitchhikersTowel","YellowHitchhikersTowel","PurpleHitchhikersTowel","OrangeHitchhikersTowel","PinkHitchhikersTowel","TealHitchhikersTowel","LimeHitchhikersTowel","HitchhikersTowel";
 
     if (FLAGS & FLAG_TOWEL_COMPLETED) goto L_Event_Done;
-    if (gettime(6) != @month) goto L_No_Event;
-    if (gettime(5) < @start_day) goto L_No_Event;
-    if (gettime(5) > @end_day) goto L_No_Event;
-    if ((gettimetick(2)-TUT_var < 6*7*86400) || (BaseLevel < 42 )) //player must be created at least 6 weeks ago and at least level 42
+    if ((gettimetick(2)-TUT_var < 6*7*86400) || (BaseLevel < 42)) //player must be created at least 6 weeks ago and at least level 42
         goto L_No_Event;
     if (FLAGS & FLAG_TOWEL_HELPED) goto L_Towel;
 
@@ -20,7 +15,7 @@
     next;
     mes "\"I need some materials to repair my spacesh- ahm, it's not important why I need it.\"";
     next;
-    mes "\"Anyway, I'd be really happy if you can give me " + @IRONINGOT + " Iron Ingots and " + @PINKANTENNA + " Pink Antennas.\"";
+    mes "\"Anyway, I'd be really happy if you can give me " + @IronIngot + " Iron Ingots and " + @PinkAntenna + " Pink Antennas.\"";
     next;
     mes "\"Do you have that for me?\"";
     menu
@@ -28,11 +23,11 @@
         "No.",L_Close;
 
 L_Items:
-    if (countitem("IronIngot") < @IRONINGOT) goto L_No_Item;
-    if (countitem("PinkAntenna") < @PINKANTENNA) goto L_No_Item;
-    delitem "IronIngot", @IRONINGOT;
-    delitem "PinkAntenna", @PINKANTENNA;
-    getexp @EXP, 0;
+    if (countitem("IronIngot") < @IronIngot) goto L_No_Item;
+    if (countitem("PinkAntenna") < @PinkAntenna) goto L_No_Item;
+    delitem "IronIngot", @IronIngot;
+    delitem "PinkAntenna", @PinkAntenna;
+    getexp @Exp, 0;
     set FLAGS, FLAGS | FLAG_TOWEL_HELPED;
 
     mes "[Stranger]";
@@ -231,7 +226,6 @@ L_Right_Answer_Hard:
     mes "\"There you are! A towel is really the most important item for a hitchhiker to have.\"";
     next;
     mes "\"Please take this.\""; // no full inventory check, this is done before the game
-    getitem "HitchhikersTowel", 1;
     set FLAGS, FLAGS | FLAG_TOWEL_COMPLETED;
     next;
     goto L_Explain;
@@ -254,7 +248,7 @@ L_No_Event:
     mes "\"And it really comes in handy that I have my towel with me. A towel is about the most massively useful thing an inte- ahm, a person can have.\"";
     next;
     mes "\"You can read more about that in my favourite book, 'The Hitchhiker's Guide to the Galaxy'.\"";
-    if (countitem("HitchhikersTowel") > 0)
+    if (FLAGS & FLAG_TOWEL_COMPLETED)
         menu
             "Thanks for the advice.",L_Close,
             "I have my towel with me too.",L_Dye;
@@ -270,7 +264,7 @@ L_Dye:
     next;
     menu
         "Oh? Can you explain about it?",L_Explain,
-        "I know. Could you dye it for me?",L_Dye_Towel,
+        "I know. Could you dye it for me?",L_StartDyeTowel,
         "It's great, isn't it? I have to go now.",L_Close;
 
 L_No_Item:
@@ -289,10 +283,10 @@ L_Event_Done:
     next;
     mes "\"Shall I dye your towel?\"";
     menu
-        "That would be great!",L_Dye_Towel,
+        "That would be great!", L_StartDyeTowel,
         "No, thanks.", L_Close;
 
-L_Dye_Towel:
+L_StartDyeTowel:
     mes "[Stranger]";
     mes "\"Alright, which color do you want?\"";
 // the other colors should be added when more places are released
@@ -300,207 +294,142 @@ L_Dye_Towel:
         "Red",L_Red,
         "Yellow",L_Yellow,
         "White",L_White,
-//        "Blue",L_Blue,
-//        "Green",L_Green,
-//        "Purple",L_Purple,
+        "Blue",L_Blue,
+        "Green",L_Green,
+        "Purple",L_Purple,
         "Orange",L_Orange,
         "Pink",L_Pink,
-//        "Lime",L_Lime,
-//        "Teal",L_Teal,
+        "Lime",L_Lime,
+        "Teal",L_Teal,
+        "Can you Bleach my Towel?",L_Save,
         "I changed my mind.", L_Close;
 
-L_Red:
-    mes "[Stranger]";
-    mes "\"Ok, I'll need two bags of Ruby Powder and a bottle of water for that.\"";
-    next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
-    getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
-    if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("RubyPowder") < 2) goto L_No_Powder;
-    delitem "RubyPowder", 2;
-    delitem "HitchhikersTowel", 1;
-    delitem "BottleOfWater", 1;
-    getitem "RedHitchhikersTowel", 1;
-    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
-    next;
-    mes "[Stranger]";
-    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
-    goto L_Close;
-
-L_Yellow:
-    mes "[Stranger]";
-    mes "\"Ok, I'll need two bags of Topaz Powder and a bottle of water for that.\"";
-    next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
-    getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
-    if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("TopazPowder") < 2) goto L_No_Powder;
-    delitem "TopazPowder", 2;
-    delitem "HitchhikersTowel", 1;
-    delitem "BottleOfWater", 1;
-    getitem "YellowHitchhikersTowel", 1;
-    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
-    next;
-    mes "[Stranger]";
-    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
-    goto L_Close;
+L_Save:
+    // Savepoint
+    set @towelName$, "HitchhikersTowel";
+    setarray @towelPowder$, "PileOfAsh";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
 
 L_White:
-    mes "[Stranger]";
-    mes "\"Ok, I'll need two bags of Diamond Powder and a bottle of water for that.\"";
-    next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
-    getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
-    if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("DiamondPowder") < 2) goto L_No_Powder;
-    delitem "DiamondPowder", 2;
-    delitem "HitchhikersTowel", 1;
-    delitem "BottleOfWater", 1;
-    getitem "WhiteHitchhikersTowel", 1;
-    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
-    next;
-    mes "[Stranger]";
-    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
-    goto L_Close;
+    // Koga
+    set @towelName$, "WhiteHitchhikersTowel";
+    setarray @towelPowder$, "DiamondPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
 
-L_Blue:
-    mes "[Stranger]";
-    mes "\"Ok, I'll need two bags of Sapphire Powder and a bottle of water for that.\"";
-    next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
-    getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
-    if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("SapphirePowder") < 2) goto L_No_Powder;
-    delitem "SapphirePowder", 2;
-    delitem "HitchhikersTowel", 1;
-    delitem "BottleOfWater", 1;
-    getitem "BlueHitchhikersTowel", 1;
-    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
-    next;
-    mes "[Stranger]";
-    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
-    goto L_Close;
+L_Red:
+    // Barbarians
+    set @towelName$, "RedHitchhikersTowel";
+    setarray @towelPowder$, "RubyPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
 
 L_Green:
-    mes "[Stranger]";
-    mes "\"Ok, I'll need two bags of Emerald Powder and a bottle of water for that.\"";
-    next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
-    getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
-    if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("EmeraldPowder") < 2) goto L_No_Powder;
-    delitem "EmeraldPowder", 2;
-    delitem "HitchhikersTowel", 1;
-    delitem "BottleOfWater", 1;
-    getitem "GreenHitchhikersTowel", 1;
-    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
-    next;
-    mes "[Stranger]";
-    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
-    goto L_Close;
+    // Candor
+    set @towelName$, "GreenHitchhikersTowel";
+    setarray @towelPowder$, "EmeraldPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
+
+L_Blue:
+    // Blue Sages
+    set @towelName$, "BlueHitchhikersTowel";
+    setarray @towelPowder$, "SapphirePowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
+
+L_Yellow:
+    // Tulimshar Mines
+    set @towelName$, "YellowHitchhikersTowel";
+    setarray @towelPowder$, "TopazPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
 
 L_Purple:
-    mes "[Stranger]";
-    mes "\"Ok, I'll need two bags of Amethyst Powder and a bottle of water for that.\"";
-    next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
-    getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
-    if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("AmethystPowder") < 2) goto L_No_Powder;
-    delitem "AmethystPowder", 2;
-    delitem "HitchhikersTowel", 1;
-    delitem "BottleOfWater", 1;
-    getitem "PurpleHitchhikersTowel", 1;
-    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
-    next;
-    mes "[Stranger]";
-    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
-    goto L_Close;
+    // Dimonds Inn
+    set @towelName$, "PurpleHitchhikersTowel";
+    setarray @towelPowder$, "AmethystPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
 
 L_Orange:
-    mes "[Stranger]";
-    mes "\"Ok, I'll need one bag of Ruby Powder, one bag of Topaz Powder and a bottle of water for that.\"";
-    next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
-    getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
-    if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("RubyPowder") < 1) goto L_No_Powder;
-    if (countitem("TopazPowder") < 1) goto L_No_Powder;
-    delitem "RubyPowder", 1;
-    delitem "TopazPowder", 1;
-    delitem "HitchhikersTowel", 1;
-    delitem "BottleOfWater", 1;
-    getitem "OrangeHitchhikersTowel", 1;
-    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
-    next;
-    mes "[Stranger]";
-    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
-    goto L_Close;
+    // Graveyard
+    set @towelName$, "OrangeHitchhikersTowel";
+    setarray @towelPowder$, "RubyPowder", "TopazPowder";
+    setarray @towelPowderCnt, 1, 1;
+    goto L_DyeChecks;
 
 L_Pink:
-    mes "[Stranger]";
-    mes "\"Ok, I'll need one bag of Ruby Powder, one bag of Diamond Powder and a bottle of water for that.\"";
-    next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
-    getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
-    if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("RubyPowder") < 1) goto L_No_Powder;
-    if (countitem("DiamondPowder") < 1) goto L_No_Powder;
-    delitem "RubyPowder", 1;
-    delitem "DiamondPowder", 1;
-    delitem "HitchhikersTowel", 1;
-    delitem "BottleOfWater", 1;
-    getitem "PinkHitchhikersTowel", 1;
-    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
-    next;
-    mes "[Stranger]";
-    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
-    goto L_Close;
-
-L_Lime:
-    mes "[Stranger]";
-    mes "\"Ok, I'll need one bag of Emerald Powder, one bag of Topaz Powder and a bottle of water for that.\"";
-    next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
-    getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
-    if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("EmeraldPowder") < 1) goto L_No_Powder;
-    if (countitem("TopazPowder") < 1) goto L_No_Powder;
-    delitem "EmeraldPowder", 1;
-    delitem "TopazPowder", 1;
-    delitem "HitchhikersTowel", 1;
-    delitem "BottleOfWater", 1;
-    getitem "LimeHitchhikersTowel", 1;
-    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
-    next;
-    mes "[Stranger]";
-    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
-    goto L_Close;
+    // Terranite Cave
+    set @towelName$, "PinkHitchhikersTowel";
+    setarray @towelPowder$, "RubyPowder", "DiamondPowder";
+    setarray @towelPowderCnt, 1, 1;
+    goto L_DyeChecks;
 
 L_Teal:
+    // Mana Seed
+    set @towelName$, "TealHitchhikersTowel";
+    setarray @towelPowder$, "EmeraldPowder", "SapphirePowder";
+    setarray @towelPowderCnt, 1, 1;
+    goto L_DyeChecks;
+
+L_Lime:
+    // Panchua
+    set @towelName$, "LimeHitchhikersTowel";
+    setarray @towelPowder$, "EmeraldPowder", "TopazPowder";
+    setarray @towelPowderCnt, 1, 1;
+    goto L_DyeChecks;
+
+L_DyeChecks:
     mes "[Stranger]";
-    mes "\"Ok, I'll need one bag of Emerald Powder, one bag of Sapphire Powder and a bottle of water for that.\"";
+    mes "\"Ok, I'll need a bottle of water first.\"";
     next;
-    if (countitem("HitchhikersTowel") < 1) goto L_No_Towel;
     getinventorylist;
-    if ((countitem("HitchhikersTowel") > 1) && (@inventorylist_count == 100)) goto L_Full_Inv;
+    if (@inventorylist_count == 100) goto L_Full_Inv;
     if (countitem("BottleOfWater") < 1) goto L_No_Water;
-    if (countitem("EmeraldPowder") < 1) goto L_No_Powder;
-    if (countitem("SapphirePowder") < 1) goto L_No_Powder;
-    delitem "EmeraldPowder", 1;
-    delitem "SapphirePowder", 1;
-    delitem "HitchhikersTowel", 1;
+    set @powderCheckCount, 0;
+    goto L_PowderChecks;
+
+L_PowderCheckAgain:
+    mes "[Stranger]";
+    mes "\"Now I need " + @towelPowderCnt[@powderCheckCount] + "  " + @towelPowder$[@powderCheckCount]  + ".\"";
+    next;
+    if((@powderCheckCount + 1) == getarraysize(@towelPowder$))
+        goto L_TowelChecks;
+    set @powderCheckCount, (@powderCheckCount + 1);
+    goto L_PowderChecks;
+
+L_PowderChecks:
+    if (countitem(@towelPowder$[@powderCheckCount]) < @towelPowderCnt[@powderCheckCount])
+        goto L_No_Powder;
+    goto L_PowderCheckAgain;
+
+L_TowelCheckAgain:
+    set @towelCheckCount, (@towelCheckCount + 1);
+    if(@towelCheckCount >= getarraysize(@towelReq$))
+        goto L_No_Towel;
+    goto L_TowelChecks;
+
+L_TowelChecks:
+    if (countitem(@towelReq$[@towelCheckCount]) > 0)
+        goto L_DeletePowder;
+    goto L_TowelCheckAgain;
+
+L_DeleteAgain:
+    set @powderCheckCount, (@powderCheckCount - 1);
+    goto L_DeletePowder;
+
+L_DeletePowder:
+    delitem @towelPowder$[@powderCheckCount], @towelPowderCnt[@powderCheckCount];
+    if (@powderCheckCount)
+        goto L_DeleteAgain;
+    goto L_DyeTowel;
+
+L_DyeTowel:
+    delitem @towelReq$[@towelCheckCount], 1;
     delitem "BottleOfWater", 1;
-    getitem "TealHitchhikersTowel", 1;
+    getitem @towelName$, 1;
     mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
     next;
     mes "[Stranger]";
@@ -528,13 +457,15 @@ L_Full_Inv:
     goto L_Close;
 
 L_Close:
-    set @month, 0;
-    set @start_day, 0;
-    set @end_day, 0;
-    set @IRONINGOT, 0;
-    set @PINKANTENNA, 0;
-    set @EXP, 0;
+    set @IronIngot, 0;
+    set @PinkAntenna, 0;
+    set @Exp, 0;
     set @random, 0;
     set @quizparam$, "";
+    set @towelName$, "";
+    set @powderCheckCount, 0;
+    set @towelCheckCount, 0;
+    setarray @towelPowder$, "";
+    setarray @towelPowderCnt, "";
     close;
 }
