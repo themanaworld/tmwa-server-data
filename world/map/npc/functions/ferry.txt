@@ -1,97 +1,121 @@
 // The ferry system
 
-function|script|Ferry|,
+botcheck.gat,27,28,0|script|#FerryConfig|-1,
 {
-    if (BaseLevel < 20)
-        goto L_LowerCost;
-    set @cost_tulimshar, 500;
-    set @cost_hurnscald, 500;
-    set @cost_nivalis, 500;
-    goto L_Start;
+    end;
 
-L_Start:
-    set @cost_candor, 1500;
-    mes "Where would you like to go?";
+OnInit:
+    disablenpc "#HurnscaldKoga";
+    disablenpc "#HurnscaldFerry";
+    disablenpc "#CandorKoga";
+    disablenpc "#CandorFerry";
+    disablenpc "#NivalisKoga";
+    disablenpc "#NivalisFerry";
+    disablenpc "#Tulimshar NorthKoga";
+    disablenpc "#Tulimshar NorthFerry";
+    disablenpc "#Tulimshar SouthKoga";
+    disablenpc "#Tulimshar SouthFerry";
+    set $@MainCurrentDock, 0;
+    set $@CandorCurrentDock, 0;
+    set $@DockTickCount, 0;
+    set $@DockLeaveCount, 1;
+    setarray $@MainDocks$, "Hurnscald", "Nivalis", "Tulimshar South";
+    setarray $@CandorDocks$, "Candor", "Tulimshar North";
+    cmdothernpc "#"+$@MainDocks$[$@MainCurrentDock]+"Dock", "Arrive";
+    cmdothernpc "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock", "Arrive";
+    initnpctimer;
+    end;
+
+L_NextDock:
+    set $@MainLastDock, $@MainCurrentDock;
+    set $@CandorLastDock, $@CandorCurrentDock;
+    set $@MainCurrentDock, $@MainCurrentDock + 1;
+    set $@CandorCurrentDock, $@CandorCurrentDock + 1;
+    if($@MainCurrentDock == getarraysize($@MainDocks$))
+        set $@MainCurrentDock, 0;
+    if($@CandorCurrentDock == getarraysize($@CandorDocks$))
+        set $@CandorCurrentDock, 0;
+    set $@DockTickCount, 0;
+    cmdothernpc "#"+$@MainDocks$[$@MainLastDock]+"Dock", "Warp";
+    cmdothernpc "#"+$@MainDocks$[$@MainCurrentDock]+"Dock", "Arrive";
+    cmdothernpc "#"+$@CandorDocks$[$@CandorLastDock]+"Dock", "Warp";
+    cmdothernpc "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock", "Arrive";
+    mapannounce "koga.gat", "Koga - Main: Now arriving in "+$@MainDocks$[$@MainCurrentDock]+".", 0;
+    mapannounce "koga-candor.gat", "Koga - Candor: Now arriving in "+$@CandorDocks$[$@CandorCurrentDock]+".", 0;
+    initnpctimer;
+    end;
+
+OnTimer10000:
+    if ($@DockTickCount > $@DockLeaveCount)
+        goto L_NextDock;
+    mapannounce "koga.gat", "Koga - Main: Now docked in "+$@MainDocks$[$@MainCurrentDock]+", Departing soon", 0;
+    mapannounce "koga-candor.gat", "Koga - Candor: Now docked in "+$@CandorDocks$[$@CandorCurrentDock]+", Departing soon", 0;
+    set $@DockTickCount, $@DockTickCount + 1;
+    initnpctimer;
+    end;
+
+}
+
+function|script|FerryManifest|,
+{
+    mes "Which Ferry do you want to check the schedule for?";
+    menu
+        "World Ferry.", L_WorldFerry,
+        "Candor Ferry.", L_CandorFerry;
+
+L_CandorFerry:
+    mes "The ferry is currently at "+$@CandorDocks$[$@CandorCurrentDock];
     next;
-    if (BaseLevel < 40)
-        goto L_PlainMenu;
-    goto L_MenuWithCandor;
-
-
-L_PlainMenu:
-    menu
-        "Tulimshar (" + @cost_tulimshar + "GP)", L_Tulimshar,
-        "Hurnscald (" + @cost_hurnscald + "GP)", L_Hurnscald,
-        "Nivalis (" + @cost_nivalis + "GP)", L_Nivalis,
-        "Nevermind", L_Close;
-
-L_MenuWithCandor:
-    menu
-        "Tulimshar (" + @cost_tulimshar + "GP)", L_Tulimshar,
-        "Hurnscald (" + @cost_hurnscald + "GP)", L_Hurnscald,
-        "Nivalis (" + @cost_nivalis + "GP)", L_Nivalis,
-        "Candor (" + @cost_candor + "GP)", L_Candor,
-        "Nevermind", L_Close;
-
-L_Tulimshar:
-    if (@loc == DOCK_tulimshar)
-        goto L_AlreadyThere;
-    if (Zeny < @cost_tulimshar)
-        goto L_NotEnoughGP;
-
-    set Zeny, Zeny - @cost_tulimshar;
-    warp "022-1.gat", 76, 72;
+    set @NextDock, ($@CandorCurrentDock + 1);
+    if(@NextDock == getarraysize($@CandorDocks$))
+        set @NextDock, 0;
+    mes "The ferry will be arriving at "+$@CandorDocks$[@NextDock]+" next";
     goto L_Close;
 
-L_Hurnscald:
-    if (@loc == DOCK_hurnscald)
-        goto L_AlreadyThere;
-    if (Zeny < @cost_hurnscald)
-        goto L_NotEnoughGP;
-
-    set Zeny, Zeny - @cost_hurnscald;
-    warp "008-1.gat", 137, 64;
+L_WorldFerry:
+    mes "The ferry is currently at "+$@MainDocks$[$@MainCurrentDock];
+    next;
+    set @NextDock, ($@MainCurrentDock + 1);
+    if(@NextDock == getarraysize($@MainDocks$))
+        set @NextDock, 0;
+    mes "The ferry will be arriving at "+$@MainDocks$[@NextDock]+" next";
     goto L_Close;
-
-L_Nivalis:
-    if (@loc == DOCK_nivalis)
-        goto L_AlreadyThere;
-    if (Zeny < @cost_nivalis)
-        goto L_NotEnoughGP;
-
-    set Zeny, Zeny - @cost_nivalis;
-    warp "031-1.gat", 95, 109;
-    goto L_Close;
-
-L_Candor:
-    if (@loc == DOCK_candor)
-        goto L_AlreadyThere;
-    if (Zeny < @cost_candor)
-        goto L_NotEnoughGP;
-
-    set Zeny, Zeny - @cost_candor;
-    warp "029-1.gat", 25, 37;
-    goto L_Close;
-
-L_AlreadyThere:
-    mes "You're already here!";
-    goto L_Close;
-
-L_NotEnoughGP:
-    mes "You don't have enough money to go there!";
-    goto L_Close;
-
-L_LowerCost:
-    set @cost_tulimshar, 250;
-    set @cost_hurnscald, 250;
-    set @cost_nivalis, 250;
-    goto L_Start;
 
 L_Close:
-    set @cost_tulimshar, 0;
-    set @cost_hurnscald, 0;
-    set @cost_candor, 0;
-    set @cost_nivalis, 0;
-    set @loc, 0;
     close;
+}
+
+function|script|BoardFerry|,
+{
+    mes "Board the ferry?";
+    menu
+        "yes.", L_Board,
+        "no.", L_Return;
+
+L_Board:
+    warp "koga.gat",39,29;
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function|script|BoardCandorFerry|,
+{
+    mes "Board the ferry?";
+    menu
+        "yes.", L_Board,
+        "no.", L_Return;
+
+L_Board:
+    if (BaseLevel < 40) goto L_TooYoung;
+    warp "koga-candor.gat",39,29;
+    goto L_Return;
+
+L_TooYoung:
+    mes "This area is too dangerous for your low level.";
+    goto L_Return;
+
+L_Return:
+    return;
 }

@@ -1,0 +1,221 @@
+// Group of wasted Underworld patrons want to be served.
+// If taken too long to serve, quest failed.
+// Get the order wrong they turn hostile.
+// Novel Idea: Universal Timer
+//
+// Config:
+//
+// QUEST_Orders
+// BITS:
+//  1-5: Patrons
+// NIBBLE 7:
+//     0-15: @Anger
+//
+// QUEST_Timer, @gettimetick(2)
+// QUEST_TimerSet
+// BIT
+//    0: Lock
+//    1: Miriam
+//    2: Orders
+//
+
+-|script|#BoneMealConfig|-1,
+{
+    goto L_Return;
+
+L_Return:
+    return;
+
+OnInit:
+    setarray $@menu_items_one$, "RoastedMaggot", "ZombieNachos", "LadyFingers", "JellAhh";
+    setarray $@menu_items_two$, "BeetleJuice", "GutBuster", "BloodWine";
+    // saying + hint to current karma
+    setarray $@shift_progress$, "Bone Meal: Your Fired!",
+                                "Bone Meal: Last Chance Meat Head.",
+                                "Bone Meal: Everyone Makes Mistakes.",
+                                "Bone Meal: Phew! Order up!",
+                                "Bone Meal: Keep those orders coming!",
+                                "Bone Meal: Nice work, it's going to be a good day.",
+                                "Bone Meal: Union Break!";
+    if (debug)
+        end;
+    disablenpc "Chef Debug";
+    end;                            
+}
+
+function|script|GetOrder|,
+{
+    if (QUEST_Orders & $@PatronBit)
+        goto L_AlreadyOrder;
+    goto L_NoOrder;
+
+L_NoOrder:
+    mes "[Patron]";
+    mes "\"Are you ready to take my order?\"";
+    menu
+        "Yes.", L_PlaceOrder,
+        "No.", L_Return;
+
+L_AlreadyOrder:
+    mes "[Patron]";
+    mes "\"Is my food ready?\"";
+    menu
+        "Yes.", L_ServeOrder,
+        "No.", L_Anger;
+
+L_PlaceOrder:
+    setarray @patron_order$[$@PatronItemOne], $@menu_items_one$[rand(getarraysize($@menu_items_one$))];
+    setarray @patron_order$[$@PatronItemTwo], $@menu_items_two$[rand(getarraysize($@menu_items_two$))];
+    mes "\"I would like " + @patron_order$[$@PatronItemOne] + "\"";
+    next;
+    mes "\"Then a " + @patron_order$[$@PatronItemTwo] + " to drink.\"";
+    next;
+    // Set Patron bit
+    set QUEST_Orders, QUEST_Orders | $@PatronBit;
+    goto L_Return;
+
+L_ServeOrder:
+    mes "Serve Patron their main course";
+    menu
+        "Roasted Maggot", L_RoastedMaggot,
+        "Zombie Nachos", L_ZombieNachos,
+        "Lady Fingers", L_LadyFingers,
+        "Jell Ahh", L_JellAhh;
+
+L_RoastedMaggot:
+    set @order_item$, "RoastedMaggot";
+    goto L_CheckItemOne;
+
+L_ZombieNachos:
+    set @order_item$, "ZombieNachos";
+    goto L_CheckItemOne;
+
+L_LadyFingers:
+    set @order_item$, "LadyFingers";
+    goto L_CheckItemOne;
+
+L_JellAhh:
+    set @order_item$, "JellAhh";
+    goto L_CheckItemOne;
+
+L_CheckItemOne:
+    setarray @delitems_names$, @order_item$;
+    setarray @delitem_counts, 1;
+    if (@check_fail)
+       goto L_Anger; 
+    if (@order_item$ == @patron_order$[$@PatronItemOne])
+        goto L_ServeOrderDrink;
+    goto L_Anger;
+
+L_ServeOrderDrink:
+    mes "Serve Patron their drink";
+    menu
+        "Beetle Juice", L_BeetleJuice,
+        "Gut Buster", L_GutBuster,
+        "Blood Wine", L_BloodWine;
+
+L_BeetleJuice:
+    set @order_item$, "BeetleJuice";
+    goto L_CheckItemTwo;
+
+L_GutBuster:
+    set @order_item$, "GutBuster";
+    goto L_CheckItemTwo;
+
+L_BloodWine:
+    set @order_item$, "BloodWine";
+    goto L_CheckItemTwo;
+
+L_CheckItemTwo:
+    setarray @delitems_names$, @order_item$;
+    setarray @delitem_counts, 1;
+    if (@check_fail)
+       goto L_Anger; 
+    if (@order_item$ == @patron_order$[$@PatronItemTwo])
+        goto L_ServeOrderTip;
+    goto L_Anger;
+
+L_Anger:
+    mes "\"When is my " + @patron_order$[$@PatronItemOne] + "\"";
+    next;
+    mes "\"and  " + @patron_order$[$@PatronItemTwo] + " going to come.\"";
+    next;
+    // Increase Anger
+    goto L_Return;
+
+L_ServeOrderTip:
+    // Tip player
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+070-2.gat,40,57,0|script|Chef Debug|300,
+{
+//    set QUEST_Orders, QUEST_Orders &~ $@PatronBit;
+    end;
+}
+
+// NPC Chef
+070-2.gat,35,57,0|script|Bone Meal|300,
+{
+    end;
+}
+// NPCS Patrons
+070-2.gat,35,77,0|script|Patron#1|409,
+{
+    set $@PatronBit, (1 << 1);
+    set $@PatronItemOne, 0;
+    set $@PatronItemTwo, 1;
+    callfunc "GetOrder";
+    close;
+}
+070-2.gat,48,82,0|script|Patron#2|409,
+{
+    set $@PatronBit, (1 << 2);
+    set $@PatronItemOne, 2;
+    set $@PatronItemTwo, 3;
+    callfunc "GetOrder";
+    close;
+}
+070-2.gat,32,86,0|script|Patron#3|409,
+{
+    set $@PatronBit, (1 << 3);
+    set $@PatronItemOne, 4;
+    set $@PatronItemTwo, 5;
+    callfunc "GetOrder";
+    close;
+}
+070-2.gat,49,86,0|script|Patron#4|409,
+{
+    set $@PatronBit, (1 << 4);
+    set $@PatronItemOne, 6;
+    set $@PatronItemTwo, 7;
+    callfunc "GetOrder";
+    close;
+}
+070-2.gat,44,91,0|script|Patron#5|409,
+{
+    set $@PatronBit, (1 << 5);
+    set $@PatronItemOne, 8;
+    set $@PatronItemTwo, 9;
+    callfunc "GetOrder";
+    close;
+}
+070-2.gat,45,77,0|script|Patron#6|409,
+{
+    set $@PatronBit, (1 << 6);
+    set $@PatronItemOne, 9;
+    set $@PatronItemTwo, 10;
+    callfunc "GetOrder";
+    close;
+}
+070-2.gat,33,91,0|script|Patron#7|409,
+{
+    set $@PatronBit, (1 << 7);
+    set $@PatronItemOne, 11;
+    set $@PatronItemTwo, 12;
+    callfunc "GetOrder";
+    close;
+}

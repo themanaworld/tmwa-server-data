@@ -1,0 +1,38 @@
+// Locking Portal
+
+070-1.gat,34,85,0|script|Boatman Styx|319,2,2
+{
+
+    set @gatebind, ((CRYPT_Quest & NIBBLE_4_MASK) >> NIBBLE_4_SHIFT);
+    //set @gatebind, (GATES >> BIT_0_SHIFT);
+    //set GATES, GATES | (@gatebind << BIT_0_SHIFT);
+    //           (VAR & (1 << 30))
+
+    if(@gatebind > 0) end;
+
+    mes "Once you pass this point Your soul will be bound to this place.";
+    mes "Are you sure you are ready to go?";
+    menu
+        "Let's go",L_BindSoul,
+        "No thank you",L_Leave;
+
+L_Leave:
+    warp "027-4.gat",108,88;
+    goto L_Close;
+
+L_BindSoul:
+    misceffect 303;
+    callfunc "ClearVariables";
+    set @gatebind, 1;
+    callsub S_Update_Var;
+    warp "070-1.gat",33,71;
+    goto L_Close;
+
+L_Close:
+    set @gatebind, 0;
+    close;
+
+S_Update_Var:
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_4_MASK) | (@gatebind << NIBBLE_4_SHIFT));
+    return;
+}

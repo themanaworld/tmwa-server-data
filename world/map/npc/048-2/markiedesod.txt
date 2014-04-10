@@ -1,0 +1,93 @@
+// author: wushin
+// CRYPT_Quest
+// NIBBLE_0 - (See Alacrius)
+// NIBBLE_2
+// 1 - knows requirements
+// 2 - quill made
+
+048-2.gat,115,74,0|script|Markie Desod|362,
+{
+    set @state, ((CRYPT_Quest & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    set @crafted, ((CRYPT_Quest & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    set @CRYPT_GOLD_REQ, 20000;
+    set @CRYPT_REDDYE_REQ, 10;
+    set @CRYPT_YELLOWDYE_REQ, 10;
+    set @CRYPT_FUR_REQ, 20;
+    set @CRYPT_YETICLAW_REQ, 20;
+
+    mes "[Markie Desod]";
+    mes "\"Greetings, I'm Markie and is it a pleasure or pain to meet you? *Chuckle*\"";
+    mes "\"As a scribe here at Nikolai's Mansion. It's up to me to craft our Quills.\"";
+    mes "\"I do so love Quills.\"";
+    if ( (@state == 1) && (@crafted == 0 ) )
+        goto L_Quill;
+    if ( (@state == 1) && (@crafted == 1 ) )
+        goto L_HaveReagents;
+    goto L_Close;
+
+//L_Full_Inv:
+//    mes "[Markie Desod]";
+//    mes "\"You have a very full backback. Please come back when you have more room available.\"";
+//    goto L_Close;
+
+L_Quill:
+    mes "[Markie Desod]";
+    mes "\"Whats this now, You need something?\"";
+    mes "\"Ah, I see, you need a Quill of Binding. I should be able to help you. Then Maybe one day you will come back an pen a tale for us. That would be a treat.\"";
+    next;
+    goto L_Reagents;
+
+L_Reagents:
+    mes "\"If you want a Quill of Binding bring me the following reagents to craft one.\"";
+    mes "\"I'll need " + @CRYPT_YETICLAW_REQ + " yeti claws to make a point, " + @CRYPT_FUR_REQ + " white fur, " + @CRYPT_REDDYE_REQ + " red dye and " + @CRYPT_YELLOWDYE_REQ + " yellow dye to Bind the Incantation. In addition the sages would request " + @CRYPT_GOLD_REQ  + " gp to perform the ritual.\"";
+    next;
+    mes "\"Come back and see me once you have the required reagents.\"";
+    set @crafted, 1;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_HaveReagents:
+    mes "[Markie Desod]";
+    mes "\"Have you returned with the require Reagents?\"";
+    menu
+        "Yes.", L_CraftQuill,
+        "Nevermind.", L_Close;
+
+L_CraftQuill:
+    if ( (Zeny < @CRYPT_GOLD_REQ)
+        || (countitem("RedDye") < @CRYPT_REDDYE_REQ)
+        || (countitem("YellowDye") < @CRYPT_YELLOWDYE_REQ)
+        || (countitem("WhiteFur") < @CRYPT_FUR_REQ)
+        || (countitem("YetiClaw") < @CRYPT_YETICLAW_REQ) )
+        goto L_MissingItems;
+    getinventorylist;
+    delitem "RedDye", @CRYPT_REDDYE_REQ;
+    delitem "YellowDye", @CRYPT_YELLOWDYE_REQ;
+    delitem "WhiteFur", @CRYPT_FUR_REQ;
+    delitem "YetiClaw", @CRYPT_YETICLAW_REQ;
+    set Zeny, Zeny - @CRYPT_GOLD_REQ;
+    getitem "QuillOfBinding", 1;
+    set @crafted, 2;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_MissingItems:
+    mes "[Markie Desod]";
+    mes "\"You don't have everything you need. Please come back when you do.\"";
+    goto L_Reagents;
+
+S_Update_Var:
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_2_MASK) | (@crafted << NIBBLE_2_SHIFT));
+    return;
+
+L_Close:
+    set @inventorylist_count, 0;
+    set @state, 0;
+    set @crafted, 0;
+    set @CRYPT_GOLD_REQ, 0;
+    set @CRYPT_REDDYE_REQ, 0;
+    set @CRYPT_YELLOWDYE_REQ, 0;
+    set @CRYPT_FUR_REQ, 0;
+    set @CRYPT_YETICLAW_REQ, 0;
+    close;
+}

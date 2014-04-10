@@ -1,0 +1,354 @@
+// Players have to feed souls into the pool or take damage
+// Candor eske battle with Undead Mobs
+// Lobby is on 070-2 Reaper's Sanctum
+// Add in dead party member spawning a mob
+// author: Jenalya, wushin
+// Based off Cindy Fight
+// Reaper Fight
+
+070-3.gat,44,50,0|script|Reaper#Starter|408,
+{
+    mes "[Reaper]";
+    mes "\"GREETINGS MORTAL\"";
+    mes "\"Have you raised an army to battle me?\"";
+    menu
+        "Wait a moment, we are still mustering.", L_Close,
+        "I've changed my mind, let me out of here!", L_Leave,
+        "Yes, Prepare to meet Death, Death!", L_Fight;
+
+L_Leave:
+    warp "070-2", 142, 75;
+    goto L_Close;
+
+L_Fight:
+    cmdothernpc "Reaper#Main", "StartFight";
+    enablenpc "SoulPool#1";
+    enablenpc "SoulPool#2";
+    disablenpc "Reaper#Starter";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    disablenpc "SoulPool#1";
+    disablenpc "SoulPool#2";
+    end;
+
+}
+
+070-3.gat,0,0,0|script|Reaper#Main|35,
+{
+    end;
+
+OnCommandStartFight:
+    // initialize fight
+    set $@REAPER_FIGHT, 1;
+    set $@REAPER_FIGHT_WAVE, 0;
+    set $@REAPER_FIGHT_SOUL_COUNT, 0;
+    set $@REAPER_FIGHT_SUMMONS_COUNT, 2;
+    set $@REAPER_FIGHT_PLAYER_COUNT, getmapusers("070-3.gat");
+    areamonster "070-3.gat", 0, 0, 90, 92, "", 1126, 1, "Reaper#Main::OnPetDeath";
+    areamonster "070-3.gat", 0, 0, 90, 92, "", 1075, 1, "Reaper#Main::OnPetDeath";
+
+    initnpctimer;
+    goto L_Announce;
+
+// Fight logic attached to npc
+OnTimer5000:
+    setnpctimer 0;
+    if ($@REAPER_FIGHT != 0)
+        goto L_CryptLogic;
+    goto L_Return_1;
+
+L_Return_1:
+    set $@REAPER_FIGHT_PLAYER_COUNT, 0;
+    areatimer "070-3.gat", 0, 0, 79, 84, 10, "Reaper#Main::OnTick";
+    end;
+
+L_CryptLogic:
+    set $@REAPER_FIGHT_ROUND_PEN, $@REAPER_FIGHT_PLAYER_COUNT;
+    if ($@REAPER_FIGHT_ROUND_PEN > 60)
+        set $@REAPER_FIGHT_ROUND_PEN, 60;
+    if ($@REAPER_FIGHT_PLAYER_COUNT <= 0)
+        goto L_CleanUpLosers;
+    set $@REAPER_FIGHT_SUMMONS_ROUND_TIMER, $@REAPER_FIGHT_SUMMONS_ROUND_TIMER + 5; // Advance 5 seconds
+    if (mobcount("070-3.gat", "Reaper#Main::OnPetDeath") < 0)
+        goto L_NextWave;
+    if ($@REAPER_FIGHT_SUMMONS_ROUND_TIMER + $@REAPER_FIGHT_ROUND_PEN >= 120)
+        goto L_NextWave;
+    goto L_Return_1;
+
+L_NextWave:
+    set $@REAPER_FIGHT_SUMMONS_ROUND_TIMER, 0;
+    set $@REAPER_FIGHT_WAVE, $@REAPER_FIGHT_WAVE + 1;
+    if ( ($@REAPER_FIGHT_WAVE > 15) && ($@REAPER_FIGHT_SUMMONS_COUNT == 0) )
+        goto L_CleanUp;
+    if ($@REAPER_FIGHT_WAVE < 4)
+        goto L_WeakSummons;
+    if ( ($@REAPER_FIGHT_WAVE < 15) && ($@REAPER_FIGHT_WAVE >= 4) )
+        goto L_StrongSummons;
+    if ($@REAPER_FIGHT_WAVE == 15)
+        goto L_BossSummons;
+    if ($@REAPER_FIGHT_WAVE > 15)
+        goto L_StrongSummons;
+    goto L_BossSummons;
+
+L_BossSummons:
+    set $@REAPER_FIGHT_SUMMONS_NUMBER, (5 + (1 * $@REAPER_FIGHT_WAVE) + (2 * $@REAPER_FIGHT_PLAYER_COUNT))/2;
+    set $@REAPER_FIGHT_SUMMONS_COUNT, $@REAPER_FIGHT_SUMMONS_COUNT + ($@REAPER_FIGHT_SUMMONS_NUMBER/2) + ($@REAPER_FIGHT_SUMMONS_NUMBER/2);
+    areamonster "070-3.gat", 0, 0, 90, 92, "", 1126, ($@REAPER_FIGHT_SUMMONS_NUMBER/2), "Reaper#Main::OnPetDeath";
+    areamonster "070-3.gat", 0, 0, 90, 92, "", 1075, ($@REAPER_FIGHT_SUMMONS_NUMBER/2), "Reaper#Main::OnPetDeath";
+    areamonster "070-3.gat", 0, 0, 90, 92, "", 1068, 1, "Reaper#Main::OnPetDeath";
+    set $@REAPER_FIGHT_SUMMONS_COUNT, $@REAPER_FIGHT_SUMMONS_COUNT + 1;
+    goto L_StrongSummons;
+
+L_StrongSummons:
+    set $@REAPER_FIGHT_SUMMONS_NUMBER, (5 + (1 * $@REAPER_FIGHT_WAVE) + (2 * $@REAPER_FIGHT_PLAYER_COUNT))/2;
+    set $@REAPER_FIGHT_SUMMONS_COUNT, $@REAPER_FIGHT_SUMMONS_COUNT + ($@REAPER_FIGHT_SUMMONS_NUMBER/2) + ($@REAPER_FIGHT_SUMMONS_NUMBER/2);
+
+    areamonster "070-3.gat", 0, 0, 90, 92, "", 1126, ($@REAPER_FIGHT_SUMMONS_NUMBER/2), "Reaper#Main::OnPetDeath";
+    areamonster "070-3.gat", 0, 0, 90, 92, "", 1075, ($@REAPER_FIGHT_SUMMONS_NUMBER/2), "Reaper#Main::OnPetDeath";
+    goto L_WeakSummons;
+
+L_WeakSummons:
+    set $@REAPER_FIGHT_SUMMONS_NUMBER, (5 + (1 * $@REAPER_FIGHT_WAVE) + (2 * $@REAPER_FIGHT_PLAYER_COUNT))/2;
+    set $@REAPER_FIGHT_SUMMONS_COUNT, $@REAPER_FIGHT_SUMMONS_COUNT + ($@REAPER_FIGHT_SUMMONS_NUMBER/2) + ($@REAPER_FIGHT_SUMMONS_NUMBER/2);
+
+    areamonster "070-3.gat", 0, 0, 90, 92, "", 1126, ($@REAPER_FIGHT_SUMMONS_NUMBER/2), "Reaper#Main::OnPetDeath";
+    areamonster "070-3.gat", 0, 0, 90, 92, "", 1045, ($@REAPER_FIGHT_SUMMONS_NUMBER/2), "Reaper#Main::OnPetDeath";
+    goto L_Announce;
+
+L_Announce:
+    set $@msg$, $@REAPER_FIGHT_MESSAGES$[$@REAPER_FIGHT_WAVE];
+    if ($@msg$ == "")
+        goto L_Return_1;
+    mapannounce "070-3.gat", $@msg$, 0;
+    mapannounce "070-2.gat", $@msg$, 0;
+    mapannounce "070-1.gat", $@msg$, 0;
+    set $@msg$, "";
+    goto L_Return_1;
+
+L_DeadComrade:
+    set $@REAPER_FIGHT_SUMMONS_COUNT, $@REAPER_FIGHT_SUMMONS_COUNT + 1;
+    areamonster "070-3.gat", 0, 0, 79, 84, "", 1045, 1, "Reaper#Main::OnPetDeath";
+    mapannounce "070-3.gat", "Arise " + strcharinfo(0) + " and join my army!", 0;
+    end;
+
+// Called on each player once every 5 seconds
+OnTick:
+    if (isdead())
+        goto L_DeadComrade;
+    set $@REAPER_FIGHT_PLAYER_COUNT, $@REAPER_FIGHT_PLAYER_COUNT + 1;
+    set @soul_diff, ($@REAPER_FIGHT_SOUL_COUNT - $@REAPER_FIGHT_WAVE);
+    if (@soul_diff < 0)
+         goto L_DevourSoul;
+    end;
+
+L_DevourSoul:
+    percentheal @soul_diff, 0;
+    mapannounce "070-3.gat", "Ahh yes, I can feel your power!", 0;
+    end;
+
+OnPetDeath:
+    set $@REAPER_FIGHT_SUMMONS_COUNT, $@REAPER_FIGHT_SUMMONS_COUNT - 1;
+    end;
+
+L_CleanUpLosers:
+    set $@msg$, "The Reaper has defeated the mortals in a contest of arms.";
+    mapannounce "070-3.gat", $@msg$, 0;
+    mapannounce "070-2.gat", $@msg$, 0;
+    mapannounce "070-1.gat", $@msg$, 0;
+    set $@REAPER_FIGHT, 0;
+    set $@REAPER_FIGHT_PLAYER_COUNT, 0;
+    set $@REAPER_FIGHT_WAVE, 0;
+    set $@REAPER_FIGHT_SUMMONS_ROUND_TIMER, 0;
+    set $@REAPER_FIGHT_SUMMONS_COUNT, 0;
+    set $@REAPER_FIGHT_ROUND_PEN, 0;
+    set $@REAPER_FIGHT_SUMMONS_NUMBER, 0;
+    killmonster "070-3.gat", "Reaper#Main::OnPetDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    enablenpc "Reaper#Starter";
+    end;
+
+L_CleanUp:
+    areatimer "070-3.gat", 0, 0, 79, 84, 10, "Reaper#Main::OnReward";
+    set $@REAPER_FIGHT, 0;
+    set $@REAPER_FIGHT_PLAYER_COUNT, 0;
+    set $@REAPER_FIGHT_WAVE, 0;
+    set $@REAPER_FIGHT_SUMMONS_ROUND_TIMER, 0;
+    set $@REAPER_FIGHT_SUMMONS_COUNT, 0;
+    set $@REAPER_FIGHT_ROUND_PEN, 0;
+    set $@REAPER_FIGHT_SUMMONS_NUMBER, 0;
+    killmonster "070-3.gat", "Reaper#Main::OnPetDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    enablenpc "Reaper#Starter";
+    end;
+
+OnReward:
+    if (isdead()) end;
+    set @state, ((CRYPT_Quest & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    set @gatebind, ((CRYPT_Quest & NIBBLE_4_MASK) >> NIBBLE_4_SHIFT);
+    set @bonus, (BaseLevel/($@REAPER_FIGHT_SOUL_COUNT + 2));
+    set DailyQuestBonus, DailyQuestBonus + @bonus;
+    message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained." ;
+    set @bossbonus, (154 - (($@REAPER_FIGHT_SOUL_COUNT + 2)*2));
+    set BOSS_POINTS, BOSS_POINTS + @bossbonus;
+    message strcharinfo(0), "You gain " + @bossbonus + " Boss Points giving you a total of " + BOSS_POINTS + ".";
+    set @state, 5;
+    set @gatebind, 0;
+    callsub S_Update_Var;
+    set $@msg$, "The Reaper has been defeated in a contest of arms.";
+    mapannounce "070-3.gat", $@msg$, 0;
+    mapannounce "070-2.gat", $@msg$, 0;
+    mapannounce "070-1.gat", $@msg$, 0;
+    goto L_Warp;
+
+L_Warp:
+    set @gatebind, 0;
+    callsub S_Update_Var;
+    set @warpmap$, "027-2.gat";
+    set @warpx, 123;
+    set @warpy, 102;
+    warp @warpmap$,@warpx,@warpy;
+    goto L_End;
+
+L_End:
+    set @map$, "";
+    set @warpmap$, 0;
+    set @warpx, 0;
+    set @warpy, 0;
+    set @state, 0;
+    set @gatebind, 0;
+    set @bonus, 0;
+    set @minlevel, 0;
+    set $@REAPER_FIGHT_SOUL_COUNT, 0;
+    end;
+
+S_Update_Var:
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_4_MASK) | (@gatebind << NIBBLE_4_SHIFT));
+    return;
+
+OnInit:
+    setarray $@REAPER_FIGHT_MESSAGES$,
+        "Reaper : Haha, Thank you mortal. You have released me from my prison. To show my graditude you can die swiftly at my hands and become part of my undead army. MUhahahahaha! Minions, Dispose of these Adventurers!",
+        "Reaper : Ha, Looks like your tougher then I thought.",
+        "Reaper : and here I thought I wasn't going to enjoy this.",
+        "Reaper : More of them are coming!",
+        "Reaper : Minions! Kill them already!",
+        "Reaper : *facepalm* I knew I should have hired better help.",
+        "Reaper : Well at least you will make a good addition to my army.",
+        "Reaper : To the Abyss with you already!",
+        "Reaper : How about you try a different approach and kill them already!",
+        "Reaper : Charge!",
+        "Reaper : Any day now!",
+        "Reaper : More of them are coming!",
+        "Reaper : and here I thought I was going to enjoy this...",
+        "Reaper : Minions! Last chance or it's back to being part of an ossuary for you!",
+        "Reaper : Looks like if you want something done right you have to do it yourself.";
+    end;
+}
+
+070-3.gat,55,33,0|script|SoulPool#1|400,
+{
+    goto L_SoulMain;
+
+L_SoulMain:
+    mes "[Soul Pool]";
+    mes "Sacrafice Souls?";
+    menu
+        "One Soul.", L_OneSoul,
+        "Five Souls.", L_FiveSoul,
+        "Ten Souls.", L_TenSoul,
+        "Twenty Souls.", L_TwentySoul,
+        "Nevermind.", L_Close;
+
+L_OneSoul:
+    if(countitem("Soul") < 1)
+        goto L_NotEnoughSoul;
+    delitem "Soul", 1;
+    set $@REAPER_FIGHT_SOUL_COUNT, $@REAPER_FIGHT_SOUL_COUNT + 1;
+    goto L_SoulMain;
+
+L_FiveSoul:
+    if(countitem("Soul") < 5)
+        goto L_NotEnoughSoul;
+    delitem "Soul", 5;
+    set $@REAPER_FIGHT_SOUL_COUNT, $@REAPER_FIGHT_SOUL_COUNT + 5;
+    goto L_SoulMain;
+
+L_TenSoul:
+    if(countitem("Soul") < 10)
+        goto L_NotEnoughSoul;
+    delitem "Soul", 10;
+    set $@REAPER_FIGHT_SOUL_COUNT, $@REAPER_FIGHT_SOUL_COUNT + 10;
+    goto L_SoulMain;
+
+L_TwentySoul:
+    if(countitem("Soul") < 20)
+        goto L_NotEnoughSoul;
+    delitem "Soul", 20;
+    set $@REAPER_FIGHT_SOUL_COUNT, $@REAPER_FIGHT_SOUL_COUNT + 20;
+    goto L_SoulMain;
+
+L_NotEnoughSoul:
+    mes "You are not carrying that many souls.";
+    goto L_SoulMain;
+
+L_Close:
+    close;
+
+}
+070-3.gat,35,63,0|script|SoulPool#2|400,
+{
+    goto L_SoulMain;
+
+L_SoulMain:
+    mes "[Soul Pool]";
+    mes "Sacrafice Souls?";
+    menu
+        "One Soul.", L_OneSoul,
+        "Five Souls.", L_FiveSoul,
+        "Ten Souls.", L_TenSoul,
+        "Twenty Souls.", L_TwentySoul,
+        "Nevermind.", L_Close;
+
+L_OneSoul:
+    if(countitem("Soul") < 1)
+        goto L_NotEnoughSoul;
+    delitem "Soul", 1;
+    set $@REAPER_FIGHT_SOUL_COUNT, $@REAPER_FIGHT_SOUL_COUNT + 1;
+    goto L_SoulMain;
+
+L_FiveSoul:
+    if(countitem("Soul") < 5)
+        goto L_NotEnoughSoul;
+    delitem "Soul", 5;
+    set $@REAPER_FIGHT_SOUL_COUNT, $@REAPER_FIGHT_SOUL_COUNT + 5;
+    goto L_SoulMain;
+
+L_TenSoul:
+    if(countitem("Soul") < 10)
+        goto L_NotEnoughSoul;
+    delitem "Soul", 10;
+    set $@REAPER_FIGHT_SOUL_COUNT, $@REAPER_FIGHT_SOUL_COUNT + 10;
+    goto L_SoulMain;
+
+L_TwentySoul:
+    if(countitem("Soul") < 20)
+        goto L_NotEnoughSoul;
+    delitem "Soul", 20;
+    set $@REAPER_FIGHT_SOUL_COUNT, $@REAPER_FIGHT_SOUL_COUNT + 20;
+    goto L_SoulMain;
+
+L_NotEnoughSoul:
+    mes "You are not carrying that many souls.";
+    goto L_SoulMain;
+
+L_Close:
+    close;
+
+}

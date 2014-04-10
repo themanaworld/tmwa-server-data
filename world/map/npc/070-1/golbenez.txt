@@ -1,0 +1,55 @@
+070-1.gat,73,95,0|script|#Golbenez#_U|204,
+{
+    set @state, ((GATE_Instance & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    set @fee, 100;
+
+    mes "[Golbenez]";
+    mes "\"Welcome mortal. I see you have foolishly stumbleid into a trap.\"";
+    mes "\"Your kind is so gulliable and easy to manipulate, Muhahaha.\"";
+    next;
+    mes "\"I can help you escape from this plane for a small fee of " + @fee + " Bloodstones.\"";
+    mes "\"Fetch me this and I will send you back to Argeas.\"";
+    menu
+        "What? Where do I find those?", L_Find_Stones,
+        "Ok, help me leave this forshaken place.",L_Warp,
+        "... I'm really beginning to hate you.", L_Next;
+
+L_Next:
+    mes "[Golbenez]";
+    mes "\"Come back when you've changed your mind. It's a wonderful place.\"";
+    goto L_Close;
+
+L_Find_Stones:
+    mes "[Golbenez]";
+    mes "\"Go to the East and kill monsters in the Marsh of the Damned.\"";
+    mes "\"Honestly, some days it barely pays to help you puny brained mortals.\"";
+    mes "\"Now do my bidding or find your own way home, mortal.\"";
+    goto L_Close;
+
+L_Warp:
+    if (countitem("Bloodstone") < @fee)
+        goto L_No_Stones;
+    delitem "Bloodstone", @fee;
+    set @state, 0;
+    callsub S_Update_Var;
+    goto L_Return;
+
+L_Return:
+    warp "027-2.gat", 105, 44;
+    goto L_Close;
+
+L_No_Stones:
+    mes "[Golbenez]";
+    mes "\"It is astonishing how WEAK you humans can be.\"";
+    next;
+    mes "\"Come back when you can pay my service.\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
+    close;
+
+S_Update_Var:
+    set GATE_Instance, (GATE_Instance & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    return;
+}

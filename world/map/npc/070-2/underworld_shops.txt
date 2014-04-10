@@ -1,0 +1,107 @@
+// Shops in the Underworld
+
+// Bank and Storage
+070-2.gat,29,25,0|script|Ronald Frump|321,
+{
+    callfunc "ClearVariables";
+    set @npcname$, "Ronald Frump";
+    callfunc "Banker";
+    close;
+}
+
+// Boss Point Vendor
+070-2.gat,35,25,0|script|Shane Tsun|321,
+{
+    mes "[Shane Tsun]";
+    mes "\"I'll trade you Boss Points for Underworld Items\"";
+    next;
+    mes "\"Would you care to shop?\"";
+    menu
+        "Shut up and Take My Boss Points!", L_BossShop,
+        "No, I'm using them to wall paper my kitchen!", L_Close;
+
+// To be added:
+//  Waiting on Cassy's Lottery to be tested
+//        "Lottery Ticket. (10 BP)", L_LotTick,
+//  Waiting on Bromeal Armor to get in the game
+//        "MylarinDust (5000 BP)", L_Mylarin,
+//  Alternative to Skull Mask
+//        "Face Mask (20,000 BP)", L_FaceMask,
+L_BossShop:
+    mes "\"You have a total of " + BOSS_POINTS + ".";
+    menu
+        "Grass Snake Tongue (5 BP)", L_GrassSnake,
+        "Bloodstone. (10 BP)", L_Bloodstone,
+        "Dark Crystal (10 BP)", L_DarkCrystal,
+        "Soul (10 BP)", L_JackO,
+        "Skull Mask (20,000 BP)", L_SkullMask,
+        "I've shopped enough today.", L_Close;
+
+L_GrassSnake:
+    set @BossPointItem$, "GrassSnakeTongue";
+    set @BossPointCost, 5;
+    goto L_CheckNGo;
+
+L_Bloodstone:
+    set @BossPointItem$, "Bloodstone";
+    set @BossPointCost, 10;
+    goto L_CheckNGo;
+
+L_DarkCrystal:
+    set @BossPointItem$, "DarkCrystal";
+    set @BossPointCost, 10;
+    goto L_CheckNGo;
+
+L_JackO:
+    set @BossPointItem$, "Soul";
+    set @BossPointCost, 10;
+    goto L_CheckNGo;
+
+//L_LotTick:
+//    set @BossPointItem$, "LotteryTicket";
+//    set @BossPointCost, 10;
+//    goto L_CheckNGo;
+
+//L_Mylarin:
+//    set @BossPointItem$, "MylarinDust";
+//    set @BossPointCost, 500;
+//    goto L_CheckNGo;
+
+//L_FaceMask:
+//    set @BossPointItem$, "FaceMask";
+//    set @BossPointCost, 20000;
+//    goto L_CheckNGo;
+
+L_SkullMask:
+    set @BossPointItem$, "SkullMask";
+    set @BossPointCost, 20000;
+    goto L_CheckNGo;
+
+L_CheckNGo:
+    if (BOSS_POINTS < @BossPointCost)
+        goto L_NotEnoughBP;
+    if ((checkweight(@BossPointItem$, 1) == 0) || (@inventorylist_count == 100))
+        goto L_NoSpace;
+    set BOSS_POINTS, BOSS_POINTS - @BossPointCost;
+    getitem @BossPointItem$, 1;
+    goto L_BossShop;
+
+L_NotEnoughBP:
+    mes "[Shane Tsun]";
+    mes "\"You need " + (@BossPointCost - BOSS_POINTS)  + " more Boss Points for " + @BossPointItem$ + "\"";
+    goto L_BossShop;
+
+L_NoSpace:
+    mes "[Shane Tsun]";
+    mes "\"You don't have enough room for the item.\"";
+    mes "\"Come Back when you have more room.\"";
+    goto L_BossShop;
+
+L_Close:
+    mes "[Shane Tsun]";
+    mes "\"Thank you for shopping, come back again.\"";
+    set @BossPointItem$, "";
+    set @BossPointCost, 0;
+    close;
+
+}

@@ -47,10 +47,6 @@
     set @Q_SHIFT2_BITS, NIBBLE_3_SHIFT;
     set @Q_status2_bits, ((QUEST_Nivalis_state) & @Q_MASK2_BITS) >> @Q_SHIFT2_BITS;
 
-    // if all bits are set, you brought him everything! Now we continue in Phase 2 of this npc.
-    // this is not ready yet, so do not enable that stage
-    // if(@Q_status == @Q_MASK) goto L_2_init;
-
     set @BIT_KNOWHIM, 0;
 
     set @BIT_DESERTHAT,1;
@@ -268,137 +264,12 @@ L_havealready:
     mes "\"I already collected what you can offer me.\"";
     close;
 
+L_Close:
+    close;
+
 S_Update_Var:
     set QUEST_Nivalis_state,
         (QUEST_Nivalis_state & ~(@Q_MASK)
         | (@Q_status << @Q_SHIFT));
-    return;
-
-//# The following stage is completely cutoff the first.
-//# So there is no linking between the upper and lower part, except for one goto at the very beginning
-//
-
-L_2_init:
-
-//# NIBBLE3     a bitmasking nibble for stage 2 again
-//# bit 0  knows the name of the opponent
-//# bit 1  killed the ugly opponent
-    set @BIT_KNOWS_NAME, 0;
-    set @BIT_KILLED_HIM, 1;
-
-    if (@Q_status2 == 1) goto L_2_talk1;
-    if (@Q_status2 == 2) goto L_2_talk2;
-    if (@Q_status2 == 3) goto L_2_talk3;
-    // fall through @Q_status2==0:
-    // need to thank for bringing all stuff.
-    mes @npcname$;
-    mes "\"Thanks a lot for bringing me all this nice stuff!\"";
-    next;
-    mes "\"That helps me a lot. You see over there is already another set I collected: There are some pieces of the Hurnscald town. That sign there has been stolen from the inn.\"";
-    next;
-    mes "\"But do not tell anyone, please! I really like collecting things. And that sign is one of the first things I organized.\"";
-    next;
-    mes "\"So thank you for bringing me that stuff for my desert collection\"";
-    next;
-    mes "\"Do you have an idea how to arrange that to make it cool looking for my admirers?\"";
-    next;
-    set @Q_status2, 1;
-    callsub S_Update_Var2;
-    close;
-
-L_2_talk1:
-    mes @npcname$;
-    mes "\"In my childhood I was called a packrat, because I collected old cans.\"";
-    next;
-    mes "\"But everybody does collect things right?\"";
-    next;
-    mes "\"So after I had collected way over 1000 cans, I started collecting snail-shells. Nice? Do you like that?\"";
-    next;
-    mes "\"Not many people like me. And I don't know why. It is nice to talk about such nice things. What did you collect in your childhood?\"";
-    next;
-    mes "He picks his nose";
-    next;
-    mes @npcname$;
-    mes "\"Ok erm, talk to you later.\"";
-    next;
-    mes "\"Ok.\"";
-    set @Q_status2, 2;
-    callsub S_Update_Var2;
-    close;
-
-L_2_talk2:
-    mes @npcname$;
-    mes "\"Could you do me a favor? This ugly guy, who always attacked me....\"";
-    next;
-    mes "\"*sob*\"";
-    next;
-    mes "\"I was always bullied by him. You know in early childhood we were very nice friends. We played some roleplaying. He was the captain, and I was the soldier.";
-    next;
-    mes "\"Or another day he was the chieftain and I was the redskin.\"";
-    next;
-    mes "\"But to tell you the truth, HE was ALWAYS the one who directed me.\"";
-    next;
-    mes "\"I DO NOT LIKE THAT!\"";
-    next;
-    mes "\"I WANT TO BE THE LEADER!\"";
-    next;
-    mes "\"STOP HIM DOING NASTY THINGS\"";
-    next;
-    mes "\"I WANT YOU TO KILL THAT BASTARD!!\"";
-    set @Q_status2, 3;
-    callsub S_Update_Var2;
-    close;
-
-L_2_talk3:
-    menu
-        "Ok, I am a professional in doing such things", L_2_professional,
-        "Hey do you really mean it? ", L_2_professional,
-        "You calmed down again?", L_Close,
-        "Oh a packrat! By the way, is that trash over there yours?", L_2_name,
-        "Nevermind", L_Close;
-
-L_Close:
-    mes @npcname$;
-    mes "\"Get out of my way, prank!\"";
-    close;
-
-L_2_professional:
-    mes @npcname$;
-    mes "\"What are you talking about?\"";
-    goto L_2_talk3;
-
-L_2_name:
-    mes @npcname$;
-    mes "\"ONE DAY I WILL GET A HUGE REVENGE!\"";
-    next;
-    mes "\"AND I MEAN IT!\"";
-    next;
-    mes "\"You see I am a dangerous killer. Last week I killed five slimes and a pinkie!\"";
-    next;
-    mes "He takes out a piece of paper... mumbling";
-    mes "\"Ok Scroticular first, and then ...\"";
-    set @Q_status2, 4;
-    set @Q_status2_bits, @Q_status2_bits | (1<<@BIT_KNOWS_NAME);
-    callsub S_Update_Var2;
-
-    mes @npcname$;
-    mes "\"What is your name again?\"";
-
-    menu
-        "I am sorry for the joke... Please forgive me", L_Next,
-        "They call me Mistakes. I am a professional killer as well. You heard about that business in the terranite cave?", L_Next;
-
-L_Next:
-    mes @npcname$;
-    mes "\"Alright, I see. Ok maybe I really need to calm down. Please leave me alone... I will try to calm down, ok?\"";
-    close;
-
-S_Update_Var2:
-    set QUEST_Nivalis_state,
-        (QUEST_Nivalis_state & ~(@Q_MASK2)
-        | (@Q_status2 << @Q_SHIFT2));
-    set QUEST_Nivalis_state,
-        (QUEST_Nivalis_state & ~(@Q_MASK2_BITS)
-        | (@Q_status2_bits << @Q_SHIFT2_BITS));
     return;
 }
