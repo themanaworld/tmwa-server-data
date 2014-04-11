@@ -8,17 +8,19 @@
         goto L_Fighting;
 
     if (FLAGS & FLAG_TUTORIAL_DONE)  goto L_Tut_Done;
-    if (tanisha == 4) goto L_Again;
-    if (tanisha == 3) goto L_Stats;
-    if (tanisha == 2) goto L_Fail;
-    if (tanisha == 1) goto L_Maggots;
+
+    callfunc "TutorialState";
+    if ((@tutorial == 11) && !(@tanisha_hasan)) goto L_Hasan;
+    if (@tutorial >= 8) goto L_Again;
+    if (@tutorial == 7) goto L_Stats;
+    if (@tutorial == 6) goto L_Fail;
+    if (@tutorial == 5) goto L_Maggots;
 
     mes "[Tanisha]";
     mes "\"Hey! You're up again!\"";
     emotion EMOTE_HAPPY;
     next;
     mes "\"Are you feeling better?\"";
-    next;
     menu
         "Yes, thank you.",L_Next,
         "Yeah, but all my stuff is gone.",L_Next;
@@ -28,7 +30,8 @@ L_Next:
     mes "\"I'm glad you're feeling better. It was really bad luck what happened to you.";
     mes "Hey, I have an idea.\"";
     next;
-    set tanisha, 1;
+    set @tutorial_tmp, 5;
+    callfunc "SetTutorialMask";
     goto L_Maggots;
 
 L_Maggots:
@@ -38,12 +41,11 @@ L_Maggots:
     next;
     mes "\"If you kill them, I'll give you my knife.";
     mes "What do you say?\"";
-    next;
     menu
-        "Sure!",L_Continue,
+        "Sure!",L_Next1,
         "That's your job.",L_Close;
 
-L_Continue:
+L_Next1:
     mes "[Tanisha]";
     mes "\"Wonderful!\"";
     // since the check happens here, it is actually possible to have
@@ -51,9 +53,10 @@ L_Continue:
     // but that's not a BIG problem
     if (getareausers("042-2.gat", 30, 85, 36, 89) >= $@Maggot_MaxHunters)
         goto L_Crowded;
-    goto L_FightAgain;
+    next;
+    goto L_Fight_Again;
 
-L_FightAgain:
+L_Fight_Again:
     mes "\"Ok, listen what to do.";
     mes "Equip a weapon and kill the maggots.\"";
     next;
@@ -66,9 +69,10 @@ L_FightAgain:
     next;
     mes "\"Sometimes dead monsters leave some useful things. You can pick them up by pressing Z or clicking on the items with your mouse.\"";
     close2;
-    // The getitem must be in the same place as set tanisha, 2;
-    // since it was moved to after L_FightAgain, add it conditionally
-    if (tanisha == 1)
+    // The getitem must be in the same place as set @tutorial, 2;
+    // since it was moved to after L_Fight_Again, add it conditionally
+    callfunc "TutorialState";
+    if (@tutorial == 5)
         goto L_GetFightItems;
     goto L_ContinueFight;
 
@@ -79,7 +83,8 @@ L_GetFightItems:
     goto L_ContinueFight;
 
 L_ContinueFight:
-    set tanisha, 2;
+    set @tutorial_tmp, 6;
+    callfunc "SetTutorialMask";
     set @Maggot_Kills, 0;
     set @time, 0;
     if (getareausers("042-2.gat", 30, 85, 36, 89) == 0)
@@ -124,7 +129,7 @@ L_StatsRe:
     mes "[Tanisha]";
     mes "\"But I doubt he'd do that without a service in return.\"";
 
-    if (tanisha != 3)
+    if (@tutorial != 7)
         goto L_Close;
     goto L_Money;
 
@@ -141,19 +146,18 @@ L_Advice:
     mes "\"When you go to Tulimshar, you should see Bernard. He can make a delicious soup!";
     mes "Good luck!\"";
     emotion EMOTE_HAPPY;
-    if (tanisha == 3)
-        set tanisha, 4;
+    if (@tutorial == 7)
+        goto L_SetTutorial;
+    goto L_Close;
+
+L_SetTutorial:
+    set @tutorial_tmp, 8;
+    callfunc "SetTutorialMask";
     goto L_Close;
 
 L_Again:
     mes "[Tanisha]";
     mes "\"Hi there! Is everything alright? Do you have questions?\"";
-    next;
-    if (hasan)
-        menu
-            "A guy named Hasan won't let me enter Tulimshar.",L_Hasan,
-            "Yes, could you explain again about...",L_Explain,
-            "No, thanks.",L_Close;
     menu
         "Yes, could you explain again about...",L_Explain,
         "No, thanks.",L_Close;
@@ -192,13 +196,20 @@ L_Mob:
 
 L_Hasan:
     mes "[Tanisha]";
+    mes "\"Hi there! Is everything alright? Do you have questions?\"";
+    menu
+        "A guy named Hasan won't let me enter Tulimshar.",L_Next3,
+        "Yes, could you explain again about...",L_Explain,
+        "No, thanks.",L_Close;
+
+L_Next3:
+    mes "[Tanisha]";
     mes "\"Bah, Hasan. He's a jerk. But he's very strong.\"";
     next;
     mes "\"The only thing he's afraid of are scorpions.";
     mes "I'm not sure why, some bad experience when he was a child.";
     mes "That was before I was born.\"";
-    if (hasan == 1)
-        set hasan, 2;
+    set TUTORIAL, TUTORIAL | $@TanishaHasanBit;
     goto L_Close;
 
 L_Tut_Done:
@@ -243,15 +254,14 @@ L_Fail:
     mes "[Tanisha]";
     mes "\"Oops, I'm sorry. It's just too funny.";
     mes "Do you want to try it again?\"";
-    next;
     menu
-        "Sure!", L_TryAgain,
+        "Sure!", L_Next2,
         "No, I need a rest.", L_Close;
 
-L_TryAgain:
+L_Next2:
     if (getareausers("042-2.gat", 30, 85, 36, 89) >= $@Maggot_MaxHunters)
         goto L_Crowded;
-    goto L_FightAgain;
+    goto L_Fight_Again;
 
 L_Fighting:
     message strcharinfo(0), "Tanisha: I believe in you!";
@@ -297,7 +307,8 @@ OnMaggotDeath:
         goto L_Summon;
     // else, complete
     warp "042-2.gat", 36, 90;
-    set tanisha, 3;
+    set @tutorial_tmp, 7;
+    callfunc "SetTutorialMask";
     set @Maggot_Kills, 0;
     set @time, 0;
     if (getareausers("042-2.gat", 30, 85, 36, 89) == 0)

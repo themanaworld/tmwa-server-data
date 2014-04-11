@@ -3,11 +3,26 @@
 
 042-2.gat,28,26,0|script|Sorfina|154,4,4
 {
+    callfunc "TutorialState";
+
+    if ((Hp != MaxHp) && (@tutorial >= 4))
+        goto L_Heal;
+    goto L_Main;
+
+L_Heal:
+    mes "[Sorfina]";
+    mes "\"Hello Dear! You look tired, you should rest a moment.\"";
+    mes "You take a short nap and feel refreshed.";
+    heal MaxHp, 0;
+    goto L_Main;
+
+L_Main:
     if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Again;
-    if (sorfina == 4) goto L_Heal;
-    if (sorfina == 3) goto L_Clothes;
-    if (sorfina == 2) goto L_Chest;
-    if (sorfina == 1) goto L_Carpet;
+    if ((@tutorial == 11) && !(@sorfina_hasan)) goto L_Hasan;
+    if (@tutorial >= 4) goto L_Again;
+    if (@tutorial == 3) goto L_Clothes;
+    if (@tutorial == 2) goto L_Chest;
+    if (@tutorial == 1) goto L_Carpet;
 
     callfunc "GameRules";
     goto L_Start;
@@ -32,9 +47,8 @@ L_Start:
     mes "Oh, and by the way my name is Sorfina.\"";
     next;
     mes "[Server]";
-    mes "The explanations in this tutorial are based on the official client 0.5 series.";
+    mes "The explanations in this tutorial are based on the official client, Manaplus.";
     mes "If you're using another client, settings and controls may be different.";
-    next;
     menu
         "That would be great!",L_Tut,
         "No, thanks. I already know how things are going.",L_SkipTut;
@@ -53,8 +67,8 @@ L_Carpet:
     mes "[Sorfina]";
     mes "\"Try to take a few steps and walk to that red carpet over there.";
     mes "Just use the arrow keys or click on the place you want to go to.\"";
-    if (!sorfina)
-        set sorfina, 1;
+    set @tutorial_tmp, 1;
+    callfunc "SetTutorialMask";
     goto L_Close;
 
 L_Chest:
@@ -81,6 +95,11 @@ L_Clothes:
     mes "[Sorfina]";
     mes "\"That's much better, don't you think?\"";
     next;
+    mes "\"Here take this.\"";
+    getitem "HitchhikersTowel", 1;
+    mes "\"Your HitchHikers Towel will return you to your last set soul menhir or here if not set.\"";
+    mes "\"It can't be used constantly as the magic needs time to power the jump.\"";
+    next;
     mes "\"I think this will help you a bit. To get more information, press the button Setup and look at the controls on the Keyboard tab. You can also change them as you like.";
     mes "Talk to me again if you want me to explain more things.\"";
     next;
@@ -94,28 +113,13 @@ L_Clothes:
     mes "\"And here is some money for you. At least you can buy yourself something to eat.";
     mes "Good luck!\"";
     set Zeny, Zeny + 30;
-    set sorfina, 4;
+    set @tutorial_tmp, 4;
+    callfunc "SetTutorialMask";
     goto L_Close;
-
-L_Heal:
-    if (Hp == MaxHp)
-        goto L_Again;
-    mes "[Sorfina]";
-    mes "\"Hello Dear! You look tired, you should rest a moment.\"";
-    mes "You take a short nap and feel refreshed.";
-    heal MaxHp, 0;
-    next;
-    goto L_Again;
 
 L_Again:
     mes "[Sorfina]";
     mes "\"Make yourself at home! Do you have any questions?\"";
-    next;
-    if (hasan)
-        menu
-            "A guy named Hasan won't let me enter Tulimshar.",L_Hasan,
-            "Yes, could you explain again about...",L_Explain,
-            "No, thanks.",L_Close;
     menu
         "Yes, could you explain about...",L_Explain,
         "No, thanks.",L_Close;
@@ -164,6 +168,9 @@ L_Items:
     next;
     mes "\"Miscellaneous items such as maggot slime, can be used in creating other items, or just to trade and sell.\"";
     next;
+    mes "\"Your HitchHikers Towel will return you to your last set soul menhir or here if not set.\"";
+    mes "\"It can't be used constantly as the magic needs time to power the jump.\"";
+    next;
     mes "\"Press F3 to open your inventory.";
     mes "When placing your cursor over an item there, you can see a box with some information about that item.\"";
     next;
@@ -198,6 +205,13 @@ L_Aidan:
 
 L_Hasan:
     mes "[Sorfina]";
+    mes "\"Make yourself at home! Do you have any questions?\"";
+        menu
+            "A guy named Hasan won't let me enter Tulimshar.",L_Next,
+            "Yes, could you explain again about...",L_Explain,
+            "No, thanks.",L_Close;
+
+L_Next:
     mes "\"Ah, Hasan. He's causing trouble again?\"";
     mes "She shakes her head.";
     next;
@@ -218,14 +232,12 @@ L_Hasan:
     next;
     mes "\"However, the scorpions poison caused a bad fever and once Hasan had recovered from that, he was even more malicious than before.\"";
     mes "She sighs.";
-    if (hasan == 1)
-        set hasan, 2;
+    set TUTORIAL, TUTORIAL | $@SorfinaHasanBit;
     goto L_Close;
 
 L_SkipTut:
     mes "[Sorfina]";
     mes "\"Really? You seem quite unexperienced. Listening to some advice won't hurt.\"";
-    next;
     menu
         "Thinking about it twice... please tell me.",L_Tut,
         "Yeah, but thanks for the offer. Bye.",L_Bye;
@@ -237,6 +249,7 @@ L_Bye:
     getitem "Knife", 1;
     getitem "SlingShot", 1;
     getitem "SlingBullet", 100;
+    getitem "HitchhikersTowel", 1;
     getitem "CottonShirt", 1;
     getitem "RaggedShorts", 1;
     set Zeny, Zeny + 50;
@@ -258,7 +271,8 @@ OnTouch:
     end;
 
 OnTouch:
-    if (sorfina != 1)
+    callfunc "TutorialState";
+    if (@tutorial != 1)
         end;
     mes "[Sorfina]";
     mes "\"Very good! I'm glad you're recovering.";
@@ -272,14 +286,16 @@ OnTouch:
     mes "\"To interact with things in your environment or talk to NPCs you can either click on it or press N to focus and T to talk/activate.\"";
     next;
     mes "\"Now get the clothes out of the chest.\"";
-    set sorfina, 2;
+    set @tutorial_tmp, 2;
+    callfunc "SetTutorialMask";
     close;
 }
 
-042-2.gat,27,23,0|script|Chest#sorfina|111,
+042-2.gat,27,23,0|script|Chest#tutorial|111,
 {
-    if (sorfina > 2) goto L_Empty;
-    if (sorfina == 2) goto L_Shirt;
+    callfunc "TutorialState";
+    if (@tutorial > 2) goto L_Empty;
+    if (@tutorial == 2) goto L_Shirt;
 
     mes "The chest is locked.";
     close;
@@ -295,7 +311,8 @@ L_Shirt:
     mes "\"You can open your inventory by pressing F3 or clicking on the 'Inventory' button in the bar at the upper right corner.\"";
     next;
     mes "\"After we finish talking, click on the clothes and press the equip button.\"";
-    set sorfina, 3;
+    set @tutorial_tmp, 3;
+    callfunc "SetTutorialMask";
     close;
 
 L_Empty:
@@ -303,15 +320,15 @@ L_Empty:
     close;
 }
 
-042-2.gat,44,31,0|script|#DoorOut-sorfina|45,0,0
+042-2.gat,44,31,0|script|#DoorOut-@tutorial|45,0,0
 {
     end;
 
 OnTouch:
-    if ((sorfina < 4)
-        && !(FLAGS & FLAG_TUTORIAL_DONE))
+    callfunc "TutorialState";
+    if ((@tutorial < 4) && !(FLAGS & FLAG_TUTORIAL_DONE))
             goto L_Block;
-    warp "042-1.gat", 63, 77;
+    warp "042-1.gat", 63, 49;
     end;
 
 L_Block:
