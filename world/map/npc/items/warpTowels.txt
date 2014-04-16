@@ -1,360 +1,174 @@
-function|script|useWhiteWarpTowel|,
+// See #TravelConfig
+function|script|WarpTowel|,
 {
+    callfunc "MultiWarpTowel";
+    if (@warpTowelName$ == "HitchhikersTowel") 
+        goto L_Save;
+    if(@warpTowelName$ == "WhiteHitchhikersTowel")
+        goto L_White;
+    if(@warpTowelName$ == "RedHitchhikersTowel")
+        goto L_Red;
+    if(@warpTowelName$ == "GreenHitchhikersTowel")
+        goto L_Green;
+    if(@warpTowelName$ == "BlueHitchhikersTowel")
+        goto L_Blue;
+    if(@warpTowelName$ == "YellowHitchhikersTowel")
+        goto L_Yellow;
+    if(@warpTowelName$ == "PurpleHitchhikersTowel")
+        goto L_Purple;
+    if(@warpTowelName$ == "OrangeHitchhikersTowel")
+        goto L_Orange;
+    if(@warpTowelName$ == "PinkHitchhikersTowel")
+        goto L_Pink;
+    if(@warpTowelName$ == "TealHitchhikersTowel")
+        goto L_Teal;
+    if(@warpTowelName$ == "LimeHitchhikersTowel")
+        goto L_Lime;
+    goto L_Save;
+
+L_White:
+    // Koga
+    set @NextLocationMap$, "035-2.gat";
+    set @NextLocationX, 20;
+    set @NextLocationY, 21;
+    goto L_WarpChecks;
+
+L_Red:
+    // Barbarians
+    set @NextLocationMap$, "033-1.gat";
+    set @NextLocationX, 66;
+    set @NextLocationY, 33;
+    goto L_WarpChecks;
+
+L_Green:
+    // Candor
+    set @NextLocationMap$, "029-1.gat";
+    set @NextLocationX, 69;
+    set @NextLocationY, 69;
+    goto L_WarpChecks;
+
+L_Blue:
+    // Blue Sages
+    set @NextLocationMap$, "048-2.gat";
+    set @NextLocationX, 26;
+    set @NextLocationY, 47;
+    goto L_WarpChecks;
+
+L_Yellow:
+    // Tulimshar Mines
+    set @NextLocationMap$, "002-2.gat";
+    set @NextLocationX, 27;
+    set @NextLocationY, 28;
+    goto L_WarpChecks;
+
+L_Purple:
+    // Dimonds Inn
+    set @NextLocationMap$, "010-1.gat";
+    set @NextLocationX, 27;
+    set @NextLocationY, 97;
+    goto L_WarpChecks;
+
+L_Orange:
+    // Graveyard
+    set @NextLocationMap$, "027-1.gat";
+    set @NextLocationX, 70;
+    set @NextLocationY, 100;
+    goto L_WarpChecks;
+
+L_Pink:
+    // Terranite Cave
+    set @NextLocationMap$, "012-3.gat";
+    set @NextLocationX, 448;
+    set @NextLocationY, 66;
+    goto L_WarpChecks;
+
+L_Teal:
+    // Mana Seed
+    set @NextLocationMap$, "012-3.gat";
+    set @NextLocationX, 64;
+    set @NextLocationY, 130;
+    goto L_WarpChecks;
+
+L_Lime:
+    // Pachua
+    set @NextLocationMap$, "006-1.gat";
+    set @NextLocationX, 28;
+    set @NextLocationY, 97;
+    goto L_WarpChecks;
+
+L_Save:
+    // Soul Menhir
+    set @NextLocationMap$, getsavepoint(0);
+    set @NextLocationX, getsavepoint(1);
+    set @NextLocationY, getsavepoint(2);
+    goto L_WarpChecks;
+
+L_WarpChecks: 
+    if (TowelLastUsed > (gettimetick(2) - 1800))
+        goto L_DontPanic;
     if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "020-1.gat",66,91; // Nivalis
+        goto L_Prison;
+    if (getmapflag(getmap(), MF_NOSAVE))
+        goto L_Forbid;
+    goto L_WarpPlayer;
+
+L_WarpPlayer:
+    set TowelLastUsed, gettimetick(2);
+    warp @NextLocationMap$,@NextLocationX,@NextLocationY;
+    goto L_BreakChance;
+
+L_BreakChance:
     if (rand(15))
         goto L_Keep;
     getitem "HitchhikersTowel", 1;
-    end;
+    goto L_End;
 
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
+L_Forbid:
+    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the power of the Towel.";
     goto L_Keep;
 
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
+L_Prison:
+    message strcharinfo(0), "You must be warped by a GM to leave the botcheck area.";
     goto L_Keep;
 
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
+L_DontPanic:
+    message strcharinfo(0), "Your towel is still too low on power to jump again.";
     goto L_Keep;
 
 L_Keep:
-    getitem "WhiteHitchhikersTowel", 1;
+    getitem @warpTowelName$, 1;
+    goto L_End;
+
+L_End:
+    set @NextLocationMap$, "";
+    set @NextLocationX, 0;
+    set @NextLocationY, 0;
+    set @warpTowelName$, "";
     end;
 }
-function|script|useRedWarpTowel|,
+
+function|script|MultiWarpTowel|,
 {
-    if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "009-1.gat",51,40; // Hurnscald
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
-    end;
+    setarray $@warpTowels$, "HitchhikersTowel", "WhiteHitchhikersTowel", "RedHitchhikersTowel", "GreenHitchhikersTowel", "BlueHitchhikersTowel", "YellowHitchhikersTowel", "PurpleHitchhikersTowel", "OrangeHitchhikersTowel", "PinkHitchhikersTowel", "TealHitchhikersTowel", "LimeHitchhikersTowel";
+    set @towel_count, 0;
+    set @towel_loop, 0;
+    goto L_CountTowelLoop;
 
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
-    goto L_Keep;
+L_CountTowelLoop:
+    set @towel_count, (@towel_count + countitem($@warpTowels$[@towel_loop]));
+    delitem $@warpTowels$[@towel_loop], countitem($@warpTowels$[@towel_loop]);
+    goto L_DelLoopAgain;
 
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
-    goto L_Keep;
+L_DelLoopAgain:
+    if((@towel_loop + 1) == getarraysize($@warpTowels$))
+        goto L_Return;
+    set @towel_loop, (@towel_loop + 1);
+    goto L_CountTowelLoop;
 
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
-    goto L_Keep;
-
-L_Keep:
-    getitem "RedHitchhikersTowel", 1;
-    end;
+L_Return:
+    if (@towel_count > 0)
+        set @warpTowelName$, $@warpTowels$[rand(getarraysize($@warpTowels$))];
+    cleararray $@warpTowels$, "", getarraysize($@warpTowels$);
+    return;
 }
-function|script|useGreenWarpTowel|,
-{
-    if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "003-1.gat",35,25;
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
-    end;
 
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
-    goto L_Keep;
-
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
-    goto L_Keep;
-
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
-    goto L_Keep;
-
-L_Keep:
-    getitem "GreenHitchhikersTowel", 1;
-    end;
-}
-function|script|useBlueWarpTowel|,
-{
-    if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "003-1.gat",35,25;
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
-    end;
-
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
-    goto L_Keep;
-
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
-    goto L_Keep;
-
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
-    goto L_Keep;
-
-L_Keep:
-    getitem "BlueHitchhikersTowel", 1;
-    end;
-}
-function|script|useYellowWarpTowel|,
-{
-    if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "001-1.gat",40,71; // Tulimshar
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
-    end;
-
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
-    goto L_Keep;
-
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
-    goto L_Keep;
-
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
-    goto L_Keep;
-
-L_Keep:
-    getitem "YellowHitchhikersTowel", 1;
-    end;
-}
-function|script|usePurpleWarpTowel|,
-{
-    if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "003-1.gat",35,25;
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
-    end;
-
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
-    goto L_Keep;
-
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
-    goto L_Keep;
-
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
-    goto L_Keep;
-
-L_Keep:
-    getitem "PurpleHitchhikersTowel", 1;
-    end;
-}
-function|script|useOrangeWarpTowel|,
-{
-    if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "027-1.gat",70,100; // Graveyard
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
-    end;
-
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
-    goto L_Keep;
-
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
-    goto L_Keep;
-
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
-    goto L_Keep;
-
-L_Keep:
-    getitem "OrangeHitchhikersTowel", 1;
-    end;
-}
-function|script|usePinkWarpTowel|,
-{
-    if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "012-3.gat",448,66; // Terranite Cave
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
-    end;
-
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
-    goto L_Keep;
-
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
-    goto L_Keep;
-
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
-    goto L_Keep;
-
-L_Keep:
-    getitem "PinkHitchhikersTowel", 1;
-    end;
-}
-function|script|useTealWarpTowel|,
-{
-    if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "003-1.gat",35,25;
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
-    end;
-
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
-    goto L_Keep;
-
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
-    goto L_Keep;
-
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
-    goto L_Keep;
-
-L_Keep:
-    getitem "TealHitchhikersTowel", 1;
-    end;
-}
-function|script|useLimeWarpTowel|,
-{
-    if (isin("botcheck.gat",25,27,51,47))
-        goto L_Botcheck;
-    if (isin("052-1.gat",1,1,100,80) || isin("052-2.gat",1,1,150,100))
-        goto L_Illia;
-    if (isin("029-3.gat",1,1,99,99))
-        goto L_Candor;
-    if (isin("031-4.gat",1,1,90,90))
-        goto L_Cindy;
-    warp "003-1.gat",35,25;
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
-    end;
-
-L_Candor:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the forgein powers of the towel.";
-    goto L_Keep;
-
-L_Cindy:
-    message strcharinfo(0), "Something is preventing your towel from working here.";
-    goto L_Keep;
-
-L_Illia:
-    message strcharinfo(0), "The strong barrier of this island prevents you to teleport!";
-    goto L_Keep;
-
-L_Botcheck:
-    message strcharinfo(0), "You must be warped by a GM to leave the bot check area.";
-    goto L_Keep;
-
-L_Keep:
-    getitem "LimeHitchhikersTowel", 1;
-    end;
-}

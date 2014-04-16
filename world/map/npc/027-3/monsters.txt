@@ -1,0 +1,71 @@
+// 027-3 Graveyard zombies and fallens
+// they need to be in an extra file because of the crying child quest
+
+027-3.gat,21,76,51,100|monster|Zombie|1036,2,300000,120000,specialMob027-3::On1036
+027-3.gat,21,30,51,63|monster|Zombie|1036,2,200000,10000,specialMob027-3::On1036
+027-3.gat,67,29,129,64|monster|Zombie|1036,3,140000,30000,specialMob027-3::On1036
+027-3.gat,101,65,128,93|monster|Fallen|1045,3,120000,30000,specialMob027-3::On1045
+
+027-3.gat,0,0,0|script|specialMob027-3|-1,
+{
+    end;
+
+On1036:
+    set @mobID, 1036;
+    callsub S_MOBCOUNT_ZOMBIES;
+    callfunc "MobPoints";
+    end;
+
+On1045:
+    set @mobID, 1045;
+    callsub S_MOBCOUNT_FALLENS;
+    callfunc "MobPoints";
+    end;
+
+S_MOBCOUNT_ZOMBIES:
+
+    set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
+    set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
+
+    set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+
+    if (@state != 1)
+        goto L_Return;
+    set @ring, @ring + 1;
+    if (@ring < 10)
+        goto L_Return;
+    if (rand(8) != 0)
+        goto L_Return;
+    message strcharinfo(0), "You found a ring hidden in the zombie's rotten rags. Maybe this is what Aldred was looking for...";
+    set @state, 2;
+    callsub S_Update_Mask;
+    return;
+
+S_MOBCOUNT_FALLENS:
+
+    set @Graveyard_Inn_MASK, NIBBLE_2_MASK;
+    set @Graveyard_Inn_SHIFT, NIBBLE_2_SHIFT;
+
+    set @state, ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+
+    if (@state != 1)
+        goto L_Return;
+    set @ring, @ring + 1;
+    if (@ring < 10)
+        goto L_Return;
+    if (rand(8) != 0)
+        goto L_Return;
+    message strcharinfo(0), "You found a ring inside the fallen's broken helmet. Maybe this is what Aldred was looking for...";
+    set @state, 2;
+    callsub S_Update_Mask;
+    return;
+
+L_Return:
+    return;
+
+S_Update_Mask:
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+            | (@state << @Graveyard_Inn_SHIFT);
+    return;
+}

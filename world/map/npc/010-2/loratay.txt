@@ -157,14 +157,18 @@ L_agostine_2:
     if (countitem("BottleOfWater"))
         menu
             "(sneak out of the room)", L_end,
-            "Are you alright?", L_Next,
+            "Are you alright?", L_NextMenu,
             "Here, have a bottle of water...", L_give_water,
-            "Can I help you?", L_Next;
+            "Can I help you?", L_NextMenu;
+    goto L_NextMenu;
 
-    menu
-        "(sneak out of the room)", L_end,
-        "Are you alright?", L_Next,
-        "Can I help you?", L_Next;
+L_NextMenu:
+    if (countitem("BottleOfWater") == 0)
+        menu
+            "(sneak out of the room)", L_end,
+            "Are you alright?", L_Next,
+            "Can I help you?", L_Next;
+    goto L_Next;
 
 L_Next:
     mes "[Lora Tay the Seamstress]";
@@ -368,7 +372,7 @@ L_proposal_retrieve_design:
     mes "\"May you go retrieve the design from Agostine?\"";
     next;
     menu
-        "Certainly I'll be back soon!", L_end,
+        "Certainly I'll be back soon!", L_Close,
         "Actually I want something else...", L_main_menu;
 
 L_proposal_bringing_design:
@@ -428,7 +432,7 @@ L_proposal_deliver_dress:
     mes "[Lora Tay the Seamstress]";
     mes "\"Please take the unfinished dress to him so he may finish the edges with the cloth.\"";
     menu
-        "I'm on my way.", L_end,
+        "I'm on my way.", L_Close,
         "I have a request...", L_main_menu;
 
 L_desert_hat:
@@ -865,62 +869,72 @@ S_pick_one_of_many_items:
                              "", "", "", "", "", "", "", "",
                              "", "", "", "", "", "", "", "",
                              "", "", "", "", "", "", "", "";
-    goto L_SUB_pick_choice_loop;
+    goto S_SUB_pick_choice_loop;
 
-L_SUB_pick_choice_loop:
+S_SUB_pick_choice_loop:
     if (@i >= @items_nr)
-        goto L_SUB_choice_init_done;
+        goto S_SUB_choice_init_done;
     set @current, @items[@i];
     set @current_name$, @item_names$[@i];
     set @i, @i + 1;
 
     if (countitem(@current) == 0)
-        goto L_SUB_pick_choice_loop;
+        goto S_SUB_pick_choice_loop;
     set @choice_v[@c], @current;
     set @choice_n$[@c], @current_name$;
     set @c, @c + 1;
-    goto L_SUB_pick_choice_loop;
+    goto S_SUB_pick_choice_loop;
 
-L_SUB_choice_init_done:
+S_SUB_choice_init_done:
     set @choice_v[@c], 0;
     set @choice_n$[@c], @default_choice$;
     set @c, @c + 1;
 
     if (@c < 10)
         menu
-            @choice_n$[0], L_SUB_choice_join,
-            @choice_n$[1], L_SUB_choice_join,
-            @choice_n$[2], L_SUB_choice_join,
-            @choice_n$[3], L_SUB_choice_join,
-            @choice_n$[4], L_SUB_choice_join,
-            @choice_n$[5], L_SUB_choice_join,
-            @choice_n$[6], L_SUB_choice_join,
-            @choice_n$[7], L_SUB_choice_join,
-            @choice_n$[8], L_SUB_choice_join,
-            @choice_n$[9], L_SUB_choice_join;
+            @choice_n$[0], L_MenuItems,
+            @choice_n$[1], L_MenuItems,
+            @choice_n$[2], L_MenuItems,
+            @choice_n$[3], L_MenuItems,
+            @choice_n$[4], L_MenuItems,
+            @choice_n$[5], L_MenuItems,
+            @choice_n$[6], L_MenuItems,
+            @choice_n$[7], L_MenuItems,
+            @choice_n$[8], L_MenuItems,
+            @choice_n$[9], L_MenuItems;
+    goto L_MenuItems;
+
+L_MenuItems:
+    if (@c < 10)
+        goto L_SUB_choice_join;
 
     if (@c < 20)
         menu
-            @choice_n$[0], L_SUB_choice_join,
-            @choice_n$[1], L_SUB_choice_join,
-            @choice_n$[2], L_SUB_choice_join,
-            @choice_n$[3], L_SUB_choice_join,
-            @choice_n$[4], L_SUB_choice_join,
-            @choice_n$[5], L_SUB_choice_join,
-            @choice_n$[6], L_SUB_choice_join,
-            @choice_n$[7], L_SUB_choice_join,
-            @choice_n$[8], L_SUB_choice_join,
-            @choice_n$[9], L_SUB_choice_join,
-            @choice_n$[10], L_SUB_choice_join,
-            @choice_n$[11], L_SUB_choice_join,
-            @choice_n$[12], L_SUB_choice_join,
-            @choice_n$[13], L_SUB_choice_join,
-            @choice_n$[14], L_SUB_choice_join,
-            @choice_n$[15], L_SUB_choice_join,
-            @choice_n$[16], L_SUB_choice_join,
-            @choice_n$[17], L_SUB_choice_join,
-            @choice_n$[18], L_SUB_choice_join,
-            @choice_n$[19], L_SUB_choice_join;
+            @choice_n$[0], L_MenuItems1,
+            @choice_n$[1], L_MenuItems1,
+            @choice_n$[2], L_MenuItems1,
+            @choice_n$[3], L_MenuItems1,
+            @choice_n$[4], L_MenuItems1,
+            @choice_n$[5], L_MenuItems1,
+            @choice_n$[6], L_MenuItems1,
+            @choice_n$[7], L_MenuItems1,
+            @choice_n$[8], L_MenuItems1,
+            @choice_n$[9], L_MenuItems1,
+            @choice_n$[10], L_MenuItems1,
+            @choice_n$[11], L_MenuItems1,
+            @choice_n$[12], L_MenuItems1,
+            @choice_n$[13], L_MenuItems1,
+            @choice_n$[14], L_MenuItems1,
+            @choice_n$[15], L_MenuItems1,
+            @choice_n$[16], L_MenuItems1,
+            @choice_n$[17], L_MenuItems1,
+            @choice_n$[18], L_MenuItems1,
+            @choice_n$[19], L_MenuItems1;
+    goto L_MenuItems1;
+
+L_MenuItems1:
+    if (@c < 20)
+        goto L_SUB_choice_join;
 
     menu
         @choice_n$[0], L_SUB_choice_join,
@@ -1114,5 +1128,8 @@ L_CleanSorcererRobe:
     set @new_sorcerer_robe_id, 0;
     set @chosen_color, 0;
     set @cotton_cloth_id, 0;
+    close;
+
+L_Close:
     close;
 }

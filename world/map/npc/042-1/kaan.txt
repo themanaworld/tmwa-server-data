@@ -1,15 +1,18 @@
 // This file is part of the Tutorial
 // Author: Jenalya
 
-042-1.gat,84,65,0|script|Kaan|160,
+042-1.gat,103,92,0|script|Kaan|160,
 {
     if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Tut_Done;
-    if (hasan == 4) goto L_Hasan_Saved;
+    callfunc "TutorialState";
+    if (@tutorial == 13) goto L_Hasan_Saved;
     if ($@ScorpionFighter == getcharid(3)) goto L_Run;
-    if (kaan == 4) goto L_Plan;
-    if (kaan == 3) goto L_Trick;
-    if (kaan == 2) goto L_Out;
-    if (kaan == 1) goto L_Tanisha;
+    if (@tutorial == 12) goto L_Plan;
+    if ((@tutorial == 11) && ((@sorfina_hasan) || (@tanisha_hasan))) goto L_TrickKnown;
+    if (@tutorial == 11) goto L_Trick;
+    if (@tutorial == 10) goto L_Hasan;
+    if (@tutorial == 9) goto L_Out;
+    if (@tutorial == 8) goto L_Tanisha;
 
     mes "[Young Man]";
     mes "\"You're the person Tanisha brought here, right?";
@@ -22,22 +25,11 @@
     mes "\"She hates maggots.\"";
     next;
     mes "\"Maybe you should go and see her...she was really upset about what happened to you.\"";
-    set kaan, 1;
-    if (tanisha >= 3)
-        goto L_Tanisha2;
     goto L_Close;
-
-L_Tanisha2:
-    menu
-        "I already did and helped her with the maggots.",L_Tanisha3,
-        "I talked to her, and she's done with the maggots.",L_Tanisha3;
 
 L_Tanisha:
     mes "[Kaan]";
     mes "\"Did you already talk to Tanisha?\"";
-    if (tanisha < 3)
-        goto L_Close;
-    next;
     menu
         "Yes, I helped her with the maggots.",L_Tanisha3,
         "Yeah, and she's done with the maggots.",L_Tanisha3;
@@ -54,7 +46,7 @@ L_Tanisha3:
     mes "\"But I took care of that problem.\"";
     mes "He looks very proud.";
     next;
-    mes "\"I built the fence down south of here to keep them out.\"";
+    mes "\"I've trapped or slain many scorpians south of here to keep them out of our fields.\"";
     next;
     menu
         "Impressive! Just a bit... skewed.",L_Next,
@@ -62,7 +54,7 @@ L_Tanisha3:
 
 L_Next:
     mes "[Kaan]";
-    mes "\"Well, it keeps the scorpions out. That's all that matters.\"";
+    mes "\"Well, I keep the scorpions out. That's all that matters.\"";
     next;
     mes "\"Are you going to visit Tulimshar?";
     mes "The bazaar there is a wondeful place! Traders, entertainers, adventurers - it's very exciting.\"";
@@ -72,7 +64,8 @@ L_Next:
     set Zeny, Zeny + 15;
     next;
     mes "\"And Ian the trainer is hanging around there often. You should talk to him, he's a smart guy.\"";
-    set kaan, 2;
+    set @tutorial_tmp, 9;
+    callfunc "SetTutorialMask";
     if (hasan)
         menu
             "A guy named Hasan won't let me enter Tulimshar.",L_Hasan,
@@ -82,16 +75,17 @@ L_Next:
 L_Out:
     mes "[Kaan]";
     mes "\"Hello! How are you? Did you already visit Tulimshar?\"";
-    next;
-    if (hasan)
-        menu
-            "A guy named Hasan won't let me enter Tulimshar.",L_Hasan,
-            "Not yet.",L_Close;
     menu
         "Not yet.",L_Close;
 
 L_Hasan:
     mes "[Kaan]";
+    mes "\"Hello! How are you? Did you already visit Tulimshar?\"";
+    menu
+        "A guy named Hasan won't let me enter Tulimshar.",L_Next1,
+        "Not yet.",L_Close;
+
+L_Next1:
     mes "\"Hasan! That's crazy. He becomes more cheeky with every day.";
     mes "I'd like to help you, but - I won't risk an open confrontation with him.\"";
     next;
@@ -99,7 +93,8 @@ L_Hasan:
     mes "He might listen to one of the adult men, but they're all off to work in Tulimshar during the day.\"";
     next;
     mes "\"We should think about some kind of trick. Ah, if only I knew his weak point.\"";
-    set kaan, 3;
+    set @tutorial_tmp, 11;
+    callfunc "SetTutorialMask";
     next;
     goto L_Trick;
 
@@ -107,42 +102,43 @@ L_Trick:
     mes "[Kaan]";
     mes "\"Do you have any idea what Hasan's weakness could be?";
     mes "I wonder if Sorfina or Tanisha know something about him that could help us.\"";
-    if (hasan < 2)
-        goto L_Close;
-    next;
     menu
-        "He's afraid of scorpions.",L_Continue,
         "No idea.",L_Close;
 
-L_Continue:
+L_TrickKnown:
+    mes "[Kaan]";
+    mes "\"Do you have any idea what Hasan's weakness could be?";
+    menu
+        "He's afraid of scorpions.",L_Next2,
+        "No idea.",L_Close;
+
+L_Next2:
     mes "[Kaan]";
     mes "\"Scorpions?! Right! How could I forget?";
     mes "When he was a child, he nearly died because he fell into a scorpion nest.\"";
+    set @tutorial_tmp, 12;
+    callfunc "SetTutorialMask";
     next;
     goto L_Explain;
 
 L_Explain:
     mes "\"Ok, then here's the plan:";
-    mes "I will catch one of the scorpions that's coming to the fence from the desert.\"";
+    mes "I will catch one of the scorpions behind the fences.\"";
     next;
     mes "\"You'll go to Hasan and give me a sign when you're ready.";
     mes "Lets say the sign is that you're scratching your head.";
     mes "I'll watch you from this point.\"";
     next;
-    mes "\"When you give me the sign, I'll throw the scorpion down on him.";
+    mes "\"When you give me the sign, I'll throw the scorpion on him.";
     mes "While he's distracted with the scorpion, you can pass.\"";
     next;
     mes "\"How's that? We can start as soon as you're ready.\"";
-    if (kaan == 3)
-        set kaan, 4;
-    set hasan, 3;
     goto L_Close;
 
 L_Plan:
     mes "[Kaan]";
     mes "\"I'm ready. Just give me the sign when you're down there.";
     mes "Or do you want me to explain the plan again?\"";
-    next;
     menu
         "Yes please.",L_Explain,
         "No, everything's alright.",L_Close;
