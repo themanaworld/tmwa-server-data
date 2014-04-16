@@ -1,9 +1,7 @@
 <?php
 
 // configuration variables
-$min_version = '0.5.1';
 $min_manaplus = '1.1.2.20';
-$cur_version = '0.6.1';
 
 // utility functions
 function failure_headers()
@@ -44,28 +42,13 @@ function handle_tmw($agent)
          "##1     TMW Staff\n \n";
 }
 
-function handle_mana($agent, $min_version)
+function handle_mana($agent)
 {
-    $version_pos = 5;
-    $version_end = strpos($agent, ' ');
-    $agent_version = substr($agent, $version_pos, $version_end - $version_pos);
-    if (version_compare($agent_version, $min_version) < 0)
-    {
-        failure_headers();
-        echo "##1 The client you're using is no longer\n".
-             "##1 supported! Please upgrade to ManaPlus\n".
-             "##1 http://manaplus.org/\n \n".
-             "##1     TMW Staff\n \n";
-    }
-    else
-    {
-        common_headers();
-        echo "##1 The client you're using is at end of life,\n".
-             "##1 and will no longer be supported as of April 8.\n".
-             "##1 Please upgrade to ManaPLus\n".
-             "##1 http://manaplus.org/\n",
-             "##1     TMW Staff\n \n";
-    }
+    failure_headers();
+    echo "##1 The client you're using is no longer\n".
+         "##1 supported! Please upgrade to ManaPlus\n".
+         "##1 http://manaplus.org/\n \n".
+         "##1     TMW Staff\n \n";
 }
 
 function handle_manaplus($agent, $min_version)
@@ -115,7 +98,7 @@ else if (starts_with($agent, 'Mana'))
     }
     else if (starts_with($agent, 'Mana/'))
     {
-        handle_mana($agent, $min_version);
+        handle_mana($agent);
     }
     else
     {
