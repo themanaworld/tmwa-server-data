@@ -148,8 +148,9 @@ L_CryptLogic:
     set $@CRYPT_FIGHT3_ROUND_PEN, $@CRYPT_FIGHT3_PLAYER_COUNT;
     if ($@CRYPT_FIGHT3_ROUND_PEN > 60)
         set $@CRYPT_FIGHT3_ROUND_PEN, 60;
-    if ($@CRYPT_FIGHT3_PLAYER_COUNT <= 0)
-        goto L_CleanUpLosers;
+    if ($@CRYPT_FIGHT3_PLAYER_COUNT <= 0) goto L_CleanUpLosers;
+    if getareausers("027-8.gat", 20, 39, 35, 60, 1) < 1 goto L_Failure;
+    if getareausers("027-8.gat", 43, 39, 58, 60, 1) < 1 goto L_Failure;
     set $@CRYPT_FIGHT3_SUMMONS_ROUND_TIMER, $@CRYPT_FIGHT3_SUMMONS_ROUND_TIMER + 5; // Advance 5 seconds
     if (mobcount("027-8.gat", "General Terogan#Main::OnPetDeath") < 0)
         goto L_NextWave;
@@ -223,9 +224,18 @@ OnTick:
 
 OnPetDeath:
     set $@CRYPT_FIGHT3_SUMMONS_COUNT, $@CRYPT_FIGHT3_SUMMONS_COUNT - 1;
+    mapannounce "027-8.gat", $@CRYPT_FIGHT3_SUMMONS_COUNT + "left alive", 0;
     end;
 
+L_Failure:
+    if $@CRYPT_FAIL_ANNOUNCED goto L_NextWave;
+    set $@CRYPT_FAIL_ANNOUNCED, 1;
+    mapannounce "027-8.gat", "Looks like your neighbour team to is finished off, this is your death sentence!", 0;
+    set $@CRYPT_FIGHT3_WAVE, 23;
+    goto L_NextWave;
+
 L_CleanUpLosers:
+    mapannounce "027-8.gat", "General Terogan : You just proved you cannot even coordinate a simple task. Come back when you are prepared", 0;
     set $@CRYPT_FIGHT3, 0;
     set $@CRYPT_FIGHT3_PLAYER_COUNT, 0;
     set $@CRYPT_FIGHT3_WAVE, 0;
@@ -233,6 +243,7 @@ L_CleanUpLosers:
     set $@CRYPT_FIGHT3_SUMMONS_COUNT, 0;
     set $@CRYPT_FIGHT3_ROUND_PEN, 0;
     set $@CRYPT_FIGHT3_SUMMONS_NUMBER, 0;
+    set $@CRYPT_FAIL_ANNOUNCED, 0;
     killmonster "027-8.gat", "General Terogan#Main::OnPetDeath";
     stopnpctimer;
     setnpctimer 0;
@@ -247,13 +258,14 @@ L_CleanUp:
     set $@CRYPT_FIGHT3_SUMMONS_COUNT, 0;
     set $@CRYPT_FIGHT3_ROUND_PEN, 0;
     set $@CRYPT_FIGHT3_SUMMONS_NUMBER, 0;
+    set $@CRYPT_FAIL_ANNOUNCED, 0;
     killmonster "027-8.gat", "General Terogan#Main::OnPetDeath";
     stopnpctimer;
     setnpctimer 0;
     end;
 
 OnReward:
-    if (isdead()) 
+    if (isdead())
         end;
     set @bonus, (BaseLevel/2);
     set DailyQuestBonus, DailyQuestBonus + @bonus;
@@ -291,14 +303,22 @@ OnInit:
 027-8.gat,27,41,0|script|General Terogan#Exit1|400,
 {
     if ($@CRYPT_FIGHT3 != 0)
+        message strcharinfo(0), "You are way too busy to check this book right now";
+    if ($@CRYPT_FIGHT3 != 0)
         end;
+    mes "[General Terogan]";
+    mes "\"Let's get you out of here " + strcharinfo(0) + "\"";
     warp "027-8", 38, 29;
     end;
 }
 027-8.gat,51,41,0|script|General Terogan#Exit2|400,
 {
     if ($@CRYPT_FIGHT3 != 0)
+        message strcharinfo(0), "You are way too busy to check this book right now";
+    if ($@CRYPT_FIGHT3 != 0)
         end;
+    mes "[General Terogan]";
+    mes "\"Let's get you out of here " + strcharinfo(0) + "\"";
     warp "027-8", 38, 29;
     end;
 }
