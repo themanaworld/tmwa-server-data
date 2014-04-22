@@ -8,7 +8,7 @@
         end;
 
     set @TEROGAN_SOUL_REQ, 5;
-    set @TEROGAN_DISEASED_HEART_REQ, 5;
+    set @TEROGAN_ROTTEN_RAGS_REQ, 5;
     set @TEROGAN_UNDEAD_EYE_REQ, 5;
     set @TEROGAN_UNDEAD_EAR_REQ, 5;
     set @minlevel, 80;
@@ -28,7 +28,7 @@ L_TomeMain:
         "Nothing.", L_Close;
 
 L_SummonReagents:
-    mes "Says we need " + @TEROGAN_SOUL_REQ + " Souls, " + @TEROGAN_DISEASED_HEART_REQ + " Diseased Hearts, " + @TEROGAN_UNDEAD_EYE_REQ + " Undead Eyes, and " + @TEROGAN_UNDEAD_EAR_REQ + " Undead Ears to perform the ritual. You will also need help, as the summon states both rooms need at least 1 occupant during the ritual.";
+    mes "Says we need " + @TEROGAN_SOUL_REQ + " Souls, " + @TEROGAN_ROTTEN_RAGS_REQ + " Rotten Rags, " + @TEROGAN_UNDEAD_EYE_REQ + " Undead Eyes, and " + @TEROGAN_UNDEAD_EAR_REQ + " Undead Ears to perform the ritual. You will also need help, as the summon states both rooms need at least 1 occupant during the ritual.";
     next;
     goto L_TomeMain;
 
@@ -55,14 +55,14 @@ L_RitualLeft:
     if (BaseLevel < @minlevel)
         goto L_ToWeak;
     if ( (countitem("Soul") < @TEROGAN_SOUL_REQ)
-        || (countitem("DiseasedHeart") < @TEROGAN_DISEASED_HEART_REQ)
+        || (countitem("RottenRags") < @TEROGAN_ROTTEN_RAGS_REQ)
         || (countitem("UndeadEye") < @TEROGAN_UNDEAD_EYE_REQ)
         || (countitem("UndeadEar") < @TEROGAN_UNDEAD_EAR_REQ) )
         goto L_MissingReagents;
     if (getareausers("027-8", 43, 39, 58, 60) == 0)
         goto L_NeedOther;
     delitem "Soul", @TEROGAN_SOUL_REQ;
-    delitem "DiseasedHeart", @TEROGAN_DISEASED_HEART_REQ;
+    delitem "RottenRags", @TEROGAN_ROTTEN_RAGS_REQ;
     delitem "UndeadEye", @TEROGAN_UNDEAD_EYE_REQ;
     delitem "UndeadEar", @TEROGAN_UNDEAD_EAR_REQ;
     mes "As you perform the ritual you can feel the energy amass.";
@@ -87,14 +87,14 @@ L_RitualRight:
     if (BaseLevel < @minlevel)
         goto L_ToWeak;
     if ( (countitem("Soul") < @TEROGAN_SOUL_REQ)
-        || (countitem("RottenRags") < @TEROGAN_DISEASED_HEART_REQ)
+        || (countitem("RottenRags") < @TEROGAN_ROTTEN_RAGS_REQ)
         || (countitem("UndeadEye") < @TEROGAN_UNDEAD_EYE_REQ)
         || (countitem("UndeadEar") < @TEROGAN_UNDEAD_EAR_REQ) )
         goto L_MissingReagents;
     if (getareausers("027-8", 20, 39, 35, 60) == 0)
         goto L_NeedOther;
     delitem "Soul", @TEROGAN_SOUL_REQ;
-    delitem "RottenRags", @TEROGAN_DISEASED_HEART_REQ;
+    delitem "RottenRags", @TEROGAN_ROTTEN_RAGS_REQ;
     delitem "UndeadEye", @TEROGAN_UNDEAD_EYE_REQ;
     delitem "UndeadEar", @TEROGAN_UNDEAD_EAR_REQ;
     mes "As you perform the ritual you can feel the energy amass.";
@@ -127,7 +127,7 @@ L_Close:
     set @bonus, 0;
     set @minlevel, 0;
     set @TEROGAN_SOUL_REQ, 0;
-    set @TEROGAN_DISEASED_HEART_REQ, 0;
+    set @TEROGAN_ROTTEN_RAGS_REQ, 0;
     set @TEROGAN_UNDEAD_EYE_REQ, 0;
     set @TEROGAN_UNDEAD_EAR_REQ, 0;
     close;
@@ -148,8 +148,9 @@ L_CryptLogic:
     set $@CRYPT_FIGHT3_ROUND_PEN, $@CRYPT_FIGHT3_PLAYER_COUNT;
     if ($@CRYPT_FIGHT3_ROUND_PEN > 60)
         set $@CRYPT_FIGHT3_ROUND_PEN, 60;
-    if ($@CRYPT_FIGHT3_PLAYER_COUNT <= 0)
-        goto L_CleanUpLosers;
+    if ($@CRYPT_FIGHT3_PLAYER_COUNT <= 0) goto L_CleanUpLosers;
+    if getareausers("027-8.gat", 20, 39, 35, 60, 1) < 1 goto L_Failure;
+    if getareausers("027-8.gat", 43, 39, 58, 60, 1) < 1 goto L_Failure;
     set $@CRYPT_FIGHT3_SUMMONS_ROUND_TIMER, $@CRYPT_FIGHT3_SUMMONS_ROUND_TIMER + 5; // Advance 5 seconds
     if (mobcount("027-8.gat", "General Terogan#Main::OnPetDeath") < 0)
         goto L_NextWave;
@@ -189,7 +190,7 @@ L_WeakSummons:
 
 L_StrongSummons:
     set $@CRYPT_FIGHT3_SUMMONS_NUMBER, (5 + (1 * $@CRYPT_FIGHT3_WAVE) + (2 * $@CRYPT_FIGHT3_PLAYER_COUNT))/2;
-    set $@CRYPT_FIGHT3_SUMMONS_COUNT, $@CRYPT_FIGHT3_SUMMONS_COUNT + ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2) + ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2);
+    set $@CRYPT_FIGHT3_SUMMONS_COUNT, $@CRYPT_FIGHT3_SUMMONS_COUNT + (2 * ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2));
 
     areamonster "027-8.gat", 43, 39, 58, 60, "", 1124, ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2), "General Terogan#Main::OnPetDeath";
     areamonster "027-8.gat", 20, 39, 35, 60, "", 1075, ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2), "General Terogan#Main::OnPetDeath";
@@ -197,12 +198,11 @@ L_StrongSummons:
 
 L_BossSummons:
     set $@CRYPT_FIGHT3_SUMMONS_NUMBER, (5 + (1 * $@CRYPT_FIGHT3_WAVE) + (2 * $@CRYPT_FIGHT3_PLAYER_COUNT))/2;
-    set $@CRYPT_FIGHT3_SUMMONS_COUNT, $@CRYPT_FIGHT3_SUMMONS_COUNT + $@CRYPT_FIGHT3_SUMMONS_NUMBER;
+    set $@CRYPT_FIGHT3_SUMMONS_COUNT, $@CRYPT_FIGHT3_SUMMONS_COUNT + (2 * ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2)) + 2;
     areamonster "027-8.gat", 43, 39, 58, 60, "", 1124, ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2), "General Terogan#Main::OnPetDeath";
     areamonster "027-8.gat", 20, 39, 35, 60, "", 1075, ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2), "General Terogan#Main::OnPetDeath";
     areamonster "027-8.gat", 43, 39, 58, 60, "", 1129, 1, "General Terogan#Main::OnPetDeath";
     areamonster "027-8.gat", 20, 39, 35, 60, "", 1129, 1, "General Terogan#Main::OnPetDeath";
-    set $@CRYPT_FIGHT3_SUMMONS_COUNT, $@CRYPT_FIGHT3_SUMMONS_COUNT + 2;
     goto L_Announce;
 
 L_Announce:
@@ -225,7 +225,15 @@ OnPetDeath:
     set $@CRYPT_FIGHT3_SUMMONS_COUNT, $@CRYPT_FIGHT3_SUMMONS_COUNT - 1;
     end;
 
+L_Failure:
+    if $@CRYPT_FAIL_ANNOUNCED goto L_NextWave;
+    set $@CRYPT_FAIL_ANNOUNCED, 1;
+    mapannounce "027-8.gat", "Looks like your neighbour team to is finished off, this is your death sentence!", 0;
+    set $@CRYPT_FIGHT3_WAVE, 23;
+    goto L_NextWave;
+
 L_CleanUpLosers:
+    mapannounce "027-8.gat", "General Terogan : You just proved you cannot even coordinate a simple task. Come back when you are prepared", 0;
     set $@CRYPT_FIGHT3, 0;
     set $@CRYPT_FIGHT3_PLAYER_COUNT, 0;
     set $@CRYPT_FIGHT3_WAVE, 0;
@@ -233,12 +241,14 @@ L_CleanUpLosers:
     set $@CRYPT_FIGHT3_SUMMONS_COUNT, 0;
     set $@CRYPT_FIGHT3_ROUND_PEN, 0;
     set $@CRYPT_FIGHT3_SUMMONS_NUMBER, 0;
+    set $@CRYPT_FAIL_ANNOUNCED, 0;
     killmonster "027-8.gat", "General Terogan#Main::OnPetDeath";
     stopnpctimer;
     setnpctimer 0;
     end;
 
 L_CleanUp:
+    mapannounce "027-8.gat", "General Terogan: You might have won this battle, but you will never defeat me!", 0;
     areatimer "027-8.gat", 0, 0, 79, 84, 10, "General Terogan#Main::OnReward";
     set $@CRYPT_FIGHT3, 0;
     set $@CRYPT_FIGHT3_PLAYER_COUNT, 0;
@@ -247,13 +257,14 @@ L_CleanUp:
     set $@CRYPT_FIGHT3_SUMMONS_COUNT, 0;
     set $@CRYPT_FIGHT3_ROUND_PEN, 0;
     set $@CRYPT_FIGHT3_SUMMONS_NUMBER, 0;
+    set $@CRYPT_FAIL_ANNOUNCED, 0;
     killmonster "027-8.gat", "General Terogan#Main::OnPetDeath";
     stopnpctimer;
     setnpctimer 0;
     end;
 
 OnReward:
-    if (isdead()) 
+    if (isdead())
         end;
     set @bonus, (BaseLevel/2);
     set DailyQuestBonus, DailyQuestBonus + @bonus;
@@ -291,14 +302,22 @@ OnInit:
 027-8.gat,27,41,0|script|General Terogan#Exit1|400,
 {
     if ($@CRYPT_FIGHT3 != 0)
+        message strcharinfo(0), "You are way too busy to check this book right now";
+    if ($@CRYPT_FIGHT3 != 0)
         end;
+    mes "[General Terogan]";
+    mes "\"Let's get you out of here " + strcharinfo(0) + "\"";
     warp "027-8", 38, 29;
     end;
 }
 027-8.gat,51,41,0|script|General Terogan#Exit2|400,
 {
     if ($@CRYPT_FIGHT3 != 0)
+        message strcharinfo(0), "You are way too busy to check this book right now";
+    if ($@CRYPT_FIGHT3 != 0)
         end;
+    mes "[General Terogan]";
+    mes "\"Let's get you out of here " + strcharinfo(0) + "\"";
     warp "027-8", 38, 29;
     end;
 }
