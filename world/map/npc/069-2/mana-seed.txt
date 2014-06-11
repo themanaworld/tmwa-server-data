@@ -1,0 +1,133 @@
+069-2.gat,106,82,0|script|Desert Mana Seed#_M|166,
+{
+    setarray @magic_exp_needed, // required magic experience for each magic level
+        0, // no magic (did not touch seed)
+        0, // level 1
+        100,
+        1200,
+        8000,
+        40000; // level 5
+
+    setarray @exp_bonus, // exp gained when leveling up in magic
+        0,
+        1000, // level 1
+        10000,
+        100000,
+        400000,
+        2000000; // level 5
+
+    setarray @min_level, // required level for each magic level
+        0,
+        10, // level 1
+        30, // level 2
+        50, // level 3
+        65, // level 4
+        80; // level 5
+
+    set @max_magic, 3; // the desert seed is limited to level 3
+
+    set @has_magic, getskilllv(SKILL_MAGIC);
+    set @drank_potion, MAGIC_FLAGS & MFLAG_DRANK_POTION;
+    set @knows_seed, MAGIC_FLAGS & MFLAG_KNOWS_MANASEED;
+
+    // Set up SkillUp function
+    set @SUP_id, SKILL_MAGIC;
+    set @SUP_name$, "Magic";
+
+    if (@has_magic)
+        goto L_magic_start;
+
+    // first time here
+
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_MANASEED;
+
+    mes "[Mana Seed]";
+    mes "You see a glowing orb.";
+    mes "Unfortunately, the orb becomes dark as you approach.";
+    next;
+    goto L_end;
+
+// Magic main menu ------------------------------------------------------------
+L_magic_start:
+    mes "[Mana Seed]";
+    mes "The Mana Seed is still in the same place as during your last visit, spreading its light throughout the castle.";
+    mes "What would you like to do?";
+    next;
+    goto L_magic_mainmenu;
+
+L_magic_mainmenu:
+    menu
+        "Touch it", L_magic_touch,
+        "Leave it alone", L_end;
+
+L_magic_touch:
+    mes "[Mana Seed]";
+    mes "You touch the Mana Seed again.";
+    if (getskilllv(SKILL_MAGIC) >= @max_magic)
+        goto L_magic_maxed_out;
+    set @exp_needed, @magic_exp_needed[getskilllv(SKILL_MAGIC) + 1];
+    set @magic_exp, MAGIC_EXPERIENCE & 65535;
+    if (@magic_exp >= @exp_needed)
+        goto L_magic_levelup;
+    set @prev_exp_needed, @magic_exp_needed[getskilllv(SKILL_MAGIC)];
+    set @exp_diff, @exp_needed - @prev_exp_needed;
+    set @index, ((@magic_exp - @prev_exp_needed) * 5) / @exp_diff;
+    setarray @messages$,
+        "The orb's energy effortlessly rushes through you, ignoring your feeble attempts at containing it. You will need considerably more practice with your magical skills before you can hope to contain it.",
+        "You only barely manage to hang on to some strands of the orb's energy, but not enough to contain it. You still need noticeably more practice with your magical skills.",
+        "The orb's powers are still no match for you; you will need more practice to contain more of its powers.",
+        "You feel close to being able to contain the orb's powers. Still, some more practice is needed.",
+        "The orb's energy only barely evades your attempts at containing it. Soon you will be able to extract more power from it.";
+    mes @messages$[@index];
+    next;
+    goto L_magic_mainmenu;
+
+L_magic_levelup:
+    set @baselevel_needed, @min_level[getskilllv(SKILL_MAGIC) + 1];
+    if (BaseLevel < @baselevel_needed)
+        goto L_insufficient_baselevel;
+    mes "Its energy permeates you, surrounds you. You are suddenly uncertain if it is you who is containing the orb's powers or if it is the orb who is seeking out yours.";
+    next;
+    mes "[Mana Seed]";
+    mes "The Seed's tempest is calming beneath your hands, and its energies resonate with yours.";
+    next;
+    mes "[Mana Seed]";
+    mes "A feeling of harmony is spreading through your body, and the tingling sensation is back, within and without.";
+    next;
+    mes "[Mana Seed]";
+    mes "As the tingling increases, you feel light-headed, weightless.";
+    mes "Everything fades...";
+    next;
+    mes "Both the tingling and the sense of harmony have vanished, making room for darkness. You can't feel the Mana Seed anymore...";
+    next;
+    mes "... you can't feel anything.";
+    next;
+    mes "You are floating...";
+    next;
+    mes "[Mana Seed]";
+    mes "You awaken, lying on the ground.";
+    next;
+    mes "[Mana Seed]";
+    mes "Something has changed... you feel more confident in your magical abilities.";
+    set @SUP_xp, @exp_bonus[1 + getskilllv(SKILL_MAGIC)];
+    set @SUP_lvl, 1 + getskilllv(SKILL_MAGIC);
+    callfunc "SkillUp";
+    itemheal 0, 10000;
+    next;
+    goto L_end;
+
+L_magic_maxed_out:
+    mes "Strangely, you feel nothing, as if its membrane had closed towards you.";
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_MANASEED_MAXEDOUT;
+    next;
+    goto L_magic_mainmenu;
+
+L_insufficient_baselevel:
+    mes "Its energies rush through you. You fight to keep them under control, to contain them in your body. Alas, your body is too frail – you have to let go.";
+    mes "Frustrated, you give up. You have the skill needed to control this power, but you will have to grow up some more before your body can handle it.";
+    next;
+    goto L_magic_mainmenu;
+
+L_end:
+    close;
+}
