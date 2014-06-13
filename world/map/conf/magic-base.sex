@@ -2536,6 +2536,77 @@
                                 (warp
                                     (partner caster)
                                     dest)
+                                (sfx dest SFX_TELEPORT 0)))))))))                                
+                                
+(SPELL () warp-to-partner "#kalzumin2" ()
+    (LET level 2)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 30)
+            (CASTTIME 2000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (REQUIRE
+                (is_married caster))
+            (REQUIRE
+                (is_equipped caster "WeddingRing")))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (IF (failed
+                    (partner caster))
+                (message caster "You call out for your partner, but there is no response.")
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "You call out for "
+                                (name_of
+                                    (partner caster)))
+                            "."))
+                    (message
+                        (partner caster)
+                        (+
+                            (name_of caster)
+                            " is calling for your aid!"))
+                    (sfx
+                        (partner caster)
+                        2
+                        0)
+                    (WAIT
+                        (max 5000
+                            (- 30000
+                                (* spellpower 60))))
+                    (IF (failed
+                            (partner caster))
+                        (message caster "Your partner has abandoned you.")
+                        (IF (is_dead
+                                (partner caster))
+                            (message caster
+                                (+
+                                    (+ "Something seems to have happened to "
+                                        (name_of
+                                            (partner caster)))
+                                    "."))
+                            (BLOCK
+                                (sfx
+                                    (location
+                                        (partner caster))
+                                    SFX_TELEPORT
+                                    0)
+                                (SET dest
+                                    (awayfrom
+                                        (location partner)
+                                        (random_dir 1)
+                                        1))
+                                (warp caster
+                                    dest)
                                 (sfx dest SFX_TELEPORT 0)))))))))
 
 "--------------------------------------------------------------------------------"
