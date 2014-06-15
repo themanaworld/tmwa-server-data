@@ -7,25 +7,20 @@ function|script|scenariodebug|,
 L_Begin:
     mes "What scenario would you like to test?";
     menu
-        "Noob level 1.", L_Noob,
-        "Noob level 15.", L_Noob15,
-        "Archer level 60.", L_Archer60,
+        "Noob builds.", L_Noob,
+        "Archer builds.", L_Archer,
         "Close", L_Close;
-
-S_ResetBase:
-    gmcommand "@charwipe " + strcharinfo(0);
-    statusup2 bStr, 9 - readparam(bStr);
-    statusup2 bAgi, 2 - readparam(bAgi);
-    statusup2 bVit, 9 - readparam(bVit);
-    statusup2 bDex, 8 - readparam(bDex);
-    setskill SKILL_EMOTE, 1;
-    setskill SKILL_TRADE, 1;
-    delitem "CottonShirt", 1;
-    delitem "Knife", 1;
-    getitem "HitchhikersTowel", 1;
-    return;
-    
+        
 L_Noob:
+  menu
+      "Noob level 1.", L_Noob1,
+      "Noob level 15", L_Noob15;
+
+L_Archer:
+  menu
+      "Archer level 60.", L_Archer60;
+
+L_Noob1:
     mes "You are now a level 1 noob.";
     mes "Make sure to equip your items.";
     callsub S_ResetBase;
@@ -53,15 +48,14 @@ L_Archer60:
     mes "You are now a level 60 archer.";
     mes "Make sure to equip your items.";
     callsub S_ResetBase;
+    callsub S_AddMagic;
+    callsub S_AddMagic_Life;
+    callsub S_AddPool;
+    callsub S_AddPool_Mallard;
     set BaseLevel, 60;
     set JobLevel, 5;
     set Zeny, 40500;
-    setskill SKILL_POOL, 1;
-    setskill SKILL_PARTY, 2;
-    setskill SKILL_MALLARDS_EYE, 9;
-    setskill SKILL_MAGIC, 2;
-    setskill SKILL_MAGIC_LIFE, 2; // FIXME: use a S_HasMagic to add the flags
-    poolskill 45;
+    poolskill 45; //focus on mallard
     statusup2 bStr, 1 - readparam(bStr);
     statusup2 bAgi, 1 - readparam(bAgi);
     statusup2 bVit, 3 - readparam(bVit);
@@ -78,6 +72,45 @@ L_Archer60:
     getitem "Arrow", 3000;
     goto L_Close;
 
+
+    
+S_AddPool: //FIXME: add luca flags
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_UNFOCUS_RECIPE;
+    setskill SKILL_POOL, 1;
+    setskill SKILL_BRAWLING, 1;
+    setskill SKILL_PARTY, 2;
+    return;
+    
+S_AddPool_Mallard: //FIXME: add gwendolynn flags
+    setskill SKILL_MALLARDS_EYE, 9;
+    return;
+    
+S_AddMagic:
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_MANASEED;
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_DRANK_POTION;
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_TOUCHED_MANASEED;
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_MANAPOTION;
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_MANASEED_RUMOUR;
+    setskill SKILL_MAGIC, 2;
+    return;
+    
+S_AddMagic_Life: //FIXME: add elanore flags to QUEST_MAGIC2
+    setskill SKILL_MAGIC_LIFE, 2;
+    return;
+    
+S_ResetBase:
+    gmcommand "@charwipe " + strcharinfo(0);
+    statusup2 bStr, 9 - readparam(bStr);
+    statusup2 bAgi, 2 - readparam(bAgi);
+    statusup2 bVit, 9 - readparam(bVit);
+    statusup2 bDex, 8 - readparam(bDex);
+    setskill SKILL_EMOTE, 1;
+    setskill SKILL_TRADE, 1;
+    delitem "CottonShirt", 1;
+    delitem "Knife", 1;
+    getitem "HitchhikersTowel", 1;
+    return;    
+    
 L_Close:
   close;
 }
