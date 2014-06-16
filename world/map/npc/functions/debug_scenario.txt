@@ -5,21 +5,46 @@ function|script|scenariodebug|,
     goto L_Begin;
     
 L_Begin:
-    mes "What scenario would you like to test?";
+    mes "[Scenario Debug]";
+    mes "Please choose the type of scenario.";
     menu
-        "Noob builds.", L_Noob,
-        "Archer builds.", L_Archer,
-        "Close", L_Close;
+        "Noob (level < 45).", L_Noob,
+        "Warrior.", L_Warrior,
+        "Archer.", L_Archer,
+        "Mage.", L_Mage,
+        "Specialized (level 85+).", L_Spec,
+        "Community builds.", L_CO,
+        "Close.", L_Close;
         
 L_Noob:
-  menu
-      "Noob level 1.", L_Noob1,
-      "Noob level 15", L_Noob15;
+    menu
+        "Noob level 1.", L_Noob1,
+        "Noob level 15.", L_Noob15,
+        "Back.", L_Begin;
+        
+L_Warrior:
+    menu
+        "Back.", L_Begin;
 
 L_Archer:
-  menu
-      "Archer level 60.", L_Archer60;
+    menu
+        "Archer level 60.", L_Archer60,
+        "Back.", L_Begin;
+        
+L_Mage:
+    menu
+        "Back.", L_Begin;
+        
+L_Spec:
+    menu
+        "Back.", L_Begin;
 
+L_CO:
+    mes "Community builds are builds submitted by players on the forums.";
+    mes "At the moment this category is only a placeholder.";
+    menu
+      "Back.", L_Begin;
+      
 L_Noob1:
     mes "You are now a level 1 noob.";
     mes "Make sure to equip your items.";
@@ -36,7 +61,6 @@ L_Noob15:
     mes "Make sure to equip your items.";
     callsub S_ResetBase;
     set BaseLevel, 15;
-    set JobLevel, 2;
     set Zeny, 1500;
     getitem "CottonShirt", 1;
     getitem "Knife", 1;
@@ -53,7 +77,6 @@ L_Archer60:
     callsub S_AddPool;
     callsub S_AddPool_Mallard;
     set BaseLevel, 60;
-    set JobLevel, 5;
     set Zeny, 40500;
     poolskill 45; //focus on mallard
     statusup2 bStr, 1 - readparam(bStr);
@@ -106,11 +129,11 @@ S_ResetBase:
     statusup2 bDex, 8 - readparam(bDex);
     setskill SKILL_EMOTE, 1;
     setskill SKILL_TRADE, 1;
-    delitem "CottonShirt", 1;
-    delitem "Knife", 1;
+    delitem "CottonShirt", 1; //charwipe leftover
+    delitem "Knife", 1; //charwipe leftover
     getitem "HitchhikersTowel", 1;
     return;    
     
 L_Close:
-  close;
+    close;
 }
