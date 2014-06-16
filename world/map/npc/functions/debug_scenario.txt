@@ -1,0 +1,198 @@
+function|script|scenariodebug|,
+{
+
+    goto L_Begin;
+    
+L_Begin:
+    mes "[Scenario Debug]";
+    mes "Please choose the type of scenario.";
+    menu
+        "Noob (level < 45).", L_Noob,
+        "Warrior.", L_Warrior,
+        "Archer.", L_Archer,
+        "Mage.", L_Mage,
+        "Specialized (level 85+).", L_Spec,
+        "Community builds.", L_CO,
+        "Close.", L_Close;
+        
+L_Noob:
+    menu
+        "Noob level 1.", L_Noob1,
+        "Noob level 15.", L_Noob15,
+//      "Noob level 35.", L_Noob, //TODO
+        "Back.", L_Begin;
+        
+L_Warrior:
+    menu
+//      "Warrior level 45.", L_Warrior, //TODO
+//      "Warrior level 60.", L_Warrior, //TODO
+//      "Warrior level 70.", L_Warrior, //TODO
+//      "Warrior level 80.", L_Warrior, //TODO
+        "Back.", L_Begin;
+
+L_Archer:
+    menu
+//      "Archer level 45.", L_Archer, //TODO
+        "Archer level 60.", L_Archer60,
+//      "Archer level 70.", L_Archer, //TODO
+//      "Archer level 80.", L_Archer, //TODO
+        "Back.", L_Begin;
+        
+L_Mage:
+    menu
+//      "Mage level 45.", L_Mage, //TODO
+//      "Mage level 60.", L_Mage, //TODO
+//      "Mage level 70.", L_Mage, //TODO
+//      "Mage level 80.", L_Mage, //TODO
+        "Back.", L_Begin;
+        
+L_Spec:
+    menu
+        "Back.", L_Begin;
+
+L_CO:
+    mes "Community builds are builds submitted by players on the forums.";
+    menu
+      "mr.fre level 65.", L_CO_001,
+      "Back.", L_Begin;
+      
+L_Noob1:
+    mes "You are now a level 1 noob.";
+    mes "Make sure to equip your items.";
+    callsub S_ResetBase;
+    getitem "CottonShirt", 1;
+    getitem "Knife", 1;
+    getitem "SlingShot", 1;
+    getitem "SlingBullet", 100;
+    getitem "RaggedShorts", 1;
+    goto L_Close;
+
+L_Noob15:
+    mes "You are now a level 15 noob.";
+    mes "Make sure to equip your items.";
+    callsub S_ResetBase;
+    set BaseLevel, 15;
+    set Zeny, 1500;
+    getitem "CottonShirt", 1;
+    getitem "Knife", 1;
+    getitem "Bow", 1;
+    getitem "Arrow", 100;
+    goto L_Close;
+
+L_Archer60:
+    mes "You are now a level 60 archer.";
+    mes "Make sure to equip your items.";
+    callsub S_ResetBase;
+    callsub S_AddMagic;
+    callsub S_AddMagic_Life;
+    callsub S_AddPool;
+    callsub S_AddPool_Mallard;
+    set BaseLevel, 60;
+    set Zeny, 40500;
+    poolskill 45; //focus on mallard
+    statusup2 bStr, 1 - readparam(bStr);
+    statusup2 bAgi, 1 - readparam(bAgi);
+    statusup2 bVit, 3 - readparam(bVit);
+    statusup2 bDex, 92 - readparam(bDex);
+    getitem "ForestBow", 1;
+    getitem "FairyHat", 1;
+    getitem "ForestArmor", 1;
+    getitem "JeansChaps", 1;
+    getitem "SilkGloves", 1;
+    getitem "FurBoots", 1;
+    getitem "FourLeafClover", 1;
+    getitem "CatEars", 1;
+    getitem "Lifestone", 100;
+    getitem "Arrow", 3000;
+    goto L_Close;
+    
+L_CO_001:
+    callsub S_ResetBase;
+    callsub S_AddMagic;
+    callsub S_AddMagic_Life;
+    callsub S_AddMagic_Nature;
+    callsub S_AddMagic_Astral;
+    callsub S_AddMagic_War;
+    callsub S_AddMagic_Transmute;
+    callsub S_AddPool;
+    setskill SKILL_ASTRAL_SOUL, 9;
+    poolskill 354;
+    set BaseLevel, 65;
+    set Zeny, 100000;
+    statusup2 bStr, 10 - readparam(bStr);
+    statusup2 bAgi, 6 - readparam(bAgi);
+    statusup2 bVit, 37 - readparam(bVit);
+    statusup2 bInt, 99 - readparam(bInt);
+    statusup2 bDex, 5 - readparam(bDex);
+    getitem 532,1; getitem 579,1; getitem 602,1; getitem 655,1; getitem 704,500; getitem 742,1;
+    getitem 782,1; getitem 868,1; getitem 883,1; getitem 902,1; getitem 1199,600; getitem 1217,1;
+    getitem 2084,1; getitem 2144,1; getitem 2154,1; getitem 2164,1; getitem 2189,1; getitem 4020,1;
+    getitem 704,100; getitem 505,100; getitem 613,10; getitem 730,100; getitem 535,500;
+    goto L_Close;
+
+
+    
+S_AddPool: //FIXME: add luca flags
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_UNFOCUS_RECIPE;
+    setskill SKILL_POOL, 1;
+    setskill SKILL_BRAWLING, 1;
+    setskill SKILL_PARTY, 2;
+    return;
+    
+S_AddPool_Mallard: //FIXME: add gwendolynn flags
+    setskill SKILL_MALLARDS_EYE, 9;
+    return;
+    
+S_AddPool_Astral:
+    setskill SKILL_ASTRAL_SOUL, 9;
+    return;
+    
+S_AddMagic:
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_MANASEED;
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_DRANK_POTION;
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_TOUCHED_MANASEED;
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_MANAPOTION;
+    set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_MANASEED_RUMOUR;
+    setskill SKILL_MAGIC, 2;
+    return;
+    
+S_AddMagic_Life: //FIXME: add elanore flags to QUEST_MAGIC2
+    setskill SKILL_MAGIC_LIFE, 2;
+    return;
+    
+S_AddMagic_Nature:
+    setskill SKILL_MAGIC_NATURE, 2;
+    return;
+    
+S_AddMagic_Astral:
+    setskill SKILL_MAGIC_ASTRAL, 2;
+    return;
+    
+S_AddMagic_War:
+    setskill SKILL_MAGIC_WAR, 2;
+    return;
+    
+S_AddMagic_Transmute:
+    setskill SKILL_MAGIC_TRANSMUTE, 2;
+    return;
+    
+S_AddMagic_Dark:
+    setskill SKILL_MAGIC_DARK, 2;
+    return;
+    
+S_ResetBase:
+    gmcommand "@charwipe " + strcharinfo(0);
+    statusup2 bStr, 9 - readparam(bStr);
+    statusup2 bAgi, 2 - readparam(bAgi);
+    statusup2 bVit, 9 - readparam(bVit);
+    statusup2 bDex, 8 - readparam(bDex);
+    setskill SKILL_EMOTE, 1;
+    setskill SKILL_TRADE, 1;
+    delitem "CottonShirt", 1; //charwipe leftover
+    delitem "Knife", 1; //charwipe leftover
+    getitem "HitchhikersTowel", 1;
+    return;    
+    
+L_Close:
+    close;
+}

@@ -50,7 +50,7 @@
 "Magic Spell Const"
 (CONST MIN_MARRY_LEVEL 32)
 (CONST MAX_RAIN_SPELL_RADIUS 15)
-(CONST MAX_MAGIC_LEVEL 2) "Increase up to 5 as each new magic level is completed."
+(CONST MAX_MAGIC_LEVEL 3) "Increase up to 5 as each new magic level is completed."
 (CONST MAGIC_FLAGS "MAGIC_FLAGS")
 (CONST MFLAG_MADE_CONC_POTION 16384)
 (CONST MFLAG_MADE_CONC_POTION_SHIFT 14)
@@ -61,7 +61,7 @@
 (CONST SCRIPT_LASTSPELL_SHIFT 16)
 (CONST SCRIPT_HEALSPELL_MASK 0xff)
 (CONST SCRIPT_HEALSPELL_SHIFT 24)
-(CONST DEBUG 0)
+(CONST DEBUG 1)
 (CONST ATTACK_ICON_GENERIC 2000)
 (CONST ATTACK_ICON_SHEARING 2001)
 (CONST E10_FLAG_USED_FREE_WARP_SHIFT 17)
@@ -2345,6 +2345,25 @@
 "--------------------------------------------------------------------------------"
 "Level 2 spells"
 "--------------------------------------------------------------------------------"
+(SPELL () vampiric-strike "#dalcuphlex" ()
+    (LET level 2)
+    (LET school DARK)
+    (=>
+        (GUARD
+            (MANA 15)
+            (CASTTIME 1000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    1)))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (SET damage spellpower))))
+                        
 (SPELL () cure-poison "#anju" (PC target)
     (LET level 2)
     (LET school LIFE)
@@ -2516,6 +2535,77 @@
                                         1))
                                 (warp
                                     (partner caster)
+                                    dest)
+                                (sfx dest SFX_TELEPORT 0)))))))))                                
+                                
+(SPELL () warp-to-partner "#kalzumin2" ()
+    (LET level 2)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 30)
+            (CASTTIME 2000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (REQUIRE
+                (is_married caster))
+            (REQUIRE
+                (is_equipped caster "WeddingRing")))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (IF (failed
+                    (partner caster))
+                (message caster "You call out for your partner, but there is no response.")
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "You call out for "
+                                (name_of
+                                    (partner caster)))
+                            "."))
+                    (message
+                        (partner caster)
+                        (+
+                            (name_of caster)
+                            " is calling for your aid!"))
+                    (sfx
+                        (partner caster)
+                        2
+                        0)
+                    (WAIT
+                        (max 5000
+                            (- 30000
+                                (* spellpower 60))))
+                    (IF (failed
+                            (partner caster))
+                        (message caster "Your partner has abandoned you.")
+                        (IF (is_dead
+                                (partner caster))
+                            (message caster
+                                (+
+                                    (+ "Something seems to have happened to "
+                                        (name_of
+                                            (partner caster)))
+                                    "."))
+                            (BLOCK
+                                (sfx
+                                    (location 
+                                        caster)
+                                    SFX_TELEPORT
+                                    0)
+                                (SET dest
+                                    (awayfrom
+                                        (location partner)
+                                        (random_dir 1)
+                                        1))
+                                (warp caster
                                     dest)
                                 (sfx dest SFX_TELEPORT 0)))))))))
 
