@@ -111,7 +111,6 @@ else
     handle_browser($agent);
 }
 
-echo "##9 Latest client version: ##6$cur_version\n \n";
 echo "##7 TMW Staff will never ask you for your password.\n";
 echo "##7 Anyone doing so is trying to scam you.\n \n";
 
