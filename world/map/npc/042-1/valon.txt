@@ -1,39 +1,168 @@
 // This file is part of the Tutorial
-// Author: Jenalya
-
-042-1.gat,44,115,0|script|Valon|156,1,0
+// Author: Jenalya, Wushin
+-|script|#ValonConfig|-1,
 {
-    if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Tut_Done;
+    end;
 
+OnInit:
+    set $@ValonStartBit, (1 << 6);
+    set $@ValonEndBit, (1 << 7);
+    setarray $@ValonMob, 1002,1050,1046,1003;
+    setarray $@ValonMobName$, "Maggots","House Maggots","Tame Scorpions","Scorpion";
+    setarray $@ValonMobCnt, 10,5,3,1;
+    end;
+}
+function|script|ValonState|,
+{
+    set @valon_mob, ((TUTORIAL & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    set @valon_count, ((TUTORIAL & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+    set @valon_start, (TUTORIAL & $@ValonStartBit);
+    set @valon_end, (TUTORIAL & $@ValonEndBit);
+    return;
+}
+function|script|AddValonMobMask|,
+{
+    set @valon_tmp, (@valon_mob + 1);
+    if (@valon_tmp > 15)
+        set @valon_tmp, 15;
+    set TUTORIAL, (TUTORIAL & ~(NIBBLE_2_MASK) | (@valon_tmp << NIBBLE_2_SHIFT));
+    set @valon_tmp, 0;
+    return;
+}
+function|script|ResetValonCntMask|,
+{
+    set TUTORIAL, (TUTORIAL & ~(NIBBLE_3_MASK) | (0 << NIBBLE_3_SHIFT));
+    return;
+}
+function|script|AddValonCntMask|,
+{
+    set @valon_tmp, (@valon_count + 1);
+    if (@valon_tmp > 15)
+        set @valon_tmp, 15;
+    set TUTORIAL, (TUTORIAL & ~(NIBBLE_3_MASK) | (@valon_tmp << NIBBLE_3_SHIFT));
+    set @valon_tmp, 0;
+    callfunc "ValonProgress";
+    return;
+}
+function|script|ValonProgress|,
+{
+    callfunc "ValonState";
+    if ((@valon_start) && (!(@valon_end)))
+        message strcharinfo(0), $@ValonMobName$[@valon_mob] + ": " + @valon_count + "/" + $@ValonMobCnt[@valon_mob];
+    return;
+}
+042-1.gat,51,111,0|script|ValonDebug|156,
+{
+    mes "[Valon Debug]";
+    mes "Reset?";
+    menu
+        "Yes.", L_Reset,
+        "No.", L_End;
+
+L_Reset:
+    set TUTORIAL, (TUTORIAL & ~(NIBBLE_2_MASK) | (0 << NIBBLE_2_SHIFT));
+    set TUTORIAL, (TUTORIAL & ~(NIBBLE_3_MASK) | (0 << NIBBLE_3_SHIFT));
+    set TUTORIAL, TUTORIAL &~ $@ValonStartBit;
+    set TUTORIAL, TUTORIAL &~ $@ValonEndBit;
+    mes "Reset!";
+    goto L_End;
+
+L_End:
+    end;
+
+OnInit:
+    if (!debug)
+        disablenpc "ValonDebug";
+    end;
+}
+042-1.gat,48,111,0|script|Valon|156,
+{
+    callfunc "ValonState";
+    if (@valon_end)
+        goto L_QuestComplete;
+    if (!(@valon_start) && (@valon_count))
+        goto L_QuestAskAgain;
+    if (((@valon_start) && (!(@valon_end))) && (@valon_count >= $@ValonMobCnt[@valon_mob]))
+        goto L_NextMob;
+    if ((@valon_start) && (!(@valon_end)))
+        goto L_QuestStarted;
+    goto L_QuestAsk;
+
+L_QuestAskAgain:
+    mes "[Valon]";
+    mes "\"Hello, Adventurer! Have you come back to help?\"";
+    menu
+        "Yes. I will help with the desert beasts.", L_Accept,
+        "Maybe some other time.", L_NoThanks;
+
+L_QuestAsk:
     mes "[Valon]";
     mes "\"Hello!";
     mes "You're looking for adventures, right?\"";
     next;
     mes "\"But you shouldn't underestimate this desert, it is dangerous.\"";
     next;
-    mes "\"It's crawling with scorpions, and the heat has overcome men tougher than you are.\"";
+    mes "\"It's crawling with scorpions, and the heat has overcome adventurers tougher than you are.\"";
     next;
-    mes "\"If you really want to challenge the desert go to Tulimshar first to prepare yourself.\"";
-    close;
-
-L_Tut_Done:
-    mes "[Valon]";
-    mes "\"Hello!";
-    mes "You're an adventurer, right?\"";
+    mes "\"I should know I gaurd this gate from all manner of desert beasts.\"";
     next;
-    mes "\"Be careful in the desert.\"";
-    close;
+    mes "\"Maybe you would like help and earn your stripes?\"";
+    next;
+    mes "\"The Council of Wizard's does offer a reward for helping...\"";
+    menu
+        "YES!!! let me at them!", L_Accept,
+        "Maybe some other time.", L_NoThanks;
 
-OnTouch:
-    if (FLAGS & FLAG_TUTORIAL_DONE)
-        goto L_Tut;
-    warp "042-1.gat", 44, 110;
+L_NoThanks:
+    callfunc "AddValonCntMask";
+    goto L_Close;
+
+L_Accept:
+    callfunc "ResetValonCntMask";
+    set TUTORIAL, TUTORIAL | $@ValonStartBit;
+    goto L_NewMob;
+
+L_NextMob:
+    getexp 40, 0;
+    mes "\"I see you killed all the " + $@ValonMobName$[@valon_mob] + " needed.\"";
+    next;
+    mes "\"The Wizard's thank thee as well.\"";
+    set Zeny, Zeny + 25;
+    next;
+    callfunc "ResetValonCntMask";
+    callfunc "AddValonMobMask";
+    callfunc "ValonState";
+    if (@valon_mob == getarraysize($@ValonMob))
+        goto L_QuestOver;
+    goto L_NewMob;
+
+L_NewMob:
+    mes "\"Let's see whats on the list. Ah ok, I need you to kill me " + $@ValonMobCnt[@valon_mob] + " " + $@ValonMobName$[@valon_mob] + "\"";
+    next;
+    mes "\"I'll be waiting here, come back and see after you've kulled those mobs.\"";
+    goto L_Close;
+
+L_QuestStarted:
     mes "[Valon]";
-    mes "\"The desert is merciless.";
-    mes "I can't let you leave like this.\"";
-    close;
+    mes "Hail adventurer! You are well on your way to mastering the beasts of the desert.\"";
+    next;
+    mes "\"You need to kill " + $@ValonMobName$[@valon_mob] + ": " + @valon_count + "/" + $@ValonMobCnt[@valon_mob] + "\"";
+    next;
+    mes "\"Come back and see me when the job is done.\"";
+    goto L_Close;
 
-L_Tut:
-    warp "041-1.gat", 58, 6;
-    end;
+L_QuestOver:
+    mes "[Valon]";
+    mes "\"Thanks once again for helping with the monsters in the desert.\"";
+    getexp 50, 0;
+    set TUTORIAL, TUTORIAL | $@ValonEndBit;
+    goto L_Close;
+
+L_QuestComplete:
+    mes "[Valon]";
+    mes "\"Thanks once again for helping with the monsters in the desert.\"";
+    goto L_Close;
+
+L_Close:
+    close;
 }
