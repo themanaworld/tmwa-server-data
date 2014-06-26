@@ -1,7 +1,7 @@
 <?php
 
 // configuration variables
-$min_manaplus = '1.1.2.20';
+$min_manaplus = '1.3.6.9';
 
 // utility functions
 function failure_headers()
