@@ -7,12 +7,12 @@ maps:
 
 % : | %.example
 	cp "$|" "$@"
-conf: world/map/conf/magic-secrets.conf \
+conf: world/map/conf/magic-secrets.sex \
 login/conf/login_local.conf login/conf/ladmin_local.conf login/save/gm_account.txt login/save/account.txt \
 world/map/conf/map_local.conf world/map/conf/battle_local.conf world/map/conf/motd.txt world/map/conf/atcommand_local.conf world/map/db/const-debugflag.txt \
 world/conf/char_local.conf
 
-world/map/conf/magic-secrets.conf: world/map/conf/magic-secrets.conf.template world/map/conf/secrets-build
+world/map/conf/magic-secrets.sex: world/map/conf/magic-secrets.sex.template world/map/conf/secrets-build
 	cd world/map/conf && ./build-magic.sh
 world/map/conf/secrets-build:
 
