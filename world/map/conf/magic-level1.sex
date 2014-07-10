@@ -1,0 +1,527 @@
+"--------------------------------------------------------------------------------"
+"Level 0 spells"
+"--------------------------------------------------------------------------------"
+(SPELL () wand "#confringo" ()
+    (LET school MAGIC)
+    (=>
+        (GUARD
+            (CASTTIME 500))
+        (EFFECT
+            (SCRIPT "{callfunc \"CheckWand\";}") 
+            (IF (==
+                    (script_int caster "@Wand")
+                    0)
+                (ABORT))
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL install_attack_spell
+                (+ (script_int caster "@Wand")
+                    (/ spellpower 10))
+                1200
+                3
+                33)
+            (CALL gain_xp 1 3)
+            (ATTRIGGER
+                (CALL attack_check target)
+                (SCRIPT "{callfunc \"WandMana\";}") 
+                (IF (==
+                        (script_int caster "@WandAttack")
+                        0)
+                (ABORT))
+                (SET damage
+                    (* (script_int caster "@Wand")
+                        (/ spellpower
+                            3)))
+                (SET damage_bonus
+                    (* (script_int caster "@Wand")
+                        (/ spellpower
+                            3)))
+                (CALL elt_damage target damage damage_bonus ELT_NEUTRAL ELT_NEUTRAL 5))
+)))
+
+(SPELL () ask-magic-exp "#abizit" ()
+    (LET level 0)
+    (LET school MAGIC)
+    (=>
+        (GUARD
+            (MANA 1)
+            (CASTTIME 1000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level)))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (SET level
+                (skill caster MAGIC))
+            (SET experience
+                (&
+                    (>>
+                        (script_int caster SCRIPT_XP)
+                        SCRIPT_XP_SHIFT)
+                    SCRIPT_XP_MASK))
+            (IF (&&
+                    (== experience SCRIPT_XP_MASK)
+                    (> level 4))
+                (message caster "You are as proficient at magic as you can possibly be.")
+                (BLOCK "This duplicates the table in mana-seed.txt"
+                    (IF (> level 4)
+                        (SET max_experience SCRIPT_XP_MASK)
+                        (IF (== level 4)
+                            (SET max_experience 40000)
+                            (IF (== level 3)
+                                (SET max_experience 8000)
+                                (IF (== level 2)
+                                    (SET max_experience 1200)
+                                    (SET max_experience 100)))))
+                    (SET ratio
+                        (/
+                            (-
+                                (* 10 experience)
+                                (random
+                                    (/ max_experience 30)))
+                            max_experience)) "Randomness:  jitter a bit at the transitions to give more precise information if used frequently"
+                    (IF (>= ratio 45)
+                        (message caster
+                            (+ "Magic flows naturally from you, readily and with ease. Your understanding of what you can currently control at present is flawless, far beyond your requirements to cast magic at this level."
+                                (if_then_else
+                                    (>= level MAX_MAGIC_LEVEL)
+                                    ""
+                                    " Surely the Mana Seed will more than readily offer more magic for such a proficient user.")))
+                        (IF (>= ratio 20)
+                            (message caster "You have perfect control of what you understand now, but there is now a distinct sensation of something more, something indescribable. If only the Mana Seed would give more magic to you...")
+                            (IF (>= ratio 10)
+                                (message caster
+                                    (+ "You feel in perfect control of your magic"
+                                        (if_then_else
+                                            (>= level MAX_MAGIC_LEVEL)
+                                            "."
+                                            ", and seem on the verge of something more... perhaps you should see the Mana Seed to ask for more magic?")))
+                                (IF (>= ratio 9)
+                                    (message caster "You feel in almost perfect control of your magic.")
+                                    (IF (>= ratio 8)
+                                        (message caster "You feel that you have very good control of your magic.")
+                                        (IF (>= ratio 7)
+                                            (message caster "You feel quite in control of your magic.")
+                                            (IF (>= ratio 6)
+                                                (message caster "You feel mostly in control of your magic.")
+                                                (IF (>= ratio 5)
+                                                    (message caster "You feel somewhat in control of your magic.")
+                                                    (IF (>= ratio 4)
+                                                        (message caster "You feel you still have a few difficulties in controlling your magic.")
+                                                        (IF (>= ratio 3)
+                                                            (message caster "Trying to control your magic is still rather troublesome.")
+                                                            (IF (>= ratio 2)
+                                                                (message caster "You feel that you have only the bare minimum of control over your magic.")
+                                                                (IF (>= ratio 1)
+                                                                    (message caster "You feel quite overwhelmed by your magic, but are beginning to see patterns.")
+                                                                    (message caster "You feel completely overwhelmed by your magic."))))))))))))))))))
+
+(SPELL () transmute-wood-to-figurine "#parum" (STRING name)
+    (LET level 0)
+    (LET school TRANSMUTE)
+    (=>
+        (GUARD
+            (MANA 5)
+            (CASTTIME 4000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (COMPONENTS "RawLog"))
+        (|
+            (=>
+                (REQUIRE
+                    (== name "boo"))
+                (EFFECT
+                    (CALL adjust_spellpower school)
+                    (CALL default_effect)
+                    (CALL create_item "MoubooFigurine" 1 "WarpedLog" 40)
+                    (CALL gain_xp 1 0)))
+            (=>
+                (REQUIRE
+                    (== name "lurk"))
+                (EFFECT
+                    (CALL adjust_spellpower school)
+                    (CALL default_effect)
+                    (CALL create_item "WarpedLog" 1 "WarpedLog" 40)
+                    (message caster "You have no idea what a Skrytlurk looks like."))))))
+
+(SPELL () make-sulphur "#gole" ()
+    (LET level 0)
+    (LET school TRANSMUTE)
+    (=>
+        (GUARD
+            (MANA 4)
+            (CASTTIME 4000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (COMPONENTS "PileOfAsh"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL create_item "SulphurPowder"
+                (+
+                    (+ 1
+                        (/ spellpower 100))
+                    (/
+                        (random
+                            (max 1
+                                (- 800 spellpower)))
+                        180))
+                "PileOfAsh"
+                50)
+            (CALL gain_xp 1 1))))
+
+(SPELL () lesser-heal "#lum" (STRING target)
+    (LET level 0)
+    (LET school LIFE)
+    (=>
+        (GUARD
+            (MANA 6)
+            (CASTTIME 500)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (if_then_else
+                    (failed
+                        (pc target))
+                    1
+                    (<
+                        (rdistance
+                            (location caster)
+                            (location
+                                (pc target)))
+                        (+ 2
+                            (/ spellpower 100)))))
+            (GUARD
+                (COMPONENTS "Lifestone")))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (IF (failed
+                    (pc target))
+                (BLOCK
+                    (IF (&&
+                            (||
+                                (== target "mouboo")
+                                (== target "Mouboo"))
+                            (<
+                                (rdistance
+                                    (location caster)
+                                    (location
+                                        (npc "Mouboo")))
+                                (+ 2
+                                    (/ spellpower 100))))
+                        (SCRIPT "{
+                            mes \"Your spell seems to have no effect on the mouboo.\";
+                            close;
+                        }")
+                        (SET target caster)))
+                (BLOCK
+                    (SET target
+                        (pc target))
+                    (IF (is_dead target)
+                        (ABORT))))
+            (CALL gain_heal_xp
+                (min 200
+                    (-
+                        (max_hp target)
+                        (hp target)))
+                1
+                2
+                2) "report half values for non-instaheal"
+            (CALL heal target 200)
+            (IF (>
+                    (skill caster DARK)
+                    1)
+                (status_change caster SC_HALT_REGENERATE 0 0 0 0 2000))
+            (CALL gain_xp 1 2))))
+
+(SPELL () flare-dart "#flar" ()
+    (LET level 0)
+    (LET school WAR)
+    (=>
+        (GUARD
+            (MANA 10)
+            (CASTTIME 500)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            2))
+                    (COMPONENTS "SulphurPowder"))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (SET damage
+                (* 5
+                    (sqrt spellpower)))
+            (SET damage_bonus
+                (+ 5
+                    (/
+                        (level caster)
+                        3)))
+            (CALL install_attack_spell
+                (+ 3
+                    (/ spellpower 50))
+                1200
+                4
+                31)
+            (CALL gain_xp 1 3)
+            (ATTRIGGER
+                (CALL attack_check target)
+                (CALL elt_damage target damage damage_bonus ELT_WATER ELT_FIRE 15)))))
+
+(SPELL () magic-blade "#chiza" ()
+    (LET level 0)
+    (LET school WAR)
+    (=>
+        (GUARD
+            (MANA 9)
+            (CASTTIME 500)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level)))
+        (|
+            (=>
+                (COMPONENTS "SharpKnife")
+                (EFFECT
+                    (CALL adjust_spellpower WAR)
+                    (CALL default_effect)
+                    (CALL install_melee_spell
+                        (+ 10
+                            (/ spellpower 15))
+                        1200
+                        30)
+                    (CALL gain_xp 1 4)
+                    (ATTRIGGER
+                        (CALL melee_damage target 60
+                            (+ 5
+                                (str caster))))))
+            (=>
+                (COMPONENTS "Knife")
+                (EFFECT
+                    (CALL adjust_spellpower WAR)
+                    (CALL default_effect)
+                    (CALL install_melee_spell
+                        (+ 10
+                            (/ spellpower 15))
+                        1200
+                        30)
+                    (CALL gain_xp 1 5)
+                    (ATTRIGGER
+                        (CALL melee_damage target 40
+                            (+ 5
+                                (str caster)))))))))
+
+(SPELL () aggravate "#itenplz" ()
+    (LET level 0)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 3)
+            (CASTTIME 1000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level)))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (FOREACH MOB target
+                (rbox
+                    (location caster)
+                    (+ 2
+                        (/ spellpower 50)))
+                (IF (line_of_sight
+                        (location caster)
+                        (location target))
+                    (BLOCK
+                        (CALL sfx_generic target)
+                        (aggravate target 0 caster)))))))
+
+(SPELL () grow-mauve "#modrilax" ()
+    (LET level 0)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 4)
+            (CASTTIME 2000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (COMPONENTS "MauveHerb" "Root"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 1 6)
+            (spawn
+                (rbox location 2)
+                caster
+                1029
+                1
+                (+
+                    (/
+                        (skill caster school)
+                        2)
+                    1)
+                10000))))
+
+(SPELL () grow-alizarin "#modriphoo" ()
+    (LET level 0)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 4)
+            (CASTTIME 2000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (COMPONENTS "AlizarinHerb" "Root"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 1 7)
+            (spawn
+                (rbox location 2)
+                caster
+                1032
+                1
+                (+
+                    (/
+                        (skill caster school)
+                        2)
+                    1)
+                10000))))
+
+(SPELL () grow-gamboge "#modriyikam" ()
+    (LET level 0)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 4)
+            (CASTTIME 2000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (COMPONENTS "GambogeHerb" "Root"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 1 8)
+            (spawn
+                (rbox location 2)
+                caster
+                1031
+                1
+                (+
+                    (/
+                        (skill caster school)
+                        2)
+                    1)
+                10000))))
+
+(SPELL () grow-cobalt "#modrisump" ()
+    (LET level 0)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 4)
+            (CASTTIME 2000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (COMPONENTS "CobaltHerb" "Root"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 1 9)
+            (spawn
+                (rbox location 2)
+                caster
+                1030
+                1
+                (+
+                    (/
+                        (skill caster school)
+                        2)
+                    1)
+                10000))))
+
+(SPELL (LOCAL) summon-maggots "#kalmurk" ()
+    (LET level 0)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 21)
+            (CASTTIME 20000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (COMPONENTS "MaggotSlime" "Root"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL gain_xp 1 10)
+            (CALL summon_spell 1002
+                (+ 1
+                    (/
+                        (+
+                            (sqrt spellpower)
+                            (/ spellpower 15))
+                        5))
+                (- 5000
+                    (* spellpower 5))
+                (+ 10000
+                    (* spellpower 50))
+                1))))
+
+(SPELL () detect-magic "#miteyo" ()
+    (LET level 0)
+    (LET school MAGIC)
+    (=>
+        (GUARD
+            (MANA 3)
+            (CASTTIME 6000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level)))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (SET range
+                (+ 1
+                    (/ spellpower 50)))
+            (FOREACH NPC n
+                (rbox
+                    (location caster)
+                    range)
+                (IF (||
+                        (contains_string
+                            (name_of n)
+                            "#MAGIC")
+                        (contains_string
+                            (name_of n)
+                            "#_M"))
+                    (sfx n SFX_DEFAULT 0)))
+            (FOREACH SPELL s (rbox
+                    (location caster)
+                    range) (IF (!= s self_invocation)
+                    (sfx s SFX_DEFAULT 0))))))
