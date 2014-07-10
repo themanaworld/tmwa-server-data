@@ -1,0 +1,73 @@
+// event system handler
+// author: meko
+
+function|script|eventManagerHandler|,
+{
+  if((getgmlevel() < 50) && !debug) goto L_End;
+
+  mes "[Event Manager]";
+  if($@event_ongoing == 1) goto L_Ongoing;
+  goto L_Main;
+  
+  L_Main:
+    mes "There is no event ongoing, what do you want to do?";
+    menu
+      "Start a new event.", L_NewEvent,
+      "Debug.", L_Debug,
+      "Nevermind.", L_End;
+  
+  L_NewEvent:
+    mes "You can choose to either start a pre-made event or to make a custom event.";
+    mes "";
+    mes "A pre-made event is automated from the beginning to the end.";
+    mes "";
+    mes "A custom event only opens the portals; the GM has to do everything and to close the portals manually once the event is over.";
+    menu
+      "Go back.", L_Main,
+      $@event_modules_name$[0], L_Event_Module,
+      $@event_modules_name$[1], L_Event_Module,
+      $@event_modules_name$[2], L_Event_Module,
+      $@event_modules_name$[3], L_Event_Module,
+      $@event_modules_name$[4], L_Event_Module,
+      $@event_modules_name$[5], L_Event_Module,
+      $@event_modules_name$[6], L_Event_Module,
+      $@event_modules_name$[7], L_Event_Module,
+      $@event_modules_name$[8], L_Event_Module,
+      $@event_modules_name$[9], L_Event_Module;
+  
+  L_Event_Module:
+    set @event_id$, $@event_modules_id$[(@menu - 2)];
+    callfunc "eventModule_"+ @event_id$ + "Menu"; 
+    goto L_End;
+  
+  L_Ongoing:
+    mes "An event is ongoing, what do you want to do?";
+    callfunc "eventModule_"+ $@event_ongoing_id$ + "OngoingMenu";
+    goto L_Ongoing;
+  
+  L_Debug:
+    menu
+      "Debug informations.", L_DebugInfo,
+      "Janitor.", L_Janitor,
+      "Go back.", L_Main;
+  
+  L_DebugInfo:
+    mes "Loaded modules: " + (getarraysize($@event_modules_id$) - 1);
+    goto L_Debug;
+  
+  L_Janitor:
+    callfunc "eventJanitorMenu";
+    goto L_Debug;
+  
+  L_End:
+    close;
+}
+
+// only NPCs can use OnInit
+-|script|#EventSetup|-1,
+{
+  end;
+  OnInit:
+    callfunc "eventJanitorInit";
+    end;
+}

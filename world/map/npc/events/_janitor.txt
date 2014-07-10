@@ -1,0 +1,45 @@
+// Janitor functions
+// author: meko
+
+function|script|eventJanitorMenu|,
+{
+  goto L_Main;
+
+  L_Main:
+    menu
+      "Clean global variables.", L_Global,
+      "Nevermind", L_End;
+
+  L_Global:
+    callfunc "eventJanitorGlobal";
+    goto L_Main;
+
+  L_End:
+    return;
+}
+
+function|script|eventJanitorInit|,
+{
+  // this function is called when the server is fully loaded
+  // first, we initiate the variables
+  callfunc "eventJanitorGlobal"; // set the base variables
+  // now we initiate the arrays
+  setarray $@event_modules_id$, "custom"; // identifier used internally
+  setarray $@event_modules_name$, "Custom"; // human-friendly name sent to the client
+  return;
+}
+
+function|script|eventJanitorGlobal|,
+{
+  // this function is called on demand by the user, by eventJanitorInit, or by event modules
+  // it resets everything (but not character variables)
+  set $@event_ongoing, 0; // boolean, should not be anything else than 0 or 1
+  set $@event_ongoing_id$, ""; // this is one of the $@event_modules_id$ variables
+  cmdothernpc "#EventPortals", "Close"; // make sure the portals are closed
+  killmonster "028-1.gat", "All"; // kill every monster that might have been spawned by an event
+  pvpoff "028-1.gat"; // make sure the pvp is off
+  killmonster "028-3.gat", "All"; // kill every monster that might have been spawned by an event
+  pvpoff "028-3.gat"; // make sure the pvp is off
+  mapwarp "028-1.gat", "009-1.gat", 1, 1; // force players to leave the island
+  return;
+}
