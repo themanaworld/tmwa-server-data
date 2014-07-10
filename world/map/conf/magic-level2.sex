@@ -1,0 +1,1447 @@
+"--------------------------------------------------------------------------------"
+"Level 1 spells"
+"--------------------------------------------------------------------------------"
+(SPELL () make-arrows "#kularzufrill" ()
+    (LET level 1)
+    (LET school TRANSMUTE)
+    (=>
+        (GUARD
+            (MANA 8)
+            (CASTTIME 5000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS "RawLog"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL create_item "Arrow"
+                (+
+                    (+ 1
+                        (/ spellpower 40))
+                    (/
+                        (random
+                            (max 1
+                                (- 800 spellpower)))
+                        80))
+                "WarpedLog"
+                500)
+            (CALL gain_xp 1 11))))
+
+(SPELL () make-shirt "#patmuploo" ()
+    (LET level 1)
+    (LET school TRANSMUTE)
+    (=>
+        (GUARD
+            (MANA 25)
+            (CASTTIME 5000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS
+                (5 "CottonCloth")))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL create_item "CottonShirt" 1 "CottonCloth" 425)
+            (CALL gain_xp 2 12))))
+
+(SPELL () make-tanktop "#patloree" ()
+    (LET level 1)
+    (LET school TRANSMUTE)
+    (=>
+        (GUARD
+            (MANA 25)
+            (CASTTIME 5000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS
+                (4 "CottonCloth")))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL create_item "TankTop" 1 "CottonCloth" 350)
+            (CALL gain_xp 2 13))))
+
+(SPELL () make-short-tanktop "#patviloree" ()
+    (LET level 1)
+    (LET school TRANSMUTE)
+    (=>
+        (GUARD
+            (MANA 25)
+            (CASTTIME 5000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS
+                (3 "CottonCloth")))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL create_item "ShortTankTop" 1 "CottonCloth" 250)
+            (CALL gain_xp 2 14))))
+
+(SPELL () make-iron-powder "#zukminbirf" ()
+    (LET level 1)
+    (LET school TRANSMUTE)
+    (=>
+        (GUARD
+            (MANA 8)
+            (CASTTIME 5000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS "IronOre"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL create_item "IronPowder"
+                (+
+                    (+ 1
+                        (/ spellpower 140))
+                    (/
+                        (random
+                            (max 1
+                                (- 900 spellpower)))
+                        220))
+                "IronOre"
+                700)
+            (CALL gain_xp 3 15))))
+
+(SPELL () make-concentration-potion "#loshira" ()
+    (LET level 1)
+    (LET school TRANSMUTE)
+    (=>
+        (GUARD
+            (MANA 8)
+            (CASTTIME 5000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS "BottleOfWater"
+                (2 "CobaltHerb")
+                (2 "PinkPetal")))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL create_item
+                (if_then_else
+                    (<
+                        (random
+                            (+ 2000 experience))
+                        experience)
+                    "ConcentrationPotion"
+                    "DarkConcentrationPotion")
+                1
+                (if_then_else
+                    (random 2)
+                    "DilutedConcentrationPot"
+                    "DarkConcentrationPotion")
+                2000)
+            (IF success
+                (CALL set_var MAGIC_FLAGS 1 MFLAG_MADE_CONC_POTION_SHIFT 1))
+            (CALL gain_xp 4 16))))
+
+(SPELL () merge-concentration-potions "#skrimp" ()
+    (LET level 1)
+    (LET school TRANSMUTE)
+    (=>
+        (GUARD
+            (MANA 8)
+            (CASTTIME 5000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS "DarkConcentrationPotion" "DilutedConcentrationPot"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL create_item "ConcentrationPotion" 1 "DilutedConcentrationPot" 1000)
+            (message caster
+                (+ "success = " success))
+            (IF success
+                (CALL set_var MAGIC_FLAGS 1 MFLAG_MADE_CONC_POTION_SHIFT 1))
+            (CALL gain_xp 4 17))))
+
+(SPELL () lay-on-hands "#inma" (STRING target)
+    (LET level 1)
+    (LET school LIFE)
+    (=>
+        (GUARD
+            (MANA 10)
+            (CASTTIME 500)
+            (REQUIRE
+                (>
+                    (hp caster)
+                    (/
+                        (max_hp caster)
+                        20)))
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (REQUIRE
+                (if_then_else
+                    (failed
+                        (pc target))
+                    1
+                    (&&
+                        (&&
+                            (&&
+                                (!=
+                                    (pc target)
+                                    caster)
+                                (<
+                                    (rdistance
+                                        (location caster)
+                                        (location
+                                            (pc target)))
+                                    (+ 2
+                                        (/
+                                            (+
+                                                (* 12
+                                                    (sqrt spellpower))
+                                                spellpower)
+                                            100))))
+                            (not
+                                (running_status_update
+                                    (pc target)
+                                    SC_HALT_REGENERATE)))
+                        (not
+                            (is_equipped
+                                (pc target)
+                                "MagicGMTopHat"))))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (IF (not target)
+                (ABORT))
+            (IF (failed
+                    (pc target))
+                (BLOCK
+                    (IF (&&
+                            (||
+                                (== target "mouboo")
+                                (== target "Mouboo"))
+                            (<
+                                (rdistance
+                                    (location caster)
+                                    (location
+                                        (npc "Mouboo")))
+                                (+ 2
+                                    (/ spellpower 100))))
+                        (BLOCK
+                            (SET needed 1000)
+                            (SCRIPT "{
+                                set @spell, 1;
+                                callfunc \"QuestMoubooHeal\";
+                            }"))
+                        (ABORT)))
+                (BLOCK
+                    (SET target
+                        (pc target))
+                    (SET needed
+                        (-
+                            (max_hp target)
+                            (hp target)))))
+            (SET pay_fraction
+                (max 80
+                    (- 200
+                        (+
+                            (vit caster)
+                            (/ spellpower 10))))) "Pay at least 40%"
+            (SET payment
+                (/
+                    (* needed pay_fraction)
+                    200))
+            (SET available
+                (-
+                    (hp caster)
+                    (/
+                        (max_hp caster)
+                        20)))
+            (IF (< payment available)
+                (SET power needed)
+                (BLOCK
+                    (SET payment available)
+                    (SET power
+                        (/
+                            (* available 200)
+                            pay_fraction))))
+            (CALL gain_heal_xp power 1 1 3)
+            (CALL quickheal target power)
+            (SET t 5000) "with dark magic skill you pay 1/20 of max hp but the regenerate cooldown is cut in half"
+            (SET school DARK)
+            (SET h
+                (*
+                    (/
+                        (max_hp caster)
+                        20)
+                    -1))
+            (IF (>
+                    (skill caster school)
+                    level)
+                (itemheal caster h 0))
+            (IF (>
+                    (skill caster school)
+                    level)
+                (SET t 10000))
+            (status_change caster SC_HALT_REGENERATE 0 0 0 0 t)
+            (CALL gain_xp
+                (min 4
+                    (/ payment 100))
+                18))))
+
+(SPELL () lightning-strike "#ingrav" ()
+    (LET level 1)
+    (LET school WAR)
+    (=>
+        (GUARD
+            (MANA 20)
+            (CASTTIME 1000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            3))
+                    (COMPONENTS "IronPowder"))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (SET damage spellpower)
+            (SET damage_bonus
+                (+ 1
+                    (/ spellpower 2)))
+            (CALL install_attack_spell
+                (+ 1
+                    (/ spellpower 90))
+                3000
+                8
+                31)
+            (CALL gain_xp 2 19)
+            (ATTRIGGER
+                (CALL attack_check target)
+                (SET in_rain 0)
+                (SET area
+                    (location caster))
+                (FOREACH SPELL s (rbox
+                        (location caster)
+                        (+ MAX_RAIN_SPELL_RADIUS 1)) (IF (==
+                            (name_of s)
+                            "rain")
+                        (BLOCK
+                            (IF (is_in
+                                    (location caster)
+                                    (. s area))
+                                (BLOCK
+                                    (SET in_rain
+                                        (| in_rain 1))
+                                    (SET area
+                                        (+ area
+                                            (. s area)))))
+                            (IF (is_in
+                                    (location target)
+                                    (. s area))
+                                (SET in_rain
+                                    (| in_rain 2))))))
+                (IF (& in_rain 1)
+                    (BLOCK "caster standing in the rain?  This is going to be fun."
+                        (SET used 0)
+                        (FOREACH TARGET t area
+                            (IF (>
+                                    (+
+                                        (random 200)
+                                        (luk caster))
+                                    175)
+                                (BLOCK
+                                    (SET used
+                                        (+ used 1))
+                                    (CALL elt_damage t
+                                        (/ damage 6)
+                                        (+ 1
+                                            (/ damage_bonus 3))
+                                        ELT_EARTH
+                                        ELT_WIND
+                                        (+ 17
+                                            (random 3))))))
+                        (IF (||
+                                (not used)
+                                (<
+                                    (+
+                                        (random 200)
+                                        (luk caster))
+                                    150))
+                            (BLOCK
+                                (sfx caster
+                                    (+ 17
+                                        (random 3))
+                                    0)
+                                (itemheal caster
+                                    (-
+                                        (- 0 damage)
+                                        (random damage_bonus))
+                                    0))))
+                    (CALL elt_damage target damage damage_bonus ELT_EARTH ELT_WIND
+                        (+ 17
+                            (random 3))))))))
+
+(SPELL (LOCAL) arrow-hail "#frillyar" ()
+    (LET level 1)
+    (LET school WAR)
+    (=>
+        (GUARD
+            (MANA 25)
+            (CASTTIME 5000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (REQUIRE
+                (is_exterior
+                    (location caster)))
+            (GUARD
+                (OR
+                    (COMPONENTS
+                        (20 "Arrow"))
+                    (COMPONENTS
+                        (20 "IronArrow"))))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            3))
+                    (COMPONENTS "SulphurPowder"))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL abort_on_area_shield
+                (location caster))
+            (SET range 7)
+            (SET area
+                (rbox
+                    (awayfrom
+                        (location caster)
+                        (dir caster)
+                        (+ 1 range))
+                    range))
+            (FOREACH SPELL s (rbox
+                    (awayfrom
+                        (location caster)
+                        (dir caster)
+                        (+ 1 range))
+                    (* range 2)) (IF (&&
+                        (!= s self_invocation)
+                        (==
+                            (name_of s)
+                            "arrow-hail"))
+                    (BLOCK
+                        (message caster "A nearby arrow hail spell absorbs your magic!")
+                        (ABORT))))
+            (SET damage 125)
+            (SET damage_bonus
+                (/ spellpower 5))
+            (CALL gain_xp 2 20)
+            (FOR i 0
+                (/ spellpower 8)
+                (BLOCK
+                    (FOR j 0 2
+                        (BLOCK
+                            (SET location
+                                (random_location area))
+                            (sfx location SFX_ARROW_HAIL 0)
+                            (SET done 0)
+                            (FOREACH TARGET target
+                                (rbox location 0)
+                                (BLOCK
+                                    (injure caster target
+                                        (+
+                                            (+ damage
+                                                (random damage_bonus))
+                                            (random damage_bonus))
+                                        0)
+                                    (SET done 1)
+                                    (BREAK)))
+                            (IF (&&
+                                    (==
+                                        (location caster)
+                                        location)
+                                    (not done))
+                                (BLOCK
+                                    (itemheal caster
+                                        (- 0
+                                            (+
+                                                (+ damage
+                                                    (random damage_bonus))
+                                                (random damage_bonus)))
+                                        0)
+                                    (sfx caster SFX_HIT 0)))))
+                    (WAIT
+                        (+
+                            (+ 250
+                                (random 50))
+                            (random 50))))))))
+
+(SPELL () magic-knuckles "#upmarmu" ()
+    (LET level 1)
+    (LET school WAR)
+    (=>
+        (GUARD
+            (MANA 20)
+            (CASTTIME 500)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            3))
+                    (COMPONENTS "Beer"))))
+        (EFFECT
+            (CALL adjust_spellpower WAR)
+            (SET str
+                (str caster))
+            (CALL install_melee_spell
+                (+ 10
+                    (/ spellpower 10))
+                1300
+                34)
+            (ATTRIGGER
+                (CALL melee_damage target 30
+                    (+ 5
+                        (* str 2)))))))
+
+(SPELL (LOCAL) summon-snakes "#halhiss" ()
+    (LET level 1)
+    (LET school DARK)
+    (=>
+        (GUARD
+            (MANA 40)
+            (CASTTIME 15000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (REQUIRE
+                (>
+                    (script_int caster "OrumQuest")
+                    40))
+            (COMPONENTS "DarkCrystal" "SnakeEgg"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 3 31)
+            (CALL summon_dark_spell 1010
+                (+ 1
+                    (/ spellpower 300))
+                (- 4000
+                    (* spellpower 9))
+                (* spellpower 80)
+                2))))
+
+(SPELL () toxic-dart "#phlex" ()
+    (LET level 1)
+    (LET school DARK)
+    (=>
+        (GUARD
+            (MANA 15)
+            (CASTTIME 500)
+            (REQUIRE
+                (>
+                    (script_int caster "OrumQuest")
+                    37))
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            2))
+                    (COMPONENTS
+                        (2 "Root")))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (SET damage
+                (* 5
+                    (sqrt spellpower)))
+            (SET damage_bonus
+                (+ 5
+                    (/
+                        (level caster)
+                        3)))
+            (CALL install_attack_spell
+                (+ 3
+                    (/ spellpower 75))
+                1200
+                4
+                31)
+            (CALL gain_xp 3 35)
+            (ATTRIGGER
+                (CALL attack_check target)
+                (CALL elt_damage target damage damage_bonus ELT_NEUTRAL ELT_POISON 15)
+                (IF (&&
+                        (is_pc target)
+                        (!= caster target))
+                    (status_change target SC_POISON
+                        (+ 5
+                            (max 15
+                                (/ spellpower 15)))
+                        0
+                        0
+                        0
+                        (+ 5000
+                            (* spellpower 1200))))))))
+
+(SPELL (LOCAL) summon-wickedmushroom "#helorp" ()
+    (LET level 1)
+    (LET school DARK)
+    (=>
+        (GUARD
+            (MANA 35)
+            (CASTTIME 15000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (script_int caster "OrumQuest")
+                    36))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS "SmallMushroom" "DarkCrystal"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 3 36)
+            (CALL summon_dark_spell 1106
+                (+ 1
+                    (/ spellpower 250))
+                (- 4000
+                    (* spellpower 9))
+                (* spellpower 80)
+                2))))
+
+(SPELL () flying-backpack "#plugh" (PC target)
+    (LET level 1)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 12)
+            (CASTTIME 1000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            3))
+                    (COMPONENTS "SilkCocoon")))
+            (REQUIRE
+                (<
+                    (rdistance
+                        (location target)
+                        (location caster))
+                    (+ 2
+                        (/ spellpower 30)))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (IF (!= caster target)
+                (sfx caster 2 0))
+            (status_change target SC_FLYING_BACKPACK 0 0 0 0
+                (+ 5000
+                    (* spellpower 500)))
+            (message target "Your backpack is lifted by a mystical force; you no longer feel it pressing on your back.")
+            (CALL gain_xp 1 21)
+            (ATEND
+                (message target "Your backpack is no longer levitating.")
+                (sfx target 2 0)))))
+
+(SPELL () protect "#betsanc" (PC target)
+    (LET level 1)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 14)
+            (CASTTIME 1500)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (REQUIRE
+                (not
+                    (is_equipped
+                        (pc target)
+                        "MagicGMTopHat")))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            3))
+                    (COMPONENTS "HardSpike")))
+            (REQUIRE
+                (<
+                    (rdistance
+                        (location target)
+                        (location caster))
+                    (+ 2
+                        (/ spellpower 30)))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (sfx target 11 0)
+            (IF (!= caster target)
+                (CALL default_effect))
+            (status_change target SC_PHYS_SHIELD
+                (+ 5
+                    (max 15
+                        (/ spellpower 20)))
+                0
+                0
+                0
+                (+ 5000
+                    (* spellpower 1000)))
+            (message target "You feel more protected.")
+            (CALL gain_xp 2 22)
+            (ATEND
+                (message target "You feel less protected.")
+                (sfx target 111 0)))))
+
+(SPELL () happy-curse "#joyplim" (PC target)
+    (LET level 1)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 13)
+            (CASTTIME 1000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            3))
+                    (COMPONENTS "GingerBreadMan")))
+            (REQUIRE
+                (<
+                    (rdistance
+                        (location target)
+                        (location caster))
+                    (+ 1
+                        (/ spellpower 100)))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (IF (>
+                    (skill caster DARK)
+                    1)
+                (FOR i 0
+                    (/ spellpower 10)
+                    (BLOCK
+                        (emote target 5)
+                        (WAIT 500)))
+                (FOR i 0
+                    (/ spellpower 10)
+                    (BLOCK
+                        (emote target 3)
+                        (WAIT 500))))
+            (CALL gain_xp 1 23))))
+
+(SPELL (LOCAL) rain "#kaflosh" ()
+    (LET level 1)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 17)
+            (CASTTIME 3000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (REQUIRE
+                (is_exterior
+                    (location caster)))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            3))
+                    (COMPONENTS "BottleOfWater"))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL abort_on_area_shield
+                (location caster))
+            (FOREACH SPELL s (rbox
+                    (location caster)
+                    (+ MAX_RAIN_SPELL_RADIUS 1)) (IF (&&
+                        (!= s self_invocation)
+                        (==
+                            (name_of s)
+                            "rain"))
+                    (BLOCK
+                        (message caster "A nearby raincloud absorbs your magic.")
+                        (ABORT))))
+            (CALL gain_xp 1 24)
+            (SET range
+                (min MAX_RAIN_SPELL_RADIUS
+                    (+ 3
+                        (/
+                            (min spellpower 200)
+                            30))))
+            (SET area
+                (rbox
+                    (location caster)
+                    range))
+            (IF (||
+                    (is_in
+                        (location
+                            (npc "#DruidTree0#_M"))
+                        area)
+                    (is_in
+                        (location
+                            (npc "#DruidTree1#_M"))
+                        area))
+                (SCRIPT "{
+                    set @flag, 1;
+                    callfunc \"QuestTreeTrigger\";
+                }"))
+            (IF (is_in
+                    (location caster)
+                    (@+
+                        (@ "011-1.gat" 94 38)
+                        9
+                        7))
+                (SCRIPT "{
+                    callfunc \"HalloweenQuestWaterPumpkins\";
+                }")) "Halloween quest"
+            (FOR i 0
+                (/ spellpower 3)
+                (BLOCK
+                    (FOR j 0
+                        (/
+                            (min
+                                (/ spellpower 2)
+                                200)
+                            100)
+                        (BLOCK
+                            (SET location
+                                (random_location area))
+                            (sfx location SFX_RAIN 0)
+                            (FOREACH TARGET target
+                                (rbox location 1)
+                                (IF (==
+                                        (element target)
+                                        ELT_FIRE)
+                                    (injure caster target
+                                        (+ 2
+                                            (random
+                                                (+ 5
+                                                    (/ spellpower 15))))
+                                        0)))))
+                    (WAIT
+                        (+ 400
+                            (random 100))))))))
+
+(PROCEDURE shear-drop (target target2 item prob)
+    (IF (||
+            (== target name)
+            (== target2 name))
+        (BLOCK
+            (IF (< score prob)
+                (drop_item_for place item 1 60000 caster 5000)))))
+
+(PROCEDURE shear-drop2 (target target2 item prob item2 prob2)
+    (IF (||
+            (== target name)
+            (== target2 name))
+        (BLOCK
+            (IF (< score prob)
+                (drop_item_for place item 1 60000 caster 5000)
+                (CALL shear-drop target target2 item2
+                    (+ prob2 prob))))))
+
+(PROCEDURE shear-drop3 (target target2 item prob item2 prob2 item3 prob3)
+    (IF (||
+            (== target name)
+            (== target2 name))
+        (BLOCK
+            (IF (< score prob)
+                (drop_item_for place item 1 60000 caster 5000)
+                (CALL shear-drop2 target target2 item2
+                    (+ prob2 prob)
+                    item3
+                    (+ prob3 prob))))))
+
+(SPELL () shear "#chipchip" ()
+    (LET level 1)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 23)
+            (CASTTIME 1000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level)))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (override_attack caster 1 2000 1 ATTACK_ICON_SHEARING 30 0)
+            (ATTRIGGER
+                (IF (not
+                        (is_pc target))
+                    (BLOCK
+                        (SET score
+                            (random
+                                (- 1000
+                                    (random spellpower)))) "lower score -> more valuable item"
+                        (SET name
+                            (name_of target))
+                        (SET place
+                            (random_location
+                                (rbox
+                                    (location target)
+                                    1)))
+                        (IF (running_status_update target SC_SHEARED)
+                            (ABORT))
+                        (status_change target SC_SHEARED 0 0 0 0 600000) "10 minutes"
+                        (CALL shear-drop "Fluffy" "Fluffy" "WhiteFur" 300)
+                        (CALL shear-drop "EasterFluffy" "Easter Fluffy" "WhiteFur" 300)
+                        (CALL shear-drop "SpikyMushroom" "Spiky Mushroom" "HardSpike" 250)
+                        (CALL shear-drop "Mouboo" "Mouboo" "CottonCloth" 175)
+                        (CALL shear-drop "Cobalt" "CobaltPlant" "CobaltHerb" 700)
+                        (CALL shear-drop "Alizarin" "AlizarinPlant" "AlizarinHerb" 700)
+                        (CALL shear-drop "Gamboge" "GambogePlant" "GambogeHerb" 700)
+                        (CALL shear-drop "Mauve" "MauvePlant" "MauveHerb" 700)
+                        (CALL shear-drop "SilkWorm" "Silkworm" "SilkCocoon" 300)
+                        (CALL shear-drop "Pinkie" "Pinkie" "PinkAntenna" 180)
+                        (IF (&&
+                                (||
+                                    (||
+                                        (== name "Fluffy")
+                                        (== name "Mouboo"))
+                                    (== name "Pinkie"))
+                                (random 2))
+                            (SCRIPT "{
+                                set @value, 1;
+                                callfunc \"QuestSagathaHappy\";
+                            }"))))))))
+
+(SPELL () barrier "#asorm" (PC target)
+    (LET level 1)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 16)
+            (CASTTIME 1000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (REQUIRE
+                (not
+                    (is_equipped
+                        (pc target)
+                        "MagicGMTopHat")))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            3))
+                    (COMPONENTS "SmallMushroom")))
+            (REQUIRE
+                (<
+                    (rdistance
+                        (location target)
+                        (location caster))
+                    (+ 2
+                        (/ spellpower 30)))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (sfx target SFX_BARRIER 0)
+            (IF (!= caster target)
+                (CALL default_effect))
+            (status_change target SC_MBARRIER
+                (+ 20
+                    (max 30
+                        (/ spellpower 8)))
+                0
+                0
+                0
+                (+ 2000
+                    (* spellpower 200)))
+            (message target "You are surrounded by a magical barrier.")
+            (CALL gain_xp 3 25)
+            (ATEND
+                (message target "Your magical barrier dissipates.")
+                (sfx target SFX_UNBARRIER 0)))))
+
+(SPELL (LOCAL) summon-spiky-mushrooms "#kalrenk" ()
+    (LET level 1)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 33)
+            (CASTTIME 20000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS "HardSpike" "Root"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 1 26)
+            (CALL summon_spell 1019
+                (+ 1
+                    (/ spellpower 120))
+                (- 5000
+                    (* spellpower 9))
+                (* spellpower 400)
+                2))))
+
+(SPELL (LOCAL) summon-fluffies "#kalakarenk" ()
+    (LET level 1)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 39)
+            (CASTTIME 20000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS "WhiteFur" "Root"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 1 27)
+            (CALL summon_spell 1020
+                (+
+                    (+ 1
+                        (/ spellpower 170))
+                    (/ spellpower 430))
+                (- 5000
+                    (* spellpower 8))
+                (* spellpower 350)
+                2))))
+
+(SPELL (LOCAL) summon-mouboo "#kalboo" ()
+    (LET level 1)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 35)
+            (CASTTIME 20000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS "MoubooFigurine" "Root"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 2 37)
+            (CALL summon_spell 1028
+                (+ 1
+                    (/ spellpower 270))
+                (- 4000
+                    (* spellpower 9))
+                (* spellpower 100)
+                2))))
+
+(SPELL (LOCAL) summon-pinkie "#kalgina" ()
+    (LET level 1)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 35)
+            (CASTTIME 20000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (COMPONENTS "PinkAntenna" "Root"))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL gain_xp 2 38)
+            (CALL summon_spell 1018
+                (+ 1
+                    (/ spellpower 120))
+                (- 5000
+                    (* spellpower 9))
+                (* spellpower 150)
+                2))))
+
+(SPELL () detect-players "#inwilt" ()
+    (LET level 1)
+    (LET school MAGIC)
+    (=>
+        (GUARD
+            (MANA 7)
+            (CASTTIME 300)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level)))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (SET message "")
+            (FOREACH PC target
+                (rbox
+                    (location caster)
+                    (/ spellpower 2))
+                (IF (&&
+                        (&&
+                            (!= target caster)
+                            (not
+                                (running_status_update
+                                    (pc target)
+                                    SC_HIDE)))
+                        (not
+                            (status_option target SO_GMINVISIBLE)))
+                    (BLOCK
+                        (IF (!= message "")
+                            (SET message
+                                (+ message ", ")))
+                        (SET message
+                            (+ message
+                                (name_of target)))
+                        (IF (> spellpower 99)
+                            (SET message
+                                (+
+                                    (+
+                                        (+ message "(")
+                                        (level target))
+                                    ")"))))))
+            (IF (== message "")
+                (message caster "You sense no-one else nearby.")
+                (message caster
+                    (+ "You sense the following: " message))))))
+
+(SPELL () enchant-lifestone "#manpahil" ()
+    (LET level 1)
+    (LET school MAGIC)
+    (=>
+        (GUARD
+            (MANA 15)
+            (CASTTIME 4000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (GUARD
+                (OR
+                    (OR
+                        (COMPONENTS "BugLeg")
+                        (COMPONENTS "MaggotSlime"))
+                    (COMPONENTS "MauveHerb" "AlizarinHerb" "CobaltHerb" "GambogeHerb"))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (create_item caster "Lifestone" 1)
+            (CALL gain_xp 1 28))))
+
+(SPELL () sense-spouse "#inzuwilt" ()
+    (LET level 1)
+    (LET school MAGIC)
+    (=>
+        (GUARD
+            (MANA 7)
+            (CASTTIME 400)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (REQUIRE
+                (is_married caster))
+            (REQUIRE
+                (is_equipped caster "WeddingRing")))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (IF (||
+                    (failed
+                        (partner caster))
+                    (not
+                        (is_equipped
+                            (partner caster)
+                            "WeddingRing")))
+                (BLOCK
+                    (message caster "You cannot sense your partner.")
+                    (ABORT)))
+            (SET partner
+                (partner caster))
+            (SET name
+                (name_of partner))
+            (IF (||
+                    (is_dead partner)
+                    (!=
+                        (map_nr
+                            (location partner))
+                        (map_nr
+                            (location caster))))
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "You cannot sense " name)
+                            " nearby."))
+                    (ABORT)))
+            (IF (&&
+                    (>
+                        (map_level
+                            (location partner))
+                        2)
+                    (<
+                        (map_level
+                            (location caster))
+                        (map_level
+                            (location partner))))
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "You sense " name)
+                            " somewhere below."))
+                    (ABORT)))
+            (IF (&&
+                    (>
+                        (map_level
+                            (location caster))
+                        2)
+                    (<
+                        (map_level
+                            (location partner))
+                        (map_level
+                            (location caster))))
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "You sense " name)
+                            " somewhere above."))
+                    (ABORT)))
+            (IF (!=
+                    (map_level
+                        (location caster))
+                    (map_level
+                        (location partner)))
+                (message caster
+                    (+
+                        (+ "You sense " name)
+                        " somewhere in the vincinity."))
+                (BLOCK
+                    (SET distance
+                        (rdistance
+                            (location caster)
+                            (location partner)))
+                    (SET dir
+                        (dir_towards
+                            (location caster)
+                            (location partner)
+                            1))
+                    (IF (< distance 3)
+                        (message caster
+                            (+
+                                (+ "You sense " name)
+                                " right next to you."))
+                        (IF (< distance 30)
+                            (message caster
+                                (+
+                                    (+
+                                        (+
+                                            (+ "You sense " name)
+                                            " close by, towards the ")
+                                        dir)
+                                    "."))
+                            (IF (< distance 200)
+                                (message caster
+                                    (+
+                                        (+
+                                            (+
+                                                (+ "You sense " name)
+                                                " nearby, towards the ")
+                                            dir)
+                                        "."))
+                                (message caster
+                                    (+
+                                        (+
+                                            (+
+                                                (+ "You sense " name)
+                                                " in the ")
+                                            dir)
+                                        "."))))))))))
+
+(SPELL () hide "#anwiltyp" (PC target)
+    (LET level 1)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 11)
+            (CASTTIME 1000)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level))
+            (GUARD
+                (OR
+                    (REQUIRE
+                        (>
+                            (skill caster school)
+                            3))
+                    (COMPONENTS "CottonCloth")))
+            (REQUIRE
+                (<
+                    (rdistance
+                        (location target)
+                        (location caster))
+                    (+ 2
+                        (/ spellpower 30)))))
+        (EFFECT
+            (CALL adjust_spellpower school)
+            (sfx target SFX_DEFAULT 0)
+            (IF (!= caster target)
+                (CALL default_effect))
+            (status_change target SC_HIDE 0 0 0 0
+                (+ 5000
+                    (* spellpower 2500)))
+            (CALL gain_xp 2 29)
+            (message target "You are hidden!")
+            (IF (!= caster target)
+                (message caster "You hid someone!"))
+            (ATEND
+                (message target "You are no longer hidden.")))))

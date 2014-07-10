@@ -1,0 +1,389 @@
+"--------------------------------------------------------------------------------"
+"Special-purpose quasispells"
+"--------------------------------------------------------------------------------"
+(SPELL (NONMAGIC SILENT) marriage "marry" (PC target)
+    (=>
+        (GUARD
+            (REQUIRE
+                (||
+                    (is_in
+                        (location caster)
+                        (@+
+                            (@ "014-1.gat" 28 39)
+                            8
+                            6))
+                    (is_in
+                        (location caster)
+                        (@+
+                            (@ "021-2.gat" 20 25)
+                            4
+                            4)))))
+        (EFFECT
+            (IF (== target caster)
+                (ABORT)) "no valid target or tried to marry self?"
+            (IF (<
+                    (level caster)
+                    MIN_MARRY_LEVEL)
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "You must be level " MIN_MARRY_LEVEL)
+                            " or higher to marry!"))
+                    (ABORT)))
+            (IF (<
+                    (level target)
+                    MIN_MARRY_LEVEL)
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "Your partner must be level " MIN_MARRY_LEVEL)
+                            " or higher to marry!"))
+                    (ABORT)))
+            (IF (==
+                    (partner caster)
+                    target)
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "You and "
+                                (name_of target))
+                            " are already married."))
+                    (ABORT)))
+            (IF (is_married caster)
+                (BLOCK
+                    (message caster "You are already married!")
+                    (ABORT)))
+            (IF (is_married target)
+                (BLOCK
+                    (message caster
+                        (+
+                            (name_of target)
+                            " is already married."))
+                    (ABORT)))
+            (IF (!=
+                    (distance
+                        (location caster)
+                        (location target))
+                    1)
+                (BLOCK
+                    (message caster "You need to stand next to each other.")
+                    (ABORT)))
+            (IF (||
+                    (==
+                        (count_item caster "WeddingRing")
+                        0)
+                    (==
+                        (count_item target "WeddingRing")
+                        0))
+                (BLOCK
+                    (message caster "You must both be wearing your wedding rings!")
+                    (ABORT)))
+            (SET script_target target)
+            (SCRIPT "{
+                announce @caster_name$ + \" is asking \" + strcharinfo(0) + \" for marriage.\", 2;
+                mes @caster_name$ + \" wishes to marry you.\";
+                mes \"Do you accept?\";
+                next;
+                menu
+                    \"Yes, I do!\", L_yes,
+                    \"No.\", L_Close;
+
+            L_yes:
+                if (marriage(@caster_name$))
+                    announce @caster_name$ + \" and \" + strcharinfo(0) + \" are now married!\", 0;
+                goto L_Close;
+
+            L_Close:
+                close;
+            }")
+            (IF (not
+                    (is_married caster))
+                (message caster
+                    (+
+                        (name_of target)
+                        " turned down your marriage offer."))))))
+
+(SPELL (LOCAL) mouboo-groan "#g" ()
+    (=>
+        (GUARD
+            (MANA 1)
+            (REQUIRE
+                (==
+                    (name_of caster)
+                    "MOUBOOTAUR")))
+        (EFFECT
+            (FOREACH PC p
+                (rbox
+                    (location caster)
+                    200)
+                (SET distance
+                    (rdistance
+                        (location caster)
+                        (location p))))
+            (IF (< distance 15)
+                (message p "The moubootaur's groaning rings in your ears!")
+                (IF (< distance 70)
+                    (message p "You hear a loud groaning noise, not far away...")
+                    (message p "You hear an odd groaning noise in the distance..."))))))
+
+(SPELL (LOCAL) mouboo-smell "#s" ()
+    (=>
+        (GUARD
+            (MANA 1)
+            (REQUIRE
+                (==
+                    (name_of caster)
+                    "MOUBOOTAUR")))
+        (EFFECT
+            (WAIT 30000)
+            (FOREACH PC p
+                (rbox
+                    (location caster)
+                    30)
+                (message p "You notice a strange smell all around you.")))))
+
+(SPELL (NONMAGIC SILENT) world-shift "#alonzialonzo" ()
+    (=>
+        (GUARD
+            (REQUIRE
+                (&&
+                    (==
+                        (&
+                            (>>
+                                (script_int caster "Easter_2010_QuestState")
+                                16)
+                            1)
+                        1)
+                    (==
+                        (&
+                            (>>
+                                (script_int caster "Easter_2010_QuestState")
+                                7)
+                            3)
+                        2))) "Travel only works when you have both helped the doctor at least thrice and have defeated the invader - top level requirement." )
+        (|
+            (=>
+                (GUARD
+                    (REQUIRE
+                        (&&
+                            (&&
+                                (count_item caster "DarkPetal")
+                                (!=
+                                    (map_nr
+                                        (location caster))
+                                    52))
+                            (!=
+                                (map_nr
+                                    (location caster))
+                                5698))) "Allow unlimited travel with the petal, 52 Do not allow if player is in Illia island, 5698 Do not allow if player is in botcheck area" )
+                (|
+                    (=>
+                        (GUARD
+                            (REQUIRE
+                                (<
+                                    (rdistance
+                                        (location caster)
+                                        (@ "028-1.gat" 69 70))
+                                    5)))
+                        (EFFECT
+                            (sfx
+                                (location caster)
+                                SFX_TELEPORT
+                                200)
+                            (WAIT 8000)
+                            (SCRIPT "{
+                                savepoint \"009-1\", 52, 39;
+                            }")
+                            (warp caster
+                                (@ "009-1.gat" 55 37))
+                            (sfx
+                                (location caster)
+                                SFX_TELEPORT
+                                200)))
+                    (=>
+                        (GUARD
+                            (REQUIRE
+                                (!=
+                                    (map_nr
+                                        (location caster))
+                                    28)))
+                        (EFFECT
+                            (SET inithp
+                                (hp caster)) "Store this value."
+                            (sfx
+                                (location caster)
+                                SFX_TELEPORT
+                                200)
+                            (IF (||
+                                    (||
+                                        (||
+                                            (==
+                                                (map_nr
+                                                    (location caster))
+                                                9)
+                                            (==
+                                                (map_nr
+                                                    (location caster))
+                                                1))
+                                        (==
+                                            (map_nr
+                                                (location caster))
+                                            21))
+                                    (==
+                                        (map_nr
+                                            (location caster))
+                                        20))
+                                (WAIT 8000)
+                                (WAIT 20000))
+                            (IF (<
+                                    (hp caster)
+                                    inithp)
+                                (ABORT)) "Cancel teleport if the player took damage during channel time (hacky, but for most purposes should work.)"
+                            (SCRIPT "{
+                                savepoint \"028-1\", 69, 71;
+                            }")
+                            (warp caster
+                                (@ "028-1.gat" 69 70))
+                            (sfx
+                                (location caster)
+                                SFX_TELEPORT
+                                200)))))
+            (|
+                (=>
+                    (REQUIRE
+                        (<
+                            (rdistance
+                                (location caster)
+                                (@ "028-1.gat" 69 70))
+                            5))
+                    (EFFECT
+                        (set_script_variable caster "Easter_2010_QuestState"
+                            (|
+                                (script_int caster "Easter_2010_QuestState")
+                                (<< 1 17)))
+                        (sfx
+                            (location caster)
+                            SFX_TELEPORT
+                            200)
+                        (WAIT 8000)
+                        (SCRIPT "{
+                            savepoint \"009-1\", 52, 39;
+                        }")
+                        (warp caster
+                            (@ "009-1.gat" 55 37))
+                        (sfx
+                            (location caster)
+                            SFX_TELEPORT
+                            200)))
+                (=>
+                    (GUARD
+                        (REQUIRE
+                            (&&
+                                (!=
+                                    (map_nr
+                                        (location caster))
+                                    28)
+                                (==
+                                    (&
+                                        (>>
+                                            (script_int caster "Easter_2010_QuestState")
+                                            17)
+                                        1)
+                                    0))) "Allow for one free warp home without the petal" )
+                    (EFFECT
+                        (SET inithp
+                            (hp caster)) "Store this value."
+                        (sfx
+                            (location caster)
+                            SFX_TELEPORT
+                            200)
+                        (IF (||
+                                (||
+                                    (||
+                                        (==
+                                            (map_nr
+                                                (location caster))
+                                            9)
+                                        (==
+                                            (map_nr
+                                                (location caster))
+                                            1))
+                                    (==
+                                        (map_nr
+                                            (location caster))
+                                        21))
+                                (==
+                                    (map_nr
+                                        (location caster))
+                                    20))
+                            (WAIT 8000)
+                            (WAIT 20000))
+                        (IF (<
+                                (hp caster)
+                                inithp)
+                            (ABORT)) "Cancel teleport if the player took damage during channel time (hacky, but for most purposes should work.)"
+                        (set_script_variable caster "Easter_2010_QuestState"
+                            (|
+                                (script_int caster "Easter_2010_QuestState")
+                                (<< 1 17)))
+                        (SCRIPT "{
+                            savepoint \"028-1\", 69, 70;
+                        }")
+                        (warp caster
+                            (@ "028-1.gat" 69 70))
+                        (sfx
+                            (location caster)
+                            SFX_TELEPORT
+                            200)))))))
+
+(SPELL (NONMAGIC SILENT) easter-get-debug "#e" (PC p)
+    (=>
+        (GUARD
+            (REQUIRE
+                (||
+                    (==
+                        (name_of caster)
+                        "Freeyorp")
+                    (==
+                        (name_of caster)
+                        "Xakelbael the Dark"))))
+        (EFFECT
+            (SCRIPT "{
+                message strcharinfo(0), \"Global state egg1: \"+ $Easter_2010_Egg_Loc_State1;
+                message strcharinfo(0), \"Global state egg2: \"+ $Easter_2010_Egg_Loc_State2;
+                message strcharinfo(0), \"Global state egg3: \"+ $Easter_2010_Egg_Loc_State3;
+                message strcharinfo(0), \"Global state egg4: \"+ $Easter_2010_Egg_Loc_State4;
+                message strcharinfo(0), \"Global state egg5: \"+ $Easter_2010_Egg_Loc_State5;
+                message strcharinfo(0), \"Global npc state1: \"+ $Easter_2010_Npc_State1;
+                message strcharinfo(0), \"Global npc state2: \"+ $Easter_2010_Npc_State2;
+            }")
+            (message caster
+                (+ "Local state egg1: "
+                    (script_int p "Easter_2010_EggState1")))
+            (message caster
+                (+ "Local state egg2: "
+                    (script_int p "Easter_2010_EggState2")))
+            (message caster
+                (+ "Local state egg3: "
+                    (script_int p "Easter_2010_EggState3")))
+            (message caster
+                (+ "Local state egg4: "
+                    (script_int p "Easter_2010_EggState4")))
+            (message caster
+                (+ "Local state egg5: "
+                    (script_int p "Easter_2010_EggState5")))
+            (message caster
+                (+ "Local state quest: "
+                    (script_int p "Easter_2010_QuestState"))))))
+
+"--------------------------------------------------------------------------------"
+"Kill the GM event spell"
+"--------------------------------------------------------------------------------"
+(SPELL (NONMAGIC) killgm0 "#pullrabbit" ()
+    (=>
+        (REQUIRE
+            (is_equipped caster "MagicGMTopHat"))
+        (EFFECT
+            (SCRIPT "{
+                callfunc \"ActivateMagicGMTophat\";
+            }"))))
