@@ -1,0 +1,155 @@
+"--------------------------------------------------------------------------------"
+"Special-purpose quasispells"
+"--------------------------------------------------------------------------------"
+(SPELL (NONMAGIC SILENT) marriage "marry" (PC target)
+    (=>
+        (GUARD
+            (REQUIRE
+                (||
+                    (is_in
+                        (location caster)
+                        (@+
+                            (@ "014-1.gat" 28 39)
+                            8
+                            6))
+                    (is_in
+                        (location caster)
+                        (@+
+                            (@ "021-2.gat" 20 25)
+                            4
+                            4)))))
+        (EFFECT
+            (IF (== target caster)
+                (ABORT)) "no valid target or tried to marry self?"
+            (IF (<
+                    (level caster)
+                    MIN_MARRY_LEVEL)
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "You must be level " MIN_MARRY_LEVEL)
+                            " or higher to marry!"))
+                    (ABORT)))
+            (IF (<
+                    (level target)
+                    MIN_MARRY_LEVEL)
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "Your partner must be level " MIN_MARRY_LEVEL)
+                            " or higher to marry!"))
+                    (ABORT)))
+            (IF (==
+                    (partner caster)
+                    target)
+                (BLOCK
+                    (message caster
+                        (+
+                            (+ "You and "
+                                (name_of target))
+                            " are already married."))
+                    (ABORT)))
+            (IF (is_married caster)
+                (BLOCK
+                    (message caster "You are already married!")
+                    (ABORT)))
+            (IF (is_married target)
+                (BLOCK
+                    (message caster
+                        (+
+                            (name_of target)
+                            " is already married."))
+                    (ABORT)))
+            (IF (!=
+                    (distance
+                        (location caster)
+                        (location target))
+                    1)
+                (BLOCK
+                    (message caster "You need to stand next to each other.")
+                    (ABORT)))
+            (IF (||
+                    (==
+                        (count_item caster "WeddingRing")
+                        0)
+                    (==
+                        (count_item target "WeddingRing")
+                        0))
+                (BLOCK
+                    (message caster "You must both be wearing your wedding rings!")
+                    (ABORT)))
+            (SET script_target target)
+            (SCRIPT "{
+                announce @caster_name$ + \" is asking \" + strcharinfo(0) + \" for marriage.\", 2;
+                mes @caster_name$ + \" wishes to marry you.\";
+                mes \"Do you accept?\";
+                next;
+                menu
+                    \"Yes, I do!\", L_yes,
+                    \"No.\", L_Close;
+
+            L_yes:
+                if (marriage(@caster_name$))
+                    announce @caster_name$ + \" and \" + strcharinfo(0) + \" are now married!\", 0;
+                goto L_Close;
+
+            L_Close:
+                close;
+            }")
+            (IF (not
+                    (is_married caster))
+                (message caster
+                    (+
+                        (name_of target)
+                        " turned down your marriage offer."))))))
+
+(SPELL (LOCAL) mouboo-groan "#g" ()
+    (=>
+        (GUARD
+            (MANA 1)
+            (REQUIRE
+                (==
+                    (name_of caster)
+                    "MOUBOOTAUR")))
+        (EFFECT
+            (FOREACH PC p
+                (rbox
+                    (location caster)
+                    200)
+                (SET distance
+                    (rdistance
+                        (location caster)
+                        (location p))))
+            (IF (< distance 15)
+                (message p "The moubootaur's groaning rings in your ears!")
+                (IF (< distance 70)
+                    (message p "You hear a loud groaning noise, not far away...")
+                    (message p "You hear an odd groaning noise in the distance..."))))))
+
+(SPELL (LOCAL) mouboo-smell "#s" ()
+    (=>
+        (GUARD
+            (MANA 1)
+            (REQUIRE
+                (==
+                    (name_of caster)
+                    "MOUBOOTAUR")))
+        (EFFECT
+            (WAIT 30000)
+            (FOREACH PC p
+                (rbox
+                    (location caster)
+                    30)
+                (message p "You notice a strange smell all around you.")))))
+
+"--------------------------------------------------------------------------------"
+"Kill the GM event spell"
+"--------------------------------------------------------------------------------"
+(SPELL (NONMAGIC) killgm0 "#pullrabbit" ()
+    (=>
+        (REQUIRE
+            (is_equipped caster "MagicGMTopHat"))
+        (EFFECT
+            (SCRIPT "{
+                callfunc \"ActivateMagicGMTophat\";
+            }"))))

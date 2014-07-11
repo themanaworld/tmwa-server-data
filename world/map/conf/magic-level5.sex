@@ -1,0 +1,53 @@
+"--------------------------------------------------------------------------------"
+"Level 4 spells"
+"--------------------------------------------------------------------------------"
+(SPELL () shroud "#anwilvimar" ()
+    (LET level 4)
+    (LET school NATURE)
+    (=>
+        (GUARD
+            (MANA 40)
+            (CASTTIME 400)
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level)))
+        (EFFECT
+            (CALL default_effect)
+            (shroud caster 0x04))))
+
+(SPELL () teleport "#vorp" (STRING destination)
+    (LET level 4)
+    (LET school ASTRAL)
+    (=>
+        (GUARD
+            (MANA 80)
+            (CASTTIME 400)
+            (DISABLED (COMPONENT "EtherEssence"))
+            (DISABLED (CATALYST "TeleportCrystal"))
+            (REQUIRE
+                (>
+                    (skill caster MAGIC)
+                    level))
+            (REQUIRE
+                (>
+                    (skill caster school)
+                    level)))
+        (EFFECT
+            (CALL default_effect)
+            (WAIT
+                (+ 1000
+                    (/ 200000
+                        (+ spellpower 10))))
+            (sfx
+                (location caster)
+                SFX_TELEPORT
+                200)
+            (warp caster
+                (random_location
+                    (anchor destination)))
+            (sfx caster SFX_TELEPORT 200))))

@@ -1,0 +1,337 @@
+"Default sfx on caster"
+(PROCEDURE default_effect ()
+    (sfx caster
+        (+
+            (- school MAGIC)
+            2)
+        0))
+
+(PROCEDURE sfx_generic (target)
+    (sfx target SFX_DEFAULT 0))
+
+(PROCEDURE sfx_lightning (target)
+    (sfx target SFX_LIGHTNING 0))
+
+(PROCEDURE set_var (name mask shift value)
+    (set_script_variable caster name
+        (|
+            (&
+                (script_int caster name)
+                (neg
+                    (<< mask shift)))
+            (<<
+                (& value mask)
+                shift))))
+
+"value is How many HP we healed"
+"gain is how many life magic experience points we can potentially gain"
+"heal_xp_value_divisor is 1 for instaheal, 2 for slow heal"
+"base_exp_factor is the factor for how many base experience points (max) the player should be allowed to gain"
+(PROCEDURE gain_heal_xp (value gain heal_xp_value_divisor base_exp_factor)
+    (SET last_heal_xp
+        (&
+            (>>
+                (script_int caster SCRIPT_XP)
+                SCRIPT_HEALSPELL_SHIFT)
+            SCRIPT_HEALSPELL_MASK))
+    (IF (&&
+            (!= target caster)
+            (>
+                (/ value heal_xp_value_divisor)
+                (+
+                    (+
+                        (+ 10 last_heal_xp)
+                        (random
+                            (+ last_heal_xp 1)))
+                    (random
+                        (+ last_heal_xp 1)))))
+        (BLOCK
+            (SET heal_xp
+                (+ last_heal_xp gain))
+            (IF (> heal_xp SCRIPT_HEALSPELL_MASK)
+                (SET heal_xp SCRIPT_HEALSPELL_MASK))
+            (CALL set_var SCRIPT_XP SCRIPT_HEALSPELL_MASK SCRIPT_HEALSPELL_SHIFT heal_xp)))
+    (IF (!= target caster)
+        (gain_experience caster
+            (* base_exp_factor
+                (extract_healer_experience target value))
+            0
+            1)))
+
+(PROCEDURE gain_xp (gain index)
+    "Level 4 and 5 magic users don't gain anything from spell levels 0 resp. 0+1"
+    (IF (>
+            (+ level 3)
+            (skill caster MAGIC))
+        (BLOCK
+            (SET last_index
+                (&
+                    (>>
+                        (script_int caster SCRIPT_XP)
+                        SCRIPT_LASTSPELL_SHIFT)
+                    SCRIPT_LASTSPELL_MASK))
+            (SET last_xp
+                (&
+                    (>>
+                        (script_int caster SCRIPT_XP)
+                        SCRIPT_XP_SHIFT)
+                    SCRIPT_XP_MASK))
+            (IF (!= index last_index)
+                (BLOCK "Some variation observed"
+                    (SET xp
+                        (+ last_xp gain))
+                    (IF (> xp SCRIPT_XP_MASK)
+                        (SET xp SCRIPT_XP_MASK))
+                    (CALL set_var SCRIPT_XP SCRIPT_XP_MASK SCRIPT_XP_SHIFT xp)
+                    (CALL set_var SCRIPT_XP SCRIPT_LASTSPELL_MASK SCRIPT_LASTSPELL_SHIFT index)
+                    (IF DEBUG
+                        (message caster
+                            (+ "Spell xp = " xp))))
+                (IF DEBUG
+                    (message caster
+                        (+ "Re-cast same spell, xp remain at " last_xp)))))))
+
+(PROCEDURE create_item (good_item count bad_item difficulty)
+    (SET success 1)
+    (SET score
+        (+ experience
+            (random
+                (min spellpower
+                    (+
+                        (/ experience 3)
+                        1)))))
+    (IF (>= score difficulty)
+        (create_item caster good_item count)
+        (BLOCK
+            (SET success 0)
+            (SET score
+                (+
+                    (+ score
+                        (random
+                            (luk caster)))
+                    (random
+                        (luk caster))))
+            (IF (< score
+                    (/ difficulty 3))
+                (BLOCK
+                    (message caster "Your spell backfires!")
+                    (IF (<
+                            (random 110)
+                            (luk caster))
+                        (itemheal caster
+                            (- 0
+                                (*
+                                    (*
+                                        (+ level 1)
+                                        (+ level 2))
+                                    (+ 3
+                                        (random 28))))
+                            0)
+                        (itemheal caster
+                            (- 0
+                                (+ level 1))
+                            0)))
+                (IF (< score
+                        (/
+                            (* difficulty 2)
+                            3))
+                    (BLOCK
+                        (IF (==
+                                (random 5)
+                                0)
+                            (BLOCK
+                                (message caster "Your spell solidifies into the shape of a mysterious object!")
+                                (create_item caster "Iten" 1))
+                            (message caster "Your spell escapes!")))
+                    (BLOCK
+                        (message caster "Your spell takes on a mind of its own!")
+                        (IF (==
+                                (random 3)
+                                0)
+                            (create_item caster bad_item 1))))))))
+
+"Increase spellpower by school and general magic skill"
+(PROCEDURE adjust_spellpower (school)
+    (SET experience
+        (&
+            (>>
+                (script_int caster SCRIPT_XP)
+                SCRIPT_XP_SHIFT)
+            SCRIPT_XP_MASK))
+    (SET spellpower
+        (+ spellpower
+            (*
+                (+
+                    (skill caster MAGIC)
+                    (skill caster school))
+                10)))
+    "Below, we adjust by special items"
+    (IF (&&
+            (not
+                (failed target))
+            (||
+                (== school LIFE)
+                (== school NATURE)))
+        (IF target
+            (IF (==
+                    (pc target)
+                    (partner caster))
+                (BLOCK
+                    (SET spellpower
+                        (+ spellpower 200))
+                    (IF (is_equipped caster "WeddingRing")
+                        (SET spellpower
+                            (+ spellpower 50)))
+                    (IF (is_equipped
+                            (pc target)
+                            "WeddingRing")
+                        (SET spellpower
+                            (+ spellpower 50))))))))
+
+(PROCEDURE heal (target max_heal)
+    (CALL default_effect)
+    (IF (!= caster target)
+        (sfx target SFX_HEAL 0))
+    (SET power
+        (+ spellpower
+            (vit caster)))
+    (SET power
+        (min max_heal
+            (/
+                (* max_heal power)
+                250)))
+    (itemheal target power 0))
+
+"Goes through instaheal instead of itemheal"
+(PROCEDURE quickheal (target power)
+    (CALL default_effect)
+    (IF (!= caster target)
+        (sfx target SFX_HEAL 0))
+    (instaheal target power 0))
+
+"Can attack the target? Imports attack_range from dynamic environment"
+(PROCEDURE attack_check (target)
+    (IF (not
+            (line_of_sight
+                (location caster)
+                (location target)))
+        (ABORT))
+    (IF (not
+            (<=
+                (rdistance
+                    (location caster)
+                    (location target))
+                attack_range))
+        (ABORT)))
+
+"Cause elemental damage.  bonus_elt grants an attack bonus, malus_elt reduces the attack. `effect' is the sfx ID."
+(PROCEDURE elt_damage (target damage dmgplus bonus_elt malus_elt effect)
+    (SET d
+        (+ damage
+            (random dmgplus)))
+    (IF (==
+            (element target)
+            malus_elt)
+        (SET d
+            (/ d 3)))
+    (IF (==
+            (element target)
+            bonus_elt)
+        (SET d
+            (/
+                (* d
+                    (+ 4
+                        (element_level target)))
+                4)))
+    (sfx target effect 0)
+    (injure caster target d 0))
+
+(PROCEDURE melee_damage (target damage dmgplus)
+    (CALL attack_check target)
+    (SET d
+        (+ damage
+            (random dmgplus)))
+    (SET evade
+        (+
+            (level target)
+            (mdef target)))
+    (IF (<
+            (- spellpower
+                (random 100))
+            evade)
+        (SET d 0))
+    (injure caster target d 0))
+
+(PROCEDURE install_attack_spell (charges base_delay range attack_animation)
+    (CALL default_effect)
+    (SET attack_range range)
+    (override_attack caster charges
+        (/
+            (*
+                (- 200
+                    (agi caster))
+                base_delay)
+            200)
+        range
+        ATTACK_ICON_GENERIC
+        attack_animation
+        0))
+
+(PROCEDURE install_melee_spell (charges base_delay attack_animation)
+    (CALL install_attack_spell charges base_delay 1 attack_animation))
+
+(PROCEDURE summon_spell (mob_id count delay lifetime control_level)
+    (CALL default_effect)
+    (sfx location SFX_SUMMON_START 0)
+    (WAIT delay)
+    (sfx location SFX_SUMMON_FIRE 0)
+    (spawn
+        (rbox location 2)
+        caster
+        mob_id
+        (if_then_else
+            (>=
+                (skill caster ASTRAL)
+                control_level)
+            2
+            1)
+        count
+        lifetime)) "pets when level is high enough"
+
+(PROCEDURE summon_dark_spell (mob_id count delay lifetime control_level)
+    (CALL default_effect)
+    (sfx location SFX_SUMMON_START 0)
+    (WAIT delay)
+    (sfx location SFX_SUMMON_FIRE 0)
+    (spawn
+        (rbox location 2)
+        caster
+        mob_id
+        (if_then_else
+            (>=
+                (skill caster DARK)
+                control_level)
+            2
+            1)
+        count
+        lifetime)) "pets when level is high enough"
+
+(PROCEDURE abort_on_area_shield (pos)
+    (IF (&&
+            (==
+                (is_exterior pos)
+                1)
+            (||
+                (||
+                    (==
+                        (map_nr pos)
+                        1)
+                    (==
+                        (map_nr pos)
+                        9))
+                (==
+                    (map_nr pos)
+                    20)))
+        (BLOCK "1 is Tulimshar, 9 is Hurnscald and 20 is Nivalis"
+            (message caster "A powerful magic drains your spell just as it is beginning to take shape!")
+            (ABORT))))
