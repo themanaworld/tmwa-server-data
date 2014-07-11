@@ -10,8 +10,7 @@
 
     callfunc "TutorialState";
     if ((@tutorial == 11) && !(@tanisha_hasan)) goto L_Hasan;
-    if (FLAGS & FLAG_TUTORIAL_DONE)  goto L_Tut_Done;
-    if (@tutorial >= 8) goto L_Again;
+    if ((@tutorial >= 8) || (FLAGS & FLAG_TUTORIAL_DONE)) goto L_Tut_Done;
     if (@tutorial == 7) goto L_Stats;
     if (@tutorial == 6) goto L_Fail;
     if (@tutorial == 5) goto L_Maggots;
@@ -138,9 +137,6 @@ L_StatsRe:
     next;
     mes "[Tanisha]";
     mes "\"But I doubt he'd do that without a service in return.\"";
-
-    if (@tutorial != 7)
-        goto L_Close;
     goto L_Money;
 
 L_Money:
@@ -148,6 +144,9 @@ L_Money:
     mes "[Tanisha]";
     mes "\"Hey, you are so smart taking out all that yucky maggots for me.";
     mes "You can have my pocket money. Here.\"";
+    set @tutorial_tmp, 8;
+    callfunc "SetTutorialMask";
+    callfunc "TutorialCompleted";
     set Zeny, Zeny + 5;
     next;
     goto L_Advice;
@@ -156,22 +155,7 @@ L_Advice:
     mes "\"When you go to Tulimshar, you should see Bernard. He can make a delicious soup!";
     mes "Good luck!\"";
     emotion EMOTE_HAPPY;
-    if (@tutorial == 7)
-        goto L_SetTutorial;
     goto L_Close;
-
-L_SetTutorial:
-    set @tutorial_tmp, 8;
-    callfunc "SetTutorialMask";
-    callfunc "TutorialCompleted";
-    goto L_Close;
-
-L_Again:
-    mes "[Tanisha]";
-    mes "\"Hi there! Is everything alright? Do you have questions?\"";
-    menu
-        "Yes, could you explain again about...",L_Explain,
-        "No, thanks.",L_Close;
 
 L_Explain:
     menu
@@ -341,8 +325,20 @@ OnInit:
 
 OnTouch:
     callfunc "TutorialState";
+    if ((@tutorial >= 8) && !(FLAGS & FLAG_TUTORIAL_DONE))
+        goto L_Complete;
+    goto L_Check;
+
+L_Complete:
+    callfunc "TutorialCompleted";
+    goto L_Warp;
+
+L_Check:
     if (!(FLAGS & FLAG_TUTORIAL_DONE))
             goto L_Block;
+    goto L_Warp;
+
+L_Warp:
     warp "042-1.gat", 63, 48;
     end;
 
@@ -350,4 +346,3 @@ L_Block:
     message strcharinfo(0), "Tanisha: Please come here. I'd like some help!";
     end;
 }
-
