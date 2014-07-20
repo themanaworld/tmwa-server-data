@@ -317,21 +317,15 @@
         lifetime)) "pets when level is high enough"
 
 (PROCEDURE abort_on_area_shield (pos)
-    (IF (&&
+    (set_script_str caster "@mapname$" (+ (substr pos 2 5) ".gat"))
+    (SCRIPT "{set @mf_outside,getmapflag(@mapname$,MF_OUTSIDE); set @mf_town,getmapflag(@mapname$,MF_TOWN);}")
+    (IF (||
             (==
-                (is_exterior pos)
-                1)
-            (||
-                (||
-                    (==
-                        (map_nr pos)
-                        1)
-                    (==
-                        (map_nr pos)
-                        9))
-                (==
-                    (map_nr pos)
-                    20)))
-        (BLOCK "1 is Tulimshar, 9 is Hurnscald and 20 is Nivalis"
+                (script_int caster "@mf_outside")
+                0)
+            (==
+                (script_int caster "@mf_town")
+                1))
+        (BLOCK
             (message caster "A powerful magic drains your spell just as it is beginning to take shape!")
             (ABORT))))

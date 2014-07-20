@@ -447,9 +447,6 @@
                 (>
                     (skill caster school)
                     level))
-            (REQUIRE
-                (is_exterior
-                    (location caster)))
             (GUARD
                 (OR
                     (COMPONENTS
@@ -849,9 +846,6 @@
                 (>
                     (skill caster school)
                     level))
-            (REQUIRE
-                (is_exterior
-                    (location caster)))
             (GUARD
                 (OR
                     (REQUIRE
@@ -1309,26 +1303,24 @@
             (IF (||
                     (is_dead partner)
                     (!=
-                        (map_nr
-                            (location partner))
-                        (map_nr
-                            (location caster))))
+                        (substr (location partner) 2 3)
+                        (substr (location caster) 2 3)))
                 (BLOCK
                     (message caster
                         (+
                             (+ "You cannot sense " name)
                             " nearby."))
                     (ABORT)))
+            (set_script_str caster "@mapname1$" (+ (substr (location caster) 2 5) ".gat"))
+            (set_script_str caster "@mapname2$" (+ (substr (location partner) 2 5) ".gat"))
+            (SCRIPT "{set @mf_outside1,getmapflag(@mapname1$,MF_OUTSIDE); set @mf_outside2,getmapflag(@mapname2$,MF_OUTSIDE);}")
             (IF (&&
-                    (>
-                        (map_level
-                            (location partner))
-                        2)
+                    (==
+                        (script_int caster "@mf_outside2")
+                        0)
                     (<
-                        (map_level
-                            (location caster))
-                        (map_level
-                            (location partner))))
+                        (script_int caster "@mf_outside2")
+                        (script_int caster "@mf_outside1")))
                 (BLOCK
                     (message caster
                         (+
@@ -1336,15 +1328,12 @@
                             " somewhere below."))
                     (ABORT)))
             (IF (&&
-                    (>
-                        (map_level
-                            (location caster))
-                        2)
+                    (==
+                        (script_int caster "@mf_outside1")
+                        0)
                     (<
-                        (map_level
-                            (location partner))
-                        (map_level
-                            (location caster))))
+                        (script_int caster "@mf_outside1")
+                        (script_int caster "@mf_outside2")))
                 (BLOCK
                     (message caster
                         (+
@@ -1352,10 +1341,8 @@
                             " somewhere above."))
                     (ABORT)))
             (IF (!=
-                    (map_level
-                        (location caster))
-                    (map_level
-                        (location partner)))
+                    (substr (location partner) 2 3)
+                    (substr (location caster) 2 3))
                 (message caster
                     (+
                         (+ "You sense " name)
