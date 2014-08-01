@@ -1,0 +1,93 @@
+function|script|QuestLog|,
+{
+    mes "[Quest Log]";
+    mes "You open your quest log.";
+    callfunc "ClearVariables";
+    cleararray @QuestsCho$,"",getarraysize(@QuestsCho$);
+    setarray @QuestsCho$, "Tutorial", "Pest Control", "Barrels o fun", "Wand", "Hasan and Kaan";
+    goto L_Pad;
+
+L_Pad:
+    set @padcnt, 0;
+    set @QuestCnt, getarraysize(@QuestsCho$);
+    set @paditem, (5 - ((@QuestCnt - ((@QuestCnt/5)*5))));
+    goto L_AddPadItem;
+
+L_AddPadItem:
+    setarray @QuestsCho$[@QuestCnt], "None";
+    set @QuestCnt, @QuestCnt + 1;
+    goto L_PadCheck;
+
+L_PadCheck:
+    set @padcnt, @padcnt + 1;
+    if(@paditem > @padcnt) 
+        goto L_AddPadItem;
+    goto L_Start; 
+
+L_Start:
+    // Checks All States
+    set @ListVar, 0;
+    if (@QuestCnt > 6)
+        goto L_MultiMenus;
+    goto L_SimpleMenu;
+
+L_MultiMenus:
+    menu 
+       @QuestsCho$[(@ListVar + 0)],L_LogOne,
+       @QuestsCho$[(@ListVar + 1)],L_LogTwo,
+       @QuestsCho$[(@ListVar + 2)],L_LogThree,
+       @QuestsCho$[(@ListVar + 3)],L_LogFour,
+       @QuestsCho$[(@ListVar + 4)],L_LogFive,
+       "<<< Back", L_QuestsLess,
+       "Forward >>>", L_QuestsMore,
+       "Phew, I'm done for now.", L_Close;
+
+L_QuestsMore:
+    set @ListVar, @ListVar + 5;
+    if(@ListVar >= @QuestCnt)
+        set @ListVar, @QuestCnt - 5;
+    goto L_MultiMenus;
+
+L_QuestsLess:
+    set @ListVar, @ListVar - 5;
+    if(@ListVar < 0)
+        set @ListVar, 0;
+    goto L_MultiMenus;
+
+L_SimpleMenu:
+    menu
+       @QuestsCho$[(@ListVar + 0)],L_LogOne,
+       @QuestsCho$[(@ListVar + 1)],L_LogTwo,
+       @QuestsCho$[(@ListVar + 2)],L_LogThree,
+       @QuestsCho$[(@ListVar + 3)],L_LogFour,
+       @QuestsCho$[(@ListVar + 4)],L_LogFive,
+       "Phew, I'm done for now.", L_Close;
+
+L_LogOne:
+     set @menuItem, @ListVar;
+     goto L_LogItem;
+L_LogTwo:
+     set @menuItem, @ListVar + 1;
+     goto L_LogItem;
+L_LogThree:
+     set @menuItem, @ListVar + 2;
+     goto L_LogItem;
+L_LogFour:
+     set @menuItem, @ListVar + 3;
+     goto L_LogItem;
+L_LogFive:
+     set @menuItem, @ListVar + 4;
+     goto L_LogItem;
+
+L_LogItem:
+    callfunc @QuestsCho$[@menuItem] + "QuestLog";
+    goto L_Start;
+
+L_Close:
+    return;
+}
+// Place Holder
+function|script|NoneQuestLog|,
+{
+    return;
+}
