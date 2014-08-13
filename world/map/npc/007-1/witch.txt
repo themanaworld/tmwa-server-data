@@ -193,11 +193,6 @@ L_CheckTeleportSpellItems:
     set $@ILLIA_STATUS, 1;
     initnpctimer;
     set @illia_go_find_items, 0;
-    delitem "SapphirePowder", @illia_sapphire_powder;
-    delitem "AmethystPowder", @illia_amethyst_powder;
-    delitem "IronPowder", @illia_iron_powder;
-    delitem "FrozenYetiTear", @illia_yeti_tear;
-    delitem "IcedWater", @illia_iced_water;
 
     mes "[Valia]";
     mes "\"Very well! I can prepare the spell now!\"";
@@ -403,9 +398,37 @@ L_ReadyToTeleport:
     close;
 
 L_AskToTeleport:
-    // Check area users just to give a hint if there are players around,
-    // but do not actually check if the real helpers are here
-    if (getareausers("007-1.gat", 66, 73, 92, 88) < 4)
+    // Check area users just to give a hint if there are players around
+    // $@ILLIA_HERO$ $@ILLIA_HELPER1$ $@ILLIA_HELPER2$ $@ILLIA_HELPER3$
+    if (attachrid($@ILLIA_HELPER1$))
+        goto L_CheckHelper1;
+    goto L_NotEveryoneHere;
+
+L_CheckHelper1:
+    if (isin("007-1.gat", 66, 73, 92, 88))
+        goto L_CheckNext;
+    goto L_NotEveryoneHere;
+
+L_CheckNext:
+    detachrid;
+    if (attachrid($@ILLIA_HELPER2$))
+        goto L_CheckHelper2;
+    goto L_NotEveryoneHere;
+
+L_CheckHelper2:
+    if (isin("007-1.gat", 66, 73, 92, 88))
+        goto L_CheckNext2;
+    goto L_NotEveryoneHere;
+
+L_CheckNext2:
+    detachrid;
+    if (attachrid($@ILLIA_HELPER3$))
+        goto L_TeleportFinal;
+    goto L_NotEveryoneHere;
+
+L_TeleportFinal:
+    detachrid;
+    if (!attachrid($@ILLIA_HERO$))
         goto L_NotEveryoneHere;
     mes "[Valia]";
     mes "\"Everyone seems to be here. Make sure to stay close to me.\"";
@@ -414,6 +437,19 @@ L_AskToTeleport:
         "Wait a minute.", L_Exit;
 
 L_Next5:
+    if (
+        (countitem ("SapphirePowder") < @illia_sapphire_powder) ||
+        (countitem ("AmethystPowder") < @illia_amethyst_powder) ||
+        (countitem ("IronPowder") < @illia_iron_powder) ||
+        (countitem ("FrozenYetiTear") < @illia_yeti_tear) ||
+        (countitem ("IcedWater") < @illia_iced_water)
+        ) goto L_MissingTeleportSpellItems;
+    delitem "SapphirePowder", @illia_sapphire_powder;
+    delitem "AmethystPowder", @illia_amethyst_powder;
+    delitem "IronPowder", @illia_iron_powder;
+    delitem "FrozenYetiTear", @illia_yeti_tear;
+    delitem "IcedWater", @illia_iced_water;
+
     // Stop the 5mins timer and start it again.
     set $@ILLIA_STATUS, 3;
     initnpctimer;
