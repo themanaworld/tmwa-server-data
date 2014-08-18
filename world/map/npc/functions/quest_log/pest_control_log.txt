@@ -1,0 +1,36 @@
+function|script|Pest ControlQuestLog|,
+{
+    // Pest Control (Valon)
+    callfunc "ValonState";
+    if (@valon_end)
+        goto L_QuestComplete;
+    if (!(@valon_start) && (@valon_count))
+        goto L_QuestAskAgain;
+    if (((@valon_start) && (!(@valon_end))) && (@valon_count >= $@ValonMobCnt[@valon_mob]))
+        goto L_NextMob;
+    if ((@valon_start) && (!(@valon_end)))
+        goto L_QuestStarted;
+    goto L_NotStarted;
+
+L_QuestComplete:
+    mes "Complete.";
+    goto L_Return;
+
+L_QuestAskAgain:
+    mes "Talk to Valon.";
+    goto L_Return;
+
+L_NextMob:
+    mes "You killed all the " + $@ValonMobName$[@valon_mob] + " needed. Return to Valon.";
+    goto L_Return;
+
+L_QuestStarted:
+    mes "You need to kill " + $@ValonMobName$[@valon_mob] + ": " + @valon_count + "/" + $@ValonMobCnt[@valon_mob] + ".";
+    goto L_Return;
+
+L_NotStarted:
+    goto L_Return;
+
+L_Return:
+    return;
+}
