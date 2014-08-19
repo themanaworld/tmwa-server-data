@@ -193,11 +193,6 @@ L_CheckTeleportSpellItems:
     set $@ILLIA_STATUS, 1;
     initnpctimer;
     set @illia_go_find_items, 0;
-    delitem "SapphirePowder", @illia_sapphire_powder;
-    delitem "AmethystPowder", @illia_amethyst_powder;
-    delitem "IronPowder", @illia_iron_powder;
-    delitem "FrozenYetiTear", @illia_yeti_tear;
-    delitem "IcedWater", @illia_iced_water;
 
     mes "[Valia]";
     mes "\"Very well! I can prepare the spell now!\"";
@@ -264,12 +259,14 @@ L_HelperTooWeak1:
         goto L_Exit;
     mes "[Team Selector]";
     mes "The player " + $@ILLIA_HELPER1$ + " is too weak to help you.";
+    set $@ILLIA_HELPER1$, "";
     next;
     goto L_ChooseHelperConfirm1;
 
 L_HelperDoesNotExist1:
     mes "[Team Selector]";
     mes "This player " + $@ILLIA_HELPER1$ + " seems offline or does not exist.";
+    set $@ILLIA_HELPER1$, "";
     next;
     goto L_ChooseHelperConfirm1;
 
@@ -313,12 +310,14 @@ L_HelperTooWeak2:
         goto_Exit;
     mes "[Team Selector]";
     mes "The player " + $@ILLIA_HELPER2$ + " is too weak to help you.";
+    set $@ILLIA_HELPER2$, "";
     next;
     goto L_ChooseHelperConfirm2;
 
 L_HelperDoesNotExist2:
     mes "[Team Selector]";
     mes "This player " + $@ILLIA_HELPER2$ + " seems offline or does not exist.";
+    set $@ILLIA_HELPER2$, "";
     next;
     goto L_ChooseHelperConfirm2;
 
@@ -364,6 +363,7 @@ L_HelperTooWeak3:
         goto_Exit;
     mes "[Team Selector]";
     mes "The player " + $@ILLIA_HELPER3$ + " is too weak to help you.";
+    set $@ILLIA_HELPER3$, "";
     next;
     goto L_ChooseHelperConfirm3;
 
@@ -371,6 +371,7 @@ L_HelperTooWeak3:
 L_HelperDoesNotExist3:
     mes "[Team Selector]";
     mes "This player " + $@ILLIA_HELPER3$ + " seems offline or does not exist.";
+    set $@ILLIA_HELPER3$, "";
     next;
     goto L_ChooseHelperConfirm3;
 
@@ -386,6 +387,8 @@ L_PreparingSpell:
     close;
 
 L_ReadyToTeleport:
+    if ($@ILLIA_HELPER1$ == "" || $@ILLIA_HELPER2$ == "" || $@ILLIA_HELPER3$ == "")
+        goto L_PlayerGaveUp;
     if (strcharinfo(0) == $@ILLIA_HERO$)
         goto L_AskToTeleport;
     if (strcharinfo(0) == $@ILLIA_HELPER1$ || strcharinfo(0) == $@ILLIA_HELPER2$ || strcharinfo(0) == $@ILLIA_HELPER3$)
@@ -395,9 +398,37 @@ L_ReadyToTeleport:
     close;
 
 L_AskToTeleport:
-    // Check area users just to give a hint if there are players around,
-    // but do not actually check if the real helpers are here
-    if (getareausers("007-1.gat", 66, 73, 92, 88) < 4)
+    // Check area users just to give a hint if there are players around
+    // $@ILLIA_HERO$ $@ILLIA_HELPER1$ $@ILLIA_HELPER2$ $@ILLIA_HELPER3$
+    if (attachrid($@ILLIA_HELPER1$))
+        goto L_CheckHelper1;
+    goto L_NotEveryoneHere;
+
+L_CheckHelper1:
+    if (isin("007-1.gat", 66, 73, 92, 88))
+        goto L_CheckNext;
+    goto L_NotEveryoneHere;
+
+L_CheckNext:
+    detachrid;
+    if (attachrid($@ILLIA_HELPER2$))
+        goto L_CheckHelper2;
+    goto L_NotEveryoneHere;
+
+L_CheckHelper2:
+    if (isin("007-1.gat", 66, 73, 92, 88))
+        goto L_CheckNext2;
+    goto L_NotEveryoneHere;
+
+L_CheckNext2:
+    detachrid;
+    if (attachrid($@ILLIA_HELPER3$))
+        goto L_TeleportFinal;
+    goto L_NotEveryoneHere;
+
+L_TeleportFinal:
+    detachrid;
+    if (!attachrid($@ILLIA_HERO$))
         goto L_NotEveryoneHere;
     mes "[Valia]";
     mes "\"Everyone seems to be here. Make sure to stay close to me.\"";
@@ -406,6 +437,19 @@ L_AskToTeleport:
         "Wait a minute.", L_Exit;
 
 L_Next5:
+    if (
+        (countitem ("SapphirePowder") < @illia_sapphire_powder) ||
+        (countitem ("AmethystPowder") < @illia_amethyst_powder) ||
+        (countitem ("IronPowder") < @illia_iron_powder) ||
+        (countitem ("FrozenYetiTear") < @illia_yeti_tear) ||
+        (countitem ("IcedWater") < @illia_iced_water)
+        ) goto L_MissingTeleportSpellItems;
+    delitem "SapphirePowder", @illia_sapphire_powder;
+    delitem "AmethystPowder", @illia_amethyst_powder;
+    delitem "IronPowder", @illia_iron_powder;
+    delitem "FrozenYetiTear", @illia_yeti_tear;
+    delitem "IcedWater", @illia_iced_water;
+
     // Stop the 5mins timer and start it again.
     set $@ILLIA_STATUS, 3;
     initnpctimer;
