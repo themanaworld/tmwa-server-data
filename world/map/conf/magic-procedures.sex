@@ -335,3 +335,24 @@
         (BLOCK "1 is Tulimshar, 9 is Hurnscald and 20 is Nivalis"
             (message caster "A powerful magic drains your spell just as it is beginning to take shape!")
             (ABORT))))
+
+(PROCEDURE script_split_str (d str v m)
+    (FOR a 0 m
+        (BLOCK
+            (IF (< (strlen str) 1) (BREAK))
+            (SET arglen (strlen str))
+            (SET argoffset
+                (if_then_else
+                    (contains_string str d)
+                    (strstr str d)
+                    arglen))
+            (SET arg
+                (if_then_else (== arglen argoffset)
+                    str
+                    (substr str 0 argoffset)))
+            (set_script_str caster (+ (+ "@" v) (+ a "$")) arg)
+            (SET str
+                (if_then_else
+                    (> arglen (- argoffset 1))
+                    (substr str (+ argoffset 1) arglen)
+                    "")))))
