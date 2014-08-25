@@ -4,13 +4,17 @@
 
 042-2.gat,110,88,0|script|Tanisha|114,
 {
+    setarray @npc_loc, 110, 88, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
+
     if (isin("042-2.gat", 98, 84, 106, 89))
         goto L_Fighting;
 
-
     callfunc "TutorialState";
-    if ((@tutorial == 11) && !(@tanisha_hasan)) goto L_Hasan;
-    if ((@tutorial >= 8) || (FLAGS & FLAG_TUTORIAL_DONE)) goto L_Tut_Done;
+    if (@tutorial == 10) goto L_Hasan;
+    if (@tutorial >= 8) goto L_Tut_Done;
     if (@tutorial == 7) goto L_Stats;
     if (@tutorial == 6) goto L_Fail;
     if (@tutorial == 5) goto L_Maggots;
@@ -146,7 +150,6 @@ L_Money:
     mes "You can have my pocket money. Here.\"";
     set @tutorial_tmp, 8;
     callfunc "SetTutorialMask";
-    callfunc "TutorialCompleted";
     set Zeny, Zeny + 5;
     next;
     goto L_Advice;
@@ -204,7 +207,8 @@ L_Next3:
     mes "\"The only thing he's afraid of are scorpions.";
     mes "I'm not sure why, some bad experience when he was a child.";
     mes "That was before I was born.\"";
-    set TUTORIAL, TUTORIAL | $@TanishaHasanBit;
+    set @tutorial_tmp, 11;
+    callfunc "SetTutorialMask";
     goto L_Close;
 
 L_Tut_Done:
@@ -311,7 +315,6 @@ OnMaggotDeath:
     end;
 
 L_Close:
-    set @menu, 0;
     close;
 
 OnInit:
@@ -325,18 +328,9 @@ OnInit:
 
 OnTouch:
     callfunc "TutorialState";
-    if ((@tutorial >= 8) && !(FLAGS & FLAG_TUTORIAL_DONE))
-        goto L_Complete;
-    goto L_Check;
-
-L_Complete:
-    callfunc "TutorialCompleted";
-    goto L_Warp;
-
-L_Check:
-    if (!(FLAGS & FLAG_TUTORIAL_DONE))
-            goto L_Block;
-    goto L_Warp;
+    if (@tutorial >= 8)
+        goto L_Warp;
+    goto L_Block;
 
 L_Warp:
     warp "042-1.gat", 63, 48;
