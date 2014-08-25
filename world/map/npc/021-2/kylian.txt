@@ -38,16 +38,12 @@
 
 OnInit:
     // Nibble 4
-    set $@knowYanisNT,   0x10000;
-    set $@knowLatoyNT,   0x20000;
-    set $@knowWeellosNT, 0x40000;
-    set $@knowCasinoNT,  0x80000;
-
-    set $@businessmanNT_MASK, NIBBLE_5_MASK;
-    set $@businessmanNT_SHIFT, NIBBLE_5_SHIFT;
+    set $@knowYanisNT, (1 << 16);
+    set $@knowLatoyNT, (1 << 17);
+    set $@knowWeellosNT, (1 << 18);
+    set $@knowCasinoNT, (1 << 19);
     end;
 }
-
 021-2.gat,25,67,0|script|#KylianOut|32767,1,1,
 {
     set @KylianNTLicense, 0;
@@ -55,10 +51,9 @@ OnInit:
     set @KylianNTCasino, 0;
     end;
 }
-
 021-2.gat,89,55,0|script|Kylian|193,
 {
-    set @state, ((QUEST_NorthTulimshar & $@businessmanNT_MASK) >> $@businessmanNT_SHIFT);
+    set @state, ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
 
     set @acorn_amount, 12;
     set @suitcase_money, 100;
@@ -307,6 +302,6 @@ L_Close:
     close;
 
 S_Update_Mask:
-    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~($@businessmanNT_MASK)) | (@state << $@businessmanNT_SHIFT);
+    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(NIBBLE_5_MASK)) | (@state << NIBBLE_5_SHIFT);
     return;
 }

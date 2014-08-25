@@ -1,9 +1,10 @@
 // Children playing Hide and Seek
-// Quest uses Nibble 0 and 1 of QUEST_NorthTulimshar
+// QUEST_NorthTulimshar
+// BYTE 0
 // Bit 0: started quest at Ayasha
 // Bit 1 - 5: found one of the kids each
-// bit 6: talked to Ayasha after finding all kids
-// bit 7: unused
+// Bit 6: talked to Ayasha after finding all kids
+// Bit 7: unused
 // Author: Jenalya
 
 -|script|#hideandseekNTconfig|-1,
@@ -11,25 +12,60 @@
     end;
 
 OnInit:
-    set $@hideandseekNT_MASK, BYTE_0_MASK;
-    set $@hideandseekNT_SHIFT, BYTE_0_SHIFT;
-
-    set $@hideandseekNT_started,    0x00000001;
-    set $@hideandseekNT_found1,     0x00000002;
-    set $@hideandseekNT_found2,     0x00000004;
-    set $@hideandseekNT_found3,     0x00000008;
-    set $@hideandseekNT_found4,     0x00000010;
-    set $@hideandseekNT_found5,     0x00000020;
-    set $@hideandseekNT_ended,      0x00000040;
+    set $@hideandseekNT_started, (1 << 0);
+    set $@hideandseekNT_found1, (1 << 1);
+    set $@hideandseekNT_found2, (1 << 2);
+    set $@hideandseekNT_found3, (1 << 3);
+    set $@hideandseekNT_found4, (1 << 4);
+    set $@hideandseekNT_found5, (1 << 5);
+    set $@hideandseekNT_ended, (1 << 6);
     end;
 }
+021-1.gat,89,66,0|script|AyashaDebug|258,
+{
+    mes "[Ayasha Debug]";
+    menu
+        "Show", L_Show,
+        "Reset", L_Reset,
+        "Close.", L_Close;
 
+L_Show:
+    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
+    mes "State: " + @state;
+    if (QUEST_NorthTulimshar & $@hideandseekNT_started)
+        mes "Start set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found1)
+        mes "Found 1 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found2)
+        mes "Found 2 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found3)
+        mes "Found 3 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found4)
+        mes "Found 4 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found5)
+        mes "Found 5 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_ended)
+        mes "Complete set";
+    goto L_Close;
+
+L_Reset:
+    set QUEST_NorthTulimshar, 0;
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "AyashaDebug";
+    end;
+}
 021-1.gat,87,66,0|script|Ayasha|258,
 {
     set @child_number, 0;
     callfunc "XmasList";
 
-    set @state, ((QUEST_NorthTulimshar & $@hideandseekNT_MASK) >> $@hideandseekNT_SHIFT);
+    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     set @EXP, 75;
 
@@ -97,7 +133,7 @@ L_Close:
 {
     set @child_number, 1;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & $@hideandseekNT_MASK) >> $@hideandseekNT_SHIFT);
+    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     set @EXP, 15;
 
@@ -159,7 +195,7 @@ L_Close:
 {
     set @child_number, 2;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & $@hideandseekNT_MASK) >> $@hideandseekNT_SHIFT);
+    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     set @EXP, 15;
 
@@ -213,7 +249,7 @@ L_Close:
 {
     set @child_number, 3;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & $@hideandseekNT_MASK) >> $@hideandseekNT_SHIFT);
+    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     set @EXP, 25;
 
@@ -265,7 +301,7 @@ L_Close:
 {
     set @child_number, 4;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & $@hideandseekNT_MASK) >> $@hideandseekNT_SHIFT);
+    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     set @EXP, 15;
 
@@ -306,7 +342,7 @@ L_Close:
 {
     set @child_number, 5;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & $@hideandseekNT_MASK) >> $@hideandseekNT_SHIFT);
+    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     set @EXP, 15;
 
