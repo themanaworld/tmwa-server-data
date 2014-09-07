@@ -1,0 +1,112 @@
+009-7.gat,32,45,0|script|Rouge#Duels|181,
+{
+if (getgmlevel() >= 40 && getequipid(equip_head) == 647) goto L_CallDebug;
+if (!debug && (strcharinfo(0) == "meko")) goto L_CallDebug; // allow meko to debug (has no dev cap)
+goto L_Main;
+
+L_CallDebug:
+  mes "You are wearing a dev cap: calling debug menu...";
+  mes "For the documentation, @@https://wiki.themanaworld.org/index.php/User:Meko/FightClub/debug|click here@@##0";
+  callfunc "fightclub_Debug";
+  goto L_Main;
+
+L_Main:
+  mes "[Rouge]";
+  if(@Duel_Queue$[0] != "") goto L_Queue;
+  mes "Welcome to the Sanguine Vault's duel arena.";
+  if(($fightclub_enabled % 5) != 3) goto L_Disabled;
+  mes "What do you want to do?";
+  menu
+    "See the commands.", L_Challenge,
+    "Set my rules.", L_Rules,
+    "Nevermind.", L_End;
+
+L_Queue:
+  set @caster_name$, @Duel_Queue$[0];
+  set @target_name$, strcharinfo(0);
+  set @target, getcharid(3, @caster_name$);
+  set @Duel_Queue$[0], "";
+  mes @caster_name$ + " wishes to challenge you to a duel.";
+  mes "";
+  callfunc "fightclub_getrules";
+  mes "";
+  mes "Do you accept?";
+  next;
+  menu
+      "Yes, I do!", L_Accept,
+      "No.", L_Decline;
+
+L_ShiftQueue: // here we shift the array to the left
+  if(@Duel_Queue$[@loop] == "") goto L_End;
+  set @Duel_Queue$[(@loop - 1)], @Duel_Queue$[@loop];
+  set @Duel_Queue$[@loop], "";
+  set @loop, (@loop + 1);
+  if(@loop >= getarraysize(@Duel_Queue$)) goto L_Queue;
+  goto L_ShiftQueue;
+
+L_Accept:
+  callfunc "fightclub_AddToQueue";
+  message @caster_name$, @target_name$ + " Accepted your offer.";
+  set @loop, 1;
+  goto L_ShiftQueue;
+
+L_Decline:
+  message @caster_name$, @target_name$ + " turned down your offer.";
+  set @loop, 1;
+  goto L_ShiftQueue;
+
+L_Challenge:
+  if(($fightclub_enabled % 5) != 3) goto L_Disabled;
+  next;
+  mes "[Rouge]";
+  mes "To challenge a player to a duel, you need to write this command:";
+  mes "%%E    ##a"+ getspellinvocation("duel") +" (name)##0";
+  next;
+  mes "Your opponent will have to talk to me to accept or decline your offer.";
+  next;
+  mes "Keep in mind that you can ignore incoming duel requests with this command:";
+  mes "%%E    ##a"+ getspellinvocation("dueloff") +"##0";
+  next;
+  mes "To un-ignore, simply write the same command again.";
+  goto L_End;
+
+L_Disabled:
+  mes "Sadly, the duel system is currently disabled. Please try again later.";
+  goto L_End;
+
+L_Rules:
+  callfunc "fightclub_setrules";
+  goto L_End;
+
+L_End:
+  close;
+
+//announcements below
+OnAnnounceNext:
+  npctalk "##0The next battle ("+ $@Duel_Queue_ID[0] +") is ##1" + $@Duel_Queue_Red$[0] + "##0 vs. ##3" + $@Duel_Queue_Blue$[0] + "##0.The battle will start in "+ $@Duel_TimeBeforeWarp +" seconds.";
+  end;
+
+OnAnnounceIntrusion:
+  npctalk "Intrusion detected. Annihilation in progress... Done.";
+  end;
+
+OnAnnounceTimeOut:
+  npctalk "Time limit reached! Both player lose!";
+  end;
+
+OnAnnounceRedWins:
+  npctalk $@Duel_Queue_Red$[0] + " wins the duel against "+ $@Duel_Queue_Blue$[0] +"!";
+  end;
+
+OnAnnounceRedForfeit:
+  npctalk $@Duel_Queue_Red$[0] + " wins by forfeit!";
+  end;
+
+OnAnnounceBlueWins:
+  npctalk $@Duel_Queue_Blue$[0] + " wins the duel against "+ $@Duel_Queue_Red$[0] +"!";
+  end;
+
+OnAnnounceBlueForfeit:
+  npctalk $@Duel_Queue_Blue$[0] + " wins by forfeit!";
+  end;
+}

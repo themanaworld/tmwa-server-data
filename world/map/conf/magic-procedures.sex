@@ -280,36 +280,35 @@
 (PROCEDURE install_melee_spell (charges base_delay attack_animation)
     (CALL install_attack_spell charges base_delay 1 attack_animation))
 
-(PROCEDURE summon_spell (mob_id count delay lifetime control_level)
-    (CALL default_effect)
-    (sfx location SFX_SUMMON_START 0)
-    (WAIT delay)
-    (sfx location SFX_SUMMON_FIRE 0)
-    (spawn
-        (rbox location 2)
-        caster
-        mob_id
-        (if_then_else
-            (>=
-                (skill caster ASTRAL)
-                control_level)
-            2
-            1)
-        count
-        lifetime)) "pets when level is high enough"
+(PROCEDURE fightclub_check ()
+    (IF (&&
+            (is_in (location caster)
+                (@+
+                    (@ "009-7.gat" (script_int caster "$@fightclub_x1") (script_int caster "$@fightclub_y1"))
+                    (- (script_int caster "$@fightclub_x2") (script_int caster "$@fightclub_x1"))
+                    (- (script_int caster "$@fightclub_y2") (script_int caster "$@fightclub_y1"))))
+            (||
+                (== (script_int caster "$@Duel_NoMagic") 1)
+                (!= (script_int caster "@Duel_Fighter") 1)))
+        (ABORT)))
 
-(PROCEDURE summon_dark_spell (mob_id count delay lifetime control_level)
+(PROCEDURE summon_spell (mob_id count delay lifetime control_level school)
     (CALL default_effect)
     (sfx location SFX_SUMMON_START 0)
     (WAIT delay)
     (sfx location SFX_SUMMON_FIRE 0)
     (spawn
-        (rbox location 2)
+        (rbox location (if_then_else
+                            (is_in (location caster)
+                                (@+
+                                    (@ "009-7.gat" (- (script_int caster "$@fightclub_x1") 2) (- (script_int caster "$@fightclub_y1") 2))
+                                    (+ (- (script_int caster "$@fightclub_x2") (script_int caster "$@fightclub_x1")) 2)
+                                    (+ (- (script_int caster "$@fightclub_y2") (script_int caster "$@fightclub_y1")) 2))) 1 2))
         caster
         mob_id
         (if_then_else
             (>=
-                (skill caster DARK)
+                (skill caster school)
                 control_level)
             2
             1)
