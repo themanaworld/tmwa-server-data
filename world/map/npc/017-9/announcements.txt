@@ -1,9 +1,5 @@
-//############################################################################
-//#                                                                          #
-//#                             GM scheduled broadcasts                      #
-//#                                                                          #
-//############################################################################
-
+// TMW Auto-Messages 
+//
 // $@GMSA_STATUS values:
 //      0: Broadcasts not running
 //      1: Broadcasts running
@@ -13,11 +9,107 @@
 // $@GMSA_TICK: broadcast the message every $@GMSA_TICK hours
 // $@GMSA_CURRENT_TICK: internal counter incremented every hour
 
-017-9.gat,26,24,0|script|Stone Board|145,
+// $@BBSMSG_STATUS values:
+//      0: Message not running
+//      1: Message running
+// $@BBSMSG_NAME$: the GM/Admin who created the message, if any
+// $@BBSMSG_MSG$: the message to be messageed
+
+017-9.gat,26,24,0|script|TMW Messages|145,
 {
     if (getgmlevel() < 60)
         goto L_Close;
 
+    mes "[GM Scheduled Message Board]";
+    mes "Welcome to the automated messenging system.";
+    mes "Which do you want to change.";
+    menu
+        "Neither.", L_Close,
+        "Broadcast.", L_BeginBroadcast,
+        "Message.", L_BeginMessage;
+
+L_BeginMessage:
+    if ($@BBSMSG_STATUS)
+        goto L_InfoMessage;
+    goto L_PrepareMessage;
+
+L_InfoMessage:
+    mes "[GM Scheduled Message Board]";
+    mes $@BBSMSG_NAME$ + " the current message:";
+    mes $@BBSMSG_MSG$;
+    next;
+
+    mes "What do you want to do?";
+    menu
+        "Nothing.", L_Close,
+        "Nothing but... what is this?", L_Help,
+        "Set the Message.", L_StopMessage;
+
+L_PrepareMessage:
+    callsub S_Help;
+    next;
+    mes "There is no message.";
+    mes "Do you want to create one?";
+    menu
+        "No.", L_Close,
+        "Yes.", L_CreateMessage;
+
+L_CreateMessage:
+    mes "[GM Scheduled Message Board]";
+    mes "Enter the message to message:";
+    input $@BBSMSG_MSG$;
+    if ($@BBSMSG_MSG$ == "")
+        goto L_InvalidMessageMessage;
+
+    next;
+    mes "The message will be used as the additional note:";
+    mes $@BBSMSG_MSG$;
+    next;
+    mes "Is this correct?";
+    menu
+        "No. I'll retry.", L_CreateMessage,
+        "No", L_Close,
+        "Yes.", L_StartMessage;
+
+L_InvalidMessageMessage:
+    mes "[GM Scheduled Message Board]";
+    mes "The message can't be empty. Please retry.";
+    goto L_CreateMessage;
+
+L_Help:
+    callsub S_Help;
+    goto L_Close;
+
+S_Help:
+    mes "[GM Scheduled Message Board]";
+    mes "This board allows a GM to add message to message board.";
+    mes "Only one message can be at a time.";
+    next;
+    mes "This board allows a GM to schedule a message to be broadcast every X hours.";
+    mes "Only one broadcast can be scheduled at a time.";
+    return;
+
+L_StopMessage:
+    callsub S_StopMessage;
+    goto L_CreateMessage;
+
+S_StopMessage:
+    stopnpctimer;
+    setnpctimer 0;
+    set $@BBSMSG_STATUS, 0;
+    set $@BBSMSG_NAME$, "";
+    set $@BBSMSG_MSG$, "";
+    return;
+
+L_StartMessage:
+    if ($@BBSMSG_STATUS == 1)
+        goto L_Abort;
+    set $@BBSMSG_STATUS, 1;
+    set $@BBSMSG_NAME$, strcharinfo(0);
+    mes "Done.";
+    goto L_Close;
+
+L_BeginBroadcast:
     if ($@GMSA_STATUS)
         goto L_InfoBroadcast;
     goto L_PrepareBroadcast;
@@ -101,16 +193,6 @@ L_InvalidBroadcastTick:
     mes "You obviously can't repeat a message every 0 hours. Please retry.";
     goto L_CreateBroadcast;
 
-L_Help:
-    callsub S_Help;
-    goto L_Close;
-
-S_Help:
-    mes "[GM Scheduled Broadcasts Board]";
-    mes "This board allows a GM to schedule a message to be broadcast every X hours.";
-    mes "Only one broadcast can be scheduled at a time.";
-    return;
-
 S_PerformBroadcast:
     announce $@GMSA_MSG$, 0;
     return;
@@ -154,7 +236,7 @@ L_StartBroadcast:
 
 L_Abort:
     mes "[GM Scheduled Broadcasts Board]";
-    mes $@GMSA_NAME$ + " has created a scheduled broadcast just before you, hence yours will abort.";
+    mes $@BBSMSG_NAME$ + " has created a message just before you, hence yours will abort.";
     goto L_Close;
 
 L_Close:
