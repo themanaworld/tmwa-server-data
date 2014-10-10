@@ -8,31 +8,41 @@
 
 042-1.gat,104,49,0|script|Scared Man|160,
 {
-    if ((@hasan_complete) && ((@tutorial == 12) || (@tutorial == 14)))
+    setarray @npc_loc, 104, 49, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_End;
+    if (@tutorial >= 13)
         goto L_TutDone;
     message strcharinfo(0), "He looks too afraid to say anything.";
-    end;
+    goto L_End;
 
 L_TutDone:
     message strcharinfo(0), "Thanks. Kaan's been much nicer to me now";
+    goto L_End;
+
+L_End:
     end;
 }
 042-1.gat,102,49,0|script|Hasan|189,2,2,
 {
+    setarray @npc_loc, 102, 49, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
     goto L_Main;
 
 L_Main:
     callfunc "TutorialState";
     if ((getcharid(3) == $@ScorpionFighter) || ($@ScorpionFighter && $@ScorpionFighter != getcharid(3)))
         goto L_Afraid;
-    if ((@hasan_complete) && ((@tutorial == 12) || (@tutorial == 14)))
+    if (@tutorial == 14)
         goto L_TutDone;
-    // implicitly, $@ScorpionFighter is nonzero
-    if ((@hasan_complete) && (@tutorial == 13))
+    if (@tutorial == 13)
         goto L_Thank;
-    if (@tutorial == 12) 
+    if (@tutorial == 12)
         goto L_Trick;
-    if ((@tutorial == 10) || (@tutorial == 11))
+    if ((@tutorial == 9) || (@tutorial == 10) || (@tutorial == 11))
         goto L_FightAgain;
 
     mes "You over hear some people nearby.";
@@ -58,7 +68,7 @@ L_Main:
     next;
     mes "Sounds like this person is in trouble.\"";
     next;
-    set @tutorial_tmp, 10;
+    set @tutorial_tmp, 9;
     callfunc "SetTutorialMask";
     mes "[Unfriendly Guy]";
     mes "\"What are you looking at?\"";
@@ -93,7 +103,8 @@ L_Trick:
 L_ScratchHead:
     if ($@ScorpionFighter)
         goto L_Wait;
-    set TUTORIAL, TUTORIAL | $@HasanCompleteBit;
+    set @tutorial_tmp, 14;
+    callfunc "SetTutorialMask";
     set $@ScorpionTimer, 0;
     set $@ScorpionFighter, getcharid(3);
     set $@ScorpDeath, PC_DIE_COUNTER;
@@ -157,7 +168,7 @@ L_Close:
     close;
 
 OnTouch:
-    if ((@hasan_complete) && ((@tutorial == 12) || (@tutorial == 14)))
+    if (@tutorial >= 13)
         end;
     goto L_Main;
 }

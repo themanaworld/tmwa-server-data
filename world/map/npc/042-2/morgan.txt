@@ -6,12 +6,12 @@
 function|script|MorganState|,
 {
     callfunc "ClearVariables";
-    set @morgan, ((TUTORIAL & NIBBLE_6_MASK) >> NIBBLE_6_SHIFT);
+    set @morgan, ((STARTAREA & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
     return;
 }
 function|script|SetMorganMask|,
 {
-    set TUTORIAL, (TUTORIAL & ~(NIBBLE_6_MASK) | (@morgan_tmp << NIBBLE_6_SHIFT));
+    set STARTAREA, (STARTAREA & ~(NIBBLE_3_MASK) | (@morgan_tmp << NIBBLE_3_SHIFT));
     set @morgan_tmp, 0;
     return;
 }
@@ -23,7 +23,7 @@ function|script|SetMorganMask|,
         "Yes.", L_Reset,
         "No.", L_End;
 L_Reset:
-    set TUTORIAL, (TUTORIAL & ~(NIBBLE_6_MASK) | (0 << NIBBLE_6_SHIFT));
+    set STARTAREA, (STARTAREA & ~(NIBBLE_3_MASK) | (0 << NIBBLE_3_SHIFT));
     mes "Reset!";
     goto L_End;
 
@@ -37,6 +37,10 @@ OnInit:
 }
 042-2,101,57,0|script|Morgan|355,
 {
+    setarray @npc_loc, 101, 57, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
     callfunc "MorganState";
     if (readparam(bInt) >= 5)
         goto L_Learn;

@@ -3,25 +3,67 @@
 function|script|ClearVariables|,
 {
     // Tutorial 
-    if (sorfina)
-        goto L_SetAllTut;
-    goto L_Easter;
+    if ((TUTORIAL) || (sorfina))
+        goto L_ResetTut;
+    goto L_Heathin;
 
-L_SetAllTut:
-    if (FLAGS & FLAG_TUTORIAL_DONE)
+L_ResetTut:
+    //TUTORIAL to STARTAREA
+    if ((sorfina) || (kaan) || (hasan) || (tanisha))
         goto L_ResetAllTut;
-    if ((FLAGS & FLAG_TUTORIAL_DONE) && (!(TUTORIAL & $@HasanCompleteBit)))
-        set TUTORIAL, TUTORIAL | $@HasanCompleteBit;
-    set @tutorial_tmp, (sorfina + tanisha + hasan + kaan);
-    set TUTORIAL, (TUTORIAL & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
+    set @tutorial_tmp, ((TUTORIAL & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    // Tutorial
+    // Nibble 0 (sorfina, tanisha, kaan & hasan)
+    set STARTAREA, (STARTAREA & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
+    // Nibble 1 (valon)
+    set @tutorial_tmp, ((TUTORIAL & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    set @valon_done, (TUTORIAL & (1 << 7));
+    set @valon_start, (TUTORIAL & (1 << 6));
+    if (@valon_start)
+        set @tutorial_tmp, (@tutorial_tmp + 2);
+    if (@valon_done)
+        set @tutorial_tmp, 7;
+    set STARTAREA, (STARTAREA & ~(NIBBLE_1_MASK) | (@tutorial_tmp << NIBBLE_1_SHIFT));
+    // Nibble 2 (Counts)
+    set @tutorial_tmp, ((TUTORIAL & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+    set STARTAREA, (STARTAREA & ~(NIBBLE_2_MASK) | (@tutorial_tmp << NIBBLE_2_SHIFT));
+    // Nibble 3 (Morgan)
+    set @tutorial_tmp, ((TUTORIAL & NIBBLE_6_MASK) >> NIBBLE_6_SHIFT);
+    set STARTAREA, (STARTAREA & ~(NIBBLE_3_MASK) | (@tutorial_tmp << NIBBLE_3_SHIFT));
+    // Nibble 4 (Zegas) Barrels shuffled
+    set @zegas_done, (TUTORIAL & (1 << 23));
+    set @zegas_start, (TUTORIAL & (1 << 16));
+    set @zegas_met, (TUTORIAL & (1 << 30));
     set @tutorial_tmp, 0;
-    goto L_ResetAllTut;
+    if (@zegas_met)
+        set @tutorial_tmp, 1;
+    if (@zegas_start)
+        set @tutorial_tmp, 2;
+    if (@zegas_done)
+        set @tutorial_tmp, 4;
+    set STARTAREA, (STARTAREA & ~(NIBBLE_4_MASK) | (@tutorial_tmp << NIBBLE_4_SHIFT));
+    // Nibble 5 (Barrels)
+    set @tutorial_tmp, 0;
+    set STARTAREA, (STARTAREA & ~(NIBBLE_5_MASK) | (@tutorial_tmp << NIBBLE_5_SHIFT));
+    // Nibble 6 (Barrels)
+    set STARTAREA, (STARTAREA & ~(NIBBLE_6_MASK) | (@tutorial_tmp << NIBBLE_6_SHIFT));
+    set TUTORIAL, 0;
+    goto L_Heathin;
 
 L_ResetAllTut:
     set sorfina, 0;
     set tanisha, 0;
     set hasan, 0;
     set kaan, 0;
+    set TUTORIAL, 0;
+    set STARTAREA, 0;
+    set FLAGS, FLAGS &~ FLAG_TUTORIAL_DONE;
+    goto L_Heathin;
+
+L_Heathin:
+    if (HEATHIN_QUEST > 0)
+        set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(NIBBLE_6_MASK)) | (HEATHIN_QUEST << NIBBLE_6_SHIFT);
+    set HEATHIN_QUEST, 0;
     goto L_Easter;
 
 L_Easter:
@@ -92,7 +134,7 @@ L_Easter:
 
     set QUEST_Christmas09_state, 0;
 
-     set QUEST_Easter09_slots, 0;
+    set QUEST_Easter09_slots, 0;
 
     // easter 2010
     // This must not be cleared: since some people would like to go to the easter island!

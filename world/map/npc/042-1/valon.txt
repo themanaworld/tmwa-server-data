@@ -5,8 +5,6 @@
     end;
 
 OnInit:
-    set $@ValonStartBit, (1 << 6);
-    set $@ValonEndBit, (1 << 7);
     setarray $@ValonMob, 1002,1050,1046,1003;
     setarray $@ValonMobName$, "Maggots","House Maggots","Tame Scorpions","Scorpion";
     setarray $@ValonMobCnt, 10,5,3,1;
@@ -14,32 +12,30 @@ OnInit:
 }
 function|script|ValonState|,
 {
-    set @valon_mob, ((TUTORIAL & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
-    set @valon_count, ((TUTORIAL & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-    set @valon_start, (TUTORIAL & $@ValonStartBit);
-    set @valon_end, (TUTORIAL & $@ValonEndBit);
+    set @valon_state, ((STARTAREA & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    set @valon_mob, 0;
+    if (@valon_state >= 2)
+        set @valon_mob, (@valon_state - 2);
+    set @valon_count, ((STARTAREA & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
     return;
 }
-function|script|AddValonMobMask|,
+function|script|setValonMask|,
 {
-    set @valon_tmp, (@valon_mob + 1);
-    if (@valon_tmp > 15)
-        set @valon_tmp, 15;
-    set TUTORIAL, (TUTORIAL & ~(NIBBLE_2_MASK) | (@valon_tmp << NIBBLE_2_SHIFT));
+    set STARTAREA, (STARTAREA & ~(NIBBLE_1_MASK) | (@valon_tmp << NIBBLE_1_SHIFT));
     set @valon_tmp, 0;
     return;
 }
 function|script|ResetValonCntMask|,
 {
-    set TUTORIAL, (TUTORIAL & ~(NIBBLE_3_MASK) | (0 << NIBBLE_3_SHIFT));
+    set STARTAREA, (STARTAREA & ~(NIBBLE_2_MASK) | (0 << NIBBLE_2_SHIFT));
     return;
 }
 function|script|AddValonCntMask|,
 {
     set @valon_tmp, (@valon_count + 1);
-    if (@valon_tmp > 15)
-        set @valon_tmp, 15;
-    set TUTORIAL, (TUTORIAL & ~(NIBBLE_3_MASK) | (@valon_tmp << NIBBLE_3_SHIFT));
+    if (@valon_tmp > $@ValonMobCnt[@valon_mob])
+        set @valon_tmp, $@ValonMobCnt[@valon_mob];
+    set STARTAREA, (STARTAREA & ~(NIBBLE_2_MASK) | (@valon_tmp << NIBBLE_2_SHIFT));
     set @valon_tmp, 0;
     callfunc "ValonProgress";
     return;
@@ -47,7 +43,7 @@ function|script|AddValonCntMask|,
 function|script|ValonProgress|,
 {
     callfunc "ValonState";
-    if ((@valon_start) && (!(@valon_end)))
+    if ((@valon_state > 1) && (@valon_state < 6))
         message strcharinfo(0), $@ValonMobName$[@valon_mob] + ": " + @valon_count + "/" + $@ValonMobCnt[@valon_mob];
     return;
 }
@@ -60,10 +56,8 @@ function|script|ValonProgress|,
         "No.", L_End;
 
 L_Reset:
-    set TUTORIAL, (TUTORIAL & ~(NIBBLE_2_MASK) | (0 << NIBBLE_2_SHIFT));
-    set TUTORIAL, (TUTORIAL & ~(NIBBLE_3_MASK) | (0 << NIBBLE_3_SHIFT));
-    set TUTORIAL, TUTORIAL &~ $@ValonStartBit;
-    set TUTORIAL, TUTORIAL &~ $@ValonEndBit;
+    set STARTAREA, (STARTAREA & ~(NIBBLE_1_MASK) | (0 << NIBBLE_1_SHIFT));
+    set STARTAREA, (STARTAREA & ~(NIBBLE_2_MASK) | (0 << NIBBLE_2_SHIFT));
     mes "Reset!";
     goto L_End;
 
@@ -77,14 +71,18 @@ OnInit:
 }
 042-1.gat,48,111,0|script|Valon|156,
 {
+    setarray @npc_loc, 48, 111, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
     callfunc "ValonState";
-    if (@valon_end)
+    if (@valon_state >= 6)
         goto L_QuestComplete;
-    if (!(@valon_start) && (@valon_count))
+    if (@valon_start == 1)
         goto L_QuestAskAgain;
-    if (((@valon_start) && (!(@valon_end))) && (@valon_count >= $@ValonMobCnt[@valon_mob]))
+    if (@valon_count >= $@ValonMobCnt[@valon_mob])
         goto L_NextMob;
-    if ((@valon_start) && (!(@valon_end)))
+    if ((@valon_state >= 2) && (@valon_state < 6))
         goto L_QuestStarted;
     goto L_QuestAsk;
 
@@ -93,7 +91,7 @@ L_QuestAskAgain:
     mes "\"Hello, Adventurer! Have you come back to help?\"";
     menu
         "Yes. I will help with the desert beasts.", L_Accept,
-        "Maybe some other time.", L_NoThanks;
+        "Maybe some other time.", L_Close;
 
 L_QuestAsk:
     mes "[Valon]";
@@ -109,17 +107,17 @@ L_QuestAsk:
     mes "\"Maybe you would like help and earn your stripes?\"";
     next;
     mes "\"The Council of Wizard's does offer a reward for helping...\"";
+    set @valon_tmp, 1;
+    callfunc "setValonMask";
+    callfunc "ResetValonCntMask";
     menu
         "YES!!! let me at them!", L_Accept,
-        "Maybe some other time.", L_NoThanks;
-
-L_NoThanks:
-    callfunc "AddValonCntMask";
-    goto L_Close;
+        "Maybe some other time.", L_Close;
 
 L_Accept:
-    callfunc "ResetValonCntMask";
-    set TUTORIAL, TUTORIAL | $@ValonStartBit;
+    set @valon_tmp, 2;
+    callfunc "setValonMask";
+    callfunc "ValonState";
     goto L_NewMob;
 
 L_NextMob:
@@ -128,10 +126,11 @@ L_NextMob:
     next;
     mes "\"The Wizard's thank thee as well.\"";
     set Zeny, Zeny + 25;
-    next;
+    set @valon_tmp, (@valon_state + 1);
+    callfunc "setValonMask";
     callfunc "ResetValonCntMask";
-    callfunc "AddValonMobMask";
     callfunc "ValonState";
+    next;
     if (@valon_mob == getarraysize($@ValonMob))
         goto L_QuestOver;
     goto L_NewMob;
@@ -155,7 +154,8 @@ L_QuestOver:
     mes "[Valon]";
     mes "\"Thanks once again for helping with the monsters in the desert.\"";
     getexp 50, 0;
-    set TUTORIAL, TUTORIAL | $@ValonEndBit;
+    set @valon_tmp, (@valon_state + 1);
+    callfunc "setValonMask";
     goto L_Close;
 
 L_QuestComplete:

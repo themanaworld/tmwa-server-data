@@ -1,34 +1,12 @@
 // This file is part of the Tutorial
 // Author: Jenalya
-042-2.gat,21,26,0|script|TutDebug|154,
-{
-    mes "[TutDebug]";
-    mes "Reset?";
-    menu
-        "Yes.",L_Reset,
-        "No.",L_End;
-
-L_Reset:
-    set TUT_var, 0;
-    set @tutorial_tmp, 0;
-    set TUTORIAL, (TUTORIAL & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
-    set TUTORIAL, TUTORIAL &~ $@SorfinaHasanBit;
-    set TUTORIAL, TUTORIAL &~ $@TanishaHasanBit;
-    set TUTORIAL, TUTORIAL &~ $@HasanCompleteBit;
-    set FLAGS, FLAGS &~ FLAG_TUTORIAL_DONE;
-    mes "Reset!";
-    goto L_End;
-
-L_End:
-    end;
-
-OnInit:
-    if(!debug)
-        disablenpc "TutDebug";
-    end;
-}
 042-2.gat,28,26,0|script|Sorfina|154,1,4
 {
+    setarray @npc_loc, 28, 26, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
+
     callfunc "TutorialState";
 
     if ((Hp != MaxHp) && (@tutorial >= 4))
@@ -43,8 +21,7 @@ L_Heal:
     goto L_Main;
 
 L_Main:
-    if ((@tutorial == 11) && !(@sorfina_hasan)) goto L_Hasan;
-    if (FLAGS & FLAG_TUTORIAL_DONE) goto L_Again;
+    if (@tutorial == 10) goto L_Hasan;
     if (@tutorial >= 4) goto L_Again;
     if (@tutorial == 3) goto L_Clothes;
     if (@tutorial == 2) goto L_Chest;
@@ -262,7 +239,8 @@ L_Next:
     next;
     mes "\"However, the scorpions poison caused a bad fever and once Hasan had recovered from that, he was even more malicious than before.\"";
     mes "She sighs.";
-    set TUTORIAL, TUTORIAL | $@SorfinaHasanBit;
+    set @tutorial_tmp, 11;
+    callfunc "SetTutorialMask";
     goto L_Close;
 
 L_SkipTut:
@@ -275,7 +253,6 @@ L_SkipTut:
 L_Bye:
     mes "[Sorfina]";
     mes "\"Alright, if you say so. But take at least this.";
-    callfunc "TutorialCompleted";
     getitem "Knife", 1;
     getitem "SlingShot", 1;
     getitem "SlingBullet", 100;
@@ -283,6 +260,8 @@ L_Bye:
     getitem "CottonShirt", 1;
     getitem "RaggedShorts", 1;
     set Zeny, Zeny + 50;
+    set @tutorial_tmp, 8;
+    callfunc "SetTutorialMask";
     mes "Good luck.\"";
     goto L_Close;
 
@@ -356,7 +335,7 @@ L_Empty:
 
 OnTouch:
     callfunc "TutorialState";
-    if ((@tutorial < 4) && !(FLAGS & FLAG_TUTORIAL_DONE))
+    if (@tutorial < 4)
             goto L_Block;
     warp "042-1.gat", 51, 44;
     end;
