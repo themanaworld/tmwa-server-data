@@ -1,0 +1,372 @@
+// Halloween Annual
+// Authors: alastrim, enchilado, o11c, wushin
+// This file initializes global constants, which includes dialog.
+
+// Event Configuration:
+// Generic stuff
+// $@halloween_start_day = the first day in October the quest can be done
+// $@halloween_year = the year this quest is activated, for event necromancers
+// $@halloween_memory_count = Number of masks each NPC remembers
+// $@halloween_min_level = Minimum level to go trick-or-treating
+
+// Global stuff
+// $@halloween_big_reward = The main reward randomly given, usually after the counter has reached 7-10
+// $@halloween_sweets = Array with all the sweets to be given as treats
+// $@halloween_sweets_num = Size of that array
+// $@halloween_mask_IDs = Array with the IDs of all the masks that cover your face + The Scary Axehat
+// $@halloween_scare_factors = Array with the basic scare factor of each mask
+//     678      Noh Mask        2
+//     679      Demon Mask      4
+//     1221     Skull Mask      4
+//     634      Face Mask       4
+//     615      Pumpkin Helmet  2
+//     639      Crusade Helmet  3
+//     769      Guy Fawkes Mask 2
+//     801      Pinkie Helmet   2
+//     1218     Paper Bag       1
+//     1276     Opera Mask      3
+//     1277     Jester Mask     2
+//     1279     Goblin Mask     4
+//     4027     Yeti Mask       4
+//     616      Axe Hat         4
+
+// Per-NPC stuff
+// $@halloween_npc_<name> = constants for @halloween_npc_id, the index into the array
+// $@halloween_npc_names$ = Array with all NPC names inside brackets, to be used in the function
+// $@halloween_greetings$ = Array with all the NPC initial greetings when you "trick or treat" them
+// $@halloween_trick_notscary$ = Array with the less scary menu options
+// $@halloween_react_notscary$ = Array with all the reactions to the less scary menu options
+// $@halloween_trick_scary$ = Array with scary menu options
+// $@halloween_react_scary$ = Array with all the reactions to the scary menu options
+// $@halloween_trick_veryscary$ = Array with the most scary menu options
+// $@halloween_react_veryscary$ = Array with all the reactions to the very scary menu options
+
+// In the appropriate NPCs, do something like:
+//+    if ($@halloween_time)
+//+        goto L_Halloween;
+//+    goto L_Main;
+//+
+//+L_Halloween:
+//+    set @halloween_npc_id, $@halloween_npc_eurni;
+//+    callfunc "TrickOrTreat";
+//+    goto L_Main;
+//+
+//+L_Main:
+
+// Variables:
+// $@halloween_maskmemory = Sliced Array containing the record of the last masks used to trick or treat each NPC.
+// @halloween_npc_id = NPC id, this variable is set when calling this function by an NPC
+// HALLOWEENTIME = Permanent variable used to control your progress in the quest.
+//          The high bits are used to keep track of the NPCs you already tricked while showing your face.
+//          The low bits are used to keep track of how many times you've gotten treats.
+//          Currently, the vague plan is 16 for each, but we may need to use this variable for the second part of the quest.
+// HALLOWEENYEAR = Keys the player to the year so the annual can be redone.
+
+// !!! IMPORTANT NOTE: a maximum of 14 NPCs can be used for this quest !!!
+// HALLOWEENTIME
+// Byte 0 + 1: Karma (65535)
+// BIT 16: Big Reward
+// BIT 17: Charm Reward
+// BIT 18: NPC #13
+// BIT 19: NPC #12
+// BIT 20: NPC #11
+// BIT 21: NPC #10
+// BIT 22: NPC #9
+// BIT 23: NPC #8
+// BIT 24: NPC #7
+// BIT 25: NPC #6
+// BIT 26: NPC #5
+// BIT 27: NPC #4
+// BIT 28: NPC #3
+// BIT 29: NPC #2
+// BIT 30: NPC #1
+// BIT 31: NPC #0
+
+-|script|#HalloweenConfig|-1,
+{
+    end;
+
+OnCommandRestartQuest:
+    goto L_Main;
+
+OnInit:
+    goto L_Main;
+
+L_Main:
+    // Halloween Key Identifier Set through Botcheck Debug
+    if(!($HALLOWEEN_TIME_KEY) || (getarraysize($HALLOWEEN_TIME_KEY) != 6))
+        setarray $HALLOWEEN_TIME_KEY, 10,10,11,24,2,gettime(7);
+    if(($HALLOWEEN_TIME_KEY[0] == 0) || ($HALLOWEEN_TIME_KEY[0] > 12))
+        goto L_HalloweenError;
+    if(($HALLOWEEN_TIME_KEY[1] == 0) || ($HALLOWEEN_TIME_KEY[1] > 12))
+        goto L_HalloweenError;
+    if(($HALLOWEEN_TIME_KEY[2] == 0) || ($HALLOWEEN_TIME_KEY[2] > 12))
+        goto L_HalloweenError;
+    if(($HALLOWEEN_TIME_KEY[3] == 0) || ($HALLOWEEN_TIME_KEY[3] > 31))
+        goto L_HalloweenError;
+    if(($HALLOWEEN_TIME_KEY[4] == 0) || ($HALLOWEEN_TIME_KEY[4] > 31))
+        goto L_HalloweenError;
+    if($HALLOWEEN_TIME_KEY[5] == 0)
+        goto L_HalloweenError;
+
+    // Event Runs until Reward Period.
+    // Month Start/End
+    set $@halloween_start_month, $HALLOWEEN_TIME_KEY[0];
+    set $@halloween_reward_start_month, $HALLOWEEN_TIME_KEY[1];
+    set $@halloween_end_month, $HALLOWEEN_TIME_KEY[2];
+
+    // Reward Day Start/End
+    set $@halloween_reward_start_day, $HALLOWEEN_TIME_KEY[3];
+    set $@halloween_reward_end_day, $HALLOWEEN_TIME_KEY[4];
+
+    // Time Settings
+    set $@halloween_no_event_time, 0;
+    set $@halloween_event_time, 1;
+    set $@halloween_reward_time, 2;
+
+    // How many, maximum is 8
+    set $@halloween_memory_count, 5;
+    // Level to go trick-or-treating
+    set $@halloween_min_level, 10;
+    // Age to go trick-or-treating
+    set $@halloween_min_age, (7*86400);
+
+    // Number of trick and treats completed to get charm.
+    set $@halloween_charm_count, 10;
+    set $@halloween_got_charm_reward, (1 << 17);
+    setarray $@halloween_big_reward, 905, 1175;
+    set $@halloween_got_big_reward, (1 << 16);
+    setarray $@halloween_sweets,
+        534,  // OrangeCupcake
+        737,  // ChocolateCake
+        510,  // Candy
+        513,  // Cake
+        509,  // ChocolateBar
+        519,  // CherryCake
+        736,  // WhiteCake
+        738,  // OrangeCake
+        739,  // AppleCake
+        3006, // TonoriDelight
+        3007, // Marshmallow
+        3009, // JellySkull
+        3010, // CandyPumpkin
+        838,  // CranberryLollipop
+        839,  // GrapeLollipop
+        840;  // OrangeLollipop
+    set $@halloween_sweets_num, getarraysize($@halloween_sweets);
+
+    setarray $@halloween_mask_IDs, 678, 679, 1221, 634, 615, 639, 769, 801, 1218, 1276, 1277, 1279, 4027, 616;
+    setarray $@halloween_scare_factors, 2, 4, 4, 4, 2, 3, 2, 2, 1, 3, 2, 4, 4, 4;
+
+    if (getarraysize($@halloween_mask_IDs) != getarraysize($@halloween_scare_factors))
+        goto L_HalloweenError;
+    // temporary counter
+    set $@n, 0;
+
+    set $@halloween_npc_caretaker,         $@n;
+    set $@halloween_npc_names$[$@n],       "[Caretaker]";
+    set $@halloween_greetings$[$@n],       "\"Alright, come on then. Show me your trick.\"";
+    set $@halloween_trick_notscary$[$@n],  "Trick? You must have misheard me. I've come because the Government needs to build a road through your house.";
+    set $@halloween_react_notscary$[$@n],  "\"And?\"";
+    set $@halloween_trick_scary$[$@n],     "You look pretty deceased to me, old man. Undead must die! Yaah!";
+    set $@halloween_react_scary$[$@n],     "\"Now listen here, I'm as alive as you - oh. Say, that was a good trick!\"";
+    set $@halloween_trick_veryscary$[$@n], "Your wife... she's - she's - she's DEAD!";
+    set $@halloween_react_veryscary$[$@n], "\"But... I live here! My wife l... is dead here. You can't - oh. I DIDN'T mishear you. You really had me fooled!\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_eurni,             $@n;
+    set $@halloween_npc_names$[$@n],       "[Eurni the Surgeon]";
+    set $@halloween_greetings$[$@n],       "\"Oh, right.\"";
+    set $@halloween_trick_notscary$[$@n],  "I paid good money for your services, and when I get home I find that now I'm not a man OR a woman...";
+    set $@halloween_react_notscary$[$@n],  "\"Heheh, sucks, buddy. But there's always a risk.\"";
+    set $@halloween_trick_scary$[$@n],     "Look out! A scorpion!";
+    set $@halloween_react_scary$[$@n],     "\"Where? Darn things, I think they're what keep scaring away my customers.\"";
+    set $@halloween_trick_veryscary$[$@n], "I know about your hobby of performing numerous sex changes on yourself.";
+    set $@halloween_react_veryscary$[$@n], "\"Shut up! Look, will you hold your tongue if I give you more treats...?\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_george,            $@n;
+    set $@halloween_npc_names$[$@n],       "[George the Pirate]";
+    set $@halloween_greetings$[$@n],       "\"Shiver me timbers! What do ye mean?\"";
+    set $@halloween_trick_notscary$[$@n],  "Well... I do a trick, and then... you give me a treat...";
+    set $@halloween_react_notscary$[$@n],  "\"Arrrrh, I knew what ye meant, to be sure! I were just kidding with ye, pretending to be a crazy old pirate! Arrrrh!\"";
+    set $@halloween_trick_scary$[$@n],     "Your eyepatch is on the wrong eye!";
+    set $@halloween_react_scary$[$@n],     "\"Arrrrh, so it is! Ta for pointing it out, mate - wait, no it isn't! Harhar, what a good trick!\"";
+    set $@halloween_trick_veryscary$[$@n], "By the powers, ye're a daft landlubber to be sure, ye barnacle-ridden swab!";
+    set $@halloween_react_veryscary$[$@n], "\"Arrrrh, ye scurvy dog! I'm sure my first mate will return with the ship eventually.\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_inac,              $@n;
+    set $@halloween_npc_names$[$@n],       "[Inac]";
+    set $@halloween_greetings$[$@n],       "\"Oh, yes?\"";
+    set $@halloween_trick_notscary$[$@n],  "Yes, we monsters moved into the tunnels... and now we're coming out... for revenge!";
+    set $@halloween_react_notscary$[$@n],  "\"Haha! That's the worse trick I've seen today.\"";
+    set $@halloween_trick_scary$[$@n],     "One of those monsters you mentioned is crawling out of the well!";
+    set $@halloween_react_scary$[$@n],     "\"He IS? Where!? Aah! Oh. You were just tricking, right? Hahaha, that was good, I really believed you.\"";
+    set $@halloween_trick_veryscary$[$@n], "Yeah, but it's all fossil water. One day it's gonna dry up!";
+    set $@halloween_react_veryscary$[$@n], "\"Fossil water? You mean it's turned to STONE? But you can't drink - oh... you were just tricking, right? You WEREN'T? Aaaah!\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_kfahr,             $@n;
+    set $@halloween_npc_names$[$@n],       "[Kfahr the Warrior]";
+    set $@halloween_greetings$[$@n],       "\"Ah, yes!\" He rubs his hands. \"Trick away, then!\"";
+    set $@halloween_trick_notscary$[$@n],  "Meh... I'm only trick-or-treating you to avoid listening to your BORING stories.";
+    set $@halloween_react_notscary$[$@n],  "\"Boring?\" He grins. \"You must be mistaking me for someone else.\"";
+    set $@halloween_trick_scary$[$@n],     "Did you hear the bad news already? They made up a law prohibiting to serve alcoholic drinks! That means no more beer!";
+    set $@halloween_react_scary$[$@n],     "\"What? But- but- why do they- oh, you tricked me. I was about to really get worried for a moment.\"";
+    set $@halloween_trick_veryscary$[$@n], "Have you heard? Tulimshar was destroyed by a giant Desert Worm!";
+    set $@halloween_react_veryscary$[$@n], "\"What!?\" Kfahr stares. \"And no one called for me? This is appalling! But - what? That was your trick? Hm, nice one. You almost had me fooled!\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_nurse,             $@n;
+    set $@halloween_npc_names$[$@n],       "[Nurse]";
+    set $@halloween_greetings$[$@n],       "\"I don't know why I let the Mayor trick me into this... well, go on then.\"";
+    set $@halloween_trick_notscary$[$@n],  "I ate too much Hallowe'en candy, now I'm sick!";
+    set $@halloween_react_notscary$[$@n],  "\"Well, no one's to blame but yourself, you know. Just make sure you don't eat any more.\"";
+    set $@halloween_trick_scary$[$@n],     "Hurnscald has been struck by plague! You must come and tend to the dying!";
+    set $@halloween_react_scary$[$@n],     "\"But I don't know how to deal with plague! Oh no! You must get the Doctor! Unless... you were just tricking me! Whew, that's a relief!\"";
+    set $@halloween_trick_veryscary$[$@n], "The Doctor asked me to tell you that he doesn't want to see you any more.";
+    set $@halloween_react_veryscary$[$@n], "\"What? But we were getting it on so well. I mean, getting on so well! Oh... that was your trick! Dear me, I believed you!\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_pachua,            $@n;
+    set $@halloween_npc_names$[$@n],       "[Chief Pachua]";
+    set $@halloween_greetings$[$@n],       "\"Ah, the strange custom the Government man told me about.\"";
+    set $@halloween_trick_notscary$[$@n],  "Look out! A scorpion!";
+    set $@halloween_react_notscary$[$@n],  "\"Don't mind him, he won't hurt you. Er... so I give you sweets now, or what?\"";
+    set $@halloween_trick_scary$[$@n],     "Yes, the ritual giving of treats... LOTS of treats... or else!";
+    set $@halloween_react_scary$[$@n],     "\"Alright, here you go.\"";
+    set $@halloween_trick_veryscary$[$@n], "Yes, the ritual giving of treats followed by the sacrifice of the treat-giver...";
+    set $@halloween_react_veryscary$[$@n], "\"I do like a good sacrifice, but less so if it's me! I'll give you extra sweets if you forget the sacrifice.\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_tathin,            $@n;
+    set $@halloween_npc_names$[$@n],       "[Tathin]";
+    set $@halloween_greetings$[$@n],       "\"I am employed by the Tonori Government, make sure you abide the regulations we wrote down for Trick-or-Treaters this year...\"";
+    set $@halloween_trick_notscary$[$@n],  "Of course I will... not!";
+    set $@halloween_react_notscary$[$@n],  "\"Hm!\"";
+    set $@halloween_trick_scary$[$@n],     "Regulations, smegulations. The Tonori Government can go suck a lollipop for all I care!";
+    set $@halloween_react_scary$[$@n],     "\"!? How dare you - oh, that was your trick! You did have me worried for a moment...\"";
+    set $@halloween_trick_veryscary$[$@n], "What regulations?";
+    set $@halloween_react_veryscary$[$@n], "\"You mean you haven't even READ - I don't believe - this is ghastly - I - oh... that was your trick... gosh, I believed you for a minute! I thought you really hadn't read them!\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_vincent,           $@n;
+    set $@halloween_npc_names$[$@n],       "[Vincent]";
+    set $@halloween_greetings$[$@n],       "\"Ooh, okay! Trick away!\"";
+    set $@halloween_trick_notscary$[$@n],  "Look out! A scorpion!";
+    set $@halloween_react_notscary$[$@n],  "\"They're everywhere in this desert! Don't worry about them.\"";
+    set $@halloween_trick_scary$[$@n],     "Hey, that action figure you're building just CAME TO LIFE!";
+    set $@halloween_react_scary$[$@n],     "\"Really? Cool! Where? What? You were tricking me? WAAAH!\"";
+    set $@halloween_trick_veryscary$[$@n], "Wow, this is a neat action figure! Haha, check out its moves! Oops! Never mind, I'm sure it'll glue back on.";
+    set $@halloween_react_veryscary$[$@n], "\"My Bug Leg action figure! You broke it!\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_weellos,           $@n;
+    set $@halloween_npc_names$[$@n],       "[Weellos]";
+    set $@halloween_greetings$[$@n],       "\"Trick me, then!\"";
+    set $@halloween_trick_notscary$[$@n],  "Look out! A scorpion!";
+    set $@halloween_react_notscary$[$@n],  "\"Pesky things, I know, but they're everywhere around here...\"";
+    set $@halloween_trick_scary$[$@n],     "Actually, it's a fake. It was built just ten years ago.";
+    set $@halloween_react_scary$[$@n],     "\"No! But I've read all the accounts... oh, haha! Very funny!\"";
+    set $@halloween_trick_veryscary$[$@n], "They say the earthquake ruined the foundations of this building, and that it's going to fall down.";
+    set $@halloween_react_veryscary$[$@n], "\"B-but it's one of the oldest buildings around! And... wait, I just remembered that it was designed to be earthquake-proof. You were tricking me!\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_zack,              $@n;
+    set $@halloween_npc_names$[$@n],       "[Zack]";
+    set $@halloween_greetings$[$@n],       "\"I thought no one would find me down here, but I'm glad I was wrong! Let's see your trick, then.\"";
+    set $@halloween_trick_notscary$[$@n],  "You think this is something to do with Hallowe'en? Hands up!";
+    set $@halloween_react_notscary$[$@n],  "\"Heh... That was ok.\"";
+    set $@halloween_trick_scary$[$@n],     "And now that I've found you, you die!";
+    set $@halloween_react_scary$[$@n],     "\"Aah! What did I do? Oh - wait - I see! That was a good one!\"";
+    set $@halloween_trick_veryscary$[$@n], "Yes, I have found you. After all these years.";
+    set $@halloween_react_veryscary$[$@n], "\"Uncle Henry? But how, I covered my tracks so well! I never told anyone that - wait... that was your trick! You had me worried for a minute!\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_kimarr,            $@n;
+    set $@halloween_npc_names$[$@n],       "[Kimarr]";
+    set $@halloween_greetings$[$@n],       "\"Many have tried to scare me, all have failed. Try your best, but the frozen wastes contain all manner of horrors.\"";
+    set $@halloween_trick_notscary$[$@n],  "Look out Yetis!";
+    set $@halloween_react_notscary$[$@n],  "\"You will have to do better then that.\"";
+    set $@halloween_trick_scary$[$@n],     "Hrmm Is that your wife calling you?";
+    set $@halloween_react_scary$[$@n],     "\"What? You haven't se... wait a second. Ok that was good.\"";
+    set $@halloween_trick_veryscary$[$@n], "The Kaizeian government declared fluffies an endangered species.";
+    set $@halloween_react_veryscary$[$@n], "\"NOooOOOooo!!! The Hunt!!! ... wait a second, you city folk are slick.\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_nikolai,           $@n;
+    set $@halloween_npc_names$[$@n],       "[Nikolai]";
+    set $@halloween_greetings$[$@n],       "\"Let us see if you are scarier then Kfahr's Fairy Tales.\"";
+    set $@halloween_trick_notscary$[$@n],  "Your going over their to the store.";
+    set $@halloween_react_notscary$[$@n],  "\"*You're* *there* Ugh, thats more annoying then scary.\"";
+    set $@halloween_trick_scary$[$@n],     "Whats White, Blue and slimey? I don't know either but it's right behind you.";
+    set $@halloween_react_scary$[$@n],     "\"More Slimes, Oh no the books again. O you tricked me, good one.\"";
+    set $@halloween_trick_veryscary$[$@n], "I hope you don't mind I used some of this kindling you have on the shelves to start a fire.";
+    set $@halloween_react_veryscary$[$@n], "\"AHHHHH!!!! You burned our books!!! *GAH* ... *Eye Twitch*\"";
+
+    set $@n, $@n + 1;
+
+    set $@halloween_npc_vellamo,           $@n;
+    set $@halloween_npc_names$[$@n],       "[Vellamo]";
+    set $@halloween_greetings$[$@n],       "\"Ahh yes, more candy related ritual.\"";
+    set $@halloween_trick_notscary$[$@n],  "Candy? No, I want Parsley.";
+    set $@halloween_react_notscary$[$@n],  "\"Parsley? is this some kind of monster? I'm not getting this scare at all\"";
+    set $@halloween_trick_scary$[$@n],     "Chief Warrick says he needs the candy inventory by end of day.";
+    set $@halloween_react_scary$[$@n],     "\"Ahh, no! I forgot to put a cover sheet on my Candy Production and Storage report.\"";
+    set $@halloween_trick_veryscary$[$@n], "I'm sorry, but your doctor says your diabetic.";
+    set $@halloween_react_veryscary$[$@n], "\"Darkest day of my life, blacker then the darkest chocolate.\"";
+
+    set $@halloween_num_npcs, $@n + 1;
+    set $@halloween_all_npc_bits, -1 << (32 - $@halloween_num_npcs);
+
+    set $@n, 0;
+
+    if((gettime(6) == $@halloween_reward_start_month && gettime(5) >= $@halloween_reward_start_day 
+            && (gettime(5) <= $@halloween_reward_end_day && $@halloween_reward_start_month == $@halloween_end_month
+                || !($@halloween_reward_start_month == $@halloween_end_month)))
+        || (gettime(6) == $@halloween_end_month && gettime(5) <= $@halloween_reward_end_day 
+            && (gettime(5) >= $@halloween_reward_start_day && $@halloween_reward_start_month == $@halloween_end_month 
+                || !($@halloween_reward_start_month == $@halloween_end_month)))
+        || (gettime(6) < $@halloween_end_month && gettime(6) > $@halloween_reward_start_month))
+        goto L_RewardTime;
+    if((gettime(6) >= $@halloween_start_month) || (gettime(6) <= $@halloween_end_month && gettime(5) <= $@halloween_reward_start_day))
+        goto L_EventTime;
+    goto L_NoEventTime;
+
+L_NoEventTime:
+    if($HALLOWEEN_TIME_KEY[5] < gettime(7))
+        setarray $HALLOWEEN_TIME_KEY, $HALLOWEEN_TIME_KEY[0],$HALLOWEEN_TIME_KEY[1],$HALLOWEEN_TIME_KEY[2],$HALLOWEEN_TIME_KEY[3],$HALLOWEEN_TIME_KEY[4],gettime(7);
+    set $@halloween_time, $@halloween_no_event_time;
+    goto L_Return;
+
+L_EventTime:
+    set $@halloween_time, $@halloween_event_time;
+    goto L_Return;
+
+L_RewardTime:
+    set $@halloween_time, $@halloween_reward_time;
+    goto L_Return;
+
+L_Return:
+    callfunc "SpawnMunro";
+    callfunc "ReplaceTrees";
+    end;
+
+L_HalloweenError:
+    debugmes "Halloween is Dead Jim.";
+    gmcommand "@mapexit";
+    end;
+}
