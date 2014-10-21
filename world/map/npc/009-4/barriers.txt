@@ -1,8 +1,13 @@
 //# see detailed description at orum.txt
 function|script|GetBarrierColor|,
 {
-    if (@Barrier < 0 || @Barrier > 2) goto L_Error;
+    if (@Barrier < 0 || @Barrier > 2)
+        goto L_Error;
+    if (@BarrierColor <= 0 || @BarrierColor > 12)
+        goto L_Error2;
+    goto L_GetBarrierColor;
 
+L_GetBarrierColor:
     set @Mask, 15;
     set @Shift, 4 * @Barrier;
     set @BarrierColor, (OrumQuestBarrier >> @Shift) & @Mask;
@@ -11,6 +16,10 @@ function|script|GetBarrierColor|,
 L_Error:
     mes "Barrier number is out of range.";
     close;
+
+L_Error2:
+    callfunc "SetUpOrumQuest";
+    goto L_GetBarrierColor;
 }
 
 function|script|SetBarrierColor|,
