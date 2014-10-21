@@ -18,6 +18,37 @@
 //# OrumQuestBarrier    nibble (0,1,2) stores the color of the barriers           #
 //#################################################################################
 
+009-4.gat,35,115,0|script|OrumDebug|158,
+{
+    mes "[Orum Debug]";
+    menu
+        "Set Quest State", L_SetQuest,
+        "Reset Quest", L_ResetQuest,
+        "Display Quest", L_Display;
+
+L_SetQuest:
+    input @quest_state;
+    set OrumQuest, @quest_state;
+    goto L_Close;
+
+L_ResetQuest:
+    set OrumQuest, 0;
+    set OrumQuestBarrier, 0;
+    set OrumQuestTorch, 0;
+    goto L_Close;
+
+L_Display:
+    mes OrumQuest;
+    goto L_Close;
+
+L_Close:
+    end;
+
+OnInit:
+    if (!debug)
+        disablenpc "OrumDebug";
+    end;
+}
 009-4.gat,37,115,0|script|Orum#barrier|158,
 {
     // needed to pass the very first barrier
@@ -221,38 +252,7 @@ L_Missing_Materials:
 
 L_Setup_Lair:
     set OrumQuest, 2;
-
-    // Second Barrier
-    set @BarrierColor, 1 + rand(3) * 4;
-    set @Barrier, 0;
-    callfunc "SetBarrierColor";
-
-    set @TorchIntensity, 0;
-
-    set @Torch, 0;
-    set @TorchColor, rand(1, 12);
-    callfunc "SetTorchColor";
-    callfunc "SetTorchIntensity";
-
-    // Third Barrier
-    set @BarrierColor, 3 + rand(3) * 4;
-    set @Barrier, 1;
-    callfunc "SetBarrierColor";
-
-    set @Torch, 1;
-    set @TorchColor, rand(1, 12);
-    callfunc "SetTorchColor";
-    callfunc "SetTorchIntensity";
-
-    // End Barrier
-    set @BarrierColor, 2 + rand(6) * 2;
-    set @Barrier, 2;
-    callfunc "SetBarrierColor";
-
-    set @Torch, 2;
-    set @TorchColor, rand(1, 12);
-    callfunc "SetTorchColor";
-    callfunc "SetTorchIntensity";
+    callfunc "SetUpOrumQuest";
     goto L_Close;
 
 L_Use_First_Barrier:
@@ -591,4 +591,39 @@ L_Close:
     set @Torch, 0;
     set @TorchColor, 0;
     close;
+}
+function|script|SetUpOrumQuest|,
+{
+    // Second Barrier
+    set @BarrierColor, 1 + rand(3) * 4;
+    set @Barrier, 0;
+    callfunc "SetBarrierColor";
+
+    set @TorchIntensity, 0;
+
+    set @Torch, 0;
+    set @TorchColor, rand(1, 12);
+    callfunc "SetTorchColor";
+    callfunc "SetTorchIntensity";
+
+    // Third Barrier
+    set @BarrierColor, 3 + rand(3) * 4;
+    set @Barrier, 1;
+    callfunc "SetBarrierColor";
+
+    set @Torch, 1;
+    set @TorchColor, rand(1, 12);
+    callfunc "SetTorchColor";
+    callfunc "SetTorchIntensity";
+
+    // End Barrier
+    set @BarrierColor, 2 + rand(6) * 2;
+    set @Barrier, 2;
+    callfunc "SetBarrierColor";
+
+    set @Torch, 2;
+    set @TorchColor, rand(1, 12);
+    callfunc "SetTorchColor";
+    callfunc "SetTorchIntensity";
+    return;
 }
