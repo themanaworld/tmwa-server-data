@@ -2,7 +2,7 @@
 
 function|script|ClearVariables|,
 {
-    // Tutorial 
+    // Tutorial
     if ((TUTORIAL) || (sorfina))
         goto L_ResetTut;
     goto L_Heathin;
@@ -231,7 +231,7 @@ L_Easter:
     if (#BankAccount < 0)
         goto L_FixBank;
 
-    return;
+    goto L_Fix_Skills;
 
 L_FixBank:
     if (Zeny >= -#BankAccount)
@@ -240,11 +240,20 @@ L_FixBank:
     // Partial fix
     set #BankAccount, #BankAccount + Zeny;
     set Zeny, 0;
-    return;
+    goto L_Fix_Skills;
 
 L_Fix_Full:
     set Zeny, Zeny + #BankAccount;
     set #BankAccount, 0;
+    goto L_Fix_Skills;
+
+L_Fix_Skills:
+    if(getskilllv(SKILL_TRADE) > 0) setskill SKILL_TRADE, 0;
+    if(getskilllv(SKILL_PARTY) > 0) setskill SKILL_PARTY, 0;
+    if(getskilllv(SKILL_EMOTE) > 0) setskill SKILL_EMOTE, 0;
+    goto L_Return;
+
+L_Return:
     return;
 }
 
