@@ -7,19 +7,35 @@ function|script|getHeadStyles|,
     set @HairColors$, 0;
     cleararray @HairStyles$, "", getarraysize(@HairStyles$);
     cleararray @HairColors$, "", getarraysize(@HairColors$);
-    if(Class == 0)
-        setarray @HairStyles$, // TALPONIAN (human)
-            "Bald", "Flat ponytail", "Bowl cut", "Combed back", "Emo", "Mohawk",
-            "Pompadour", "Center parting/Short and slick", "Long and slick",
-            "Short and curly", "Pigtails", "Long and curly", "Parted",
-            "Perky ponytail", "Wave", "Mane", "Bun", "Shoulder Length Flick",
-            "Fizzy", "Long and Clipped";
-    if(Class == 0)
-        setarray @HairColors$, // TALPONIAN (human)
-            "Brunette", "Green", "Dark red", "Light purple", "Gray", "Blonde",
-            "Teal", "Light red", "Blue", "Dark purple", "Black", "Pink",
-            "Brown";//, "(free slot)", "(free slot)";
+    cleararray @ValidClasses, "", getarraysize(@ValidClasses);
+    setarray @ValidClasses, 0; // add new classes here
+    set @loop, 0;
+    if(Class != 0) goto L_LoopValid;
+    goto L_ValidClass;
 
-    // adding a new species is as simple as adding another if(Class == X)
-    return;
+    L_LoopValid:
+        if(@ValidClasses[@loop] == Class) goto L_ValidClass;
+        set @loop, (@loop + 1);
+        if(@loop >= getarraysize(@ValidClasses)) goto L_FixClass;
+        goto L_LoopValid;
+
+    L_FixClass:
+        set Class, 0;
+        goto L_ValidClass;
+
+    L_ValidClass:
+        if(Class == 0)
+            setarray @HairStyles$, // TALPONIAN (human)
+                "Bald", "Flat ponytail", "Bowl cut", "Combed back", "Emo", "Mohawk",
+                "Pompadour", "Center parting/Short and slick", "Long and slick",
+                "Short and curly", "Pigtails", "Long and curly", "Parted",
+                "Perky ponytail", "Wave", "Mane", "Bun", "Shoulder Length Flick",
+                "Fizzy", "Long and Clipped";
+        if(Class == 0)
+            setarray @HairColors$, // TALPONIAN (human)
+                "Brunette", "Green", "Dark red", "Light purple", "Gray", "Blonde",
+                "Teal", "Light red", "Blue", "Dark purple", "Black", "Pink",
+                "Brown";//, "(free slot)", "(free slot)";
+        // adding a new species is as simple as adding another if(Class == X) and adding the class to @ValidClasses
+        return;
 }
