@@ -11,100 +11,124 @@
 
 function|script|Barber|,
 {
-    set @style, getlook(LOOK_HAIR_STYLE);
-    set @color, getlook(LOOK_HAIR_COLOR);
-
-    set @style$, "Unknown";
-    set @color$, "Unknown";
-    if (@style >= 0 && @style < 20)
-        set @style$, $@HairStyles$[@style];
-    if (@color >= 0 && @color < 20)
-        set @color$, $@HairColors$[@color];
-    if (@color == 127)
-        set @color$, "Shocked White";
-
-    mes "Your current style is " + @style$ + " and your current color is " + @color$ + ".";
-    set @style$, "";
-    set @color$, "";
+    callfunc "getHeadStyles";
     goto L_Main;
 
 L_Main:
+    set @style, getlook(LOOK_HAIR_STYLE);
+    set @color, getlook(LOOK_HAIR_COLOR);
+    set @style$, "Unknown";
+    set @color$, "Unknown";
+    if (@style >= 0 && @style < 20)
+        set @style$, @HairStyles$[@style];
+    if (@color >= 0 && @color < 120)
+        set @color$, @HairColors$[@color];
+    if (@color == 127)
+        set @color$, "Shocked White";
+    mes "Your current style is " + @style$ + " and your current color is " + @color$ + ".";
+    set @style$, "";
+    set @color$, "";
     menu
         "Change my style", L_Style,
         "Change my color", L_Color,
         "Nah, I'm fine", L_Done;
 
 L_Style:
+    if(!@hairOpts) set @HairStyles$[getarraysize(@HairStyles$)], "Surprise me";
+    if(!@hairOpts) set @HairStyles$[getarraysize(@HairStyles$)], "Nah, I'm fine";
+    if(!@hairOpts) set @hairOpts, 1;
     menu
-        "Bald", L_MenuItems,
-        "Flat ponytail", L_MenuItems,
-        "Bowl cut", L_MenuItems,
-        "Combed back", L_MenuItems,
-        "Emo", L_MenuItems,
-        "Mohawk", L_MenuItems,
-        "Pompadour", L_MenuItems,
-        "Center parting/Short and slick", L_MenuItems,
-        "Long and slick", L_MenuItems,
-        "Short and curly", L_MenuItems,
-        "Pigtails", L_MenuItems,
-        "Long and curly", L_MenuItems,
-        "Parted", L_MenuItems,
-        "Perky ponytail", L_MenuItems,
-        "Wave", L_MenuItems,
-        "Mane", L_MenuItems,
-        "Bun", L_MenuItems,
-        "Shoulder Length Flick", L_MenuItems,
-        "Fizzy", L_MenuItems,
-        "Long and Clipped", L_MenuItems,
-        "Surprise me", L_RandomStyle,
-        "Nah, I'm fine", L_Done;
+        @HairStyles$[0], L_MenuItems,
+        @HairStyles$[1], L_MenuItems,
+        @HairStyles$[2], L_MenuItems,
+        @HairStyles$[3], L_MenuItems,
+        @HairStyles$[4], L_MenuItems,
+        @HairStyles$[5], L_MenuItems,
+        @HairStyles$[6], L_MenuItems,
+        @HairStyles$[7], L_MenuItems,
+        @HairStyles$[8], L_MenuItems,
+        @HairStyles$[9], L_MenuItems,
+        @HairStyles$[10], L_MenuItems,
+        @HairStyles$[11], L_MenuItems,
+        @HairStyles$[12], L_MenuItems,
+        @HairStyles$[13], L_MenuItems,
+        @HairStyles$[14], L_MenuItems,
+        @HairStyles$[15], L_MenuItems,
+        @HairStyles$[16], L_MenuItems,
+        @HairStyles$[17], L_MenuItems,
+        @HairStyles$[18], L_MenuItems,
+        @HairStyles$[19], L_MenuItems,
+        @HairStyles$[20], L_MenuItems,
+        @HairStyles$[21], L_MenuItems,
+        @HairStyles$[22], L_MenuItems,
+        @HairStyles$[23], L_MenuItems,
+        @HairStyles$[24], L_MenuItems,
+        @HairStyles$[25], L_MenuItems;
 
 L_MenuItems:
     if (@menu - 1 == @style)
         goto L_SameStyle;
-
+    if(@menu == (getarraysize(@HairStyles$) - 1)) goto L_RandomStyle;
+    if(@menu == getarraysize(@HairStyles$)) goto L_Done;
     setlook LOOK_HAIR_STYLE, @menu - 1;
-    goto L_Done;
+    goto L_Main;
 
 L_RandomStyle:
-    setlook LOOK_HAIR_STYLE, rand(20);
-    goto L_Done;
+    set @randomStyle, rand(0, (getarraysize(@HairStyles$) -4));
+    if(@randomStyle == @style) goto L_RandomStyle;
+    setlook LOOK_HAIR_STYLE, @randomStyle;
+    menu
+        "Surprise me once again", L_RandomStyle,
+        "Go back", L_Main,
+        "Goodbye", L_Done;
 
 L_SameStyle:
     mes "Your hair already has that style.";
     goto L_Main;
 
 L_Color:
+    if(@style == Class) goto L_SameColor; // first headstyle of any class is bald
+    if(!@colorOpts) set @HairColors$[getarraysize(@HairColors$)], "Surprise me";
+    if(!@colorOpts) set @HairColors$[getarraysize(@HairColors$)], "Nah, I'm fine";
+    if(!@colorOpts) set @colorOpts, 1;
     menu
-        "Brunette", L_MenuItems1,
-        "Green", L_MenuItems1,
-        "Dark red", L_MenuItems1,
-        "Light purple", L_MenuItems1,
-        "Gray", L_MenuItems1,
-        "Blonde", L_MenuItems1,
-        "Teal", L_MenuItems1,
-        "Light red", L_MenuItems1,
-        "Blue", L_MenuItems1,
-        "Dark purple", L_MenuItems1,
-        "Black", L_MenuItems1,
-        "Pink", L_MenuItems1,
-        "Brown", L_MenuItems1,
-        "Surprise me", L_RandomColor,
-        "Nah, I'm fine", L_Done;
+        @HairColors$[0], L_MenuItems1,
+        @HairColors$[1], L_MenuItems1,
+        @HairColors$[2], L_MenuItems1,
+        @HairColors$[3], L_MenuItems1,
+        @HairColors$[4], L_MenuItems1,
+        @HairColors$[5], L_MenuItems1,
+        @HairColors$[6], L_MenuItems1,
+        @HairColors$[7], L_MenuItems1,
+        @HairColors$[8], L_MenuItems1,
+        @HairColors$[9], L_MenuItems1,
+        @HairColors$[10], L_MenuItems1,
+        @HairColors$[11], L_MenuItems1,
+        @HairColors$[12], L_MenuItems1,
+        @HairColors$[13], L_MenuItems1,
+        @HairColors$[14], L_MenuItems1,
+        @HairColors$[15], L_MenuItems1,
+        @HairColors$[16], L_MenuItems1;
 
 L_MenuItems1:
     if (@menu - 1 == @color)
         goto L_SameColor;
-
-    setlook LOOK_HAIR_COLOR, @menu - 1;
-    goto L_Done;
+    if(@menu == (getarraysize(@HairColors$) - 1)) goto L_RandomColor;
+    if(@menu == getarraysize(@HairColors$)) goto L_Done;
+    setlook LOOK_HAIR_COLOR, ((@menu - 1) + (15 * Class));
+    goto L_Main;
 
 L_RandomColor:
-    setlook LOOK_HAIR_COLOR, rand(13);
-    goto L_Done;
+    set @randomColor, rand((15 * Class), ((getarraysize(@HairColors$) -4) + (15 * Class)));
+    if(@randomColor == @color) goto L_RandomColor;
+    setlook LOOK_HAIR_COLOR, @randomColor;
+    menu
+        "Surprise me once again", L_RandomColor,
+        "Go back", L_Main,
+        "Goodbye", L_Done;
 
 L_SameColor:
-    mes "Your hair is already that color.";
+    mes "You are either bald or your hair is already that color.";
     goto L_Main;
 
 L_Done:
@@ -112,23 +136,9 @@ L_Done:
     set @menu, 0;
     set @style, 0;
     set @color, 0;
+    cleararray @HairStyles$, "", getarraysize(@HairStyles$);
+    cleararray @HairColors$, "", getarraysize(@HairColors$);
+    set @hairOpts, 0;
+    set @colorOpts, 0;
     return;
-}
-
--|script|#BarberConfig|-1,
-{
-    end;
-
-OnInit:
-    setarray $@HairStyles$,
-        "Bald", "Flat ponytail", "Bowl cut", "Combed back", "Emo", "Mohawk",
-        "Pompadour", "Center parting/Short and slick", "Long and slick",
-        "Short and curly", "Pigtails", "Long and curly", "Parted",
-        "Perky ponytail", "Wave", "Mane", "Bun", "Shoulder Length Flick",
-        "Fizzy", "Long and Clipped";
-    setarray $@HairColors$,
-        "Brunette", "Green", "Dark red", "Light purple", "Gray", "Blonde",
-        "Teal", "Light red", "Blue", "Dark purple", "Black", "Pink",
-        "Brown";
-    end;
 }
