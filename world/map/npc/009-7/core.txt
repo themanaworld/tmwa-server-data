@@ -38,7 +38,7 @@ function|script|fightclub_getrules|,
   goto L_Missing;
 
 L_Proceed:
-  set $@Temp_NoMagic, Duel_NoMagic;
+  set $@Temp_NoMagic, (DUELS & $@NoMagicBit);
   if($@fightclub_myself == getcharid(3)) goto L_Proceed2; // the target is ourselves
   if(attachrid($@fightclub_myself) == 1) goto L_Proceed2;
   goto L_Missing;
@@ -154,7 +154,7 @@ L_Proceed2:
 
 function|script|fightclub_NextBattleProceed|, // ** called after the delay
 {
-    set $@Duel_NoMagic, Duel_NoMagic; // get the rules of the caster
+    set $@Duel_NoMagic, (DUELS & $@NoMagicBit); // get the rules of the caster
     donpcevent "Rouge#Duels::OnAnnounceNext";
     set $@Duel_Started, 0;
     addtimer ($@Duel_TimeBeforeWarp * 1000), "#FightClub#utils::OnDelayedStart";
@@ -285,6 +285,9 @@ function|script|fightclub_StartUp|, // ** called after the server boots up
   setarray $@Duel_Queue_Red$, "";
   cleararray $@Duel_Queue_Red$, "", ($@Duel_QueueLimit + 1);
   set $@Duel_TotalTime, 0;
+  // flags below
+  set $@DuelPvpBit, (1 << 1);
+  set $@NoMagicBit, (1 << 2);
   return;
 }
 
@@ -318,18 +321,18 @@ L_Main:
     "Nevermind.", L_Return;
 
 L_Start:
-  set Duel_NoMagic, 1; // set the rule to 1 to enable it
+  set DUELS, DUELS | $@NoMagicBit;
   goto L_NoMagic;
 
 L_NoMagic:
-  if(Duel_NoMagic != 1) goto L_Done;
+  if((DUELS & $@NoMagicBit) != 1) goto L_Done;
   mes "Do you want to allow magic?";
   mes "If disabled, the fighters will not be able to use any kind of spell.";
   menu
     "Yes.", L_NoMagicYes,
     "No.", L_Done;
 L_NoMagicYes:
-  set Duel_NoMagic, 0;
+  set DUELS, DUELS &~ $@NoMagicBit;
   goto L_Done;
 
 L_Done:
