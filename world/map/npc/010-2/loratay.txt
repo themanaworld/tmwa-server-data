@@ -106,8 +106,12 @@ L_agostine_1:
     mes "[Lora Tay the Seamstress]";
     mes "Angry red spots begin to form on her cheeks.";
     mes "\"Get those... things out of my sight before I forget myself!\"";
-    if (@wg_state == 9)
-        set @wg_state, 10;
+    if (@wg_state == 9) goto L_Next13;
+    goto L_Close;
+
+L_Next13:
+    set @wg_state, 10;
+    callsub S_Update;
     goto L_Close;
 
 L_agostine_menu:
@@ -211,6 +215,7 @@ L_give_water:
         goto L_no_water;
     delitem "BottleOfWater", 1;
     set @wg_state, 11;
+    callsub S_Update;
 
     set @xpval, 50000;
 
@@ -297,6 +302,7 @@ L_Next2:
     mes "Go see Agostine, ask him what he's planning and I will think about it.\"";
 
     set @wg_state, 13;
+    callsub S_Update;
     goto L_Close;
 
 L_proposal_intro:
@@ -347,6 +353,7 @@ L_proposal_search_items:
 
 L_Next5:
     set @wg_state, 15;
+    callsub S_Update;
     goto L_Close;
 
 L_proposal_not_enough_items:
@@ -359,6 +366,7 @@ L_proposal_give_items:
         goto L_proposal_not_enough_items;
     delitem "SilkCocoon", @FINEDRESS_COCOONS;
     set @wg_state, 16;
+    callsub S_Update;
 
     mes "[Lora Tay the Seamstress]";
     mes "\"Great, now I can spin the silk threading and fix this mess made of these fine materials.";
@@ -388,6 +396,7 @@ L_Next6:
     mes "I am done with the threading but I will now need to sew these materials together into the design.\"";
     next;
     set @wg_state, 18;
+    callsub S_Update;
     goto L_proposal_wait_dress_finished;
 
 L_proposal_wait_dress_finished:
@@ -403,6 +412,7 @@ L_proposal_wait_dress_finished:
 
 L_proposal_dress_finished:
     set @wg_state, 19;
+    callsub S_Update;
     mes "[Lora Tay the Seamstress]";
     mes "\"Well it was difficult seaming with such fragile materials.";
     mes "But I have done it. The design is finished except for one part of it.\"";
@@ -426,6 +436,7 @@ L_Next7:
 
 L_Next8:
     set @wg_state, 20;
+    callsub S_Update;
     goto L_Close;
 
 L_proposal_deliver_dress:
@@ -1130,8 +1141,11 @@ L_CleanSorcererRobe:
     set @cotton_cloth_id, 0;
     goto L_Close;
 
-L_Close:
+S_Update:
     set QUEST_WG_state, (QUEST_WG_state & ~(BYTE_0_MASK) | (@wg_state << BYTE_0_SHIFT));
+    return;
+
+L_Close:
     set @wg_state, 0;
     close;
 }
