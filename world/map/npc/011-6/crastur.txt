@@ -1,10 +1,9 @@
 011-6.gat,172,250,0|script|Crastur the Ugly|418,
 {
     set @spants_state, ((QUEST_WG_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
-    set @spants_chest, ((QUEST_WG_state & 4096 ) >> 12);
     if @spants_state < 3 goto L_Regular;
     if @spants_state == 3 goto L_Ask;
-    if (@spants_state == 4 || @spants_state == 5) goto L_Ask_Again;
+    if (@spants_state == 4 || @spants_state == 5 || @spants_state == 6) goto L_Ask_Again;
     goto L_Main;
 
 
@@ -100,7 +99,7 @@ L_Pirate_Proof:
 L_Bandana:
     getinventorylist;
     if (countitem("Bandana") < 1) goto L_No_Item;
-    if (@spants_chest_open == 0) goto L_Wrong_Item;
+    if (@spants_state != 6) goto L_Wrong_Item;
     mes "Crasturs gazes at the bandana in your hand. He scratches his right arm, then he nods";
     mes "[Crastur]";
     mes "";
@@ -113,7 +112,7 @@ L_Bandana:
     mes "\"Crastur hands you a page ripped out of his Almanach that has dotted lines in green and red Ink all over it";
     next;
     mes "You put the plans into a hidden pocket";
-    set @spants_state, 6;
+    set @spants_state, 7;
     callsub S_Update_Spants;
     goto L_Close;
 
@@ -127,7 +126,7 @@ L_Wrong_Item:
     mes "Crastur takes a look at the bandana.";
     next;
      mes "[Crastur]";
-    mes "THIS IS NOT FROM THE PIRATES FROM HURNSCALD, it is a cheap scam.";
+    mes "THIS IS NOT FROM THE PIRATES FROM TULIMSHAR, it is a cheap scam.";
     emotion EMOTE_PERTURBED;
     mes "As far as you can tell through his mask he seems very mad";
     goto L_Insult;
