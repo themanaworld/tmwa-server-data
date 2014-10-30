@@ -1,0 +1,148 @@
+// Mining Nodes
+// Author: wushin
+
+// NodeManager
+026-1.gat,0,0,0|script|#NodeManager37|400,
+{
+    end;
+
+OnTimer25000:
+    stopnpctimer;
+    cleararray $@NodesThritysevenSpawned, "", getarraysize($@NodesThritysevenSpawned);
+    goto L_EnableSpawns;
+
+L_EnableSpawns:
+    set $@RandomThritysevenNodeLoop, 0;
+    set $@RandomThritysevenNode, rand(getarraysize($@NodeManagerThritysevenSpawn));
+    goto L_CheckNotEnabled;
+
+L_CheckNotEnabled:
+    if ($@RandomThritysevenNode == $@NodesThritysevenSpawned[$@RandomThritysevenNodeLoop])
+        goto L_EnableSpawns;
+    goto L_CheckNotEnabledLoop;
+
+L_CheckNotEnabledLoop:
+    set $@RandomThritysevenNodeLoop, ($@RandomThritysevenNodeLoop + 1);
+    if ($@RandomThritysevenNodeLoop >= getarraysize($@NodesThritysevenSpawned))
+        goto L_Enable;
+    goto L_CheckNotEnabled;
+
+L_Enable:
+    enablenpc "#Node"+$@NodeManagerThritysevenSpawn[$@RandomThritysevenNode];
+    setarray $@NodesThritysevenSpawned[$@NodeManagerThritysevenSpawnCount], $@RandomThritysevenNode;
+    goto L_EnableCheck;
+
+L_EnableCheck:
+    set $@NodeManagerThritysevenSpawnCount, ($@NodeManagerThritysevenSpawnCount + 1);
+    if ($@NodeManagerThritysevenSpawnMax > $@NodeManagerThritysevenSpawnCount)
+        goto L_EnableSpawns;
+    goto L_End;
+ 
+L_Start:
+    initnpctimer;
+    goto L_End;
+
+L_DisableSpawns:
+    set $@RandomThritysevenNodeLoop, 0;
+    set $@RandomThritysevenNode, rand(getarraysize($@NodeManagerThritysevenSpawn));
+    goto L_CheckNotDisabled;
+
+L_CheckNotDisabled:
+    if ($@RandomThritysevenNode == $@NodesThritysevenSpawned[$@RandomThritysevenNodeLoop])
+        goto L_DisableSpawns;
+    goto L_CheckNotDisabledLoop;
+
+L_CheckNotDisabledLoop:
+    set $@RandomThritysevenNodeLoop, ($@RandomThritysevenNodeLoop + 1);
+    if ($@RandomThritysevenNodeLoop >= getarraysize($@NodesThritysevenSpawned))
+        goto L_Disable;
+    goto L_CheckNotDisabled;
+
+L_Disable:
+    disablenpc "#Node"+$@NodeManagerThritysevenSpawn[$@RandomThritysevenNode];
+    setarray $@NodesThritysevenSpawned[$@DisableThritysevenSpawnsLoop], $@RandomThritysevenNode;
+    goto L_DisableCheck;
+
+L_DisableCheck:
+    set $@DisableThritysevenSpawnsLoop, ($@DisableThritysevenSpawnsLoop + 1);
+    if ($@NodeManagerThritysevenSpawnMax > $@DisableThritysevenSpawnsLoop)
+        goto L_DisableSpawns;
+    goto L_End;
+
+OnCommandTally:
+    set $@NodeManagerThritysevenSpawnCount, ($@NodeManagerThritysevenSpawnCount - 1);
+    if ($@NodeManagerThritysevenSpawnCount)
+        goto L_End;
+    goto L_Start;
+
+OnInit:
+    set $@DisableThritysevenSpawnsLoop, 0;
+    set $@NodeManagerThritysevenSpawnMax, 3;
+    set $@NodeManagerThritysevenSpawnCount, 3;
+    setarray $@NodeManagerThritysevenSpawn, 237, 238, 239, 240, 241, 242;
+    cleararray $@NodesThritysevenSpawned, "", getarraysize($@NodesThritysevenSpawned);
+    goto L_DisableSpawns;
+
+L_End:
+    end;
+}
+
+// Gather Node NPC
+026-1.gat,25,25,0|script|#Node237|606,
+{
+    set @NodeId, 237;
+    set @NodeManagerId, 37;
+    setarray @npc_loc, 25, 25, 2;
+    callfunc "Mushroom";
+    end;
+}
+
+// Gather Node NPC
+026-1.gat,124,20,0|script|#Node238|606,
+{
+    set @NodeId, 238;
+    set @NodeManagerId, 37;
+    setarray @npc_loc, 124, 20, 2;
+    callfunc "Mushroom";
+    end;
+}
+
+// Gather Node NPC
+026-1.gat,126,89,0|script|#Node239|606,
+{
+    set @NodeId, 239;
+    set @NodeManagerId, 37;
+    setarray @npc_loc, 126, 89, 2;
+    callfunc "Mushroom";
+    end;
+}
+
+// Gather Node NPC
+026-1.gat,53,67,0|script|#Node240|603,
+{
+    set @NodeId, 240;
+    set @NodeManagerId, 37;
+    setarray @npc_loc, 53, 67, 2;
+    callfunc "GambrogePlant";
+    end;
+}
+
+// Gather Node NPC
+026-1.gat,32,81,0|script|#Node241|603,
+{
+    set @NodeId, 241;
+    set @NodeManagerId, 37;
+    setarray @npc_loc, 32, 81, 2;
+    callfunc "GambrogePlant";
+    end;
+}
+
+// Gather Node NPC
+026-1.gat,68,82,0|script|#Node242|603,
+{
+    set @NodeId, 242;
+    set @NodeManagerId, 37;
+    setarray @npc_loc, 68, 82, 2;
+    callfunc "GambrogePlant";
+    end;
+}

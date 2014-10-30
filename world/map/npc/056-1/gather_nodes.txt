@@ -1,0 +1,118 @@
+// Mining Nodes
+// Author: wushin
+
+// NodeManager
+056-1.gat,0,0,0|script|#NodeManager43|400,
+{
+    end;
+
+OnTimer25000:
+    stopnpctimer;
+    cleararray $@NodesFortythreeSpawned, "", getarraysize($@NodesFortythreeSpawned);
+    goto L_EnableSpawns;
+
+L_EnableSpawns:
+    set $@RandomFortythreeNodeLoop, 0;
+    set $@RandomFortythreeNode, rand(getarraysize($@NodeManagerFortythreeSpawn));
+    goto L_CheckNotEnabled;
+
+L_CheckNotEnabled:
+    if ($@RandomFortythreeNode == $@NodesFortythreeSpawned[$@RandomFortythreeNodeLoop])
+        goto L_EnableSpawns;
+    goto L_CheckNotEnabledLoop;
+
+L_CheckNotEnabledLoop:
+    set $@RandomFortythreeNodeLoop, ($@RandomFortythreeNodeLoop + 1);
+    if ($@RandomFortythreeNodeLoop >= getarraysize($@NodesFortythreeSpawned))
+        goto L_Enable;
+    goto L_CheckNotEnabled;
+
+L_Enable:
+    enablenpc "#Node"+$@NodeManagerFortythreeSpawn[$@RandomFortythreeNode];
+    setarray $@NodesFortythreeSpawned[$@NodeManagerFortythreeSpawnCount], $@RandomFortythreeNode;
+    goto L_EnableCheck;
+
+L_EnableCheck:
+    set $@NodeManagerFortythreeSpawnCount, ($@NodeManagerFortythreeSpawnCount + 1);
+    if ($@NodeManagerFortythreeSpawnMax > $@NodeManagerFortythreeSpawnCount)
+        goto L_EnableSpawns;
+    goto L_End;
+ 
+L_Start:
+    initnpctimer;
+    goto L_End;
+
+L_DisableSpawns:
+    set $@RandomFortythreeNodeLoop, 0;
+    set $@RandomFortythreeNode, rand(getarraysize($@NodeManagerFortythreeSpawn));
+    goto L_CheckNotDisabled;
+
+L_CheckNotDisabled:
+    if ($@RandomFortythreeNode == $@NodesFortythreeSpawned[$@RandomFortythreeNodeLoop])
+        goto L_DisableSpawns;
+    goto L_CheckNotDisabledLoop;
+
+L_CheckNotDisabledLoop:
+    set $@RandomFortythreeNodeLoop, ($@RandomFortythreeNodeLoop + 1);
+    if ($@RandomFortythreeNodeLoop >= getarraysize($@NodesFortythreeSpawned))
+        goto L_Disable;
+    goto L_CheckNotDisabled;
+
+L_Disable:
+    disablenpc "#Node"+$@NodeManagerFortythreeSpawn[$@RandomFortythreeNode];
+    setarray $@NodesFortythreeSpawned[$@DisableFortythreeSpawnsLoop], $@RandomFortythreeNode;
+    goto L_DisableCheck;
+
+L_DisableCheck:
+    set $@DisableFortythreeSpawnsLoop, ($@DisableFortythreeSpawnsLoop + 1);
+    if ($@NodeManagerFortythreeSpawnMax > $@DisableFortythreeSpawnsLoop)
+        goto L_DisableSpawns;
+    goto L_End;
+
+OnCommandTally:
+    set $@NodeManagerFortythreeSpawnCount, ($@NodeManagerFortythreeSpawnCount - 1);
+    if ($@NodeManagerFortythreeSpawnCount)
+        goto L_End;
+    goto L_Start;
+
+OnInit:
+    set $@DisableFortythreeSpawnsLoop, 0;
+    set $@NodeManagerFortythreeSpawnMax, 1;
+    set $@NodeManagerFortythreeSpawnCount, 1;
+    setarray $@NodeManagerFortythreeSpawn, 270, 271, 272;
+    cleararray $@NodesFortythreeSpawned, "", getarraysize($@NodesFortythreeSpawned);
+    goto L_DisableSpawns;
+
+L_End:
+    end;
+}
+
+// Gather Node NPC
+056-1.gat,50,41,0|script|#Node270|606,
+{
+    set @NodeId, 270;
+    set @NodeManagerId, 43;
+    setarray @npc_loc, 50, 41, 2;
+    callfunc "Mushroom";
+    end;
+}
+
+// Gather Node NPC
+056-1.gat,67,54,0|script|#Node271|606,
+{
+    set @NodeId, 271;
+    set @NodeManagerId, 43;
+    setarray @npc_loc, 67, 54, 2;
+    callfunc "Mushroom";
+    end;
+}
+
+// Gather Node NPC
+056-1.gat,76,26,0|script|#Node272|605,
+{
+    set @NodeId, 272;
+    set @NodeManagerId, 43;
+    setarray @npc_loc, 76, 26, 2;
+    callfunc "CloverPatch";
+    end;
+}

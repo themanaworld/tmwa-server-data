@@ -1,0 +1,105 @@
+// Basic craft functionality
+// Craft system uses:
+// CRAFTONE 
+// CRAFTONEXP (craft experience points, gained by using your professions)
+// CRAFTTWO
+// CRAFTTWOXP (craft experience points, gained by using your professions)
+// Limit the character, only allow 2 out professions at once.
+
+// Initialise Menu for training up
+// ------------------------------------------------------------
+function|script|TrainMenu|,
+{
+    // Set Used if exists
+    mes "\"I can train you in "+@RequiredSkillName$+".\"";
+    next;
+
+    set $@CraftLevelLimit, 10;
+    set @HasSkill, getskilllv(@RequiredSkill);
+    set @TrainZeny, (((@TrainerCost * @HasSkill) * 3) + @TrainerCost); 
+    set @NextLvlXP, ((@HasSkill * 80) + ((@HasSkill * @HasSkill) * 20));
+
+    if(@HasSkill >= $@CraftLevelLimit)
+        goto L_TeachNoMore;
+    if(@HasSkill)
+        goto L_CraftChecks;
+    goto L_LearnCraft;
+
+L_CraftChecks:
+    if(CRAFTONE == @RequiredSkill)
+        set @CraftXP, CRAFTONEXP;
+    if(CRAFTTWO == @RequiredSkill)
+        set @CraftXP, CRAFTTWOXP;
+    if(@CraftXP >= @NextLvlXP)
+        goto L_LearnNext;
+    goto L_LearnMore;
+
+L_LearnCraft:
+    mes "\"You currently don't know this Craft.\"";
+    mes "\"Training in it will consume 1 of your 2 craft slots.\"";
+    mes "\"Please Select which Craft slot to use.\"";
+    mes "\"This delete any knowledge of the prior craft.\"";
+    next;
+    menu
+       "I'd like to replace the first craft.", L_CraftOneReplace,
+       "I'd like to replace the second craft.", L_CraftTwoReplace,
+       "I like both my crafts, thank you very much.", L_Return;
+
+L_LearnNext:
+    mes "\"You have gained enough experience using your profession.\"";
+    mes "\"I can show you some how to work with new materials if you want.\"";
+    mes "\"It will cost you "+@TrainZeny+" to train, are you ready to learn?\"";
+    next;
+    menu
+       "Yes.", L_LevelUp,
+       "No.", L_Return;
+
+L_LearnMore:
+    mes "\"You need more experience to train up.\"";
+    next;
+    goto L_Return;
+
+L_CraftOneReplace:
+    setskill @RequiredSkill, 1;
+    set CRAFTONE, @RequiredSkill;
+    set CRAFTONEXP, 0;
+    goto L_Return;
+
+L_CraftTwoReplace:
+    setskill @RequiredSkill, 1;
+    set CRAFTTWO, @RequiredSkill;
+    set CRAFTTWOXP, 0;
+    goto L_Return;
+
+L_LevelUp:
+    if(@Zeny > @TrainZeny)
+        goto L_NeedZeny;
+    misceffect sfx_skillup, strcharinfo(0);
+    set @Zeny, @Zeny - @TrainZeny;
+    setskill @RequiredSkill, (@HasSkill + 1);
+    if(CRAFTONE == @RequiredSkill)
+        set CRAFTONEXP, (CRAFTONEXP - @NextLvlXP);
+    if(CRAFTTWO == @RequiredSkill)
+        set CRAFTTWOXP, (CRAFTTWOXP - @NextLvlXP);
+    goto L_Return;
+
+L_NeedZeny:
+    mes "\"You don't have enough money, please come back when you do.\"";
+    next;
+    goto L_Nothing;
+
+L_Nothing:
+    mes "\"You are progressing well come back when you are stronger and I will teach you more.\"";
+    next;
+    goto L_Return;
+
+L_TeachNoMore:
+    mes "\"There is nothing else I can teach you.\"";
+    next;
+    goto L_Return;
+
+L_Return:
+    set @CraftXP, 0;
+    set @HasSkill, 0;
+    return;
+}

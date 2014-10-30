@@ -1,0 +1,148 @@
+// Mining Nodes
+// Author: wushin
+
+// NodeManager
+027-1.gat,0,0,0|script|#NodeManager38|400,
+{
+    end;
+
+OnTimer25000:
+    stopnpctimer;
+    cleararray $@NodesThrityeightSpawned, "", getarraysize($@NodesThrityeightSpawned);
+    goto L_EnableSpawns;
+
+L_EnableSpawns:
+    set $@RandomThrityeightNodeLoop, 0;
+    set $@RandomThrityeightNode, rand(getarraysize($@NodeManagerThrityeightSpawn));
+    goto L_CheckNotEnabled;
+
+L_CheckNotEnabled:
+    if ($@RandomThrityeightNode == $@NodesThrityeightSpawned[$@RandomThrityeightNodeLoop])
+        goto L_EnableSpawns;
+    goto L_CheckNotEnabledLoop;
+
+L_CheckNotEnabledLoop:
+    set $@RandomThrityeightNodeLoop, ($@RandomThrityeightNodeLoop + 1);
+    if ($@RandomThrityeightNodeLoop >= getarraysize($@NodesThrityeightSpawned))
+        goto L_Enable;
+    goto L_CheckNotEnabled;
+
+L_Enable:
+    enablenpc "#Node"+$@NodeManagerThrityeightSpawn[$@RandomThrityeightNode];
+    setarray $@NodesThrityeightSpawned[$@NodeManagerThrityeightSpawnCount], $@RandomThrityeightNode;
+    goto L_EnableCheck;
+
+L_EnableCheck:
+    set $@NodeManagerThrityeightSpawnCount, ($@NodeManagerThrityeightSpawnCount + 1);
+    if ($@NodeManagerThrityeightSpawnMax > $@NodeManagerThrityeightSpawnCount)
+        goto L_EnableSpawns;
+    goto L_End;
+ 
+L_Start:
+    initnpctimer;
+    goto L_End;
+
+L_DisableSpawns:
+    set $@RandomThrityeightNodeLoop, 0;
+    set $@RandomThrityeightNode, rand(getarraysize($@NodeManagerThrityeightSpawn));
+    goto L_CheckNotDisabled;
+
+L_CheckNotDisabled:
+    if ($@RandomThrityeightNode == $@NodesThrityeightSpawned[$@RandomThrityeightNodeLoop])
+        goto L_DisableSpawns;
+    goto L_CheckNotDisabledLoop;
+
+L_CheckNotDisabledLoop:
+    set $@RandomThrityeightNodeLoop, ($@RandomThrityeightNodeLoop + 1);
+    if ($@RandomThrityeightNodeLoop >= getarraysize($@NodesThrityeightSpawned))
+        goto L_Disable;
+    goto L_CheckNotDisabled;
+
+L_Disable:
+    disablenpc "#Node"+$@NodeManagerThrityeightSpawn[$@RandomThrityeightNode];
+    setarray $@NodesThrityeightSpawned[$@DisableThrityeightSpawnsLoop], $@RandomThrityeightNode;
+    goto L_DisableCheck;
+
+L_DisableCheck:
+    set $@DisableThrityeightSpawnsLoop, ($@DisableThrityeightSpawnsLoop + 1);
+    if ($@NodeManagerThrityeightSpawnMax > $@DisableThrityeightSpawnsLoop)
+        goto L_DisableSpawns;
+    goto L_End;
+
+OnCommandTally:
+    set $@NodeManagerThrityeightSpawnCount, ($@NodeManagerThrityeightSpawnCount - 1);
+    if ($@NodeManagerThrityeightSpawnCount)
+        goto L_End;
+    goto L_Start;
+
+OnInit:
+    set $@DisableThrityeightSpawnsLoop, 0;
+    set $@NodeManagerThrityeightSpawnMax, 3;
+    set $@NodeManagerThrityeightSpawnCount, 3;
+    setarray $@NodeManagerThrityeightSpawn, 243, 244, 245, 246, 247, 248;
+    cleararray $@NodesThrityeightSpawned, "", getarraysize($@NodesThrityeightSpawned);
+    goto L_DisableSpawns;
+
+L_End:
+    end;
+}
+
+// Gather Node NPC
+027-1.gat,102,63,0|script|#Node243|606,
+{
+    set @NodeId, 243;
+    set @NodeManagerId, 38;
+    setarray @npc_loc, 102, 63, 2;
+    callfunc "Mushroom";
+    end;
+}
+
+// Gather Node NPC
+027-1.gat,114,37,0|script|#Node244|606,
+{
+    set @NodeId, 244;
+    set @NodeManagerId, 38;
+    setarray @npc_loc, 114, 37, 2;
+    callfunc "Mushroom";
+    end;
+}
+
+// Gather Node NPC
+027-1.gat,111,11,0|script|#Node245|606,
+{
+    set @NodeId, 245;
+    set @NodeManagerId, 38;
+    setarray @npc_loc, 111, 11, 2;
+    callfunc "Mushroom";
+    end;
+}
+
+// Gather Node NPC
+027-1.gat,37,37,0|script|#Node246|603,
+{
+    set @NodeId, 246;
+    set @NodeManagerId, 38;
+    setarray @npc_loc, 37, 37, 2;
+    callfunc "GambrogePlant";
+    end;
+}
+
+// Gather Node NPC
+027-1.gat,53,55,0|script|#Node247|603,
+{
+    set @NodeId, 247;
+    set @NodeManagerId, 38;
+    setarray @npc_loc, 53, 55, 2;
+    callfunc "GambrogePlant";
+    end;
+}
+
+// Gather Node NPC
+027-1.gat,32,66,0|script|#Node248|603,
+{
+    set @NodeId, 248;
+    set @NodeManagerId, 38;
+    setarray @npc_loc, 32, 66, 2;
+    callfunc "GambrogePlant";
+    end;
+}

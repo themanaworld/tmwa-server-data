@@ -1,0 +1,148 @@
+// Mining Nodes
+// Author: wushin
+
+// NodeManager
+002-5.gat,0,0,0|script|#NodeManager2|400,
+{
+    end;
+
+OnTimer15000:
+    stopnpctimer;
+    cleararray $@NodesTwoSpawned, "", getarraysize($@NodesTwoSpawned);
+    goto L_EnableSpawns;
+
+L_EnableSpawns:
+    set $@RandomTwoNodeLoop, 0;
+    set $@RandomTwoNode, rand(getarraysize($@NodeManagerTwoSpawn));
+    goto L_CheckNotEnabled;
+
+L_CheckNotEnabled:
+    if ($@RandomTwoNode == $@NodesTwoSpawned[$@RandomTwoNodeLoop])
+        goto L_EnableSpawns;
+    goto L_CheckNotEnabledLoop;
+
+L_CheckNotEnabledLoop:
+    set $@RandomTwoNodeLoop, ($@RandomTwoNodeLoop + 1);
+    if ($@RandomTwoNodeLoop >= getarraysize($@NodesTwoSpawned))
+        goto L_Enable;
+    goto L_CheckNotEnabled;
+
+L_Enable:
+    enablenpc "#Node"+$@NodeManagerTwoSpawn[$@RandomTwoNode];
+    setarray $@NodesTwoSpawned[$@NodeManagerTwoSpawnCount], $@RandomTwoNode;
+    goto L_EnableCheck;
+
+L_EnableCheck:
+    set $@NodeManagerTwoSpawnCount, ($@NodeManagerTwoSpawnCount + 1);
+    if ($@NodeManagerTwoSpawnMax > $@NodeManagerTwoSpawnCount)
+        goto L_EnableSpawns;
+    goto L_End;
+ 
+L_Start:
+    initnpctimer;
+    goto L_End;
+
+L_DisableSpawns:
+    set $@RandomTwoNodeLoop, 0;
+    set $@RandomTwoNode, rand(getarraysize($@NodeManagerTwoSpawn));
+    goto L_CheckNotDisabled;
+
+L_CheckNotDisabled:
+    if ($@RandomTwoNode == $@NodesTwoSpawned[$@RandomTwoNodeLoop])
+        goto L_DisableSpawns;
+    goto L_CheckNotDisabledLoop;
+
+L_CheckNotDisabledLoop:
+    set $@RandomTwoNodeLoop, ($@RandomTwoNodeLoop + 1);
+    if ($@RandomTwoNodeLoop >= getarraysize($@NodesTwoSpawned))
+        goto L_Disable;
+    goto L_CheckNotDisabled;
+
+L_Disable:
+    disablenpc "#Node"+$@NodeManagerTwoSpawn[$@RandomTwoNode];
+    setarray $@NodesTwoSpawned[$@DisableTwoSpawnsLoop], $@RandomTwoNode;
+    goto L_DisableCheck;
+
+L_DisableCheck:
+    set $@DisableTwoSpawnsLoop, ($@DisableTwoSpawnsLoop + 1);
+    if ($@NodeManagerTwoSpawnMax > $@DisableTwoSpawnsLoop)
+        goto L_DisableSpawns;
+    goto L_End;
+
+OnCommandTally:
+    set $@NodeManagerTwoSpawnCount, ($@NodeManagerTwoSpawnCount - 1);
+    if ($@NodeManagerTwoSpawnCount)
+        goto L_End;
+    goto L_Start;
+
+OnInit:
+    set $@DisableTwoSpawnsLoop, 0;
+    set $@NodeManagerTwoSpawnMax, 3;
+    set $@NodeManagerTwoSpawnCount, 3;
+    setarray $@NodeManagerTwoSpawn, 7, 8, 9, 10, 11, 12;
+    cleararray $@NodesTwoSpawned, "", getarraysize($@NodesTwoSpawned);
+    goto L_DisableSpawns;
+
+L_End:
+    end;
+}
+
+// Gather Node NPC
+002-5.gat,30,80,0|script|#Node7|501,
+{
+    set @NodeId, 7;
+    set @NodeManagerId, 2;
+    setarray @npc_loc, 30, 80, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+002-5.gat,32,28,0|script|#Node8|501,
+{
+    set @NodeId, 8;
+    set @NodeManagerId, 2;
+    setarray @npc_loc, 32, 28, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+002-5.gat,91,76,0|script|#Node9|501,
+{
+    set @NodeId, 9;
+    set @NodeManagerId, 2;
+    setarray @npc_loc, 91, 76, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+002-5.gat,95,69,0|script|#Node10|501,
+{
+    set @NodeId, 10;
+    set @NodeManagerId, 2;
+    setarray @npc_loc, 95, 69, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+002-5.gat,97,29,0|script|#Node11|501,
+{
+    set @NodeId, 11;
+    set @NodeManagerId, 2;
+    setarray @npc_loc, 97, 29, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+002-5.gat,64,52,0|script|#Node12|501,
+{
+    set @NodeId, 12;
+    set @NodeManagerId, 2;
+    setarray @npc_loc, 64, 52, 2;
+    callfunc "CoalVein";
+    end;
+}
