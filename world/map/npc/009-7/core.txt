@@ -347,6 +347,7 @@ L_Return:
 function|script|fightclub_death|, // ** called by event handler whenever someone dies
 {
     if(@Duel_Fighter != 1) goto L_NoDuel;
+    if(($@Duel_CurrentDuel < 1) || ($@Duel_Started != 1)) goto L_Reset;
     if(@killerrid != 0) goto L_Murdered;
     goto L_Killed;
 
@@ -396,11 +397,16 @@ L_Stranger:
     // the victim was not murdered by its adversary (wtf)
     if(debug) donpcevent "Debug#Duels::OnKillerNotInDuel";
     callfunc "fightclub_EmergencyWipe";
-    end;
+    return;
 
 L_NoDuel:
     if(debug) donpcevent "Debug#Duels::OnVictimNotInDuel";
-    end;
+    return;
+
+L_Reset: // the player has duel_fighter but no duel is ongoing (happens if the player quit before fightclub_exit can be called)
+    if(debug) donpcevent "Debug#Duels::OnVictimInDuelNoDuel";
+    callfunc "fightclub_DestroyMe"; // here we attempt to resume the interrupted procedure
+    return;
 }
 
 function|script|fightclub_enter|, // ** called every time a player enters the ring

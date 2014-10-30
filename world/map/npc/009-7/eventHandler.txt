@@ -129,30 +129,4 @@ L_Intrusion:
     cmdothernpc "#FightClub#utils", "Intrusion"; // we can not attach a second timer to this npc so we use another one
     callfunc "fightclub_Intrusion";
     goto L_StartTimer;
-
-OnPCKilledEvent: // fired with the RID of the victim
-    set @killer, 0;
-    if(@Duel_Fighter != 1) end;
-    if(getmap() != "009-7") end;
-    set $@duel_loser, getcharid(3); // grab the rid of the victim
-    set $@duel_winner, @killerrid; // grab the rid of the killer
-    set @killerrid, 0; // reset killerid
-    callfunc "fightclub_death";
-    end;
-
-OnPCDieEvent: // fired with the RID of the victim
-    callfunc "fightclub_GoBack"; // TODO: we need a unified death handler
-    set @killer, 0;
-    if(@Duel_Fighter != 1) end;
-    if (($@Duel_CurrentDuel < 1) || ($@Duel_Started != 1)) goto L_Reset;
-    if(getmap() != "009-7") end;
-    set @killerrid, 0; // since the player was not murdered, the killerrid is 0
-    set $@duel_loser, getcharid(3); // grab the rid of the victim
-    callfunc "fightclub_death";
-    end;
-
-L_Reset: // the player has duel_fighter but no duel is ongoing (happens if the player quit before fightclub_exit can be called)
-    if(debug) donpcevent "Debug#Duels::OnVictimInDuelNoDuel";
-    callfunc "fightclub_DestroyMe"; // here we attempt to resume the interrupted procedure
-    end;
 }
