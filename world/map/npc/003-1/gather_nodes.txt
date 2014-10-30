@@ -1,0 +1,148 @@
+// Mining Nodes
+// Author: wushin
+
+// NodeManager
+003-1.gat,0,0,0|script|#NodeManager19|400,
+{
+    end;
+
+OnTimer25000:
+    stopnpctimer;
+    cleararray $@NodesNineteenSpawned, "", getarraysize($@NodesNineteenSpawned);
+    goto L_EnableSpawns;
+
+L_EnableSpawns:
+    set $@RandomNineteenNodeLoop, 0;
+    set $@RandomNineteenNode, rand(getarraysize($@NodeManagerNineteenSpawn));
+    goto L_CheckNotEnabled;
+
+L_CheckNotEnabled:
+    if ($@RandomNineteenNode == $@NodesNineteenSpawned[$@RandomNineteenNodeLoop])
+        goto L_EnableSpawns;
+    goto L_CheckNotEnabledLoop;
+
+L_CheckNotEnabledLoop:
+    set $@RandomNineteenNodeLoop, ($@RandomNineteenNodeLoop + 1);
+    if ($@RandomNineteenNodeLoop >= getarraysize($@NodesNineteenSpawned))
+        goto L_Enable;
+    goto L_CheckNotEnabled;
+
+L_Enable:
+    enablenpc "#Node"+$@NodeManagerNineteenSpawn[$@RandomNineteenNode];
+    setarray $@NodesNineteenSpawned[$@NodeManagerNineteenSpawnCount], $@RandomNineteenNode;
+    goto L_EnableCheck;
+
+L_EnableCheck:
+    set $@NodeManagerNineteenSpawnCount, ($@NodeManagerNineteenSpawnCount + 1);
+    if ($@NodeManagerNineteenSpawnMax > $@NodeManagerNineteenSpawnCount)
+        goto L_EnableSpawns;
+    goto L_End;
+ 
+L_Start:
+    initnpctimer;
+    goto L_End;
+
+L_DisableSpawns:
+    set $@RandomNineteenNodeLoop, 0;
+    set $@RandomNineteenNode, rand(getarraysize($@NodeManagerNineteenSpawn));
+    goto L_CheckNotDisabled;
+
+L_CheckNotDisabled:
+    if ($@RandomNineteenNode == $@NodesNineteenSpawned[$@RandomNineteenNodeLoop])
+        goto L_DisableSpawns;
+    goto L_CheckNotDisabledLoop;
+
+L_CheckNotDisabledLoop:
+    set $@RandomNineteenNodeLoop, ($@RandomNineteenNodeLoop + 1);
+    if ($@RandomNineteenNodeLoop >= getarraysize($@NodesNineteenSpawned))
+        goto L_Disable;
+    goto L_CheckNotDisabled;
+
+L_Disable:
+    disablenpc "#Node"+$@NodeManagerNineteenSpawn[$@RandomNineteenNode];
+    setarray $@NodesNineteenSpawned[$@DisableNineteenSpawnsLoop], $@RandomNineteenNode;
+    goto L_DisableCheck;
+
+L_DisableCheck:
+    set $@DisableNineteenSpawnsLoop, ($@DisableNineteenSpawnsLoop + 1);
+    if ($@NodeManagerNineteenSpawnMax > $@DisableNineteenSpawnsLoop)
+        goto L_DisableSpawns;
+    goto L_End;
+
+OnCommandTally:
+    set $@NodeManagerNineteenSpawnCount, ($@NodeManagerNineteenSpawnCount - 1);
+    if ($@NodeManagerNineteenSpawnCount)
+        goto L_End;
+    goto L_Start;
+
+OnInit:
+    set $@DisableNineteenSpawnsLoop, 0;
+    set $@NodeManagerNineteenSpawnMax, 3;
+    set $@NodeManagerNineteenSpawnCount, 3;
+    setarray $@NodeManagerNineteenSpawn, 109, 110, 111, 112, 113, 114;
+    cleararray $@NodesNineteenSpawned, "", getarraysize($@NodesNineteenSpawned);
+    goto L_DisableSpawns;
+
+L_End:
+    end;
+}
+
+// Gather Node NPC
+003-1.gat,125,21,0|script|#Node109|608,
+{
+    set @NodeId, 109;
+    set @NodeManagerId, 19;
+    setarray @npc_loc, 125, 21, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+003-1.gat,21,45,0|script|#Node110|608,
+{
+    set @NodeId, 110;
+    set @NodeManagerId, 19;
+    setarray @npc_loc, 21, 45, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+003-1.gat,73,29,0|script|#Node111|608,
+{
+    set @NodeId, 111;
+    set @NodeManagerId, 19;
+    setarray @npc_loc, 73, 29, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+003-1.gat,99,105,0|script|#Node112|608,
+{
+    set @NodeId, 112;
+    set @NodeManagerId, 19;
+    setarray @npc_loc, 99, 105, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+003-1.gat,94,70,0|script|#Node113|608,
+{
+    set @NodeId, 113;
+    set @NodeManagerId, 19;
+    setarray @npc_loc, 94, 70, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+003-1.gat,127,69,0|script|#Node114|608,
+{
+    set @NodeId, 114;
+    set @NodeManagerId, 19;
+    setarray @npc_loc, 127, 69, 2;
+    callfunc "ClamShell";
+    end;
+}

@@ -1,0 +1,148 @@
+// Mining Nodes
+// Author: wushin
+
+// NodeManager
+015-1.gat,0,0,0|script|#NodeManager30|400,
+{
+    end;
+
+OnTimer25000:
+    stopnpctimer;
+    cleararray $@NodesThritySpawned, "", getarraysize($@NodesThritySpawned);
+    goto L_EnableSpawns;
+
+L_EnableSpawns:
+    set $@RandomThrityNodeLoop, 0;
+    set $@RandomThrityNode, rand(getarraysize($@NodeManagerThritySpawn));
+    goto L_CheckNotEnabled;
+
+L_CheckNotEnabled:
+    if ($@RandomThrityNode == $@NodesThritySpawned[$@RandomThrityNodeLoop])
+        goto L_EnableSpawns;
+    goto L_CheckNotEnabledLoop;
+
+L_CheckNotEnabledLoop:
+    set $@RandomThrityNodeLoop, ($@RandomThrityNodeLoop + 1);
+    if ($@RandomThrityNodeLoop >= getarraysize($@NodesThritySpawned))
+        goto L_Enable;
+    goto L_CheckNotEnabled;
+
+L_Enable:
+    enablenpc "#Node"+$@NodeManagerThritySpawn[$@RandomThrityNode];
+    setarray $@NodesThritySpawned[$@NodeManagerThritySpawnCount], $@RandomThrityNode;
+    goto L_EnableCheck;
+
+L_EnableCheck:
+    set $@NodeManagerThritySpawnCount, ($@NodeManagerThritySpawnCount + 1);
+    if ($@NodeManagerThritySpawnMax > $@NodeManagerThritySpawnCount)
+        goto L_EnableSpawns;
+    goto L_End;
+ 
+L_Start:
+    initnpctimer;
+    goto L_End;
+
+L_DisableSpawns:
+    set $@RandomThrityNodeLoop, 0;
+    set $@RandomThrityNode, rand(getarraysize($@NodeManagerThritySpawn));
+    goto L_CheckNotDisabled;
+
+L_CheckNotDisabled:
+    if ($@RandomThrityNode == $@NodesThritySpawned[$@RandomThrityNodeLoop])
+        goto L_DisableSpawns;
+    goto L_CheckNotDisabledLoop;
+
+L_CheckNotDisabledLoop:
+    set $@RandomThrityNodeLoop, ($@RandomThrityNodeLoop + 1);
+    if ($@RandomThrityNodeLoop >= getarraysize($@NodesThritySpawned))
+        goto L_Disable;
+    goto L_CheckNotDisabled;
+
+L_Disable:
+    disablenpc "#Node"+$@NodeManagerThritySpawn[$@RandomThrityNode];
+    setarray $@NodesThritySpawned[$@DisableThritySpawnsLoop], $@RandomThrityNode;
+    goto L_DisableCheck;
+
+L_DisableCheck:
+    set $@DisableThritySpawnsLoop, ($@DisableThritySpawnsLoop + 1);
+    if ($@NodeManagerThritySpawnMax > $@DisableThritySpawnsLoop)
+        goto L_DisableSpawns;
+    goto L_End;
+
+OnCommandTally:
+    set $@NodeManagerThritySpawnCount, ($@NodeManagerThritySpawnCount - 1);
+    if ($@NodeManagerThritySpawnCount)
+        goto L_End;
+    goto L_Start;
+
+OnInit:
+    set $@DisableThritySpawnsLoop, 0;
+    set $@NodeManagerThritySpawnMax, 3;
+    set $@NodeManagerThritySpawnCount, 3;
+    setarray $@NodeManagerThritySpawn, 186, 187, 188, 189, 190, 191;
+    cleararray $@NodesThritySpawned, "", getarraysize($@NodesThritySpawned);
+    goto L_DisableSpawns;
+
+L_End:
+    end;
+}
+
+// Gather Node NPC
+015-1.gat,61,23,0|script|#Node186|601,
+{
+    set @NodeId, 186;
+    set @NodeManagerId, 30;
+    setarray @npc_loc, 61, 23, 2;
+    callfunc "MauvePlant";
+    end;
+}
+
+// Gather Node NPC
+015-1.gat,73,41,0|script|#Node187|601,
+{
+    set @NodeId, 187;
+    set @NodeManagerId, 30;
+    setarray @npc_loc, 73, 41, 2;
+    callfunc "MauvePlant";
+    end;
+}
+
+// Gather Node NPC
+015-1.gat,29,71,0|script|#Node188|601,
+{
+    set @NodeId, 188;
+    set @NodeManagerId, 30;
+    setarray @npc_loc, 29, 71, 2;
+    callfunc "MauvePlant";
+    end;
+}
+
+// Gather Node NPC
+015-1.gat,56,78,0|script|#Node189|601,
+{
+    set @NodeId, 189;
+    set @NodeManagerId, 30;
+    setarray @npc_loc, 56, 78, 2;
+    callfunc "MauvePlant";
+    end;
+}
+
+// Gather Node NPC
+015-1.gat,24,25,0|script|#Node190|606,
+{
+    set @NodeId, 190;
+    set @NodeManagerId, 30;
+    setarray @npc_loc, 24, 25, 2;
+    callfunc "CloverPatch";
+    end;
+}
+
+// Gather Node NPC
+015-1.gat,78,87,0|script|#Node191|606,
+{
+    set @NodeId, 191;
+    set @NodeManagerId, 30;
+    setarray @npc_loc, 78, 87, 2;
+    callfunc "CloverPatch";
+    end;
+}

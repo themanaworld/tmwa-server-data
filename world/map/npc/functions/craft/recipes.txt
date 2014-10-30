@@ -1,0 +1,111 @@
+// Recipe Menu
+// author: wushin
+
+function|script|RecipeMenu|,
+{
+    set @HasSkill, getskilllv(@RequiredSkill);
+    if(!(@HasSkill))
+        goto L_Learn;
+    set @ListVar, 0;
+    // Set Used if exists
+    mes "["+@CraftObject$+"]";
+    mes "\"You open your recipe book.\"";
+    next;
+    goto L_HasSkill;
+
+L_HasSkill:
+    callfunc @RequiredSkillName$ + "Recipes";
+    set @RecipeCnt, getarraysize(@RecipesCho);
+    if (@RecipeCnt > 6)
+        goto L_MultiMenus;
+    goto L_SimpleMenu;
+
+L_MultiMenus:
+    mes "\"What shall we make?\"";
+    menu 
+       getitemname(@RecipesCho[(@ListVar + 0)]),L_CraftOne,
+       getitemname(@RecipesCho[(@ListVar + 1)]),L_CraftTwo,
+       getitemname(@RecipesCho[(@ListVar + 2)]),L_CraftThree,
+       getitemname(@RecipesCho[(@ListVar + 3)]),L_CraftFour,
+       getitemname(@RecipesCho[(@ListVar + 4)]),L_CraftFive,
+       "<<< Back", L_RecipesLess,
+       "Forward >>>", L_RecipesMore,
+       "Phew, I'm done for now.", L_Close;
+
+L_RecipesMore:
+    set @ListVar, @ListVar + 5;
+    if(@ListVar >= @RecipeCnt)
+        set @ListVar, @RecipeCnt - 5;
+    goto L_MultiMenus;
+
+L_RecipesLess:
+    set @ListVar, @ListVar - 5;
+    if(@ListVar < 0)
+        set @ListVar, 0;
+    goto L_MultiMenus;
+
+L_SimpleMenu:
+    mes "\"What shall we make?\"";
+    menu
+       getitemname(@RecipesCho[(@ListVar + 0)]),L_CraftOne,
+       getitemname(@RecipesCho[(@ListVar + 1)]),L_CraftTwo,
+       getitemname(@RecipesCho[(@ListVar + 2)]),L_CraftThree,
+       getitemname(@RecipesCho[(@ListVar + 3)]),L_CraftFour,
+       getitemname(@RecipesCho[(@ListVar + 4)]),L_CraftFive,
+       "Phew, I'm done for now.", L_Close;
+
+L_CraftOne:
+     set @menuItem, @ListVar;
+     goto L_CraftItem;
+L_CraftTwo:
+     set @menuItem, @ListVar + 1;
+     goto L_CraftItem;
+L_CraftThree:
+     set @menuItem, @ListVar + 2;
+     goto L_CraftItem;
+L_CraftFour:
+     set @menuItem, @ListVar + 3;
+     goto L_CraftItem;
+L_CraftFive:
+     set @menuItem, @ListVar + 4;
+     goto L_CraftItem;
+
+L_Learn:
+    message strcharinfo(0), "You need to learn "+@RequiredSkillName$+".";
+    goto L_Close;
+
+L_CraftItem:
+    if (getitemname(@RecipesCho[@menuItem]) == "Nothing")
+        goto L_HasSkill;
+    // Calls the Recipe to set vars
+    callfunc getitemname(@RecipesCho[@menuItem]);
+    callfunc "CheckInventory";
+    if (@check_fail)
+        goto L_HasSkill;
+    goto L_GrantXp;
+
+L_GrantXp:
+    if(CRAFTONE == @RequiredSkill)
+        goto L_EndCraftOne;
+    if(CRAFTTWO == @RequiredSkill)
+        goto L_EndCraftTwo;
+    goto L_Learn;
+
+L_EndCraftOne:
+    misceffect FX_GETITEM, strcharinfo(0);
+    set CRAFTONEXP, CRAFTONEXP + @RecipeXp;
+    goto L_HasSkill;
+
+L_EndCraftTwo:
+    misceffect FX_GETITEM, strcharinfo(0);
+    set CRAFTTWOXP, CRAFTTWOXP + @RecipeXp;
+    goto L_HasSkill;
+
+L_Close:
+    set @RecipeXp, 0;
+    cleararray @getitem_ids, "", getarraysize(@getitem_ids);
+    cleararray @getitem_counts, "", getarraysize(@getitem_counts);
+    cleararray @delitem_ids, "", getarraysize(@delitem_ids);
+    cleararray @delitem_counts, "", getarraysize(@delitem_counts);
+    return;
+}

@@ -1,0 +1,118 @@
+// Mining Nodes
+// Author: wushin
+
+// NodeManager
+041-1.gat,0,0,0|script|#NodeManager39|400,
+{
+    end;
+
+OnTimer25000:
+    stopnpctimer;
+    cleararray $@NodesThritynineSpawned, "", getarraysize($@NodesThritynineSpawned);
+    goto L_EnableSpawns;
+
+L_EnableSpawns:
+    set $@RandomThritynineNodeLoop, 0;
+    set $@RandomThritynineNode, rand(getarraysize($@NodeManagerThritynineSpawn));
+    goto L_CheckNotEnabled;
+
+L_CheckNotEnabled:
+    if ($@RandomThritynineNode == $@NodesThritynineSpawned[$@RandomThritynineNodeLoop])
+        goto L_EnableSpawns;
+    goto L_CheckNotEnabledLoop;
+
+L_CheckNotEnabledLoop:
+    set $@RandomThritynineNodeLoop, ($@RandomThritynineNodeLoop + 1);
+    if ($@RandomThritynineNodeLoop >= getarraysize($@NodesThritynineSpawned))
+        goto L_Enable;
+    goto L_CheckNotEnabled;
+
+L_Enable:
+    enablenpc "#Node"+$@NodeManagerThritynineSpawn[$@RandomThritynineNode];
+    setarray $@NodesThritynineSpawned[$@NodeManagerThritynineSpawnCount], $@RandomThritynineNode;
+    goto L_EnableCheck;
+
+L_EnableCheck:
+    set $@NodeManagerThritynineSpawnCount, ($@NodeManagerThritynineSpawnCount + 1);
+    if ($@NodeManagerThritynineSpawnMax > $@NodeManagerThritynineSpawnCount)
+        goto L_EnableSpawns;
+    goto L_End;
+ 
+L_Start:
+    initnpctimer;
+    goto L_End;
+
+L_DisableSpawns:
+    set $@RandomThritynineNodeLoop, 0;
+    set $@RandomThritynineNode, rand(getarraysize($@NodeManagerThritynineSpawn));
+    goto L_CheckNotDisabled;
+
+L_CheckNotDisabled:
+    if ($@RandomThritynineNode == $@NodesThritynineSpawned[$@RandomThritynineNodeLoop])
+        goto L_DisableSpawns;
+    goto L_CheckNotDisabledLoop;
+
+L_CheckNotDisabledLoop:
+    set $@RandomThritynineNodeLoop, ($@RandomThritynineNodeLoop + 1);
+    if ($@RandomThritynineNodeLoop >= getarraysize($@NodesThritynineSpawned))
+        goto L_Disable;
+    goto L_CheckNotDisabled;
+
+L_Disable:
+    disablenpc "#Node"+$@NodeManagerThritynineSpawn[$@RandomThritynineNode];
+    setarray $@NodesThritynineSpawned[$@DisableThritynineSpawnsLoop], $@RandomThritynineNode;
+    goto L_DisableCheck;
+
+L_DisableCheck:
+    set $@DisableThritynineSpawnsLoop, ($@DisableThritynineSpawnsLoop + 1);
+    if ($@NodeManagerThritynineSpawnMax > $@DisableThritynineSpawnsLoop)
+        goto L_DisableSpawns;
+    goto L_End;
+
+OnCommandTally:
+    set $@NodeManagerThritynineSpawnCount, ($@NodeManagerThritynineSpawnCount - 1);
+    if ($@NodeManagerThritynineSpawnCount)
+        goto L_End;
+    goto L_Start;
+
+OnInit:
+    set $@DisableThritynineSpawnsLoop, 0;
+    set $@NodeManagerThritynineSpawnMax, 1;
+    set $@NodeManagerThritynineSpawnCount, 1;
+    setarray $@NodeManagerThritynineSpawn, 249, 250, 251;
+    cleararray $@NodesThritynineSpawned, "", getarraysize($@NodesThritynineSpawned);
+    goto L_DisableSpawns;
+
+L_End:
+    end;
+}
+
+// Gather Node NPC
+041-1.gat,50,22,0|script|#Node249|608,
+{
+    set @NodeId, 249;
+    set @NodeManagerId, 39;
+    setarray @npc_loc, 50, 22, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+041-1.gat,54,76,0|script|#Node250|608,
+{
+    set @NodeId, 250;
+    set @NodeManagerId, 39;
+    setarray @npc_loc, 54, 76, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+041-1.gat,76,96,0|script|#Node251|608,
+{
+    set @NodeId, 251;
+    set @NodeManagerId, 39;
+    setarray @npc_loc, 76, 96, 2;
+    callfunc "ClamShell";
+    end;
+}

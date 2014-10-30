@@ -1,0 +1,148 @@
+// Mining Nodes
+// Author: wushin
+
+// NodeManager
+013-3.gat,0,0,0|script|#NodeManager10|400,
+{
+    end;
+
+OnTimer25000:
+    stopnpctimer;
+    cleararray $@NodesTenSpawned, "", getarraysize($@NodesTenSpawned);
+    goto L_EnableSpawns;
+
+L_EnableSpawns:
+    set $@RandomTenNodeLoop, 0;
+    set $@RandomTenNode, rand(getarraysize($@NodeManagerTenSpawn));
+    goto L_CheckNotEnabled;
+
+L_CheckNotEnabled:
+    if ($@RandomTenNode == $@NodesTenSpawned[$@RandomTenNodeLoop])
+        goto L_EnableSpawns;
+    goto L_CheckNotEnabledLoop;
+
+L_CheckNotEnabledLoop:
+    set $@RandomTenNodeLoop, ($@RandomTenNodeLoop + 1);
+    if ($@RandomTenNodeLoop >= getarraysize($@NodesTenSpawned))
+        goto L_Enable;
+    goto L_CheckNotEnabled;
+
+L_Enable:
+    enablenpc "#Node"+$@NodeManagerTenSpawn[$@RandomTenNode];
+    setarray $@NodesTenSpawned[$@NodeManagerTenSpawnCount], $@RandomTenNode;
+    goto L_EnableCheck;
+
+L_EnableCheck:
+    set $@NodeManagerTenSpawnCount, ($@NodeManagerTenSpawnCount + 1);
+    if ($@NodeManagerTenSpawnMax > $@NodeManagerTenSpawnCount)
+        goto L_EnableSpawns;
+    goto L_End;
+ 
+L_Start:
+    initnpctimer;
+    goto L_End;
+
+L_DisableSpawns:
+    set $@RandomTenNodeLoop, 0;
+    set $@RandomTenNode, rand(getarraysize($@NodeManagerTenSpawn));
+    goto L_CheckNotDisabled;
+
+L_CheckNotDisabled:
+    if ($@RandomTenNode == $@NodesTenSpawned[$@RandomTenNodeLoop])
+        goto L_DisableSpawns;
+    goto L_CheckNotDisabledLoop;
+
+L_CheckNotDisabledLoop:
+    set $@RandomTenNodeLoop, ($@RandomTenNodeLoop + 1);
+    if ($@RandomTenNodeLoop >= getarraysize($@NodesTenSpawned))
+        goto L_Disable;
+    goto L_CheckNotDisabled;
+
+L_Disable:
+    disablenpc "#Node"+$@NodeManagerTenSpawn[$@RandomTenNode];
+    setarray $@NodesTenSpawned[$@DisableTenSpawnsLoop], $@RandomTenNode;
+    goto L_DisableCheck;
+
+L_DisableCheck:
+    set $@DisableTenSpawnsLoop, ($@DisableTenSpawnsLoop + 1);
+    if ($@NodeManagerTenSpawnMax > $@DisableTenSpawnsLoop)
+        goto L_DisableSpawns;
+    goto L_End;
+
+OnCommandTally:
+    set $@NodeManagerTenSpawnCount, ($@NodeManagerTenSpawnCount - 1);
+    if ($@NodeManagerTenSpawnCount)
+        goto L_End;
+    goto L_Start;
+
+OnInit:
+    set $@DisableTenSpawnsLoop, 0;
+    set $@NodeManagerTenSpawnMax, 3;
+    set $@NodeManagerTenSpawnCount, 3;
+    setarray $@NodeManagerTenSpawn, 55, 56, 57, 58, 59, 60;
+    cleararray $@NodesTenSpawned, "", getarraysize($@NodesTenSpawned);
+    goto L_DisableSpawns;
+
+L_End:
+    end;
+}
+
+// Gather Node NPC
+013-3.gat,20,84,0|script|#Node55|501,
+{
+    set @NodeId, 55;
+    set @NodeManagerId, 10;
+    setarray @npc_loc, 20, 84, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+013-3.gat,179,68,0|script|#Node56|501,
+{
+    set @NodeId, 56;
+    set @NodeManagerId, 10;
+    setarray @npc_loc, 179, 68, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+013-3.gat,54,163,0|script|#Node57|501,
+{
+    set @NodeId, 57;
+    set @NodeManagerId, 10;
+    setarray @npc_loc, 54, 163, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+013-3.gat,63,74,0|script|#Node58|501,
+{
+    set @NodeId, 58;
+    set @NodeManagerId, 10;
+    setarray @npc_loc, 63, 74, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+013-3.gat,179,20,0|script|#Node59|501,
+{
+    set @NodeId, 59;
+    set @NodeManagerId, 10;
+    setarray @npc_loc, 179, 20, 2;
+    callfunc "CoalVein";
+    end;
+}
+
+// Gather Node NPC
+013-3.gat,158,103,0|script|#Node60|501,
+{
+    set @NodeId, 60;
+    set @NodeManagerId, 10;
+    setarray @npc_loc, 158, 103, 2;
+    callfunc "CoalVein";
+    end;
+}

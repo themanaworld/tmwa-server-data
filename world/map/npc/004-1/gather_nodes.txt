@@ -1,0 +1,148 @@
+// Mining Nodes
+// Author: wushin
+
+// NodeManager
+004-1.gat,0,0,0|script|#NodeManager20|400,
+{
+    end;
+
+OnTimer25000:
+    stopnpctimer;
+    cleararray $@NodesTwentySpawned, "", getarraysize($@NodesTwentySpawned);
+    goto L_EnableSpawns;
+
+L_EnableSpawns:
+    set $@RandomTwentyNodeLoop, 0;
+    set $@RandomTwentyNode, rand(getarraysize($@NodeManagerTwentySpawn));
+    goto L_CheckNotEnabled;
+
+L_CheckNotEnabled:
+    if ($@RandomTwentyNode == $@NodesTwentySpawned[$@RandomTwentyNodeLoop])
+        goto L_EnableSpawns;
+    goto L_CheckNotEnabledLoop;
+
+L_CheckNotEnabledLoop:
+    set $@RandomTwentyNodeLoop, ($@RandomTwentyNodeLoop + 1);
+    if ($@RandomTwentyNodeLoop >= getarraysize($@NodesTwentySpawned))
+        goto L_Enable;
+    goto L_CheckNotEnabled;
+
+L_Enable:
+    enablenpc "#Node"+$@NodeManagerTwentySpawn[$@RandomTwentyNode];
+    setarray $@NodesTwentySpawned[$@NodeManagerTwentySpawnCount], $@RandomTwentyNode;
+    goto L_EnableCheck;
+
+L_EnableCheck:
+    set $@NodeManagerTwentySpawnCount, ($@NodeManagerTwentySpawnCount + 1);
+    if ($@NodeManagerTwentySpawnMax > $@NodeManagerTwentySpawnCount)
+        goto L_EnableSpawns;
+    goto L_End;
+ 
+L_Start:
+    initnpctimer;
+    goto L_End;
+
+L_DisableSpawns:
+    set $@RandomTwentyNodeLoop, 0;
+    set $@RandomTwentyNode, rand(getarraysize($@NodeManagerTwentySpawn));
+    goto L_CheckNotDisabled;
+
+L_CheckNotDisabled:
+    if ($@RandomTwentyNode == $@NodesTwentySpawned[$@RandomTwentyNodeLoop])
+        goto L_DisableSpawns;
+    goto L_CheckNotDisabledLoop;
+
+L_CheckNotDisabledLoop:
+    set $@RandomTwentyNodeLoop, ($@RandomTwentyNodeLoop + 1);
+    if ($@RandomTwentyNodeLoop >= getarraysize($@NodesTwentySpawned))
+        goto L_Disable;
+    goto L_CheckNotDisabled;
+
+L_Disable:
+    disablenpc "#Node"+$@NodeManagerTwentySpawn[$@RandomTwentyNode];
+    setarray $@NodesTwentySpawned[$@DisableTwentySpawnsLoop], $@RandomTwentyNode;
+    goto L_DisableCheck;
+
+L_DisableCheck:
+    set $@DisableTwentySpawnsLoop, ($@DisableTwentySpawnsLoop + 1);
+    if ($@NodeManagerTwentySpawnMax > $@DisableTwentySpawnsLoop)
+        goto L_DisableSpawns;
+    goto L_End;
+
+OnCommandTally:
+    set $@NodeManagerTwentySpawnCount, ($@NodeManagerTwentySpawnCount - 1);
+    if ($@NodeManagerTwentySpawnCount)
+        goto L_End;
+    goto L_Start;
+
+OnInit:
+    set $@DisableTwentySpawnsLoop, 0;
+    set $@NodeManagerTwentySpawnMax, 3;
+    set $@NodeManagerTwentySpawnCount, 3;
+    setarray $@NodeManagerTwentySpawn, 115, 116, 117, 118, 119, 120;
+    cleararray $@NodesTwentySpawned, "", getarraysize($@NodesTwentySpawned);
+    goto L_DisableSpawns;
+
+L_End:
+    end;
+}
+
+// Gather Node NPC
+004-1.gat,39,41,0|script|#Node115|608,
+{
+    set @NodeId, 115;
+    set @NodeManagerId, 20;
+    setarray @npc_loc, 39, 41, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+004-1.gat,34,68,0|script|#Node116|608,
+{
+    set @NodeId, 116;
+    set @NodeManagerId, 20;
+    setarray @npc_loc, 34, 68, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+004-1.gat,28,102,0|script|#Node117|608,
+{
+    set @NodeId, 117;
+    set @NodeManagerId, 20;
+    setarray @npc_loc, 28, 102, 2;
+    callfunc "ClamShell";
+    end;
+}
+
+// Gather Node NPC
+004-1.gat,54,83,0|script|#Node118|608,
+{
+    set @NodeId, 118;
+    set @NodeManagerId, 20;
+    setarray @npc_loc, 54, 83, 2;
+    callfunc "PricklyPear";
+    end;
+}
+
+// Gather Node NPC
+004-1.gat,77,78,0|script|#Node119|608,
+{
+    set @NodeId, 119;
+    set @NodeManagerId, 20;
+    setarray @npc_loc, 77, 78, 2;
+    callfunc "PricklyPear";
+    end;
+}
+
+// Gather Node NPC
+004-1.gat,22,110,0|script|#Node120|608,
+{
+    set @NodeId, 120;
+    set @NodeManagerId, 20;
+    setarray @npc_loc, 22, 110, 2;
+    callfunc "ClamShell";
+    end;
+}

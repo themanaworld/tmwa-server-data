@@ -1,0 +1,136 @@
+// Gather Event
+// Author: wushin
+// @NodeManager, 0 is resevered for Container Nodes
+
+function|script|GatherEvent|,
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check)
+        goto L_Range;
+
+    set @FoundWaitTime, ((@FoundWaitTimeBase - readparam(@NodeReduceAttr) / 5));
+    if (5 > (@FoundWaitTime)) 
+        set @FoundWaitTime, 5;
+
+    set @HasSkill, getskilllv(@RequiredSkill);
+    if(@HasSkill <= @NodeLevel)
+        goto L_EndNeedSkill;
+    if (!(countitem(@RequiredItem)))
+        goto L_EndNeedItem;
+
+    // prevent clicking multiple times:
+    if (gettimetick(2) < @GatherTimePenalty + @FoundWaitTime)
+        goto L_End2;
+    set @GatherTimePenalty, gettimetick(2);
+
+    if ((@LastNode) && (@LastNode != @NodeId))
+        goto L_ResetHits;
+    goto L_Hit;
+
+L_ResetHits:
+    set @NodeHits, 0;
+    goto L_Hit;
+
+L_Hit:
+    set @LastNode, @NodeId;
+    set @NodeHits, @NodeHits + 1;
+    if (@NodeHits < @NodeHitCount)
+        goto L_Work;
+    goto L_Gather;
+
+L_Work:
+    misceffect FX_GETITEM, strcharinfo(0);
+    message strcharinfo(0), "Phew this is hard work.";
+    end;
+
+L_Gather:
+    set @NodeHits, 0;
+    if(CRAFTONE == @RequiredSkill)
+        goto L_EndCraftOne;
+    if(CRAFTTWO == @RequiredSkill)
+        goto L_EndCraftTwo;
+    goto L_EndNeedSkill;
+
+L_EndNeedSkill:
+    message strcharinfo(0), "You do not have enough experience "+@RequiredSkillName$+" to gather this.";
+    goto L_End;
+
+L_EndNeedItem:
+    message strcharinfo(0), "The node is hard for work with using your bare hands. You need a "+getitemname(@RequiredItem);
+    goto L_End;
+
+L_End2:
+    message strcharinfo(0), "You look exhausted, maybe you should rest a bit.";
+    set @GatherTimePenalty, @GatherTimePenalty + 5;
+    if (@GatherTimePenalty > gettimetick(2))
+        set @GatherTimePenalty, gettimetick(2);
+    set @random, 0;
+    goto L_End;
+
+L_EndCraftOne:
+    set @getitem_ids, @NodeDrop;
+    set @getitem_counts, @NodeDropCount;
+    callfunc "CheckInventory";
+    if(@check_fail)
+        goto L_NeedSpace;
+    misceffect FX_GETITEM, strcharinfo(0);
+    set CRAFTONEXP, CRAFTONEXP + @NodeXp;
+    if(@DropChanceEpic >= rand(1000))
+        goto L_BonusDrop;
+    goto L_Spawn;
+
+L_EndCraftTwo:
+    set @getitem_ids, @NodeDrop;
+    set @getitem_counts, @NodeDropCount;
+    callfunc "CheckInventory";
+    if(@check_fail)
+        goto L_NeedSpace;
+    misceffect FX_GETITEM, strcharinfo(0);
+    set CRAFTTWOXP, CRAFTTWOXP + @NodeXp;
+    if(@DropChanceEpic >= rand(1000))
+        goto L_BonusDrop;
+    goto L_Spawn;
+
+L_BonusDrop:
+    getitem @BonGatherRewards[rand(getarraysize(@BonGatherRewards))], 1;
+    goto L_Spawn;
+
+L_Spawn:
+    if (@NodeSpawnCnt == 0)
+        goto L_Disable;
+    areamonster getmap() + ".gat", @npc_loc[0], @npc_loc[1], (@npc_loc[0] + 1), (@npc_loc[1] + 1), @NodeSpawnName$, @NodeSpawnId, @NodeSpawnCnt;
+    goto L_Disable;
+
+L_Disable:
+    if (!(@NodeManagerId))
+        goto L_End;
+    disablenpc "#Node"+@NodeId;
+    cmdothernpc "#NodeManager"+@NodeManagerId, "Tally";
+    goto L_End;
+
+L_NeedSpace:
+    message strcharinfo(0), "You don't have enough space left.";
+    goto L_End;
+
+L_Range:
+    message strcharinfo(0), "You are too far away.";
+    goto L_End;
+
+L_End:
+    set @NodeID, 0;
+    set @NodeDrop, 0;
+    set @NodeLevel, 0;
+    set @NodeHitCount, 0;
+    set @NodeXp, 0;
+    set @NodeSpawnCnt, 0;
+    set @NodeSpawnId, 0;
+    set @NodeSpawnName$, "";
+    set @RequiredSkill, 0;
+    set @RequiredSkillName$, "";
+    set @RequiredItem, 0;
+    set @NodeReduceAttr, 0;
+    set @DropChanceEpic, 0;
+    set @FoundWaitTimeBase, 0;
+    cleararray @BonGatherRewards, 0, getarraysize(@BonGatherRewards);
+    return;
+}

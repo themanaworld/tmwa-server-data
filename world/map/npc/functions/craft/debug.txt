@@ -1,0 +1,120 @@
+// Craft Debug Script
+// author: wushin
+function|script|CraftDebug|,
+{
+    set @TrainerCost, 2500;
+    mes "[Craft Debug]";
+    goto L_Menu;
+
+L_Menu:
+    mes "\"What would you like to do?\"";
+    menu
+        "Display vars.", L_DisplayCrafts,
+        "Increase Craft One Xp", L_OneXpUp,
+        "Increase Craft Two Xp", L_TwoXpUp,
+        "Mining", L_Mining,
+        "Alchemy", L_Alchemy,
+        "Forging", L_Forging,
+        "Foraging", L_Foraging,
+        "Tanning", L_Tanning,
+        "Leathercraft", L_Leathercraft,
+        "Weaving", L_Weaving,
+        "Clothier", L_Clothier,
+        "Reset Crafts", L_ResetCrafts,
+        "Nothing.", L_Close;
+
+L_OneXpUp:
+    set @HasSkill, getskilllv(CRAFTONE);
+    set CRAFTONEXP, ((@HasSkill * 80) + ((@HasSkill * @HasSkill) * 20));
+    goto L_Menu;
+
+L_TwoXpUp:
+    set @HasSkill, getskilllv(CRAFTTWO);
+    set CRAFTTWOXP, ((@HasSkill * 80) + ((@HasSkill * @HasSkill) * 20));
+    goto L_Menu;
+
+L_Mining:
+    set @RequiredSkill, SKILL_MINING;
+    set @RequiredSkillName$, "Mining";
+    goto L_CraftMenu;
+
+L_Alchemy:
+    set @RequiredSkill, SKILL_ALCHEMY;
+    set @RequiredSkillName$, "Alchemy";
+    goto L_CraftMenu;
+
+L_Forging:
+    set @RequiredSkill, SKILL_FORGING;
+    set @RequiredSkillName$, "Forging";
+    goto L_CraftMenu;
+
+L_Foraging:
+    set @RequiredSkill, SKILL_FORAGING;
+    set @RequiredSkillName$, "Foraging";
+    goto L_CraftMenu;
+
+L_Tanning:
+    set @RequiredSkill, SKILL_TANNING;
+    set @RequiredSkillName$, "Tanning";
+    goto L_CraftMenu;
+
+L_Leathercraft:
+    set @RequiredSkill, SKILL_LEATHERCRAFT;
+    set @RequiredSkillName$, "Leathercraft";
+    goto L_CraftMenu;
+
+L_Weaving:
+    set @RequiredSkill, SKILL_WEAVING;
+    set @RequiredSkillName$, "Weaving";
+    goto L_CraftMenu;
+
+L_Clothier:
+    set @RequiredSkill, SKILL_CLOTHIER;
+    set @RequiredSkillName$, "Clothier";
+    goto L_CraftMenu;
+
+L_CraftMenu:
+    mes "What would you like to do with "+@RequiredSkillName$;
+    menu
+        "Train.", L_TrainMenu,
+        "Recipes.", L_RecipeMenu;
+
+L_TrainMenu:
+    callfunc "TrainMenu";
+    goto L_Menu;
+
+L_RecipeMenu:
+    set @CraftObject$, "Debug Craft";
+    callfunc "RecipeMenu";
+    goto L_Menu;
+
+L_DisplayCrafts:
+    mes "Craft One: " + CRAFTONE;
+    mes "Craft One XP: " + CRAFTONEXP;
+    mes "Craft Two: " + CRAFTTWO;
+    mes "Craft Two XP: " + CRAFTTWOXP;
+    goto L_Menu;
+
+L_ResetCrafts:
+    setskill CRAFTONE, 0;
+    set CRAFTONE, 0;
+    set CRAFTONEXP, 0;
+    setskill CRAFTTWO, 0;
+    set CRAFTTWO, 0;
+    set CRAFTTWOXP, 0;
+    goto L_DisplayCrafts;
+
+L_Close:
+    close;
+}
+// Debug Npcs
+001-1.gat,32,35,0|script|CraftDebug#1|109,
+{
+    callfunc "CraftDebug";
+    end;
+
+OnInit:
+    if (!debug)
+        disablenpc "CraftDebug#1";
+    end;
+}
