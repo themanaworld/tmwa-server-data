@@ -100,11 +100,11 @@ L_Check_Inventory:
     goto L_Tricking_Trick_or_Treat;
 
 L_Check_Karma:
-    // Please don't change this, you'll break stuff.
+    // NPC Cheater detection starts after max NPCs hit
     if (rand($@halloween_num_npcs, 65535) <= @karma)
         goto L_Cheater;
-    // this is a cheap, limited form of ilog2
-    if ((@karma >= 16) && !(rand( 4 - (@karma >= 64) + (@karma >= 256) + (@karma >= 1024) )))
+    // NPC Cheater detection engages at 48 Trick or Treats
+    if (@karma >= 48)
         goto L_Cheater;
     if (HALLOWEENTIME & $@halloween_got_big_reward)
         goto L_Tricking_Trick_or_Treat;
@@ -161,8 +161,8 @@ L_Tricking_Reward:
     next;
     if (@karma >= 16)
         set @scare_factor, rand(@scare_factor / 2, @scare_factor);
-    if (@karma >= 256)
-        goto L_Tricking_End;
+    if (@karma >= 24)
+        set @scare_factor, rand(@scare_factor / 3, @scare_factor);
     if (@scare_factor < 1)
         set @scare_factor, 1;
     goto L_Tricking_Reward_Loop;
@@ -266,7 +266,12 @@ L_Return:
 function|script|HalloweenTree|,
 {
     mes "[Confused Tree]";
-    mes "\"I love halloween, wearing masks and going trick or treating is so much fun.\"";
+    if ((HALLOWEENTIME & 65535) > ($@halloween_num_npcs * 3))
+        mes "\"Whoa slow down greedy, leave some candy for the reset of us!\"";
+    if ((HALLOWEENTIME & 65535) > $@halloween_num_npcs)
+        mes "\"I see you have ben enjoying trick or treating, I hope you don't get a stomach ache.\"";
+    if ((HALLOWEENTIME & 65535) <= $@halloween_num_npcs)
+        mes "\"I love halloween, wearing masks and going trick or treating is so much fun.\"";
     goto L_StartMenu;
 
 L_StartMenu:

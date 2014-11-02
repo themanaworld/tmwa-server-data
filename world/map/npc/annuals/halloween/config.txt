@@ -127,8 +127,6 @@ L_Main:
     set $@halloween_memory_count, 8;
     // Level to go trick-or-treating
     set $@halloween_min_level, 10;
-    // Age to go trick-or-treating
-    set $@halloween_min_age, (7*86400);
 
     // Number of trick and treats completed to get charm.
     set $@halloween_charm_count, 10;
@@ -332,6 +330,12 @@ L_Main:
     set $@halloween_all_npc_bits, -1 << (32 - $@halloween_num_npcs);
 
     set $@n, 0;
+
+    // Age to go trick-or-treating (1 week before the start)
+    if ((gettime(6) >= $@halloween_start_month) || (gettime(6) <= $@halloween_end_month))
+        set $@halloween_min_age, ((gettime(5) + 7)*86400);
+    if (gettime(6) == $@halloween_reward_start_month)
+        set $@halloween_min_age, ((gettime(5) + 38)*86400);
 
     if((gettime(6) == $@halloween_reward_start_month && gettime(5) >= $@halloween_reward_start_day 
             && (gettime(5) <= $@halloween_reward_end_day && $@halloween_reward_start_month == $@halloween_end_month
