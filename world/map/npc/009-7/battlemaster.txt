@@ -1,0 +1,102 @@
+009-7.gat,40,35,0|script|Battle Master#Duels|322,
+{
+    if(($fightclub_enabled % 6) != 3) goto L_Disabled;
+    mes "[Battle Master]";
+    mes "\"Hey, you seem tough enough! Would you like to prove your skills?\"";
+    next;
+    menu
+        "PvP Cave (50gp)", L_PVP,
+        "Last Man Standing (150gp)", L_Brodomir,
+        "Nevermind.", L_Next;
+
+L_Disabled:
+    mes "[Battle Master]";
+    mes "I am busy, come back later.";
+    close;
+
+L_Next:
+    mes "[Battle Master]";
+    mes "\"Ha ha, coward.\"";
+    close;
+
+L_Brodomir:
+    if (Zeny < 150) goto L_NoMoney;
+    set Zeny, Zeny - 150;
+    mes "[Battle Master]";
+    mes "\"Get ready!\"";
+    close2;
+    set DUELS, DUELS | $@DuelPvpBit; // tell the arena to send the player back here when he exits
+    warp "009-6.gat", 33, 37;
+    savepoint "009-7.gat", 39, 37;
+    end;
+
+L_PVP:
+    if (Zeny < 50) goto L_NoMoney;
+    set Zeny, Zeny - 50;
+    mes "[Battle Master]";
+    mes "\"Get ready!\"";
+    close2;
+    set DUELS, DUELS | $@DuelPvpBit; // tell the arena to send the player back here when he dies
+    warp "001-3.gat", 0, 0;
+    savepoint "009-7.gat", 39, 37;
+    end;
+
+L_NoMoney:
+    mes "\"Wait a second, you don't have enough money.\"";
+    close;
+}
+
+
+// death and exit handlers below
+
+function|script|fightclub_GoBack|,
+{
+    set @Duel_PVP, DUELS & $@DuelPvpBit;
+    if((@Duel_PVP == 0) && ((getmap() == "009-6") || (getmap() == "009-5"))) goto L_NormalExit;
+    if((getmap() != "009-6") && (getmap() != "009-5") && (getmap() != "001-2") && (getmap() != "001-3")) goto L_Clean;
+    if(@Duel_PVP != 0) goto L_GoBack;
+    return;
+
+L_GoBack:
+    set DUELS, DUELS &~ $@DuelPvpBit;
+    warp "009-7.gat", 39, 37;
+    gmcommand "@alive";
+    message strcharinfo(0), "Thank you for participating!";
+    return;
+
+L_Clean:
+    set DUELS, DUELS &~ $@DuelPvpBit;
+    return;
+
+OnResave:
+    if(@Duel_PVP == 0) end;
+    savepoint "009-7.gat", 39, 37;
+    return;
+
+L_NormalExit:
+    warp "009-3.gat", 162, 82;
+    gmcommand "@alive";
+    return;
+}
+009-6.gat,36,48,0|script|#GoBack2#Duels|127,0,1,
+{
+    callfunc "fightclub_GoBack";
+    end;
+}
+009-5.gat,53,74,0|script|#GoBack3#Duels|127,3,1,
+{
+    callfunc "fightclub_GoBack";
+    end;
+}
+
+
+001-2.gat,130,22,0|script|#GoBack4#Duels|127,1,1,
+{
+    callfunc "fightclub_GoBack";
+    end;
+}
+001-3.gat,73,28,0|script|#GoBack#Duels|127,0,1,
+{
+    callfunc "fightclub_GoBack";
+    end;
+}
