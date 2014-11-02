@@ -3,6 +3,24 @@
     set @has_magic, getskilllv(SKILL_MAGIC);
     set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_OLD_WIZARD;
 
+    set @run, ((QUEST_NorthTulimshar & TWOBIT_8_MASK) >> TWOBIT_8_SHIFT);
+    set @state, ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
+    if ((@run == 2) && (@state == 13))
+        goto L_Deliver;
+    goto L_Start;
+
+L_Deliver:
+    menu
+        "I have a delivery for you", L_Delivery;
+
+L_Delivery:
+    mes "[Old Wizard]";
+    mes "\"Good now I can get to work on some stronger brew..\"";
+    set @state, 14;
+    callfunc "SetKylianQuest";
+    goto L_Close;
+
+L_Start:
     mes "[Old Wizard]";
     mes "\"Welcome, dear wanderer! Come into my humble home. Take a rest, eat and drink.\"";
     next;
