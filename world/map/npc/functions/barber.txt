@@ -19,9 +19,11 @@ L_Main:
     set @color, getlook(LOOK_HAIR_COLOR);
     set @style$, "Unknown";
     set @color$, "Unknown";
-    if (@style >= 0 && @style < 20)
-        set @style$, @HairStyles$[@style];
-    if (@color >= 0 && @color < 120)
+    if (@style >= 1 && @style <= 20)
+        set @style$, @HairStyles$[(@style - 1)];
+    if (Class > 1)
+        set @color, (@color - (15 * Class));
+    if (@color >= 0 && @color <= 15)
         set @color$, @HairColors$[@color];
     if (@color == 127)
         set @color$, "Shocked White";
@@ -66,15 +68,15 @@ L_Style:
         @HairStyles$[25], L_MenuItems;
 
 L_MenuItems:
-    if (@menu - 1 == @style)
+    if (@menu == @style)
         goto L_SameStyle;
     if(@menu == (getarraysize(@HairStyles$) - 1)) goto L_RandomStyle;
     if(@menu == getarraysize(@HairStyles$)) goto L_Done;
-    setlook LOOK_HAIR_STYLE, @menu - 1;
+    setlook LOOK_HAIR_STYLE, @menu;
     goto L_Main;
 
 L_RandomStyle:
-    set @randomStyle, rand(0, (getarraysize(@HairStyles$) -4));
+    set @randomStyle, rand(1, (getarraysize(@HairStyles$) -4));
     if(@randomStyle == @style) goto L_RandomStyle;
     setlook LOOK_HAIR_STYLE, @randomStyle;
     menu
@@ -87,7 +89,7 @@ L_SameStyle:
     goto L_Main;
 
 L_Color:
-    if(@style == Class) goto L_SameColor; // first headstyle of any class is bald
+    if(@style == @BaldStyle) goto L_SameColor; // last headstyle of any class is bald
     if(!@colorOpts) set @HairColors$[getarraysize(@HairColors$)], "Surprise me";
     if(!@colorOpts) set @HairColors$[getarraysize(@HairColors$)], "Nah, I'm fine";
     if(!@colorOpts) set @colorOpts, 1;
@@ -115,11 +117,11 @@ L_MenuItems1:
         goto L_SameColor;
     if(@menu == (getarraysize(@HairColors$) - 1)) goto L_RandomColor;
     if(@menu == getarraysize(@HairColors$)) goto L_Done;
-    setlook LOOK_HAIR_COLOR, ((@menu - 1) + (15 * Class));
+    setlook LOOK_HAIR_COLOR, ((@menu - 1) + (15 * (Class - 1)));
     goto L_Main;
 
 L_RandomColor:
-    set @randomColor, rand((15 * Class), ((getarraysize(@HairColors$) -4) + (15 * Class)));
+    set @randomColor, rand((15 * (Class - 1)), ((getarraysize(@HairColors$) -4) + (15 * (Class - 1))));
     if(@randomColor == @color) goto L_RandomColor;
     setlook LOOK_HAIR_COLOR, @randomColor;
     menu
