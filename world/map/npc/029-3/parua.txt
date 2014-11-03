@@ -1,6 +1,10 @@
 // Parua's fight
 029-3.gat,50,25,0|script|Parua|183,
 {
+    set @FIGHT_CAVE_COST, 20000;
+    set @FIGHT_CAVE_COST$, "20,000";
+    set @FIGHT_CAVE_ANNOUNCE_COST, 3000;
+    set @FIGHT_CAVE_ANNOUNCE_COST$, "3,000";
     if ($@FIGHT_CAVE_STATUS == 1) goto L_Enjoy;
     if ($@FIGHT_CAVE_STATUS >= 2) goto L_Wait;
     mes "[Parua]";
@@ -14,26 +18,29 @@
 
 L_Next:
     mes "[Parua]";
-    mes "\"Very well, for a fee of 20,000 GP, I will awaken that power.\"";
+    mes "\"Very well, for a fee of "+@FIGHT_CAVE_COST$+" GP, I will awaken that power.\"";
     menu "No, what a ripoff!", L_Exit,
          "Fine, here you go.", L_Fine;
 
 L_Fine:
     if ($@FIGHT_CAVE_STATUS == 1)
         goto L_AlreadyStarted;
-    if (Zeny >= 20000 + 3000)
+    if (Zeny >= @FIGHT_CAVE_COST + @FIGHT_CAVE_ANNOUNCE_COST)
         goto L_CallPlayers;
     goto L_Paying;
 
 L_Paying:
     if (getmapusers("029-3.gat") < 5)
         goto L_NotEnoughPlayers;
-    if (Zeny < 20000)
+    if (Zeny < @FIGHT_CAVE_COST)
         goto L_NotEnough;
 // Do not charge the money if the fight or the announces were already started by someone else
     if ($@FIGHT_CAVE_STATUS != 0)
         close;
-    set Zeny, Zeny - 20000;
+    if ($@FIGHT_CAVE_PAID != 0)
+        close;
+    set Zeny, Zeny - @FIGHT_CAVE_COST;
+    set $@FIGHT_CAVE_PAID, 1;
     goto L_StartFight;
 
 L_StartFight:
@@ -48,7 +55,7 @@ L_StartFight:
 
 L_CallPlayers:
     mes "[Parua]";
-    mes "\"Good... Your money will be very useful. I can awaken this power right now, if you want, or, for an additional fee of 3,000 GP, I can help you gather some of your friends to help you in this battle. What will it be?\"";
+    mes "\"Good... Your money will be very useful. I can awaken this power right now, if you want, or, for an additional fee of "+@FIGHT_CAVE_ANNOUNCE_COST$+" GP, I can help you gather some of your friends to help you in this battle. What will it be?\"";
     menu
         "We are OK. Just do it!", L_Paying,
         "I will accept your help.", L_AcceptHelp;
@@ -72,9 +79,12 @@ L_TimeFightStart:
         close;
     if (getmapusers("029-3.gat") < 5)
         goto L_NotEnoughPlayers;
-    if (Zeny < 20000 + 3000)
+    if (Zeny < @FIGHT_CAVE_COST + @FIGHT_CAVE_ANNOUNCE_COST)
         goto L_NotEnough_Announce;
-    set Zeny, Zeny - (20000 + 3000);
+    if ($@FIGHT_CAVE_PAID != 0)
+        close;
+    set Zeny, Zeny - (@FIGHT_CAVE_COST + @FIGHT_CAVE_ANNOUNCE_COST);
+    set $@FIGHT_CAVE_PAID, 1;
     set $@SPONSOR$, strcharinfo(0);
     set $@FIGHT_CAVE_STATUS, $@FIGHT_CAVE_STATUS + (@menu + 2);
     if ($@FIGHT_CAVE_STATUS == 3)
@@ -328,6 +338,7 @@ L_CleanUp_Announcement:
     set $@SPONSOR$, "";
     set $@ANNOUNCE_TIME, 0;
     set $@FIGHT_CAVE_STATUS, 0;
+    set $@FIGHT_CAVE_PAID, 0;
     stopnpctimer;
     setnpctimer 0;
     end;
