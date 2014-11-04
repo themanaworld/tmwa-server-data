@@ -49,9 +49,9 @@ L_Missing:
 L_Proceed2:
     set $@fightclub_myself, 0;
     set @target, 0;
-    if($@Temp_NoMagic != 1)
+    if($@Temp_NoMagic == 0)
         mes "(no rules)";
-    if($@Temp_NoMagic == 1) mes "- No Magic";
+    if($@Temp_NoMagic != 0) mes "- No Magic";
     set $@Temp_NoMagic, 0; // now we clean these vars ASAP because they're globals
     return;
 }
@@ -154,7 +154,8 @@ L_Proceed2:
 
 function|script|fightclub_NextBattleProceed|, // ** called after the delay
 {
-    set $@Duel_NoMagic, (DUELS & $@NoMagicBit); // get the rules of the caster
+    set $@Duel_NoMagic, 0;
+    if((DUELS & $@NoMagicBit) != 0) set $@Duel_NoMagic, 1; // get the rules of the caster
     donpcevent "Rouge#Duels::OnAnnounceNext";
     set $@Duel_Started, 0;
     addtimer ($@Duel_TimeBeforeWarp * 1000), "#FightClub#utils::OnDelayedStart";
@@ -325,7 +326,6 @@ L_Start:
     goto L_NoMagic;
 
 L_NoMagic:
-    if((DUELS & $@NoMagicBit) != 1) goto L_Done;
     mes "Do you want to allow magic?";
     mes "If disabled, the fighters will not be able to use any kind of spell.";
     menu
