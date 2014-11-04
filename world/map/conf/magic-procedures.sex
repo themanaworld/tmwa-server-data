@@ -280,7 +280,7 @@
 (PROCEDURE install_melee_spell (charges base_delay attack_animation)
     (CALL install_attack_spell charges base_delay 1 attack_animation))
 
-(PROCEDURE fightclub_check (healing)
+(PROCEDURE fightclub_check (onSelf onTarget)
     (IF (&&
             (is_in (location caster)
                 (@+
@@ -291,7 +291,7 @@
                 (== (script_int caster "$@Duel_NoMagic") 1)
                 (!= (script_int caster "@Duel_Fighter") 1)))
         (ABORT))
-    (IF (== healing 1)
+    (IF (== onSelf 1)
         (IF (&&
                 (== (substr (location caster) 2 5) "009-7")
                 (not
@@ -300,6 +300,15 @@
                             (@ "009-7.gat" (script_int caster "$@fightclub_x1") (script_int caster "$@fightclub_y1"))
                             (+ (- (script_int caster "$@fightclub_x2") (script_int caster "$@fightclub_x1")) 1)
                             (+ (- (script_int caster "$@fightclub_y2") (script_int caster "$@fightclub_y1")) 1)))))
+            (ABORT)))
+    (IF (== onTarget 1)
+        (IF (&&
+                (!= (pc target) caster)
+                (is_in (location (pc target))
+                    (@+
+                        (@ "009-7.gat" (script_int caster "$@fightclub_x1") (script_int caster "$@fightclub_y1"))
+                        (+ (- (script_int caster "$@fightclub_x2") (script_int caster "$@fightclub_x1")) 1)
+                        (+ (- (script_int caster "$@fightclub_y2") (script_int caster "$@fightclub_y1")) 1))))
             (ABORT))))
 
 (PROCEDURE summon_spell (mob_id count delay lifetime control_level school)
