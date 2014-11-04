@@ -4,12 +4,11 @@ function|script|fightclub_Debug
 
 L_Menu:
     next;
-    set @bme,0; if(($fightclub_enabled % 6) == 3) set @bme,1;
-    set @due,0; if(($fightclub_enabled % 5) == 3) set @due,1;
+    set @bme,0; if($SANGUINE & $@SV_BMDBit == 0) set @bme,1;
+    set @due,0; if($SANGUINE & $@SV_FCDBit == 0) set @due,1;
     mes "[Global]";
     mes "$Duel_Enabled: " + @due;
     mes "$fightclub_bm_enabled: " + @bme;
-    mes "$@fightclub_password$: " + $fightclub_password$;
     mes "$@Duel_TimeBeforeNext: " + $@Duel_TimeBeforeNext;
     mes "$@Duel_TimeBeforeWarp: " + $@Duel_TimeBeforeWarp;
     mes "$@Duel_TimeBeforeStart: " + $@Duel_TimeBeforeStart;
@@ -24,7 +23,6 @@ L_Menu:
     menu
         "[G] Toggle $Duel_Enabled", L_DuelEnabled,
         "[G] Toggle $fightclub_bm_enabled", L_BmEnabled,
-        "[G] Set $@fightclub_password$", L_FightclubPassword,
         "[G] Set $@Duel_TimeBeforeNext", L_TimeBeforeNext,
         "[G] Set $@Duel_TimeBeforeWarp", L_TimeBeforeWarp,
         "[G] Set $@Duel_TimeBeforeStart", L_TimeBeforeStart,
@@ -38,22 +36,18 @@ L_Menu:
 
 L_DuelEnabled:
     if(@due < 1) goto L_DuelEnabled2;
-    set $fightclub_enabled, 9;
-    if(@bme < 1) set $fightclub_enabled, 1;
+    set $SANGUINE, $SANGUINE | $@SV_FCDBit;
     goto L_Menu;
 L_DuelEnabled2:
-    set $fightclub_enabled, 8;
-    if(@bme == 1) set $fightclub_enabled, 3;
-    goto L_Menu;
+    set $SANGUINE, $SANGUINE &~ $@SV_FCDBit;
+    goto L_Restart;
 
 L_BmEnabled:
     if(@bme < 1) goto L_BmEnabled2;
-    set $fightclub_enabled, 8;
-    if(@due < 1) set $fightclub_enabled, 1;
+    set $SANGUINE, $SANGUINE | $@SV_BMDBit;
     goto L_Menu;
 L_BmEnabled2:
-    set $fightclub_enabled, 9;
-    if(@due == 1) set $fightclub_enabled, 3;
+    set $SANGUINE, $SANGUINE &~ $@SV_BMDBit;
     goto L_Menu;
 
 L_DuelFighter:
@@ -114,12 +108,6 @@ L_LastDuel:
     set $Duel_LastDuel, @last;
     next;
     goto L_Restart;
-
-L_FightclubPassword:
-    input @pass$;
-    if(@pass$ == "") goto L_OutOfRange;
-    set $@fightclub_password$, @pass$;
-    goto L_Menu;
 
 L_OutOfRange:
     mes "Value out of range or empty.";

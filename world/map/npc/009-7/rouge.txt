@@ -11,10 +11,11 @@ L_CallDebug:
     goto L_Main;
 
 L_Main:
-    mes "[Rouge]";
+    set @requests, 0;
     if(@Duel_Queue$[0] != "") goto L_Queue;
+    mes "[Rouge]";
     mes "Welcome to the Sanguine Vault's duel arena.";
-    if(($fightclub_enabled % 5) != 3) goto L_Disabled;
+    if($SANGUINE & $@SV_FCDBit != 0) goto L_Disabled;
     mes "What do you want to do?";
     menu
         "See the commands.", L_Challenge,
@@ -25,7 +26,13 @@ L_Queue:
     set @caster_name$, @Duel_Queue$[0];
     set @target_name$, strcharinfo(0);
     set @target, getcharid(3, @caster_name$);
+    set $@my_rid, getcharid(3);
     set @Duel_Queue$[0], "";
+    if(attachrid(@target) != 1) goto L_Missing;
+    if(getmap() != "009-7") goto L_Missing;
+    if(attachrid($@my_rid) != 1) goto L_End;
+    set @requests, (@requests + 1);
+    set $@my_rid, 0; // clean this ASAP
     mes @caster_name$ + " wishes to challenge you to a duel.";
     mes "";
     callfunc "fightclub_getrules";
@@ -37,6 +44,7 @@ L_Queue:
             "No.", L_Decline;
 
 L_ShiftQueue: // here we shift the array to the left
+    if((@Duel_Queue$[@loop] == "" ) && (@requests < 1)) goto L_Main;
     if(@Duel_Queue$[@loop] == "") goto L_End;
     set @Duel_Queue$[(@loop - 1)], @Duel_Queue$[@loop];
     set @Duel_Queue$[@loop], "";
@@ -46,17 +54,20 @@ L_ShiftQueue: // here we shift the array to the left
 
 L_Accept:
     callfunc "fightclub_AddToQueue";
-    message @caster_name$, @target_name$ + " Accepted your offer.";
     set @loop, 1;
     goto L_ShiftQueue;
 
 L_Decline:
-    message @caster_name$, @target_name$ + " turned down your offer.";
     set @loop, 1;
     goto L_ShiftQueue;
 
+L_Missing:
+    if(attachrid($@my_rid) != 1) goto L_End;
+    set $@my_rid, 0; // clean this ASAP
+    goto L_Decline;
+
 L_Challenge:
-    if(($fightclub_enabled % 5) != 3) goto L_Disabled;
+    if($SANGUINE & $@SV_FCDBit != 0) goto L_Disabled;
     next;
     mes "[Rouge]";
     mes "To challenge a player to a duel, you need to write this command:";
