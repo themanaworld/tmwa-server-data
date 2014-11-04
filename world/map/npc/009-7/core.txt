@@ -49,9 +49,9 @@ L_Missing:
 L_Proceed2:
     set $@fightclub_myself, 0;
     set @target, 0;
-    if($@Temp_NoMagic != 1)
+    if($@Temp_NoMagic == 0)
         mes "(no rules)";
-    if($@Temp_NoMagic == 1) mes "- No Magic";
+    if($@Temp_NoMagic != 0) mes "- No Magic";
     set $@Temp_NoMagic, 0; // now we clean these vars ASAP because they're globals
     return;
 }
@@ -154,7 +154,8 @@ L_Proceed2:
 
 function|script|fightclub_NextBattleProceed|, // ** called after the delay
 {
-    set $@Duel_NoMagic, (DUELS & $@NoMagicBit); // get the rules of the caster
+    set $@Duel_NoMagic, 0;
+    if((DUELS & $@NoMagicBit) != 0) set $@Duel_NoMagic, 1; // get the rules of the caster
     donpcevent "Rouge#Duels::OnAnnounceNext";
     set $@Duel_Started, 0;
     addtimer ($@Duel_TimeBeforeWarp * 1000), "#FightClub#utils::OnDelayedStart";
@@ -277,7 +278,7 @@ function|script|fightclub_StartUp|, // ** called after the server boots up
     if($@Duel_TimeLimit < 1) set $@Duel_TimeLimit, 120; // init the (temporary) TimeLimit global
     if($@Duel_QueueLimit < 1) set $@Duel_QueueLimit, 5; // init the (temporary) QueueLimit global
     if($@Duel_PlayerQueueLimit < 1) set $@Duel_PlayerQueueLimit, 2; // init the (temporary) PlayerQueueLimit global
-    if($@fightclub_password$ == "") set $@fightclub_password$, "Banana"; // init the (temporary) fightclub_password global
+    if($@fightclub_password$ == "") set $@fightclub_password$, "random"; // init the (temporary) fightclub_password global
     setarray $@Duel_Queue_ID, 0;
     cleararray $@Duel_Queue_ID, 0, ($@Duel_QueueLimit + 1);
     setarray $@Duel_Queue_Blue$, "";
@@ -325,7 +326,6 @@ L_Start:
     goto L_NoMagic;
 
 L_NoMagic:
-    if((DUELS & $@NoMagicBit) != 1) goto L_Done;
     mes "Do you want to allow magic?";
     mes "If disabled, the fighters will not be able to use any kind of spell.";
     menu
@@ -414,6 +414,7 @@ function|script|fightclub_enter|, // ** called every time a player enters the ri
     set @Duel_Fighter, 1;
     warp "009-7.gat", rand($@fightclub_x1,$@fightclub_x2), rand($@fightclub_y1,$@fightclub_y2);
     gmcommand "@alive"; // ensure that you can't duel wih a corpse
+    sc_end 132; sc_end 14; sc_end 37; sc_end 185; sc_end 194; sc_end 195; sc_end 196; sc_end 197; sc_end 198; sc_end 199; // remove effects
     message strcharinfo(0), "Get Ready.";
     addtimer ($@Duel_TimeBeforeStart * 1000), "#FightClub#utils::OnBecomeKiller"; // call fightclub_enter_killer in 3 seconds
     return;
@@ -423,7 +424,7 @@ function|script|fightclub_enter_killer|, // ** called 3 seconds after a player e
 {
     gmcommand "@killable";
     gmcommand "@killer"; // add both killable and killer so if one doesn't kick in, the other (hopefully) will
-    set @killer, 1;
+    set @duel_killer, 1;
     message strcharinfo(0), "GO !";
     return;
 }
@@ -432,15 +433,14 @@ function|script|fightclub_exit|, // ** called every time a player exits the ring
 {
     set @Duel_Fighter, 0;
     if(getmap() == "009-7") warp "009-7.gat", 31, 40; // do not warp if player left the room
-    if(@killer != 1) goto L_Clean;
-    gmcommand "@killable";
-    gmcommand "@killer";
+    if(@duel_killer != 1) goto L_Clean;
+    percentheal -100, 0; // doing @killer is unreliable
     goto L_Clean;
 
 L_Clean:
-    set @killer, 0; // the player no longer have @killer
+    set @duel_killer, 0; // the player no longer have @killer
     gmcommand "@alive"; // refill hp/mana
-    sc_end 132; sc_end 14; sc_end 37; sc_end 185; // remove effects
+    sc_end 132; sc_end 14; sc_end 37; sc_end 185; sc_end 194; sc_end 195; sc_end 196; sc_end 197; sc_end 198; sc_end 199; // remove effects
     message strcharinfo(0), "Thank you for participating in the fight club!";
     if(@Duel_HasPendingRequest) message strcharinfo(0), "You have received a new duel request.";
     return;
