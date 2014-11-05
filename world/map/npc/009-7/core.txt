@@ -56,7 +56,8 @@ L_Proceed2:
     return;
 }
 
-function|script|fightclub_AddToQueue|, // ** called when someone agree to duel
+// ** called when someone agree to duel
+function|script|fightclub_AddToQueue|,
 {
     set @Duel_Loop, 0;
     goto L_Loop;
@@ -108,7 +109,8 @@ L_Request:
     return;
 }
 
-function|script|fightclub_NextBattle|, // ** called when a duel is finished
+// ** called when a duel is finished
+function|script|fightclub_NextBattle|,
 {
     set $@Duel_Queue_Blue$[0], ""; // clean the 0 index
     set $@Duel_Queue_Red$[0], "";
@@ -152,7 +154,8 @@ L_Proceed2:
     return;
 }
 
-function|script|fightclub_NextBattleProceed|, // ** called after the delay
+// ** called after the delay
+function|script|fightclub_NextBattleProceed|,
 {
     set $@Duel_NoMagic, (DUELS & $@NoMagicBit); // get the rules of the caster
     donpcevent "Rouge#Duels::OnAnnounceNext";
@@ -196,7 +199,8 @@ L_Missing:
     return;
 }
 
-function|script|fightclub_Intrusion|, // ** called when someone uninvited is on stage
+// ** called when someone uninvited is on stage
+function|script|fightclub_Intrusion|,
 {
     // nothing to do here (yet)
     return;
@@ -210,7 +214,8 @@ function|script|fightclub_EmergencyWipe|,
     return;
 }
 
-function|script|fightclub_Victory|, // ** called whenever someone wins (to handle rewards and bids)
+// ** called whenever someone wins (to handle rewards and bids)
+function|script|fightclub_Victory|,
 {
     // TODO: give some sort of reward
     // TODO: increase score
@@ -218,14 +223,16 @@ function|script|fightclub_Victory|, // ** called whenever someone wins (to handl
     return;
 }
 
-function|script|fightclub_DestroyMe|, // ** called when the player needs to be reset
+// ** called when the player needs to be reset
+function|script|fightclub_DestroyMe|,
 {
     callfunc "fightclub_exit";
     percentheal -100, 0; // dying removes @killable, @killer or any temp buff
     return;
 }
 
-function|script|fightclub_Missing|, // ** called when the red or blue player disappears from stage
+// ** called when the red or blue player disappears from stage
+function|script|fightclub_Missing|,
 {
     // $@Duel_Missing 1 = red, 2 = blue
     if (attachrid($@Duel_BluePlayer) == 1) goto L_Proceed; // we need to attach to at least one player
@@ -268,7 +275,8 @@ L_Resume:
     return;
 }
 
-function|script|fightclub_StartUp|, // ** called after the server boots up
+// ** called after the server boots up
+function|script|fightclub_StartUp|,
 {
     if($fightclub_enabled < 1) set $fightclub_enabled, 1; // init the (permanent) enabled global (this will only be done once, when the duel system is merged with master)
     if($@Duel_TimeBeforeNext < 1) set $@Duel_TimeBeforeNext, 5; // init the (temporary) TimeBeforeNext global
@@ -291,7 +299,8 @@ function|script|fightclub_StartUp|, // ** called after the server boots up
     return;
 }
 
-function|script|fightclub_CleanStage|, // ** called before and after each duel to wipe the vars
+// ** called before and after each duel to wipe the vars
+function|script|fightclub_CleanStage|,
 {
     if($@Duel_NoWarp != 1) areawarp "009-7.gat", $@fightclub_x1, $@fightclub_y1, $@fightclub_x2, $@fightclub_y2, "009-7.gat", 31, 40; // kick all players from stage
     set $@Duel_NoWarp, 0;
@@ -308,7 +317,8 @@ function|script|fightclub_CleanStage|, // ** called before and after each duel t
     return;
 }
 
-function|script|fightclub_setrules|, // ** called by npc; allows the player to change their custom rules
+// ** called by npc; allows the player to change their custom rules
+function|script|fightclub_setrules|,
 {
     goto L_Main;
 
@@ -344,7 +354,8 @@ L_Return:
     return;
 }
 
-function|script|fightclub_death|, // ** called by event handler whenever someone dies
+// ** called by event handler whenever someone dies
+function|script|fightclub_death|,
 {
     if(@Duel_Fighter != 1) goto L_NoDuel;
     if(($@Duel_CurrentDuel < 1) || ($@Duel_Started != 1)) goto L_Reset;
@@ -409,7 +420,8 @@ L_Reset: // the player has duel_fighter but no duel is ongoing (happens if the p
     return;
 }
 
-function|script|fightclub_enter|, // ** called every time a player enters the ring
+// ** called every time a player enters the ring
+function|script|fightclub_enter|,
 {
     set @Duel_Fighter, 1;
     warp "009-7.gat", rand($@fightclub_x1,$@fightclub_x2), rand($@fightclub_y1,$@fightclub_y2);
@@ -419,7 +431,8 @@ function|script|fightclub_enter|, // ** called every time a player enters the ri
     return;
 }
 
-function|script|fightclub_enter_killer|, // ** called 3 seconds after a player enters the ring
+// ** called 3 seconds after a player enters the ring
+function|script|fightclub_enter_killer|,
 {
     gmcommand "@killable";
     gmcommand "@killer"; // add both killable and killer so if one doesn't kick in, the other (hopefully) will
@@ -428,7 +441,8 @@ function|script|fightclub_enter_killer|, // ** called 3 seconds after a player e
     return;
 }
 
-function|script|fightclub_exit|, // ** called every time a player exits the ring
+// ** called every time a player exits the ring
+function|script|fightclub_exit|,
 {
     set @Duel_Fighter, 0;
     if(getmap() == "009-7") warp "009-7.gat", 31, 40; // do not warp if player left the room
