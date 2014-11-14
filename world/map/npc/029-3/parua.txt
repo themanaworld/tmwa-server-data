@@ -36,9 +36,9 @@ L_Paying:
         goto L_NotEnough;
 // Do not charge the money if the fight or the announces were already started by someone else
     if ($@FIGHT_CAVE_STATUS != 0)
-        close;
+        goto L_AlreadyStarted;
     if ($@FIGHT_CAVE_PAID != 0)
-        close;
+        goto L_AlreadyStarted;
     set Zeny, Zeny - @FIGHT_CAVE_COST;
     set $@FIGHT_CAVE_PAID, 1;
     goto L_StartFight;
@@ -76,13 +76,13 @@ L_AcceptHelp:
 L_TimeFightStart:
 // Do not charge the money if the fight or the announces were already started by someone else
     if ($@FIGHT_CAVE_STATUS != 0)
-        close;
+        goto L_AlreadyStarted;
     if (getmapusers("029-3.gat") < 5)
         goto L_NotEnoughPlayers;
     if (Zeny < @FIGHT_CAVE_COST + @FIGHT_CAVE_ANNOUNCE_COST)
         goto L_NotEnough_Announce;
     if ($@FIGHT_CAVE_PAID != 0)
-        close;
+        goto L_AlreadyStarted;
     set Zeny, Zeny - (@FIGHT_CAVE_COST + @FIGHT_CAVE_ANNOUNCE_COST);
     set $@FIGHT_CAVE_PAID, 1;
     set $@SPONSOR$, strcharinfo(0);
@@ -325,6 +325,7 @@ L_CleanUp:
     mapannounce "029-1.gat", "Parua:* The dungeon is now ready for its next victims.", 0;
     areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::OnReward";
     set $@FIGHT_CAVE_STATUS, 0;
+    set $@FIGHT_CAVE_PAID, 0;
     set $@FIGHT_CAVE_PLAYER_COUNT, 0;
     set $@FIGHT_CAVE_LEVEL, 1;
     set $@FIGHT_CAVE_ROUND_TIMER, 0;
