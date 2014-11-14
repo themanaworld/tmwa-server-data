@@ -1,6 +1,6 @@
 009-7.gat,40,35,0|script|Battle Master#Duels|322
 {
-    if(($fightclub_enabled % 6) != 3) goto L_Disabled;
+    if($SANGUINE & $@SV_BMDBit != 0) goto L_Disabled;
     mes "[Battle Master]";
     mes "\"Hey, you seem tough enough! Would you like to prove your skills?\"";
     next;
@@ -52,8 +52,6 @@ L_NoMoney:
 function|script|fightclub_GoBack
 {
     set @Duel_PVP, DUELS & $@DuelPvpBit;
-    if((@Duel_PVP == 0) && ((getmap() == "009-6") || (getmap() == "009-5"))) goto L_NormalExit;
-    if((getmap() != "009-6") && (getmap() != "009-5") && (getmap() != "001-2") && (getmap() != "001-3")) goto L_Clean;
     if(@Duel_PVP != 0) goto L_GoBack;
     return;
 
@@ -63,39 +61,30 @@ L_GoBack:
     gmcommand "@alive";
     message strcharinfo(0), "Thank you for participating!";
     return;
-
-L_Clean:
-    set DUELS, DUELS &~ $@DuelPvpBit;
-    return;
-
-OnResave:
-    if(@Duel_PVP == 0) end;
-    savepoint "009-7.gat", 39, 37;
-    return;
-
-L_NormalExit:
-    warp "009-3.gat", 162, 82;
-    gmcommand "@alive";
-    return;
 }
-009-6.gat,36,48,0|script|#GoBack2#Duels|127,0,1
+009-6.gat,36,48,0|script|#GoBack2Duels|127,0,1
 {
     callfunc "fightclub_GoBack";
     end;
 }
-009-5.gat,53,74,0|script|#GoBack3#Duels|127,3,1
+009-5.gat,53,74,0|script|#GoBack3Duels|127,3,1
+{
+    callfunc "fightclub_GoBack";
+    end;
+}
+009-3.gat,158,83,0|script|#GoBack5Duels|127,7,0
 {
     callfunc "fightclub_GoBack";
     end;
 }
 
 
-001-2.gat,130,22,0|script|#GoBack4#Duels|127,1,1
+001-2.gat,130,22,0|script|#GoBack4Duels|127,1,1
 {
     callfunc "fightclub_GoBack";
     end;
 }
-001-3.gat,73,28,0|script|#GoBack#Duels|127,0,1
+001-3.gat,73,28,0|script|#GoBack1Duels|127,0,1
 {
     callfunc "fightclub_GoBack";
     end;
