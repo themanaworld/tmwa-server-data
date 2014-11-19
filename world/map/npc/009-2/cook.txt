@@ -1,0 +1,119 @@
+// Hermes the arcane chef
+// author: meko
+009-2.gat,34,93,0|script|Hermes#_M|103,
+{
+  // if level < 15 goodbye
+  // blabla
+  // menu
+    // add ingredient
+      // if level >= 30
+        // if cookbook
+          // add 2nd ingredient
+        // give cookbook quest
+      // if level >= 60
+        // if 2nd cookbook
+          // add 3rd ingredient
+        // give 2nd cookbook quest
+      // if good combination
+        // give item
+        // add item to cookbook
+      // if bad combination
+        // give iten
+    // goodbye
+    
+    
+    
+  if (BaseLevel < 15) goto L_Unexperienced;
+  
+  setarray @SingleIngredient,  740,  631,  569;
+  setarray @SingleResult,      569,  825,  729;
+  
+  setarray @DoubleIngredient$,   "569,569";
+  setarray @DoubleResult,             740;
+  
+  set @firstItem, 0;
+  set @secondItem, 0;
+  set @thirdItem, 0;
+  set @cookLoop, 0;
+  
+  getinventorylist;
+  if ((checkweight("Iten", 1) == 0) || (@inventorylist_count == 100)) goto L_Inventory;
+  
+  goto L_Main;
+  
+  L_Main:
+    menu
+      "Add an ingredient.",L_addFirst,
+      "Nevermind.",L_end;
+      
+  L_addFirst:
+    input @firstItem;
+    if((@firstItem < 100) || (getitemname(@firstItem) == "Unknown Item") || (getitemname(@firstItem) == "")) goto L_Bad;
+    if(countitem(@firstItem) < 1) goto L_NoItem;
+    next;
+    mes "Do you want to add this item to the mixture?";
+    mes "- "+ getitemname(@firstItem);
+    menu
+      "Add this item.", L_afterFirst,
+      "Abort.", L_end;
+      
+  L_afterFirst:
+    //TODO: check if user can use 2 items
+    goto L_MakeIt;
+  
+  L_MakeIt:
+    //TODO: if((@secondItem > 0) && (@thirdItem > 0)) goto L_TripleMakeLoop;
+    //TODO: if(@secondItem > 0) goto L_DoubleMakeLoop;
+    goto L_SingleMakeLoop;
+  
+  L_SingleMakeLoop:
+    if(@SingleIngredient[@cookLoop] == @firstItem) goto L_SingleMake;
+    set @cookLoop, (@cookLoop +1);
+    if(@cookLoop >= getarraysize(@SingleIngredient)) goto L_MakeIten;
+    goto L_SingleMakeLoop;
+    
+  L_SingleMake:
+    next;
+    mes "You got this item :";
+    mes "- " + getitemname(@SingleResult[@cookLoop]);
+    delitem @firstItem, 1;
+    getitem @SingleResult[@cookLoop], 1;
+    goto L_end;
+  
+  L_MakeIten:
+    //TODO: chance to fail
+    next;
+    mes "You got this item: ";
+    mes "- Iten";
+    delitem @firstItem, 1;
+    getitem 727, 1;
+    //TODO: change to get item twice
+    //TODO: add recipe to cookbook
+    if(@secondItem > 1) delitem @secondItem, 1;
+    if(@thirdItem > 1) delitem @thirdItem, 1;
+    goto L_end;
+  
+  L_Unexperienced:
+    next;
+    mes "Come back when you are stronger.";
+    goto L_end;
+  
+  L_Bad:
+    next;
+    mes "bad item id";
+    close;
+  
+  L_NoItem:
+    next;
+    mes "You do not possess this item :";
+    mes "- "+ getitemname(@firstItem);
+    close;
+  
+  L_Inventory:
+    next;
+    mes "You're too heavy or you don't have a free slot.";
+    close;
+  
+  L_end:
+    close;
+}
