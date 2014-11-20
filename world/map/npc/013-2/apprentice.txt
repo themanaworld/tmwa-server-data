@@ -40,14 +40,11 @@ L_Beer:
         "No thanks", L_Beer_no;
 
 L_Beer_yes:
-    if (Zeny < 175)
-        goto L_Low_money;
-    getinventorylist;
-    if (@inventorylist_count == 100
-        && countitem("Beer") == 0)
-            goto L_TooMany;
-    getitem "Beer", 1;
-    set Zeny, Zeny - 175;
+    setarray @getitem$, "Beer";
+    setarray @getitem, 1;
+    set @delzeny, 175;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     goto L_Finish;
 
 L_Beer_no:
@@ -65,14 +62,11 @@ L_Milk:
         "No thanks", L_Milk_no;
 
 L_Milk_yes:
-    if (Zeny < 300)
-        goto L_Low_money;
-    getinventorylist;
-    if (@inventorylist_count == 100
-        && countitem("Milk") == 0)
-            goto L_TooMany;
-    getitem "Milk", 1;
-    set Zeny, Zeny - 300;
+    setarray @getitem$, "Milk";
+    setarray @getitem, 1;
+    set @delzeny, 300;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     goto L_Finish;
 
 L_Milk_no:
@@ -81,19 +75,8 @@ L_Milk_no:
     next;
     goto L_Finish;
 
-L_Low_money:
-    mes "[Fabius]";
-    mes "\"Aw, you don't have enough gold on you!\"";
-    next;
-    goto L_Finish;
-
 L_Finish:
     mes "[Fabius]";
     mes "\"By the way, have you seen those flying notes and the mirror in the room next door? They're WAY COOL! Try reading some of the notes!\"";
-    close;
-
-L_TooMany:
-    mes "[Fabius]";
-    mes "\"You don't have room for it.\"";
     close;
 }

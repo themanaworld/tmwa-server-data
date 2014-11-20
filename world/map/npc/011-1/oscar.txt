@@ -133,18 +133,14 @@ L_End:
     close;
 
 L_CheckSeeds:
-    if (countitem("PumpkinSeeds") < $@halloween_num_seeds)
-        goto L_NotEnoughSeeds;
-    delitem "PumpkinSeeds", $@halloween_num_seeds;
+    setarray @delitem$, "PumpkinSeeds";
+    setarray @delitem, $@halloween_num_seeds;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set Quest_Halloween, 3;
     mes "[Oscar]";
     mes "\"Yes you found them! I can start to make them grow now!";
     mes "Thank you so much " + strcharinfo(0) + "!\"";
-    goto L_End;
-
-L_NotEnoughSeeds:
-    mes "[Oscar]";
-    mes "\"Oh, it looks like you didn't find enough seeds yet...\"";
     goto L_End;
 
 L_HelpGrowSeeds:
@@ -196,13 +192,16 @@ L_Next4:
     goto L_GetEmptyBottles;
 
 L_GetEmptyBottles:
+    setarray @getitem$, "EmptyBottle";
+    setarray @getitem, $@halloween_num_water_bottles;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Oscar]";
     mes "\"Ok, here are the " + $@halloween_num_water_bottles + " empty bottles.\"";
     next;
     mes "\"Oh and while you fill these bottles, why not bring some friends here as well?";
     mes "Let's not be reckless. Maybe these rumors about the pumpkins are true.";
     mes "Oh, unless you consider yourself strong enough to take care of this alone!\"";
-    getitem "EmptyBottle", $@halloween_num_water_bottles;
     goto L_End;
 
 L_WaitGrowSeeds:
@@ -226,13 +225,15 @@ L_HelpFillWaters:
         "Oh, not yet. I'm on my way.", L_End;
 
 L_Next5:
-    if (countitem("BottleOfWater") < $@halloween_num_water_bottles)
-        goto L_NotEnoughWaters;
 
     // make an additional check here, since the player had a dialog pause in the above menu.
     if ($@HalloweenQuest_PumpkinHunter$ != "")
         goto L_WateringBusy;
-    delitem "BottleOfWater", $@halloween_num_water_bottles;
+
+    setarray @delitem$, "BottleOfWater";
+    setarray @delitem, $@halloween_num_water_bottles;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
 
     mes "[Oscar]";
     mes "\"Many thanks! I wonder what I would have done without you!";
@@ -243,9 +244,10 @@ L_Next5:
     goto L_End;
 
 L_WaterWithKaflosh:
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("BottleOfWater") == 0)
-        goto L_InventoryFull;
+    setarray @getitem$, "BottleOfWater";
+    setarray @getitem, $@halloween_num_water_bottles;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Oscar]";
     mes "\"Oh, I see!";
     next;
@@ -257,7 +259,6 @@ L_WaterWithKaflosh:
     mes "\"By the way, I told you about the rumors concerning these pumpkins.";
     mes "Why not bring some friends here? Oh, unless you consider yourself strong enough!\"";
     set Quest_Halloween, 5;
-    getitem "BottleOfWater", 1;
     goto L_End;
 
 L_HelpWaterPatches:
@@ -283,12 +284,6 @@ L_WateringBusy:
 L_HelpCleanPumpkins:
     mes "[Oscar]";
     mes "\"Help me clean all these pumpkins! It's a disaster!\"";
-    goto L_End;
-
-L_NotEnoughWaters:
-    mes "[Oscar]";
-    mes "\"That's not enough bottles to water all these pumpkin patches.";
-    mes "Please bring me more.\"";
     goto L_End;
 
 S_Update_Annual_Quest:

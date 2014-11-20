@@ -9,9 +9,13 @@ function|script|SlotMachine
         "Maybe later", L_Close;
 
 L_Play:
-    if(countitem("CasinoCoins") < 1)
-        goto L_NoCoin;
-    delitem "CasinoCoins", 1;
+    if(checkweight("CasinoCoins",9) == 0) goto L_Weight;
+    //setarray @getitem$, "";
+    //setarray @getitem, 0;
+    setarray @delitem$, "CasinoCoins";
+    setarray @delitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @Temp1,rand(7);
     set @Temp2,rand(7);
     set @Temp3,rand(7);
@@ -26,15 +30,17 @@ L_Play:
         goto L_Lost;
     mes "Congratulations! You won!";
     mes "You get 10 casino coins";
-    getitem "CasinoCoins", 10;
+    setarray @getitem$, "CasinoCoins";
+    setarray @getitem, 10;
+    callfunc "CheckInventory";
+    close;
+
+L_Weight:
+    mes "You are overweight!";
     close;
 
 L_Lost:
     mes "You lost!";
-    close;
-
-L_NoCoin:
-    mes "Insert coin";
     close;
 
 L_Close:

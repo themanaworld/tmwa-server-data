@@ -34,7 +34,7 @@ L_Except:
         "No thank you.", L_Close;
 
 L_Teach:
-    if (Zeny < 5) goto L_NotEnoughMoney;
+    if (Zeny < 2) goto L_NotEnoughMoney;
     set Zeny, Zeny - 2;
     mes "[Trader]";
     mes "\"You can initiate trade with someone by right-clicking on them and choosing trade.";
@@ -86,13 +86,13 @@ L_Healpots:
         "Whoa, that's way too much.", L_Close;
 
 L_Ipowder:
-    if (countitem("IronOre") < 1) goto L_Missing;
-    if (Zeny < @Ironprice) goto L_NotEnoughMoney;
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("IronOre") > 1 && countitem("IronPowder") < 1) goto L_Full;
-    delitem "IronOre", 1;
-    set Zeny, Zeny - @Ironprice;
-    getitem "IronPowder", 4;
+    setarray @delitem$, "IronOre";
+    setarray @delitem, 1;
+    setarray @getitem$, "IronPowder";
+    setarray @getitem, 4;
+    set @delzeny, @Ironprice;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Trader]";
     mes "\"There you go. Would you like to trade anything else?\"";
     menu
@@ -100,13 +100,13 @@ L_Ipowder:
         "No.", L_No;
 
 L_Spowder:
-    if (countitem("PileOfAsh") < 1) goto L_Missing;
-    if (Zeny < @Sulphurprice) goto L_NotEnoughMoney;
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("PileOfAsh") > 1 && countitem("SulphurPowder") < 1) goto L_Full;
-    delitem "PileOfAsh", 1;
-    set Zeny, Zeny - @Sulphurprice;
-    getitem "SulphurPowder", 5;
+    setarray @delitem$, "PileOfAsh";
+    setarray @delitem, 1;
+    setarray @getitem$, "SulphurPowder";
+    setarray @getitem, 5;
+    set @delzeny, @Sulphurprice;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Trader]";
     mes "\"There you go. Would you like to trade anything else?\"";
     menu
@@ -114,28 +114,18 @@ L_Spowder:
         "No.", L_No;
 
 L_Pots:
-    if (countitem("SmallHealingPotion") < 3) goto L_Missing;
-    if (Zeny < @Potionprice) goto L_NotEnoughMoney;
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("SmallHealingPotion") > 3 && countitem("MediumHealingPotion") < 1) goto L_Full;
-    delitem "SmallHealingPotion", 3;
-    set Zeny, Zeny - @Potionprice;
-    getitem "MediumHealingPotion", 1;
+    setarray @delitem$, "SmallHealingPotion";
+    setarray @delitem, 3;
+    setarray @getitem$, "MediumHealingPotion";
+    setarray @getitem, 1;
+    set @delzeny, @Potionprice;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Trader]";
     mes "\"There you go. Would you like to trade anything else?\"";
     menu
         "Yes.", L_Trademenu,
         "No.", L_No;
-
-L_Full:
-    mes "[Trader]";
-    mes "\"You must have been making a lot of trades...your bag is completely full!  Come back after you've made some room.\"";
-    goto L_Close;
-
-L_Missing:
-    mes "[Trader]";
-    mes "\"It looks like you're missing some items. Please come back when you have enough to trade.\"";
-    goto L_Close;
 
 L_NotEnoughMoney:
     mes "[Trader]";

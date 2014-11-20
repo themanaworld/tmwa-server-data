@@ -17,28 +17,19 @@
         "No.", L_Close;
 
 L_Yes:
-    if (countitem("TreasureKey") < 3)
-        goto L_Not_Enough;
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("TreasureKey") > 3)
-        goto L_TooMany;
+    setarray @getitem$, "TreasureKey";
+    setarray @getitem, 3;
+    setarray @getitem$, "ShortBow";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "You opened the chest and found a short bow!";
-    delitem "TreasureKey", 3;
-    getitem "ShortBow", 1;
     set @state, 26;
     callsub S_Update_Var;
     goto L_Close;
 
-L_Not_Enough:
-    mes "It seems that you do not have the right key for this chest yet...";
-    goto L_Close;
-
 L_Finished:
     mes "You have already opened this chest.";
-    goto L_Close;
-
-L_TooMany:
-    mes "You do not have enough room to loot this chest. Maybe you should try again later.";
     goto L_Close;
 
 L_Close:

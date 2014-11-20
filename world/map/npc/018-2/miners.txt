@@ -135,25 +135,12 @@ L_MenuItems:
     if (@menuid[@menu] == 6)
         goto L_Close;
 
-    getinventorylist;
-    if (countitem(@gem$) < 1)
-        goto L_no_gem;
-    if (@inventorylist_count == 100
-        && countitem(@gem$) > 1)
-            goto L_TooMany;
-    delitem @gem$, 1;
-    if (@gem$ == "Diamond")
-        getitem "DiamondPowder", @MIN_GEM_AMOUNT + rand(6);
-    if (@gem$ == "Ruby")
-        getitem "RubyPowder", @MIN_GEM_AMOUNT + rand(6);
-    if (@gem$ == "Emerald")
-        getitem "EmeraldPowder", @MIN_GEM_AMOUNT + rand(6);
-    if (@gem$ == "Sapphire")
-        getitem "SapphirePowder", @MIN_GEM_AMOUNT + rand(6);
-    if (@gem$ == "Topaz")
-        getitem "TopazPowder", @MIN_GEM_AMOUNT + rand(6);
-    if (@gem$ == "Amethyst")
-        getitem "AmethystPowder", @MIN_GEM_AMOUNT + rand(6);
+    setarray @delitem$, @gem$;
+    setarray @delitem, 1;
+    setarray @getitem$, @gem$ + "Powder";
+    setarray @getitem, @MIN_GEM_AMOUNT + rand(6);
+    callfunc "CheckInventory";
+    if(@check_fail) goto L_Close;
 
     mes "[Malek]";
     mes "\"Here's your powder. Hope it's fine enough for you.\"";
@@ -161,16 +148,6 @@ L_MenuItems:
     menu
         "Yes please.", L_Check_Gems,
         "No thank you, this is enough.", L_Close;
-
-L_TooMany:
-    mes "[Malek]";
-    mes "\"Doesn't look like you've got room for this powder. Come back when you do.\"";
-    goto L_Close;
-
-L_no_gem:
-    mes "[Malek]";
-    mes "\"You don't have that gem.\"";
-    goto L_Close;
 
 L_Close:
     set @inspector, 0;

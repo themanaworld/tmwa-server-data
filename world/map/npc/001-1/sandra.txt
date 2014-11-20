@@ -76,24 +76,17 @@ L_Set:
     goto L_Close;
 
 L_Progress:
-    if (countitem("ScorpionStinger") < 5)
-        goto L_NotEnough;
+    setarray @delitem$, "ScorpionStinger";
+    setarray @delitem, 5;
+    setarray @getitem$, "Bow", "Arrow";
+    setarray @getitem, 1, 100;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Sandra]";
     mes "\"Excellent! You brought me 5 Scorpion Stingers!";
     mes "Here's something for you.\"";
-    getinventorylist;
-    if (@inventorylist_count + (countitem("ScorpionStinger") == 5) - (countitem("Arrow") == 0) > 99)
-        goto L_TooMany;
-    delitem "ScorpionStinger", 5;
-    getitem "Bow", 1;
-    getitem "Arrow", 100;
     set @state, 2;
     callsub S_Update_Var;
-    goto L_Close;
-
-L_NotEnough:
-    mes "[Sandra]";
-    mes "\"Please hurry and bring me 5 Scorpion Stingers.\"";
     goto L_Close;
 
 L_Done:
@@ -105,12 +98,6 @@ L_Close:
     set @TEMP, 0;
     set @state, 0;
     close;
-
-L_TooMany:
-    next;
-    mes "[Sandra]";
-    mes "\"You don't have room for my reward. I'll wait until you do.\"";
-    goto L_Close;
 
 S_Update_Var:
     set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_3_MASK) | (@state << NIBBLE_3_SHIFT));

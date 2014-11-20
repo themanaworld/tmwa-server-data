@@ -13,37 +13,22 @@
         "Nah, maybe later.", L_No;
 
 L_NoTip:
-    if (Zeny < 170)
-        goto L_NoMoney;
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("Beer") == 0)
-        goto L_TooMany;
-    set Zeny, Zeny - 170;
-    getitem "Beer", 1;
+    set @delzeny, 170;
+    callsub S_ServeBeer;
     mes "[Melinda]";
     mes "Pff... nickel nurser!";
     close;
 
 L_5Tip:
-    if (Zeny < 175)
-        goto L_NoMoney;
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("Beer") == 0)
-        goto L_TooMany;
-    set Zeny, Zeny - 175;
-    getitem "Beer", 1;
+    set @delzeny, 175;
+    callsub S_ServeBeer;
     mes "[Melinda]";
     mes "\"Here you go, sweetheart!\"";
     close;
 
 L_10Tip:
-    if (Zeny < 180)
-        goto L_NoMoney;
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("Beer") == 0)
-        goto L_TooMany;
-    set Zeny, Zeny - 180;
-    getitem "Beer", 1;
+    set @delzeny, 180;
+    callsub S_ServeBeer;
     mes "[Melinda]";
     mes "\"Thank you, sweetie! Want to hear a secret?\"";
     next;
@@ -61,13 +46,10 @@ L_No:
     mes "\"Just call me when you've changed your mind.\"";
     close;
 
-L_NoMoney:
-    mes "[Melinda]";
-    mes "\"You look broke. Don't think that you can dine and dash here!\"";
-    close;
-
-L_TooMany:
-    mes "[Melinda]";
-    mes "\"You don't have room for a beer!\"";
-    close;
+S_ServeBeer:
+    setarray @getitem$, "Beer";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
+    return;
 }
