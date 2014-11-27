@@ -1,56 +1,17 @@
 // Script to boost Dark Helm, Underworld Mask and Phylactery when those are equipped while being in Graveyard or Crypt.
 function|script|CryptItem
 {
-    if (isin("027-1.gat", 0, 0, 0, 0)) // Graveyard
-        goto L_ItemCheck;
-    if (isin("027-2.gat", 0, 0, 0, 0)) // Graveyard Inn
-        goto L_ItemCheck;
-    if (isin("027-3.gat", 0, 0, 0, 0)) // Crypt Level 1
-        goto L_ItemCheck;
-    if (isin("027-4.gat", 0, 0, 0, 0)) // Crypt Level 2
-        goto L_ItemCheck;
-    if (isin("027-5.gat", 0, 0, 0, 0)) // Crypt Level 3
-        goto L_ItemCheck;
-    if (isin("027-6.gat", 0, 0, 0, 0)) // Crypt Miniboss 1
-        goto L_ItemCheck;
-    if (isin("027-7.gat", 0, 0, 0, 0)) // Crypt Miniboss 2
-        goto L_ItemCheck;
-    if (isin("027-8.gat", 0, 0, 0, 0)) // Crypt Miniboss 3
-        goto L_ItemCheck;
-    if (isin("070-1.gat", 0, 0, 0, 0)) // Underworld
-        goto L_ItemCheck;
-    if (isin("070-2.gat", 0, 0, 0, 0)) // Underworld Indoors
-        goto L_ItemCheck;
-    if (isin("070-3.gat", 0, 0, 0, 0)) // Reaper Battle
-        goto L_ItemCheck;
-    goto L_End;
+    cleararray @crypt_maps$, "", getarraysize(@crypt_maps$);
+    setarray @crypt_maps$, "027-1", "027-2", "027-3", "027-4", "027-5", "027-6", "027-7", "027-8", "070-1", "070-2", "070-3";
+    set @loop, 0;
+    goto L_Loop;
 
-L_ItemCheck:
-    if (getequipid(equip_head) == 5128)
-        goto L_BoostDarkHelm;
-    if (getequipid(equip_head) == 5129)
-        goto L_BoostUnderworldMask;
-    if (getequipid(equip_head) == 5130)
-        goto L_BoostPhylactery;
-    goto L_End;
+L_Loop:
+    if(@crypt_maps$[@loop] == getmap()) goto L_Return;
+    set @loop, @loop + 1;
+    if(@loop == getarraysize(@crypt_maps$)) end;
+    goto L_Loop;
 
-L_BoostDarkHelm:
-    bonus bStr, 3;
-    bonus bVit, 1;
-    bonus bLuk, 1;
-    goto L_End;
-
-L_BoostUnderworldMask:
-    bonus bAgi, 2;
-    bonus bDex, 1;
-    bonus bLuk, 1;
-    goto L_End;
-
-L_BoostPhylactery:
-    bonus bVit, 2;
-    bonus bInt, 2;
-    goto L_End;
-
-L_End:
-    end;
+L_Return:
+    return;
 }
