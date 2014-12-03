@@ -337,32 +337,18 @@ L_Main:
     if (gettime(6) == $@halloween_reward_start_month)
         set $@halloween_min_age, ((gettime(5) + 38)*86400);
 
-    if(gettime(6) <= $@halloween_end_month && gettime(5) > $@halloween_reward_end_day)
-        goto L_NoEventTime;
-    if((gettime(6) == $@halloween_reward_start_month && gettime(5) >= $@halloween_reward_start_day
-            && (gettime(5) <= $@halloween_reward_end_day && $@halloween_reward_start_month == $@halloween_end_month
-                || !($@halloween_reward_start_month == $@halloween_end_month)))
-        || (gettime(6) == $@halloween_end_month && gettime(5) <= $@halloween_reward_end_day
-            && (gettime(5) >= $@halloween_reward_start_day && $@halloween_reward_start_month == $@halloween_end_month
-                || !($@halloween_reward_start_month == $@halloween_end_month)))
-        || (gettime(6) < $@halloween_end_month && gettime(6) > $@halloween_reward_start_month))
-        goto L_RewardTime;
-    if((gettime(6) >= $@halloween_start_month) || (gettime(6) <= $@halloween_end_month && gettime(5) <= $@halloween_reward_start_day))
-        goto L_EventTime;
-    goto L_NoEventTime;
+    set $@start_month, $@halloween_start_month;
+    set $@end_month, $@halloween_end_month;
+    set $@start_day, 1;
+    set $@end_day, $@halloween_reward_end_day;
+    set $@reward_start_month, $@halloween_reward_start_month;
+    set $@reward_start_day, $@halloween_reward_start_day;
 
-L_NoEventTime:
-    if($HALLOWEEN_TIME_KEY[5] < gettime(7))
+    callfunc "GetEventTime";
+    set $@halloween_time, $@event_time;
+
+    if($@halloween_time == 0 && $HALLOWEEN_TIME_KEY[5] < gettime(7))
         setarray $HALLOWEEN_TIME_KEY, $HALLOWEEN_TIME_KEY[0],$HALLOWEEN_TIME_KEY[1],$HALLOWEEN_TIME_KEY[2],$HALLOWEEN_TIME_KEY[3],$HALLOWEEN_TIME_KEY[4],gettime(7);
-    set $@halloween_time, $@halloween_no_event_time;
-    goto L_Return;
-
-L_EventTime:
-    set $@halloween_time, $@halloween_event_time;
-    goto L_Return;
-
-L_RewardTime:
-    set $@halloween_time, $@halloween_reward_time;
     goto L_Return;
 
 L_Return:

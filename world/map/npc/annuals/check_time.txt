@@ -1,0 +1,55 @@
+// check a date
+// Wushin
+// $@start_month
+// $@end_month
+// $@start_day
+// $@end_day
+// $@reward_start_month
+// $@reward_start_day 
+
+function|script|GetEventTime
+{
+    set $@month, gettime(6);
+    set $@day, gettime(5);
+
+    if ($@start_month > $@end_month)
+        goto L_YearWrap;
+    goto L_Normal;
+
+L_Normal:
+    if(($@month < $@start_month)
+        || ($@month == $@start_month && $@day < $@start_day))
+        goto L_NoEventTime;
+    if(($@month > $@end_month)
+        || ($@month == $@end_month && $@day > $@end_day))
+        goto L_NoEventTime;
+    if(($@month > $@reward_start_month)
+        || ($@month == $@reward_start_month && $@day >= $@reward_start_day))
+        goto L_RewardTime;
+    goto L_EventTime;
+
+L_YearWrap:
+    if(($@month == $@reward_start_month && $@day >= $@reward_start_day
+            && ($@day <= $@end_day && $@reward_start_month == $@end_month
+                || !($@reward_start_month == $@end_month)))
+        || ($@month == $@end_month && $@day <= $@end_day
+            && ($@day >= $@reward_start_day && $@reward_start_month == $@end_month
+                || !($@reward_start_month == $@end_month)))
+        || ($@month < $@end_month && $@month > $@reward_start_month))
+        goto L_RewardTime;
+    if(($@month >= $@start_month) || ($@month <= $@end_month && $@day <= $@reward_start_day))
+        goto L_EventTime;
+    goto L_NoEventTime;
+
+L_NoEventTime:
+    set $@event_time, 0;
+    return;
+
+L_EventTime:
+    set $@event_time, 1;
+    return;
+
+L_RewardTime:
+    set $@event_time, 2;
+    return;
+}
