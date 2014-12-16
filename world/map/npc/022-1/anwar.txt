@@ -105,16 +105,13 @@ L_GiftMaterial: // @state == 10
         "I'll see what I can do.",L_Close;
 
 L_GiveGiftStuff:
-    getinventorylist;
-    if (@inventorylist_count == 100)
-        goto L_Full_Inv;
-    if ((countitem("CottonCloth") < @cloth_amount) || (countitem("SilkCocoon") < @silk_amount))
-        goto L_NoItem;
-    delitem "CottonCloth", @cloth_amount;
-    delitem "SilkCocoon", @silk_amount;
+    setarray @delitem$, "CottonCloth", "SilkCocoon";
+    setarray @delitem, @cloth_amount, @silk_amount;
+    setarray @getitem$, "GreenVNeckSweater";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     getexp @material_exp, 0;
-
-    getitem "GreenVNeckSweater", 1;
     set @state, 11;
     callsub S_Update_Mask;
     mes "[Anwar]";
@@ -142,20 +139,17 @@ L_GiveTinris: // @state >= 11 but below 13
         "Yes, he was very happy.",L_Happy;
 
 L_Happy:
-    getinventorylist;
-    if (@inventorylist_count == 100)
-        goto L_Full_Inv;
+    setarray @getitem$, "SilkHeadband";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Anwar]";
     mes "\"Wonderful! I also finished the present for Eomie. Can you bring it to her?\"";
-    getitem "SilkHeadband", 1;
     set @state, 13;
     callsub S_Update_Mask;
     goto L_Close;
 
 L_GiveEomie: // @state >= 13 but below 15
-    getinventorylist;
-    if (@inventorylist_count == 100)
-        goto L_Full_Inv;
     mes "[Anwar]";
     mes "\"Did you give the Silk Headband to Eomie?\"";
     if (@state != 14)
@@ -165,11 +159,14 @@ L_GiveEomie: // @state >= 13 but below 15
         "Yes. She asked me to thank you.",L_ThankYou;
 
 L_ThankYou:
+    setarray @getitem$, "DarkGreenCottonTrousers";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "Anwar smiles.";
     mes "[Anwar]";
     mes "\"I'm so happy. Thank you so much for your help. I made this for you while you went to see Eomie.\"";
     getexp @final_exp, 0;
-    getitem "DarkGreenCottonTrousers", 1;
     set @state, 15;
     callsub S_Update_Mask;
     goto L_Close;
@@ -178,16 +175,6 @@ L_Done: // @state == 15
     mes "[Anwar]";
     mes "\"Thank you so much for your help. The plants are growing much better now. I don't have to spend all my time working in the field any more.";
     mes "Finally I can do what I'm really interested in and work on getting better at sewing clothes.\"";
-    goto L_Close;
-
-L_NoItem:
-    mes "[Anwar]";
-    mes "\"You don't have it!\"";
-    goto L_Close;
-
-L_Full_Inv:
-    mes "[Anwar]";
-    mes "\"You carry a lot of stuff. Come back when you have more room.\"";
     goto L_Close;
 
 L_Close:

@@ -28,21 +28,15 @@ L_Get:
     mes "\"Wonderful! Show me the ticket.\"";
     mes "He checks the paper Kylian gave you and then takes a critical look at you.";
     next;
-    getinventorylist;
-    if ((checkweight("LeatherSuitcase", 1) == 0) || (@inventorylist_count == 100))
-        goto L_Inventory;
+    setarray @getitem$, "LeatherSuitcase";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Adrian]";
     mes "\"Alright, here it is.\"";
     mes "Adrain hands you a very heavy suitcase.";
-    getitem "LeatherSuitcase", 1;
     set @state, 2;
     set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(NIBBLE_5_MASK)) | (@state << NIBBLE_5_SHIFT);
-    goto L_Close;
-
-L_Inventory:
-    mes "[Adrian]";
-    mes "\"The suitcase is rather heavy. You doesn't look as if you can handle that.";
-    mes "Maybe if you get rid of some of the other stuff you're carrying.\"";
     goto L_Close;
 
 L_Close:

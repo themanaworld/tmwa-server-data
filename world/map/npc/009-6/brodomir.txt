@@ -91,15 +91,10 @@ L_Next:
     if (countitem(@brodomir_item$) < @brodomir_item_amount)
         goto L_NoItem;
 
-    // we need this loop because for items that can't be stacked, delitem can only delete a single one
-    set @loopcounter, @brodomir_item_amount;
-    goto L_Delitem;
-
-L_Delitem:
-    delitem @brodomir_item$, 1;
-    set @loopcounter, @loopcounter - 1;
-    if (@loopcounter > 0)
-        goto L_Delitem;
+    setarray @delitem$, @brodomir_item$;
+    setarray @delitem, @brodomir_item_amount;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
 
     set $@BRODOMIR_SPONSOR, getcharid(3);
     goto L_Go;
@@ -179,14 +174,9 @@ L_Warpfail:
         goto L_Cleanup;
     if (attachrid($@BRODOMIR_SPONSOR) == 0)
         goto L_SkipItemback;
-    // we need this loop because for items that can't be stacked, getitem will stack them nevertheless
-    goto L_GetitemLoop;
-
-L_GetitemLoop:
-    getitem $@BRODOMIR_ITEM$, 1;
-    set $@BRODOMIR_ITEM_AMOUNT, $@BRODOMIR_ITEM_AMOUNT - 1;
-    if ($@BRODOMIR_ITEM_AMOUNT > 0)
-        goto L_GetitemLoop;
+    setarray @getitem$, $@BRODOMIR_ITEM$;
+    setarray @getitem, $@BRODOMIR_ITEM_AMOUNT;
+    callfunc "CheckInventory";
     goto L_SkipItemback;
 
 L_SkipItemback:
@@ -208,14 +198,9 @@ OnReward:
     set Zeny, Zeny + ($@BRODOMIR_MONEY + 150 * $@BRODOMIR_PLAYERS);
     if ($@BRODOMIR_ITEM_AMOUNT == 0 || $@BRODOMIR_ITEM$ == "")
         goto L_SkipItem;
-    // we need this loop because for items that can't be stacked, getitem will stack them nevertheless
-    goto L_Getitem;
-
-L_Getitem:
-    getitem $@BRODOMIR_ITEM$, 1;
-    set $@BRODOMIR_ITEM_AMOUNT, $@BRODOMIR_ITEM_AMOUNT - 1;
-    if ($@BRODOMIR_ITEM_AMOUNT > 0)
-        goto L_Getitem;
+    setarray @getitem$, $@BRODOMIR_ITEM$;
+    setarray @getitem, $@BRODOMIR_ITEM_AMOUNT;
+    callfunc "CheckInventory";
     goto L_SkipItem;
 
 L_SkipItem:

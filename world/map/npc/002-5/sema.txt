@@ -36,24 +36,20 @@ L_Sema_Yes:
     goto L_Close;
 
 L_Sema_Happy:
-    if (countitem("Iten") < 1)
-        goto L_Sema_Not_Happy;
-    getinventorylist;
-    if (@inventorylist_count - (countitem("Iten") == 1) > 99)
-        goto L_Sema_TooMany;
-    delitem "Iten", 1;
-    getitem "DesertShirt", 1;
+    setarray @delitem$, "Iten";
+    setarray @delitem, 1;
+    setarray @getitem$, "DesertShirt";
+    setarray @getitem, 1;
+    set @silent1, 1; // let sema handle the situation
+    callfunc "CheckInventory";
+    if(@check_fail == 1) goto L_Sema_Not_Happy;
+    if(@check_fail) close;
     set @state, 28;
     callsub S_Update_Var;
     set BOSS_POINTS, BOSS_POINTS + 10;
     message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS + ".";
     mes "[Sema the Miner]";
     mes "\"You killed it!  What a relief!  I wish I had more to give, but please accept this Desert Shirt as reward.\"";
-    goto L_Close;
-
-L_Sema_TooMany:
-    mes "[Sema the Miner]";
-    mes "\"You have too many items for me to give you a reward. Please drop or sell something so I can give it to you. Oh and yes, you can also store items at the nearest bank.\"";
     goto L_Close;
 
 L_Sema_Not_Happy:

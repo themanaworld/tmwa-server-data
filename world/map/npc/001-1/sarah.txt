@@ -45,24 +45,19 @@ L_Req0:
     goto L_Close;
 
 L_Progress:
-    if (countitem("CherryCake") < 1)
-        goto L_NotEnough;
+    setarray @delitem$, "CherryCake";
+    setarray @delitem, 1;
+    setarray @getitem$, "SerfHat";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Sarah]";
     mes "\"Whee!\"";
     next;
     mes "You brought me Cherry Cake!  Here is your new hat, as promised.\"";
     emotion EMOTE_TONGUE;
-    getinventorylist;
-    if ((@inventorylist_count - (countitem("CherryCake") == 1)) > 99) goto L_TooMany;
-    delitem "CherryCake", 1;
-    getitem "SerfHat", 1;
     set @state, 2;
     callsub S_Update_Var;
-    goto L_Close;
-
-L_NotEnough:
-    mes "[Sarah]";
-    mes "\"Oh, I'm starving!  Please bring me Cherry Cake!\"";
     goto L_Close;
 
 L_Done:
@@ -75,12 +70,6 @@ L_Close:
     set @TEMP, 0;
     set @state, 0;
     close;
-
-L_TooMany:
-    next;
-    mes "[Sarah]";
-    mes "\"You don't have room for my reward. I'll wait until you do.\"";
-    goto L_Close;
 
 S_Update_Var:
     set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_1_MASK) | (@state << NIBBLE_1_SHIFT));

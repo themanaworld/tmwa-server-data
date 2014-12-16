@@ -6,12 +6,15 @@
     set @spants_state, ((QUEST_WG_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
     if(@spants_state > 5) goto L_Looted;
     if(@spants_state != 5) goto L_Unknown;
+    setarray @getitem$, "Bandana";
+    setarray @getitem, 1;
+    set @getzeny, rand(8000,20000);
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @spants_state, 6;
-    getitem "Bandana", 1;
-    set Zeny, (Zeny + rand(8000,20000)); // give some random loot
+    set QUEST_WG_state, (QUEST_WG_state & ~(NIBBLE_2_MASK) | (@spants_state << NIBBLE_2_SHIFT));
     mes "This must be the treasure that Crastur was talking about.";
     mes "You see a pile of gold and a Bandana on top.";
-    set QUEST_WG_state, (QUEST_WG_state & ~(NIBBLE_2_MASK) | (@spants_state << NIBBLE_2_SHIFT));
     goto L_Close;
 
 L_Looted:

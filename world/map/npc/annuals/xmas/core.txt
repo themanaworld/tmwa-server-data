@@ -194,9 +194,6 @@ L_FinalGift:
     mes "[From: " + $@xmas_present_from$[@xmas_reward_side] + "]";
     mes "O look, a present from " + $@xmas_present_from$[@xmas_reward_side];
     next;
-    getinventorylist;
-    if (@inventorylist_count > 97)
-        goto L_FullInv;
     set @xmas_reward, (@xmas_reward + ((BaseLevel + 10)/10));
     if (debug > 0)
         message strcharinfo(0), "Reward variable: " + @xmas_reward;
@@ -207,13 +204,16 @@ L_FinalGift:
     if(@xmas_reward >= $@xmas_reward_tally_common)
         set @xmas_reward_item1$, $@xmas_uncommon_reward$[@xmas_uncommon_slot1];
     set @xmas_reward_item2$, $@xmas_uncommon_reward$[@xmas_uncommon_slot2];
-    if(checkweight("Iten", 1) == 0)
-        goto L_FullInv;
-    if(@xmas_reward >= 80)
-        getitem @xmas_reward_item$, 1;
-    if(@xmas_reward >= 40)
-        getitem @xmas_reward_item1$, 1;
-    getitem @xmas_reward_item2$, 1;
+
+    setarray @getitem$, @xmas_reward_item2$;
+    setarray @getitem, 1;
+    if(@xmas_reward >= 80) set @getitem$[getarraysize(@getitem$)], @xmas_reward_item$;
+    if(@xmas_reward >= 80) set @getitem[getarraysize(@getitem)], 1;
+    if(@xmas_reward >= 40) set @getitem$[getarraysize(@getitem$)], @xmas_reward_item1$;
+    if(@xmas_reward >= 40) set @getitem[getarraysize(@getitem)], 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
+
     set @xmas_uncommon_slot1, 0;
     set @xmas_uncommon_slot2, 0;
     set @xmas_reward_item$, "";
@@ -224,10 +224,6 @@ L_FinalGift:
     if (@xmas_reward1_done_state)
         set @xmas_state, $@xmas_reward_done;
     callfunc "XmasSetState";
-    goto L_Return;
-
-L_FullInv:
-    mes "\"You have no place to put the present.\"";
     goto L_Return;
 
 L_Return:

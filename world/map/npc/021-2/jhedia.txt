@@ -8,6 +8,7 @@
 
     mes "[Jhedia]";
     mes "\"I forge Iron Ore into ingots. Ingots are more useful for skilled smiths, like armorers, because the ore is refined and made into useful units which can be worked with. To make ingots, I need " + @Iron_Ore_Per + " Iron Ore and " + @Cost_Per_Ingot + " gp per ingot. I also need " + @Coal_Per + " Coal for my forge.\"";
+    if((Zeny < @Cost_Per_Ingot) || (countitem("IronOre") < @Iron_Ore_Per) || (countitem("Coal") < @Coal_Per)) close;
     next;
     mes "[Jhedia]";
     mes "\"How many ingots would you like?\"";
@@ -15,48 +16,17 @@
 
     if (@ingot_count == 0)
         goto L_Jhedia_Bye;
-    set @Zeny_cost, @ingot_count * @Cost_Per_Ingot;
-    if (countitem("IronOre") < @Iron_Ore_Per * @ingot_count)
-        goto L_Jhedia_NotEnough_Ore;
-    if (countitem("Coal") < @Coal_Per * @ingot_count)
-        goto L_Jhedia_NotEnough_Coal;
-    if (Zeny < @Zeny_cost)
-        goto L_Jhedia_NotEnough_Zeny;
-    getinventorylist;
-    if (@inventorylist_count == 100
-        && countitem("IronIngot") == 0
-        && countitem("IronOre") > @ingot_count * @Iron_Ore_Per
-        | countitem("Coal") > @ingot_count * @Coal_Per)
-            goto L_Jhedia_NotEnoughSlots;
-    set Zeny, Zeny - @Zeny_cost;
-    delitem "IronOre", @ingot_count * @Iron_Ore_Per;
-    delitem "Coal", @ingot_count * @Coal_Per;
-    getitem "IronIngot", @ingot_count;
+
+    setarray @delitem$, "IronOre", "Coal";
+    setarray @delitem, @ingot_count * @Iron_Ore_Per, @ingot_count * @Coal_Per;
+    setarray @getitem$, "IronIngot";
+    setarray @getitem, @ingot_count;
+    set @delzeny, @ingot_count * @Cost_Per_Ingot;
+    callfunc "CheckInventory";
     close;
 
 L_Jhedia_Bye:
     mes "[Jhedia]";
     mes "\"Goodbye then.\"";
     close;
-
-L_Jhedia_NotEnough_Ore:
-    mes "[Jhedia]";
-    mes "\"You do not seem to have enough Iron Ore.\"";
-    close;
-
-L_Jhedia_NotEnough_Coal:
-    mes "[Jhedia]";
-    mes "\"You do not seem to have enough Coal.\"";
-    close;
-
-L_Jhedia_NotEnough_Zeny:
-    mes "[Jhedia]";
-    mes "\"You do not seem to have enough gold pieces.\"";
-    close;
-
-L_Jhedia_NotEnoughSlots:
-    mes "[Jhedia]";
-    mes "\"You do not seem to have enough room to carry this many ingots.\"";
-    close;
-
 }

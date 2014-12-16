@@ -53,8 +53,10 @@ L_End:
         "No", L_Close;
 
 L_Begin:
-    if(countitem("CasinoCoins") < 15) goto L_NoCoin;
-    delitem "CasinoCoins", 15;
+    setarray @delitem$, "CasinoCoins";
+    setarray @delitem, 15;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @croupier, rand(0, 4);
     set @croupier, @croupier + 17;
     set @player, rand(4, 21);
@@ -84,11 +86,10 @@ L_End:
     mes "\"Congratulations, you won!";
     mes "I had " + @croupier + ".";
     mes "You get 45 casino coins.\"";
-    getitem "CasinoCoins", 45;
-    goto L_Close;
-
-L_NoCoin:
-    mes "\"You need at least 15 coins.\"";
+    setarray @getitem$, "CasinoCoins";
+    setarray @getitem, 45;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     goto L_Close;
 
 L_Lost:
@@ -152,8 +153,10 @@ L_b100:
     goto L_Check;
 
 L_Check:
-    if(countitem("CasinoCoins") < @bet) goto L_NoCoin;
-    delitem "CasinoCoins", @bet;
+    setarray @delitem$, "CasinoCoins";
+    setarray @delitem, @bet;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     menu
         "Choose a color", L_PickColor,
         "Choose a number", L_Number;
@@ -167,7 +170,9 @@ L_Color:
     set @color,rand(2);
     if(@color == 1) goto L_Lost;
     mes "You won!";
-    getitem "CasinoCoins", @bet * 2;
+    setarray @getitem$, "CasinoCoins";
+    setarray @getitem, @bet * 2;
+    callfunc "CheckInventory";
     goto L_Close;
 
 L_Number:
@@ -187,11 +192,9 @@ L_Menuitems:
     if (@roulette < 37) mes "The ball stopped on " + @roulette;
     if (@number != @roulette) goto L_Lost;
     mes "\"You won!\"";
-    getitem "CasinoCoins", @bet * 10;
-    goto L_Close;
-
-L_NoCoin:
-    mes "\"You don't have enough coins.\"";
+    setarray @getitem$, "CasinoCoins";
+    setarray @getitem, @bet * 10;
+    callfunc "CheckInventory";
     goto L_Close;
 
 L_Lost:

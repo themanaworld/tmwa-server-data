@@ -113,32 +113,25 @@ L_Chaps_store:
             "On second thought, maybe later.", L_NoDeal;
 
 L_BuyChaps:
-    if (Zeny < 10000) goto L_NoMoney;
-    if (countitem("JeansShorts") < 1) goto L_NoJeans;
-    if (countitem("SnakeSkin") < 10) goto L_NoSkins;
-    set Zeny, Zeny - 10000;
-    delitem "SnakeSkin", 10;
-    delitem "JeansShorts", 1;
-    getitem "JeansChaps", 1;
+    setarray @delitem$, "SnakeSkin", "JeansShorts";
+    setarray @delitem, 10, 1;
+    setarray @getitem$, "JeansChaps";
+    setarray @getitem, 1;
+    set @delzeny, 10000;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     goto L_DealDone;
 
 L_BuyCowboy:
-    if (Zeny < 5000) goto L_NoMoney;
-    if (countitem("FancyHat") < 1) goto L_NoFancy;
-    if (countitem("SnakeSkin") < 2) goto L_NoSkins;
-    set Zeny, Zeny - 5000;
-    delitem "SnakeSkin", 2;
-    delitem "FancyHat", 1;
-    set @temp,rand(2);
-    if(@temp == 0) goto L_Cowboy_white;
-    goto L_Cowboy_black;
-
-L_Cowboy_white:
-    getitem "WhiteCowboyHat", 1;
-    goto L_DealDone;
-
-L_Cowboy_black:
-    getitem "BlackCowboyHat", 1;
+    set @hat$, "WhiteCowboyHat";
+    if(rand(1,2) == 1) set @hat$, "BlackCowboyHat";
+    setarray @delitem$, "SnakeSkin", "FancyHat";
+    setarray @delitem, 2, 1;
+    setarray @getitem$, @hat$;
+    setarray @getitem, 1;
+    set @delzeny, 5000;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     goto L_DealDone;
 
 L_leather_patch:
@@ -152,14 +145,13 @@ L_leather_patch:
         "That's too expensive!.", L_NoDeal;
 
 L_Next:
-    if (countitem("SnakeSkin") < 1) goto L_NoSkins;
-    if (Zeny < @LEATHER_PATCH_PRICE) goto L_NoMoney;
-    getinventorylist;
-    if (@inventorylist_count == 100 && countitem("SnakeSkin") > 1) goto L_TooMany;
-
-    set Zeny, Zeny - @LEATHER_PATCH_PRICE;
-    delitem "SnakeSkin", 1;
-    getitem "LeatherPatch", 1;
+    setarray @delitem$, "SnakeSkin";
+    setarray @delitem, 1;
+    setarray @getitem$, "LeatherPatch";
+    setarray @getitem, 1;
+    set @delzeny, @LEATHER_PATCH_PRICE;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     goto L_DealDone;
 
 L_DealDone:
@@ -174,30 +166,6 @@ L_NoDeal:
     mes "[Chief Pachua]";
     mes "";
     mes "\"Alright, but you won't get a better deal anywhere else!\"";
-    goto L_Close;
-
-L_NoMoney:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"Oh dear, it seems you don't have enough money.\"";
-    goto L_Close;
-
-L_NoJeans:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"Oh dear, it seems you don't have enough jeans shorts.\"";
-    goto L_Close;
-
-L_NoFancy:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"Oh dear, it seems you don't have enough fancy hats.\"";
-    goto L_Close;
-
-L_NoSkins:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"Oh dear, it seems you don't have enough snake skins.\"";
     goto L_Close;
 
 L_WearingCowboy:
@@ -222,12 +190,6 @@ L_Close:
     set @end_day, 0;
     set @temp, 0;
     close;
-
-L_TooMany:
-    mes "[Chief Pachua]";
-    mes "";
-    mes "\"You don't have room for a leather patch. Come back later.\"";
-    goto L_Close;
 
 L_smoke:
     message strcharinfo(0), "Pachua quickly inhales from his pipe and releases a ring of smoke towards the sky!";

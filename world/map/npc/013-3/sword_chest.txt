@@ -13,31 +13,20 @@
         "No.", L_Close;
 
 L_Yes:
-    if(countitem("TreasureKey") < 10)
-        goto L_Not_Enough;
-    getinventorylist;
-    if (@inventorylist_count == 100
-        && countitem("TreasureKey") > 10)
-            goto L_TooMany;
-    delitem "TreasureKey", 10;
-    getitem "ShortSword", 1;
+    setarray @getitem$, "ShortSword";
+    setarray @getitem, 1;
+    setarray @delitem$, "TreasureKey";
+    setarray @delitem, 10;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Chest]";
     mes "You opened it and found a short sword!";
     set FLAGS, FLAGS | FLAG_HURNSMINE_CHEST;
     close;
 
-L_Not_Enough:
-    mes "It seems that this is not the right key...";
-    close;
-
 L_Finished:
     mes "[Chest]";
     mes "You already opened this chest.";
-    close;
-
-L_TooMany:
-    mes "[Chest]";
-    mes "You don't have room for what ever is inside. Maybe you should try again later.";
     close;
 
 L_Close:

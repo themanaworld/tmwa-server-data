@@ -58,15 +58,16 @@ L_Set:
     goto L_Close;
 
 L_Progress:
-    if (countitem("RoastedMaggot") < 1) goto L_NotEnough;
+    setarray @delitem$, "RoastedMaggot";
+    setarray @delitem, 1;
+    setarray @getitem$, "CherryCake";
+    setarray @getitem, 5;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Bernard]";
     mes "\"Oooh, perfect! It's perfect!";
     mes "You brought me my Roasted Maggot!  Here, have some cake for your troubles.\"";
-    getinventorylist;
-    if (@inventorylist_count - (countitem("RoastedMaggot") == 1) > 99 - (countitem("CherryCake") == 0) ) goto L_TooMany;
-    delitem "RoastedMaggot", 1;
     getexp 100, 0;
-    getitem "CherryCake", 5;
     set @state, 2;
     callsub S_Update_Var;
     next;
@@ -74,27 +75,18 @@ L_Progress:
     goto L_Close;
 
 L_Progress2:
-    if (countitem("MaggotSlime") < 3) goto L_NotEnough1;
+    setarray @delitem$, "MaggotSlime";
+    setarray @delitem, 3;
+    setarray @getitem$, "Beer";
+    setarray @getitem, 3;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Bernard]";
     mes "\"Nice!  They're perfect, just perfect!";
     mes "You brought me the 3 Maggot Slimes!  Here, have some beer as reward.\"";
-    getinventorylist;
-    if ((@inventorylist_count - (countitem("MaggotSlime") == 3) > 99  - (countitem("Beer") == 0) )) goto L_TooMany;
-    delitem "MaggotSlime", 3;
     getexp 100, 0;
-    getitem "Beer", 3;
     set @state, 4;
     callsub S_Update_Var;
-    goto L_Close;
-
-L_NotEnough:
-    mes "[Bernard]";
-    mes "\"Oh, please hurry and bring me a Roasted Maggot. I'm yearning for maggot soup!\"";
-    goto L_Close;
-
-L_NotEnough1:
-    mes "[Bernard]";
-    mes "\"Please do hurry and bring me 3 Maggot Slimes, so I can finish my soup!\"";
     goto L_Close;
 
 L_Done1:
@@ -119,12 +111,6 @@ L_Close:
     set @TEMP, 0;
     set @state, 0;
     close;
-
-L_TooMany:
-    next;
-    mes "[Bernard]";
-    mes "\"You don't have room for my reward. I'll wait until you do.\"";
-    goto L_Close;
 
 S_Update_Var:
     set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));

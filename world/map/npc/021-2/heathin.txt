@@ -67,26 +67,18 @@ L_Heathin_Interested:
         "Can you repeat that again?", L_Heathin_Interested;
 
 L_Heathin_Forge_Award:
-    if (countitem ("Coal") < 50) goto L_Heathin_Forge_Wait;
-    getinventorylist;
+    setarray @delitem$, "Coal";
+    setarray @delitem, 50;
+    set @getzeny, 20000;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @state, 2;
     callsub S_Update_Mask;
-    delitem "Coal", 50;
     getexp @heathin_xp_bonus, 0;
-    set Zeny, Zeny + 20000;
     mes "[Heathin]";
     mes "\"You have brought the Coal. This is most excellent!  As promised, I have a reward for you. Hopefully you will find it useful.\"";
     next;
     mes "\"Time to make some armor. The Council will be pleased. Thank you for your efforts!\"";
-    close;
-
-L_Heathin_Forge_Wait:
-    mes "[Heathin]";
-    mes "\"Hello again. Making armor keeps me pretty busy. I certainly hope I can fulfill my commission soon so that I can move on to bigger and better things.\"";
-    next;
-    mes "\"The pay is good, certainly, but I am a far better smith than this. If you can bring me 50 Coal, it would surely get me to my goal faster.\"";
-    next;
-    mes "\"I will be sure to provide an apt award once you are done.\"";
     close;
 
 L_Heathin_Forge_Thanks:
@@ -130,16 +122,14 @@ L_Heathin_Terranite_Yes:
     close;
 
 L_Heathin_Terranite_Hood_Forge:
-    if ( (Zeny < 20000)
-        || (countitem("Coal") < 100)
-        || (countitem("TerraniteOre") < 10) )
-            goto L_Heathin_Terranite_Hood_Wait;
+    setarray @delitem$, "Coal", "TerraniteOre";
+    setarray @delitem, 100, 10;
+    set @delzeny, 20000;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @state, 4;
     callsub S_Update_Mask;
-    delitem "Coal", 100;
-    delitem "TerraniteOre", 10;
     getexp @heathin_xp_bonus, 0;
-    set Zeny, Zeny - 20000;
     mes "[Heathin]";
     mes "\"Great, you brought everything!  Come back later and I'll have the helm ready for you.\"";
     close;
@@ -150,12 +140,12 @@ L_Heathin_Terranite_Hood_Wait:
     close;
 
 L_Heathin_Terranite_Hood_Ready:
-    getinventorylist;
-    if ((checkweight("TerraniteHelmet", 1) == 0) || (@inventorylist_count == 100))
-        goto L_InventoryNoSpace;
+    setarray @getitem$, "TerraniteHelmet";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @state, 5;
     callsub S_Update_Mask;
-    getitem "TerraniteHelmet", 1;
     mes "[Heathin]";
     mes "\"I am all done with your terranite hood. I hope you enjoy it!  I have some work to wrap up for the Council, but come back later and I might be able to assist you again.\"";
     close;
@@ -170,16 +160,14 @@ L_Heathin_Terranite_Legs:
     close;
 
 L_Heathin_Terranite_Legs_Forge:
-    if ( (Zeny < 40000)
-        || (countitem("Coal") < 200)
-        || (countitem("TerraniteOre") < 30) )
-            goto L_Heathin_Terranite_Legs_Wait;
+    setarray @delitem$, "Coal", "TerraniteOre";
+    setarray @delitem, 200, 30;
+    set @delzeny, 40000;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @state, 7;
     callsub S_Update_Mask;
-    delitem "Coal", 200;
-    delitem "TerraniteOre", 30;
     getexp @heathin_xp_bonus, 0;
-    set Zeny, Zeny - 40000;
     mes "[Heathin]";
     mes "\"Great, you have brought everything!  Come back later and I will have those terranite pants ready for you.\"";
     close;
@@ -190,12 +178,12 @@ L_Heathin_Terranite_Legs_Wait:
     close;
 
 L_Heathin_Terranite_Legs_Ready:
-    getinventorylist;
-    if ((checkweight("TerraniteLegs", 1) == 0) || (@inventorylist_count == 100))
-        goto L_InventoryNoSpace;
+    setarray @getitem$, "TerraniteLegs";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @state, 8;
     callsub S_Update_Mask;
-    getitem "TerraniteLegs", 1;
     mes "[Heathin]";
     mes "\"I am all done with your terranite pants. Hope you enjoy them!  I have some more work to complete for the Council. Come back later and I might be able to assist you again.\"";
     close;
@@ -210,16 +198,14 @@ L_Heathin_Terranite_Chest_Armor:
     close;
 
 L_Heathin_Terranite_Chest_Armor_Forge:
-    if ( (Zeny < 50000)
-        || (countitem("Coal") < 250)
-        || (countitem("TerraniteOre") < 40) )
-            goto L_Heathin_Terranite_Chest_Armor_Wait;
+    setarray @delitem$, "Coal", "TerraniteOre";
+    setarray @delitem, 250, 40;
+    set @delzeny, 50000;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @state, 10;
     callsub S_Update_Mask;
-    delitem "Coal", 250;
-    delitem "TerraniteOre", 40;
     getexp @heathin_xp_bonus, 0;
-    set Zeny, Zeny - 50000;
     mes "[Heathin]";
     mes "\"Splendid, you have brought everything!  Come back later and I will have the terranite chest armor ready for you.\"";
     close;
@@ -230,12 +216,12 @@ L_Heathin_Terranite_Chest_Armor_Wait:
     close;
 
 L_Heathin_Terranite_Chest_Armor_Ready:
-    getinventorylist;
-    if ((checkweight("TerraniteChestArmor", 1) == 0) || (@inventorylist_count == 100))
-        goto L_InventoryNoSpace;
+    setarray @getitem$, "TerraniteChestArmor";
+    setarray @getitem, 1;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @state, 11;
     callsub S_Update_Mask;
-    getitem "TerraniteChestArmor", 1;
     mes "[Heathin]";
     mes "\"I have completed your terranite chest armor. I hope you enjoy it!  I have some work to wrap up for the Council again, but come back later and I might be able to assist you once more.\"";
     close;
@@ -264,16 +250,14 @@ L_Heathin_Terranite_Arrows_Yes:
     close;
 
 L_Heathin_Terranite_Arrows_Forge:
-    if ( (Zeny < @TARROW_REQ_GP)
-        || (countitem("Coal") < @TARROW_REQ_COAL)
-        || (countitem("TerraniteOre") < @TARROW_REQ_TERRA_ORE) )
-            goto L_Heathin_Terranite_Arrows_Wait;
+    setarray @delitem$, "Coal", "TerraniteOre";
+    setarray @delitem, @TARROW_REQ_COAL, @TARROW_REQ_TERRA_ORE;
+    set @delzeny, @TARROW_REQ_GP;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @state, 13;
     callsub S_Update_Mask;
-    delitem "Coal", @TARROW_REQ_COAL;
-    delitem "TerraniteOre", @TARROW_REQ_TERRA_ORE;
     getexp @heathin_xp_bonus, 0;
-    set Zeny, Zeny - @TARROW_REQ_GP;
     mes "[Heathin]";
     mes "\"Wonderful! You have everything I asked for. I will start working on the arrows right away.\"";
     close;
@@ -284,12 +268,12 @@ L_Heathin_Terranite_Arrows_Wait:
     close;
 
 L_Heathin_Terranite_Arrows_Ready:
-    getinventorylist;
-    if ((checkweight("TerraniteArrow", 1000) == 0) || (@inventorylist_count == 100))
-        goto L_InventoryNoSpace;
+    setarray @getitem$, "TerraniteArrow";
+    setarray @getitem, 1000;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     set @state, 14;
     callsub S_Update_Mask;
-    getitem "TerraniteArrow", 1000;
     mes "[Heathin]";
     mes "\"All done, here you go!  I hope you like them. I am still working on my commission, but if you ever need any more Terranite Arrows, just come on by with "+@TARROW_REQ_COAL+" Coal, "+@TARROW_REQ_TERRA_ORE+" Terranite Ore and "+@TARROW_REQ_GP+" gold pieces and I will make another 1,000 arrows for you. By now I have enough Terranite Ore in reserve that you can just trade me my requirements to keep my resources up. Thank you for all your efforts!\"";
     close;
@@ -307,18 +291,14 @@ L_Heathin_Terranite_Arrows_Trade_No:
     close;
 
 L_Heathin_Terranite_Arrows_Trade_Yes:
-    if ( (Zeny < @TARROW_REQ_GP)
-        || (countitem("Coal") < @TARROW_REQ_COAL)
-        || (countitem("TerraniteOre") < @TARROW_REQ_TERRA_ORE) )
-            goto L_Heathin_Terranite_Arrows_Trade_Wait;
-    getinventorylist;
-    if ((checkweight("TerraniteArrow", 1500) == 0) || (@inventorylist_count == 100))
-        goto L_InventoryNoSpace;
-    delitem "Coal", @TARROW_REQ_COAL;
-    delitem "TerraniteOre", @TARROW_REQ_TERRA_ORE;
-    set Zeny, Zeny - @TARROW_REQ_GP;
     set @lucky, 5 * rand(readparam(bLuk));
-    getitem "TerraniteArrow", 1000 + @lucky;
+    setarray @delitem$, "Coal", "TerraniteOre";
+    setarray @delitem, @TARROW_REQ_COAL, @TARROW_REQ_TERRA_ORE;
+    setarray @getitem$, "TerraniteArrow";
+    setarray @getitem, 1000 + @lucky;
+    set @delzeny, @TARROW_REQ_GP;
+    callfunc "CheckInventory";
+    if(@check_fail) close;
     mes "[Heathin]";
     mes "\"Here you go! You are lucky, I could forge "+@lucky+" more arrows than expected. Come back again if you want more Terranite Arrows.\"";
     close;
@@ -326,11 +306,6 @@ L_Heathin_Terranite_Arrows_Trade_Yes:
 L_Heathin_Terranite_Arrows_Trade_Wait:
     mes "[Heathin]";
     mes "\"It seems that you do not have the necessary resources for me to trade you. Please come back with "+@TARROW_REQ_COAL+" Coal, "+@TARROW_REQ_TERRA_ORE+" Terranite Ore and "+@TARROW_REQ_GP+" gold pieces if you want another 1,000 Terranite Arrows.\"";
-    close;
-
-L_InventoryNoSpace:
-    mes "[Heathin]";
-    mes "\"Hm no. You can't carry this right now. Make some room and come back.\"";
     close;
 
 S_Update_Mask:
