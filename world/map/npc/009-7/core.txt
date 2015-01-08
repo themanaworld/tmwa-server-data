@@ -2,15 +2,28 @@
 
 function|script|fightclub_sendrequest
 {
+    goto L_Try;
+
+L_Try:
     set @loop, 0;
     goto L_Loop;
 
 L_Loop:
     if(@Duel_Queue$[@loop] == @caster_name$) goto L_Exists;
-    if(@Duel_Queue$[@loop] == "") goto L_Proceed;
+    if((@Duel_Queue$[@loop] == "") && (@Duel_Queue$[(@loop + 1)] == "")) goto L_Proceed;
+    if((@Duel_Queue$[@loop] == "") && (@Duel_Queue$[(@loop + 1)] != "")) goto L_ShiftQueue;
     set @loop, (@loop + 1);
     if(@loop >= getarraysize(@Duel_Queue)) goto L_Full; // this shouldn't happen since we check in magic but we still handle it
     goto L_Loop;
+
+L_ShiftQueue:
+    set @Duel_Queue$[@loop], @Duel_Queue$[(@loop + 1)];
+    set @Duel_Queue[@loop], @Duel_Queue[(@loop + 1)];
+    set @Duel_Queue$[(@loop + 1)], "";
+    set @Duel_Queue[(@loop + 1)], 0;
+    set @loop, (@loop + 1);
+    if(@loop >= getarraysize(@Duel_Queue)) goto L_Try;
+    goto L_ShiftQueue;
 
 L_Full:
     message @caster_name$, "There is already "+ $@Duel_PlayerQueueLimit +" duel request(s) in the queue of this player, which is the maximum.";
@@ -24,6 +37,7 @@ L_Proceed:
     misceffect FX_MAGIC_DARKRED, @caster_name$;
     message @caster_name$, "Your request has been sent.";
     set @Duel_Queue$[@loop], @caster_name$;
+    set @Duel_Queue[@loop], gettimetick(2);
     if(@Duel_Fighter == 0) message strcharinfo(0), "You have received a new duel request. Talk to Rouge to accept or decline.";
     if(@Duel_Fighter == 0) misceffect FX_MAGIC_DARKRED, strcharinfo(0);
     if(@Duel_Fighter == 1) set @Duel_HasPendingRequest, 1;
@@ -281,6 +295,7 @@ function|script|fightclub_StartUp
     if($@Duel_TimeLimit < 1) set $@Duel_TimeLimit, 120; // init the (temporary) TimeLimit global
     if($@Duel_QueueLimit < 1) set $@Duel_QueueLimit, 5; // init the (temporary) QueueLimit global
     if($@Duel_PlayerQueueLimit < 1) set $@Duel_PlayerQueueLimit, 2; // init the (temporary) PlayerQueueLimit global
+    if($@Duel_PlayerQueueTimeOut < 1) set $@Duel_PlayerQueueTimeOut, 300; // init the (temporary) PlayerQueueTimeOut global
     setarray $@Duel_Queue_ID, 0;
     cleararray $@Duel_Queue_ID, 0, ($@Duel_QueueLimit + 1);
     setarray $@Duel_Queue_Blue$, "";
@@ -288,6 +303,7 @@ function|script|fightclub_StartUp
     setarray $@Duel_Queue_Red$, "";
     cleararray $@Duel_Queue_Red$, "", ($@Duel_QueueLimit + 1);
     set $@Duel_TotalTime, 0;
+    if($fightclub_enabled) set $fightclub_enabled, 0; // this var moved to $SANGUINE
     // DUELS flags below
     set $@DuelPvpBit, (1 << 1);
     set $@NoMagicBit, (1 << 2);

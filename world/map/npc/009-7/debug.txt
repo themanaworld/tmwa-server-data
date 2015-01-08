@@ -6,33 +6,44 @@ L_Menu:
     next;
     set @bme,0; if($SANGUINE & $@SV_BMDBit == 0) set @bme,1;
     set @due,0; if($SANGUINE & $@SV_FCDBit == 0) set @due,1;
-    mes "[Global]";
-    mes "$Duel_Enabled: " + @due;
-    mes "$fightclub_bm_enabled: " + @bme;
-    mes "$@Duel_TimeBeforeNext: " + $@Duel_TimeBeforeNext;
-    mes "$@Duel_TimeBeforeWarp: " + $@Duel_TimeBeforeWarp;
-    mes "$@Duel_TimeBeforeStart: " + $@Duel_TimeBeforeStart;
-    mes "$@Duel_TimeLimit: " + $@Duel_TimeLimit;
-    mes "$@Duel_QueueLimit: " + $@Duel_QueueLimit;
-    mes "$@Duel_PlayerQueueLimit: " + $@Duel_PlayerQueueLimit;
-    mes "$Duel_LastDuel: " + $Duel_LastDuel;
-    mes "";
-    mes "[User]";
-    mes "@Duel_Fighter: " + @Duel_Fighter;
+    mes "---";
+    mes "##3$##0Duel_Enabled: ##7" + @due;
+    mes "##3$##0fightclub_bm_enabled: ##7" + @bme;
+    mes "##3$##2@##0Duel_TimeBeforeNext: ##7" + $@Duel_TimeBeforeNext;
+    mes "##3$##2@##0Duel_TimeBeforeWarp: ##7" + $@Duel_TimeBeforeWarp;
+    mes "##3$##2@##0Duel_TimeBeforeStart: ##7" + $@Duel_TimeBeforeStart;
+    mes "##3$##2@##0Duel_TimeLimit: ##7" + $@Duel_TimeLimit;
+    mes "##3$##2@##0Duel_QueueLimit: ##7" + $@Duel_QueueLimit;
+    mes "##3$##2@##0Duel_PlayerQueueLimit: ##7" + $@Duel_PlayerQueueLimit;
+    mes "##3$##2@##0Duel_PlayerQueueTimeOut: ##7" + $@Duel_PlayerQueueTimeOut;
+    mes "##3$##0Duel_LastDuel: ##7" + $Duel_LastDuel + "##0";
+    mes "---";
+    mes "##2@##0Duel_Fighter: ##7" + @Duel_Fighter + "##0";
     next;
     menu
-        "[G] Toggle $Duel_Enabled", L_DuelEnabled,
-        "[G] Toggle $fightclub_bm_enabled", L_BmEnabled,
-        "[G] Set $@Duel_TimeBeforeNext", L_TimeBeforeNext,
-        "[G] Set $@Duel_TimeBeforeWarp", L_TimeBeforeWarp,
-        "[G] Set $@Duel_TimeBeforeStart", L_TimeBeforeStart,
-        "[G] Set $@Duel_TimeLimit", L_TimeLimit,
-        "[G] Set $@Duel_QueueLimit", L_QueueLimit,
-        "[G] Set $@Duel_PlayerQueueLimit", L_PlayerQueueLimit,
-        "[G] Set $Duel_LastDuel", L_LastDuel,
-        "[U] Toggle @Duel_Fighter", L_DuelFighter,
-        "Restart fightclub.", L_Restart,
-        "Nevermind.", L_End;
+        "toggle|Toggle $Duel_Enabled", L_DuelEnabled,
+        "toggle|Toggle $fightclub_bm_enabled", L_BmEnabled,
+        "edit|Set $@Duel_TimeBeforeNext", L_TimeBeforeNext,
+        "edit|Set $@Duel_TimeBeforeWarp", L_TimeBeforeWarp,
+        "edit|Set $@Duel_TimeBeforeStart", L_TimeBeforeStart,
+        "edit|Set $@Duel_TimeLimit", L_TimeLimit,
+        "edit|Set $@Duel_QueueLimit", L_QueueLimit,
+        "edit|Set $@Duel_PlayerQueueLimit", L_PlayerQueueLimit,
+        "edit|Set $@Duel_PlayerQueueTimeOut", L_PlayerQueueTimeOut,
+        "edit|Set $Duel_LastDuel", L_LastDuel,
+        "toggle|Toggle @Duel_Fighter", L_DuelFighter,
+        "toggle|Toggle killer state", L_Killer,
+        "toggle|Toggle killable state", L_Killable,
+        "restart|Restart fightclub.", L_Restart,
+        "quit|Nevermind.", L_End;
+
+L_Killer:
+    gmcommand "@killer";
+    goto L_Menu;
+
+L_Killable:
+    gmcommand "@killable";
+    goto L_Menu;
 
 L_DuelEnabled:
     if(@due < 1) goto L_DuelEnabled2;
@@ -59,23 +70,23 @@ L_DuelFighter2:
     goto L_Menu;
 
 L_TimeBeforeNext:
-    mes "range: 1~500";
+    mes "range: 1~600";
     input @time;
-    if((@time < 1) || (@time > 500)) goto L_OutOfRange;
+    if((@time < 1) || (@time > 600)) goto L_OutOfRange;
     set $@Duel_TimeBeforeNext, @time;
     goto L_Menu;
 
 L_TimeBeforeWarp:
-    mes "range: 1~500";
+    mes "range: 1~600";
     input @time;
-    if((@time < 1) || (@time > 500)) goto L_OutOfRange;
+    if((@time < 1) || (@time > 600)) goto L_OutOfRange;
     set $@Duel_TimeBeforeWarp, @time;
     goto L_Menu;
 
 L_TimeBeforeStart:
-    mes "range: 1~500";
+    mes "range: 1~600";
     input @time;
-    if((@time < 1) || (@time > 500)) goto L_OutOfRange;
+    if((@time < 1) || (@time > 600)) goto L_OutOfRange;
     set $@Duel_TimeBeforeStart, @time;
     goto L_Menu;
 
@@ -98,6 +109,13 @@ L_PlayerQueueLimit:
     input @limit;
     if((@limit < 1) || (@limit > 5)) goto L_OutOfRange;
     set $@Duel_PlayerQueueLimit, @limit;
+    goto L_Menu;
+
+L_PlayerQueueTimeOut:
+    mes "range: 30~600";
+    input @limit;
+    if((@limit < 30) || (@limit > 600)) goto L_OutOfRange;
+    set $@Duel_PlayerQueueTimeOut, @limit;
     goto L_Menu;
 
 L_LastDuel:
