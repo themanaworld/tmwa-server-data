@@ -72,6 +72,19 @@ L_Close:
     next;
     mes "You feel the floor disappear below your feet...";
     next;
+    if (QUEST_MIRIAM_start != 0)
+        goto L_cheat;
+    goto L_Warp;
+
+// If you try to use the notes to warp to pachua the quest will fail.
+L_cheat:
+    set QUEST_MIRIAM_cheat, 1;
+    set QUEST_MIRIAM_run, gettimetick(2) - QUEST_MIRIAM_start;
+    set QUEST_MIRIAM_start, 0;
+    message strcharinfo(0), "You were supposed to actually run to this place. You are not sure if this is going to work for Miriam...";
+    goto L_Warp;
+
+L_Warp:
     set @dest, rand(BaseLevel);
     if (@dest < 10)
         goto L_PlaceOne;
@@ -80,24 +93,15 @@ L_Close:
     goto L_PlaceThree;
 
 L_PlaceOne:
-    warp "006-1.gat",125,111;
+    warp "006-1.gat",83,60;
     goto L_Close;
 
 L_PlaceTwo:
-    warp "032-1.gat",77,22;
+    warp "006-1.gat",77,22;
     goto L_Close;
 
 L_PlaceThree:
     warp "006-1.gat",33,93;
-    if (QUEST_MIRIAM_start != 0) goto L_cheat;
-    goto L_Close;
-
-// If you try to use the notes to warp to pachua the quest will fail.
-L_cheat:
-    set QUEST_MIRIAM_cheat, 1;
-    set QUEST_MIRIAM_run, gettimetick(2) - QUEST_MIRIAM_start;
-    set QUEST_MIRIAM_start, 0;
-    message strcharinfo(0), "You were supposed to actually run to this place. You are not sure if this is going to work for Miriam...";
     goto L_Close;
 
 L_Close:
