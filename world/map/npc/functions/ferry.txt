@@ -5,17 +5,17 @@
     end;
 
 OnInit:
-    disablenpc "Hurnscald Koga";
+    disablenpc "Hurnscald South Koga";
     disablenpc "Candor Koga";
     disablenpc "Nivalis Koga";
-    disablenpc "Tulimshar North Koga";
-    disablenpc "Tulimshar South Koga";
+    disablenpc "Hurnscald North Koga";
+    disablenpc "Tulimshar Koga";
     set $@MainCurrentDock, 0;
     set $@CandorCurrentDock, 0;
     set $@DockTickCount, 0;
     set $@DockLeaveCount, 1;
-    setarray $@MainDocks$, "Hurnscald", "Nivalis", "Tulimshar South";
-    setarray $@CandorDocks$, "Candor", "Tulimshar North";
+    setarray $@MainDocks$, "Hurnscald North", "Nivalis", "Tulimshar";
+    setarray $@CandorDocks$, "Candor", "Hurnscald South";
     cmdothernpc "#"+$@MainDocks$[$@MainCurrentDock]+"Dock", "Arrive";
     cmdothernpc "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock", "Arrive";
     if (debug >= 2) end;
@@ -49,7 +49,7 @@ L_NextDock:
     if($@MainCurrentDock == 1) goto L_k1city3;
     end;
 
-OnTimer10000:
+OnTimer8000:
     if ($@DockTickCount > $@DockLeaveCount)
         goto L_NextDock;
     //mapannounce "035-2.tmx", "Koga - Main:* Now docked in "+$@MainDocks$[$@MainCurrentDock]+", Departing soon", 0;
@@ -91,6 +91,18 @@ L_k2city2:
 end;    
 }
 
+function|script|FerryHelp
+{
+    mes "\"You wait on the dock for the ship to come in. You'll be given a chance to board the boat when it comes into port.\"";
+    mes "\"It lingers in port to allow you some time to board in case you are running behind.\"";
+    mes "\"Once on the ship, it will sail to different ports and annouce where it is docking.\"";
+    mes "\"There are 2 Ferrys, both ferrys are free to ride.\"";
+    mes "\"The Main ferry travels from Argeas, Kaizei and Tonori. It docks in the major ports Hurnscald North, Nivalis and the Tulimshar Dock.\"";
+    mes "\"The Candor Ferry only travels betwen Candor and the Hurnscald South Dock.\"";
+    mes "\"Refreshments and supplies are offered aboard both ships during the voyage.\"";
+    mes "\"We also have some slot machines in case you get bored.\"";
+    return;
+}
 function|script|FerryManifest
 {
     mes "Which Ferry do you want to check the schedule for?";
@@ -100,7 +112,6 @@ function|script|FerryManifest
 
 L_CandorFerry:
     mes "The ferry is currently at "+$@CandorDocks$[$@CandorCurrentDock];
-    next;
     set @NextDock, ($@CandorCurrentDock + 1);
     if(@NextDock == getarraysize($@CandorDocks$))
         set @NextDock, 0;
@@ -109,7 +120,6 @@ L_CandorFerry:
 
 L_WorldFerry:
     mes "The ferry is currently at "+$@MainDocks$[$@MainCurrentDock];
-    next;
     set @NextDock, ($@MainCurrentDock + 1);
     if(@NextDock == getarraysize($@MainDocks$))
         set @NextDock, 0;
@@ -143,12 +153,7 @@ function|script|BoardCandorFerry
         "No.", L_Return;
 
 L_Board:
-    if (BaseLevel < 40) goto L_TooYoung;
     warp "036-2.tmx",39,29;
-    goto L_Return;
-
-L_TooYoung:
-    mes "This area is too dangerous for your low level.";
     goto L_Return;
 
 L_Return:
