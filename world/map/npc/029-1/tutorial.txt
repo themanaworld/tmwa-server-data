@@ -1,0 +1,75 @@
+// This file is part of the Tutorial
+// Author: Jenalya
+// if you enter the tutorial area from outside, it is set to be already done
+-|script|#TutorialConfig|-1
+{
+    end;
+
+OnInit:
+    set $@ScorpionFighter, 0;
+    set $@ScorpionTimer, 0;
+    set $@ScorpDeath, 0; 
+    set $@SpokeToKaan, (1 << 31);
+    end;
+}
+function|script|TutorialState
+{
+    callfunc "ClearVariables";
+    set @tutorial, ((STARTAREA & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    set @kaan_talked, (STARTAREA & $@SpokeToKaan);
+    return;
+}
+function|script|SetTutorialMask
+{
+    set STARTAREA, (STARTAREA & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
+    set @tutorial_tmp, 0;
+    return;
+}
+029-2.gat,21,26,0|script|TutDebug|154
+{
+    mes "[TutDebug]";
+    mes "Reset?";
+    menu
+        "Reset Kaan/Hasan",L_Kaan,
+        "Yes.",L_Reset,
+        "No.",L_Close;
+
+L_Kaan:
+    set @tutorial_tmp, 8;
+    set STARTAREA, (STARTAREA & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
+    set STARTAREA, STARTAREA &~ $@SpokeToKaan;
+    mes "Reset!";
+    goto L_Close;
+
+L_Reset:
+    set TUT_var, 0;
+    set @tutorial_tmp, 0;
+    set STARTAREA, (STARTAREA & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
+    set STARTAREA, STARTAREA &~ $@SpokeToKaan;
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if(!debug)
+        disablenpc "TutDebug";
+    end;
+}
+029-1.gat,32,99,0|script|#tutorialoutside|45,0,0
+{
+    callfunc "TutorialState";
+    if (@tutorial >= 8)
+        goto L_Warp;
+    goto L_ResetTutorial;
+
+L_ResetTutorial:
+    set @tutorial_tmp, 8;
+    callfunc "SetTutorialMask";
+    goto L_Warp;
+
+L_Warp:
+    warp "029-2.gat", 114, 92;
+    end;
+}

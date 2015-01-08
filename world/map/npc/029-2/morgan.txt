@@ -1,0 +1,132 @@
+// Tut mage
+// Author: Wushin
+// Gains Access to Magic School
+// See 024-2 clean that shit up
+// Morgan, liana
+function|script|MorganState
+{
+    callfunc "ClearVariables";
+    set @morgan, ((STARTAREA & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+    return;
+}
+function|script|SetMorganMask
+{
+    set STARTAREA, (STARTAREA & ~(NIBBLE_3_MASK) | (@morgan_tmp << NIBBLE_3_SHIFT));
+    set @morgan_tmp, 0;
+    return;
+}
+029-2,105,57,0|script|MorganDebug|355
+{
+    mes "[Morgan Debug]";
+    mes "Reset?";
+    menu
+        "Yes.", L_Reset,
+        "No.", L_End;
+L_Reset:
+    set STARTAREA, (STARTAREA & ~(NIBBLE_3_MASK) | (0 << NIBBLE_3_SHIFT));
+    mes "Reset!";
+    goto L_End;
+
+L_End:
+    end;
+
+OnInit:
+    if (!debug)
+        disablenpc "MorganDebug";
+    end;
+}
+029-2,101,57,0|script|Morgan#_M|355
+{
+    setarray @npc_loc, 101, 57, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
+    callfunc "MorganState";
+    if (readparam(bInt) >= 5)
+        goto L_Learn;
+    goto L_NotMagic;
+
+L_Learn:
+    if (@morgan == 0)
+        goto L_NotSeen;
+    if (@morgan == 1)
+        goto L_Seen;
+    if (@morgan == 2)
+        goto L_Started;
+    if (@morgan == 3)
+        goto L_CastOnce;
+    if (@morgan == 4)
+        goto L_LearningDone;
+    goto L_Close;
+
+L_NotSeen:
+    set @morgan_tmp, 1;
+    callfunc "SetMorganMask";
+    mes "[Morgan]";
+    mes "\"Welcome to the magic school of Candor\"";
+    mes "\"My name is Morgan, I'm Head of Wizardry.\"";
+    mes "\"You appear to have the markings to use magic.\"";
+    mes "\"Granted you are still to young to cast spells.\"";
+    mes "\"But we can teach you to use simple magic devices.\"";
+    mes "\"Would you like to learn some apprentice skills?\"";
+    menu
+        "Yes.", L_Start,
+        "Maybe later", L_Close;
+
+L_Seen:
+    mes "[Morgan]";
+    mes "\"Have you returned to learn some magic?\"";
+    menu
+        "Yes.", L_Start,
+        "Maybe later", L_Close;
+
+L_NotMagic:
+    mes "[Morgan]";
+    mes "\"Hrmm you don't appear to posses enough magical talent to teach.\"";
+    goto L_Close;
+
+L_Start:
+    set @morgan_tmp, 2;
+    callfunc "SetMorganMask";
+    mes "\"Great, lets begin your first lesson.\"";
+    getitem 1171, 1;
+    mes "\"This is a wand, there are many like it but this one is now yours.\"";
+    mes "\"Various wands and staffs are found throughout the land with many different strengths and weaknesses.\"";
+    mes "\"To use the wand you need to have it equipped and speak the incantation to let it tap into your mana.\"";
+    mes "\"As the power of your magic grows so will the spells you can cast.\"";
+    mes "\"Lets start with a basic wand attack. " + getspellinvocation("wand") + "\"";
+    mes "\"Equip the wand and lets try out that spell.\"";
+    mes "\"To cast a spell open the chat window, type the invocation and press enter.\"";
+    mes "\"Speak to me again once you've cast the spell.\"";
+    goto L_Close;
+
+L_Started:
+    mes "[Morgan]";
+    mes "\"Lets start with a basic wand attack. " + getspellinvocation("wand") + "\"";
+    mes "\"Equip the wand and lets try out that spell.\"";
+    mes "\"To cast a spell open the chat window, type the invocation and press enter.\"";
+    mes "\"Speak to me again once you've cast the spell.\"";
+    goto L_Close;
+
+L_CastOnce:
+    mes "[Morgan]";
+    mes "\"Ok, good job! Looks like you have good mana flow.\"";
+    mes "\"Onto the next lesson. Now that you have " + getspellinvocation("wand") + " cast,\"";
+    mes "\"Each time you attack the wand will convert a bit of you mana into a magic bolt.\"";
+    mes "\"After so many attacks, you will need to recast the invocation to stay attuned to the wand.\"";
+    mes "\"(Logging out will also cancel any spell effects currently active in-game.).\"";
+    set @morgan_tmp, 4;
+    callfunc "SetMorganMask";
+    goto L_Close;
+
+L_LearningDone:
+    mes "[Morgan]";
+    mes "\"" + getspellinvocation("wand") + " is a basic wand attack.\"";
+    mes "\"A Wand must be equipped to use the spell.\"";
+    mes "\"To cast a spell open the chat window, type the invocation and press enter.\"";
+    mes "\"I've taught you all I can for now. You should visit the Mana Seed north west of Hurnscald.\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}
