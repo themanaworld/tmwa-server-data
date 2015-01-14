@@ -1,3 +1,21 @@
+function|script|EquipHandler
+{
+    goto L_FightClub;
+
+L_FightClub:
+    if((@Duel_Fighter != 1) || (@iskillable != 1)) goto L_Return;
+    if(isin("009-7.gat", $@fightclub_x1, $@fightclub_y1, $@fightclub_x2, $@fightclub_y2) == 0) goto L_Return;
+    gmcommand "@killable"; // equiping an item undo @killer and @killable so we need to re-call it
+    gmcommand "@killer";
+    message strcharinfo(0), " "; // do not send the "you be a killa" message
+    goto L_Return;
+
+// Add other checks here
+
+L_Return:
+    return;
+}
+
 017-9.gat,0,0,0|script|#GlobalHandler|-1
 {
     end;
@@ -14,12 +32,14 @@ OnPCKilledEvent:
     goto L_Fightclub_Killed; // this is used by the 1v1 arena
 
 OnPCDieEvent:
+    set @iskillable, 0;
     callfunc "fightclub_GoBack"; // this used by the battle master
     goto L_Fightclub_Die; // this is used by the 1v1 arena
 
 // custom handlers below
 
 L_Fightclub_Killed:
+    set @iskillable, 0;
     set @duel_killer, 0;
     if(@Duel_Fighter != 1) goto L_End;
     if(getmap() != "009-7") goto L_End;
