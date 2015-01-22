@@ -2,7 +2,42 @@
 // Script by Shaili and QOAL
 //#################################################################################
 
-// Tulimshar Crafting Workshop - Agostine, The Legendary Tailor
+020-2.gat,24,26,0|script|Agostine Debug|137
+{
+    mes "[Agostine Debug]";
+    mes "What do you want to do?";
+    menu
+        "Show Quest State", L_ShowState,
+        "Set Quest State", L_SetState,
+        "Reset", L_Reset,
+        "Nothing.", L_Close;
+
+L_ShowState:
+    set @wg_state, ((QUEST_WG_state & BYTE_0_MASK) >> BYTE_0_SHIFT);
+    mes "Current State is " + @wg_state;
+    goto L_Close;
+
+L_SetState:
+    mes "What state do you want?";
+    input @wg_state;
+    callfunc "setWGState";
+    mes "Set to " + @wg_state;
+    goto L_Close;
+
+L_Reset:
+    set @wg_state, 0;
+    callfunc "setWGState";
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "Agostine Debug";
+    end;
+}
 020-2.gat,27,26,0|script|Agostine|137
 {
     set @CUTFUR_EXP, 10;
@@ -69,6 +104,7 @@ L_State_Accept:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Thanks so much.\"";
     set @wg_state, 1;
+    callfunc "setWGState";
     goto L_Close;
 
 L_State_0_3:
@@ -134,6 +170,7 @@ L_State_0_9:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"This is a little reward for your help. Take 500 GP, my friend!\"";
     set @wg_state, 2;
+    callfunc "setWGState";
     goto L_Close;
 
 L_State_neg:
@@ -163,6 +200,7 @@ L_State_2:
     mes "Only the best furs can be used for these gloves!";
     mes "But, as you see, I am a tailor, not a hunter! So, why don't you bring me the best fluffy's fur you can find?\"";
     set @wg_state, 3;
+    callfunc "setWGState";
     next;
     menu
         "You are crazy! I won't kill any animal for this!", L_Close,
@@ -172,6 +210,7 @@ L_State_3:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Remember, I want the best of fur!\"";
     set @wg_state, 4;
+    callfunc "setWGState";
     goto L_Close;
 
 L_State_4:
@@ -210,6 +249,7 @@ L_State_4_success:
     mes "\"It's perfect! Perfect! Good job, my friend! I will prepare your gloves right now!\"";
     next;
     set @wg_state, 5;
+    callfunc "setWGState";
     goto L_State_5;
 
 L_State_5:
@@ -227,6 +267,7 @@ L_State_5_pay:
     set Zeny, Zeny - 15000;
     getitem "WinterGloves", 1;
     set @wg_state, 6;
+    callfunc "setWGState";
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Here they are. You will have the most fashionable hands in the world!\"";
     goto L_Close;
@@ -254,6 +295,7 @@ L_State_10:
     mes "and a pair of Boots, like those you can find in the mines.";
     mes "They will make you lovely, my friend!\"";
     set @wg_state, 7;
+    callfunc "setWGState";
     goto L_Close;
 
 L_State_11:
@@ -292,6 +334,7 @@ L_State_11_success:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"This one is good enough, my friend. Good job.\"";
     set @wg_state, 8;
+    callfunc "setWGState";
     goto L_State_12;
 
 L_State_12:
@@ -311,6 +354,7 @@ L_State_12_pay:
     delitem "Boots", 1;
     getitem "FurBoots", 1;
     set @wg_state, 9;
+    callfunc "setWGState";
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Enjoy your new boots, my friend!\"";
     goto L_Close;
@@ -381,6 +425,7 @@ L_Next2:
 
 L_State_14_Accept:
     set @wg_state, 12;
+    callfunc "setWGState";
     goto L_Close;
 
 L_State_14_AlreadyAccepted:
@@ -421,6 +466,7 @@ L_Next4:
     mes "\"Hurry back my friend!\"";
 
     set @wg_state, 14;
+    callfunc "setWGState";
 
     goto L_Close;
 
@@ -463,6 +509,7 @@ L_Next6:
 
 L_Next7:
     set @wg_state, 17;
+    callfunc "setWGState";
 
     message strcharinfo(0), "Agostine gives you a folio containing his designs, that you put in a hidden compartment in your backpack.";
     mes "Agostine gives you a folio containing his designs, that you put in a hidden compartment in your backpack.";
@@ -504,6 +551,7 @@ L_State_17_AskItems:
 
 L_Next9:
     set @wg_state, 21;
+    callfunc "setWGState";
     goto L_Close;
 
 L_State_17_NotEnoughItems:
@@ -517,6 +565,7 @@ L_State_17_GiveItems:
         goto L_State_17_NotEnoughItems;
     delitem "CottonCloth", @FINEDRESS_COTTON_CLOTHS;
     set @wg_state, 22;
+    callfunc "setWGState";
 
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Great now just a little cloth here........\"";
@@ -574,6 +623,7 @@ L_Next11:
     set Zeny, Zeny - @FINEDRESS_GP;
     getitem "FineDress", 1;
     set @wg_state, 23;
+    callfunc "setWGState";
     goto L_Close;
 
 L_State_17_NoMoney:
@@ -595,7 +645,11 @@ L_State_18:
     goto L_Close;
 
 L_Close:
-    set QUEST_WG_state, (QUEST_WG_state & ~(BYTE_0_MASK) | (@wg_state << BYTE_0_SHIFT));
     set @wg_state, 0;
     close;
+}
+function|script|setWGState
+{
+    set QUEST_WG_state, (QUEST_WG_state & ~(BYTE_0_MASK) | (@wg_state << BYTE_0_SHIFT));
+    return;
 }
