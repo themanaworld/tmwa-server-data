@@ -16,8 +16,8 @@ OnInit:
     set $@DockLeaveCount, 1;
     setarray $@MainDocks$, "Hurnscald North", "Nivalis", "Tulimshar";
     setarray $@CandorDocks$, "Candor", "Hurnscald South";
-    cmdothernpc "#"+$@MainDocks$[$@MainCurrentDock]+"Dock", "Arrive";
-    cmdothernpc "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock", "Arrive";
+    donpcevent "#"+$@MainDocks$[$@MainCurrentDock]+"Dock::OnCommandArrive";
+    donpcevent "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock::OnCommandArrive";
     if (debug >= 2) end;
     initnpctimer;
     end;
@@ -32,18 +32,18 @@ L_NextDock:
     if($@CandorCurrentDock == getarraysize($@CandorDocks$))
         set $@CandorCurrentDock, 0;
     set $@DockTickCount, 0;
-    cmdothernpc "#"+$@MainDocks$[$@MainLastDock]+"Dock", "Warp";
-    cmdothernpc "#"+$@MainDocks$[$@MainCurrentDock]+"Dock", "Arrive";
-    cmdothernpc "#"+$@CandorDocks$[$@CandorLastDock]+"Dock", "Warp";
-    cmdothernpc "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock", "Arrive";
-    
-    cmdothernpc "#k1sound", "Ding";
-    cmdothernpc "#k2sound", "Ding";
-  
+    donpcevent "#"+$@MainDocks$[$@MainLastDock]+"Dock::OnCommandWarp";
+    donpcevent "#"+$@MainDocks$[$@MainCurrentDock]+"Dock::OnCommandArrive";
+    donpcevent "#"+$@CandorDocks$[$@CandorLastDock]+"Dock::OnCommandWarp";
+    donpcevent "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock::OnCommandArrive";
+
+    donpcevent "#k1sound::OnCommandDing";
+    donpcevent "#k2sound::OnCommandDing";
+
     //mapannounce "035-2.tmx", " Koga - Main:* Now arriving in "+$@MainDocks$[$@MainCurrentDock]+".", 0;
     //mapannounce "036-2.tmx", " Koga - Candor:* Now arriving in "+$@CandorDocks$[$@CandorCurrentDock]+".", 0;
     initnpctimer;
-    
+
     if($@MainCurrentDock == 2) goto L_k1city1;
     if($@MainCurrentDock == 0) goto L_k1city2;
     if($@MainCurrentDock == 1) goto L_k1city3;
@@ -58,7 +58,7 @@ OnTimer8000:
     initnpctimer;
     end;
 
-    
+
 L_k1city1:
   enablenpc "#k1city1e"; disablenpc "#k1city2e"; disablenpc "#k1city3e";
   disablenpc "#k1city1d"; enablenpc "#k1city2d"; enablenpc "#k1city3d";
@@ -88,7 +88,7 @@ end;
 L_k2city2:
   disablenpc "#k2city1e"; enablenpc "#k2city2e";
   enablenpc "#k2city1d"; disablenpc "#k2city2d";
-end;    
+end;
 }
 
 function|script|FerryHelp
