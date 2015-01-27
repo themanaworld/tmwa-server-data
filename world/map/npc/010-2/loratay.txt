@@ -487,12 +487,10 @@ L_desert_hat:
     mes "The seamstress sighs.";
     mes "\"One of these days it would be nice to have an actual challenge... yes, of course I can make a desert hat.  A Cotton Headband, three pieces of cotton cloth.  Hmm.  And let's add 300 GP to that.\"";
     next;
-    set @default_choice$, "Never mind.";
     setarray @items, 724, 2140, 2141, 2142, 2143, 2144, 2145, 2146, 2147, 2148, 2149;
     setarray @item_names$, "Here is a Cotton Headband.", "Here is a Red Cotton Headband.", "Here is a Green Cotton Headband.", "Here is a Dark Blue Cotton Headband.", "Here is a Yellow Cotton Headband.", "Here is a Light Blue Cotton Headband.", "Here is a Pink Cotton Headband.", "Here is a Black Cotton Headband.", "Here is an Orange Cotton Headband.", "Here is a Puple Cotton Headband.", "Here is a Dark Green Cotton Headband.";
-    set @items_nr, 11;
 
-    callsub S_pick_one_of_many_items;
+    callfunc "DynamicItemMenu";
     if (@item == 0)
         goto L_main_menu;
     if (@item == 724)
@@ -544,11 +542,9 @@ L_trim:
     mes "\"Alright.  What is it that you want trimmed?\"";
     next;
 
-    set @default_choice$, "Never mind.";
     setarray @items, 1202, 2050, 2051, 2052, 2053, 2054, 2055, 2056, 2057, 2058, 2059, 688, 2090, 2091, 2092, 2093, 2094, 2095, 2096, 2097, 2098, 2099, 632, 2100, 2101, 2102, 2103, 2104, 2105, 2106, 2107, 2108, 2109, 648, 2180, 2181, 2182, 2183, 2184, 2185, 2186, 2187, 2188, 2189;
     setarray @item_names$, "Cotton Shirt", "Red Cotton Shirt", "Green Cotton Shirt", "Dark Blue Cotton Shirt", "Yellow Cotton Shirt", "Light Blue Cotton Shirt", "Pink Cotton Shirt", "Black Cotton Shirt", "Orange Cotton Shirt", "Purple Cotton Shirt", "Dark Green Cotton Shirt", "Tank Top", "Red Tank Top", "Green Tank Top", "Dark Blue Tank Top", "Yellow Tank Top", "Light Blue Tank Top", "Pink Tank Top", "Black Tank Top", "Orange Tank Top", "Purple Tank Top", "Dark Green Tank Top", "Cotton Skirt", "Red Cotton Skirt", "Green Cotton Skirt", "Dark Blue Cotton Skirt", "Yellow Cotton Skirt", "Light Blue Cotton Skirt", "Pink Cotton Skirt", "Black Cotton Skirt", "Orange Cotton Skirt", "Purple Cotton Skirt", "Dark Green Cotton Skirt", "Cotton Trousers", "Red Cotton Trousers", "Green Cotton Trousers", "Dark Blue Cotton Trousers", "Yellow Cotton Trousers", "Light Blue Cotton Trousers", "Pink Cotton Trousers", "Black Cotton Trousers", "Orange Cotton Trousers", "Purple Cotton Trousers", "Dark Green Cotton Trousers";
-    set @items_nr, 44;
-    callsub S_pick_one_of_many_items;
+    callfunc "DynamicItemMenu";
     if (@item == 0)
         goto L_main_menu;
     set @delitem, @item;
@@ -603,12 +599,10 @@ L_lengthen:
     mes "\"Now, let me see.  What is it that you want lengthened?\"";
     next;
 
-    set @default_choice$, "Never mind.";
     setarray @items, 688, 2090, 2091, 2092, 2093, 2094, 2095, 2096, 2097, 2098, 2099, 689, 2120, 2121, 2122, 2123, 2124, 2125, 2126, 2127, 2128, 2129, 771, 2170, 2171, 2172, 2173, 2174, 2175, 2176, 2177, 2178, 2179, 586, 2110, 2111, 2112, 2113, 2114, 2115, 2116, 2117, 2118, 2119;
     setarray @item_names$, "Tank Top", "Red Tank Top", "Green Tank Top", "Dark Blue Tank Top", "Yellow Tank Top", "Light Blue Tank Top", "Pink Tank Top", "Black Tank Top", "Orange Tank Top", "Purple Tank Top", "Dark Green Tank Top", "Short Tank Top", "Red Short Tank Top", "Green Short Tank Top", "Dark Blue Short Tank Top", "Yellow Short Tank Top", "Light Blue Short Tank Top", "Pink Short Tank Top", "Black Short Tank Top", "Orange Short Tank Top", "Purple Short Tank Top", "Dark Green Short Tank Top", "Miniskirt", "Red Miniskirt", "Green Miniskirt", "Dark Blue Miniskirt", "Yellow Miniskirt", "Light Blue Miniskirt", "Pink Miniskirt", "Black Miniskirt", "Orange Miniskirt", "Purple Miniskirt", "Dark Green Miniskirt", "Cotton Shorts", "Red Cotton Shorts", "Green Cotton Shorts", "Dark Blue Cotton Shorts", "Yellow Cotton Shorts", "Light Blue Cotton Shorts", "Pink Cotton Shorts", "Black Cotton Shorts", "Orange Cotton Shorts", "Purple Cotton Shorts", "Dark Green Cotton Shorts";
 
-    set @items_nr, 44;
-    callsub S_pick_one_of_many_items;
+    callfunc "DynamicItemMenu";
     if (@item == 0)
         goto L_main_menu;
 
@@ -902,127 +896,6 @@ L_end:
     set @ROBE_SHEETS_ZENY, 0;
     set @Robe_with_sheets, 0;
     goto L_Close;
-
-// Input: @items (array of items you want to choose from)
-//        @item_names (names of the items in @items)
-//        @items_nr (number of entries in @items)
-//        @default_choice$ (default option)
-// Return:  @item (The selected item, or 0 if the default/something invalid was chosen)
-S_pick_one_of_many_items:
-    set @c, 0;
-    set @i, 0;
-
-    setarray @choice_n$, "", "", "", "", "", "", "", "",
-                             "", "", "", "", "", "", "", "",
-                             "", "", "", "", "", "", "", "",
-                             "", "", "", "", "", "", "", "";
-    goto S_SUB_pick_choice_loop;
-
-S_SUB_pick_choice_loop:
-    if (@i >= @items_nr)
-        goto S_SUB_choice_init_done;
-    set @current, @items[@i];
-    set @current_name$, @item_names$[@i];
-    set @i, @i + 1;
-
-    if (countitem(@current) == 0)
-        goto S_SUB_pick_choice_loop;
-    set @choice_v[@c], @current;
-    set @choice_n$[@c], @current_name$;
-    set @c, @c + 1;
-    goto S_SUB_pick_choice_loop;
-
-S_SUB_choice_init_done:
-    set @choice_v[@c], 0;
-    set @choice_n$[@c], @default_choice$;
-    set @c, @c + 1;
-
-    if (@c < 10)
-        menu
-            @choice_n$[0], L_MenuItems,
-            @choice_n$[1], L_MenuItems,
-            @choice_n$[2], L_MenuItems,
-            @choice_n$[3], L_MenuItems,
-            @choice_n$[4], L_MenuItems,
-            @choice_n$[5], L_MenuItems,
-            @choice_n$[6], L_MenuItems,
-            @choice_n$[7], L_MenuItems,
-            @choice_n$[8], L_MenuItems,
-            @choice_n$[9], L_MenuItems;
-    goto L_MenuItems;
-
-L_MenuItems:
-    if (@c < 10)
-        goto L_SUB_choice_join;
-
-    if (@c < 20)
-        menu
-            @choice_n$[0], L_MenuItems1,
-            @choice_n$[1], L_MenuItems1,
-            @choice_n$[2], L_MenuItems1,
-            @choice_n$[3], L_MenuItems1,
-            @choice_n$[4], L_MenuItems1,
-            @choice_n$[5], L_MenuItems1,
-            @choice_n$[6], L_MenuItems1,
-            @choice_n$[7], L_MenuItems1,
-            @choice_n$[8], L_MenuItems1,
-            @choice_n$[9], L_MenuItems1,
-            @choice_n$[10], L_MenuItems1,
-            @choice_n$[11], L_MenuItems1,
-            @choice_n$[12], L_MenuItems1,
-            @choice_n$[13], L_MenuItems1,
-            @choice_n$[14], L_MenuItems1,
-            @choice_n$[15], L_MenuItems1,
-            @choice_n$[16], L_MenuItems1,
-            @choice_n$[17], L_MenuItems1,
-            @choice_n$[18], L_MenuItems1,
-            @choice_n$[19], L_MenuItems1;
-    goto L_MenuItems1;
-
-L_MenuItems1:
-    if (@c < 20)
-        goto L_SUB_choice_join;
-
-    menu
-        @choice_n$[0], L_SUB_choice_join,
-        @choice_n$[1], L_SUB_choice_join,
-        @choice_n$[2], L_SUB_choice_join,
-        @choice_n$[3], L_SUB_choice_join,
-        @choice_n$[4], L_SUB_choice_join,
-        @choice_n$[5], L_SUB_choice_join,
-        @choice_n$[6], L_SUB_choice_join,
-        @choice_n$[7], L_SUB_choice_join,
-        @choice_n$[8], L_SUB_choice_join,
-        @choice_n$[9], L_SUB_choice_join,
-        @choice_n$[10], L_SUB_choice_join,
-        @choice_n$[11], L_SUB_choice_join,
-        @choice_n$[12], L_SUB_choice_join,
-        @choice_n$[13], L_SUB_choice_join,
-        @choice_n$[14], L_SUB_choice_join,
-        @choice_n$[15], L_SUB_choice_join,
-        @choice_n$[16], L_SUB_choice_join,
-        @choice_n$[17], L_SUB_choice_join,
-        @choice_n$[18], L_SUB_choice_join,
-        @choice_n$[19], L_SUB_choice_join,
-        @choice_n$[20], L_SUB_choice_join,
-        @choice_n$[21], L_SUB_choice_join,
-        @choice_n$[22], L_SUB_choice_join,
-        @choice_n$[23], L_SUB_choice_join,
-        @choice_n$[24], L_SUB_choice_join,
-        @choice_n$[25], L_SUB_choice_join,
-        @choice_n$[26], L_SUB_choice_join,
-        @choice_n$[27], L_SUB_choice_join,
-        @choice_n$[28], L_SUB_choice_join,
-        @choice_n$[29], L_SUB_choice_join,
-        @choice_n$[30], L_SUB_choice_join,
-        @choice_n$[31], L_SUB_choice_join;
-
-L_SUB_choice_join:
-    set @menu, @menu - 1;
-    set @item, @choice_v[@menu];
-    if (@menu >= @c)
-        set @item, 0;
-    return;
 
 L_TooMany:
     mes "[Lora Tay the Seamstress]";
