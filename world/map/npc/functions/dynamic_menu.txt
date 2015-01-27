@@ -28,12 +28,14 @@ L_pick_choice_loop:
         goto L_choice_init_done;
     set @current, @items[@i];
     set @current_name$, @item_names$[@i];
+    set @current_index, @i;
     set @i, @i + 1;
 
     if (countitem(@current) == 0)
         goto L_pick_choice_loop;
     set @choice_v[@c], @current;
     set @choice_n$[@c], @current_name$;
+    set @choice_i[@c], @current_index;
     set @c, @c + 1;
     goto L_pick_choice_loop;
 
@@ -125,6 +127,7 @@ L_MenuItems1:
 L_choice_join:
     set @menu, @menu - 1;
     set @item, @choice_v[@menu];
+    set @index, @choice_i[@menu];
     if (@menu >= @c)
         set @item, 0;
     goto L_Clean;
@@ -136,8 +139,9 @@ L_Clean:
     set @i, 0;
     set @current, 0;
     set @current_name$, "";
-    cleararray @choice_v, "", getarraysize(@choice_v);
+    cleararray @choice_v, 0, getarraysize(@choice_v);
     cleararray @choice_n$, "", getarraysize(@choice_n$);
+    cleararray @choice_i, 0, getarraysize(@choice_i);
     return;
 
 L_ArrayLengthMismatch:
@@ -175,12 +179,14 @@ L_pick_choice_loop:
         goto L_choice_init_done;
     set @current$, @items$[@i];
     set @current_name$, @item_names$[@i];
+    set @current_index, @i;
     set @i, @i + 1;
 
     if (countitem(@current$) == 0)
         goto L_pick_choice_loop;
     set @choice_v$[@c], @current$;
     set @choice_n$[@c], @current_name$;
+    set @choice_i[@c], @current_index;
     set @c, @c + 1;
     goto L_pick_choice_loop;
 
@@ -272,6 +278,7 @@ L_MenuItems1:
 L_choice_join:
     set @menu, @menu - 1;
     set @item$, @choice_v$[@menu];
+    set @index, @choice_i[@menu];
     if (@menu >= @c)
         set @item$, "";
     goto L_Clean;
@@ -280,11 +287,13 @@ L_Clean:
     set @menu, 0;
     set @items_nr, 0;
     set @c, 0;
+    set @current_index, 0;
     set @i, 0;
     set @current$, 0;
     set @current_name$, "";
     cleararray @choice_v$, "", getarraysize(@choice_v$);
     cleararray @choice_n$, "", getarraysize(@choice_n$);
+    cleararray @choice_i, 0, getarraysize(@choice_i);
     return;
 
 L_ArrayLengthMismatch:
