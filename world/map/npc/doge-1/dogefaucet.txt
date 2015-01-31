@@ -1,0 +1,87 @@
+//
+
+doge-1.gat,45,60,0|script|Faucet|901
+{
+    callfunc "ClearVariables";
+    callfunc "DailyQuestPoints";
+
+    set @npcname$, "Faucet";
+
+    //Receive faucet doge info
+    set @FaucetBalance$, "";
+    dogeBalance @FaucetBalance$, "faucet";
+
+    set @FaucetDeposit$, "";
+    dogeDeposit @FaucetDeposit$, "faucet";
+
+    //Check if doge server is up
+    if @FaucetBalance$ == "shibe sorry, dogecoin server down"
+        goto L_DOGES_DOWN;
+
+    if @FaucetDeposit$ == "shibe sorry, dogecoin server down"
+        goto L_DOGES_DOWN;
+
+    //Print info
+    mes "Faucet balance:";
+    mes @FaucetBalance$;
+
+    mes "Please send doges to the faucet:";
+    mes @FaucetDeposit$;
+    mes "or";
+    mes "Tip the character named Faucet in the ATM";
+    mes "or";
+    mes "@doge tip faucet 1000";
+
+    mes "";
+    mes "";
+
+    //Check if faucet has enough doges
+    if @FaucetBalance$ == "0Ð"
+        goto L_NO_DOGES;
+
+    if @FaucetBalance$ == "1Ð"
+        goto L_NO_DOGES;
+
+    if @FaucetBalance$ == "2Ð"
+        goto L_NO_DOGES;
+
+    if @FaucetBalance$ == "3Ð"
+        goto L_NO_DOGES;
+
+    if @FaucetBalance$ == "4Ð"
+        goto L_NO_DOGES;
+
+    //Check if player has enough dialy quest points
+    if (DailyQuestPoints == 0)
+        goto L_NO_DAILYQUESTPOINTS;
+
+    //Send doges
+    set @Character_to$, strcharinfo(0);
+
+    dogeTip @Return$, "faucet", 5, @Character_to$;
+
+    mes @Return$;
+
+    set DailyQuestPoints, 0;
+
+    mes "Please come back tomorrow.";
+    goto L_End;
+
+L_NO_DAILYQUESTPOINTS:
+    mes "You have not enough Daily Quest Points";
+    mes "Please come back tomorrow.";
+    goto L_End;
+
+L_NO_DOGES:
+    mes "Sorry, I have not enough doges.";
+    goto L_End;
+
+L_DOGES_DOWN:
+    mes "Sorry, Dogecoin server down.";
+    goto L_End;
+
+L_End:
+    //mes "\"shibe goodbye\"";
+    set @npcname$, "";
+    close;
+}

@@ -1,0 +1,59 @@
+// Last Man Standing PvP Event NPC
+// Authors: tux9th, Jenalya
+// many thanks to Jenalaya, o11c, Ablu :)
+//  CAVE: this script requires a patch by o11c that makes it possible for
+//  getareausers to check if players are alive or dead.
+
+// Global Variables:
+// $@DOGEARENA_PVP_STATUS:
+//      1 if players are waiting to be warped into the fight cave
+//      2 if fight is in progress
+// $@DOGEARENA_START_TIME:
+//      time when the players will be warped into the fight cave
+// $@DOGEARENA_PLAYERS: number of players taking part in the event
+
+// $@DOGEARENA_ITEM$: Item that was given by the sponsor as prize
+// $@DOGEARENA_SPONSOR: player ID of sponsor that gave the item
+
+doge-1.gat,53,43,0|script|Toughomir|116
+{
+    mes "[Toughomir]";
+    mes "\"Hey kid! Do you feel strong enough?\"";
+    mes "\"You can go downstairs and fight other players to earn some Ðogecoins.\"";
+    mes "\"5Ð is the entrance fee.\"";
+    mes "\"Will you give it a shot?\"";
+    menu
+        "Yes.", L_Go,
+        "No.", L_Exit;
+
+L_Go:
+    set @Character$, strcharinfo(0);
+    dogeTip @Return$, @Character$, 5, "Arena";
+    if (@Return$ != "5Ð sent to arena")
+        goto L_NODOGES;
+    mes "[Toughomir]";
+    mes "\"Bring other players and then talk to Brahdomir downstairs.\"";
+    next;
+    warp "doge-2.gat", 57, 64;
+    goto L_Exit;
+
+L_NODOGES:
+    mes "[Toughomir]";
+    mes "You have not enough doges.";
+    goto L_Exit;
+
+L_Exit:
+    close;
+
+OnReward:
+    if (isdead())
+        goto L_Dead;
+    message strcharinfo(0), "Congratulations you won!";
+    dogeTip @Return$, "arena", 4*$@BRAHDOMIR_PLAYERS, strcharinfo(0);
+    set $@BRAHDOMIR_PLAYERS, 0;
+    end;
+
+L_Dead:
+    warp "doge-1.gat", 155,83;
+    end;
+}

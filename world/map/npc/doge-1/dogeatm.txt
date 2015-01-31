@@ -1,0 +1,76 @@
+//
+
+doge-1.gat,50,50,0|script|Doge ATM|900
+{
+    callfunc "ClearVariables";
+    set @npcname$, "Doge ATM";
+    set @Character$, strcharinfo(0);
+
+    mes "\"such ATM\"";
+    mes "\"Select your command.\"";
+
+    set @Return$, "";
+    dogeBalance @Return$, @Character$;
+    mes "Your current balance:";
+    mes @Return$;
+
+    menu
+        "Send", L_Tip,
+        "Deposit", L_Dep,
+        "Withdraw", L_With,
+        "Nevermind", L_End;
+
+    L_Tip:
+
+        mes "\"Select the transfer amount:\"";
+        input @Amount;
+
+        mes "\"Type the destination character name:\"";
+        input @Character_to$;
+
+        dogeTip @Return$, @Character$, @Amount, @Character_to$;
+        mes @Return$;
+
+        set @Return$, "";
+        dogeBalance @Return$, @Character$;
+        mes "Your new balance:";
+        mes @Return$;
+
+        goto L_End;
+
+    L_Dep:
+
+        set @Return$, "";
+        mes "Your deposit address is:";
+        dogeDeposit @Return$, @Character$;
+        mes @Return$;
+
+        mes "Tip: You can expand this window then copy your address to the clipboard using right click.";
+
+        goto L_End;
+
+    L_With:
+
+        mes "\"Select the transfer amount:\"";
+        input @Amount;
+
+        set @Return$, "";
+
+        mes "\"Type the destination Dogecoin wallet address:\"";
+        input @Address$;
+
+        dogeWithdraw @Return$, @Character$, @Amount, @Address$;
+        mes @Return$;
+
+        set @Return$, "";
+        dogeBalance @Return$, @Character$;
+        mes "Your new balance:";
+        mes @Return$;
+
+        goto L_End;
+    
+    L_End:
+    mes "\"such goodbye\"";
+    set @npcname$, "";
+    close;
+}

@@ -1,0 +1,107 @@
+// Last Man Standing PvP Event NPC
+// Authors: tux9th, Jenalya
+// many thanks to Jenalaya, o11c, Ablu :)
+//  CAVE: this script requires a patch by o11c that makes it possible for
+//  getareausers to check if players are alive or dead.
+
+// Global Variables:
+// $@BRAHDOMIR_PVP_STATUS:
+//      1 if players are waiting to be warped into the fight cave
+//      2 if fight is in progress
+// $@BRAHDOMIR_START_TIME:
+//      time when the players will be warped into the fight cave
+// $@BRAHDOMIR_PLAYERS: number of players taking part in the event
+
+// $@BRAHDOMIR_SPONSOR: player ID of sponsor that gave the item
+
+
+doge-2.gat,57,48,0|script|Brahdomir|116
+{
+    if ($@BRAHDOMIR_PVP_STATUS == 2)
+        goto L_Alreadystarted;
+    if ($@BRAHDOMIR_PVP_STATUS == 1)
+        goto L_Wait;
+
+    mes "[Brahdomir]";
+    mes "\"The winner will receive 4Ð for each participant.\"";
+    mes "\"There must be at least 2 players in this room to start the fight.\"";
+    mes "\"Do you want to start now?\"";
+
+    menu
+        "No.", L_Exit,
+        "Yes.", L_Go;
+
+L_Exit:
+    mes "[Brahdomir]";
+    mes "\"Okay, you can come back anytime.\"";
+    goto L_Close;
+
+L_Go:
+    mes "\"I will give you 10 seconds so everyone gets prepared.\"";
+    set $@brahdomir_delay_seconds, 10;
+    set $@BRAHDOMIR_PVP_STATUS, 1;
+    announce "Brahdomir : In "+$@brahdomir_delay_seconds+" seconds, I will start a PvP tournament, if at least 2 fighters are present. Make your way in Moon Underground Caves!", 0;
+    mes "[Brahdomir]";
+    mes "\"In "+$@brahdomir_delay_seconds+" seconds I will bring you all to the PvP cave. If there are less than 2 players here the event will not start.\"";
+    set $@BRAHDOMIR_START_TIME, gettimetick(2) + $@brahdomir_delay_seconds;
+    set $@brahdomir_delay_seconds, 0;
+    initnpctimer;
+    goto L_Close;
+
+L_Wait:
+    set $@brahdomir_seconds, ($@BRAHDOMIR_START_TIME - gettimetick(2));
+    mes "[Brahdomir]";
+    if ($@brahdomir_seconds/60 == 0)
+        mes "\"Just a little longer. I will bring you there in " + $@brahdomir_seconds + " seconds.\"";
+    if ($@brahdomir_seconds/60 > 0)
+        mes "\"Just a little longer. I will bring you there in " + $@brahdomir_seconds/60 + " minute(s).\"";
+    set $@brahdomir_seconds, 0;
+    goto L_Close;
+
+OnTimer5000:
+    setnpctimer 0;
+    if ($@BRAHDOMIR_PVP_STATUS > 1)
+        goto L_Check;
+    if (gettimetick(2) >= $@BRAHDOMIR_START_TIME)
+        goto L_Warp;
+    end;
+
+L_Warp:
+    if (getareausers("doge-2.gat", 20, 20, 80, 80, 1) < 2)
+        goto L_Warpfail;
+    set $@BRAHDOMIR_PVP_STATUS, $@BRAHDOMIR_PVP_STATUS + 1;
+    set $@BRAHDOMIR_PLAYERS, getareausers("doge-2.gat", 20, 20, 80, 80, 1);
+    mapwarp "doge-2.gat", "doge-arena.gat", 0, 0;
+    mapannounce "doge-arena.gat", "PvP On!", 0;
+    pvpon "doge-arena.gat";
+    end;
+
+L_Warpfail:
+    mapannounce "doge-2.gat", "There are not enough players around to start!", 0;
+    goto L_Cleanup;
+
+L_Check:
+    if (getareausers("doge-arena.gat", 20, 20, 80, 80, 1) > 1)
+        end;
+    areatimer "doge-arena.gat", 20, 20, 80, 80, 0, "Toughomir::OnReward";
+    goto L_End;
+
+L_End:
+    mapwarp "doge-arena.gat", "doge-1.gat", 36, 42;
+    goto L_Cleanup;
+
+L_Alreadystarted:
+    mes "[Brahdomir]";
+    mes "\"Please wait until the cave is clear again.\"";
+    goto L_Close;
+
+L_Cleanup:
+    pvpoff "doge-arena.gat";
+    set $@BRAHDOMIR_PVP_STATUS , 0;
+    set $@BRAHDOMIR_START_TIME, 0;
+    stopnpctimer;
+    end;
+
+L_Close:
+    close;
+}
