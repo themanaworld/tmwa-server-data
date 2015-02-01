@@ -4,7 +4,7 @@
 // state2: Cindy is saved, she gives you a reward (wizard hat or wooden staff)
 // state3: and greater: Cindy is saved, she asks you to visit them
 
-031-4.gat,42,42,0|script|Cindy|198
+031-4,42,42,0|script|Cindy|198
 {
     if ($@FIGHT_YETI_STATUS != 0) goto L_Yeti;
 
@@ -64,8 +64,8 @@ L_Try_Cage:
     set $@FIGHT_YETI_STATUS, 1;
     set $@FIGHT_YETI_WAVE, 0;
     set $@YETI_COUNT, 1;
-    set $@FIGHT_YETI_PLAYER_COUNT, getmapusers("031-4.gat");
-    areamonster "031-4.gat", 0, 0, 95, 91, "", 1072, 1, "Cindy::OnPetDeath";
+    set $@FIGHT_YETI_PLAYER_COUNT, getmapusers("031-4");
+    areamonster "031-4", 0, 0, 95, 91, "", 1072, 1, "Cindy::OnPetDeath";
 
     initnpctimer;
     goto L_Close;
@@ -145,7 +145,7 @@ OnTimer5000:
 
 L_Return_1:
     set $@FIGHT_YETI_PLAYER_COUNT, 0;
-    areatimer "031-4.gat", 0, 0, 95, 91, 10, "Cindy::OnTick";
+    areatimer "031-4", 0, 0, 95, 91, 10, "Cindy::OnTick";
     end;
 
 L_CaveLogic:
@@ -155,7 +155,7 @@ L_CaveLogic:
     if ($@FIGHT_YETI_PLAYER_COUNT <= 0)
         goto L_CleanUp;
     set $@FIGHT_YETI_ROUND_TIMER, $@FIGHT_YETI_ROUND_TIMER + 5; // Advance 5 seconds
-    if (mobcount("031-4.gat", "Cindy::OnPetDeath") < 0)
+    if (mobcount("031-4", "Cindy::OnPetDeath") < 0)
         goto L_NextWave;
     if ($@FIGHT_YETI_ROUND_TIMER + $@FIGHT_YETI_ROUND_PEN >= 120)
         goto L_NextWave;
@@ -171,19 +171,19 @@ L_NextWave:
         && $@FIGHT_YETI_WAVE < 22)
             goto L_Return_1;
     if ($@FIGHT_YETI_WAVE > 22)
-        areamonster "031-4.gat", 0, 0, 95, 91, "", 1072, $@FIGHT_YETI_WAVE*2 + $@FIGHT_YETI_PLAYER_COUNT*5, "Cindy::OnPetDeath";
+        areamonster "031-4", 0, 0, 95, 91, "", 1072, $@FIGHT_YETI_WAVE*2 + $@FIGHT_YETI_PLAYER_COUNT*5, "Cindy::OnPetDeath";
     if ($@FIGHT_YETI_WAVE > 22)
         set $@YETI_COUNT, $@YETI_COUNT + $@FIGHT_YETI_WAVE*2 + $@FIGHT_YETI_PLAYER_COUNT*5;
     set $@FIGHT_YETI_NUMBER, (5 + (1 * $@FIGHT_YETI_WAVE) + (2 * $@FIGHT_YETI_PLAYER_COUNT))/4;
     set $@YETI_COUNT, $@YETI_COUNT + $@FIGHT_YETI_NUMBER;
 
-    areamonster "031-4.gat", 0, 0, 95, 91, "", 1072, $@FIGHT_YETI_NUMBER, "Cindy::OnPetDeath";
+    areamonster "031-4", 0, 0, 95, 91, "", 1072, $@FIGHT_YETI_NUMBER, "Cindy::OnPetDeath";
 
     set $@msg$, $@FIGHT_YETI_MESSAGES$[$@FIGHT_YETI_WAVE];
     if ($@msg$ == "")
         goto L_Return_1;
-    mapannounce "031-4.gat", $@msg$, 0;
-    mapannounce "031-3.gat", $@msg$, 0;
+    mapannounce "031-4", $@msg$, 0;
+    mapannounce "031-3", $@msg$, 0;
     set $@msg$, "";
     goto L_Return_1;
 
@@ -198,7 +198,7 @@ OnPetDeath:
     end;
 
 L_CleanUp:
-    areatimer "031-4.gat", 0, 0, 95, 91, 10, "Cindy::OnReward";
+    areatimer "031-4", 0, 0, 95, 91, 10, "Cindy::OnReward";
     set $@FIGHT_YETI_STATUS, 0;
     set $@FIGHT_YETI_PLAYER_COUNT, 0;
     set $@FIGHT_YETI_WAVE, 0;
@@ -206,7 +206,7 @@ L_CleanUp:
     set $@YETI_COUNT, 0;
     set $@FIGHT_YETI_ROUND_PEN, 0;
     set $@FIGHT_YETI_NUMBER, 0;
-    killmonster "031-4.gat", "Cindy::OnPetDeath";
+    killmonster "031-4", "Cindy::OnPetDeath";
     stopnpctimer;
     setnpctimer 0;
     end;
