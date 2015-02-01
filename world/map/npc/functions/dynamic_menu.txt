@@ -1,0 +1,302 @@
+// Input: @items (array of items you want to choose from)
+//        @item_names$ (names of the items in @items)
+//        @default_choice$ (default option)
+// Return:  @item (The selected item, or 0 if the default/something invalid was chosen)
+//
+// NOTE: DynamicItemMenu is ONLY used for scripts that need to do math with @item like tailor, dyer, bleacher
+//       All other scripts should use DynamicItemMenu$
+
+function|script|DynamicItemMenu
+{
+set @items_nr, getarraysize(@items);
+if(@items_nr != getarraysize(@item_names$)) goto L_ArrayLengthMismatch;
+if(@default_choice$ == "") set @default_choice$, "Never mind.";
+goto L_pick_one_of_many_items;
+
+L_pick_one_of_many_items:
+    set @c, 0;
+    set @i, 0;
+
+    setarray @choice_n$, "", "", "", "", "", "", "", "",
+                             "", "", "", "", "", "", "", "",
+                             "", "", "", "", "", "", "", "",
+                             "", "", "", "", "", "", "", "";
+    goto L_pick_choice_loop;
+
+L_pick_choice_loop:
+    if (@i >= @items_nr)
+        goto L_choice_init_done;
+    set @current, @items[@i];
+    set @current_name$, @item_names$[@i];
+    set @current_index, @i;
+    set @i, @i + 1;
+
+    if (countitem(@current) == 0)
+        goto L_pick_choice_loop;
+    set @choice_v[@c], @current;
+    set @choice_n$[@c], @current_name$;
+    set @choice_i[@c], @current_index;
+    set @c, @c + 1;
+    goto L_pick_choice_loop;
+
+L_choice_init_done:
+    set @choice_v[@c], 0;
+    set @choice_n$[@c], @default_choice$;
+    set @c, @c + 1;
+
+    if (@c < 10)
+        menu
+            @choice_n$[0], L_MenuItems,
+            @choice_n$[1], L_MenuItems,
+            @choice_n$[2], L_MenuItems,
+            @choice_n$[3], L_MenuItems,
+            @choice_n$[4], L_MenuItems,
+            @choice_n$[5], L_MenuItems,
+            @choice_n$[6], L_MenuItems,
+            @choice_n$[7], L_MenuItems,
+            @choice_n$[8], L_MenuItems,
+            @choice_n$[9], L_MenuItems;
+    goto L_MenuItems;
+
+L_MenuItems:
+    if (@c < 10)
+        goto L_choice_join;
+
+    if (@c < 20)
+        menu
+            @choice_n$[0], L_MenuItems1,
+            @choice_n$[1], L_MenuItems1,
+            @choice_n$[2], L_MenuItems1,
+            @choice_n$[3], L_MenuItems1,
+            @choice_n$[4], L_MenuItems1,
+            @choice_n$[5], L_MenuItems1,
+            @choice_n$[6], L_MenuItems1,
+            @choice_n$[7], L_MenuItems1,
+            @choice_n$[8], L_MenuItems1,
+            @choice_n$[9], L_MenuItems1,
+            @choice_n$[10], L_MenuItems1,
+            @choice_n$[11], L_MenuItems1,
+            @choice_n$[12], L_MenuItems1,
+            @choice_n$[13], L_MenuItems1,
+            @choice_n$[14], L_MenuItems1,
+            @choice_n$[15], L_MenuItems1,
+            @choice_n$[16], L_MenuItems1,
+            @choice_n$[17], L_MenuItems1,
+            @choice_n$[18], L_MenuItems1,
+            @choice_n$[19], L_MenuItems1;
+    goto L_MenuItems1;
+
+L_MenuItems1:
+    if (@c < 20)
+        goto L_choice_join;
+
+    menu
+        @choice_n$[0], L_choice_join,
+        @choice_n$[1], L_choice_join,
+        @choice_n$[2], L_choice_join,
+        @choice_n$[3], L_choice_join,
+        @choice_n$[4], L_choice_join,
+        @choice_n$[5], L_choice_join,
+        @choice_n$[6], L_choice_join,
+        @choice_n$[7], L_choice_join,
+        @choice_n$[8], L_choice_join,
+        @choice_n$[9], L_choice_join,
+        @choice_n$[10], L_choice_join,
+        @choice_n$[11], L_choice_join,
+        @choice_n$[12], L_choice_join,
+        @choice_n$[13], L_choice_join,
+        @choice_n$[14], L_choice_join,
+        @choice_n$[15], L_choice_join,
+        @choice_n$[16], L_choice_join,
+        @choice_n$[17], L_choice_join,
+        @choice_n$[18], L_choice_join,
+        @choice_n$[19], L_choice_join,
+        @choice_n$[20], L_choice_join,
+        @choice_n$[21], L_choice_join,
+        @choice_n$[22], L_choice_join,
+        @choice_n$[23], L_choice_join,
+        @choice_n$[24], L_choice_join,
+        @choice_n$[25], L_choice_join,
+        @choice_n$[26], L_choice_join,
+        @choice_n$[27], L_choice_join,
+        @choice_n$[28], L_choice_join,
+        @choice_n$[29], L_choice_join,
+        @choice_n$[30], L_choice_join,
+        @choice_n$[31], L_choice_join;
+
+L_choice_join:
+    set @menu, @menu - 1;
+    set @item, @choice_v[@menu];
+    set @index, @choice_i[@menu];
+    if (@menu >= @c)
+        set @item, 0;
+    goto L_Clean;
+
+L_Clean:
+    set @menu, 0;
+    set @items_nr, 0;
+    set @c, 0;
+    set @i, 0;
+    set @current, 0;
+    set @current_name$, "";
+    cleararray @choice_v, 0, getarraysize(@choice_v);
+    cleararray @choice_n$, "", getarraysize(@choice_n$);
+    cleararray @choice_i, 0, getarraysize(@choice_i);
+    return;
+
+L_ArrayLengthMismatch:
+    debugmes "@items and @item_names$ array length mismatch";
+    mapexit;
+}
+
+
+
+
+// Input: @items$ (array of items you want to choose from)
+//        @item_names$ (names of the items in @items)
+//        @default_choice$ (default option)
+// Return:  @item$ (The selected item, or 0 if the default/something invalid was chosen)
+
+function|script|DynamicItemMenu$
+{
+set @items_nr, getarraysize(@items$);
+if(@items_nr != getarraysize(@item_names$)) goto L_ArrayLengthMismatch;
+if(@default_choice$ == "") set @default_choice$, "Never mind.";
+goto L_pick_one_of_many_items;
+
+L_pick_one_of_many_items:
+    set @c, 0;
+    set @i, 0;
+
+    setarray @choice_n$, "", "", "", "", "", "", "", "",
+                             "", "", "", "", "", "", "", "",
+                             "", "", "", "", "", "", "", "",
+                             "", "", "", "", "", "", "", "";
+    goto L_pick_choice_loop;
+
+L_pick_choice_loop:
+    if (@i >= @items_nr)
+        goto L_choice_init_done;
+    set @current$, @items$[@i];
+    set @current_name$, @item_names$[@i];
+    set @current_index, @i;
+    set @i, @i + 1;
+
+    if (countitem(@current$) == 0)
+        goto L_pick_choice_loop;
+    set @choice_v$[@c], @current$;
+    set @choice_n$[@c], @current_name$;
+    set @choice_i[@c], @current_index;
+    set @c, @c + 1;
+    goto L_pick_choice_loop;
+
+L_choice_init_done:
+    set @choice_v$[@c], "";
+    set @choice_n$[@c], @default_choice$;
+    set @c, @c + 1;
+
+    if (@c < 10)
+        menu
+            @choice_n$[0], L_MenuItems,
+            @choice_n$[1], L_MenuItems,
+            @choice_n$[2], L_MenuItems,
+            @choice_n$[3], L_MenuItems,
+            @choice_n$[4], L_MenuItems,
+            @choice_n$[5], L_MenuItems,
+            @choice_n$[6], L_MenuItems,
+            @choice_n$[7], L_MenuItems,
+            @choice_n$[8], L_MenuItems,
+            @choice_n$[9], L_MenuItems;
+    goto L_MenuItems;
+
+L_MenuItems:
+    if (@c < 10)
+        goto L_choice_join;
+
+    if (@c < 20)
+        menu
+            @choice_n$[0], L_MenuItems1,
+            @choice_n$[1], L_MenuItems1,
+            @choice_n$[2], L_MenuItems1,
+            @choice_n$[3], L_MenuItems1,
+            @choice_n$[4], L_MenuItems1,
+            @choice_n$[5], L_MenuItems1,
+            @choice_n$[6], L_MenuItems1,
+            @choice_n$[7], L_MenuItems1,
+            @choice_n$[8], L_MenuItems1,
+            @choice_n$[9], L_MenuItems1,
+            @choice_n$[10], L_MenuItems1,
+            @choice_n$[11], L_MenuItems1,
+            @choice_n$[12], L_MenuItems1,
+            @choice_n$[13], L_MenuItems1,
+            @choice_n$[14], L_MenuItems1,
+            @choice_n$[15], L_MenuItems1,
+            @choice_n$[16], L_MenuItems1,
+            @choice_n$[17], L_MenuItems1,
+            @choice_n$[18], L_MenuItems1,
+            @choice_n$[19], L_MenuItems1;
+    goto L_MenuItems1;
+
+L_MenuItems1:
+    if (@c < 20)
+        goto L_choice_join;
+
+    menu
+        @choice_n$[0], L_choice_join,
+        @choice_n$[1], L_choice_join,
+        @choice_n$[2], L_choice_join,
+        @choice_n$[3], L_choice_join,
+        @choice_n$[4], L_choice_join,
+        @choice_n$[5], L_choice_join,
+        @choice_n$[6], L_choice_join,
+        @choice_n$[7], L_choice_join,
+        @choice_n$[8], L_choice_join,
+        @choice_n$[9], L_choice_join,
+        @choice_n$[10], L_choice_join,
+        @choice_n$[11], L_choice_join,
+        @choice_n$[12], L_choice_join,
+        @choice_n$[13], L_choice_join,
+        @choice_n$[14], L_choice_join,
+        @choice_n$[15], L_choice_join,
+        @choice_n$[16], L_choice_join,
+        @choice_n$[17], L_choice_join,
+        @choice_n$[18], L_choice_join,
+        @choice_n$[19], L_choice_join,
+        @choice_n$[20], L_choice_join,
+        @choice_n$[21], L_choice_join,
+        @choice_n$[22], L_choice_join,
+        @choice_n$[23], L_choice_join,
+        @choice_n$[24], L_choice_join,
+        @choice_n$[25], L_choice_join,
+        @choice_n$[26], L_choice_join,
+        @choice_n$[27], L_choice_join,
+        @choice_n$[28], L_choice_join,
+        @choice_n$[29], L_choice_join,
+        @choice_n$[30], L_choice_join,
+        @choice_n$[31], L_choice_join;
+
+L_choice_join:
+    set @menu, @menu - 1;
+    set @item$, @choice_v$[@menu];
+    set @index, @choice_i[@menu];
+    if (@menu >= @c)
+        set @item$, "";
+    goto L_Clean;
+
+L_Clean:
+    set @menu, 0;
+    set @items_nr, 0;
+    set @c, 0;
+    set @current_index, 0;
+    set @i, 0;
+    set @current$, 0;
+    set @current_name$, "";
+    cleararray @choice_v$, "", getarraysize(@choice_v$);
+    cleararray @choice_n$, "", getarraysize(@choice_n$);
+    cleararray @choice_i, 0, getarraysize(@choice_i);
+    return;
+
+L_ArrayLengthMismatch:
+    debugmes "@items$ and @item_names$ array length mismatch";
+    mapexit;
+}

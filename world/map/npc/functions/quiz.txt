@@ -1,0 +1,93 @@
+function|script|MultiQuiz
+{
+    if((getarraysize(@quiz_answers$) != getarraysize(@quiz_questions$)) ||
+        (@quiz_answers$[0] == "") || (@quiz_questions$[0] == "")) goto L_ArrayError;
+    set @setindex, 1;
+    set @index, rand(0,(getarraysize(@quiz_answers$) - 1));
+    set @question$, @quiz_questions$[@index];
+    mes "\""+ @question$ + "\"";
+    next;
+    mes "Pick the correct answer.";
+    callfunc "Quiz";
+    return;
+
+L_ArrayError:
+    if(@quiz_answers$[0] == "") debugmes "@quiz_answers$ is empty";
+    if(@quiz_questions$[0] == "") debugmes "@quiz_questions$ is empty";
+    if(getarraysize(@quiz_answers$) != getarraysize(@quiz_questions$)) debugmes "Size of @quiz_answers$ is not equal to size of @quiz_questions$";
+    mapexit;
+}
+
+function|script|Quiz
+{
+    if((@choices_nr < 1) || (@choices_nr > 8)) set @choices_nr, 3;
+    if(@choices_nr > getarraysize(@quiz_answers$)) set @choices_nr, getarraysize(@quiz_answers$);
+    if(@quiz_answers$[0] == "") goto L_ArrayError;
+    set @success, 0;
+    if(@setindex < 1) set @index, @answer;
+    set @good, rand(0,(@choices_nr - 1));
+    setarray @choices$, "";
+    cleararray @choices$, "", getarraysize(@choices$);
+    set @loop, 0;
+    goto L_Shuffle;
+
+L_Shuffle:
+    set @nindex, rand(0,(getarraysize(@quiz_answers$) - 1));
+    if(@nindex == @index) goto L_Shuffle; // do not get the good definition
+    set @loop2, 0;
+    goto L_Search;
+
+L_Search:
+    if(@choices$[@loop2] == @quiz_answers$[@nindex]) goto L_Shuffle; // array is already populated with this choice
+    if(@loop2 >= (@choices_nr - 1)) goto L_Shuffle2;
+    set @loop2, @loop2 + 1;
+    goto L_Search;
+
+L_Shuffle2:
+    set @choices$[@loop], @quiz_answers$[@nindex];
+    if(@loop >= (@choices_nr - 1)) goto L_Answer;
+    set @loop, @loop + 1;
+    goto L_Shuffle;
+
+L_Answer:
+    set @choices$[@good], @quiz_answers$[@index]; // set the good definition
+    menu
+        @choices$[0], L_Enter,
+        @choices$[1], L_Enter,
+        @choices$[2], L_Enter,
+        @choices$[3], L_Enter,
+        @choices$[4], L_Enter,
+        @choices$[5], L_Enter,
+        @choices$[6], L_Enter,
+        @choices$[7], L_Enter;
+
+L_Enter:
+    if(@menu != (@good + 1)) goto L_Shift;
+    set @success, 1;
+    goto L_Shift;
+
+L_Shift:
+    if(@shift < @index) set @shift, @index;
+
+    if(@shift == @index) set @quiz_answers$[@index], ""; // do not allow twice the same question
+
+    if((@quiz_questions$[0] != "") && (@shift == @index)) set @quiz_questions$[@index], "";
+    if((@quiz_questions$[0] != "") && (@quiz_questions$[(@shift + 1)] != "")) set @quiz_questions$[@shift], @quiz_questions$[(@shift + 1)];
+    if((@quiz_questions$[0] != "") && (@quiz_questions$[(@shift + 1)] != "")) set @quiz_questions$[(@shift + 1)], "";
+
+    if(@quiz_answers$[(@shift + 1)] != "") set @quiz_answers$[@shift], @quiz_answers$[(@shift + 1)];
+    if(@quiz_answers$[(@shift + 1)] != "") set @quiz_answers$[(@shift + 1)], "";
+
+    set @shift, @shift + 1;
+    if(@quiz_answers$[(@shift + 1)] != "") goto L_Shift;
+    set @shift, 0;
+    goto L_Close;
+
+L_Close:
+    set @answer, 0;
+    return;
+
+L_ArrayError:
+    if(@quiz_answers$[0] == "") debugmes "@quiz_answers$ is empty";
+    mapexit;
+}
