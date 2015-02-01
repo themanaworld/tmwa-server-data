@@ -32,7 +32,7 @@
 // that's the only reason I didn't make that one a local variable like it really is
 
 
-033-1.gat,74,32,0|script|Kimarr|218
+033-1,74,32,0|script|Kimarr|218
 {
     set @halloween_npc_id, $@halloween_npc_kimarr;
     callfunc "TrickOrTreat";
@@ -166,7 +166,7 @@ L_Game:
     set $@Fluffy_Time, 180;
     set $@Fluffy_Min, 1 + (BaseLevel*7)/10;
 
-    warp "033-1.gat", 79, 34;
+    warp "033-1", 79, 34;
     initnpctimer;
     goto L_Close;
 
@@ -190,13 +190,13 @@ L_Action:
     if (attachrid($@Fluffy_FighterID) == 0)
         goto L_GotOut;
 // Checking if player is still in the map or used a towel or spell to get out
-    if (getareausers("033-1.gat", 79, 28, 88, 42) == 0)
+    if (getareausers("033-1", 79, 28, 88, 42) == 0)
         goto L_GotOut;
     if (PC_DIE_COUNTER > $@Fluffy_PC_Deaths)
         goto L_Died;
 // Checking if there is more than 1 player in the fight area
-    if (getareausers("033-1.gat", 79, 28, 88, 42) > 1)
-        areatimer "033-1.gat", 79, 28, 88, 42, 10, "Kimarr::OnTooMany";
+    if (getareausers("033-1", 79, 28, 88, 42) > 1)
+        areatimer "033-1", 79, 28, 88, 42, 10, "Kimarr::OnTooMany";
 
     if ($@Fluffy_Time == 180)
         npctalk strcharinfo(0) + ", you have 3 minutes.";
@@ -230,11 +230,11 @@ OnTooMany:
     if (getcharid(3) == $@Fluffy_FighterID)
         end;
     npctalk "Hey " + strcharinfo(0) + "! What are you doing there? This hunt is for " + $@Fluffy_Fighter$ + " alone!";
-    warp "033-1.gat", 77, 34;
+    warp "033-1", 77, 34;
     end;
 
 L_Died:
-    warp "033-1.gat", 77, 34;
+    warp "033-1", 77, 34;
     message strcharinfo(0), "You are dead.";
     npctalk "Oh no! " + $@Fluffy_Fighter$ + " got overwhelmed!";
     callsub S_Clean;
@@ -245,10 +245,10 @@ L_TimeOver:
     goto L_MaybeRecordScore;
 
 L_CheckDrops:
-    set @Fluffy_RedApple,      getareadropitem("033-1.gat", 79, 29, 88, 42, "RedApple", 1);
-    set @Fluffy_XmasCake,      getareadropitem("033-1.gat", 79, 29, 88, 42, "XmasCake", 1);
-    set @Fluffy_Cake,          getareadropitem("033-1.gat", 79, 29, 88, 42, "Cake", 1);
-    set @Fluffy_GreenApple,    getareadropitem("033-1.gat", 79, 29, 88, 42, "GreenApple", 1);
+    set @Fluffy_RedApple,      getareadropitem("033-1", 79, 29, 88, 42, "RedApple", 1);
+    set @Fluffy_XmasCake,      getareadropitem("033-1", 79, 29, 88, 42, "XmasCake", 1);
+    set @Fluffy_Cake,          getareadropitem("033-1", 79, 29, 88, 42, "Cake", 1);
+    set @Fluffy_GreenApple,    getareadropitem("033-1", 79, 29, 88, 42, "GreenApple", 1);
     if (@Fluffy_RedApple || @Fluffy_XmasCake || @Fluffy_Cake || @Fluffy_GreenApple)
         goto L_BeginHunting;
     goto L_ContinueTimer;
@@ -265,15 +265,15 @@ L_BeginHunting:
     goto L_SpawnFluffies;
 
 L_SpawnFluffies:
-    areamonster "033-1.gat", 79, 29, 88, 42, "", 1089, $@Fluffy_Spawn, "Kimarr::OnFluffyDeath";
+    areamonster "033-1", 79, 29, 88, 42, "", 1089, $@Fluffy_Spawn, "Kimarr::OnFluffyDeath";
 
     set $@Fluffy_Extra, 5 * @Fluffy_XmasCake + 3 * @Fluffy_Cake + 12 * ($@Fluffy_Alive + $@Fluffy_Spawn) + 7 * BaseLevel;
     if ((BaseLevel > 40) && (rand($@Fluffy_Extra) > 500)) // Ice Goblin
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1058, 1, "Kimarr::OnIceGoblinDeath";
+        areamonster "033-1", 79, 29, 88, 42, "", 1058, 1, "Kimarr::OnIceGoblinDeath";
     if ((BaseLevel > 60) && (rand($@Fluffy_Extra) > 550)) // Wolvern
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1090, 1, "Kimarr::OnWolvernDeath";
+        areamonster "033-1", 79, 29, 88, 42, "", 1090, 1, "Kimarr::OnWolvernDeath";
     if ((BaseLevel > 70) && (rand($@Fluffy_Extra) > 600)) // Yeti
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1072, 1, "Kimarr::OnYetiDeath";
+        areamonster "033-1", 79, 29, 88, 42, "", 1072, 1, "Kimarr::OnYetiDeath";
 
     set $@Fluffy_Extra, 0;
     set @Fluffy_RedApple, 0;
@@ -321,13 +321,13 @@ OnFluffyDeath:
 
 L_Punish:
     if (@MobID == 1089)
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1089, 1, "Kimarr::OnFluffyDeath";
+        areamonster "033-1", 79, 29, 88, 42, "", 1089, 1, "Kimarr::OnFluffyDeath";
     if (@MobID == 1058)
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1058, 1, "Kimarr::OnIceGoblinDeath";
+        areamonster "033-1", 79, 29, 88, 42, "", 1058, 1, "Kimarr::OnIceGoblinDeath";
     if (@MobID == 1090)
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1090, 1, "Kimarr::OnWolvernDeath";
+        areamonster "033-1", 79, 29, 88, 42, "", 1090, 1, "Kimarr::OnWolvernDeath";
     if (@MobID == 1072)
-        areamonster "033-1.gat", 79, 29, 88, 42, "", 1072, 1, "Kimarr::OnYetiDeath";
+        areamonster "033-1", 79, 29, 88, 42, "", 1072, 1, "Kimarr::OnYetiDeath";
 
     npctalk strcharinfo(0) + "! This hunt is for " + $@Fluffy_Fighter$ + " alone!";
     percentheal -100, 0;
@@ -348,15 +348,15 @@ S_Clean:
     set $@Fluffy_Kills, 0;
     set $@Fluffy_Spawn, 0;
     set $@Fluffy_Alive, 0;
-    killmonster "033-1.gat", "Kimarr::OnIceGoblinDeath";
-    killmonster "033-1.gat", "Kimarr::OnWolvernDeath";
-    killmonster "033-1.gat", "Kimarr::OnYetiDeath";
-    killmonster "033-1.gat", "Kimarr::OnFluffyDeath";
+    killmonster "033-1", "Kimarr::OnIceGoblinDeath";
+    killmonster "033-1", "Kimarr::OnWolvernDeath";
+    killmonster "033-1", "Kimarr::OnYetiDeath";
+    killmonster "033-1", "Kimarr::OnFluffyDeath";
     set @state, 0;
     return;
 
 L_MaybeRecordScore:
-    warp "033-1.gat", 77, 34;
+    warp "033-1", 77, 34;
     if ($@Fluffy_Kills < $@Fluffy_Min)
         goto L_NotGoodEnough;
     set @rank, 0;

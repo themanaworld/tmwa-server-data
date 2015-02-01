@@ -1,5 +1,5 @@
 // Parua's fight
-029-3.gat,50,25,0|script|Parua|183
+029-3,50,25,0|script|Parua|183
 {
     set $@candor_npctalk$, "The dungeon is now ready for its next victims.";
     donpcevent "#CandorAnnouncer::OnCommandTalk";
@@ -33,7 +33,7 @@ L_Fine:
     goto L_Paying;
 
 L_Paying:
-    if (getmapusers("029-3.gat") < 5)
+    if (getmapusers("029-3") < 5)
         goto L_NotEnoughPlayers;
     if (Zeny < @FIGHT_CAVE_COST)
         goto L_NotEnough;
@@ -47,12 +47,12 @@ L_Paying:
     goto L_StartFight;
 
 L_StartFight:
-    if (getmapusers("029-3.gat") < 5)
+    if (getmapusers("029-3") < 5)
         goto L_NotEnoughPlayers;
     npctalk "Let the battle begin!";
     set $@FIGHT_CAVE_STATUS, 1;
     set $@FIGHT_CAVE_LEVEL, 1;
-    set $@FIGHT_CAVE_PLAYER_COUNT, getmapusers("029-3.gat");
+    set $@FIGHT_CAVE_PLAYER_COUNT, getmapusers("029-3");
     startnpctimer;
     goto L_Exit;
 
@@ -80,7 +80,7 @@ L_TimeFightStart:
 // Do not charge the money if the fight or the announces were already started by someone else
     if ($@FIGHT_CAVE_STATUS != 0)
         goto L_AlreadyStarted;
-    if (getmapusers("029-3.gat") < 5)
+    if (getmapusers("029-3") < 5)
         goto L_NotEnoughPlayers;
     if (Zeny < @FIGHT_CAVE_COST + @FIGHT_CAVE_ANNOUNCE_COST)
         goto L_NotEnough_Announce;
@@ -172,7 +172,7 @@ L_Stuck:
         "I changed my mind.", L_Exit;
 
 L_Warp:
-    warp "005-3.gat", 86, 34;
+    warp "005-3", 86, 34;
     goto L_Exit;
 
 L_Exit:
@@ -189,7 +189,7 @@ OnTimer5000:
 
 L_Return_1:
     set $@FIGHT_CAVE_PLAYER_COUNT, 0;
-    areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::OnTick";
+    areatimer "029-3", 20, 20, 70, 60, 10, "Parua::OnTick";
     end;
 
 L_CaveLogic:
@@ -199,7 +199,7 @@ L_CaveLogic:
     if ($@FIGHT_CAVE_PLAYER_COUNT <= 0)
         goto L_CleanUp;
     set $@FIGHT_CAVE_ROUND_TIMER, $@FIGHT_CAVE_ROUND_TIMER + 5; // Advance 5 seconds
-    if (mobcount("029-3.gat", "Parua::OnPetDeath") <= 0)
+    if (mobcount("029-3", "Parua::OnPetDeath") <= 0)
         goto L_NextRound;
     if ($@FIGHT_CAVE_ROUND_TIMER + $@FIGHT_CAVE_ROUND_PEN >= 120)
         goto L_NextRound;
@@ -217,11 +217,11 @@ L_NextRound:
         goto L_CleanUp;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_LEVEL;
 
-    areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::OnNewRound";
+    areatimer "029-3", 20, 20, 70, 60, 10, "Parua::OnNewRound";
 
     set $@candor_npctalk$, "The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive.";
     donpcevent "#CandorAnnouncer::OnCommandTalk";
-    mapannounce "029-3.gat", "Parua: The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive." , 0;
+    mapannounce "029-3", "Parua: The next round (level " + $@FIGHT_CAVE_LEVEL + ") is starting with " + $@FIGHT_CAVE_PLAYER_COUNT + " player(s) left alive." , 0;
 
     set $@MOB_1_SUMMON, 0;
     set $@MOB_2_SUMMON, 0;
@@ -253,7 +253,7 @@ L_Summon:
     goto L_Return_1;
 
 L_GlobalAnnounce:
-    set $@FIGHT_CAVE_PLAYER_COUNT, getmapusers("029-3.gat");
+    set $@FIGHT_CAVE_PLAYER_COUNT, getmapusers("029-3");
     if ($@FIGHT_CAVE_STATUS == 3)
         goto L_Five_Minutes;
     if ($@FIGHT_CAVE_STATUS == 4)
@@ -292,37 +292,37 @@ L_Fifteen_Minutes:
 L_MOB1:
     set $@MOB_1_SUMMON, $@MOB_1_SUMMON + 1;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 243;
-    areamonster "029-3.gat", 20, 20, 70, 60, "", 1022, 1, "Parua::OnPetDeath";
+    areamonster "029-3", 20, 20, 70, 60, "", 1022, 1, "Parua::OnPetDeath";
     goto L_Summon;
 
 L_MOB2:
     set $@MOB_2_SUMMON, $@MOB_2_SUMMON + 1;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 81;
-    areamonster "029-3.gat", 20, 20, 70, 60, "", 1045, 1, "Parua::OnPetDeath";
+    areamonster "029-3", 20, 20, 70, 60, "", 1045, 1, "Parua::OnPetDeath";
     goto L_Summon;
 
 L_MOB3:
     set $@MOB_3_SUMMON, $@MOB_3_SUMMON + 1;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 27;
-    areamonster "029-3.gat", 20, 20, 70, 60, "", 1024, 1, "Parua::OnPetDeath";
+    areamonster "029-3", 20, 20, 70, 60, "", 1024, 1, "Parua::OnPetDeath";
     goto L_Summon;
 
 L_MOB4:
     set $@MOB_4_SUMMON, $@MOB_4_SUMMON + 1;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 9;
-    areamonster "029-3.gat", 20, 20, 70, 60, "", 1043, 1, "Parua::OnPetDeath";
+    areamonster "029-3", 20, 20, 70, 60, "", 1043, 1, "Parua::OnPetDeath";
     goto L_Summon;
 
 L_MOB5:
     set $@MOB_5_SUMMON, $@MOB_5_SUMMON + 1;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 3;
-    areamonster "029-3.gat", 20, 20, 70, 60, "", 1010, 1, "Parua::OnPetDeath";
+    areamonster "029-3", 20, 20, 70, 60, "", 1010, 1, "Parua::OnPetDeath";
     goto L_Summon;
 
 L_MOB6:
     set $@MOB_6_SUMMON, $@MOB_6_SUMMON + 1;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_POINTS - 1;
-    areamonster "029-3.gat", 20, 20, 70, 60, "", 1008, 1, "Parua::OnPetDeath";
+    areamonster "029-3", 20, 20, 70, 60, "", 1008, 1, "Parua::OnPetDeath";
     goto L_Summon;
 
 // Called on each player once every 5 seconds
@@ -362,13 +362,13 @@ L_CleanUp:
     npctalk "Game Over";
     set $@candor_npctalk$, "The dungeon is now ready for its next victims.";
     donpcevent "#CandorAnnouncer::OnCommandTalk";
-    areatimer "029-3.gat", 20, 20, 70, 60, 10, "Parua::OnReward";
+    areatimer "029-3", 20, 20, 70, 60, 10, "Parua::OnReward";
     set $@FIGHT_CAVE_STATUS, 0;
     set $@FIGHT_CAVE_PAID, 0;
     set $@FIGHT_CAVE_PLAYER_COUNT, 0;
     set $@FIGHT_CAVE_LEVEL, 1;
     set $@FIGHT_CAVE_ROUND_TIMER, 0;
-    killmonster "029-3.gat", "Parua::OnPetDeath";
+    killmonster "029-3", "Parua::OnPetDeath";
     stopnpctimer;
     setnpctimer 0;
     end;
