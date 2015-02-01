@@ -44,12 +44,11 @@ L_Error2:
 
 
 // Starting Barrier / Quest Entrance
-009-4.gat,37,120,0|script|#OrumCaveStartBarrier|127,1,0
+009-4.gat,37,119,0|script|#OrumCaveStartMessage|127,0,0
 {
-    if (OrumQuest >= 3) close;
+    if (OrumQuest >= 3) end;
     if (OrumQuest == 2) goto L_Started;
 
-    warp "009-4.gat", 37, 118;
     mes "As you try to pass, two torches begin to flare and push you back. They seem to form some kind of barrier.";
     close;
 
@@ -59,8 +58,15 @@ L_Started:
     close;
 }
 
+009-4.gat,37,120,0|script|#OrumCaveStartBarrier|127,0,0
+{
+    if (OrumQuest >= 3) end;
+    warp "009-4.gat", 37, 118;
+    end;
+}
+
 // First Barrier
-009-4.gat,57,29,0|script|#OrumCaveFirstBarrier|127,1,0
+009-4.gat,57,29,0|script|#OrumCaveFirstBarrier|127,0,0
 {
     if (OrumQuest >= 5) close;
 
@@ -70,7 +76,7 @@ L_Started:
 }
 
 // Second Barrier
-009-4.gat,61,54,0|script|#OrumCaveSecondBarrier|127,1,0
+009-4.gat,61,55,0|script|#OrumCaveSecondMessage|127,0,0
 {
     if (OrumQuest == 3) set OrumQuest, 4;
 
@@ -81,7 +87,6 @@ L_Started:
     if (OrumQuest > 7 && @TorchColor == @BarrierColor)
         goto L_Allow_Second_Passage;
 
-    warp "009-4.gat", 60, 56;
     mes "As you try to pass, the torches begin to flare and push you back. Perhaps there's a way to get past it.";
     mes "";
     setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
@@ -90,18 +95,29 @@ L_Started:
 
 L_Allow_Second_Passage:
     if (OrumQuest < 9) goto L_Advance_Quest;
-    close;
+    end;
 
 L_Advance_Quest:
     message strcharinfo(0), "The torches dim as you enter like the first. You must be on the right trail.";
     set OrumQuest, 9;
-    close;
+    end;
+}
+
+009-4.gat,61,54,0|script|#OrumCaveSecondBarrier|127,0,0
+{
+    if (OrumQuest >= 9) end;
+    warp "009-4.gat", 60, 56;
+    end;
 }
 
 // Third Barrier
-009-4.gat,24,66,0|script|#OrumCaveThirdBarrier|127,1,0
+009-4.gat,24,65,0|script|#OrumCaveThirdMessage|127,0,0
 {
     if (OrumQuest == 3) set OrumQuest, 4;
+    if (OrumQuest > 8 && @Torch1Color == @firstColor && @Torch2Color == @secondColor)
+        goto L_Allow_Third_Passage;
+    if (OrumQuest > 8 && @Torch2Color == @firstColor && @Torch1Color == @secondColor)
+        goto L_Allow_Third_Passage;
 
     set @Barrier, 1;
     callfunc("GetBarrierColor");
@@ -121,12 +137,6 @@ L_Advance_Quest:
     if (@secondColor > 12)
         set @secondColor, 1;
 
-    if (OrumQuest > 8 && @Torch1Color == @firstColor && @Torch2Color == @secondColor)
-        goto L_Allow_Third_Passage;
-    if (OrumQuest > 8 && @Torch2Color == @firstColor && @Torch1Color == @secondColor)
-        goto L_Allow_Third_Passage;
-
-    warp "009-4.gat", 23, 64;
     mes "As you try to pass, the torches begin to flare and push you back. Perhaps there is a way to get past it.";
     mes "";
     setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
@@ -135,17 +145,24 @@ L_Advance_Quest:
 
 L_Allow_Third_Passage:
     if (OrumQuest < 10) goto L_Advance_Quest;
-    close;
+    end;
 
 L_Advance_Quest:
     set OrumQuest, 10;
-    close;
+    end;
+}
+
+009-4.gat,24,66,0|script|#OrumCaveThirdBarrier|127,0,0
+{
+    if (OrumQuest >= 10) end;
+    warp "009-4.gat", 23, 64;
+    end;
 }
 
 // Ending Barrier
-009-4.gat,48,38,0|script|#OrumCaveEndBarrier|127,1,0
+009-4.gat,48,37,0|script|#OrumCaveEndMessage|127,0,0
 {
-    if (OrumQuest >= 11) close;
+    if (OrumQuest >= 11) end;
     if (OrumQuest == 3) set OrumQuest, 4;
 
     set @Barrier, 2;
@@ -239,7 +256,6 @@ L_Advance_Quest:
     goto L_Deny_Final_Passage;
 
 L_Deny_Final_Passage:
-    warp "009-4.gat", 47, 36;
     mes "As you try to pass, the torches begin to flare and push you back. Perhaps there is a way to get past it.";
     mes "";
     setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
@@ -254,4 +270,11 @@ L_Advance_Quest:
     message strcharinfo(0), "The torches dim as you enter. At last you finally have access!";
     set OrumQuest, 11;
     close;
+}
+
+009-4.gat,48,38,0|script|#OrumCaveEndBarrier|127,0,0
+{
+    if (OrumQuest >= 11) end;
+    warp "009-4.gat", 47, 36;
+    end;
 }
