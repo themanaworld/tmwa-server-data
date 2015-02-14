@@ -55,7 +55,7 @@ L_DeveloperBoard:
 
 L_Introduce:
     if (@illia_go_find_items)
-        goto L_AskTeleportSpellItems;
+        goto L_AskItems;
     if (@illia_know_witch == 1)
         goto L_QuickIntroduce;
     mes "[Valia]";
@@ -128,7 +128,7 @@ L_Next3:
     next;
 
     if (getusers(1) < 4)
-        goto L_NotEnoughPeopleAvailable;
+        goto L_NotPeepAv;
 
     mes "[Valia]";
     mes "\"Do you know such people?\"";
@@ -141,48 +141,48 @@ L_Next4:
     mes "\"Good.";
     mes "I can teleport all of you close to that waterfall, but for that, I will need " + @illia_sapphire_powder + " bags of Sapphire Powder, " + @illia_amethyst_powder + " of Amethyst Powder, " + @illia_iron_powder + " Iron Powders," + @illia_yeti_tear + " Frozen Yeti Tear and " + @illia_iced_water + " bottles of Iced Water.\"";
     menu
-        "I have them here.", L_CheckTeleportSpellItems,
-        "I don't have them, but I'll try to find.", L_NoTeleportSpellItems;
+        "I have them here.", L_CheckItems,
+        "I don't have them, but I'll try to find.", L_NoItems;
 
-L_NotEnoughPeopleAvailable:
+L_NotPeepAv:
     mes "[Valia]";
     mes "\"But it seems there are not enough people around.";
     mes "Come back later.\"";
     close;
 
-L_AskTeleportSpellItems:
+L_AskItems:
     mes "[Valia]";
     mes "\"So, did you bring me what I need?\"";
     menu
-        "Hum, I forgot what you asked...", L_RepeatTeleportSpellItems,
-        "Here they are!", L_CheckTeleportSpellItems;
+        "Hum, I forgot what you asked...", L_RepeatItems,
+        "Here they are!", L_CheckItems;
 
-L_RepeatTeleportSpellItems:
+L_RepeatItems:
     mes "[Valia]";
     mes "\"I need " + @illia_sapphire_powder + " bags of Sapphire Powder, " + @illia_amethyst_powder + " of Amethyst Powder, " + @illia_iron_powder + " Iron Powders," + @illia_yeti_tear + " Frozen Yeti Tear and " + @illia_iced_water + " bottles of Iced Water.\"";
     next;
     mes "\"Hurry up.\"";
     close;
 
-L_NoTeleportSpellItems:
+L_NoItems:
     set @illia_go_find_items, 1;
     close;
 
-L_MissingTeleportSpellItems:
+L_MissingItems:
     mes "[Valia]";
     mes "\"Obviously you are missing some of the components.";
     mes "Go find the missing ones, fast. We lack time!\"";
     set @illia_go_find_items, 1;
     close;
 
-L_CheckTeleportSpellItems:
+L_CheckItems:
     if (
         (countitem ("SapphirePowder") < @illia_sapphire_powder) ||
         (countitem ("AmethystPowder") < @illia_amethyst_powder) ||
         (countitem ("IronPowder") < @illia_iron_powder) ||
         (countitem ("FrozenYetiTear") < @illia_yeti_tear) ||
         (countitem ("IcedWater") < @illia_iced_water)
-        ) goto L_MissingTeleportSpellItems;
+        ) goto L_MissingItems;
     // someone started the quest in the meantime, so we cancel this one.
     if ($@ILLIA_STATUS > 0)
         goto L_Interrupt;
@@ -432,7 +432,7 @@ L_Next5:
         (countitem ("IronPowder") < @illia_iron_powder) ||
         (countitem ("FrozenYetiTear") < @illia_yeti_tear) ||
         (countitem ("IcedWater") < @illia_iced_water)
-        ) goto L_MissingTeleportSpellItems;
+        ) goto L_MissingItems;
     delitem "SapphirePowder", @illia_sapphire_powder;
     delitem "AmethystPowder", @illia_amethyst_powder;
     delitem "IronPowder", @illia_iron_powder;
@@ -545,7 +545,7 @@ L_ReactToPlayersReturn:
     // the rings will have deleted their memories.
     // So the same dialog can apply.
     if ($@illia_progress < 8)
-        goto L_DisappointedByHeroFail;
+        goto L_Disappoint;
     if ($@illia_progress == 8)
         goto L_SurprisedByHeroWin;
     end;
@@ -555,7 +555,7 @@ L_SurprisedByHeroWin:
     emotion EMOTE_SURPRISE;
     goto L_EndQuest;
 
-L_DisappointedByHeroFail:
+L_Disappoint:
     npctalk "Oh no... It seems " + $@ILLIA_HERO$ + " did not make it... Who will save my sister now?";
     emotion EMOTE_SAD;
     goto L_EndQuest;
@@ -742,7 +742,7 @@ OnTimer4500:
     // send a message to all the helpers
     setarray $@illia_helpers$, $@ILLIA_HELPER1$,$@ILLIA_HELPER2$,$@ILLIA_HELPER3$;
     set $@illia_helper_index,0;
-    goto L_CheckHelperNeedNotification;
+    goto L_HelperNotification;
 
 OnTimer6500:
     if ($@ILLIA_STATUS < 254)
@@ -758,9 +758,9 @@ OnTimer6500:
     set $@illia_players_in_luvia_territory, 0;
     end;
 
-L_CheckHelperNeedNotification:
+L_HelperNotification:
     if ($@illia_helper_index >= 4)
-        goto L_CleanHelpersNotifications;
+        goto L_CleanHelpers;
     set $@illia_helper$, $@illia_helpers$[$@illia_helper_index];
     if (isloggedin(getcharid(3, $@illia_helper$)) == 0)
         goto L_NextHelperToNotify;
@@ -778,9 +778,9 @@ L_CheckHelperNeedNotification:
 
 L_NextHelperToNotify:
     set $@illia_helper_index, $@illia_helper_index + 1;
-    goto L_CheckHelperNeedNotification;
+    goto L_HelperNotification;
 
-L_CleanHelpersNotifications:
+L_CleanHelpers:
     cleararray $@illia_helpers$, "", 3;
     set $@illia_helper$, "";
     set $@illia_helper_index,0;

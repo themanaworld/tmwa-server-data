@@ -42,7 +42,7 @@
 
     if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED) goto L_Rewarded;
     if (QUEST_Airlia == @Q_STATUS_HELP_AIRLIA) goto L_Fetch;
-    if (QUEST_Graveyard_Caretaker > @Q_STATUS_RECIEVED_FIRST_LETTER) goto L_Airlia_intro;
+    if (QUEST_Graveyard_Caretaker > @Q_STATUS_RECIEVED_FIRST_LETTER) goto L_intro;
     goto L_Caretaker;
 
 L_Caretaker:
@@ -52,12 +52,12 @@ L_Caretaker:
     if (QUEST_Graveyard_Caretaker < @Q_STATUS_RECIEVED_FIRST_LETTER)
         menu
             "Sorry, no.", L_Next,
-            "My what?", L_Caretaker_mount;
+            "My what?", L_mount;
     if (QUEST_Graveyard_Caretaker == @Q_STATUS_RECIEVED_FIRST_LETTER)
         menu
             "Sorry, no.", L_Next,
-            "I have a letter from your father.", L_Caretaker_first_reward,
-            "My what?", L_Caretaker_mount;
+            "I have a letter from your father.", L_first_reward,
+            "My what?", L_mount;
     goto L_Next;
 
 L_Next:
@@ -65,12 +65,12 @@ L_Next:
     mes "\"Nobody ever does...\"";
     close;
 
-L_Caretaker_mount:
+L_mount:
     // The mention of mounts will certainly gather some interest from players,
     // this section may be extended.
     close;
 
-L_Caretaker_first_reward:
+L_first_reward:
     mes "[Airlia]";
     mes "\"Oh! Thank you very, very much! Please take this for your trouble.\"";
     if (@LETTER_REWARD_GOLD_INITIAL > 0)
@@ -82,7 +82,7 @@ L_Caretaker_first_reward:
     set QUEST_Graveyard_Caretaker, @Q_STATUS_DELIVERED_FIRST_LETTER;
     close;
 
-L_Caretaker_later_rewards:
+L_later_rewards:
     mes "[Airlia]";
     mes "\"Oh! Thank you very, very much! Please take this for your trouble.\"";
     if (@LETTER_REWARD_GOLD > 0)
@@ -94,7 +94,7 @@ L_Caretaker_later_rewards:
     set QUEST_Graveyard_Caretaker, @Q_STATUS_HAS_NO_NEW_LETTER;
     close;
 
-L_Airlia_intro:
+L_intro:
     mes "[Airlia]";
     mes "\"My poor father, doomed to that awful cemetery.\"";
     next;
@@ -112,7 +112,7 @@ L_Airlia_intro:
     if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
         menu
             "...", L_Next3,
-            "Oh, I have a letter from him.", L_Caretaker_later_rewards;
+            "Oh, I have a letter from him.", L_later_rewards;
     goto L_Next3;
 
 L_Next3:
@@ -121,8 +121,8 @@ L_Next3:
     mes "Eventually, there will not be enough mana for them to rise again and they can be at rest. Do you believe this is true?\"";
     next;
     menu
-        "I believe so, yes.", L_Airlia_intro_mana_loss,
-        "Maybe...", L_Airlia_intro_mana_loss,
+        "I believe so, yes.", L_intro_mana_loss,
+        "Maybe...", L_intro_mana_loss,
         "No, that is not proven.", L_Next1;
 
 L_Next1:
@@ -130,38 +130,38 @@ L_Next1:
     mes "\"Oh...\"";
     close;
 
-L_Airlia_intro_mana_loss:
+L_intro_mana_loss:
     mes "[Airlia]";
     mes "\"When I am not working, I recruit help for the esteemed Fighters of the Undead, or FoU.";
     mes "They are an official group effort of the Warriors' Guild and Magicians, you know, a very prestigious group.\"";
     next;
     menu
-        "...", L_Airlia_intro_fou,
-        "I have heard of them.", L_Airlia_intro_fou,
+        "...", L_intro_fou,
+        "I have heard of them.", L_intro_fou,
         "Keep up the good work. I have to go now, bye.", L_Close;
 
-L_Airlia_intro_fou:
+L_intro_fou:
     mes "[Airlia]";
     mes "\"If we drain those evil creatures of their mana, I can get my father back. He is getting very old. Will you help us?\"";
     next;
     menu
-        "Of course I will.", L_Airlia_intro_fight,
-        "Sure, I guess.", L_Airlia_intro_fight,
+        "Of course I will.", L_intro_fight,
+        "Sure, I guess.", L_intro_fight,
         "Thanks, but no thanks. I have other business to attend to.", L_Close;
 
-L_Airlia_intro_fight:
+L_intro_fight:
     mes "[Airlia]";
     mes "\"Great, just kill any of the undead creatures you can and bring me proof of your work, and I will put in a word for you with the guild.\"";
     next;
     menu
         "I'm on it.", L_Next2,
-        "What sort of proof?", L_Airlia_intro_proof;
+        "What sort of proof?", L_intro_proof;
 
 L_Next2:
     set QUEST_Airlia, @Q_STATUS_HELP_AIRLIA;
     goto L_Close;
 
-L_Airlia_intro_proof:
+L_intro_proof:
     mes "[Airlia]";
     mes "\"Let's say " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s. You don't know how much this means to me, thank you.\"";
     set QUEST_Airlia, @Q_STATUS_HELP_AIRLIA;
@@ -184,7 +184,7 @@ L_Fetch:
     if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
         menu
             "You are welcome.", L_Close,
-            "I have another letter from your father.", L_Caretaker_later_rewards,
+            "I have another letter from your father.", L_later_rewards,
             "I have collected the " + @FETCH_AMOUNT_INITIAL + " " + getitemname(@FETCH_LABEL_INITIAL$) + "s.", L_Fetch_initial_reward;
     goto L_Close;
 
@@ -237,7 +237,7 @@ L_Rewarded:
     if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
         menu
             "You are welcome.", L_Close,
-            "I have another letter from your father.", L_Caretaker_later_rewards,
+            "I have another letter from your father.", L_later_rewards,
             "I have collected the " + @FETCH_AMOUNT + " " + getitemname(@FETCH_LABEL$) + "s.", L_Fetch_later_rewards;
     goto L_Close;
 

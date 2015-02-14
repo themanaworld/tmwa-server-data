@@ -56,14 +56,14 @@ OnInit:
     if (@wg_state == 8) goto L_State_12;
     if (@wg_state >= 9 && @wg_state < 11) goto L_State_13;
     if (@wg_state == 11) goto L_State_14;
-    if (@wg_state == 12) goto L_State_14_AlreadyAccepted;
+    if (@wg_state == 12) goto L_State_14_AA;
     if (@wg_state == 13) goto L_State_15;
     if (@wg_state > 13 && @wg_state < 16) goto L_State_15_Repeat;
     if (@wg_state == 16) goto L_State_16;
     if (@wg_state > 16 && @wg_state < 20) goto L_State_16_Repeat;
     if (@wg_state == 20) goto L_State_17;
     if (@wg_state == 21) goto L_State_17_AskItems;
-    if (@wg_state == 22) goto L_State_17_ProposeBuyDress;
+    if (@wg_state == 22) goto L_State_17_PBD;
     if (@wg_state >= 23) goto L_State_18;
 
     mes "\"This goes up, this goes left...\"";
@@ -428,7 +428,7 @@ L_State_14_Accept:
     callfunc "setWGState";
     goto L_Close;
 
-L_State_14_AlreadyAccepted:
+L_State_14_AA:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Please my friend, go talk to Lora Tay about our possible collaboration!\"";
     goto L_Close;
@@ -554,7 +554,7 @@ L_Next9:
     callfunc "setWGState";
     goto L_Close;
 
-L_State_17_NotEnoughItems:
+L_State_17_NoItems:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"My friend, sorry to disappoint you, but you are lacking some cloth.";
     mes "I need exactly " + @FINEDRESS_COTTON_CLOTHS + " cotton cloths to finish this master piece.\"";
@@ -562,7 +562,7 @@ L_State_17_NotEnoughItems:
 
 L_State_17_GiveItems:
     if (countitem ("CottonCloth") < @FINEDRESS_COTTON_CLOTHS)
-        goto L_State_17_NotEnoughItems;
+        goto L_State_17_NoItems;
     delitem "CottonCloth", @FINEDRESS_COTTON_CLOTHS;
     set @wg_state, 22;
     callfunc "setWGState";
@@ -600,7 +600,7 @@ L_Next10:
 
     goto L_State_17_BuyDress;
 
-L_State_17_ProposeBuyDress:
+L_State_17_PBD:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Did you consider buying the dress off me?";
     mes "I would charge " + @FINEDRESS_GP +" GP, which I think is a magnificent price for something this fine.\"";
@@ -618,7 +618,7 @@ L_Next11:
         goto L_State_17_NoMoney;
     getinventorylist;
     if (@inventorylist_count == 100)
-        goto L_State_17_InventoryFull;
+        goto L_State_17_InvFull;
 
     set Zeny, Zeny - @FINEDRESS_GP;
     getitem "FineDress", 1;
@@ -632,7 +632,7 @@ L_State_17_NoMoney:
     mes "and come back when you have the money.\"";
     goto L_Close;
 
-L_State_17_InventoryFull:
+L_State_17_InvFull:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"My friend, you don't have room to carry my master piece. Come back when you do.\"";
     goto L_Close;

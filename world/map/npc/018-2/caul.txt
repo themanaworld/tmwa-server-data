@@ -48,7 +48,7 @@
     set @choices_nr, 4;
 
 
-    if !(@Q_status)
+    if (!(@Q_status))
         goto L_M_no_monster_oil;
 
     set @choice_idx[@choices_nr], @C_monster_oil;
@@ -102,9 +102,9 @@ L_MenuItems:
     set @choice, @choice_idx[@menu - 1];
 
     if (@choice == @C_monster_oil)
-        goto L_monster_oil_start;
+        goto L_mo_start;
     if (@choice == @C_mopox_cure)
-        goto L_mopox_cure_start;
+        goto L_mox_start;
     if (@choice == @C_nohmask)
         goto L_NohMask;
     if (@choice == @C_dementiapotion)
@@ -182,7 +182,7 @@ L_NotEnough:
     mes "\"Oh, it seems like you don't have enough herbs. You can find herbs in deep forests.\"";
     close;
 
-L_monster_oil_start:
+L_mo_start:
     mes "[Caul]";
     mes "\"Monster oil?  Hmm, I have heard of it, but I don't remember the precise recipe to make it...\"";
     next;
@@ -191,42 +191,42 @@ L_monster_oil_start:
             "OK, I'll ask around, perhaps someone else knows.", L_Close;
     if (@Q_status > @SETZER_KNOWS_OIL)
         menu
-            "Rauk told me the recipe.", L_monster_oil_knows_recipe;
+            "Rauk told me the recipe.", L_mo_knows_recipe;
     close;
 
-L_monster_oil_knows_recipe:
+L_mo_knows_recipe:
     mes "[Caul]";
     mes "\"Ah, but of course!  Yes, we should be able to brew that here. Except that... hmm. Pearl and three black scorpion stingers?  This sounds very dangerous;";
     mes "I fear that I will have to ask you to do this yourself.\"";
     next;
-    goto L_monster_oil_main_menu;
+    goto L_mo_main_menu;
 
-L_monster_oil_main_menu:
+L_mo_main_menu:
     set @main_menu, 1;
     menu
-        "What do you mean by 'dangerous'?", L_monster_oil_why_dangerous,
-        "What do I need, again?", L_monster_oil_ingredients,
-        "How does this work?", L_monster_oil_explain,
-        "Let's start!", L_monster_oil_start_brew,
-        "Where can I get a golden scorpion stinger?", L_monster_oil_where_gold,
+        "What do you mean by 'dangerous'?", L_mo_why_dangerous,
+        "What do I need, again?", L_mo_ingredients,
+        "How does this work?", L_mo_explain,
+        "Let's start!", L_mo_start_brew,
+        "Where can I get a golden scorpion stinger?", L_mo_where_gold,
         "I've changed my mind.", L_Close;
 
-L_monster_oil_why_dangerous:
+L_mo_why_dangerous:
     mes "[Caul]";
     mes "\"Well, with those two reagents in there at that ratio, you risk an explosion – quite possibly a fatal one. So be prepared to duck if the brew gets too bubbly – it's better to lose the ingredients than your head!\"";
     next;
-    goto L_monster_oil_main_menu;
+    goto L_mo_main_menu;
 
-L_monster_oil_ingredients:
+L_mo_ingredients:
     mes "[Caul]";
     mes "\"You will need one pearl, two snake skins, three black scorpion stingers, two piles of ash, and a golden scorpion stinger. The golden stinger goes in last, after the dangerous part, so you won't lose it if your brew blows up.\"";
     next;
     mes "[Caul]";
     mes "\"You should also bring gamboge, mauve, alizarin and cobalt leaves. You will have to stabilize the brew, and they will help with that.\"";
     next;
-    goto L_monster_oil_main_menu;
+    goto L_mo_main_menu;
 
-L_monster_oil_explain:
+L_mo_explain:
     mes "[Caul]";
     mes "\"After you have put in the monster parts – except for the golden stinger – the brew will take on some random color; this can be a light, dark, or medium color. You have to stabilize this color by adding leaves to it.\"";
     next;
@@ -252,27 +252,27 @@ L_monster_oil_explain:
     mes "\"But don't add too much!  If you add a color that is already there, or try to make it darker at the wrong spot, it may backfire.\"";
     next;
     if (@main_menu)
-        goto L_monster_oil_main_menu;
-    goto L_monster_oil_loop;
+        goto L_mo_main_menu;
+    goto L_mo_loop;
 
-L_monster_oil_where_gold:
+L_mo_where_gold:
     mes "[Caul]";
     mes "\"Good question. There aren't any golden scorpions nearby. Perhaps you can find a trader or an adventurer who have travelled further south and ask them to help?\"";
     next;
-    goto L_monster_oil_main_menu;
+    goto L_mo_main_menu;
 
-L_monster_oil_start_brew:
+L_mo_start_brew:
     set @main_menu, 0;
     if (countitem ("Pearl") < 1)
-        goto L_monster_oil_missing;
+        goto L_mo_missing;
     if (countitem ("SnakeSkin") < 2)
-        goto L_monster_oil_missing;
+        goto L_mo_missing;
     if (countitem ("BlackScorpionStinger") < 3)
-        goto L_monster_oil_missing;
+        goto L_mo_missing;
     if (countitem ("PileOfAsh") < 2)
-        goto L_monster_oil_missing;
+        goto L_mo_missing;
     if (countitem ("GoldenScorpionStinger") < 1)
-        goto L_monster_oil_missing_gold;
+        goto L_mo_missing_gold;
 
     delitem "Pearl", 1;
     delitem "SnakeSkin", 2;
@@ -304,30 +304,30 @@ L_monster_oil_start_brew:
 
     set @auto_mode, 0;    // Start by adding a colour or going lighter
 
-    goto L_monster_oil_loop;
+    goto L_mo_loop;
 
-L_monster_oil_missing:
+L_mo_missing:
     mes "[Caul]";
     mes "\"You don't seem to have all of the ingredients. You need one pearl, two snake skins, three black stingers, two piles of ash, and one golden stinger.\"";
     close;
 
-L_monster_oil_missing_gold:
+L_mo_missing_gold:
     mes "[Caul]";
     mes "\"You seem to have everything except for the golden stinger. I understand that this one is hard to get, but I'm sure that you can find one somewhere.\"";
     close;
 
-L_monster_oil_loop:
+L_mo_loop:
     mes "[Brewing monster oil]";
     mes @bubble_modes$[@bubble_mode];
     mes "It is currently a " + @intensities$[@intensity] + " " + @colors$[@color] + ".";
     next;
 
     menu
-        "Add alizarin leaf", L_monster_oil_alizarin,
-        "Add gamboge leaf", L_monster_oil_gamboge,
-        "Add cobalt leaf", L_monster_oil_cobalt,
-        "Add mauve leaf", L_monster_oil_mauve,
-        "Ask Caul for advice", L_monster_oil_explain,
+        "Add alizarin leaf", L_mo_alizarin,
+        "Add gamboge leaf", L_mo_gamboge,
+        "Add cobalt leaf", L_mo_cobalt,
+        "Add mauve leaf", L_mo_mauve,
+        "Ask Caul for advice", L_mo_explain,
         "Duck!", L_Explodes;
 
 L_Explodes:
@@ -339,97 +339,97 @@ L_Explodes:
     mes "\"I'm glad to see that you chose to brew another day... perhaps it might be best if you give up on this dangerous concoction, though!\"";
     close;
 
-L_monster_oil_out_of_leaves:
+L_mo_out_of_leaves:
     mes "[Brewing monster oil]";
     mes "You don't have any of these leaves left!";
     next;
-    goto L_monster_oil_loop;
+    goto L_mo_loop;
 
-L_monster_oil_alizarin:
+L_mo_alizarin:
     set @use_leaf$, "AlizarinHerb";
     set @use_color, 1;
-    goto L_monster_oil_leaf_color;
+    goto L_mo_leaf_color;
 
-L_monster_oil_gamboge:
+L_mo_gamboge:
     set @use_leaf$, "GambogeHerb";
     set @use_color, 2;
-    goto L_monster_oil_leaf_color;
+    goto L_mo_leaf_color;
 
-L_monster_oil_cobalt:
+L_mo_cobalt:
     set @use_leaf$, "CobaltHerb";
     set @use_color, 4;
-    goto L_monster_oil_leaf_color;
+    goto L_mo_leaf_color;
 
-L_monster_oil_leaf_color:
+L_mo_leaf_color:
     if (countitem (@use_leaf$) < 1)
-        goto L_monster_oil_out_of_leaves;
+        goto L_mo_out_of_leaves;
 
-    callsub S_monster_oil_random_move;
+    callsub S_mo_random_move;
     if (@color & @use_color)
-        goto L_monster_oil_pc_bad;
+        goto L_mo_pc_bad;
     set @color, @color | @use_color;
     delitem @use_leaf$, 1;
 
     mes "The brew changes its hue as your leaf dissolves.";
     next;
-    goto L_monster_oil_loop;
+    goto L_mo_loop;
 
-L_monster_oil_mauve:
+L_mo_mauve:
     if (countitem("MauveHerb") < 1)
-        goto L_monster_oil_out_of_leaves;
+        goto L_mo_out_of_leaves;
     delitem "MauveHerb", 1;
 
-    callsub S_monster_oil_random_move;
+    callsub S_mo_random_move;
     if (@intensity == 2 && @color == 7)
-        goto L_monster_oil_done;
+        goto L_mo_done;
     if (@intensity == 2)
-        goto L_monster_oil_pc_bad;
+        goto L_mo_pc_bad;
 
     set @intensity, @intensity + 1;
     mes "The brew darkens as your mauve leaf dissolves.";
     next;
-    goto L_monster_oil_loop;
+    goto L_mo_loop;
 
-S_monster_oil_random_move:
+S_mo_random_move:
     mes "[Brewing monster oil]";
     mes "You throw in a leaf and stir.";
 
     if (@auto_mode == 1)
-        goto L_monster_oil_random_1;
-    goto L_monster_oil_random_0;
+        goto L_mo_random_1;
+    goto L_mo_random_0;
 
-L_monster_oil_random_0: // mode 0:  add colour or lighten up
+L_mo_random_0: // mode 0:  add colour or lighten up
     set @auto_mode, 1;
     if (rand(3) == 0)
-        goto L_monster_oil_random_0_lighten;
+        goto L_mo_random_0_lighten;
 
     set @choice, 1 << (rand(3));
     if (@color & @choice)
-        goto L_monster_oil_auto_bad;
+        goto L_mo_auto_bad;
     set @color, @color | @choice;
 
     mes "Before your leaf has a chance to dissolve, the brew changes to a " + @colors$[@color] + " hue.";
     return;
 
-L_monster_oil_random_0_lighten:
+L_mo_random_0_lighten:
     if (@intensity == 0)
-        goto L_monster_oil_auto_bad;
+        goto L_mo_auto_bad;
     set @intensity, @intensity - 1;
     mes "Before your leaf has a chance to dissolve, the brew takes on a lighter shade of " + @colors$[@color] + ".";
     return;
 
-L_monster_oil_random_1: // mode 1: remove colour
+L_mo_random_1: // mode 1: remove colour
     set @auto_mode, 0;
     set @choice, 1 << (rand(3));
     if (!(@color & @choice))
-        goto L_monster_oil_auto_bad;
+        goto L_mo_auto_bad;
     set @color, @color & (~@choice);
     mes "Before your leaf has a chance to dissolve, the brew changes to a " + @colors$[@color] + " hue.";
     return;
 
-L_monster_oil_pc_bad:
+L_mo_pc_bad:
     if (rand(readparam(bInt) + 100) > 60)
-        goto L_monster_oil_pc_bad_ok;
+        goto L_mo_pc_bad_ok;
     if (@bubble_mode)
         mes "As your leaf dissolves, the intensity of the bubbling increases.";
     if (!@bubble_mode)
@@ -437,15 +437,15 @@ L_monster_oil_pc_bad:
     next;
     set @bubble_mode, @bubble_mode + 1;
     if (@bubble_mode > 2)
-        goto L_monster_oil_explode;
-    goto L_monster_oil_loop;
+        goto L_mo_explode;
+    goto L_mo_loop;
 
-L_monster_oil_pc_bad_ok:
+L_mo_pc_bad_ok:
     mes "Your leaf dissolves but seems to have no effect.";
     next;
-    goto L_monster_oil_loop;
+    goto L_mo_loop;
 
-L_monster_oil_auto_bad:
+L_mo_auto_bad:
     if (rand(3) == 0)
         goto L_Return;
     if (rand(readparam(bInt) + 100) > 70)
@@ -455,20 +455,20 @@ L_monster_oil_auto_bad:
     if (@bubble_mode > 2)
         next;
     if (@bubble_mode > 2)
-        goto L_monster_oil_explode;
+        goto L_mo_explode;
     return;
 
-L_monster_oil_explode:
+L_mo_explode:
     mes "[Exploding monster oil]";
     mes "Your brew explodes!";
     if (rand(readparam(bAgi)) > 40)
-        goto L_monster_oil_explode_dodge;
+        goto L_mo_explode_dodge;
     mes "The burst of boiling monster brew hits you.";
     next;
     itemheal (15 * rand(readparam(bVit))) - 1500, 0;
     close;
 
-L_monster_oil_explode_dodge:
+L_mo_explode_dodge:
     mes "You throw yourself to the ground at the very last moment, barely avoiding the burst of boiling monster brew.";
     next;
     mes "[Caul]";
@@ -476,14 +476,14 @@ L_monster_oil_explode_dodge:
     mes "\"I told you, it's dangerous!!\"";
     close;
 
-L_monster_oil_done:
+L_mo_done:
     mes "As you throw in another mauve leaf, the brew takes on a deep black color and calms down.";
     next;
     mes "[Brewing monster oil]";
     mes "As instructed, you toss in your golden scorpion stinger.";
 
     if (countitem ("GoldenScorpionStinger") < 1)
-        goto L_monster_oil_no_gold_end;
+        goto L_mo_no_gold_end;
 
     mes "The brew bubbles once more, then calms completely.";
 
@@ -504,32 +504,32 @@ L_monster_oil_done:
     mes "He hands you the monster oil.";
     close;
 
-L_monster_oil_no_gold_end:
+L_mo_no_gold_end:
     mes "But where is your golden stinger?  Didn't you have one earlier?";
     mes "Frustrated, you give up.";
     close;
 
-L_mopox_cure_start:
+L_mox_start:
     mes "[Caul]";
     mes "\"The mopox cure potion?  Certainly, if you have all of the ingredients... oh, and make sure to bring water, roots, sulphur powder and Mauve leaves.\"";
     mes "\"This is a very easy one, so I think I should let you do this yourself. It is very good exercise.\"";
     next;
-    goto L_mopox_cure_overview_menu;
+    goto L_mox_overview_menu;
 
-L_mopox_cure_overview_menu:
+L_mox_overview_menu:
     menu
-        "I'm ready!", L_mopox_cure_setup,
-        "What are the ingredients?", L_mopox_cure_ingredients,
-        "How does this work?", L_mopox_cure_howto,
+        "I'm ready!", L_mox_setup,
+        "What are the ingredients?", L_mox_ingredients,
+        "How does this work?", L_mox_howto,
         "I'd rather not try.", L_Close;
 
-L_mopox_cure_ingredients:
+L_mox_ingredients:
     mes "[Caul]";
     mes "\"You will need one concentration potion, one iron potion, a lifestone, and one gamboge leaf.\"";
     next;
-    goto L_mopox_cure_overview_menu;
+    goto L_mox_overview_menu;
 
-L_mopox_cure_howto:
+L_mox_howto:
     mes "[Caul]";
     mes "\"When you start brewing, the liquid very rarely has the proper consistency and color. You need to make it gooey and medium dark.\"";
     next;
@@ -542,37 +542,37 @@ L_mopox_cure_howto:
     mes "[Caul]";
     mes "\"Oh, and be careful:  water will evaporate over time, too.\"";
     next;
-    goto L_mopox_cure_overview_menu;
+    goto L_mox_overview_menu;
 
-L_mopox_cure_no_lifestone:
+L_mox_no_lifestone:
     mes "[Caul]";
     mes "\"You will need a lifestone.\"";
-    goto L_mopox_cure_overview_menu;
+    goto L_mox_overview_menu;
 
-L_mopox_cure_no_gamboge:
+L_mox_no_gamboge:
     mes "[Caul]";
     mes "\"You will need a gamboge leaf.\"";
-    goto L_mopox_cure_overview_menu;
+    goto L_mox_overview_menu;
 
-L_mopox_cure_no_concentration:
+L_mox_no_concentration:
     mes "[Caul]";
     mes "\"You will need a concentration potion.\"";
-    goto L_mopox_cure_overview_menu;
+    goto L_mox_overview_menu;
 
-L_mopox_cure_no_iron:
+L_mox_no_iron:
     mes "[Caul]";
     mes "\"You will need an iron potion.\"";
-    goto L_mopox_cure_overview_menu;
+    goto L_mox_overview_menu;
 
-L_mopox_cure_setup:
+L_mox_setup:
     if (countitem("IronPotion") < 1)
-        goto L_mopox_cure_no_iron;
+        goto L_mox_no_iron;
     if (countitem("ConcentrationPotion") < 1)
-        goto L_mopox_cure_no_concentration;
+        goto L_mox_no_concentration;
     if (countitem("GambogeHerb") < 1)
-        goto L_mopox_cure_no_gamboge;
+        goto L_mox_no_gamboge;
     if (countitem("Lifestone") < 1)
-        goto L_mopox_cure_no_lifestone;
+        goto L_mox_no_lifestone;
 
     delitem "IronPotion", 1;
     delitem "ConcentrationPotion", 1;
@@ -592,14 +592,14 @@ L_mopox_cure_setup:
     if (@stickiness == 3 && @colour == 3)
         set @colour, 4; // don't allow insta-win; it's easy enough.
     set @rounds, 0;
-    goto L_mopox_cure_loop;
+    goto L_mox_loop;
 
-L_mopox_cure_loop:
+L_mox_loop:
     mes "[Brewing Mopox Cure]";
     mes "The brew is " + @colours$[@colour] + " and " + @stickinesses$[@stickiness] + ".";
 
     if (@colour == 3 && @stickiness == 3)
-        goto L_mopox_cure_win;
+        goto L_mox_win;
     next;
 
     set @colour, @colour + 10;
@@ -611,27 +611,27 @@ L_mopox_cure_loop:
         "Add sulphur powder", L_mopox_B_sulphur,
         "Add mauve", L_mopox_B_mauve,
         "...what should I do again?", L_mopox_reexplain,
-        "Wait", L_mopox_cure_next;
+        "Wait", L_mox_next;
 
-L_mopox_cure_next:
+L_mox_next:
     set @stickiness, @stickiness + @rounds;
     set @rounds, 1 - @rounds;
 
     if (@stickiness < 10)
         set @stickiness, 10;
     if (@colour < 10)
-        goto L_mopox_failed_badcolour;
+        goto L_mopox_fail_bc;
     if (@colour > 17)
-        goto L_mopox_failed_badcolour;
+        goto L_mopox_fail_bc;
     if (@stickiness > 16)
         goto L_mopox_failed_hard;
     if (@colour > 17)
-        goto L_mopox_failed_badcolour;
+        goto L_mopox_fail_bc;
 
     set @colour, @colour - 10;
     set @stickiness, @stickiness - 10;
 
-    goto L_mopox_cure_loop;
+    goto L_mox_loop;
 
 L_mopox_reexplain:
     mes "[Caul]";
@@ -643,13 +643,13 @@ L_mopox_reexplain:
     mes "\"Water and ground roots mostly affect stickiness.\"";
     mes "\"Mauve and sulphur powder mostly affect color, with Mauve darkening the brew.\"";
     next;
-    goto L_mopox_cure_next;
+    goto L_mox_next;
 
 L_mopox_B_none:
     mes "[Brewing Mopox Cure]";
     mes "You don't have any left!";
     next;
-    goto L_mopox_cure_next;
+    goto L_mox_next;
 
 L_mopox_B_root:
     if (countitem ("Root") < 1)
@@ -661,7 +661,7 @@ L_mopox_B_root:
     next;
     set @colour, @colour + 1;
     set @stickiness, @stickiness + 3;
-    goto L_mopox_cure_next;
+    goto L_mox_next;
 
 L_mopox_B_water:
     if (countitem ("BottleOfWater") < 1)
@@ -674,7 +674,7 @@ L_mopox_B_water:
     next;
     set @colour, @colour;
     set @stickiness, @stickiness - 2;
-    goto L_mopox_cure_next;
+    goto L_mox_next;
 
 L_mopox_B_sulphur:
     if (countitem ("SulphurPowder") < 1)
@@ -686,7 +686,7 @@ L_mopox_B_sulphur:
     next;
     set @colour, @colour - 3;
     set @stickiness, @stickiness + 1;
-    goto L_mopox_cure_next;
+    goto L_mox_next;
 
 L_mopox_B_mauve:
     if (countitem ("MauveHerb") < 1)
@@ -698,9 +698,9 @@ L_mopox_B_mauve:
     next;
     set @colour, @colour + 2;
     set @stickiness, @stickiness + 1;
-    goto L_mopox_cure_next;
+    goto L_mox_next;
 
-L_mopox_failed_badcolour:
+L_mopox_fail_bc:
     mes "[Brewing Mopox Cure]";
     mes "The brew suddenly begins to bubble again, turning green.";
     mes "\"Oh dear,\" Caul remarks, \"you let the color stray too much.\"";
@@ -726,7 +726,7 @@ L_mopox_failed_hard:
     mes "\"Better luck next time!\"";
     close;
 
-L_mopox_cure_win:
+L_mox_win:
     mes "Caul looks pleased. \"Well done!  This looks very good to me.\"";
     next;
     mes "[Caul]";
@@ -734,13 +734,13 @@ L_mopox_cure_win:
     mes "\"One potion of Mopox cure, here you are. Good luck!\"";
     getitem "MopoxCurePotion", 1;
     if (!@Q_can_score_mopox_cure)
-        goto L_mopox_cure_win_quick;
+        goto L_mox_win_quick;
     getexp @MOPOX_CURE_XP, 0;
     mes "[" + @MOPOX_CURE_XP + " experience points]";
     set QUEST_MAGIC2, (QUEST_MAGIC2 & ~NIBBLE_3_MASK) | (2 << NIBBLE_3_SHIFT); // Make sure we can only get XP for brewing this once
-    goto L_mopox_cure_win_quick;
+    goto L_mox_win_quick;
 
-L_mopox_cure_win_quick:
+L_mox_win_quick:
     close;
 
 L_DemPotion:

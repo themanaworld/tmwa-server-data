@@ -8,22 +8,22 @@
 
     set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
 
-    if (@state == 20) goto L_Nickos_UGQ;
-    if (@state == 19) goto L_Nickos_AS_Done;
-    if (@state == 18) goto L_Nickos_AS_Start;
-    if (@state >= 11) && (@state < 18) goto L_Nickos_Guards;
-    if (@state == 10) goto L_Nickos_Check_Happy;
-    if (@state > 7) && (@state < 10) goto L_Nickos_Waits;
-    if (@state == 7) goto L_Nickos_Mine;
-    if (@state == 6) goto L_Nickos_Orders_Received;
-    if (@state == 5) goto L_Nickos_Orders;
-    if (@state < 5) goto L_Nickos_See_Dausen_First;
+    if (@state == 20) goto L_UGQ;
+    if (@state == 19) goto L_AS_Done;
+    if (@state == 18) goto L_AS_Start;
+    if (@state >= 11) && (@state < 18) goto L_Guards;
+    if (@state == 10) goto L_Check_Happy;
+    if (@state > 7) && (@state < 10) goto L_Waits;
+    if (@state == 7) goto L_Mine;
+    if (@state == 6) goto L_Orders_Received;
+    if (@state == 5) goto L_Orders;
+    if (@state < 5) goto L_See_Dausen_First;
 
     mes "[Nickos]";
     mes "\"I'm watching this mine to make sure the monsters don't harm the miners.\"";
     goto L_Close;
 
-L_Nickos_See_Dausen_First:
+L_See_Dausen_First:
     mes "[Nickos]";
     mes "\"I'm watching this mine to make sure the monsters don't harm the miners.\"";
     next;
@@ -31,45 +31,45 @@ L_Nickos_See_Dausen_First:
     mes "\"The mines are closed from tourists due to the monster threat. If you want to get in you will need to prove yourself first. Talk to Lieutenant Dausen, my superior, if you want to make a formal complaint.\"";
     goto L_Close;
 
-L_Nickos_Orders:
+L_Orders:
     set @state, 6;
     callsub S_Update_Var;
     mes "[Nickos]";
     mes "\"I have to hold my post longer?  Argh!  I was looking forward to my break. Oh well, thanks for letting me know.\"";
     goto L_Close;
 
-L_Nickos_Orders_Received:
+L_Orders_Received:
     mes "[Nickos]";
     mes "\"Thanks for letting me know Lieutenant Dausen wants me to stick it out for a while longer. Even though I would've liked my break, I'm sure these miners could use my watchful eye.\"";
     goto L_Close;
 
-L_Nickos_Mine:
+L_Mine:
     mes "[Nickos]";
     mes "\"I haven't heard from the miners in a while, but I've got to keep to my post unless there is due reason to investigate. Normally the miners take care of themselves without any problem.\"";
     next;
     mes "[Nickos]";
     mes "\"Could you check on them for me, though?\"";
     menu
-        "Yes.", L_Nickos_Mine_Open,
-        "No.", L_Nickos_Disappoint;
+        "Yes.", L_Mine_Open,
+        "No.", L_Disappoint;
 
-L_Nickos_Disappoint:
+L_Disappoint:
     mes "Nickos looks disappointed.";
     goto L_Close;
 
-L_Nickos_Mine_Open:
+L_Mine_Open:
     set @state, 8;
     callsub S_Update_Var;
     mes "[Nickos]";
     mes "\"Excellent!  You now have my permission to enter the mine. Your assistance helps ease my worries.\"";
     goto L_Close;
 
-L_Nickos_Waits:
+L_Waits:
     mes "[Nickos]";
     mes "\"Please be sure to get word from Nathan and Naem to make sure everthing is okay down there. Your assistance helps ease my worries.\"";
     goto L_Close;
 
-L_Nickos_Check_Happy:
+L_Check_Happy:
     set @state, 11;
     callsub S_Update_Var;
     set Zeny, Zeny + 500;
@@ -77,26 +77,26 @@ L_Nickos_Check_Happy:
     mes "\"Oh, everything is okay?  That's great!  I think they are pretty busy and could use some help. Feel free to give them a hand. Here's some gold for your troubles.\"";
     goto L_Close;
 
-L_Nickos_Guards:
+L_Guards:
     mes "[Nickos]";
     mes "\"I'm watching this mine to make sure the monsters don't harm the miners.\"";
     next;
     mes "\"Talk to Nathan the miner, I'm sure the miners could use some help down there.\"";
     goto L_Close;
 
-L_Nickos_AS_Start:
+L_AS_Start:
     set @state, 19;
     callsub S_Update_Var;
     mes "[Nickos]";
     mes "\"Oh, the angry scorpions are becoming a problem?  We could thin down their numbers a bit. I can make it worth your time, but of course, I'll need something to show your work. Bring me 10 Angry Scorpion Stingers to demonstrate your effectiveness, and you will be rewarded for your efforts.\"";
     goto L_Close;
 
-L_Nickos_AS_Done:
+L_AS_Done:
     if (countitem ("AngryScorpionStinger") < 10)
-        goto L_Nickos_AS_NotDone;
+        goto L_AS_NotDone;
     getinventorylist;
     if (@inventorylist_count - (countitem("AngryScorpionStinger") == 10) > 99)
-        goto L_Nickos_TooMany;
+        goto L_TooMany;
     set @state, 20;
     callsub S_Update_Var;
     delitem "AngryScorpionStinger", 10;
@@ -107,17 +107,17 @@ L_Nickos_AS_Done:
     mes "\"You might be ready to take on the underground palace. If you are interested, go talk to Naem about unlocking the barrier, he's got the key and the code to open it.\"";
     goto L_Close;
 
-L_Nickos_AS_NotDone:
+L_AS_NotDone:
     mes "[Nickos]";
     mes "\"Bring me 10 Angry Scorpion Stingers and I'll know their numbers are down. You will be rewarded for your efforts.\"";
     goto L_Close;
 
-L_Nickos_TooMany:
+L_TooMany:
     mes "[Nickos]";
     mes "\"Oh, it seems you have too many items. Please get rid some some and I'll give you a reward.\"";
     goto L_Close;
 
-L_Nickos_UGQ:
+L_UGQ:
     mes "[Nickos]";
     mes "\"You might be ready to take on the underground palace. If you are interested, talk to the miners about unlocking the barrier, they've got the key to open it.\"";
     goto L_Close;
