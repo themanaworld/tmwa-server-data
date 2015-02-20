@@ -27,8 +27,8 @@
 
     set @has_magic, getskilllv(SKILL_MAGIC);
 
-    if (@Q_status == @STATUS_PURIFY_ONCE) goto L_Magic_purify_once;
-    if (@Q_status == @STATUS_PURIFY_TWICE) goto L_Magic_purify_done;
+    if (@Q_status == @STATUS_PURIFY_ONCE) goto L_M_purify_once;
+    if (@Q_status == @STATUS_PURIFY_TWICE) goto L_M_purify_done;
 
     mes "[Wyara the witch]";
     if (!Sex)
@@ -200,7 +200,7 @@ L_Q_auldsbel:
     next;
     goto L_Main;
 
-L_Magic_no:
+L_M_no:
     mes "[Wyara the Witch]";
     mes "\"I am sorry, but you don't seem to be able to control any magic. That means that I really can't help you with that.\"";
     next;
@@ -208,20 +208,20 @@ L_Magic_no:
 
 L_Magic:
     if (!@has_magic)
-        goto L_Magic_no;
+        goto L_M_no;
     mes "[Wyara the Witch]";
     mes "\"Perhaps I can help you a little, but I am not a master of any school of magic.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
-L_Magic_main:
+L_M_main:
     menu
-        "Can you explain magic to me?", L_Magic_explain,
-        "Can you teach me a spell?", L_Magic_spell,
-        "Can you train me?", L_Magic_train,
+        "Can you explain magic to me?", L_M_explain,
+        "Can you teach me a spell?", L_M_spell,
+        "Can you train me?", L_M_train,
         "Never mind.", L_Main;
 
-L_Magic_explain:
+L_M_explain:
     mes "[Wyara the Witch]";
     mes "\"Magic is just a name for the force that lives in all plants and animals and emanates from there into all things, living or dead.\"";
     next;
@@ -231,76 +231,76 @@ L_Magic_explain:
     mes "[Wyara the Witch]";
     mes "\"There are different kinds of magic, too; nature, astral, and so on, but if this interests you, you should talk to a scholar.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
-L_Magic_spell:
+L_M_spell:
     if (getskilllv(SKILL_MAGIC_NATURE) > 1)
-        goto L_Magic_spell3;
+        goto L_M_spell3;
     if (getskilllv(SKILL_MAGIC) > 1)
-        goto L_Magic_spell2;
+        goto L_M_spell2;
     mes "[Wyara the Witch]";
     mes "\"No... I don't think that you are ready yet. But please ask me again when you have some more control over your magical powers.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
-L_Magic_spell3:
+L_M_spell3:
     mes "[Wyara the Witch]";
     mes "\"Now that you know the basics of nature magic, here is one of my favourites: '" + getspellinvocation("rain") + "' will summon rain, whereever you are standing. It will consume a bottle of water, though.\"";
     if (getskilllv(SKILL_MAGIC) < 2)
         mes "\"You are not powerful enough to use it yet, though; you will first have to absorb more magic from the mana seed.\"";
     next;
-    goto L_Magic_spell2;
+    goto L_M_spell2;
 
-L_Magic_spell2:
+L_M_spell2:
     mes "[Wyara the Witch]";
     mes "\"Here is another useful one: '" + getspellinvocation("detect-players") + "'. It will tell you the names of everyone nearby, but beware that there are ways to protect against it.\"";
     if (getskilllv(SKILL_MAGIC) < 2)
         mes "\"Hmm. You aren't powerful enough for this one either yet, I think.\"";
     next;
     if (!(getpartnerid2()))
-        goto L_Magic_main;
+        goto L_M_main;
     mes "[Wyara the Witch]";
     mes "\"Married partners can find each other even more easily. Use the '" + getspellinvocation("sense-spouse") + "' spell instead.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
-L_Magic_train:
+L_M_train:
     if (getskilllv(SKILL_MAGIC_NATURE) > 1)
-        goto L_Magic_train_no;
+        goto L_M_train_no;
     mes "[Wyara the Witch]";
     if (@Q_status >= @STATUS_PURIFY_EXPLAINED)
-        goto L_Magic_train_wb;
+        goto L_M_train_wb;
     mes "\"Train you?  No... you should talk to Sagatha.\"";
     mes "She hesitates.";
     next;
     callfunc "SagathaStatus";
-    if (@evil) goto L_Magic_train_evil;
+    if (@evil) goto L_M_train_evil;
     mes "[Wyara the Witch]";
     mes "\"It would be difficult to ask her to accept you unless you understand some of the basics already.\"";
     next;
-    goto L_Magic_train_dispatch;
+    goto L_M_train_dispatch;
 
-L_Magic_train_evil:
+L_M_train_evil:
     mes "Wyara looks at you sadly.";
     mes "\"I have heard that you have done something unforgiveable. No witch in this land will teach you now.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
-L_Magic_train_wb:
+L_M_train_wb:
     callfunc "SagathaStatus";
     if (@evil)
-        goto L_Magic_train_evil;
+        goto L_M_train_evil;
     mes "\"Ah, yes, your training...\"";
     next;
-    goto L_Magic_train_dispatch;
+    goto L_M_train_dispatch;
 
-L_Magic_train_dispatch:
+L_M_train_dispatch:
     if (@Q_status == @STATUS_PURIFY_TWICE)
-        goto L_Magic_purify_done;
+        goto L_M_purify_done;
     if (@Q_status == @STATUS_PURIFY_ONCE)
-        goto L_Magic_purify_once;
+        goto L_M_purify_once;
     if (@Q_status == @STATUS_PURIFY_EXPLAINED)
-        goto L_Magic_purify_explained;
+        goto L_M_purify_explained;
 
     mes "[Wyara the Witch]";
     mes "\"Well, let me help you get started, then!  But first, to make sure that you are serious, I have a small task for you.\"";
@@ -313,60 +313,60 @@ L_Magic_train_dispatch:
     next;
     set @Q_status, @STATUS_PURIFY_EXPLAINED;
     callsub S_update_var;
-    goto L_Magic_purify_explained;
+    goto L_M_purify_explained;
 
-L_Magic_purify_explained:
+L_M_purify_explained:
     if (countitem("PurificationPotion"))
-        goto L_Magic_purify_doit;
+        goto L_M_purify_doit;
 
     mes "[Wyara the Witch]";
     mes "\"To make the purification potion, I will need twenty maggot slimes and twenty leaves of mauve.\"";
     next;
     menu
-        "I shall get them later.", L_Magic_main,
-        "Booring.", L_Magic_main,
+        "I shall get them later.", L_M_main,
+        "Booring.", L_M_main,
         "Here they are.", L_Next;
 
 L_Next:
     getinventorylist;
     if ((@inventorylist_count == 100) && (countitem("MauveHerb") > 20) && (countitem("MaggotSlime") > 20))
-        goto L_Magic_purify_nospace;
+        goto L_M_purify_nospace;
     if (countitem("MauveHerb") < 20)
-        goto L_Magic_purify_lacking;
+        goto L_M_purify_lacking;
     if (countitem("MaggotSlime") < 20)
-        goto L_Magic_purify_lacking;
+        goto L_M_purify_lacking;
     delitem "MauveHerb", 20;
     delitem "MaggotSlime", 20;
     getitem "PurificationPotion", 1;
     mes "[Wyara the Witch]";
     mes "Wyara grinds the leaves and mixes them with the slime, boils them, then speaks a brief incantation over them and hands you the result.";
     next;
-    goto L_Magic_purify_doit;
+    goto L_M_purify_doit;
 
-L_Magic_purify_doit:
+L_M_purify_doit:
     mes "[Wyara the Witch]";
     mes "\"Take your purification potion to the pond, right next to its center, and pour the potion in.\"";
     close;
 
-L_Magic_purify_nospace:
+L_M_purify_nospace:
     mes "[Wyara the Witch]";
     mes "\"You don't have enough space to carry the potion. Please come back later.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
-L_Magic_purify_lacking:
+L_M_purify_lacking:
     mes "[Wyara the Witch]";
     mes "\"You'll need twenty mauve leaves and twenty maggot slimes for the potion.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
-L_Magic_purify_once:
+L_M_purify_once:
     mes "[Wyara the Witch]";
     mes "Wyara nods.";
     mes "\"You have purified the pond a little, but not enough, I think. We'll need another potion.\"";
     next;
     if (countitem("PurificationPotion"))
-        goto L_Magic_purify_doit2;
+        goto L_M_purify_doit2;
     mes "[Wyara the Witch]";
     mes "\"I'll need twenty more maggot slimes and leaves of mauve.\"";
     next;
@@ -378,25 +378,25 @@ L_Magic_purify_once:
 L_Next1:
     getinventorylist;
     if ((@inventorylist_count == 100) && (countitem("MauveHerb") > 20) && (countitem("MaggotSlime") > 20))
-        goto L_Magic_purify_nospace;
+        goto L_M_purify_nospace;
     if (countitem("MauveHerb") < 20)
-        goto L_Magic_purify_lacking;
+        goto L_M_purify_lacking;
     if (countitem("MaggotSlime") < 20)
-        goto L_Magic_purify_lacking;
+        goto L_M_purify_lacking;
     delitem "MauveHerb", 20;
     delitem "MaggotSlime", 20;
     getitem "PurificationPotion", 1;
     mes "[Wyara the Witch]";
     mes "Wyara brews another purification potion.";
     next;
-    goto L_Magic_purify_doit2;
+    goto L_M_purify_doit2;
 
-L_Magic_purify_doit2:
+L_M_purify_doit2:
     mes "[Wyara the Witch]";
     mes "\"Please apply this one quickly, again.\"";
     close;
 
-L_Magic_purify_done:
+L_M_purify_done:
     mes "[Wyara the Witch]";
     mes "Wyara smiles at you.";
     mes "\"A friend told me... you have saved the pond for now. Perhaps it will need some more attention later, but I'll ask others for this.\"";
@@ -406,7 +406,7 @@ L_Magic_purify_done:
     next;
     menu
         "Very well.", L_Next2,
-        "No way!", L_Magic_purify_abort;
+        "No way!", L_M_purify_abort;
 
 L_Next2:
     mes "[Wyara the Witch]";
@@ -430,29 +430,29 @@ L_Next2:
     callsub S_update_var;
     close;
 
-L_Magic_purify_abort:
+L_M_purify_abort:
     mes "[Wyara the Witch]";
     mes "\"I can't help you if you don't subject yourself to the ritual.\"";
     close;
 
-L_Magic_train_no:
+L_M_train_no:
     mes "[Wyara the Witch]";
     mes "\"I can't teach you anything at this time. Perhaps Sagatha can help you, but I'm not sure if she will accept you as a student.\"";
     next;
-    goto L_Magic_train_sagatha;
+    goto L_M_train_sagatha;
 
-L_Magic_train_sagatha:
+L_M_train_sagatha:
     menu
-        "OK.", L_Magic_main,
+        "OK.", L_M_main,
         "How can I convince her to accept me?", L_Next3;
 
 L_Next3:
     callfunc "SagathaStatus";
     mes "[Wyara the Witch]";
     if (@evil)
-        goto L_Magic_train_sagatha_fail;
+        goto L_M_train_s_fail;
     if (getskilllv(SKILL_MAGIC) < 2)
-        goto L_Magic_train_sagatha_lvl1;
+        goto L_M_train_s_lvl1;
     if (@good > 1)
         mes "\"Come to think of it, I have heard good things about you. Perhaps she will be willing to accept you as a student now?\"";
     if (@good == 1)
@@ -461,7 +461,7 @@ L_Next3:
         mes "\"Sagatha cares greatly about all living creatures, but particularly about the creatures of the forest. If you are kind to them, she will be more likely to be kind to you.\"";
     next;
     if (@druid == 3)
-        goto L_Magic_main;
+        goto L_M_main;
     mes "[Wyara the Witch]";
     mes "She smiles.";
     mes "\"Actually, I think I know of a good thing you could do. There is a very special tree in the desert south-east of Tulimshar, a tree that has been there for a very long time.\"";
@@ -471,9 +471,9 @@ L_Next3:
     next;
     set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_KNOWS_DRUIDTREE;
     menu
-        "What is that tree?", L_Magic_train_tree_backgd,
+        "What is that tree?", L_M_train_t_backgd,
         "How should I tend to it?", L_Next4,
-        "Nah.", L_Magic_main;
+        "Nah.", L_M_main;
 
 L_Next4:
     mes "[Wyara the Witch]";
@@ -483,9 +483,9 @@ L_Next4:
     mes "She hesitates for a moment.";
     mes "\"But stay away from the well in the area. There is no water in there anymore, and it's also dangerous.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
-L_Magic_train_tree_backgd:
+L_M_train_t_backgd:
     mes "[Wyara the Witch]";
     mes "\"Many generations ago, there was a lush, green oasis in the desert south-east of Tulimshar. Plants of all kinds grew there, and many animals, including mouboos, made this place their home.\"";
     next;
@@ -516,40 +516,40 @@ L_Magic_train_tree_backgd:
     mes "[Wyara the Witch]";
     mes "\"Please give him water, for he is always in need of it, and thank him for his sacrifice. It is all we can do for him now.\"";
     next;
-    goto L_Magic_tree_menu;
+    goto L_M_t_menu;
 
-L_Magic_tree_menu:
+L_M_t_menu:
     menu
-        "How should I give him water?", L_Magic_tree_water,
-        "How should I thank him?", L_Magic_tree_remind,
-        "I will.", L_Magic_main,
-        "No.", L_Magic_main;
+        "How should I give him water?", L_M_t_water,
+        "How should I thank him?", L_M_t_remind,
+        "I will.", L_M_main,
+        "No.", L_M_main;
 
-L_Magic_tree_water:
+L_M_t_water:
     mes "[Wyara the Witch]";
     mes "\"A bottle of water would probably not be enough. No, you would have to water the ground all around... that's too many bottles. You will have to get water from elsewhere.\"";
     next;
-    goto L_Magic_tree_menu;
+    goto L_M_t_menu;
 
-L_Magic_tree_remind:
+L_M_t_remind:
     mes "[Wyara the Witch]";
     mes "\"Give him a sign of affection. Something that works with a tree, but also something that humans might do to each other, to remind him of his days as a human.\"";
     next;
     mes "[Wyara the Witch]";
     mes "\"Yes... that would be important. Show your affection in the same way that you might towards a human.\"";
     next;
-    goto L_Magic_tree_menu;
+    goto L_M_t_menu;
 
-L_Magic_train_sagatha_fail:
+L_M_train_s_fail:
     mes "She shakes her head.";
     mes "\"No... from what I have heard, you have done something unforgivable. I very much doubt that you can be her student now, and I won't teach you any further either.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
-L_Magic_train_sagatha_lvl1:
+L_M_train_s_lvl1:
     mes "\"Well, you're still a bit of a beginner, so I don't think she will accept you yet. Maybe you can absorb some more power from the mana seed?  If you can grow your magical powers a little, I might be able to help you.\"";
     next;
-    goto L_Magic_main;
+    goto L_M_main;
 
 L_Close:
     close;

@@ -178,20 +178,20 @@ L_Lifestones:
     menu
         "OK, I will get them.", L_Close,
         "No way!", L_Close,
-        "Here you are!", L_Lifestones_Trade,
-        "Can I make them myself?", L_Lifestones_MakeSelf;
+        "Here you are!", L_Trade,
+        "Can I make them myself?", L_MakeSelf;
 
-L_Lifestones_Trade:
-    if (countitem("MauveHerb") < 10) goto L_Lifestones_Trade_Missing;
-    if (countitem("GambogeHerb") < 10) goto L_Lifestones_Trade_Missing;
-    if (countitem("AlizarinHerb") < 10) goto L_Lifestones_Trade_Missing;
-    if (countitem("CobaltHerb") < 10) goto L_Lifestones_Trade_Missing;
+L_Trade:
+    if (countitem("MauveHerb") < 10) goto L_Trade_Missing;
+    if (countitem("GambogeHerb") < 10) goto L_Trade_Missing;
+    if (countitem("AlizarinHerb") < 10) goto L_Trade_Missing;
+    if (countitem("CobaltHerb") < 10) goto L_Trade_Missing;
     getinventorylist;
     if (@inventorylist_count == 100 && countitem("Lifestone") == 0
         && countitem("MauveHerb") > 10
         && countitem("GambogeHerb") > 10
         && countitem("AlizarinHerb") > 10
-        && countitem("CobaltHerb") > 10) goto L_Lifestones_NoRoom;
+        && countitem("CobaltHerb") > 10) goto L_NoRoom;
 
     delitem "MauveHerb", 10;
     delitem "GambogeHerb", 10;
@@ -211,44 +211,44 @@ L_Lifestones_Trade:
     mes "[200 experience points]";
     goto L_Close;
 
-L_Lifestones_NoRoom:
+L_NoRoom:
     mes "[Elanore the Healer]";
     mes "\"Oh... it seems that you have no room for the lifestones. But please do come back later when you have made a little space.\"";
     goto L_Close;
 
-L_Lifestones_Trade_Missing:
+L_Trade_Missing:
     mes "[Elanore the Healer]";
     mes "Elanore counts the leaves you show her.";
     mes "\"No, I am sorry. Please bring me ten leaves each of gamboge, alizarin, mauve, and cobalt.\"";
     goto L_Close;
 
-L_Lifestones_MakeSelf:
+L_MakeSelf:
     mes "[Elanore the Healer]";
-    if (@has_magic < 2) goto L_Lifestones_MakeSelf_no;
-    goto L_Lifestones_MakeSelf_yes;
+    if (@has_magic < 2) goto L_MakeSelf_no;
+    goto L_MakeSelf_yes;
 
-L_Lifestones_MakeSelf_yes:
+L_MakeSelf_yes:
     mes "\"Oh, but of course!  You are powerful enough to make your own lifestones, using the enchantment '" + getspellinvocation("enchant-lifestone") + "'. This will consume a bug leg or a maggot slime or one of each of the four healing herbs, though.\"";
     goto L_Close;
 
-L_Lifestones_MakeSelf_no:
+L_MakeSelf_no:
     mes "\"No, you are not powerful enough yet. Please come back and ask me again when you have learned to control more powerful magic, though!\"";
     goto L_Close;
 
 L_Teach:
-    if (@Q_status == @STATUS_INITIAL) goto L_Teach_Initial;
-    if (@Q_status == @STATUS_LEARNED_LIGHT_HEAL) goto L_Teach_CheckAdvanceTo2;
-    if (@Q_status == @STATUS_MASTERED_LIGHT_HEAL) goto L_Teach_CheckAdvanceToLOH;
-    if (@Q_status == @STATUS_LEARNED_LAY_ON_HANDS) goto L_Teach_Explain3;
-    if (@Q_status == @STATUS_WAITING_FOR_KADIYA) goto L_Teach_CheckAdvanceTo3;
-    if (@Q_status == @STATUS_READY_TO_LEARN_CURE_POISON) goto L_Teach_CurePosion;
-    if (@Q_status == @STATUS_LEARNED_CURE_POISON) goto L_Teach_dunno;
+    if (@Q_status == @STATUS_INITIAL) goto L_T_Initial;
+    if (@Q_status == @STATUS_LEARNED_LIGHT_HEAL) goto L_T_ChkAdvTo2;
+    if (@Q_status == @STATUS_MASTERED_LIGHT_HEAL) goto L_T_ChkAdvToLOH;
+    if (@Q_status == @STATUS_LEARNED_LAY_ON_HANDS) goto L_T_Explain3;
+    if (@Q_status == @STATUS_WAITING_FOR_KADIYA) goto L_T_ChkAdvTo3;
+    if (@Q_status == @STATUS_READY_TO_LEARN_CURE_POISON) goto L_T_CurePosion;
+    if (@Q_status == @STATUS_LEARNED_CURE_POISON) goto L_T_dunno;
 
     mes "[Elanore the Healer]";
     mes "\"You have made good progress, but you lack the magical power to advance further. Also, I would like to observe you some more to be certain that you will make a good healer.\"";
     goto L_Close;
 
-L_Teach_Initial:
+L_T_Initial:
     mes "[Elanore the Healer]";
     mes "\"I will only teach you magic of the school of Life, and that only if you prove yourself to be a good healer – that is, if you use your powers to help others.\"";
     mes "She hesistates.";
@@ -274,7 +274,7 @@ L_Teach_Initial:
     mes "\"Let me give you a lifestone to get started with.\"";
     next;
     getinventorylist;
-    if ((@inventorylist_count == 100) && (countitem("Lifestone") == 0)) goto L_Teach_Initial_Noroom;
+    if ((@inventorylist_count == 100) && (countitem("Lifestone") == 0)) goto L_T_Initial_Noroom;
     getitem "Lifestone", 1;
     set @Q_status, @STATUS_LEARNED_LIGHT_HEAL;
     callsub S_update_var;
@@ -284,27 +284,27 @@ L_Teach_Initial:
     mes "\"Here you are. I hope that it will allow you to do good!\"";
     goto L_Close;
 
-L_Teach_Initial_Noroom:
+L_T_Initial_Noroom:
     mes "[Elanore the Healer]";
     mes "\"Oh... you managed to put things into every little nook and pocket, haven't you?  Well, come back later, I will give it to you then.\"";
     goto L_Close;
 
-L_Teach_CheckAdvanceTo2:
+L_T_ChkAdvTo2:
     mes "[Elanore the Healer]";
-    if (@Q_heal_exp < 20) goto L_Teach_CheckAdvanceTo2_fail;
+    if (@Q_heal_exp < 20) goto L_T_ChkAdvTo2_fail;
     mes "Elanore smiles at you.";
     mes "\"From what I have been hearing, you seem to be doing well on your way to becoming a healer. I have decided to accept you as a student of the School of Life Magic.\"";
     next;
-    if (getskilllv(SKILL_MAGIC) < 2) goto L_Teach_AdvanceTo2_warn;
-    goto L_Teach_AdvanceTo2_skip;
+    if (getskilllv(SKILL_MAGIC) < 2) goto L_T_AdvTo2_warn;
+    goto L_T_AdvTo2_skip;
 
-L_Teach_AdvanceTo2_warn:
+L_T_AdvTo2_warn:
     mes "[Elanore the Healer]";
     mes "\"But be warned:  you won't be able to use advanced healing magic until you are more capable in your regular magic usage.\"";
     next;
-    goto L_Teach_AdvanceTo2_skip;
+    goto L_T_AdvTo2_skip;
 
-L_Teach_AdvanceTo2_skip:
+L_T_AdvTo2_skip:
     mes "[Elanore the Healer]";
     mes "\"Please stand still.\"";
     mes "She walks up to you, holds your shoulders, and smiles at you.";
@@ -321,7 +321,7 @@ L_Teach_AdvanceTo2_skip:
     callfunc "SkillUp";
     goto L_Close;
 
-L_Teach_CheckAdvanceTo2_fail:
+L_T_ChkAdvTo2_fail:
     mes "\"I think I would like to observe you for a little longer to see if you would make a good healer.\"";
     if (@Q_heal_exp < 5)
         mes "\"You are still at the beginning of your path, but do keep practicing.\"";
@@ -331,9 +331,9 @@ L_Teach_CheckAdvanceTo2_fail:
         mes "\"You have made good progress, but please do continue in your efforts.\"";
     goto L_Close;
 
-L_Teach_CheckAdvanceToLOH:
-    if (getskilllv(SKILL_MAGIC) < 2) goto L_Teach_LOH_advance_abort0;
-    if (@Q_heal_exp < 30) goto L_Teach_LOH_advance_abort1;
+L_T_ChkAdvToLOH:
+    if (getskilllv(SKILL_MAGIC) < 2) goto L_T_LOH_adv_abort0;
+    if (@Q_heal_exp < 30) goto L_T_LOH_adv_abort1;
 
     mes "[Elanore the Healer]";
     mes "\"I will now teach you how to heal by laying on your hands. The technique is similar to the spell I taught you at the beginning, but this time you transfer your own health instead of drawing health from a lifestone.\"";
@@ -349,19 +349,19 @@ L_Teach_CheckAdvanceToLOH:
     callsub S_update_var;
     goto L_Close;
 
-L_Teach_LOH_advance_abort0:
+L_T_LOH_adv_abort0:
     mes "[Elanore the Healer]";
     mes "\"You don't have enough magical power to learn the next healing spell yet.\"";
     goto L_Close;
 
-L_Teach_LOH_advance_abort1:
+L_T_LOH_adv_abort1:
     mes "[Elanore the Healer]";
     mes "\"I'm sorry, but I am not yet convinced that you are a good enough healer. Please continue in your endeavours.\"";
     goto L_Close;
 
-L_Teach_Explain3:
-    if (getskilllv(SKILL_MAGIC) < 3) goto L_Teach_Explain3_abort;
-    if (@Q_heal_exp < 50) goto L_Teach_Explain3_fail;
+L_T_Explain3:
+    if (getskilllv(SKILL_MAGIC) < 3) goto L_T_Explain3_abort;
+    if (@Q_heal_exp < 50) goto L_T_Explain3_fail;
 
     mes "[Elanore the Healer]";
     mes "Elanore smiles.";
@@ -423,12 +423,12 @@ L_3_where:
     next;
     goto L_3_menu;
 
-L_Teach_Explain3_abort:
+L_T_Explain3_abort:
     mes "[Elanore the Healer]";
     mes "\"I'm sorry, but you lack the magical power to advance.\"";
     goto L_Close;
 
-L_Teach_Explain3_fail:
+L_T_Explain3_fail:
     mes "[Elanore the Healer]";
     if (@Q_heal_exp < 30)
         mes "\"You seem to have regressed as a healer. This is worrisome; please mend your ways or I will not teach you any further.\"";
@@ -438,17 +438,17 @@ L_Teach_Explain3_fail:
         mes "\"You are doing well, but you need some more practice as a healer first.\"";
     goto L_Close;
 
-L_Teach_CheckAdvanceTo3:
+L_T_ChkAdvTo3:
     callfunc "KadiyaSubquestConsts";
 
-    if (@Q_kadiya_status >= @Q_STATUS_COMPLETED) goto L_Teach_AdvanceTo3Ready;
+    if (@Q_kadiya_status >= @Q_STATUS_COMPLETED) goto L_T_AdvTo3Ready;
 
     mes "[Elanore the Healer]";
     mes "\"Please help Kadiya.\"";
     next;
     goto L_3_menu;
 
-L_Teach_AdvanceTo3Ready:
+L_T_AdvTo3Ready:
     mes "[Elanore the Healer]";
     mes "\"I have heard of what you did. Hiding the potion in her favorite food – that was clever.\"";
     mes "She smiles at you.";
@@ -484,7 +484,7 @@ L_Teach_AdvanceTo3Ready:
 
     goto L_Main;
 
-L_Teach_CurePosion:
+L_T_CurePosion:
     mes "[Elanore the Healer]";
     mes "\"Thank you again for your help with Kadiya!\"";
     mes "\"Curing sicknesses is often quite difficult; most of them require complicated potions to be brewed.\"";
@@ -506,7 +506,7 @@ L_Teach_CurePosion:
     callsub S_update_var;
     goto L_Main;
 
-L_Teach_dunno:
+L_T_dunno:
     mes "[Elanore the Healer]";
     mes "\"Hmm. I wanted to teach you something, but I've forgotten what it was... please come back later.\"";
     next;

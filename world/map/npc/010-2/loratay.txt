@@ -47,17 +47,17 @@ OnInit:
     setarray @item_colors$, "red", "green", "dark blue", "yellow", "light blue", "pink", "black", "orange", "purple", "dark green", "white";
     set @wg_state, ((QUEST_WG_state & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
-    if (@loratay_asking_robe == 1) goto L_ExamineSorcererRobe;
+    if (@loratay_asking_robe == 1) goto L_ExamineSR;
     if (@wg_state == 10) goto L_agostine_menu;
     if (@wg_state == 11 || @wg_state == 12) goto L_regular_intro;
-    if (@wg_state == 13) goto L_proposal_intro;
-    if (@wg_state == 14) goto L_proposal_show_materials;
-    if (@wg_state == 15) goto L_proposal_search_items;
-    if (@wg_state == 16) goto L_proposal_retrieve_design;
-    if (@wg_state == 17) goto L_proposal_bringing_design;
-    if (@wg_state == 18) goto L_proposal_wait_dress_finished;
-    if (@wg_state == 19) goto L_proposal_dress_finished;
-    if (@wg_state >= 20 && @wg_state < 23) goto L_proposal_deliver_dress;
+    if (@wg_state == 13) goto L_intro;
+    if (@wg_state == 14) goto L_show_materials;
+    if (@wg_state == 15) goto L_search_items;
+    if (@wg_state == 16) goto L_retrieve_design;
+    if (@wg_state == 17) goto L_bringing_design;
+    if (@wg_state == 18) goto L_wait_dress_finished;
+    if (@wg_state == 19) goto L_dress_finished;
+    if (@wg_state >= 20 && @wg_state < 23) goto L_deliver_dress;
     if (@wg_state >= 23) goto L_regular_intro;
 
     set @t, rand(3);
@@ -284,7 +284,7 @@ L_main_menu:
         "Can you make winter gloves me?", L_Fur,
         "Can you sew a robe for me?", L_robe,
         "Can you make a desert hat for me?", L_desert_hat,
-        "Can you enhance a sorcerer robe with another line color?", L_sorcerer_robe_linecolor,
+        "Can you enhance a sorcerer robe with another line color?", L_sr_linecolor,
         "Goodbye for now.", L_end;
 
 L_Fur:
@@ -341,13 +341,13 @@ L_Next2:
     callfunc "setWGState";
     goto L_Close;
 
-L_proposal_intro:
+L_intro:
     mes "Lora Tay seems lost in her thoughts... ";
     menu
         "Sorry to disturb you, but...", L_main_menu,
         "I better go talk to Agostine.", L_end;
 
-L_proposal_show_materials:
+L_show_materials:
     mes "[Lora Tay the Seamstress]";
     mes "\"Did you talk to Agostine about his idea?\"";
     next;
@@ -374,9 +374,9 @@ L_Next4:
     mes "\"I will fix them, but I cannot use normal threading to fix these materials.";
     mes "I will need a soft thin thread so I won't spoil the textures.\"";
     next;
-    goto L_proposal_search_items;
+    goto L_search_items;
 
-L_proposal_search_items:
+L_search_items:
     mes "[Lora Tay the Seamstress]";
     mes "\"Please bring me " + @FINEDRESS_COCOONS + " silk cocoons.";
     mes "This should cover the materials needed, and will leave extra for sewing the pieces together later on.\"";
@@ -384,7 +384,7 @@ L_proposal_search_items:
 
     menu
         "I will go get them right away!", L_Next5,
-        "Here you are.", L_proposal_give_items,
+        "Here you are.", L_give_items,
         @FINEDRESS_COCOONS+" silk cocoons for a dress? Find somebody else.", L_end;
 
 L_Next5:
@@ -392,14 +392,14 @@ L_Next5:
     callfunc "setWGState";
     goto L_Close;
 
-L_proposal_not_enough_items:
+L_not_enough_items:
     mes "[Lora Tay the Seamstress]";
     mes "\"This is not funny. I need " + @FINEDRESS_COCOONS + " silk cocoons. No less.";
     goto L_Close;
 
-L_proposal_give_items:
+L_give_items:
     if (countitem ("SilkCocoon") < @FINEDRESS_COCOONS)
-        goto L_proposal_not_enough_items;
+        goto L_not_enough_items;
     delitem "SilkCocoon", @FINEDRESS_COCOONS;
     set @wg_state, 16;
     callfunc "setWGState";
@@ -409,9 +409,9 @@ L_proposal_give_items:
     mes "While I do this, you will need to go get the design drawings from Agostine...";
     mes "Every tailor puts their designs on paper before they forget about it.\"";
     next;
-    goto L_proposal_retrieve_design;
+    goto L_retrieve_design;
 
-L_proposal_retrieve_design:
+L_retrieve_design:
     mes "[Lora Tay the Seamstress]";
     mes "\"May you go retrieve the design from Agostine?\"";
     next;
@@ -419,7 +419,7 @@ L_proposal_retrieve_design:
         "Certainly I'll be back soon!", L_Close,
         "Actually I want something else...", L_main_menu;
 
-L_proposal_bringing_design:
+L_bringing_design:
     mes "[Lora Tay the Seamstress]";
     mes "\"Welcome back, did you get the drawings I requested?\"";
     next;
@@ -433,20 +433,20 @@ L_Next6:
     next;
     set @wg_state, 18;
     callfunc "setWGState";
-    goto L_proposal_wait_dress_finished;
+    goto L_wait_dress_finished;
 
-L_proposal_wait_dress_finished:
+L_wait_dress_finished:
     // Sets @time_start to the current time
     // if not set yet, or if the player logged off.
     if (@time_start == 0) set @time_start, gettimetick(2);
     if (gettimetick(2) - @time_start > 30)
-        goto L_proposal_dress_finished;
+        goto L_dress_finished;
     mes "[Lora Tay the Seamstress]";
     mes "\"It will take some time to have the dress finished.";
     mes "Meanwhile, why don't you go take some air outside?\"";
     goto L_Close;
 
-L_proposal_dress_finished:
+L_dress_finished:
     set @wg_state, 19;
     callfunc "setWGState";
     mes "[Lora Tay the Seamstress]";
@@ -475,7 +475,7 @@ L_Next8:
     callfunc "setWGState";
     goto L_Close;
 
-L_proposal_deliver_dress:
+L_deliver_dress:
     mes "[Lora Tay the Seamstress]";
     mes "\"Please take the unfinished dress to him so he may finish the edges with the cloth.\"";
     menu
@@ -691,9 +691,9 @@ L_tanktop_menu:
 
 L_tanktop_short:
     if (countitem ("CottonCloth") < 5)
-        goto L_tanktop_insufficient_cloth;
+        goto L_tanktop_ins_cloth;
     if (Zeny < 1000)
-        goto L_tanktop_insufficient_Zeny;
+        goto L_tanktop_ins_Zeny;
     getinventorylist;
     if (@inventorylist_count == 100 && countitem("CottonCloth") > 5)
         goto L_TooMany;
@@ -710,9 +710,9 @@ L_tanktop_short:
 
 L_tanktop_long:
     if (countitem ("CottonCloth") < 6)
-        goto L_tanktop_insufficient_cloth;
+        goto L_tanktop_ins_cloth;
     if (Zeny < 1000)
-        goto L_tanktop_insufficient_Zeny;
+        goto L_tanktop_ins_Zeny;
     getinventorylist;
     if (@inventorylist_count == 100 && countitem("CottonCloth") > 6)
         goto L_TooMany;
@@ -725,13 +725,13 @@ L_tanktop_long:
     next;
     goto L_tanktop_menu;
 
-L_tanktop_insufficient_cloth:
+L_tanktop_ins_cloth:
     mes "[Lora Tay the Seamstress]";
     mes "\"No, no, no, count again-- how much Cotton Cloth did I say I needed?  That's not enough.\"";
     next;
     goto L_tanktop_menu;
 
-L_tanktop_insufficient_Zeny:
+L_tanktop_ins_Zeny:
     mes "[Lora Tay the Seamstress]";
     mes "As you note that you don't have enough GP on you, Lora rolls her eyes.";
     mes "\"I don't work for free, you know.  I already gave you a discounted peasant price.\"";
@@ -814,7 +814,7 @@ L_Next12:
     if (countitem("SilkSheet") < @ROBE_SHEETS_NR)
         goto L_robe_missing_sheets;
     if (Zeny < @ROBE_SHEETS_ZENY)
-        goto L_robe_sheet_missing_Zeny;
+        goto L_r_sh_miss_zeny;
     getinventorylist;
     if (@inventorylist_count == 100 && countitem("SilkSheet") > @ROBE_SHEETS_NR)
         goto L_TooMany;
@@ -867,7 +867,7 @@ L_robe_missing_sheets:
     next;
     goto L_main_menu;
 
-L_robe_sheet_missing_Zeny:
+L_r_sh_miss_zeny:
     mes "[Lora Tay the Seamstress]";
     mes "\"No, no no.  The way this works is that you give me the GP first and I give you the robe afterwards.  You're " + (@ROBE_SHEETS_ZENY - Zeny) + " GP short, so come back when you can afford the robe!\"";
     next;
@@ -908,7 +908,7 @@ L_TooMany:
     mes "\"You don't have anywhere to put this. Come back when you have more room.\"";
     goto L_Close;
 
-L_sorcerer_robe_linecolor:
+L_sr_linecolor:
     mes "[Lora Tay the Seamstress]";
     mes "\"Hmm, this has a line sewed on it already. I don't see another way than remove it and sew a new one.";
     mes "That is  quite a difficult work... for a casual tailor of course. I'll do that in a heart beat.\"";
@@ -920,28 +920,28 @@ L_sorcerer_robe_linecolor:
     set @loratay_asking_robe, 1;
     goto L_Close;
 
-L_ExamineSorcererRobe:
+L_ExamineSR:
     set @loratay_asking_robe, 0;
     mes "[Lora Tay the Seamstress]";
     mes "\"Let's see...\"";
     next;
     set @chest_equip_id, getequipid(equip_torso);
-    callsub S_Get_SorcererRobeColors;
+    callsub S_Get_SRColors;
     mes "Lora Tay takes a closer look at what you are wearing.";
     next;
     mes "[Lora Tay the Seamstress]";
     mes "\"Hmm. This " + @item_colors$[@current_linecolor] + " lined " + @item_colors$[@current_maincolor] + " sorcerer robe. I see. Is that ok?\"";
     if (@current_maincolor == -1 || @current_linecolor == -1)
-        goto L_NotSorcererRobe;
+        goto L_NotSR;
     menu
-        "Yes, that's fine. Take this one.", L_ChooseSorcererLineColor,
-        "No, I changed my mind.", L_CleanSorcererRobe;
+        "Yes, that's fine. Take this one.", L_ChooseSRLineColor,
+        "No, I changed my mind.", L_CleanSR;
 
-L_NotSorcererRobe:
+L_NotSR:
     mes "\"This isn't a Sorcerer Robe dear. Stop taking me for a fool.\"";
-    goto L_CleanSorcererRobe;
+    goto L_CleanSR;
 
-L_ChooseSorcererLineColor:
+L_ChooseSRLineColor:
     // Unequip the robe, just to simulate Lora Tay really took it
     unequipbyid(equip_torso);
     mes "[Lora Tay the Seamstress]";
@@ -969,22 +969,22 @@ L_ItemMenus2:
     if (countitem(@cotton_cloth_id) < 2)
         goto L_NoColoredCottonCloth;
     if (@current_linecolor == @chosen_color)
-        goto L_SorcererRobe_SameColor;
-    callsub S_Get_NewSorcererRobeId;
+        goto L_SR_SameColor;
+    callsub S_Get_NewSRId;
     // Should not happen since it has been checked the player submitted a sorcerer robe
-    if (@new_sorcerer_robe_id == 0)
+    if (@new_sr_id == 0)
         goto L_end;
 
     if (Zeny < @SORCERER_ROBE_SEW_ZENY)
-        goto L_SorcererRobe_NoZeny;
+        goto L_SR_NoZeny;
     if (countitem(@chest_equip_id) == 0)
-        goto L_SorcererRobe_Vanished;
+        goto L_SR_Vanished;
     delitem @cotton_cloth_id, @SORCERER_ROBE_NUM_COTTON_CLOTH;
     // Since we delete an unstackable item, we don't need to check
     // for an available inventory slot.
     delitem @chest_equip_id, 1;
     set Zeny, Zeny - @SORCERER_ROBE_SEW_ZENY;
-    getitem @new_sorcerer_robe_id, 1;
+    getitem @new_sr_id, 1;
     mes "Lora Tay adjusts her glasses and removes carefully the " + @item_colors$[@current_linecolor] + " string of the robe.";
     mes "Then she grabs the " + @item_colors$[@chosen_color] + " cotton cloth, unfolds it and pins her needle in it.";
     next;
@@ -997,40 +997,40 @@ L_ItemMenus2:
     mes "[Lora Tay the Seamstress]";
     mes "\"There you are dear. I have to say I made a perfect job... As always.";
     mes "I hope you'll enjoy your new robe.\"";
-    goto L_CleanSorcererRobe;
+    goto L_CleanSR;
 
-L_SorcererRobe_SameColor:
+L_SR_SameColor:
     mes "[Lora Tay the Seamstress]";
     mes "\"Are you blind? Your robe is already of this color dear!\"";
-    goto L_CleanSorcererRobe;
+    goto L_CleanSR;
 
-L_SorcererRobe_Vanished:
+L_SR_Vanished:
     mes "Lora Tay adjusts her glasses and looks around, as if something was missing.";
     next;
     mes "[Lora Tay the Seamstress]";
     mes "\"Uh? Where is your sorcerer robe?\"";
-    goto L_CleanSorcererRobe;
+    goto L_CleanSR;
 
-S_Get_NewSorcererRobeId:
+S_Get_NewSRId:
     if (@chosen_color == 0 && @current_maincolor == 10)
-        set @new_sorcerer_robe_id, 798;
+        set @new_sr_id, 798;
     if (@chosen_color == 0 && @current_maincolor < 10)
-        set @new_sorcerer_robe_id, 2220 + @current_maincolor;
+        set @new_sr_id, 2220 + @current_maincolor;
     if (@chosen_color > 0)
-        set @new_sorcerer_robe_id, 5000 + @current_maincolor + (@chosen_color-1)*11;
+        set @new_sr_id, 5000 + @current_maincolor + (@chosen_color-1)*11;
     return;
 
 L_NoColoredCottonCloth:
     mes "[Lora Tay the Seamstress]";
     mes "\"You don't seem to own enough Cotton Cloth of this color. I need " + @SORCERER_ROBE_NUM_COTTON_CLOTH + " of them. Too bad.\"";
-    goto L_CleanSorcererRobe;
+    goto L_CleanSR;
 
-L_SorcererRobe_NoZeny:
+L_SR_NoZeny:
     mes "[Lora Tay the Seamstress]";
     mes "\"You don't seem to be able to afford my services, dear.\"";
-    goto L_CleanSorcererRobe;
+    goto L_CleanSR;
 
-S_Get_SorcererRobeColors:
+S_Get_SRColors:
     set @current_maincolor, -1;
     set @current_linecolor, -1;
     // Line color
@@ -1047,11 +1047,11 @@ S_Get_SorcererRobeColors:
         set @current_maincolor, @chest_equip_id - 5000 - (@current_linecolor-1)*11;
     return;
 
-L_CleanSorcererRobe:
+L_CleanSR:
     set @current_maincolor, 0;
     set @current_linecolor, 0;
     set @chest_equip_id, 0;
-    set @new_sorcerer_robe_id, 0;
+    set @new_sr_id, 0;
     set @chosen_color, 0;
     set @cotton_cloth_id, 0;
     goto L_Close;

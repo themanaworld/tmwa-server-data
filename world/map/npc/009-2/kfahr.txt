@@ -41,9 +41,9 @@
 
     set @Q_needs_stinger, ((QUEST_Forestbow_state & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT) > 1;
 
-    if (@Q_status == @QS_KNIFE_QUEST) goto L_knife_quest_check;
+    if (@Q_status == @QS_KNIFE_QUEST) goto L_Check;
 
-    if (@Q_status == @QS_STINGER_QUEST) goto L_stinger_quest_check;
+    if (@Q_status == @QS_STINGER_QUEST) goto L_stinger_check;
 
     if (@Q_status > @QS_NEWBIE) goto L_meet_again;
 
@@ -281,11 +281,11 @@ L_worm_bones:
 
 L_worm_see_bones:
     if (@Q_status == @QS_KNIFE_QUEST)
-        goto L_boneknife_quest_ip;
+        goto L_bone_ip;
     if (@Q_status > @QS_KNIFE_QUEST)
         goto L_worm_continue2;
     if (BaseLevel >= 40)
-        goto L_boneknife_quest;
+        goto L_bone_quest;
 
     mes "[Kfahr the Warrior]";
     mes "\"Of course!\"";
@@ -580,9 +580,9 @@ L_tale_desert:
 
 L_gain_power:
     if ((@beer_count - @has_beer) < 1)
-        goto L_listen_to_a_story_first;
+        goto L_story_first;
     if (@Q_status < @QS_KNIFE_QUEST)
-        goto L_boneknife_quest;
+        goto L_bone_quest;
 
     mes "[Kfahr the Warrior]";
     mes "\"Yeees, yes... doesn't everyone?\"";
@@ -591,19 +591,19 @@ L_gain_power:
     next;
     goto L_main_menu;
 
-L_listen_to_a_story_first:
+L_story_first:
     mes "[Kfahr the Warrior]";
     mes "\"That's the spirit!  Perhaps you better listen to one of my tales, then!\"";
     next;
     goto L_main_menu;
 
-L_boneknife_quest:
+L_bone_quest:
     if (@Q_status == @QS_KNIFE_QUEST)
-        goto L_boneknife_quest_ip;
+        goto L_bone_ip;
     if (@Q_status > @QS_KNIFE_QUEST)
-        goto L_boneknife_quest_completed;
+        goto L_bone_completed;
     if (BaseLevel < 40)
-        goto L_boneknife_quest_tooweak;
+        goto L_bone_tooweak;
 
     mes "[Kfahr the Warrior]";
     mes "Kfahr stares at you for a moment, then nods.";
@@ -612,9 +612,9 @@ L_boneknife_quest:
     set @Q_status, @QS_KNIFE_QUEST;
     callsub L_Update_Var;
     next;
-    goto L_boneknife_quest_ip;
+    goto L_bone_ip;
 
-L_boneknife_quest_ip:
+L_bone_ip:
     mes "[Kfahr the Warrior]";
     mes "\"Bring me " + @BLACK_STINGERS_NR + " black scorpion stingers and " + @MUSHROOMS_NR + " small mushrooms to prove that you are a competent warrior, and I'll see if I have something for you.\"";
     mes "He grins.";
@@ -624,35 +624,35 @@ L_boneknife_quest_ip:
     next;
     goto L_main_menu;
 
-L_boneknife_quest_completed:
+L_bone_completed:
     mes "[Kfahr the Warrior]";
     mes "\"I really don't have anything else I'd want to give away to make you stronger. Look around a bit yourself!  You won't become a hero if you keep begging for help!\"";
     next;
     goto L_main_menu;
 
-L_boneknife_quest_tooweak:
+L_bone_tooweak:
     mes "[Kfahr the Warrior]";
     mes "\"You know, little one, if you keep practicing a little and come back once you're a bit stronger, I might have something for you...\"";
     mes "He winks.";
     next;
     goto L_main_menu;
 
-L_knife_quest_check:
+L_Check:
     mes "[Kfahr the Warrior]";
     mes "Kfahr eyes you with unconcealed amusement.";
     mes "\"Welcome back!  Did you bring me the things I asked for?\"";
     next;
     menu
-        "Yes, here they are!", L_knife_quest_completecheck,
-        "Er, what were those things again?", L_boneknife_quest_ip,
+        "Yes, here they are!", L_completecheck,
+        "Er, what were those things again?", L_bone_ip,
         "No, sorry, I didn't have the time.", L_main_menu,
         "I forgot!  Let me get them right now.", L_end;
 
-L_knife_quest_completecheck:
+L_completecheck:
     if (countitem("BlackScorpionStinger") < @BLACK_STINGERS_NR)
-        goto L_knife_quest_missing_stingers;
+        goto L_missing_stingers;
     if (countitem("SmallMushroom") < @MUSHROOMS_NR)
-        goto L_knife_quest_missing_mushrooms;
+        goto L_missing_mushrooms;
 
     mes "[Kfahr the Warrior]";
     mes "Kfahr is delighted.";
@@ -672,9 +672,9 @@ L_knife_quest_completecheck:
     mes "I had the nomads make me a few of them, and I hardly use them nowadays, so I think I can part with this one.";
     next;
     if (countitem("BlackScorpionStinger") < @BLACK_STINGERS_NR)
-        goto L_knife_quest_missing_stingers_2;
+        goto L_missing_stingers_2;
     if (countitem("SmallMushroom") < @MUSHROOMS_NR)
-        goto L_knife_quest_missing_mushrooms_2;
+        goto L_missing_mushrooms_2;
     getinventorylist;
     if (@inventorylist_count == 100) goto L_Knife_TooMany;
     mes "[Kfahr the Warrior]";
@@ -696,7 +696,7 @@ L_Knife_TooMany:
     mes "\"You don't have room for this. Come back when you do.\"";
     close;
 
-L_knife_quest_missing_stingers:
+L_missing_stingers:
     mes "[Kfahr the Warrior]";
     mes "\"No, no... I said " + @BLACK_STINGERS_NR + " black scorpion stingers.";
     if (countitem("BlackScorpionStinger"))
@@ -705,7 +705,7 @@ L_knife_quest_missing_stingers:
         mes "You didn't bring even a single one!\"";
     close;
 
-L_knife_quest_missing_stingers_2:
+L_missing_stingers_2:
     mes "[Kfahr the Warrior]";
     mes "\"You just had " + @BLACK_STINGERS_NR + " black scorpion stingers. What happened to them?";
     if (countitem("BlackScorpionStinger"))
@@ -714,7 +714,7 @@ L_knife_quest_missing_stingers_2:
         mes "You didn't bring even a single one!\"";
     close;
 
-L_knife_quest_missing_mushrooms:
+L_missing_mushrooms:
     mes "[Kfahr the Warrior]";
     mes "\"No, no... I said " + @MUSHROOMS_NR + " small mushrooms.";
     if (countitem("SmallMushroom"))
@@ -723,7 +723,7 @@ L_knife_quest_missing_mushrooms:
         mes "You didn't bring me even a single little mushroom!\"";
     close;
 
-L_knife_quest_missing_mushrooms_2:
+L_missing_mushrooms_2:
     mes "[Kfahr the Warrior]";
     mes "\"You just had " + @MUSHROOMS_NR + " small mushrooms. What happened to them?";
     if (countitem("SmallMushroom"))
@@ -732,17 +732,17 @@ L_knife_quest_missing_mushrooms_2:
         mes "You didn't bring me even a single little mushroom!\"";
     close;
 
-L_stinger_quest_check:
+L_stinger_check:
     mes "[Kfahr the Warrior]";
     mes "Kfahr grins at you.";
     mes "\"Welcome, welcome!  Did you bring me my snake skins?\"";
     next;
     menu
-        "Yes, here they are!", L_snakeskins_completecheck,
+        "Yes, here they are!", L_ss_cc,
         "No, sorry, I didn't have the time.", L_main_menu,
         "I forgot!  Let me get them right now.", L_end;
 
-L_snakeskins_completecheck:
+L_ss_cc:
     if (countitem("SnakeSkin") < @SNAKE_SKINS_NR)
         goto L_snakeskins_missing;
     getinventorylist;
@@ -831,11 +831,11 @@ L_player_out_of_beer:
 
 L_golden_scorpion:
     if (@Q_status > @QS_STINGER_QUEST)
-        goto L_golden_scorpion_over_ask;
+        goto L_gs_over_ask;
     if (@Q_status == @QS_STINGER_QUEST)
-        goto L_golden_scorpion_ask_again;
+        goto L_gs_ask_again;
     if (@Q_status == @QS_LOST_WRESTLING)
-        goto L_golden_scorpion_wrestle_again;
+        goto L_gs_wrestle_again;
 
     mes "[Kfahr the Warrior]";
     mes "He grins.";
@@ -849,11 +849,11 @@ L_Next2:
     mes "[Kfahr the Warrior]";
     mes "\"A golden scorpion stinger?  Those are rare and valuable, I hope that you know that!\"";
     if (BaseLevel < 60)
-        goto L_too_lowlevel_for_stinger;
+        goto L_lowlvl_for_stinger;
     if (@Q_status < @QS_KNIFE_QUEST)
-        goto L_golden_requires_knife_quest;
+        goto L_golden_requires_quest;
     if (@Q_status < @QS_KNIFE_QUEST_DONE)
-        goto L_golden_requires_knife_quest_done;
+        goto L_golden_requires_done;
 
     mes "\"Still, you are a warrior of repute. I'll consider giving it to you...\"";
     next;
@@ -861,57 +861,57 @@ L_Next2:
     mes "A mischievous sparkle lightens up in his eyes.";
     mes "\"...if you arm-wrestle me for it!\"";
     next;
-    goto L_golden_scorpion_wrestle_intro;
+    goto L_gs_wrestle_intro;
 
-L_golden_scorpion_wrestle_intro:
+L_gs_wrestle_intro:
     menu
         "Never!", L_main_menu,
         "Wait... what?", L_wrestle_explain,
-        "Bring it on!", L_golden_scorpion_wrestle;
+        "Bring it on!", L_gs_wrestle;
 
-L_golden_requires_knife_quest_done:
+L_golden_requires_done:
     mes "He hesitates.";
     mes "\"But no, this is too valuable. Perhaps if you finish that other quest I gave you...?\".";
     next;
     goto L_main_menu;
 
-L_golden_requires_knife_quest:
+L_golden_requires_quest:
     mes "He hesitates.";
     mes "\"But no, this is too valuable. I think I should have you prove your worthiness with another quest first...\"";
     next;
-    goto L_boneknife_quest;
+    goto L_bone_quest;
 
 L_wrestle_explain:
     mes "[Kfahr the Warrior]";
     mes "\"Arm wrestling!  Arm against arm!  And whoever is stronger wins!  If you manage to defeat me, I'll give you a little quest for the stinger. How about it?\"";
     next;
-    goto L_golden_scorpion_wrestle_intro;
+    goto L_gs_wrestle_intro;
 
-L_too_lowlevel_for_stinger:
+L_lowlvl_for_stinger:
     mes "\"Well, I have one, but I can't just give it to anyone. Maybe if you train a little and become a worthy warrior I will consider giving it away...\"";
     next;
     goto L_main_menu;
 
-L_golden_scorpion_over_ask:
+L_gs_over_ask:
     mes "[Kfahr the Warrior]";
     mes "\"Is this about the stingers again? I already gave you a golden stinger, I'm not going to part with any more.\"";
     next;
     goto L_main_menu;
 
-L_golden_scorpion_ask_again:
+L_gs_ask_again:
     mes "[Kfahr the Warrior]";
     mes "\"This is about the stinger again, right?  Well, just bring me " + @SNAKE_SKINS_NR + " snake skins, and you can have one.\"";
     next;
     goto L_main_menu;
 
-L_golden_scorpion_wrestle_again:
+L_gs_wrestle_again:
     mes "[Kfahr the Warrior]";
     mes "\"This is about the stinger again, eh?  So you want to give it another try?\"";
     mes "He grins broadly.";
     next;
-    goto L_golden_scorpion_wrestle;
+    goto L_gs_wrestle;
 
-L_golden_scorpion_wrestle:
+L_gs_wrestle:
     mes "[Kfahr the Warrior]";
     mes "You sit down. Both of you place your arms on the table, on opposing sides, and grab each other's hands.";
     next;
