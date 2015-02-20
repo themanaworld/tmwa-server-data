@@ -1,0 +1,175 @@
+
+018-2,85,23,0	script	Malek	109,{
+    callfunc "ClearVariables";
+
+    @inspector = ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    @MIN_GEM_AMOUNT = 7;
+
+    if (@inspector == 10) goto L_NohMask;
+
+    mes "[Malek]";
+    mes "\"Hi, can I help you at all?\"";
+    menu
+        "I'm looking for someone able to make gem powder.", L_GemPowder,
+        "I was just having a look, have a nice day.", L_Close;
+
+L_NohMask:
+    mes "[Malek]";
+    mes "\"Hi, can I help you at all?\"";
+    menu
+        "I'm looking for someone able to make gem powder.", L_GemPowder,
+        "I was just having a look, have a nice day.", L_Close,
+        "The inspector sent me here to investigate.", L_Investigation;
+
+L_Investigation:
+    @inspector = 11;
+    QUEST_Hurnscald = (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (@inspector << NIBBLE_3_SHIFT);
+    mes "\"Yeah, we did hear a commotion. We thought we heard someone go down to the basement, but we checked the whole place over and didn't see anything out of the ordinary.\"";
+    goto L_Close;
+
+L_GemPowder:
+    mes "[Malek]";
+    mes "\"My father taught me how to make that sort of powder. Put the gem on a firm surface, hold your pickaxe tight and whack that gem hard. It'll be crushed into powder pretty soon if you keep at it.\"";
+    mes "\"Do you want me to make any for you?\"";
+    menu
+        "Yes, I really need some.", L_GemPowderStart,
+        "Actually, I don't want anything. Have a nice day.", L_Close;
+
+L_GemPowderStart:
+    mes "[Malek]";
+    mes "\"Well, I can do that. Bring me a gem and I'll make you some powder - hope you don't mind if I keep a little as payment!\"";
+    menu
+        "I've got some gems.", L_Check_Gems,
+        "I'll be back with a gem soon.", L_Close,
+        "Actually, I prefer my gems whole. Thanks anyway.", L_Close;
+
+L_Check_Gems:
+    mes "[Malek]";
+    mes "\"Which gem do you want me to powder for you?\"";
+    next;
+    setarray @menuitems$, "", "", "", "", "", "", "";
+    @c = 0;
+    goto L_Check_Diamond;
+
+L_Check_Diamond:
+    if (countitemcolor("Diamond") < 1)
+        goto L_Check_Ruby;
+    @menuitems$[@c] = "A diamond.";
+    @menuid[@c] = 0;
+    @c = @c + 1;
+    goto L_Check_Ruby;
+
+L_Check_Ruby:
+    if (countitemcolor("Ruby") < 1)
+        goto L_Check_Emerald;
+    @menuitems$[@c] = "A ruby.";
+    @menuid[@c] = 1;
+    @c = @c + 1;
+    goto L_Check_Emerald;
+
+L_Check_Emerald:
+    if (countitemcolor("Emerald") < 1)
+        goto L_Check_Sapphire;
+    @menuitems$[@c] = "An emerald.";
+    @menuid[@c] = 2;
+    @c = @c + 1;
+    goto L_Check_Sapphire;
+
+L_Check_Sapphire:
+    if (countitemcolor("Sapphire") < 1)
+        goto L_Check_Topaz;
+    @menuitems$[@c] = "A sapphire.";
+    @menuid[@c] = 3;
+    @c = @c + 1;
+    goto L_Check_Topaz;
+
+L_Check_Topaz:
+    if (countitemcolor("Topaz") < 1)
+        goto L_Check_Amethyst;
+    @menuitems$[@c] = "A topaz.";
+    @menuid[@c] = 4;
+    @c = @c + 1;
+    goto L_Check_Amethyst;
+
+L_Check_Amethyst:
+    if (countitemcolor("Amethyst") < 1)
+        goto L_Choose_Gem;
+    @menuitems$[@c] = "An amethyst.";
+    @menuid[@c] = 5;
+    @c = @c + 1;
+    goto L_Choose_Gem;
+
+L_Choose_Gem:
+    @menuitems$[@c] = "None right now, thanks.";
+    @menuid[@c] = 6;
+    @c = @c + 1;
+    menu
+        @menuitems$[0], L_MenuItems,
+        @menuitems$[1], L_MenuItems,
+        @menuitems$[2], L_MenuItems,
+        @menuitems$[3], L_MenuItems,
+        @menuitems$[4], L_MenuItems,
+        @menuitems$[5], L_MenuItems,
+        @menuitems$[6], L_MenuItems;
+
+L_MenuItems:
+    @menu = @menu - 1;
+    if (@menu >= @c)
+        goto L_Close;
+    if (@menuid[@menu] == 0)
+        @gem$ = "Diamond";
+    if (@menuid[@menu] == 1)
+        @gem$ = "Ruby";
+    if (@menuid[@menu] == 2)
+        @gem$ = "Emerald";
+    if (@menuid[@menu] == 3)
+        @gem$ = "Sapphire";
+    if (@menuid[@menu] == 4)
+        @gem$ = "Topaz";
+    if (@menuid[@menu] == 5)
+        @gem$ = "Amethyst";
+    if (@menuid[@menu] == 6)
+        goto L_Close;
+
+    getinventorylist;
+    if (countitemcolor(@gem$) < 1)
+        goto L_no_gem;
+    if (@inventorylist_count == 100
+        && countitemcolor(@gem$) > 1)
+            goto L_TooMany;
+    delitem @gem$, 1;
+    if (@gem$ == "Diamond")
+        getitem "DiamondPowder", @MIN_GEM_AMOUNT + rand(6);
+    if (@gem$ == "Ruby")
+        getitem "RubyPowder", @MIN_GEM_AMOUNT + rand(6);
+    if (@gem$ == "Emerald")
+        getitem "EmeraldPowder", @MIN_GEM_AMOUNT + rand(6);
+    if (@gem$ == "Sapphire")
+        getitem "SapphirePowder", @MIN_GEM_AMOUNT + rand(6);
+    if (@gem$ == "Topaz")
+        getitem "TopazPowder", @MIN_GEM_AMOUNT + rand(6);
+    if (@gem$ == "Amethyst")
+        getitem "AmethystPowder", @MIN_GEM_AMOUNT + rand(6);
+
+    mes "[Malek]";
+    mes "\"Here's your powder. Hope it's fine enough for you.\"";
+    mes "\"Do you need me to make any more?\"";
+    menu
+        "Yes please.", L_Check_Gems,
+        "No thank you, this is enough.", L_Close;
+
+L_TooMany:
+    mes "[Malek]";
+    mes "\"Doesn't look like you've got room for this powder. Come back when you do.\"";
+    goto L_Close;
+
+L_no_gem:
+    mes "[Malek]";
+    mes "\"You don't have that gem.\"";
+    goto L_Close;
+
+L_Close:
+    @inspector = 0;
+    close;
+}

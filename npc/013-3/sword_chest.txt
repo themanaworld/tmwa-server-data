@@ -1,0 +1,43 @@
+
+013-3,177,22,0	script	Chest#sword	111,{
+    callfunc "ClearVariables";
+    if (FLAGS & FLAG_HURNSMINE_CHEST) goto L_Finished;
+
+    mes "[Chest]";
+    mes "Would you try to open it?";
+    next;
+    menu
+        "Yes.", L_Yes,
+        "No.", L_Close;
+
+L_Yes:
+    if(countitemcolor("TreasureKey") < 10)
+        goto L_Not_Enough;
+    getinventorylist;
+    if (@inventorylist_count == 100
+        && countitemcolor("TreasureKey") > 10)
+            goto L_TooMany;
+    delitem "TreasureKey", 10;
+    getitem "ShortSword", 1;
+    mes "[Chest]";
+    mes "You opened it and found a short sword!";
+    FLAGS = FLAGS | FLAG_HURNSMINE_CHEST;
+    close;
+
+L_Not_Enough:
+    mes "It seems that this is not the right key...";
+    close;
+
+L_Finished:
+    mes "[Chest]";
+    mes "You already opened this chest.";
+    close;
+
+L_TooMany:
+    mes "[Chest]";
+    mes "You don't have room for what ever is inside. Maybe you should try again later.";
+    close;
+
+L_Close:
+    close;
+}

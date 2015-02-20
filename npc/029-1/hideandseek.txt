@@ -1,0 +1,386 @@
+
+-	script	#hideandseekNTconfig	-1,{
+    end;
+
+OnInit:
+    $@hideandseekNT_started = (1 << 0);
+    $@hideandseekNT_found1 = (1 << 1);
+    $@hideandseekNT_found2 = (1 << 2);
+    $@hideandseekNT_found3 = (1 << 3);
+    $@hideandseekNT_found4 = (1 << 4);
+    $@hideandseekNT_found5 = (1 << 5);
+    $@hideandseekNT_ended = (1 << 6);
+    end;
+}
+function	script	CountHideNSeek	{
+    @hidden_kid_cnt = 0;
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found1)
+        @hidden_kid_cnt = (@hidden_kid_cnt + 1);
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found2)
+        @hidden_kid_cnt = (@hidden_kid_cnt + 1);
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found3)
+        @hidden_kid_cnt = (@hidden_kid_cnt + 1);
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found4)
+        @hidden_kid_cnt = (@hidden_kid_cnt + 1);
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found5)
+        @hidden_kid_cnt = (@hidden_kid_cnt + 1);
+    return;
+}
+029-1,64,90,0	script	AyashaDebug	258,{
+    mes "[Ayasha Debug]";
+    menu
+        "Show", L_Show,
+        "Reset", L_Reset,
+        "Close.", L_Close;
+
+L_Show:
+    @state = ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
+    mes "State: " + @state;
+    if (QUEST_NorthTulimshar & $@hideandseekNT_started)
+        mes "Start set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found1)
+        mes "Found 1 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found2)
+        mes "Found 2 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found3)
+        mes "Found 3 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found4)
+        mes "Found 4 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_found5)
+        mes "Found 5 set";
+    if (QUEST_NorthTulimshar & $@hideandseekNT_ended)
+        mes "Complete set";
+    goto L_Close;
+
+L_Reset:
+    QUEST_NorthTulimshar = 0;
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "AyashaDebug";
+    end;
+}
+029-1,62,90,0	script	Ayasha	258,{
+    @child_number = 0;
+    callfunc "XmasList";
+
+    @state = ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
+
+    @Exp = 75;
+
+    if (@state > 63) goto L_Done;
+    if (@state == 63) goto L_Reward;
+    if (@state > 0) goto L_Doing;
+
+    mes "You see a girl who is holding her hands in front of her face.";
+    mes "[Ayasha]";
+    mes "\"98... 99... 100!\"";
+    mes "She takes away her hands and looks up.";
+    menu
+        "Hello, what are you doing?",L_Next,
+        "(Leave)",L_Close;
+
+L_Next:
+    mes "[Ayasha]";
+    mes "\"I'm playing hide and seek with my friends!";
+    mes "Do you want to play with us?\"";
+    menu
+        "Sure, sounds like fun.",L_Next1,
+        "I'm busy with more important things!",L_Close;
+
+L_Next1:
+    mes "[Ayasha]";
+    mes "\"Great! You can take my turn with searching. You need to find all five of my friends.";
+    mes "They're hiding somewhere on the island, you will have to explore to find them. They could be hiding anywhere.\"";
+
+    QUEST_NorthTulimshar = QUEST_NorthTulimshar | $@hideandseekNT_started;
+    goto L_Close;
+
+L_Doing:
+    callfunc "CountHideNSeek";
+    mes "[Ayasha]";
+    mes "\"You still need to find some of my friends. You have found " + @hidden_kid_cnt + " out of 5 of my friends.\"";
+    mes "\"Remember, they're hiding somewhere on the island, you will have to explore to find them. They could be hiding anywhere.\"";
+    goto L_Close;
+
+L_Reward:
+    mes "[Ayasha]";
+    mes "\"Oh, you found them all! Good job! Now it's my turn with searching again. Go and hide!\"";
+    getexp @Exp, 0;
+    QUEST_NorthTulimshar = QUEST_NorthTulimshar | $@hideandseekNT_ended;
+    menu
+        "I think I need to do other things now.",L_Next2;
+
+L_Next2:
+    mes "[Ayasha]";
+    mes "\"Oh, ok.";
+    mes "Have you already seen Hurnscald? It's a very exciting place! I love the entertainer. She can make so many funny faces.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Ayasha]";
+    mes "\"Hello! It was fun to play with you.";
+    mes "When you go to the Hurnscald, you can say hello to Mikhail. He's very nice! But very shy.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @Exp = 0;
+    close;
+}
+
+029-1,50,105,0	script	Latif	262,{
+    @child_number = 1;
+    callfunc "XmasList";
+    @state = ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
+
+    @Exp = 15;
+
+    if (@state > 63) goto L_Done;
+    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found1)) goto L_Find;
+    if (@state > 0) goto L_Doing;
+
+    mes "You see a kid hiding behind a box.";
+    menu
+        "What are you doing there?",L_Next,
+        "(Leave)",L_Close;
+
+L_Next:
+    mes "[Latif]";
+    mes "\"Hiding. We're playing hide and seek. Don't say that is boring. It's fun.\"";
+    menu
+        "I agree, it's fun.",L_Agree,
+        "Hide and seek? Lame.",L_Next1;
+
+L_Next1:
+    mes "[Latif]";
+    mes "\"My friend Vincent thinks so too. He doesn't join us playing.";
+    mes "Do you know what he does instead? He builds action figures out of Bug Legs! That is lame.\"";
+    goto L_Close;
+
+L_Agree:
+    mes "[Latif]";
+    mes "\"Yeah, right? My friend Vincent doesn't thinks so. He doesn't join us playing.";
+    mes "Do you know what he does instead? He builds action figures out of Bug Legs! That is lame.\"";
+    goto L_Close;
+
+L_Find:
+    mes "[Latif]";
+    mes "\"Hey! Ah, you found me. Well done. But my hiding place wasn't that difficult this time.\"";
+    getexp @Exp, 0;
+    QUEST_NorthTulimshar = QUEST_NorthTulimshar | $@hideandseekNT_found1;
+    mes "\"Here, do you want a candy?\"";
+    getitem "Candy", 1;
+    goto L_Close;
+
+L_Doing:
+    callfunc "CountHideNSeek";
+    mes "[Latif]";
+    mes "\"You didn't find all of us yet? Seems like the other ones found a better place to hide.\"";
+    mes "\"" + @hidden_kid_cnt + " out of 5 have been found.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Latif]";
+    mes "\"The northeastern most building of town is a workshop. My father works there and wants me to do that too when I'm grown up. But I don't want do that! I want to go on an adventure! Just like you.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @Exp = 0;
+    close;
+}
+
+029-1,48,67,0	script	Charda	260,{
+    @child_number = 2;
+    callfunc "XmasList";
+    @state = ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
+
+    @Exp = 15;
+
+    if (@state > 63) goto L_Done;
+    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found2)) goto L_Find;
+    if (@state > 0) goto L_Doing;
+
+    mes "[Charda]";
+    mes "\"Hello. Psht, be careful. I'm playing hide and seek with Ayasha. You'll draw attention to my hiding place.\"";
+    mes "\"They will never find me here.\"";
+    goto L_Close;
+
+L_Find:
+    mes "[Charda]";
+    mes "\"Oh! Got me! You're good at this.\"";
+    getexp @Exp, 0;
+    QUEST_NorthTulimshar = QUEST_NorthTulimshar | $@hideandseekNT_found2;
+    mes "She takes something out of her pocket.";
+    mes "\"I'm hungry now. Do you want chocolate too?\"";
+    getitem "ChocolateBar", 1;
+    mes "\"My mom doesn't want me to eat so much chocolate, but I got it from the trader at the Hurnscald Market. He sells many different things";
+    mes "when we goto vacation in Hurnscald. I convinced him to teach me how to trade. It's fun.\"";
+    goto L_Close;
+
+L_Doing:
+    callfunc "CountHideNSeek";
+    mes "[Charda]";
+    mes "\"Did you find the others yet?\"";
+    mes "\"Hrmm, no looks like only " + @hidden_kid_cnt + " out of 5 have been found.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Charda]";
+    mes "\"Hey! We're still playing hide and seek. What are you going to do? Will you go to Hurnscald with the ferry? The mother of my friends Rossy and Julia come from there. They are on a vacation there at the moment.\"";
+    mes "\"Rossy told me that it's a very beautiful place. Lots of trees and flowers and grass, everything's green.\"";
+    mes "She sighs.";
+    mes "[Charda]";
+    mes "\"Sounds wonderful.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @Exp = 0;
+    close;
+}
+
+029-1,100,36,0	script	Faris	259,{
+    @child_number = 3;
+    callfunc "XmasList";
+    @state = ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
+
+    @Exp = 25;
+
+    if (@state > 63) goto L_Done;
+    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found3)) goto L_Find;
+    if (@state > 0) goto L_Doing;
+
+    mes "[Faris]";
+    mes "\"Oh, hi there. What are you doing here on the beach?\"";
+    menu
+        "I'm just having a look around.",L_Next,
+        "It's nice place here, isn't it?",L_Next;
+
+L_Next:
+    mes "[Faris]";
+    mes "\"Hey, you're cool. I'm hiding here from Ayasha, we're playing hide and seek. This is the best hiding place ever.\"";
+    goto L_Close;
+
+L_Find:
+    mes "[Faris]";
+    mes "\"You found me! Well done. You look a bit thirsty, here.\"";
+    getexp @Exp, 0;
+    getitem "CactusDrink", 1;
+    QUEST_NorthTulimshar = QUEST_NorthTulimshar | $@hideandseekNT_found3;
+    mes "\"It's really cool you're playing with us. I'm sure you have a lot of other things to do.";
+    mes "You're an adventurer, right? I want to become an adventurer too when I'm grown up. I'll talk to Aidan then.\"";
+    mes "\"Aidan is outside Sorfina's place and you can register there for monster points. That's something the Wizard's Council made up. They reward you for slaying monsters. It's so cool.\"";
+    goto L_Close;
+
+L_Doing:
+    callfunc "CountHideNSeek";
+    mes "[Faris]";
+    mes "\"Are you still searching for the others? Nobody else is here.\"";
+    mes "\"It seems you found " + @hidden_kid_cnt + " out of 5 of my friends.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Faris]";
+    mes "\"I'll go to Hurnscald's Inn and ask Bernard for some soup when we're done with playing. His soup is delicious!\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @Exp = 0;
+    close;
+}
+
+029-1,28,52,0	script	Rasin	263,{
+    @child_number = 4;
+    callfunc "XmasList";
+    @state = ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
+
+    @Exp = 15;
+
+    if (@state > 63) goto L_Done;
+    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found4)) goto L_Find;
+    if (@state > 0) goto L_Doing;
+
+    mes "[Rasin]";
+    mes "\"The harbor is to the south from here. There you can take a ferry to other places.";
+    mes "And now go away, I'm playing hide and seek and Ayasha shouldn't see me here. You'll draw her attention when you talk to me.\"";
+    goto L_Close;
+
+L_Find:
+    mes "[Rasin]";
+    mes "\"Ah, you found me. I need to find a better place to hide next time.\"";
+    getexp @Exp, 0;
+    QUEST_NorthTulimshar = QUEST_NorthTulimshar | $@hideandseekNT_found4;
+    goto L_Close;
+
+L_Doing:
+    callfunc "CountHideNSeek";
+    mes "[Rasin]";
+    mes "\"Hehe, I'm curious when you'll have found all of us.\"";
+    mes "\"There are " + @hidden_kid_cnt + " out of 5 found.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Rasin]";
+    mes "\"Thanks for playing with us! It was fun!";
+    mes "Will you leave Candor to go on an adventure in other places of the world?\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @Exp = 0;
+    close;
+}
+
+029-1,79,99,0	script	Ghada	265,{
+    @child_number = 5;
+    callfunc "XmasList";
+    @state = ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
+
+    @Exp = 15;
+
+    if (@state > 63) goto L_Done;
+    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found5)) goto L_Find;
+    if (@state > 0) goto L_Doing;
+
+    mes "You see a girl standing behind the wheat. She has a look of intense concentration on her face.";
+    menu
+        "Hi, what are you doing there?",L_Next,
+        "(Leave)",L_Close;
+
+L_Next:
+    mes "[Ghada]";
+    mes "\"Oh, hello. I'm hiding. We're playing hide and seek.\"";
+    goto L_Close;
+
+L_Find:
+    mes "[Ghada]";
+    mes "\"Oh no! You found me! You must be very clever.";
+    mes "My friend Sandra is clever too, but she said it's a waste of time to play hide and seek.\"";
+    getexp @Exp, 0;
+    QUEST_NorthTulimshar = QUEST_NorthTulimshar | $@hideandseekNT_found5;
+    goto L_Close;
+
+L_Doing:
+    callfunc "CountHideNSeek";
+    mes "[Ghada]";
+    mes "\"Are you still searching for the others? I'm sure you'll find them soon.\"";
+    mes "\"You found " + @hidden_kid_cnt + " out of 5 us.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Ghada]";
+    mes "\"It's so nice that you played with us! You're about the same age as my older sister, but she never plays with us. Her name is Sarah.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @Exp = 0;
+    close;
+}

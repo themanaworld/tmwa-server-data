@@ -1,0 +1,93 @@
+
+019-1,74,75,0	script	Santa's Helper	105,{
+    callfunc "ClearVariables";
+    callfunc "XmasStates";
+
+    if (($@xmas_time) && (@xmas_sh_done)) goto L_Done;
+    if ($@xmas_time) goto L_Quest;
+
+    mes "[Santa's Helper]";
+    mes "\"Ah, isn't it peaceful here? Around Christmas time we always have problems with some slimy monsters.";
+    mes "They steal the presents boxes. I think they feel attracted by the spiritual power of the Christmas presents.\"";
+    next;
+    mes "He smiles happily.";
+    mes "[Santa's Helper]";
+    mes "\"But at this time of the year everything's calm and relaxing.\"";
+    goto L_Close;
+
+L_Quest:
+    mes "[Santa's Helper]";
+    mes "\"Hello my young friend.";
+    mes "Would you like to help me?\"";
+    next;
+    mes "[Santa's Helper]";
+    mes "\"Those monsters stole Santa's presents.";
+    mes "If you help me, I'll give you something very nice\"";
+    next;
+    goto L_Menu;
+
+L_Menu:
+    menu
+        "I have some present boxes", L_Yes,
+        "Hmm, see you later", L_No,
+        "What you need exactly?", L_Help;
+
+L_Yes:
+    mes "[Santa's Helper]";
+    mes "\"Hmm, let me check what you have.\"";
+    next;
+    if (countitemcolor("PurplePresentBox") < $@xmas_sh_purple_amount)
+        goto L_NoItem;
+    if (countitemcolor("BluePresentBox") < $@xmas_sh_blue_amount)
+        goto L_NoItem;
+    if (countitemcolor("GreenPresentBox") < $@xmas_sh_green_amount)
+        goto L_NoItem;
+    getinventorylist;
+    @SantasHelper_Reward$ = $@SantasHelper_Annual_Reward$[ rand(getarraysize($@SantasHelper_Annual_Reward$)) ];
+    if ((@inventorylist_count > 99) || (checkweight(@SantasHelper_Reward$, 1) == 0))
+        goto L_TooMany;
+    mes "[Santa's Helper]";
+    mes "\"Great! Here is something for you\"";
+    delitem "PurplePresentBox", $@xmas_sh_purple_amount;
+    delitem "BluePresentBox", $@xmas_sh_blue_amount;
+    delitem "GreenPresentBox", $@xmas_sh_green_amount;
+    getitem @SantasHelper_Reward$, 1;
+    @SantasHelper_Reward$ = "";
+    XMASTIME = XMASTIME | $@xmas_sh_bit;
+    @karma_bonus = $@xmas_karma_bonus;
+    callfunc "XmasNice";
+    goto L_Close;
+
+L_Help:
+    mes "[Santa's Helper]";
+    mes "\"I need:";
+    mes $@xmas_sh_purple_amount + " Purple Present Boxes";
+    mes $@xmas_sh_blue_amount + " Blue Present Boxes";
+    mes $@xmas_sh_green_amount + " Green Present Boxes\"";
+    next;
+    goto L_Menu;
+
+L_No:
+    mes "[Santa's Helper]";
+    mes "\"Enjoy your holidays and I wish you a happy Christmas!\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Santa's Helper]";
+    mes "\"You dont seem to have enough presents.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Santa's Helper]";
+    mes "\"All the children got their Christmas presents.";
+    mes "Thank you for your help.\"";
+    goto L_Close;
+
+L_TooMany:
+    mes "[Santa's Helper]";
+    mes "\"It doesn't look like you have room for this. Come back later.\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}

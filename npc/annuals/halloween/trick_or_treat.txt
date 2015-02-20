@@ -1,0 +1,322 @@
+function	script	TrickOrTreat	{
+    callfunc "HalloweenCheckOld";
+    if ($@halloween_time)
+        goto L_Halloween;
+    goto L_QuickReturn;
+
+L_Halloween:
+    if ((gettimetick(2)-TUT_var < $@halloween_min_age) || (BaseLevel < $@halloween_min_level)) //player must be created at least 1 weeks ago
+        goto L_QuickReturn;
+    menu
+        "Trick or Treat", L_HWQuest,
+        "[Go to normal NPC dialog]", L_QuickReturn;
+
+L_HWQuest:
+    @Mask = getequipid(equip_head);
+    goto L_Begin;
+
+L_Begin:
+    @karma = (HALLOWEENTIME & 65535);
+    if (@Mask > 0)
+        goto L_WearingMask;
+    goto L_NoMask;
+
+L_WearingMask:
+    // set the scare factor of the equipped mask
+    @Mask_index = 0;
+    @scare_factor = 1;
+    goto L_MaskLoop;
+
+L_MaskLoop:
+    if ($@halloween_mask_IDs[@Mask_index] == @Mask)
+        goto L_FoundMask;
+    @Mask_index = @Mask_index + 1;
+    if ($@halloween_mask_IDs[@Mask_index])
+        goto L_MaskLoop;
+    // not a mask in the list
+    @Mask = 0;
+    goto L_MaskDone;
+
+L_FoundMask:
+    @scare_factor = $@halloween_scare_factors[@Mask_index];
+    if (@Mask != 616)
+        goto L_MaskDone;
+    mes "\"Aaargh... Gross! This is sick! I can't even look at your face...\"";
+    goto L_MaskDone;
+
+L_MaskDone:
+    @Mask_index = 0;
+    // check if the mask is in the memory
+    @loop = 0;
+    // Note: we don't handle remembered faces until they get their candy
+    if (!@Mask)
+        goto L_MaskMemoryNo;
+    // check if the mask is remembered
+    goto L_MaskMemoryCheck;
+
+L_MaskMemoryCheck:
+    @tmp = $@halloween_maskmemory[8 * @halloween_npc_id + @loop];
+    if (!@tmp)
+        goto L_MaskMemoryNo;
+    if (@tmp == @Mask)
+        goto L_MaskMemoryYes;
+    @loop = @loop + 1;
+    if (@loop != $@halloween_memory_count)
+        goto L_MaskMemoryCheck;
+    goto L_MaskMemoryNo;
+
+L_MaskMemoryYes:
+    // not necessarily true
+    mes "\"I remember you, " + getequipname(equip_head) + " person. No more treats for you!\"";
+    goto L_Close;
+
+L_MaskMemoryNo:
+    // player will probably get treats
+    @loop = 0;
+    @sweets_types = 0;
+    goto L_Count_Sweets;
+
+L_Count_Sweets:
+    if ($@halloween_sweets[@loop] == 0)
+        goto L_Check_Inventory;
+    if (countitemcolor($@halloween_sweets[@loop]))
+        @sweets_types = @sweets_types + 1;
+    @loop = @loop + 1;
+    goto L_Count_Sweets;
+
+L_Check_Inventory:
+    getinventorylist;
+    if (@inventorylist_count + (@loop - @halloween_invy) > 100)
+        goto L_Full_Inventory;
+    if (@Mask)
+        goto L_Check_Karma;
+    // check if the player's face is remembered
+    if (HALLOWEENTIME & (1 << (31 - @halloween_npc_id)))
+        goto L_Remember_Face;
+    goto L_Tricking_Trick_or_Treat;
+
+L_Check_Karma:
+    // NPC Cheater detection starts after max NPCs hit
+    if (rand($@halloween_num_npcs, 65535) <= @karma)
+        goto L_Cheater;
+    // NPC Cheater detection engages at 48 Trick or Treats
+    if (@karma >= 48)
+        goto L_Cheater;
+    if (HALLOWEENTIME & $@halloween_got_big_reward)
+        goto L_Tricking_Trick_or_Treat;
+    // assert: @karma < $@halloween_num_npcs
+    if (rand($@halloween_num_npcs - @karma))
+        goto L_Tricking_Trick_or_Treat;
+    mes "\"All this candy isn't healthy, here take this to have a break from it.\"";
+    getitem $@halloween_big_reward[rand(getarraysize($@halloween_big_reward))], 1;
+    HALLOWEENTIME = HALLOWEENTIME | $@halloween_got_big_reward;
+    // you get the big reward first, then the main treats
+    // otherwise it would be too complicated, and/or possibly unfair
+    goto L_Tricking_Trick_or_Treat;
+
+L_Cheater:
+    mes "\"I recognize you despite your mask, you have been taking sweets you do not deserve.\"";
+    if (@karma != 65535)
+        HALLOWEENTIME = HALLOWEENTIME + 1;
+    goto L_Close;
+
+L_Remember_Face:
+    // mes "You've been here before; I remember your face";
+    mes "\"I remember your face, " + strcharinfo(0) + ". No more treats for you!\"";
+    goto L_Close;
+
+L_Tricking_Trick_or_Treat:
+    // moved above
+    mes $@halloween_npc_names$[@halloween_npc_id];
+    mes $@halloween_greetings$[@halloween_npc_id];
+    next;
+    // TODO: should we randomize these? (in a subsequent commit)
+    menu
+        $@halloween_trick_notscary$[@halloween_npc_id], L_Tricking_Notscary,
+        $@halloween_trick_scary$[@halloween_npc_id], L_Tricking_Scary,
+        $@halloween_trick_veryscary$[@halloween_npc_id], L_Tricking_Veryscary;
+
+L_Tricking_Notscary:
+    mes $@halloween_npc_names$[@halloween_npc_id];
+    mes $@halloween_react_notscary$[@halloween_npc_id];
+    goto L_Tricking_Reward;
+
+L_Tricking_Scary:
+    mes $@halloween_npc_names$[@halloween_npc_id];
+    mes $@halloween_react_scary$[@halloween_npc_id];
+    @scare_factor = @scare_factor * 2;
+    goto L_Tricking_Reward;
+
+L_Tricking_Veryscary:
+    mes $@halloween_npc_names$[@halloween_npc_id];
+    mes $@halloween_react_veryscary$[@halloween_npc_id];
+    @scare_factor = @scare_factor * 3;
+    goto L_Tricking_Reward;
+
+L_Tricking_Reward:
+    next;
+    if (@karma >= 16)
+        @scare_factor = rand(@scare_factor / 2, @scare_factor);
+    if (@karma >= 24)
+        @scare_factor = rand(@scare_factor / 3, @scare_factor);
+    if (@scare_factor < 1)
+        @scare_factor = 1;
+    goto L_Tricking_Reward_Loop;
+
+L_Tricking_Reward_Loop:
+    @random = rand($@halloween_sweets_num);
+    setarray @getitem_ids, $@halloween_sweets[@random];
+    setarray @getitem_counts, 1;
+    callfunc "CheckInventory";
+    if (@check_fail)
+        @scare_factor = 0;
+    if (!@scare_factor)
+        goto L_Tricking_End;
+    // NOTE: it gives out one piece at a time, but can loop several times
+    getitem $@halloween_sweets[@random], 1;
+    @scare_factor = @scare_factor - 1;
+    goto L_Tricking_Reward_Loop;
+
+L_SetRememberFace:
+    HALLOWEENTIME = HALLOWEENTIME | (1 << (31 - @halloween_npc_id));
+    goto L_Close;
+
+L_Tricking_End:
+    mes $@halloween_npc_names$[@halloween_npc_id];
+    mes "\"That should be enough sweets for you. Thanks for participating!\"";
+    if (!@Mask)
+        goto L_SetRememberFace;
+    // add the player's mask to the list
+    @loop = 7;
+    goto L_SetRememberMask;
+
+L_SetRememberMask:
+    $@halloween_maskmemory[8 * @halloween_npc_id + @loop] = $@halloween_maskmemory[8 * @halloween_npc_id + @loop - 1];
+    @loop = @loop - 1;
+    if (@loop)
+        goto L_SetRememberMask;
+    $@halloween_maskmemory[8 * @halloween_npc_id] = @Mask;
+    HALLOWEENTIME = HALLOWEENTIME + 1;
+    goto L_Close;
+
+L_Full_Inventory:
+    mes $@halloween_npc_names$[@halloween_npc_id];
+    mes "\"You are trying to collect candy but you have no space to carry all the kinds of stuff that I have to offer! Please, save room for more stuff and come back.\"";
+    goto L_Close;
+
+L_NoMask:
+    mes $@halloween_npc_names$[@halloween_npc_id];
+    mes "\"Hey " + strcharinfo(0) + ", are you trying to scare me with your face? Interesting! hahaha...\"";
+    goto L_Close;
+
+L_Close:
+    @tmp = 0;
+    @Mask = 0;
+    @karma = 0;
+    @loop = 0;
+    @menu = 0;
+    @halloween_npc_id = 0;
+    return;
+
+L_QuickReturn:
+    @halloween_npc_id = 0;
+    return;
+}
+function	script	TrickOrTreatTally	{
+    @npc_loop = 0;
+    @npc_tally = 0;
+    goto L_LoopCheck;
+
+L_LoopCheck:
+    if (HALLOWEENTIME & (1 << (31 - @npc_loop)))
+        @npc_tally = (@npc_tally + 1);
+    goto L_IncLoop;
+
+L_IncLoop:
+    @npc_loop = (@npc_loop + 1);
+    if (@npc_loop >= 15)
+        goto L_Return;
+    goto L_LoopCheck;
+
+L_Return:
+    return;
+}
+function	script	HalloweenCheckOld	{
+    if(HALLOWEENYEAR == $HALLOWEEN_TIME_KEY[5])
+        goto L_Return;
+    goto L_OldMatch;
+
+L_OldMatch:
+    HALLOWEENTIME = 0;
+    HALLOWEENYEAR = $HALLOWEEN_TIME_KEY[5];
+    goto L_Return;
+
+L_Return:
+    return;
+}
+function	script	HalloweenTree	{
+    mes "[Confused Tree]";
+    if ((HALLOWEENTIME & 65535) > ($@halloween_num_npcs * 3))
+        mes "\"Whoa slow down greedy, leave some candy for the reset of us!\"";
+    if ((HALLOWEENTIME & 65535) > $@halloween_num_npcs)
+        mes "\"I see you have ben enjoying trick or treating, I hope you don't get a stomach ache.\"";
+    if ((HALLOWEENTIME & 65535) <= $@halloween_num_npcs)
+        mes "\"I love halloween, wearing masks and going trick or treating is so much fun.\"";
+    goto L_StartMenu;
+
+L_StartMenu:
+    menu
+        "Whats Halloween?", L_Explain,
+        "Me too!", L_CheckDressed,
+        "Meh, I like Christmas Better.", L_XmasBetter;
+
+L_Explain:
+    mes "\"I've convinced some people throughout the world to help with trick or treating.\"";
+    next;
+    @npc_check_loop = 0;
+    goto L_NpcCheckLoop;
+    
+L_NpcCheckLoop:
+    mes $@halloween_npc_names$[@npc_check_loop];
+    next;
+    goto L_NpcCheckInc;
+
+L_NpcCheckInc:
+    @npc_check_loop = (@npc_check_loop + 1);
+    if (@npc_check_loop >= getarraysize($@halloween_npc_names$))
+        goto L_ContinueExplain;
+    goto L_NpcCheckLoop;
+
+L_ContinueExplain:
+    mes "\"Find each person and put on a mask then try to scare them.\"";
+    next;
+    mes "\"The scarier you are, the more treats you will be awarded.\"";
+    next;
+    mes "\"If you are really scary you could get a rare reward.\"";
+    next;
+    goto L_StartMenu;
+
+L_CheckDressed:
+    @head = getequipid(equip_head);
+    @chest = getequipid(equip_torso);
+    @leg = getequipid(equip_legs);
+    @random_mes$ = "\" I like your costume.\"";
+    if ((@head <= 0) && (@chest <= 0) && (@leg <= 0))
+        @random_mes$ = "\"Birthday Suit, always a classic.\"";
+    if ((@head == 615) && (@chest == 870))
+        @random_mes$ = "\"How embrassing... we are wearing the same costume.\"";
+    if ((@head == 617) || (@head == 622) || (@head == 621))
+        @random_mes$ = "\"Yar, matey I see that.\"";
+    if ((@head == 633) || (@head == 1205) || (@chest == 1183) || (@chest == 1184) || (@chest == 1185) || (@chest == 1186) || (@chest == 1187))
+        @random_mes$ = "\"Your sense of humor offends me, it's way to early for that.\"";
+    mes @random_mes$;
+    goto L_Return;
+
+L_XmasBetter:
+    mes "\"Bah, Humbug, Show your Halloween spirit! OOooooOooo\"";
+    misceffect 302, strcharinfo(0);
+    goto L_Return;
+
+L_Return:
+    return;
+}

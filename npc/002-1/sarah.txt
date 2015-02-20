@@ -1,0 +1,86 @@
+
+002-1,93,43,0	script	Sarah	106,{
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    @state = ((QUEST_SouthTulimshar & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+
+    if (@state >= 2) goto L_Done;
+    if (@state == 1) goto L_Progress;
+
+    mes "[Sarah]";
+    mes "\"Boy, am I hungry or what!\"";
+    next;
+
+    @temp = rand(2);
+    if(@temp == 1) goto L_Opening1;
+    goto L_Opening0;
+
+L_Opening0:
+    mes "\"Cherry Cake is the best!\"";
+    next;
+    goto L_Ask;
+
+L_Opening1:
+    mes "\"Mmm, Cherry Cake... I love it!\"";
+    next;
+    goto L_Ask;
+
+L_Ask:
+    mes "\"Can you bring me a piece of Cherry Cake?  Pretty please?\"";
+    menu
+        "Yes.", L_Req0,
+        "No.", L_Close;
+
+L_Req0:
+    mes "[Sarah]";
+    mes "\"Yippee!  Bring me a piece of Cherry Cake, and I'll give you a nice hat!\"";
+    next;
+    @state = 1;
+    callsub S_Update_Var;
+    mes "[Sarah]";
+    mes "\"Please bring it to me!\"";
+    goto L_Close;
+
+L_Progress:
+    if (countitemcolor("CherryCake") < 1)
+        goto L_NotEnough;
+    mes "[Sarah]";
+    mes "\"Whee!\"";
+    next;
+    mes "You brought me Cherry Cake!  Here is your new hat, as promised.\"";
+    emotion EMOTE_TONGUE;
+    getinventorylist;
+    if ((@inventorylist_count - (countitemcolor("CherryCake") == 1)) > 99) goto L_TooMany;
+    delitem "CherryCake", 1;
+    getitem "SerfHat", 1;
+    @state = 2;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_NotEnough:
+    mes "[Sarah]";
+    mes "\"Oh, I'm starving!  Please bring me Cherry Cake!\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Sarah]";
+    mes "\"It was so tasty, I can't eat anything more... Thank you!\"";
+    emotion EMOTE_TONGUE;
+    goto L_Close;
+
+L_Close:
+    @temp = 0;
+    @state = 0;
+    close;
+
+L_TooMany:
+    next;
+    mes "[Sarah]";
+    mes "\"You don't have room for my reward. I'll wait until you do.\"";
+    goto L_Close;
+
+S_Update_Var:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_1_MASK) | (@state << NIBBLE_1_SHIFT));
+    return;
+}

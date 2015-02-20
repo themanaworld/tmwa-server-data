@@ -1,0 +1,175 @@
+009-3,26,100,0	script	#MysticSword#_M	400,{
+    if (getskilllv(SKILL_MAGIC))
+        goto L_message;
+    close;
+
+L_message:
+    @Q_MASK = NIBBLE_6_MASK;
+    @Q_SHIFT = NIBBLE_6_SHIFT;
+    @Q_status = (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+
+    // Set up SkillUp function
+    @SUP_id = SKILL_MAGIC_WAR;
+    @SUP_name$ = "War Magic";
+
+    @STATUS_INITIAL = 0;
+    @STATUS_LEARNED_FLAREDART = 1;
+    @STATUS_LEARNED_MAGICBLADE = 2;
+    @STATUS_LEVEL2 = 3;
+    @STATUS_W11 = 4;
+    @STATUS_W12 = 5;
+    @STATUS_W11_12 = 6;
+    @STATUS_L2_ALLSPELLS = 7;
+
+    if (@Q_status == @STATUS_INITIAL) goto L_Initial;
+    if (@Q_status == @STATUS_LEARNED_FLAREDART) goto L_PostFlareDart;
+    if (@Q_status == @STATUS_LEARNED_MAGICBLADE) goto L_PostFlareDart_teach2;
+    if (@Q_status == @STATUS_LEVEL2) goto L_L2_W11;
+    if (@Q_status == @STATUS_W12) goto L_L2_W11;
+    if (@Q_status == @STATUS_W11) goto L_L2_almost_done;
+    if (@Q_status == @STATUS_W11_12) goto L_L2_almost_done;
+
+    mes "[Magic Sword]";
+    mes "\"Come back when thou art stronger.\"";
+    close;
+
+L_Initial:
+    mes "[Magic Sword]";
+    mes "As you look at the sword, you suddenly hear a voice in your head!";
+    mes "\"Welcome to my prison, mortal!\"";
+    next;
+    mes "[Magic Sword]";
+    mes "Well, either you are going mad, or that sword in the stone is talking to you.";
+    next;
+    mes "[Magic Sword]";
+    mes "Or, well, both.";
+    next;
+    mes "[Magic Sword]";
+    mes "The deep basso voice continues.";
+    mes "\"I know not what brought thee hither, but I kindly ask that thou leavest me alone in my sorrow.\"";
+    next;
+    menu
+        "Leave", L_Close,
+        "Sorry.", L_Next,
+        "Who or what are you?", L_Next,
+        "What sorrow?", L_Next,
+        "Can I help?", L_Next,
+        "Can you teach me magic?", L_Next;
+
+L_Next:
+    mes "[Magic Sword]";
+    mes "There is no answer.";
+    close;
+
+L_PostFlareDart:
+    mes "[Magic Sword]";
+    mes "As you look at the sword, you hear a deep voice resounding in your head.";
+    mes "\"Welcome, mortal!\"";
+    next;
+    menu
+        "Hi!  How are you?", L_PostFlareDart_hi,
+        "Can you teach me magic?", L_PostFlareDart_teach,
+        "Your sister sent me.", L_PostFlareDart_sister,
+        "Bye!", L_Close;
+
+L_PostFlareDart_hi:
+    mes "[Magic Sword]";
+    mes "\"Mortal... I have seen pain and death beyond thine reckoning!  Mock me not with thine idle questions!\"";
+    close;
+
+L_PostFlareDart_sister:
+    mes "[Magic Sword]";
+    mes "\"My sister...?  Alas!  I remember now; abandoned she was, just as I; buried in stone, never to be wielded again.\"";
+    mes "\"Wherefore did she send thee?\"";
+    next;
+    menu
+        "She asked me to ask you to teach me a spell.", L_PostFlareDart_teach;
+
+L_PostFlareDart_teach:
+    mes "[Magic Sword]";
+    mes "\"Beware, mortal... the only spells I can teach thee are those of the school of war. Dark and dreary spells, that lot!  Pain and misery is all they bring...\"";
+    next;
+    mes "[Magic Sword]";
+    mes "The sword's voice is growing apprehensive.";
+    mes "\"Once a spell has been learned, it cannot be taken back, no more than a death can be undone. So be careful, mortal... dost thou truly wish to know the secrets of thus destructive power?\"";
+    next;
+    menu
+        "Yes.", L_Next1,
+        "No.", L_Close;
+
+L_Next1:
+    mes "[Magic Sword]";
+    mes "\"So thou art bound to the path of War, as am I, as is my sister...\"";
+    next;
+    mes "[Magic Sword]";
+    mes "\"So be it, fellow warrior. Hear the incantation for the blade spell: '" + getspellinvocation("magic-blade") + "'\"";
+    mes "\"Hold a knife, sharp or regular, when thou speakest it.\"";
+    @Q_status = @STATUS_LEARNED_MAGICBLADE;
+    callsub S_Update_Var;
+    next;
+    mes "[Magic Sword]";
+    mes "\"But beware... the path of war that thou hast embarked upon is one from which few return. May luck be on thy side...\"";
+    close;
+
+L_PostFlareDart_teach2:
+    mes "[Magic Sword]";
+    mes "\"Seek out my sister, and leave me alone in my sorrows.\"";
+    next;
+    goto L_Close;
+
+L_Close:
+    close;
+
+L_L2_W11:
+    mes "[Magic Sword]";
+    mes "\"Thou hast returned. That must mean that thy wish to learn the magic of war is still alive?\"";
+    next;
+    menu
+        "No, I just wanted to say `hi'.", L_Farewell,
+        "Yes, teach me more!", L_Next2;
+
+L_Next2:
+    mes "[Magic Sword]";
+    mes "\"If that is thou wishest, I shall not stop thee. But do not expect to find merriment down this road.\"";
+    mes "\"I must ask that thou sacrificest five thousand monster points for this, however.\"";
+    menu
+        "No, I don't want that.", L_Close,
+        "Very well.", L_Next3;
+
+L_Next3:
+    if (Mobpt < 5000)
+        goto L_lacking_mobpoints;
+    mes "[Magic Sword]";
+    mes "\"So be it, then.\"";
+    mes "[1000 experience points]";
+    Mobpt = Mobpt - 5000;
+    getexp 1000, 0;
+    @Q_status = @Q_status + 1;
+    callsub S_Update_Var;
+    next;
+    mes "[Magic Sword]";
+    mes "\"The spell I shall teach thee is the hail of arrows spell. It will make arrows fall down from the heavens unto thy enemies.\"";
+    next;
+    mes "[Magic Sword]";
+    mes "\"Take twenty arrows, sprinkle sulphur powder over them, and then speak '" + getspellinvocation("arrow-hail") + "'. Throw them high up in the air, and watch the hail unfold before thy feet.\"";
+    close;
+
+L_L2_almost_done:
+    mes "[Magic Sword]";
+    mes "\"Return to my sister now. I expect that she shall teach thee one more spell.\"";
+    close;
+
+L_lacking_mobpoints:
+    mes "[Magic Sword]";
+    mes "\"Thou lackest the monster points needed to prove thy worthiness. I shall not reveal more to thee until thou hast slain more monsters.\"";
+    close;
+
+L_Farewell:
+    mes "[Magic Sword]";
+    mes "\"Please leave me in peace.\"";
+    close;
+
+S_Update_Var:
+    QUEST_MAGIC = (QUEST_MAGIC & ~(@Q_MASK) | (@Q_status << @Q_SHIFT));
+    return;
+}

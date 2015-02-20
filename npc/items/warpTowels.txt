@@ -1,0 +1,168 @@
+function	script	WarpTowel	{
+    if (TowelLastUsed > (gettimetick(2) - 1800))
+        goto L_DontPanic;
+    if (isin("botcheck",25,27,51,47))
+        goto L_Prison;
+    if (getmapflag(getmapname(), mf_nosave) || isin("009-7",$@fightclub_x1,$@fightclub_y1,$@fightclub_x2,$@fightclub_y2))
+        goto L_Forbid;
+
+    callfunc "MultiWarpTowel";
+
+    if (@warpTowelName$ == "HitchhikersTowel")
+        goto L_Save;
+    if(@warpTowelName$ == "WhiteHitchhikersTowel")
+        goto L_White;
+    if(@warpTowelName$ == "RedHitchhikersTowel")
+        goto L_Red;
+    if(@warpTowelName$ == "GreenHitchhikersTowel")
+        goto L_Green;
+    if(@warpTowelName$ == "BlueHitchhikersTowel")
+        goto L_Blue;
+    if(@warpTowelName$ == "YellowHitchhikersTowel")
+        goto L_Yellow;
+    if(@warpTowelName$ == "PurpleHitchhikersTowel")
+        goto L_Purple;
+    if(@warpTowelName$ == "OrangeHitchhikersTowel")
+        goto L_Orange;
+    if(@warpTowelName$ == "PinkHitchhikersTowel")
+        goto L_Pink;
+    if(@warpTowelName$ == "TealHitchhikersTowel")
+        goto L_Teal;
+    if(@warpTowelName$ == "LimeHitchhikersTowel")
+        goto L_Lime;
+    goto L_Save;
+
+L_White:
+    // Koga
+    @NextLocationMap$ = "035-2";
+    @NextLocationX = 20;
+    @NextLocationY = 21;
+    goto L_WarpPlayer;
+
+L_Red:
+    // Barbarians
+    @NextLocationMap$ = "033-1";
+    @NextLocationX = 66;
+    @NextLocationY = 33;
+    goto L_WarpPlayer;
+
+L_Green:
+    // Candor
+    @NextLocationMap$ = "029-1";
+    @NextLocationX = 69;
+    @NextLocationY = 69;
+    goto L_WarpPlayer;
+
+L_Blue:
+    // Blue Sages
+    @NextLocationMap$ = "048-2";
+    @NextLocationX = 26;
+    @NextLocationY = 47;
+    goto L_WarpPlayer;
+
+L_Yellow:
+    // Tulimshar Mines
+    @NextLocationMap$ = "002-2";
+    @NextLocationX = 27;
+    @NextLocationY = 28;
+    goto L_WarpPlayer;
+
+L_Purple:
+    // Dimonds Inn
+    @NextLocationMap$ = "010-1";
+    @NextLocationX = 27;
+    @NextLocationY = 97;
+    goto L_WarpPlayer;
+
+L_Orange:
+    // Graveyard
+    @NextLocationMap$ = "027-1";
+    @NextLocationX = 70;
+    @NextLocationY = 100;
+    goto L_WarpPlayer;
+
+L_Pink:
+    // Terranite Cave
+    @NextLocationMap$ = "012-3";
+    @NextLocationX = 448;
+    @NextLocationY = 66;
+    goto L_WarpPlayer;
+
+L_Teal:
+    // Mana Seed
+    @NextLocationMap$ = "012-3";
+    @NextLocationX = 64;
+    @NextLocationY = 130;
+    goto L_WarpPlayer;
+
+L_Lime:
+    // Pachua
+    @NextLocationMap$ = "006-1";
+    @NextLocationX = 28;
+    @NextLocationY = 97;
+    goto L_WarpPlayer;
+
+L_Save:
+    // Soul Menhir
+    @NextLocationMap$ = getsavepoint(0);
+    @NextLocationX = getsavepoint(1);
+    @NextLocationY = getsavepoint(2);
+    goto L_WarpPlayer;
+
+L_WarpPlayer:
+    TowelLastUsed = gettimetick(2);
+    warp @NextLocationMap$,@NextLocationX,@NextLocationY;
+    goto L_BreakChance;
+
+L_BreakChance:
+    if (rand(15))
+        goto L_Keep;
+    getitem "HitchhikersTowel", 1;
+    goto L_End;
+
+L_Forbid:
+    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the power of the Towel.";
+    goto L_Keep;
+
+L_Prison:
+    message strcharinfo(0), "You must be warped by a GM to leave the botcheck area.";
+    goto L_Keep;
+
+L_DontPanic:
+    message strcharinfo(0), "Your towel is still too low on power to jump again.";
+    goto L_Keep;
+
+L_Keep:
+    getitem @warpTowelName$, 1;
+    goto L_End;
+
+L_End:
+    @NextLocationMap$ = "";
+    @NextLocationX = 0;
+    @NextLocationY = 0;
+    @warpTowelName$ = "";
+    end;
+}
+
+function	script	MultiWarpTowel	{
+    setarray $@warpTowels$, "HitchhikersTowel", "WhiteHitchhikersTowel", "RedHitchhikersTowel", "GreenHitchhikersTowel", "BlueHitchhikersTowel", "YellowHitchhikersTowel", "PurpleHitchhikersTowel", "OrangeHitchhikersTowel", "PinkHitchhikersTowel", "TealHitchhikersTowel", "LimeHitchhikersTowel";
+    @towel_count = 0;
+    @towel_loop = 0;
+    goto L_CountTowelLoop;
+
+L_CountTowelLoop:
+    @towel_count = (@towel_count + countitemcolor($@warpTowels$[@towel_loop]));
+    delitem $@warpTowels$[@towel_loop], countitemcolor($@warpTowels$[@towel_loop]);
+    goto L_DelLoopAgain;
+
+L_DelLoopAgain:
+    if((@towel_loop + 1) == getarraysize($@warpTowels$))
+        goto L_Return;
+    @towel_loop = (@towel_loop + 1);
+    goto L_CountTowelLoop;
+
+L_Return:
+    cleararray $@warpTowels$, "", getarraysize($@warpTowels$);
+    return;
+}
+

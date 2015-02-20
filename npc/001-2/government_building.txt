@@ -1,0 +1,139 @@
+
+001-2,25,21,0	script	Estard	107,{
+    mes "[Estard]";
+    mes "\"Hello what can I do for you?\"";
+    next;
+    if (getpartnerid())
+        goto L_Main_married;
+
+    menu
+        "I'm looking at getting married.", L_marry,
+        "Nothing, I guess.", L_Close;
+
+L_Main_married:
+    menu
+        "I'd like a divorce.", L_divorce,
+        "Nothing, I guess.", L_Close;
+
+L_marry:
+    if (BaseLevel < WEDDING_MIN_LEVEL)
+        goto L_marry_too_young;
+    if (Zeny < WEDDING_FEE)
+        goto L_marry_too_poor;
+
+    mes "[Estard]";
+    mes "\"Are you sure you want to get married? It'll cost " + WEDDING_FEE + " GP.\"";
+    menu
+        "Yes", L_marry_do,
+        "No", L_Close;
+
+L_marry_do:
+    callsub S_give_rings;
+
+    mes "[Estard]";
+    mes "\"Here are your rings. You can get married by standing in one of the designated places (like that small rug over there) with your partner, give them their ring, and say 'marry (their name here)'. You both need to have your rings on.\"";
+    close;
+
+L_marry_too_young:
+    mes "[Estard]";
+    mes "\"I'm sorry, but you are too young to get married. You must be atleast " + WEDDING_MIN_LEVEL + " levels old.\"";
+    next;
+
+    menu
+        "Can I at least get wedding rings?", L_Get_rings,
+        "Thanks anyways.", L_Close;
+
+L_marry_too_poor:
+    mes "[Estard]";
+    mes "\"You need " + WEDDING_FEE + " GP to get married. That covers all administrative fees for the marriage and provides two wedding rings.\"";
+    close;
+
+L_Get_rings:
+    mes "[Estard]";
+    mes "\"Yes. They are " + WEDDING_FEE + " GP. That covers all administrative fees for the marriage.\"";
+
+    if (Zeny < WEDDING_FEE)
+        menu
+            "Thanks anyways. I don't have enough with me.", L_Close;
+    if (Zeny >= WEDDING_FEE)
+        menu
+            "I'll buy a pair.", L_Get_rings_pay,
+            "Thanks anyways.", L_Close;
+    goto L_Get_rings_pay;
+
+L_Get_rings_pay:
+    callsub S_give_rings;
+
+    mes "[Estard]";
+    mes "\"There you go. Come again.\"";
+    close;
+
+L_divorce:
+    @divorce_cost = DIVORCE_FEE_PER_LEVEL * BaseLevel;
+
+    if (Zeny < @divorce_cost)
+        goto L_divorce_not_enough;
+
+    mes "[Estard]";
+    mes "\"If you're sure you want a divorce, it'll cost you " + @divorce_cost + " GP.\"";
+    next;
+    menu
+        "I am sure I want it.", L_do_divorce,
+        "I don't want it.", L_Close;
+
+L_do_divorce:
+    if (Zeny < @divorce_cost)
+        goto L_not_enough_money;
+
+    if (divorce())
+        goto L_divorce_done;
+
+    mes "[Estard]";
+    mes "\"I'm having trouble finding the record. \"";
+    mes "[Server]";
+    mes "Try again when your partner is online too.";
+    close;
+
+L_divorce_done:
+    Zeny = Zeny - @divorce_cost;
+
+    mes "[Estard]";
+    mes "\"You have been divorced. Come again.\"";
+    close;
+
+L_divorce_not_enough:
+    mes "[Estard]";
+    mes "\"I'm sorry , but you don't have enough money to get a divorce. You need " + @divorce_cost + " GP.\"";
+    close;
+
+L_not_enough_money:
+    mes "[Estard]";
+    mes "\"Seems you don't have enough money.\"";
+    close;
+
+L_no_room_for_rings:
+    mes "[Estard]";
+    mes "\"You don't have enough room to carry these rings.\"";
+    close;
+
+L_Close:
+    close;
+
+S_give_rings:
+    if (Zeny < WEDDING_FEE)
+        goto L_not_enough_money;
+    getinventorylist;
+    if (@inventorylist_count > 98)
+        goto L_no_room_for_rings;
+
+    Zeny = Zeny - WEDDING_FEE;
+    getitem "WeddingRing", 1;
+    getitem "WeddingRing", 1;
+    return;
+}
+
+001-2,22,21,0	script	Guard#govt_in	123,{
+    mes "[Guard]";
+    mes "\"You can't come back here.\"";
+    close;
+}

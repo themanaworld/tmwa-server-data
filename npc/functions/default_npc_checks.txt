@@ -1,0 +1,127 @@
+
+function	script	PCtoNPCRange	{
+    @npc_check = 0;
+    @Nmap$ = getmapname() + "";
+    @Nx1 = (@npc_loc[0] - @npc_loc[2]);
+    @Ny1 = (@npc_loc[1] - @npc_loc[2]);
+    @Nx2 = (@npc_loc[0] + @npc_loc[2]);
+    @Ny2 = (@npc_loc[1] + @npc_loc[2]);
+    if (isin(@Nmap$, @Nx1, @Ny1, @Nx2, @Ny2))
+        goto L_Return;
+    @npc_check = 1;
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function	script	CheckInventory	{
+    @del_loop = 0;
+    @get_loop = 0;
+    @delitem_loop = 0;
+    @getitem_loop = 0;
+    @check_fail = 0;
+    @msg_loop = 0;
+
+    if (getarraysize(@delitem_ids))
+        goto L_DelItemsLoop;
+    goto L_CheckGet;
+
+L_DelItemsLoop:
+    if(countitemcolor(@delitem_ids[@delitem_loop]) >= @delitem_counts[@delitem_loop])
+        goto L_DelLoopAgain;
+    goto L_ReturnMissing;
+
+L_DelLoopAgain:
+    @delitem_loop = (@delitem_loop + 1);
+    if(@delitem_loop == getarraysize(@delitem_ids))
+        goto L_CheckGet;
+    goto L_DelItemsLoop;
+
+L_CheckGet:
+    if (getarraysize(@getitem_ids))
+        goto L_CheckWeight;
+    goto L_DelCheck;
+
+L_CheckWeight:
+    getinventorylist;
+    if (100 < (@inventorylist_count + getarraysize(@getitem_ids)))
+        goto L_ReturnSpace;
+    goto L_GetItemsLoop;
+
+L_GetItemsLoop:
+    if (checkweight(@getitem_ids[@getitem_loop], @getitem_counts[@getitem_loop]))
+        goto L_GetLoopAgain;
+    goto L_ReturnWeight;
+
+L_GetLoopAgain:
+    @getitem_loop = (@getitem_loop + 1);
+    if(@getitem_loop == getarraysize(@getitem_ids))
+        goto L_DelCheck;
+    goto L_GetItemsLoop;
+
+L_DelCheck:
+    if (getarraysize(@delitem_ids))
+        goto L_DelLoop;
+    goto L_CheckGet2;
+
+L_DelLoop:
+    delitem @delitem_ids[@del_loop], @delitem_counts[@del_loop];
+    goto L_DelAgain;
+
+L_DelAgain:
+    @del_loop = (@del_loop + 1);
+    if(@del_loop == getarraysize(@delitem_ids))
+        goto L_GetLoop;
+    goto L_DelLoop;
+
+L_CheckGet2:
+    if (getarraysize(@getitem_ids))
+        goto L_GetLoop;
+    goto L_Return;
+
+L_GetLoop:
+    misceffect FX_GETITEM, strcharinfo(0);
+    getitem @getitem_ids[@get_loop], @getitem_counts[@get_loop];
+    goto L_GetAgain;
+
+L_GetAgain:
+    @get_loop = (@get_loop + 1);
+    if(@get_loop == getarraysize(@getitem_ids))
+        goto L_Return;
+    goto L_GetLoop;
+
+L_ReturnMissing:
+    @check_fail = 1;
+    mes "\"You are missing required items.\"";
+    goto L_MissingMsg;
+
+L_MissingMsg:
+    mes "[@@"+@delitem_ids[@msg_loop]+"|"+getitemname(@delitem_ids[@msg_loop])+"@@] "+countitemcolor(getitemname(@delitem_ids[@msg_loop]))+"/"+@delitem_counts[@msg_loop];
+    goto L_NextMsgCheck;
+
+L_NextMsgCheck:
+    @msg_loop = (@msg_loop + 1);
+    if(@msg_loop == getarraysize(@delitem_ids))
+        goto L_Return;
+    goto L_MissingMsg;
+
+L_ReturnWeight:
+    mes "\"You need to be carrying less weight.\"";
+    next;
+    @check_fail = 1;
+    goto L_Return;
+
+L_ReturnSpace:
+    mes "\"You need more room in your inventory.\"";
+    next;
+    @check_fail = 1;
+    goto L_Return;
+
+L_Return:
+    cleararray @delitem_ids, "", getarraysize(@delitem_ids);
+    cleararray @delitem_counts, "", getarraysize(@delitem_counts);
+    cleararray @getitem_ids, "", getarraysize(@getitem_ids);
+    cleararray @getitem_counts, "", getarraysize(@getitem_counts);
+    return;
+}

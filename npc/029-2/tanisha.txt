@@ -1,0 +1,294 @@
+
+029-2,110,88,0	script	Tanisha	114,{
+    setarray @npc_loc, 110, 88, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
+
+    if (isin("029-2", 98, 84, 106, 89))
+        goto L_Fighting;
+
+    callfunc "TutorialState";
+    if (@tutorial >= 8) goto L_Tut_Done;
+    if (@tutorial == 7) goto L_Stats;
+    if (@tutorial == 6) goto L_Fail;
+    if (@tutorial == 5) goto L_Maggots;
+
+    mes "[Tanisha]";
+    mes "\"Hey! You're up again!\"";
+    emotion EMOTE_HAPPY;
+    mes "\"Are you feeling better?\"";
+    menu
+        "Yes, thank you.",L_Next,
+        "Yeah, but everything is gone. My stuff and memories..",L_Next;
+
+L_Next:
+    mes "[Tanisha]";
+    mes "\"I'm glad you're feeling better. It was really bad luck what happened to you.";
+    mes "Hey, I have an idea.\"";
+    @tutorial_tmp = 5;
+    callfunc "SetTutorialMask";
+    goto L_Maggots;
+
+L_Maggots:
+    mes "[Tanisha]";
+    mes "\"There are some maggots eating the goods and I'm supposed to get rid of them.";
+    mes "But they're so yucky!\"";
+    mes "\"If you kill them, I'll give you my knife.";
+    mes "What do you say?\"";
+    menu
+        "I guess it's the least I can do.",L_Next1;
+
+L_Next1:
+    mes "[Tanisha]";
+    mes "\"Wonderful.";
+    // since the check happens here, it is actually possible to have
+    // more than $@Maggot_MaxHunters in the area at one time
+    // but that's not a BIG problem
+    if (getareausers("029-2", 98, 84, 106, 89) >= $@Maggot_MaxHunters)
+        goto L_Crowded;
+    next;
+    goto L_Fight_Again;
+
+L_Fight_Again:
+    mes "[Tanisha]";
+    mes "\"Ok, listen what to do.";
+    mes "Equip a weapon and kill the maggots.\"";
+    mes "\"Press [###keyTargetMonster;] to focus on a monster. With [###keyTargetAttack;] you can focus and start attacking the same time.";
+    mes "But it also works to click on the monster with your mouse.\"";
+    next;
+    mes "\"If you press the [###keyTarget;], you can abort your attack.\"";
+    next;
+    mes "\"Maggots aren't aggressive, so they won't harm you until you attack them first. Take them out one by one.\"";
+    next;
+    mes "\"Sometimes dead monsters leave some useful things. You can pick them up by pressing [###keyPickup;] or clicking on the items with your mouse.\"";
+    close2;
+    // The getitem must be in the same place as set @tutorial, 2;
+    // since it was moved to after L_Fight_Again, add it conditionally
+    callfunc "TutorialState";
+    if (@tutorial == 5)
+        goto L_GetFightItems;
+    goto L_ContinueFight;
+
+L_GetFightItems:
+    @tutorial_tmp = 6;
+    callfunc "SetTutorialMask";
+    getitem "Knife", 1;
+    getitem "SlingShot", 1;
+    getitem "SlingBullet", 500;
+    goto L_ContinueFight;
+
+L_ContinueFight:
+    @tutorial_tmp = 6;
+    callfunc "SetTutorialMask";
+    @Maggot_Kills = 0;
+    @time = 0;
+    if (getareausers("029-2", 98, 84, 106, 89) == 0)
+        initnpctimer;
+    warp "029-2", 101, 87;
+    goto L_Summon;
+
+L_Summon:
+    areamonster "029-2", 98, 84, 106, 89, "", 1002, 1, "Tanisha::OnMaggotDeath";
+    end;
+
+L_Stats:
+    mes "[Tanisha]";
+    mes "\"That was great! Like a professional exterminator!\"";
+    mes "\"And it seems you became stronger and more experienced.";
+    mes "That means you got some status points which you can use to increase your abilities.\"";
+    mes "\"Press [###keyWindowStatus;] or click the Status button in the bar at the upper right to see your status window. There you can distribute your points on six different properties.\"";
+    next;
+    goto L_StatsRe;
+
+L_StatsRe:
+    mes "\"Strength makes you hit harder and you can carry more weight.\"";
+    mes "\"Agility increases your attack speed and your ability to dodge attacks.\"";
+    mes "\"Vitality gives you more hit points and more defense against physical attacks.\"";
+    mes "\"Intelligence is useful for magic attack and defense.";
+    mes "But as long as you don't know any magic, you shouldn't use your points on this.\"";
+    mes "\"Dexterity is needed to hit monsters. It's also very important for the damage if you use a ranged weapon.\"";
+    mes "\"Luck gives you the chance to do critical hits and lowers the chance to receive a critical hit from your opponent.\"";
+    next;
+    mes "\"Think about how you want to play before assigning the points.\"";
+    mes "\"My Uncle sitting at the counter knows a spell to help the younglings reset their stats.\"";
+    mes "\"He also knows of mages with even more powerful reset spells.\"";
+    next;
+    callfunc "TutorialState";
+    if (@tutorial == 7)
+        goto L_Money;
+    goto L_Advice;
+
+L_Money:
+    next;
+    mes "[Tanisha]";
+    mes "\"Hey, you are so smart taking out all that yucky maggots for me.";
+    mes "You can have my pocket money. Here.\"";
+    @tutorial_tmp = 8;
+    callfunc "SetTutorialMask";
+    Zeny = Zeny + 5;
+    next;
+    goto L_Advice;
+
+L_Advice:
+    mes "\"When you go to Hurnscald, you should see Bernard. He can make a delicious soup!";
+    mes "Good luck!\"";
+    emotion EMOTE_HAPPY;
+    goto L_Close;
+
+L_Explain:
+    menu
+        "... how to fight?",L_Fight,
+        "... monsters?",L_Mob,
+        "... status points?",L_StatsRe,
+        "... what to do in Hurnscald?",L_Advice,
+        "... nevermind.",L_Close;
+
+L_Fight:
+    mes "[Tanisha]";
+    mes "\"Press [###keyTargetMonster;] to focus on a monster. With [###keyTargetAttack;] you can focus and attack.";
+    mes "But it also works to click on the monster with your mouse.\"";
+    next;
+    mes "\"If you press the [###keyTarget;] button, you can abort your attack.\"";
+    next;
+    mes "\"Sometimes dead monsters leave some useful things. You can pick them up with pressing [###keyPickup;] or clicking on the items with your mouse.\"";
+    next;
+    mes "\"If you feel exhausted from battle you can sit down by pressing [###keyBeingSit;] to recover faster.\"";
+    goto L_Close;
+
+L_Mob:
+    mes "[Tanisha]";
+    mes "\"I don't know much about monsters, I'm just a little girl. But I know a few things.";
+    mes "There are several types of monsters...Aggressive, Neutral, and Assistants.\"";
+    next;
+    mes "\"Aggressive monsters will attack you as soon as they see you.\"";
+    next;
+    mes "\"Neutral monsters are peaceful until they get attacked.\"";
+    next;
+    mes "\"Assistants are monsters who help each other.\"";
+    goto L_Close;
+
+L_Tut_Done:
+    mes "[Tanisha]";
+    mes "\"These yucky maggots! They're eating our goods!";
+    mes "No matter how many of them you kill, they always come back.\"";
+    mes "She sighs.";
+    mes "[Tanisha]";
+    mes "\"Do you have any questions?\"";
+    menu
+        "Yes, could you explain about...", L_Explain,
+        "No, thanks.", L_Close;
+
+L_Crowded:
+    mes "[Tanisha]";
+    mes "\"That's great! But...";
+    mes "it seems a little crowded in there.\"";
+    mes "\"Let's wait a short while.\"";
+    goto L_Close;
+
+L_Sleep:
+    warp "029-2", 101, 87;
+    mes "[Tanisha]";
+    mes "\"What are you doing in there?";
+    mes "Sleeping?";
+    mes "Come back when you're serious.\"";
+    @Maggot_Kills = 0;
+    @time = 0;
+    close2;
+    if (getareausers("029-2", 98, 84, 106, 89) == 0)
+        goto L_CleanUp;
+    end;
+
+L_Fail:
+    mes "Tanisha seems to be trying hard to supress laughter.";
+    mes "[Tanisha]";
+    mes "\"The maggots defeated you.\"";
+    mes "She bursts out with laughter.";
+    mes "\"Oops, I'm sorry. It's just too funny.";
+    mes "Do you want to try it again?\"";
+    menu
+        "Sure!", L_Next2,
+        "No, I need a rest.", L_Close;
+
+L_Next2:
+    if (getareausers("029-2", 98, 84, 106, 89) >= $@Maggot_MaxHunters)
+        goto L_Crowded;
+    goto L_Fight_Again;
+
+L_Fighting:
+    message strcharinfo(0), "Tanisha: I believe in you!";
+    end;
+
+OnTimer1000:
+    setnpctimer 0;
+    if (getareausers("029-2", 98, 84, 106, 89) == 0)
+        goto L_CleanUp;
+    // This is needed because multiple players can be in the area at once
+    areatimer "029-2", 98, 84, 106, 89, 0, "Tanisha::OnTick";
+    end;
+
+L_CleanUp:
+    killmonster "029-2", "Tanisha::OnMaggotDeath";
+    $@Maggot_Hunters = 0;
+    stopnpctimer;
+    areamonster "029-2", 98, 84, 106, 89, "", 1002, 1, "Tanisha::OnMaggotDeath";
+    end;
+
+OnTick:
+    @time = @time + 1;
+    if (@time > 300)
+        goto L_Sleep;
+    if (ispcdead())
+        end;
+    if (Hp > 20)
+        end;
+    heal MaxHp, 0;
+    message strcharinfo(0), "Tanisha: You're doing good!";
+    end;
+
+OnMaggotDeath:
+    if (@Maggot_Kills == 1)
+        message strcharinfo(0), "Tanisha: Aaahhhh... another one! It will crawl up your legs!";
+    if (@Maggot_Kills == 2)
+        message strcharinfo(0), "Tanisha: Ohh... Irrhk... Eeeeww... They just appear from nowhere!";
+    if (@Maggot_Kills == 3)
+        message strcharinfo(0), "Tanisha: Yuck... I think I am getting sick.";
+    if (isin("029-2", 98, 84, 106, 89))
+        @Maggot_Kills = @Maggot_Kills + 1;
+    if (@Maggot_Kills < 5)
+        goto L_Summon;
+    // else, complete
+    warp "029-2", 110, 88;
+    @tutorial_tmp = 7;
+    callfunc "SetTutorialMask";
+    @Maggot_Kills = 0;
+    @time = 0;
+    if (getareausers("029-2", 98, 84, 106, 89) == 0)
+        goto L_CleanUp;
+    end;
+
+L_Close:
+    close;
+
+OnInit:
+    $@Maggot_MaxHunters = 4;
+    areamonster "029-2", 98, 84, 106, 89, "", 1002, 1, "Tanisha::OnMaggotDeath";
+    end;
+}
+029-2,114,93,0	script	#DoorOutTut2	45,0,0,{
+    end;
+
+OnTouch:
+    callfunc "TutorialState";
+    if (@tutorial >= 8)
+        goto L_Warp;
+    goto L_Block;
+
+L_Warp:
+    warp "029-1", 32, 100;
+    end;
+
+L_Block:
+    message strcharinfo(0), "Tanisha: Please come here. I'd like some help!";
+    end;
+}

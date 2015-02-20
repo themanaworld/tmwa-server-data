@@ -1,0 +1,249 @@
+
+function	script	Banker	{
+    if (BankAccount == 0)
+        goto L_Start;
+    callsub S_MoveAccount;
+    goto L_Start;
+
+L_Start:
+    mes "[" + @npcname$ + "]";
+    mes "\"Welcome to the bank!";
+    mes "How can I help you?\"";
+    next;
+    menu
+        "Open my storage", L_Storage,
+        "Deposit", L_Dep,
+        "Withdraw", L_With,
+        "Check my balance", L_Balance,
+        "Change Bank Options", L_Change,
+        "Nevermind", L_Nev;
+
+L_Storage:
+    if (#BankOptions & OPT_STORAGE_CLOSE) close2;
+    openstorage;
+    if (#BankOptions & OPT_STORAGE_CLOSE) end;
+    goto L_Start;
+
+L_Dep:
+    mes "[" + @npcname$ + "]";
+    mes "\"How much would you like to deposit?\"";
+    next;
+    menu
+        "Other", L_Dep_Input,
+        "5,000 GP", L_Dep_5k,
+        "10,000 GP", L_Dep_10k,
+        "25,000 GP", L_Dep_25k,
+        "50,000 GP", L_Dep_50k,
+        "100,000 GP", L_Dep_100k,
+        "250,000 GP", L_Dep_250k,
+        "500,000 GP", L_Dep_500k,
+        "1,000,000 GP", L_Dep_1kk,
+        "All of my money", L_Dep_All,
+        "I've changed my mind", L_Start,
+        "Quit", L_Return;
+
+L_Dep_Input:
+    input @Amount;
+    if (@Amount >= 0)
+        goto L_Dep_Continue;
+    mes "[" + @npcname$ + "]";
+    mes "\"I need a positive amount. What would you like to do?\"";
+    menu
+        "Go back", L_Start,
+        "Try again", L_Dep_Input,
+        "Deposit all", L_Dep_All,
+        "Nevermind", L_Nev;
+
+L_Dep_5k:
+    if (Zeny<5000)
+        goto L_NoMoney;
+    @Amount = 5000;
+    goto L_Dep_Continue;
+
+L_Dep_10k:
+    if (Zeny<10000)
+        goto L_NoMoney;
+    @Amount = 10000;
+    goto L_Dep_Continue;
+
+L_Dep_25k:
+    if (Zeny<25000)
+        goto L_NoMoney;
+    @Amount = 25000;
+    goto L_Dep_Continue;
+
+L_Dep_50k:
+    if (Zeny<50000)
+        goto L_NoMoney;
+    @Amount = 50000;
+    goto L_Dep_Continue;
+
+L_Dep_100k:
+    if (Zeny<100000)
+        goto L_NoMoney;
+    @Amount = 100000;
+    goto L_Dep_Continue;
+
+L_Dep_250k:
+    if (Zeny<250000)
+        goto L_NoMoney;
+    @Amount = 250000;
+    goto L_Dep_Continue;
+
+L_Dep_500k:
+    if (Zeny<500000)
+        goto L_NoMoney;
+    @Amount = 500000;
+    goto L_Dep_Continue;
+
+L_Dep_1kk:
+    if (Zeny<1000000)
+        goto L_NoMoney;
+    @Amount = 1000000;
+    goto L_Dep_Continue;
+
+L_Dep_All:
+    if (Zeny<1)
+        goto L_NoMoney;
+    @Amount = Zeny;
+    goto L_Dep_Continue;
+
+L_Dep_Continue:
+    if (Zeny < @Amount)
+        goto L_NoMoney;
+    Zeny = Zeny - @Amount;
+    #BankAccount = #BankAccount + @Amount;
+    goto L_Balance;
+
+L_With:
+    mes "[" + @npcname$ + "]";
+    mes "\"How much would you like to withdraw?\"";
+    menu
+        "Other", L_With_Input,
+        "5,000 GP", L_With_5k,
+        "10,000 GP", L_With_10k,
+        "25,000 GP", L_With_25k,
+        "50,000 GP", L_With_50k,
+        "100,000 GP", L_With_100k,
+        "250,000 GP", L_With_250k,
+        "500,000 GP", L_With_500k,
+        "1,000,000 GP", L_With_1kk,
+        "All of my money", L_With_All,
+        "I've changed my mind", L_Start,
+        "Quit", L_Return;
+
+L_With_Input:
+    input @Amount;
+    if (@Amount >= 0)
+        goto L_With_Continue;
+    mes "[" + @npcname$ + "]";
+    mes "\"I need a positive amount. What would you like to do?\"";
+    menu
+        "Go back", L_Start,
+        "Try again", L_With_Input,
+        "Withdraw all", L_With_All,
+        "Nevermind", L_Nev;
+
+L_With_5k:
+    if (#BankAccount < 5000)
+        goto L_NoMoney;
+    @Amount = 5000;
+    goto L_With_Continue;
+
+L_With_10k:
+    if (#BankAccount < 10000)
+        goto L_NoMoney;
+    @Amount = 10000;
+    goto L_With_Continue;
+
+L_With_25k:
+    if (#BankAccount < 25000)
+        goto L_NoMoney;
+    @Amount = 25000;
+    goto L_With_Continue;
+
+L_With_50k:
+    if (#BankAccount < 50000)
+        goto L_NoMoney;
+    @Amount = 50000;
+    goto L_With_Continue;
+
+L_With_100k:
+    if (#BankAccount < 100000)
+        goto L_NoMoney;
+    @Amount = 100000;
+    goto L_With_Continue;
+
+L_With_250k:
+    if (#BankAccount < 250000)
+        goto L_NoMoney;
+    @Amount = 250000;
+    goto L_With_Continue;
+
+L_With_500k:
+    if (#BankAccount < 500000)
+        goto L_NoMoney;
+    @Amount = 500000;
+    goto L_With_Continue;
+
+L_With_1kk:
+    if (#BankAccount < 1000000)
+        goto L_NoMoney;
+    @Amount = 1000000;
+    goto L_With_Continue;
+
+L_With_All:
+    if (#BankAccount < 0)
+        goto L_NoMoney;
+    @Amount = #BankAccount;
+    goto L_With_Continue;
+
+L_With_Continue:
+    if (#BankAccount < @Amount)
+        goto L_NoMoney;
+    Zeny = Zeny + @Amount;
+    #BankAccount = #BankAccount - @Amount;
+    goto L_Balance;
+
+L_Balance:
+    mes "[" + @npcname$ + "]";
+    mes "\"Your current bank balance is:";
+    mes #BankAccount + " GP\"";
+    if (#BankOptions & OPT_BANK_CLOSE) close;
+    goto L_Start;
+
+L_Nev:
+    mes "[" + @npcname$ + "]";
+    mes "\"Goodbye then.\"";
+    return;
+
+L_NoMoney:
+    mes "[" + @npcname$ + "]";
+    mes "\"Oh dear, it seems that you don't have enough money.\"";
+    goto L_Start;
+
+S_MoveAccount:
+    #BankAccount = #BankAccount + BankAccount;
+    BankAccount = 0;
+    return;
+
+L_Change:
+    setarray @menuitems$, "Keep the current settings", "Close NPC dialog after selecting storage option", "Close NPC dialog after checking your balance";
+    if (#BankOptions & OPT_STORAGE_CLOSE) set @menuitems$[1], "Return to main menu after leaving storage";
+    if (#BankOptions & OPT_BANK_CLOSE) set @menuitems$[2], "Return to main menu after leaving bank";
+    menu
+        @menuitems$[0], L_Start,
+        @menuitems$[1], L_Change_Storage,
+        @menuitems$[2], L_Change_Bank;
+
+L_Change_Storage:
+    #BankOptions = (#BankOptions ^ OPT_STORAGE_CLOSE);
+    goto L_Start;
+
+L_Change_Bank:
+    #BankOptions = (#BankOptions ^ OPT_BANK_CLOSE);
+    goto L_Start;
+
+L_Return:
+    return;
+}

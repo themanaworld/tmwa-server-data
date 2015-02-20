@@ -1,0 +1,85 @@
+
+048-2,94,86,0	script	Henriikka	363,{
+    @investigate = ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    @bookpages = ((QUEST_BlueSage & $@Q_BlueSageBookPages_MASK) >> $@Q_BlueSageBookPages_SHIFT);
+
+    if (@bookpages == 31) goto L_Thank;
+    if (@bookpages > 0) goto L_Progress;
+
+    mes "You see a helper looking through some papers that have a strange smell.";
+    mes "[Henriikka]";
+    mes "\"Oh, hey. Welcome to the library, or what's left of it.\"";
+    mes "She sighs.";
+    menu
+        "What are you doing?",L_Next,
+        "You seem to be busy. See you.",L_Close;
+
+L_Next:
+    mes "[Henriikka]";
+    mes "\"We're trying to repair the books by collecting the ripped out bookpages and sorting them and copying them for new books. It's a lot to do, and after being eaten by a slime they stink!";
+    mes "And a lot of pages are missing, since most of the slimes escaped. I suppose we'll have to go out and hunt them once we're done here.\"";
+    menu
+        "Maybe I can help with that?",L_Collect,
+        "Good luck.",L_Close;
+
+L_Collect:
+    if (BaseLevel < $@Q_BlueSageMinimumLevel)
+        goto L_Careful;
+    mes "[Henriikka]";
+    mes "\"Oh, that'd be awesome! If you find some pages, you can bring them to Ensio.\"";
+    goto L_Investigate;
+
+L_Careful:
+    mes "[Henriikka]";
+    mes "\"Oh, that's very kind, but those slimes are dangerous! Better become a bit stronger first.\"";
+    goto L_Close;
+
+L_Progress:
+    mes "[Henriikka]";
+    mes "\"If you get any bookpages from the slimes, bring them to Ensio. Thanks for your help!\"";
+    goto L_Investigate;
+
+L_Thank:
+    mes "[Henriikka]";
+    mes "\"I'm so glad we didn't have to go out to hunt the slimes! Thank you!\"";
+    goto L_Investigate;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "I need to leave.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "See you later.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Visitor:
+    mes "[Henriikka]";
+    mes "\"With a mask? I don't really remember... We have so many visitors. Though I suppose someone wearing a mask would be noticeable... But I'm so worn out from the past few days that I'm just glad I can even recall my own name! Sorry.\"";
+    goto L_Close;
+
+L_Helper:
+    mes "[Henriikka]";
+    mes "\"Oh, I never really thought about that. He was the one who failed the sealing spell, right? But I heard it's a quite difficult spell, so I suppose this could've happened to anyone. I don't know. Why are you asking such difficult questions?\"";
+    next;
+    mes "\"I need to go on with sorting the bookpages now.\"";
+    goto L_Close;
+
+L_Close:
+    @investigate = 0;
+    @bookpages = 0;
+    close;
+}

@@ -1,0 +1,238 @@
+
+009-2,63,79,0	script	Olana	190,{
+    @minLevel = 60;
+
+    @Cherry_Amount = 10;
+    @Cherry_EXP = 1000;
+    @Cherry_Money = 1000;
+
+    @RedRose_Amount = 15;
+    @RedTulip_Amount = 15;
+    @Flower_Money = 1500;
+
+    @Finish_EXP = 5000;
+    @Finish_Money = 5000;
+
+    if (FLAGS & FLAG_ROSSI_COMPLETED) goto L_FinalEnd;
+    if (Rossy_Quest == 17 || Rossy_Quest == 18) goto L_End;
+
+    if (Rossy_Quest >= 14 && Rossy_Quest <= 16) goto L_Julia;
+    if (Rossy_Quest == 13) goto L_Best;
+    if (Rossy_Quest == 12) goto L_Give;
+    if (Rossy_Quest == 11) goto L_Allergic;
+    if (Rossy_Quest == 10) goto L_BringRose;
+    if (Rossy_Quest == 9) goto L_RC;
+    if (Rossy_Quest == 8) goto L_Rose;
+    if (Rossy_Quest >= 6 && Rossy_Quest < 8) goto L_BL;
+    if (Rossy_Quest == 5) goto L_Bring;
+    if (Rossy_Quest == 4) goto L_See;
+    if (Rossy_Quest == 3) goto L_Worried;
+    if (Rossy_Quest == 1 || Rossy_Quest == 2) goto L_Daughter;
+
+    mes "[Olana]";
+    mes "\"Hello. We don't usually get guests back here.\"";
+    next;
+    mes "\"My name is Olana and my father owns this inn. I live in Tulimshar, but came to Hurnscald on vacation with my two young daughters, Rossy and Julia.\"";
+    if (BaseLevel < @minLevel) close;
+    next;
+    mes "\"I let my two lovely girls play in the woods nearby but they haven't come back yet!\"";
+    next;
+    mes "Olana suddenly looks very pale and starts to shiver.";
+    next;
+    mes "\"I'm starting to get a bad feeling about this. If you go to the forest near the swamps, could you see if you can find my daughters? I need to know if they are safe!\"";
+    menu
+        "Sure, I can do that.", L_Next,
+        "I am sorry, I don't usually go to that area.", L_No;
+
+L_Next:
+    Rossy_Quest = 1;
+    close;
+
+L_Daughter:
+    mes "Olana looks really worried - she seems about to burst into tears.";
+    mes "[Olana]";
+    mes "\"I would be relieved if you could look for my daughters.";
+    mes "They must be playing in the forest near the swamps.\"";
+    if (Rossy_Quest == 1)
+        close;
+    next;
+    menu
+        "Wait, I saw Rossy, she is fine.", L_Help,
+        "Hey, don't worry, I'm sure they'll be back soon.", L_No;
+
+L_No:
+    close;
+
+L_Help:
+    mes "[Olana]";
+    mes "\"Oh you did? That's good. I'm relieved. But what about Julia?\"";
+    next;
+    menu
+        "I haven't found Julia yet, sorry.", L_Next1;
+
+L_Next1:
+    mes "\"Ok. They must be playing hide and seek. Thanks again... I can't express how grateful I am.\"";
+    Rossy_Quest = 3;
+    close;
+
+L_Worried:
+    mes "Olana smiles at you, trying to show some happiness, but her facial expression only conveys tension and preoccupation.";
+    next;
+    mes "You suddenly remember that Rossy asked for your help to collect some fruits. Maybe she could also have some ideas on how to cheer her mother up.";
+    close;
+
+L_See:
+    if (gotcherry == 1)
+        goto L_Task;
+    if (countitemcolor("Cherry") < @Cherry_Amount)
+        goto L_Worried;
+    delitem "Cherry", @Cherry_Amount;
+    menu
+        "Hi, Rossy asked me to give you this. She says it is a gift from both her and Julia.", L_Next2;
+
+L_Next2:
+    mes "[Olana]";
+    mes "\"Ohhh... How sweet... Sometimes Rossy impresses me with her kindness. Here... You are spending so much time helping us, and we give nothing back. Take this as a small reward.\"";
+    getexp @Cherry_EXP, 0;
+    Zeny = Zeny + @Cherry_Money;
+    gotcherry = 1;
+    goto L_Task;
+
+L_Task:
+    mes "[Olana]";
+    mes "\"I know I barely know you, but can I ask you for a small favor?\"";
+    menu
+        "Sure, tell me about it.", L_Cont,
+        "No, sorry, I'm busy.", L_No;
+
+L_Cont:
+    mes "[Olana]";
+    mes "\"Would you mind giving this letter to my little Rossy? Today is the last day for her final exam, and I know my daughter. If I don't remind her, she will surely forget about it and flunk the exam. I would deliver the letter myself, but I can't walk, my aching knees...\"";
+    menu
+        "Of course I can. Hand me the letter, I'll give it to Rossy as soon as I see her.", L_Let,
+        "No, sorry, I'm not interested in that sort of task. Hand it to her yourself.", L_No;
+
+L_Let:
+    mes "[Olana]";
+    Rossy_Quest = 5;
+    gotcherry = 0;
+    mes "\"Thank you again. Please, bring it to her as fast as you can.\"";
+    close;
+
+L_Bring:
+    mes "[Olana]";
+    mes "\"Please, bring this letter to my daughter as fast as you can.\"";
+    close;
+
+L_BL:
+    mes "[Olana]";
+    mes "\"Good, now she won't forget her final exam.\"";
+    close;
+
+L_Rose:
+    menu
+        "Hi, Rossy did great in the exam. David told me her potion was flawless.", L_Next3;
+
+L_Next3:
+    mes "[Olana]";
+    mes "\"Wow! Really? That is great! I would like to congratulate my little Rossy. Would you mind helping me a little more?\"";
+    menu
+        "Just tell me what to do.", L_Next4,
+        "No, I'm busy, maybe later.", L_No;
+
+L_Next4:
+    mes "[Olana]";
+    mes "\"Can you bring me " + @RedRose_Amount + " Red Roses? I would like to give them to Rossy. I am sure she will love them!\"";
+    menu
+        "Ok, I will be back with the roses.", L_RG,
+        "I'm allergic to roses, can't even touch them. Sorry.", L_No;
+
+L_RG:
+    if (Rossy_Quest == 8)
+        Rossy_Quest = 9;
+    mes "[Olana]";
+    mes "\"Please, bring me " + @RedRose_Amount + " Red Roses as soon as you can.\"";
+    close;
+
+L_RC:
+    if(countitemcolor("RedRose") < @RedRose_Amount)
+        goto L_RG;
+    mes "[Olana]";
+    Rossy_Quest = 10;
+    mes "\"Great job! Please hand them to my brilliant daughter, Rossy.\"";
+    close;
+
+L_BringRose:
+    mes "[Olana]";
+    mes "\"Now please hand them to my brilliant daughter, Rossy.\"";
+    close;
+
+L_Allergic:
+    mes "[Olana]";
+    mes "\"Did she like my present?\"";
+    menu
+        "Sure she did...", L_No,
+        "Well, you should have known that your daughter is allergic to roses.", L_Next5;
+
+L_Next5:
+    Rossy_Quest = 12;
+    mes "[Olana]";
+    mes "\"Oh, how stupid I am! Here, take some of my money and buy Red Tulips instead, the same amount. Keep the flowers.\"";
+    Zeny = Zeny + @Flower_Money;
+    next;
+    mes "\"Please, tell Rossy I am really sorry. My mind was on Julia when I asked you to bring the red roses, they are her favorite.\"";
+    menu
+        "I will give her the tulips when I see her.", L_Next6;
+
+L_Next6:
+    mes "[Olana]";
+    mes "\"Thank you. And don't forget to tell her that I'm really sorry.\"";
+    close;
+
+L_Give:
+    mes "[Olana]";
+    mes "\""+ strcharinfo(0) +", please, get " + @RedTulip_Amount + " Red Tulips and hand them to Rossy. Don't forget to tell her that I'm really sorry.\"";
+    close;
+
+L_Best:
+    mes "[Olana]";
+    mes "\"Thank you for your help "+ strcharinfo(0) +"!\"";
+    close;
+
+L_Julia:
+    mes "[Olana]";
+    mes "\"Oh no, I can't take this anymore. Something must have happened... Where is Julia? I want to know where she is! Please, find her "+ strcharinfo(0) +"!\"";
+    close;
+
+L_End:
+    mes "[Olana]";
+    mes "\"Where is Julia? I want to know where she is! Please, find her "+ strcharinfo(0) +"!\"";
+    menu
+        "She'll be back soon, trust me. I saved her from an evil spirit.", L_Found,
+        "I haven't seen her yet, sorry.", L_No;
+
+L_Found:
+    mes "[Olana]";
+    if (Rossy_Quest == 17)
+        Rossy_Quest = 18;
+    if (Rossy_Quest == 18)
+        Rossy_Quest = 19;
+    mes "\"Thank you "+ strcharinfo(0) +", thank you! Here is a reward for you.\"";
+    getexp @Finish_EXP, 0;
+    Zeny = Zeny + @Finish_Money;
+    if (Rossy_Quest == 19)
+        goto L_Clear;
+    close;
+
+L_Clear:
+    Rossy_Quest = 0;
+    cavefights = 0;
+    FLAGS = FLAGS | FLAG_ROSSI_COMPLETED;
+    close;
+
+L_FinalEnd:
+    mes "[Olana]";
+    mes "\"Thanks again for your help.";
+    mes "I hope the girls will come home soon enough for dinner.\"";
+    close;
+}

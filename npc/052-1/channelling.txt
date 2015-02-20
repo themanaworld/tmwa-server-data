@@ -1,0 +1,314 @@
+
+052-1,25,44,0	script	#EnchantDoorTrigger	32767,3,4,{
+    @step = 4;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if (strcharinfo(0) == $@ILLIA_HERO$ &&
+        $@illia_level_4_progress == 0) goto L_EnchantDoor;
+    end;
+
+L_EnchantDoor:
+    enablenpc "#Enchanted Door";
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+
+}
+
+052-1,57,29,0	script	#Enchanted Door	369,1,1,{
+    if ($@illia_level_4_progress != 2) goto L_PushBack;
+    end;
+
+L_PushBack:
+    warp "052-1", 57, 34;
+    percentheal -20, 0;
+    message strcharinfo(0), "You are pushed back violently. There is probably some way to break this barrier.";
+    mes "You are pushed back violently.";
+    mes "There is probably some way to break this barrier.";
+    close;
+
+OnCommandDS:
+    areamonster "052-1", 56, 30, 60, 31, "", 1101, 2 + rand(3), "#Enchanted Door::OnSpawn";
+    misceffect FX_EVIL_SUMMON;
+    end;
+
+OnSpawn:
+    end;
+
+}
+
+052-1,57,29,0	script	#Enchanted Door2	400,1,1,{
+    if ($@illia_level_4_progress == 2) goto L_Warp;
+    end;
+
+L_Warp:
+    warp "052-2", 33, 40;
+    end;
+
+OnCommandDestroy:
+    misceffect FX_ENCHANTED_DOOR_BROKEN;
+    end;
+
+}
+
+052-1,51,38,0	script	Engravings	400,{
+    mes "You can read some words engraved inside this rock, but some are erased by wind and time:";
+    next;
+    mes "\".. can use this .. power..´. . .´. . . amplify a spell ..´.";
+    mes " . ´´. Don't let .. spell power .´..´ . .. fade away ...";
+    mes "´ .Use lazurite stones ´..´. they will appear. ..´ .. drop them inside .. this circle.";
+    mes ". ´ power.. drains .. life..´. .´  focus . .not move at all´. .\"";
+    next;
+    mes "Below this strange writing, you notice a word still deeply engraved in the stone:";
+    next;
+    mes "\"#catalazuli\"";
+    next;
+    mes "... that looks like an incantation or something.";
+    if ($@illia_level_4_progress == 0)
+        goto L_SuggestChannelling;
+    close;
+
+L_SuggestChannelling:
+    next;
+    mes "I think this blue circle right here can be helpful to break the enchantment that blocks the door of the Inn.";
+    next;
+    mes "Let's see how I can activate it...";
+    mes "But I should probably get inside it, first.";
+    close;
+
+}
+
+function	script	StartChannelling	{
+    if (isat("052-1",53,38) == 0)
+        end;
+    if ($@illia_level_4_progress > 0)
+        end;
+    $@illia_level_4_progress = 1;
+    $@illia_char_channelling$ = strcharinfo(0);
+
+    @bonus = (readparam(bInt)+1) / 25;
+    // Lazurite Stones power, will also depend on the Int of the channelling character
+    setarray $@illia_lazurites_power,
+        12 + @bonus, // small
+        32 + @bonus, // regular
+        65 + @bonus; // large
+
+    // coordinates where stones will appear
+    setarray $@illia_small_lazurites, 50,41, 44,33, 61,42;
+    setarray $@illia_regular_lazurites, 68,29, 47,25, 38,45, 70,40;
+    setarray $@illia_large_lazurites, 21,40, 34,25;
+
+    // amount of initial magic power
+    $@illia_magic_power = 1811 + readparam(bInt)*2;
+    // Channelling required power depends on the base Int of the character
+    $@illia_magic_power_required = 5707 - 2*readparam(bInt);
+    // magic power loss depends also on Int
+    $@illia_magic_power_loss = 53 - ((readparam(bInt)+1)*2)/10;
+
+    // register the power status to display hints to the players
+    // Statuses: 0=critical(below 300), 1=neutral, 2=almost there (max-300)
+    $@illia_magic_power_status = 1;
+
+    message strcharinfo(0), "Ok, let's stay focused now!";
+    donpcevent "#Power Circle::OnCommandSt";
+    close;
+
+}
+
+052-1,53,38,0	script	#Power Circle	368,{
+    @step = 4;
+    if ($@illia_progress < @step)
+        goto L_ShouldNotBeHere;
+    if (isat("052-1",53,38) == 0)
+        goto L_Hint;
+    end;
+
+OnCommandSt:
+    initnpctimer;
+    end;
+
+L_Hint:
+    mes "Magic seems to be flowing from this place. I should find out what it is.";
+    close;
+
+OnTimer2000:
+    callsub S_CheckChannelling;
+    end;
+
+OnTimer4000:
+    callsub S_CheckChannelling;
+    end;
+
+OnTimer6000:
+    // Spawn items at specific place
+    callsub S_ItemSpawn;
+    callsub S_CheckChannelling;
+    end;
+
+OnTimer8000:
+    callsub S_CheckChannelling;
+    end;
+
+OnTimer10000:
+    // Spawn items at specific place
+    callsub S_ItemSpawn;
+    callsub S_CheckChannelling;
+    end;
+
+OnTimer11000:
+    setnpctimer 0;
+    // Spawn monsters (demonic spirits) near the enchanted door
+    donpcevent "#Enchanted Door::OnCommandDS";
+    end;
+
+S_ItemSpawn:
+    if (!(attachrid(getcharid(3, $@illia_char_channelling$))))
+        goto L_Return;
+    // spawn items at random
+    $@illia_item_spawn_i = rand(getarraysize($@illia_small_lazurites)/2);
+    $@illia_item_spawn_x = $@illia_small_lazurites[$@illia_item_spawn_i*2];
+    $@illia_item_spawn_y = $@illia_small_lazurites[($@illia_item_spawn_i*2)+1];
+    if (rand(10) > 0)
+        makeitem 873, rand(4,7), "052-1", $@illia_item_spawn_x, $@illia_item_spawn_y;
+
+    $@illia_item_spawn_i = rand(getarraysize($@illia_regular_lazurites)/2);
+    $@illia_item_spawn_x = $@illia_regular_lazurites[$@illia_item_spawn_i*2];
+    $@illia_item_spawn_y = $@illia_regular_lazurites[($@illia_item_spawn_i*2)+1];
+    if (rand(8) > 0)
+        makeitem 874, rand(3,4), "052-1", $@illia_item_spawn_x, $@illia_item_spawn_y;
+
+    $@illia_item_spawn_i = rand(getarraysize($@illia_large_lazurites)/2);
+    $@illia_item_spawn_x = $@illia_large_lazurites[$@illia_item_spawn_i*2];
+    $@illia_item_spawn_y = $@illia_large_lazurites[($@illia_item_spawn_i*2)+1];
+    if (rand(4) > 0)
+        makeitem 875, rand(1,2), "052-1", $@illia_item_spawn_x, $@illia_item_spawn_y;
+
+    $@illia_item_spawn_i = 0;
+    $@illia_item_spawn_x = 0;
+    $@illia_item_spawn_y = 0;
+
+    detachrid;
+    goto L_Return;
+
+L_Return:
+    return;
+
+S_CheckChannelling:
+    // Remove stones inside the circle
+    set $@illia_magic_power, $@illia_magic_power +
+        getareadropitem("052-1", 52, 37, 54, 39, 873, 1)*$@illia_lazurites_power[0] +
+        getareadropitem("052-1", 52, 37, 54, 39, 874, 1)*$@illia_lazurites_power[1] +
+        getareadropitem("052-1", 52, 37, 54, 39, 875, 1)*$@illia_lazurites_power[2];
+
+    // magic power fades over time
+    $@illia_magic_power = $@illia_magic_power - $@illia_magic_power_loss;
+
+    $@illia_magic_power_last_status = $@illia_magic_power_status;
+    $@illia_magic_power_status = 1;
+    if ($@illia_magic_power < 300)
+        $@illia_magic_power_status = 0;
+    if ($@illia_magic_power > $@illia_magic_power_required - 300)
+        $@illia_magic_power_status = 2;
+
+    // Player loses a part of his health while channelling
+    if (!(attachrid(getcharid(3, $@illia_char_channelling$))))
+        goto L_ChannellingFail;
+    // Display an effect showing the drain
+    misceffect FX_CHANNELLING_RAISE;
+    percentheal -4, 0;
+
+    if (ispcdead())
+        goto L_ChannellingDead;
+    if (isat("052-1",53,38) == 0)
+        goto L_ChannellingMoved;
+    // check the magic power
+    if ($@illia_magic_power <= 0)
+        goto L_ChPwrVanish;
+    if ($@illia_magic_power >= $@illia_magic_power_required)
+        goto L_ChannellingComplete;
+
+    detachrid;
+
+    $@illia_channelling_status_msg$ = "";
+
+    if ($@illia_magic_power_last_status == 0 && $@illia_magic_power_status == 1)
+        $@illia_channelling_status_msg$ = $@illia_char_channelling$ + ": I think I'm controlling the spell again now. Keep up!";
+    if ($@illia_magic_power_last_status == 1 && $@illia_magic_power_status == 0)
+        $@illia_channelling_status_msg$ = $@illia_char_channelling$ + ": Guys I'm loosing it! Hurry up!";
+    if ($@illia_magic_power_last_status == 1 && $@illia_magic_power_status == 2)
+        $@illia_channelling_status_msg$ = $@illia_char_channelling$ + ": I almost have the power to cast it! One last effort!";
+    if ($@illia_magic_power_last_status == 2 && $@illia_magic_power_status == 1)
+        $@illia_channelling_status_msg$ = $@illia_char_channelling$ + ": Damn! It faded a little.";
+
+    if ($@illia_channelling_status_msg$ != "")
+        areatimer "052-1", 1, 1, 100, 80, 0, "#Power Circle::OnMPSC";
+
+    return;
+
+OnMPSC:
+    message strcharinfo(0), $@illia_channelling_status_msg$;
+    $@illia_channelling_status_msg$ = "";
+    end;
+
+L_ChannellingComplete:
+    message strcharinfo(0), "You successfully cast the spell and broke the door's enchantment!";
+    detachrid;
+    stopnpctimer;
+    setnpctimer 0;
+    $@illia_magic_power = 0;
+    $@illia_magic_power_required = 0;
+    $@illia_magic_power_last_status = 0;
+    $@illia_magic_power_status = 0;
+    $@illia_magic_power_loss = 0;
+    $@illia_char_channelling$ = "";
+    $@illia_level_4_progress = 2;
+    $@illia_progress = 5;
+    callfunc "UpdateIlliaProgress";
+    $@illia_max_time = $@illia_max_time + 600;
+    // Effect to display the disenchant is cast
+    misceffect FX_CHANNELLING_CAST;
+    // move away the enchanted door
+    donpcevent "#Enchanted Door2::OnCommandDestroy";
+    disablenpc "#Enchanted Door";
+    end;
+
+L_ChannellingDead:
+    misceffect FX_MAGIC_DARK_EXPLOSION, strcharinfo(0);
+    goto L_ChannellingFail;
+
+L_ChannellingMoved:
+    // kill the player as part of the process: the magic process drained his life.
+    // But only if he is still in the island (otherwise, he probably got warped
+    // and does not need being killed)
+    if (isin("052-1",1,1,100,80) == 0)
+        goto L_ChannellingFail;
+    percentheal -100, 0;
+    misceffect FX_MAGIC_DARK_EXPLOSION, strcharinfo(0);
+    message strcharinfo(0), "You moved out of the power circle. The magic power you accumulated backfires at you!";
+    goto L_ChannellingFail;
+
+L_ChPwrVanish:
+    // kill the player as part of the process: the magic process drained his life.
+    percentheal -100, 0;
+    misceffect FX_MAGIC_DARK_EXPLOSION, strcharinfo(0);
+    message strcharinfo(0), "The magic power vanished, and your spell backfires at you!";
+    goto L_ChannellingFail;
+
+L_ChannellingFail:
+    detachrid;
+    stopnpctimer;
+    setnpctimer 0;
+    $@illia_magic_power = 0;
+    $@illia_magic_power_required = 0;
+    $@illia_magic_power_last_status = 0;
+    $@illia_magic_power_status = 0;
+    $@illia_magic_power_loss = 0;
+    $@illia_char_channelling$ = "";
+    $@illia_level_4_progress = 0;
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+}

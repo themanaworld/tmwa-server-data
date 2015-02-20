@@ -1,0 +1,279 @@
+
+009-1,40,45,0	script	Jack	141,{
+    callfunc "ClearVariables";
+
+    @RAWLOGS_AMOUNT = 40;
+    @SHIELD_COST = 5000;
+    @QUEST_SHIELD_EXP = 2500;
+
+    @Q_Forestbow_MASK = NIBBLE_0_MASK;
+    @Q_Forestbow_SHIFT = NIBBLE_0_SHIFT;
+
+    @Q_Woodenshield_MASK = NIBBLE_1_MASK;
+    @Q_Woodenshield_SHIFT = NIBBLE_1_SHIFT;
+
+    @Q_Forestbow = ((QUEST_Forestbow_state & @Q_Forestbow_MASK) >> @Q_Forestbow_SHIFT);
+    @Q_Woodenshield = ((QUEST_Forestbow_state & @Q_Woodenshield_MASK) >> @Q_Woodenshield_SHIFT);
+
+    @inspector = ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    if (@Q_Woodenshield >= 3) goto L_Shield_state_3;
+    if (@Q_Woodenshield == 2) goto L_Shield_state_2;
+    if (@Q_Woodenshield == 1) goto L_Shield_state_1;
+    if (@Q_Forestbow > 1) goto L_Bow_state_2;
+
+    mes "[Jack Lumber]";
+    mes "\"Hello there! My name is Jack Lumber, the enemy of all trees. If you need some firewood, just let me know.\"";
+    if (@inspector == 1)
+        goto L_NohMask_Ask;
+    goto L_NotInspector;
+
+L_NotInspector:
+    next;
+    if (@Q_Forestbow < 1)
+        goto L_Close;
+    mes "I heard you aren't delivering any more living wood. Why not?";
+    next;
+    goto L_Next;
+
+L_Next:
+    mes "[Jack Lumber]";
+    mes "\"Why not?! I value my life, that's why!.\"";
+    next;
+    menu
+        "What do you mean?", L_Next1;
+
+L_Next1:
+    mes "[Jack Lumber]";
+    mes "\"A week ago, I was going to chop down one of those twigleaf trees in the forest to the southwest – these twigleafs are the trees that give me the living wood you speak of. I was just chopping away with my axe, and guess what happened? One of its branches hit me! At first, I thought it fell down or the wind blew it, but it hurt! After I shook it off and struck the tree again with my axe, another branch hit me! I got angry and started to chop off all the low-hanging branches so this couldn't happen anymore. Even after all that though, I still can't believe what happened next.\"";
+    next;
+    menu
+        "What happened? ", L_Next2;
+
+L_Next2:
+    mes "[Jack Lumber]";
+    mes "\"You'll think I'm insane if I tell you...\"";
+    next;
+    menu
+        "I won't. I promise.", L_Next3;
+
+L_Next3:
+    mes "[Jack Lumber]";
+    mes "\"Alright, well... After I chopped off a few branches, the whole tree started to move! Its roots tore out of the earth, all the branches started to wave around, and a face appeared on the trunk. The whole tree CAME TO LIFE! It was mad!\"";
+    next;
+    menu
+        "Did you run away?", L_Next4,
+        "Did you fight it?", L_Next4;
+
+L_Next4:
+    mes "[Jack Lumber]";
+    mes "\"I fought it, of course! I took my axe and attacked the beast! It hit me here *points at a bruise on his shoulder,* here *lifts his trouser leg to show another bruise,* and here *lifts his shirt and reveals even worse bruises.* But I didn't give up! I chopped away at it, branch after branch, and in the end I chopped off its roots, and it fell to the ground – motionless.\"";
+    next;
+    menu
+        "So you beat the monster? Then why are you so scared?", L_Next5;
+
+L_Next5:
+    mes "[Jack Lumber]";
+    mes "\"Well, I was exhausted and had to rest. A few minutes passed, and suddenly I was practically surrounded by a dozen or more of these living trees!\"";
+    next;
+    menu
+        "Did you fight them too? ", L_Next6;
+
+L_Next6:
+    mes "[Jack Lumber]";
+    mes "\"Are you crazy? I barely destroyed one of those beasts; I was in no shape to fight again! I ran away as fast as I could, and lucky for me the monsters aren't that fast on their tiny root legs. Ha!\"";
+    next;
+    menu
+        "So, I guess you aren't chopping down trees anymore?", L_Next7;
+
+L_Next7:
+    mes "[Jack Lumber]";
+    mes "\"I still do; it's my job. But I'll no longer chop those twigleafs – I'll tell you that. I know the bow master wants some twigleaf wood, but I don't care. I won't risk MY life for a few gold pieces! If you really want to, just go to the southwest, but I  can't help you. I won't go there ever again.\"";
+    next;
+    menu
+        "Southwest you say? OK, thank you.", L_Next8;
+
+L_Next8:
+    @Q_Forestbow = 2;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Bow_state_2:
+    // Bow state 4: The player has found a perfect piece of wood.
+    if (@Q_Forestbow > 3) goto L_Bow_state_4;
+
+    mes "\"Good luck hunting those tree monsters – you'll need it.\"";
+    if (@inspector != 1)
+        goto L_Close;
+    goto L_NohMask_Ask;
+
+L_Bow_state_4:
+    mes "[Jack Lumber]";
+    mes "\"You've finally found that perfect piece of living wood that Alan needs to make a Forest Bow, haven't you?\"";
+    next;
+    menu
+        "I couldn't afford the bow, though...", L_Shield_state_0,
+        "No, I'm still looking.", L_Bow_state_4_reaffirm,
+        "Yes, I've got the Forest bow now.", L_Next9,
+        "I'm a melee warrior, I don't need bows.", L_Shield_state_0;
+
+L_Next9:
+    // Check if the player tells the truth (continue on in any case)
+    if (@Q_Forestbow > 4) goto L_Shield_state_0;
+
+    mes "[Jack Lumber]";
+    mes "\"Hrmph. I'm someone who respects those speaking the truth.\"";
+    next;
+    goto L_Shield_state_0;
+
+L_Bow_state_4_reaffirm:
+    mes "[Jack Lumber]";
+    mes "\"You should go talk to Alan again.\"";
+    goto L_Close;
+
+L_Shield_state_0:
+    @Q_Woodenshield = 1;
+    callsub S_Update_Mask;
+
+    if (Sex == 0)
+        @child_of_jack$ = "daughter";
+    if (Sex == 1)
+        @child_of_jack$ = "son";
+
+    mes "[Jack Lumber]";
+    mes "\"You no doubt remember how I struggled with those beasts, fighting for my life. Scared me, those seven-branched little stumps did!  Never since that day have I strayed near them, and yet there you are, cutting them down one by one. I'm proud of you – to dare to fight those trunks is admirable indeed. You're as strong as if you were my own " + @child_of_jack$ + "!\"";
+    next;
+    goto L_Shield_state_1;
+
+L_Shield_state_1:
+    mes "[Jack Lumber]";
+    mes "\"I have an idea. What would you say about a new shield?\"";
+    next;
+    if (@inspector == 1)
+        menu
+            "No thanks.", L_Close,
+            "Yes, please!", L_Yes,
+            "Actually, I'd like to know if you've seen any strange happenings in town.", L_NohMask_Answer;
+    menu
+        "No thanks.", L_Close,
+        "Yes, please!", L_Yes;
+
+L_Yes:
+    mes "[Jack Lumber]";
+    mes "\"All I need is " + @RAWLOGS_AMOUNT + " raw logs. This needn't be high quality wood; pretty much any log you can find should work. Oh, and I'll also need " + @SHIELD_COST + " GP for other materials.\"";
+    next;
+    @Q_Woodenshield = 2;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Shield_state_2:
+    mes "[Jack Lumber]";
+    mes "\"Do you have the " + @RAWLOGS_AMOUNT + " raw logs and " + @SHIELD_COST + " GP for the shield?\"";
+    menu
+        "Here it is.", L_Next10,
+        "I'll come back later.", L_Close;
+
+L_Next10:
+    if (countitemcolor("RawLog") < @RAWLOGS_AMOUNT)
+        goto L_Not_enough_logs;
+    if (Zeny < @SHIELD_COST)
+        goto L_not_enough_money;
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_TooMany;
+    delitem "RawLog", @RAWLOGS_AMOUNT;
+    Zeny = Zeny - @SHIELD_COST;
+    getexp @QUEST_SHIELD_EXP, 0;
+    getitem "WoodenShield", 1;
+    @Q_Woodenshield = 3;
+    callsub S_Update_Mask;
+    mes "[Jack Lumber]";
+    mes "\"Have a seat.\"";
+    mes "Jack saws the logs into pieces and then sands them until they are smooth to the touch.";
+    mes "Applying some strong-smelling liquid, he tans them to a darker hue.";
+    next;
+    mes "[Jack Lumber]";
+    mes "Grabbing one of two leftover pieces, he begins to carve it into a round shape, then repeats this with the second piece – shield handles from what you can tell.";
+    next;
+    mes "[Jack Lumber]";
+    mes "Meanwhile, the sun has dried the other pieces. Jack places them next to each other, adds a frame, and nails everything together.";
+    mes "The resulting shield looks usable already, but Jack applies another liquid to it and leaves it to dry for a few moments.";
+    next;
+    mes "[Jack Lumber]";
+    mes "Finally, he hands the shield to you.";
+    mes "\"Enjoy your new shield!\"";
+    mes "[" + @QUEST_SHIELD_EXP + " experience points]";
+    next;
+    goto L_Close;
+
+L_Not_enough_logs:
+    mes "[Jack Lumber]";
+    mes "\"You don't have enough wood for me to craft this shield; I need a total of " + @RAWLOGS_AMOUNT + " raw logs.\"";
+    goto L_Close;
+
+L_not_enough_money:
+    mes "[Jack Lumber]";
+    mes "\"I'm afraid that you don't have enough gold. I need " + @SHIELD_COST + " GP to finish your shield.\"";
+    goto L_Close;
+
+L_TooMany:
+    mes "[Jack Lumber]";
+    mes "\"You don't have enough room to carry the shield. Come back when you do.\"";
+    goto L_Close;
+
+L_Shield_state_3:
+    mes "[Jack Lumber]";
+    mes "\"I hope that my shield will serve you well!\"";
+    next;
+    if (@inspector != 1)
+        goto L_Made_Shield;
+    menu
+        "Me too.", L_Made_Shield,
+        "Have you seen anything that might be connected to the recent robberies in town?", L_NohMask_Answer;
+
+L_NohMask_Ask:
+    menu
+        "I'll keep that in mind.", L_Close,
+        "I heard you aren't delivering any more living wood. Why not?", L_Next,
+        "Have you seen anything that might be connected to the recent robberies in town?", L_NohMask_Answer;
+
+L_NohMask_Answer:
+    mes "[Jack Lumber]";
+    mes "\"Sorry, no.\"";
+    goto L_Close;
+
+L_Made_Shield:
+    next;
+    mes "[Jack Lumber]";
+    mes "\"Speaking of that shield...\"";
+    mes "\"It has put me behind on all these new Nivalis orders, now that the ship is running there.\"";
+    next;
+    mes "\"Care to help out? I'll pay you for your time.\"";
+    goto L_Daily;
+
+L_Daily:
+    @dq_level = 30;
+    @dq_cost = 25;
+    @dq_count = 30;
+    @dq_name$ = "RawLog";
+    @dq_friendly_name$ = "raw logs";
+    @dq_money = 4000;
+    @dq_exp = 4000;
+
+    callfunc "DailyQuest";
+
+    next;
+
+    mes "[Jack Lumber]";
+    mes "\"Check back with me tomorrow, and I'll let you know if I need any help with that shipment.\"";
+
+    goto L_Close;
+
+L_Close:
+    @inspector = 0;
+    close;
+
+S_Update_Mask:
+    QUEST_Forestbow_state = (QUEST_Forestbow_state & ~(@Q_Forestbow_MASK | @Q_Woodenshield_MASK)) | (@Q_Forestbow << @Q_Forestbow_SHIFT) | (@Q_Woodenshield << @Q_Woodenshield_SHIFT);
+    return;
+}

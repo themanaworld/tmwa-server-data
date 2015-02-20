@@ -1,0 +1,378 @@
+029-2,27,27,0	script	Sorfina	154,0,1,{
+    setarray @npc_loc, 27, 27, 2;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
+    goto L_Main;
+
+L_Main:
+    callfunc "TutorialState";
+    if (@tutorial == 10) goto L_Hasan;
+    if (@tutorial >= 4) goto L_Again;
+    if (@tutorial == 3) goto L_Clothes;
+    if (@tutorial == 2) goto L_Dresser;
+    if (@tutorial == 1) goto L_Carpet;
+    goto L_Start;
+
+L_Start:
+    mes "You open your eyes.";
+    mes "";
+    mes "[Old Woman]";
+    mes "\"Ah, you woke up. You washed ashore on the beach 3 days ago. You've been asleep since.";
+    mes "You must have been thrown off one of the ships sailing during that last tremor.\"";
+    mes "\"My little granddaughter Tanisha found you. Kaan was able to carry you to bed.";
+    mes "We've been taking care of you ever since. Waiting for you to wake up.\"";
+    mes "\"You didn't have any possessions on you when we found you and no one knows who you are.\"";
+    mes "Do you have a name?";
+    menu
+        strcharinfo(0), L_name;
+
+L_name:
+    mes "[Old Woman]";
+    mes "\"Well " + strcharinfo(0) + " what else can you tell me about yourself?.\"";
+    menu
+        "Umm... I... I don't remember anything...", L_KnowNothing;
+
+L_KnowNothing:
+    mes "[Old Woman]";
+    mes "\"Well I can tell you some useful things, if you want to hear.";
+    mes "Some of it might jog your memory or at least help you catch your bearings.";
+    mes "Oh, and by the way my name is Sorfina.\"";
+    menu
+        "That would be great!",L_Tut,
+        "No, thanks. I already know how things are going.",L_SkipTut;
+
+L_Tut:
+    mes "She smiles at you.";
+    mes "[Sorfina]";
+    mes "\"You have arrived at a very strange time. The Council is visiting Candor today.\"";
+    mes "\"All the recent rumbling from the cave has all of Candor worried.\"";
+    mes "\"Our guess is something with the last big shaker was the reason you ended up here.\"";
+    mes "\"Ok, lets start by getting you dressed.\"";
+    goto L_Carpet;
+
+L_Carpet:
+    mes "[Sorfina]";
+    mes "\"Try to take a few steps and walk to that carpet over there.";
+    mes "Press [###keyMoveUp;] to move up, press [###keyMoveDown;] to move down, ";
+    mes "press [###keyMoveLeft;] to move left, press [###keyMoveRight;] to move right ";
+    mes " or click on the place you want to go to.\"";
+    @tutorial_tmp = 1;
+    callfunc "SetTutorialMask";
+    goto L_Close;
+
+L_Dresser:
+    mes "[Sorfina]";
+    mes "\"In that dresser there are some clothes you can wear.\"";
+    mes "\"To interact with things in your environment or talk to NPCs you can either click on it or press [###keyTargetNPC;] to focus and [###keyTalk;] to talk/activate.\"";
+    mes "\"Now get the clothes out of the dresser.\"";
+    goto L_Close;
+
+L_Naked:
+    mes "[Sorfina]";
+    mes "\"Press [###keyWindowInventory;] or click on the Inventory button in the bar at the upper right corner to open your bag.\"";
+    mes "\"Once we stop talking, double-click on the clothes to equip.\"";
+    mes "\"Talk to me again after you get dressed. You can either click on me, or press [###keyTargetNPC;] to focus on me and [###keyTalk;] to talk.\"";
+    goto L_Close;
+
+L_Clothes:
+    if (getequipid(equip_torso) < 0)
+        goto L_Naked;
+    mes "[Sorfina]";
+    mes "\"That's much better, don't you think?\"";
+    mes "\"Here take this.\"";
+    getitem "HitchhikersTowel", 1;
+    mes "\"Your HitchHikers Towel will return you to your last set soul menhir or here if not set.\"";
+    mes "\"It can't be used constantly as the magic needs time to power the jump.\"";
+    mes "\"I think this will help you a bit. To get more information, press the button Setup and look at the controls on the Keyboard tab. You can also change them as you like.";
+    mes "Talk to me again if you want me to explain more things.\"";
+
+    mes "\"Oh, and if you're looking for extra work, you should talk to Aidan and Valon when you go outside. They're giving rewards for monster hunting.";
+    mes "You can find Aidan near the camp fire outside and Valon out by the fields in the east.\"";
+    next;
+
+    mes "She digs in her pocket for a moment.";
+    mes "\"And here is some money for you. Don't spend it all in one place.";
+    mes "Now go help Tanisha downstairs.\"";
+    Zeny = Zeny + 30;
+    @tutorial_tmp = 4;
+    callfunc "SetTutorialMask";
+    goto L_Close;
+
+L_Again:
+    mes "[Sorfina]";
+    mes "\"Make yourself at home! Do you have any questions?\"";
+    menu
+        "Yes, could you explain about...",L_Explain,
+        "Could I get Healed?",L_Heal,
+        "No, thanks.",L_Close;
+
+L_Heal:
+    if (BaseLevel > 20)
+        goto L_NoHeal;
+    mes "[Sorfina]";
+    mes "\"Hello Dear! You look tired, you should rest a moment.\"";
+    mes "You take a short nap and feel refreshed.";
+    heal MaxHp, 0;
+    goto L_Main;
+
+L_NoHeal:
+    mes "[Sorfina]";
+    mes "\"I'm sorry but your wounds are far to advanced for my skills.\"";
+    goto L_Main;
+
+L_Explain:
+    menu
+        "... walking?",L_Walk,
+        "... talking?",L_Talk,
+        "... the inventory and items?",L_Items,
+        "... shortcuts?",L_Shortcut,
+        "... what to do in Candor?",L_Aidan,
+        "... nevermind.",L_Close;
+
+L_Walk:
+    mes "[Sorfina]";
+    mes "\"You can use the arrow keys to walk around.";
+    mes "Press [###keyMoveUp;] to move up, press [###keyMoveDown;] to move down, ";
+    mes "press [###keyMoveLeft;] to move left, press [###keyMoveRight;] to move right ";
+    mes " or click on the place you want to go to.";
+    mes "This only works if that place is reachable and walkable.\"";
+    goto L_Close;
+
+L_Talk:
+    mes "[Sorfina]";
+    mes "\"If you want to talk to a normal person, you can click at him or her.";
+    mes "Or you can press [###keyTargetNPC;] to focus on the nearest person and then press [###keyTalk;] to talk.\"";
+    next;
+    mes "\"If you want to talk to other adventurers, press [###keyChat;] to open your chat window.";
+    mes "Then type your message and press Enter to send.\"";
+    next;
+    mes "\"You may want to talk privately to another adventurer sometimes. In that case you can whisper.";
+    mes "After pressing [###keyChat;] type '/whisper [name] [message]'.";
+    mes "Or you can right click on someone and choose the whisper option.\"";
+    next;
+    mes "\"Press [###keyWindowChat;] to show and hide your chat window.\"";
+    goto L_Close;
+
+L_Items:
+    mes "[Sorfina]";
+    mes "\"There are three types of items.";
+    mes "They can be Consumables, Equipment or Miscellaneous.\"";
+    next;
+    mes "\"Consumable items such as Potions, can be used only once.";
+    mes "After use, they will disappear from your inventory.";
+    mes "There are some rare items that can be used but don't get consumed.\"";
+    next;
+    mes "\"Equipment items like Armors, Weapons, Accessories can be equipped for fashionable purposes or to raise your status.\"";
+    next;
+    mes "\"Miscellaneous items such as maggot slime, can be used in creating other items, or just to trade and sell.\"";
+    next;
+    mes "\"Your HitchHikers Towel will return you to your last set soul menhir or here if not set.\"";
+    mes "\"It can't be used constantly as the magic needs time to power the jump.\"";
+    next;
+    mes "\"Press [###keyWindowInventory;] to open your inventory.";
+    mes "When placing your cursor over an item there, you can see a box with some information about that item.\"";
+    next;
+    mes "\"To use or equip an item, select it by double-clicking on it.";
+    mes "Selecting the item then pressing Use or Equip also works.\"";
+    goto L_Close;
+
+L_Shortcut:
+    mes "[Sorfina]";
+    mes "\"Press [###keyWindowShortcut;] or click the Shortcut button in the bar at the upper right to open your shortcut window.\"";
+    next;
+    mes "\"You can select the item you want to put on a shortcut with your mouse and then click on the position in the shortcut window you want to place it.\"";
+    next;
+    mes "\"Now you can use or equip/unequip it by pressing the number of the shortcut.\"";
+    goto L_Close;
+
+L_Aidan:
+    mes "[Sorfina]";
+    mes "\"I heard Aidan and Valon are looking for brave adventurers, you might want to talk to them. ";
+    mes "You can find Aidan near the camp fire outside. The fields are just south of the town exit. ";
+    mes "You'll see Valon of the city gaurd standing there. They both are offering rewards for monster hunting.\"";
+    next;
+    mes "\"When you leave this area to the South, you'll come to the docks.";
+    mes "They will take you to Hurnscald, a major trading port.\"";
+    next;
+    mes "\"Go east out of Candor and north. You will find the cave everyone is talking about to the north.";
+    next;
+    mes "Talk to everybody. You can never tell when they might know something useful.\"";
+    goto L_Close;
+
+L_Hasan:
+    mes "[Sorfina]";
+    mes "\"Make yourself at home! Do you have any questions?\"";
+        menu
+            "A guy named Hasan is bullying people.",L_Next,
+            "Yes, could you explain again about...",L_Explain,
+            "No, thanks.",L_Close;
+
+L_Next:
+    mes "\"Ah, Hasan. He's causing trouble again?\"";
+    mes "She shakes her head.";
+    mes "[Sorfina]";
+    mes "\"This guy has been a plague ever since he could walk. He's always causing trouble.\"";
+    mes "\"And his father... Well, one day his father thought he should teach Hasan a lesson.\"";
+    mes "\"He took him into the desert and then left him there!";
+    mes "Hasan was only seven years old!\"";
+    mes "\"I never understood how someone could do something like that to a child, even if it's a rascal like Hasan.\"";
+    mes "\"Anyway, Hasan tried to find his way back home, but stumbled into a nest of scorpions!\"";
+    mes "She shakes her head.";
+    mes "\"If Valon hadn't have come along that moment, Hasan would have died that day.\"";
+    mes "\"However, the scorpions poison caused a bad fever and once Hasan had recovered from that, he was even more malicious than before.\"";
+    mes "She sighs.";
+    @tutorial_tmp = 11;
+    callfunc "SetTutorialMask";
+    goto L_Close;
+
+L_SkipTut:
+    mes "[Sorfina]";
+    mes "\"Really? You seem quite unexperienced. Listening to some advice won't hurt.\"";
+    menu
+        "Thinking about it twice... please tell me.",L_Tut,
+        "Yeah, but thanks for the offer. Bye.",L_Bye;
+
+L_Bye:
+    mes "[Sorfina]";
+    mes "\"Alright, if you say so. But take at least this. See you later.\"";
+    getitem "Knife", 1;
+    getitem "SlingShot", 1;
+    getitem "SlingBullet", 500;
+    getitem "HitchhikersTowel", 1;
+    getitem "CottonShirt", 1;
+    getitem "RaggedShorts", 1;
+    Zeny = Zeny + 50;
+    @tutorial_tmp = 8;
+    callfunc "SetTutorialMask";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnTouch:
+    callfunc "TutorialState";
+    if (@tutorial > 0)
+        end;
+    goto L_Start;
+}
+
+029-2,33,27,0	script	#Carpet	32767,1,1,{
+    end;
+
+OnTouch:
+    callfunc "TutorialState";
+    if (@tutorial != 1)
+        end;
+    mes "[Sorfina]";
+    mes "\"You should get dressed now.\"";
+    mes "\"In that dresser there are some clothes you can wear.\"";
+    mes "\"To interact with things in your environment or talk to NPCs you can either click on it or press N to focus and T to talk/activate.\"";
+    next;
+    mes "\"Now get the clothes out of the dresser.\"";
+    @tutorial_tmp = 2;
+    callfunc "SetTutorialMask";
+    close;
+}
+
+029-2,29,23,0	script	Dresser#tutorial	400,{
+    setarray @npc_loc, 29, 23, 2;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_CloseDis;
+    callfunc "TutorialState";
+    if (@tutorial > 2) goto L_Empty;
+    if (@tutorial == 2) goto L_Shirt;
+    goto L_Walk;
+
+L_Walk:
+    mes "[Sorfina]";
+    mes "\"Thats not what I said to do. Please don't skip ahead.\"";
+    close;
+
+L_Shirt:
+    mes "You take a simple Cotton Shirt and some very worn-out Ragged Shorts out of the dresser.";
+    getitem "CottonShirt", 1;
+    getitem "RaggedShorts", 1;
+    mes "[Sorfina]";
+    mes "\"Great! Now you can equip it.\"";
+    mes "\"You can open your inventory by pressing F3 or clicking on the 'Inventory' button in the bar at the upper right corner.\"";
+    next;
+    mes "\"After we finish talking, click on the clothes and press the equip button.\"";
+    @tutorial_tmp = 3;
+    callfunc "SetTutorialMask";
+    close;
+
+L_Empty:
+    mes "The dresser is empty.";
+    close;
+
+L_CloseDis:
+    mes "You cannot reach that far.";
+    close;
+}
+
+029-2,44,31,0	script	#DoorOutTut1	45,0,0,{
+    end;
+
+OnTouch:
+    callfunc "TutorialState";
+    if (@tutorial < 4)
+        goto L_Block;
+    warp "029-2", 112, 85;
+    end;
+
+L_Block:
+    message strcharinfo(0), "Sorfina: Wait a moment! You're not ready to leave.";
+    end;
+}
+029-2,23,24,0	script	#GameRules1	32767,0,1,{
+    end;
+
+OnTouch:
+    if (TUT_var > 0)
+        end;
+    mes "[Server/Client Notice]";
+    mes "The explanations in this tutorial are based on the official client, Manaplus.";
+    mes "If you're using another client, settings and controls may be different.";
+    callfunc "GameRules";
+    close;
+}
+029-2,21,24,0	script	#GameRules2	32767,0,1,{
+    end;
+
+OnTouch:
+    if (TUT_var > 0)
+        end;
+    callfunc "GameRules";
+    mes "[Server/Client Notice]";
+    mes "The explanations in this tutorial are based on the official client, Manaplus.";
+    mes "If you're using another client, settings and controls may be different.";
+    close;
+}
+029-2,22,26,0	script	#GameRules3	32767,1,0,{
+    if (TUT_var == 0)
+        goto L_KnockBack;
+    goto L_Close;
+
+L_KnockBack:
+    message strcharinfo(0), "Please Accept the Game rules";
+    warp "029-2", 22, 24;
+    goto L_Close;
+
+L_Close:
+    close;
+}
+029-2,24,24,0	script	#GameRules4	32767,0,1,{
+    if (TUT_var == 0)
+        goto L_KnockBack;
+    goto L_Close;
+
+L_KnockBack:
+    message strcharinfo(0), "Please Accept the Game rules";
+    warp "029-2", 22, 24;
+    goto L_Close;
+
+L_Close:
+    close;
+}

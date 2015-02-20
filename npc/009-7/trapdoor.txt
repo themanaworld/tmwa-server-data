@@ -1,0 +1,62 @@
+009-2,38,105,0	script	#trapdoor#FightClub	327,0,0,{
+    @index = rand(0,(getarraysize($@fightclub_randompasswords$) - 1));
+    @password$ = $@fightclub_definitions$[@index];
+    mes "[Bouncer]";
+    mes "\"To enter, you must find the word I have in mind.\"";
+    mes "\"Here's a hint: ##2"+ @password$ + "##0.\"";
+    next;
+    mes "Pick the correct word for this definition.";
+    @choices_nr = 3;
+    @good = rand(0,(@choices_nr - 1));
+    setarray @choices$, "";
+    cleararray @choices$, "", getarraysize(@choices$);
+    @loop = 0;
+    goto L_Shuffle;
+
+L_Shuffle:
+    @nindex = rand(0,(getarraysize($@fightclub_randompasswords$) - 1));
+    if(@nindex == @index) goto L_Shuffle; // do not get the good definition
+    @loop2 = 0;
+    goto L_Search;
+
+L_Search:
+    if(@choices$[@loop2] == $@fightclub_randompasswords$[@nindex]) goto L_Shuffle; // array is already populated with this choice
+    if(@loop2 >= (@choices_nr - 1)) goto L_Shuffle2;
+    @loop2 = @loop2 + 1;
+    goto L_Search;
+
+L_Shuffle2:
+    @choices$[@loop] = $@fightclub_randompasswords$[@nindex];
+    if(@loop >= (@choices_nr - 1)) goto L_Answer;
+    @loop = @loop + 1;
+    goto L_Shuffle;
+
+L_Answer:
+    set @choices$[@good], $@fightclub_randompasswords$[@index]; // set the good definition
+    @choices$[getarraysize(@choices$)] = "I have no clue";
+    menu
+        @choices$[0], L_Enter,
+        @choices$[1], L_Enter,
+        @choices$[2], L_Enter,
+        @choices$[3], L_Enter,
+        @choices$[4], L_Enter,
+        @choices$[5], L_Enter,
+        @choices$[6], L_Enter;
+
+L_Enter:
+    if(@menu != (@good + 1)) goto L_Close;
+    mes "Correct. You may enter.";
+    close2;
+    warp "009-7", 22, 21;
+    end;
+
+L_Close:
+    mes "Incorrect.";
+    close;
+
+OnInit:
+    setarray $@fightclub_randompasswords$, "Abibliophobia", "Anencephalous", "Batrachomyomachy", "Blunderbuss", "Boustrophedon", "Bumbershoot", "Canoodle", "Cockalorum", "Cockamamie", "Collywobbles", "Eructation", "Flibbertigibbet", "Formication", "Gaberlunzie", "Gastromancy", "Gobemouche", "Hemidemisemiquaver", "Hobbledehoy", "Hootenanny", "Lickspittle", "Lollygag", "Mumpsimus", "Nincompoop", "Oocephalus", "Pettifogger", "Sialoquent", "Slangwhanger", "Smellfungus", "Tatterdemalion", "Vomitory", "Widdershins", "Avoirdupois", "Embonpoint", "Bibble", "Erinaceous", "Impignorate", "Nudiustertian", "Tittynope", "Winklepicker", "Yarborough", "Floccinaucinihilipilification";
+    setarray $@fightclub_definitions$, "The fear of running out of reading material","Lacking a brain","Making a mountain out of a molehill","A gun with a flared muzzle or disorganized activity","A back and forth pattern","An umbrella","To hug and kiss","A small, haughty man","Absurd, outlandish","Butterflies in the stomach","A burp, belch","Nonsense, balderdash","The sense of ants crawling on your skin","A wandering beggar","Telling fortune from the rumblings of the stomach","A highly gullible person","A musical timing of 1/64","An awkward or ill-mannered young boy","A country or folk music get-together","A servile person, a toady","To move slowly, fall behind","To move slowly, fall behind","A foolish person","An egghead","A person who tries to befuddle others with his speech","Spitting while speaking","A loud abusive speaker or obnoxious writer","A perpetual pessimist","A child in rags","An exit or outlet","In a contrary or counterclockwise direction", "Commodities sold by weight", "A plump, hourglass figure", "To drink often; to eat and/or drink noisily", "Resembling a hedgehog", "To pawn or mortgage something", "The day before yesterday", "A small quantity of something left over", "Style of shoe or boot with a sharp and long pointed toe", "Hand of cards containing no card above a nine", "Estimation that something is valueless";
+    if(getarraysize($@fightclub_randompasswords$) != getarraysize($@fightclub_definitions$)) mapexit;
+    end;
+}

@@ -1,0 +1,163 @@
+
+052-2,136,73,0	script	Chest#illia	111,{
+    @step = 8;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if (@illia_got_rewards > 2) end;
+    if (@illia_got_rewards == 2) goto L_AlreadyGotReward;
+    if (@illia_current_num_rewards > 0) goto L_ResumePick;
+    @illia_current_num_rewards = 0;
+    mes "You find an opened chest which seems full of equipments.";
+    next;
+    mes "You realize again you were not the first one to visit this place. But where the others failed, you succeeded.";
+    goto L_Pick;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+
+OnInit:
+    setarray $@illia_item_common_rewards, 601, 636, 637, 638, 639, 625, 626, 658, 571, 579, 876, 782, 545, 758, 4028, 602, 536, 720, 532, 570, 642;
+    setarray $@illia_item_unique_rewards, 877, 878, 879, 880;
+    end;
+
+L_ResumePick:
+    mes "Ok. I should continue to dig in this chest...";
+    menu
+        "... and quickly.", L_GetReward,
+        "... or maybe not. I am out of time.", L_AskLeaving,
+        "... but I can't carry more stuff.", L_AskLeaving,
+        "... no, wait a minute.", L_Close;
+
+L_Pick:
+    menu
+        "Let's take what I deserve for all this.", L_GetReward,
+        "Wait.", L_Close;
+
+L_GetReward:
+    if (@illia_got_rewards == 0)
+        goto L_GetCommonReward;
+    if (@illia_got_rewards == 1)
+        goto L_GetUniqueReward;
+    goto L_Close;
+
+L_GetCommonReward:
+    if (@illia_current_num_rewards == $@illia_num_common_reward_items)
+        goto L_RewardDone;
+    getinventorylist;
+    @reward = $@illia_item_common_rewards[rand(getarraysize($@illia_item_common_rewards))];
+    if ((checkweight(@reward, 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    @illia_current_num_rewards = @illia_current_num_rewards + 1;
+    getitem @reward, 1;
+    mes "You found a " + getitemname(@reward) + "!";
+    @reward = 0;
+    goto L_GetCommonReward;
+
+L_GetUniqueReward:
+    if (@illia_current_num_rewards == $@illia_num_unique_reward_items)
+        goto L_RewardDone;
+    if (Illia_Uniques_Count >= 2)
+        goto L_GetUniqueReward2;
+    getinventorylist;
+    @reward = $@illia_item_unique_rewards[rand(getarraysize($@illia_item_unique_rewards))];
+    if ((checkweight(@reward, 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    next;
+    mes "You notice an interesting shape hidden under a cover...";
+    next;
+    @illia_current_num_rewards = @illia_current_num_rewards + 1;
+    getitem @reward, 1;
+    mes "You found a " + getitemname(@reward) + "!";
+    Illia_Uniques_Count = Illia_Uniques_Count + 1;
+    @reward = 0;
+    goto L_GetUniqueReward;
+
+L_GetUniqueReward2:
+    next;
+    mes "You find a bunch of gold pieces!";
+    next;
+    Zeny = Zeny + 100000*($@illia_num_unique_reward_items - @illia_current_num_rewards);
+    getexp 200000*($@illia_num_unique_reward_items - @illia_current_num_rewards), 0;
+    @illia_current_num_rewards = $@illia_num_unique_reward_items;
+    goto L_GetUniqueReward;
+
+L_AlreadyGotReward:
+    mes "I already took my part.";
+    next;
+    goto L_AskLeaving;
+
+L_RewardDone:
+    @illia_got_rewards = @illia_got_rewards + 1;
+    @illia_current_num_rewards = 0;
+    next;
+    if (@illia_got_rewards == 1)
+        goto L_GetUniqueReward;
+    goto L_AskLeaving; // @illia_got_rewards == 2
+
+L_InventoryNoSpace:
+    mes "You cannot carry more stuff. Make some room first.";
+    close;
+
+L_AskLeaving:
+    mes "It's time to leave this place now.";
+    next;
+    // Force the hero to leave last, as this event triggers the end of the quest
+    // as well as some dialogs from Valia, when the hero returns.
+    if (strcharinfo(0) == $@ILLIA_HERO$ && getareausers("052-2", 19, 8, 137, 88) > 1)
+        goto L_WaitHelpersLeave;
+    goto L_PrepareLeaving;
+
+L_WaitHelpersLeave:
+    mes "However, I'd better wait my friends leave before I do.";
+    next;
+    mes "I prefer to know they left safely this place.";
+    close;
+
+L_PrepareLeaving:
+    mes "Use Valia's ring to teleport now?";
+    menu
+        "Yes. Time to make her pay for her trick!", L_Leave,
+        "No, I still need to see things here.", L_Close;
+
+L_Leave:
+    @illia_got_rewards = 3;
+    @illia_current_num_rewards = 0;
+    addtimer 1000, "Chest#illia::OnMsg1";
+    addtimer 4000, "Chest#illia::OnMsg2";
+    addtimer 7000, "Chest#illia::OnMsg3";
+    addtimer 9000, "Chest#illia::OnFx";
+    addtimer 10000, "Chest#illia::OnRing";
+    close;
+
+OnMsg1:
+    message strcharinfo(0), "At the moment you are wearing the ring, you start to feel dizzy...";
+    end;
+
+OnMsg2:
+    message strcharinfo(0), "Who is Luvia? Something isn't right... It looks like your memory is rewritten.";
+    end;
+
+OnMsg3:
+    message strcharinfo(0), "Damn, this ring! That Valia! Someone...";
+    end;
+
+OnFx:
+    misceffect FX_MAGIC_BLUE_TELEPORT, strcharinfo(0);
+    end;
+
+OnRing:
+    warp "007-1", 85 + rand(0,2), 75 + rand(0,2);
+    if (strcharinfo(0) == $@ILLIA_HERO$)
+        goto L_ScheduleEnd;
+    end;
+
+L_ScheduleEnd:
+    $@ILLIA_STATUS = 253;
+    startnpctimer "Valia";
+    donpcevent "#IlliaDaemon::OnCommandToggle";
+    end;
+
+L_Close:
+    close;
+
+}

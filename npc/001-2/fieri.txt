@@ -1,0 +1,129 @@
+
+001-2,114,89,0	script	Fieri	117,{
+    @state = ((QUEST_SouthTulimshar & NIBBLE_6_MASK) >> NIBBLE_6_SHIFT);
+
+    if (@state >= 4) goto L_Done2;
+    if (@state == 3) goto L_Progress2;
+    if (@state == 2) goto L_Done1;
+    if (@state == 1) goto L_Progress;
+
+    @temp = rand(2);
+    if(@temp == 1) goto L_Opening1;
+    goto L_Opening0;
+
+L_Opening0:
+    mes "[Fieri]";
+    mes "\"The Wizards are always hungry. All the magic all the time, sapping their energy.";
+    mes "Could I ask a favor of you?\"";
+    next;
+    goto L_Ask;
+
+L_Opening1:
+    mes "[Fieri]";
+    mes "\"These Wizards eat like a store house full of maggots.";
+    mes "At this rate I'll have nothing left to cook. Can you help me with a task?\"";
+    next;
+    goto L_Ask;
+
+L_Ask:
+    menu
+        "Yes.", L_Yes,
+        "No.", L_Close;
+
+L_Yes:
+    @temp = rand(2);
+    if(@temp == 1) goto L_Req1;
+    goto L_Req0;
+
+L_Req0:
+    mes "[Fieri]";
+    mes "\"Great!  I need a Beer for my Tonori Delight.\"";
+    next;
+    goto L_Set;
+
+L_Req1:
+    mes "[Fieri]";
+    mes "\"Bring me a Beer. I'll give you something if you do.\"";
+    next;
+    goto L_Set;
+
+L_Set:
+    @state = 1;
+    callsub S_Update_Var;
+    mes "[Fieri]";
+    mes "\"Please bring it to me!\"";
+    goto L_Close;
+
+L_Progress:
+    if (countitemcolor("Beer") < 1) goto L_NotEnough;
+    mes "[Fieri]";
+    mes "\"Oooh, perfect! It's perfect!";
+    mes "You brought me my Beer!  Here, have some cake for your troubles.\"";
+    getinventorylist;
+    if (@inventorylist_count - (countitemcolor("Beer") == 1) > 99 - (countitemcolor("CherryCake") == 0) ) goto L_TooMany;
+    delitem "Beer", 1;
+    getexp 100, 0;
+    getitem "CherryCake", 5;
+    @state = 2;
+    callsub S_Update_Var;
+    next;
+    mes "\"Now let's see...\"";
+    goto L_Close;
+
+L_Progress2:
+    if (countitemcolor("MaggotSlime") < 3) goto L_NotEnough1;
+    mes "[Fieri]";
+    mes "\"Nice!  They're perfect, just perfect!";
+    mes "You brought me the 3 Maggot Slimes! Here, have some Tonori Delight as reward.\"";
+    getinventorylist;
+    if ((@inventorylist_count - (countitemcolor("MaggotSlime") == 3) > 99  - (countitemcolor("TonoriDelight") == 0) )) goto L_TooMany;
+    delitem "MaggotSlime", 3;
+    getexp 100, 0;
+    getitem "TonoriDelight", 3;
+    @state = 4;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_NotEnough:
+    mes "[Fieri]";
+    mes "\"Oh, please hurry and bring me a Beer. The Wizards need their Tonori Delight!\"";
+    goto L_Close;
+
+L_NotEnough1:
+    mes "[Fieri]";
+    mes "\"Please do hurry and bring me 3 Maggot Slimes, so I can finish the Tonori Delight!\"";
+    goto L_Close;
+
+L_Done1:
+    mes "[Fieri]";
+    mes "\"Thank you so much!\"";
+    mes "\"But... I need some more ingredients.\"";
+    next;
+    mes "\"I need 3 Maggot Slimes for that.\"";
+    mes "\"Bring them to me, and I'll give you something nice.\"";
+    @state = 3;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_Done2:
+    mes "[Fieri]";
+    mes "\"I hope you like Tonori Delight as much as I do, because, you see...\"";
+    next;
+    mes "\"Tonori Delight is life!\"";
+    goto L_Close;
+
+L_Close:
+    @temp = 0;
+    @state = 0;
+    close;
+
+L_TooMany:
+    next;
+    mes "[Fieri]";
+    mes "\"You don't have room for my reward. I'll wait until you do.\"";
+    goto L_Close;
+
+S_Update_Var:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_6_MASK) | (@state << NIBBLE_6_SHIFT));
+    return;
+}

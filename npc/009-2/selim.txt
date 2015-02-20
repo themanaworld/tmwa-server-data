@@ -1,0 +1,179 @@
+function	script	SelimDebug	{
+    @w = 0;
+    mes "[Selim Debug]";
+    menu
+        "Debug item array.", L_DebugArrayExplain,
+        "Exit debug.", L_Return;
+
+L_DebugArrayExplain:
+    mes "[How it works]";
+    mes "Click on the link to verify that it is the red variation of the item.";
+    mes "If, for example, you see [Skirt] then when you click on it you should see Red Skirt.";
+    next;
+    goto L_DebugArray;
+
+L_DebugArray:
+    mes "[@@" + @items_new[@w] + "|" + @item_names$[@w] + "@@]";
+    @w = @w + 1;
+    if(@w >= getarraysize(@items_new)) goto L_Return;
+    menu
+        "Next.", L_DebugArray,
+        "Exit debug.", L_Return;
+
+L_Return:
+    return;
+}
+
+009-2,32,104,0	script	Selim	326,{
+    setarray @all_colours$, "red", "green", "dark blue", "yellow", "light blue", "pink", "black", "orange", "purple", "dark green";
+
+    cleararray @items$, "", getarraysize(@items$);
+    cleararray @item_names$, "", getarraysize(@item_names$);
+    cleararray @items_new, "", getarraysize(@items_new);
+    setarray @items_new,   2050,           2250,           2060,             2070,                 2110,            2180,              2100,           2170,        2090,       2120,             2080,        2140,              2130,         2150,           2160,            2190,                2200,         2210,         2230,                 2240,         5131,                2220,                      5000,                        5011,                            5022,                         5033,                             5044,                       5055,                        5066,                         5077,                         5088,                             5099;
+    setarray @items$,      "CottonShirt",  "CottonCloth",  "VNeckSweater",   "TurtleneckSweater",  "CottonShorts",  "CottonTrousers",  "CottonSkirt",  "Miniskirt", "TankTop",  "ShortTankTop",   "SilkRobe",  "CottonHeadband",  "DesertHat",  "CottonBoots",  "CottonGloves",  "WhiteRabbitEars",   "WizardHat",  "BowlerHat",  "BowlerHatBrown",     "FineDress",  "ContributorShirt",  "SorcererRobeRed",         "SorcererRobeGreen",         "SorcererRobeDarkBlue",          "SorcererRobeYellow",         "SorcererRobeLightBlue",          "SorcererRobePink",         "SorcererRobeBlack",         "SorcererRobeOrange",         "SorcererRobePurple",         "SorcererRobeDarkGreen",          "SorcererRobeWhite";
+    setarray @item_names$, "Cotton Shirt", "Cotton Cloth", "V-Neck Sweater", "Turtleneck Sweater", "Cotton Shorts", "Cotton Trousers", "Cotton Skirt", "Miniskirt", "Tank Top", "Short Tank Top", "Silk Robe", "Cotton Headband", "Desert Hat", "Cotton Boots", "Cotton Gloves", "White Rabbit Ears", "Wizard Hat", "Bowler Hat", "Bowler Hat (brown)", "Fine Dress", "Contributor Shirt", "Red lined Sorcerer Robe", "Green lined Sorcerer Robe", "Dark Blue lined Sorcerer Robe", "Yellow lined Sorcerer Robe", "Light Blue lined Sorcerer Robe", "Pink lined Sorcerer Robe", "Black lined Sorcerer Robe", "Orange lined Sorcerer Robe", "Purple lined Sorcerer Robe", "Dark Green lined Sorcerer Robe", "White lined Sorcerer Robe";
+    if ((getgmlevel() >= 40 || debug) && (getequipid(equip_head) == 647 || getequipid(equip_head) == 725)) goto L_Debug;
+    goto L_Main;
+
+L_Debug:
+    callfunc "SelimDebug";
+    close;
+
+L_Main:
+    mes "[Selim]";
+    mes "\"Greetings, fair traveler. With what may I help you?\"";
+    menu
+        "Greetings, are you the store merchant?", L_ask_selim,
+        "But what are dyes and what purpose do they serve?", L_ask_dye,
+        "Can you dye something for me?", L_clothes_choice,
+        "Can you also remove color from clothing?", L_ask_bleach,
+        "About these sorcerer robes...", L_asksorcererrobe,
+        "Never mind.", L_Close;
+
+L_ask_bleach:
+    mes "[Selim]";
+    mes "\"I'm afraid no.";
+    mes "For that, you would need to visit Candide in the Tulimshar marketplace.\"";
+    goto L_Main;
+
+L_ask_selim:
+    mes "[Selim]";
+    mes "\"That is an honest mistake you have made.";
+    mes "However I am not the merchant, but rather a Master Dyer here to serve the good people of this town.";
+    mes "I dye things, upon request.\"";
+    menu
+        "But what are dyes and where can I get them?", L_ask_dye,
+        "Can you dye something for me?", L_clothes_choice,
+        "Can you also remove color from clothing?", L_ask_bleach,
+        "Good bye.", L_Close;
+
+L_ask_dye:
+    mes "[Selim]";
+    mes "\"Dyes are special liquids used to add color to clothing. If you want me to dye something for you you will have to bring me some dye first.";
+    mes "Those behind me are nearly empty and won't last for your item.\"";
+    menu
+        "What do you mean, `bring you dye'?", L_explain_dye,
+        "Where would I get dye?", L_explain_dye,
+        "Good bye.", L_Close;
+
+L_clothes_choice:
+    mes "[Selim]";
+    mes "\"What can I dye for you today?\"";
+    next;
+    callfunc "DynamicItemMenu$";
+    @default_choice$ = "";
+    @item_del$ = @item$;
+    @item_new = @items_new[@index];
+    @name$ = @item_names$[@index];
+    cleararray @items$, "", getarraysize(@items$);
+    cleararray @item_names$, "", getarraysize(@item_names$);
+    if(@item$ == "") goto L_Close;
+    goto L_picked_item;
+
+
+L_asksorcererrobe:
+    mes "[Selim]";
+    mes "\"Yes?\"";
+    next;
+    menu
+        "Do you think you can dye that line to a different color?", L_Next1;
+
+L_Next1:
+    mes "[Selim]";
+    mes "\"Hum, I fear I can't do that. The area is too small and I can operate only on large ones.";
+    mes "But with the appropriate materials, maybe a talented tailor can make the change.\"";
+    next;
+    menu
+        "Oh, I see!", L_Next;
+
+L_Next:
+    mes "[Selim]";
+    mes "\"Of course I can help you by dyeing the materials your tailor will want.";
+    mes "All I need is a piece of Cotton Cloth.\"";
+    @item_del$ = "CottonCloth";
+    @item_new = 2250;
+    menu
+        "Sure. Here is one.", L_picked_item,
+        "I have to go pick that.", L_Close;
+
+L_picked_item:
+    if (countitemcolor(@item_del$) == 0) goto L_havenone;
+    goto L_colour;
+
+L_colour:
+    mes "[Selim]";
+    mes "\"Excellent. Now, what color do you want?\"";
+    next;
+    setarray @items$, "RedDye", "GreenDye", "DarkBlueDye", "YellowDye", "LightBlueDye", "PinkDye", "BlackDye", "OrangeDye", "PurpleDye", "DarkGreenDye";
+    setarray @item_names$, "red", "green", "dark blue", "yellow", "light blue", "pink", "black", "orange", "purple", "dark green";
+    @default_choice$ = "I have no dye.";
+    callfunc "DynamicItemMenu$";
+    cleararray @items$, "", getarraysize(@items$);
+    cleararray @item_names$, "", getarraysize(@item_names$);
+    @default_choice$ = "";
+    if (@item$ == "") goto L_no_dye;
+    @colour = @index;
+    @vial = 690 + @colour;
+    goto L_Finish;
+
+L_no_dye:
+    mes "[Selim]";
+    mes "\"I would love to dye your " + @name$ + " for you, but you will have to bring me some dye first.";
+    mes "Those behind me are nearly empty and won't last for your item.\"";
+    next;
+    menu
+        "I wanted to dye a different item anyway.", L_clothes_choice,
+        "What do you mean, `bring you dye'?", L_explain_dye,
+        "Where would I get dye?", L_explain_dye,
+        "Never mind.", L_Close;
+
+L_explain_dye:
+    if (QUEST_clothdyer_knowsdye < 1)
+        QUEST_clothdyer_knowsdye = 1;
+    mes "[Selim]";
+    mes "\"Well, dye is very expensive, and since I don't charge adventurers anything, I can't give you any for free.";
+    mes "But most alchemists can make dye; perhaps you can find one around here.\"";
+    goto L_Close;
+
+L_Finish:
+    delitem @vial, 1;
+    delitem @item_del$, 1;
+    getitem @item_new + @colour, 1;
+    mes "[Selim]";
+    mes "\"Here's your " + @all_colours$[@colour] + " " + @name$ + "!  Please let dry for a minute.\"";
+    goto L_Close;
+
+L_havenone:
+    mes "[Selim]";
+    mes "\"You don't have any uncolored " + @name$ + "?  That's unfortunate.";
+    mes "Would you like to dye something else?\"";
+    next;
+    goto L_clothes_choice;
+
+L_Close:
+    mes "\"Farewell and good luck in your journeys!\"";
+    close2;
+    emotion EMOTE_WINK;
+    end;
+}

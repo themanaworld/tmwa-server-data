@@ -1,0 +1,123 @@
+
+001-1,71,23,0	script	Eomie	164,{
+    @state = ((QUEST_NorthTulimshar & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    @grass_amount = 5;
+    @water_amount = 2;
+    @ice_amount = 2;
+
+    @silk_exp = 600;
+
+    if (@state >= 14) goto L_Done;
+    if (@state >= 9) goto L_CastedSpell;
+    if (@state == 8) goto L_GetStuff;
+
+    mes "[Eomie]";
+    mes "\"I maintain this little spot of grass in the desert.\"";
+    if (@state != 7)
+        goto L_Close;
+    menu
+        "I have this magic fertilizer from Tinris and need a spell cast on it.",L_Next;
+
+L_Next:
+    mes "[Eomie]";
+    mes "\"Oh? I see, that's a difficult task.";
+    mes "I'd be glad to help you, but unfortunately I can't interrupt the magic I use to keep this spot of grass alive.\"";
+    next;
+    mes "\"It's unusually hot at the moment, even for this desert area. It might have something to do with the aftereffects of the earthquake.\"";
+    menu
+        "Isn't there any possibility?",L_Continue;
+
+L_Continue:
+    mes "She hesitates.";
+    @state = 8;
+    callsub S_Update_Mask;
+    goto L_GetStuff;
+
+L_GetStuff:
+    // @state == 8
+    mes "[Eomie]";
+    mes "\"I could try to interrupt my spells to be able to cast the spell on the fertilizer, but then I need to prepare the grass for this.";
+    mes "Bring me " + @grass_amount + " Grass Seeds, " + @water_amount + " Bottles of Water and " + @ice_amount + " Ice Cubes.\"";
+    menu
+        "I have it.",L_More,
+        "Where can I get Grass Seeds?",L_Hurnscald,
+        "How can I get Ice Cubes? We're in the desert!",L_Mine,
+        "Ok, I'll go and get it.",L_Close;
+L_More:
+    if ((countitemcolor("GrassSeed") < @grass_amount) || (countitemcolor("BottleOfWater") < @water_amount) || (countitemcolor("IceCube") < @ice_amount))
+        goto L_NoItem;
+
+    delitem "GrassSeed", @grass_amount;
+    delitem "BottleOfWater", @water_amount;
+    delitem "IceCube", @ice_amount;
+    @state = 9;
+    callsub S_Update_Mask;
+    mes "[Eomie]";
+    mes "\"Very good.\"";
+    mes "She takes the things you brought her and uses them to create a bubble of coolness around the spot of grass.";
+    misceffect sfx_magic_nature;
+    next;
+    mes "[Eomie]";
+    mes "\"This should last long enough to keep the spot of grass alive until I cast the spell on the fertilizer. And if some of it shrivels I still have the seeds you brought me which I can use to recover it.\"";
+    next;
+    mes "She takes the fertilizer and casts some invocations. After a while she's done and gives it back to you with a smile.";
+    misceffect sfx_magic_nature;
+    mes "[Eomie]";
+    mes "\"This should help you. I'm glad you're taking care of the plants. Not enough people do that nowadays.\"";
+    goto L_Close;
+
+L_Hurnscald: // player asked how to get Grass Seeds
+    mes "[Eomie]";
+    mes "\"Squirrels tend to pick up Grass Seeds as they gather food. You can find them around Hurnscald. To get there you will have to take the ferry in the harbor district.\"";
+    goto L_Close;
+
+L_Mine: // player asked how to get Ice Cubes
+    mes "[Eomie]";
+    mes "\"Hm, that's a difficult task, indeed. Naturally you will find them on the continent of Kaizei, which is high up in the north and covered with snow most time of the year. But it might be difficult to get there.\"";
+    next;
+    mes "\"I heard that Ice Goblins were seen in the caves that are around Nivalis. Maybe you can find Ice Cubes in there.\"";
+    goto L_Close;
+
+L_CastedSpell: // @state >= 9 but below 14
+    mes "[Eomie]";
+    mes "\"The grass wasn't damaged due to the interruption. I hope the magic fertilizer is useful for Anwar.\"";
+    if (@state != 13)
+        goto L_Close;
+    menu
+        "It was and he created this Silk Headband as a present for you.",L_Present,
+        "(Mumble something and leave)",L_Close;
+
+L_Present:
+    if (countitemcolor("SilkHeadband") < 1)
+        goto L_NoItem;
+    delitem "SilkHeadband", 1;
+    getexp @silk_exp, 0;
+    @state = 14;
+    callsub S_Update_Mask;
+    mes "[Eomie]";
+    mes "\"Oh, this is very friendly! Please tell him I'm very happy about it.\"";
+    mes "She smiles.";
+    goto L_Close;
+
+L_Done: // @state >= 14
+    mes "[Eomie]";
+    mes "\"Hello. I'm happy to see someone like you being dedicated to the needs of plants and people.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Eomie]";
+    mes "\"Where is it?\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @grass_amount = 0;
+    @water_amount = 0;
+    @ice_amount = 0;
+    close;
+
+S_Update_Mask:
+    QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(NIBBLE_3_MASK)) | (@state << NIBBLE_3_SHIFT);
+    return;
+}

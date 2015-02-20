@@ -1,0 +1,90 @@
+
+019-1,77,44,0	script	Snowman	129,{
+    callfunc "ClearVariables";
+    if (FLAGS & FLAG_SNOWMAN) goto L_Done;
+    if (gettime(6) == 12 || gettime(6) == 1 || gettime(6) == 2) goto L_Quest;
+
+    mes "A beautiful snowman. It looks almost alive.";
+    mes "Maybe the magic of Christmas time will breath life into it?";
+    goto L_Close;
+
+L_Quest:
+    if (Sex == 0)
+        @Sex$ = "lady";
+    if (Sex == 1)
+        @Sex$ = "man";
+    @candy_amount = 15;
+    @chocolate_amount = 10;
+    @cactus_amount = 5;
+
+    mes "[Snowman]";
+    mes "\"Hello there young " + @Sex$ + ".";
+    mes "Would you like a Christmas hat?\"";
+    next;
+    goto L_Menu;
+
+L_Menu:
+    menu
+        "Yes", L_Sure,
+        "No", L_Next,
+        "What do you need?", L_Need;
+
+L_Next:
+    mes "[Snowman]";
+    mes "\"Well, thats too bad, but make sure to have the holiday spirit!\"";
+    goto L_Close;
+
+L_Sure:
+    mes "[Snowman]";
+    mes "\"Hmm, let me see what you have.\"";
+    next;
+    if(countitemcolor("Candy") < @candy_amount)
+        goto L_NoItem;
+    if(countitemcolor("ChocolateBar") < @chocolate_amount)
+        goto L_NoItem;
+    if(countitemcolor("CactusPotion") < @cactus_amount)
+        goto L_NoItem;
+    getinventorylist;
+    if (@inventorylist_count > 99)
+        goto L_TooMany;
+    delitem "Candy", @candy_amount;
+    delitem "ChocolateBar", @chocolate_amount;
+    delitem "CactusPotion", @cactus_amount;
+    mes "[Snowman]";
+    mes "\"Here you go, enjoy your new hat!\"";
+    getitem "SantaHat", 1;
+    FLAGS = FLAGS | FLAG_SNOWMAN;
+    goto L_Close;
+
+L_Need:
+    mes "[Snowman]";
+    mes "\"For this special hat, I need a pint of magic and a little help.";
+    mes "Just kidding. I would like to get some food:";
+    mes @candy_amount + " pieces of Candy";
+    mes @chocolate_amount + " Chocolate Bars";
+    mes @cactus_amount + " Cactus Potions\"";
+    next;
+    goto L_Menu;
+
+L_NoItem:
+    mes "[Snowman]";
+    mes "\"Well, I am interested in some food and you don't have enought to get a hat.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Snowman]";
+    mes "\"Thank you for your help!\"";
+    goto L_Close;
+
+L_TooMany:
+    mes "[Snowman]";
+    mes "\"It doesn't look like you have room for this. Come back later.\"";
+    goto L_Close;
+
+L_Close:
+    @Sex$ = "";
+    @candy_amount = 0;
+    @chocolate_amount = 0;
+    @cactus_amount = 0;
+    close;
+}

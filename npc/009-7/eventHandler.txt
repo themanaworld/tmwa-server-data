@@ -1,0 +1,132 @@
+
+009-7,45,33,0	script	#trapdoor2FightClub	327,0,0,{
+    if(countitemcolor(647)||countitemcolor(725)||countitemcolor(1178)||countitemcolor(5131)||countitemcolor(5132)||countitemcolor(5133)||countitemcolor(5134)||countitemcolor(5135)||countitemcolor(5136)||countitemcolor(5137)||countitemcolor(5138)||countitemcolor(5139)||countitemcolor(5140)||(getgmlevel()>=20)) goto L_Enter;
+    end;
+
+L_Enter:
+    warp "009-7",34,22; // this warp is a special thanks for contributors
+    end;
+}
+009-7,33,21,0	script	#trapdoor3FightClub	327,0,0,{
+    warp "009-7",44,32;
+    end;
+}
+
+009-7,22,38,0	script	#FightClubUtils	127,{
+    end;
+
+OnIntrusion:
+    if(getgmlevel() >= 60) end; // allow GMs to be in the ring
+    if(getcharid(3) == $@Duel_RedPlayer) end; // do not kill the red fighter
+    if(getcharid(3) == $@Duel_BluePlayer) end; // do not kill the blue fighter
+    donpcevent "Rouge#Duels::OnAnnounceIntrusion";
+    callfunc "fightclub_DestroyMe"; // only kill the intruder(s)
+    end;
+
+OnDelayedStart:
+    callfunc "fightclub_StartBattle";
+    end;
+
+OnDelayedNextBattle:
+    callfunc "fightclub_NextBattleProceed";
+    end;
+
+OnBecomeKiller:
+    callfunc "fightclub_enter_killer";
+    end;
+
+OnCommandIntrusion:
+    areatimer "009-7", $@fightclub_x1, $@fightclub_y1, $@fightclub_x2, $@fightclub_y2, 0, "#FightClubUtils::OnIntrusion"; // we can not do this directly on #handler because it already have a timer
+    end;
+}
+
+009-7,20,45,0	script	#FightClubTimeLimit	127,0,0,{
+    end;
+
+OnStartTimer:
+    $@Duel_TotalTime = 0;
+    goto L_StartTimer;
+
+OnStopTimer:
+    stopnpctimer;
+    end;
+
+OnTimer1000:
+    $@Duel_TotalTime = ($@Duel_TotalTime + 1);
+    if($@Duel_TotalTime >= $@Duel_TimeLimit) goto L_TimeOut;
+    goto L_StartTimer;
+
+L_TimeOut:
+    stopnpctimer;
+    callfunc "fightclub_TimeOut";
+    end;
+
+L_StartTimer:
+    setnpctimer 0;
+    initnpctimer;
+    end;
+
+OnInit:
+    $@Duel_TotalTime = 0;
+    end;
+}
+
+009-7,20,44,0	script	#FightClubHandler	127,0,0,{
+    end;
+
+OnInit:
+    // this event is called when the map server boots up
+    $@fightclub_x1 = 27;
+    $@fightclub_y1 = 42;
+    $@fightclub_x2 = 38;
+    $@fightclub_y2 = 48;
+    callfunc "fightclub_StartUp";
+    callfunc "fightclub_CleanStage";
+    goto L_StartTimer;
+
+L_StartTimer:
+    if($SANGUINE & $@SV_FCDBit != 0) end;
+    if(debug >= 2) end;
+    setnpctimer 0;
+    initnpctimer;
+    end;
+
+OnTimer2000:
+    // this events checks who is on stage every 2 seconds
+    set $@areausers, getareausers("009-7", $@fightclub_x1, $@fightclub_y1, $@fightclub_x2, $@fightclub_y2); // get the number of players on stage
+    if (($@areausers > 2) || (($@Duel_CurrentDuel < 1) && ($@areausers >= 1))) goto L_Intrusion; // too many players on the stage
+    if (($@Duel_CurrentDuel < 1) && ($@Duel_Started != 1)) goto L_Request; // start the next duel
+    if ($@Duel_Started != 1) goto L_StartTimer; // no intrusion and no duel ongoing so loop again
+    if (attachrid($@Duel_BluePlayer) == 0) goto L_BlueMissing;
+    if (isin("009-7", $@fightclub_x1, $@fightclub_y1, $@fightclub_x2, $@fightclub_y2) == 0) goto L_BlueMissing;
+    if (ispcdead() == 1) goto L_IAmACorpse;
+    if (attachrid($@Duel_RedPlayer) == 0) goto L_RedMissing;
+    if (isin("009-7", $@fightclub_x1, $@fightclub_y1, $@fightclub_x2, $@fightclub_y2) == 0) goto L_RedMissing;
+    if (ispcdead() == 1) goto L_IAmACorpse;
+    detachrid;
+    goto L_StartTimer;
+
+L_Request:
+    callfunc "fightclub_NextBattle";
+    goto L_StartTimer;
+
+L_IAmACorpse:
+    $@duel_loser = getcharid(3);
+    callfunc "fightclub_death";
+    goto L_StartTimer;
+
+L_RedMissing:
+    $@Duel_Missing = 1;
+    callfunc "fightclub_Missing";
+    goto L_StartTimer;
+
+L_BlueMissing:
+    $@Duel_Missing = 2;
+    callfunc "fightclub_Missing";
+    goto L_StartTimer;
+
+L_Intrusion:
+    donpcevent "#FightClubUtils::OnCommandIntrusion"; // we can not attach a second timer to this npc so we use another one
+    callfunc "fightclub_Intrusion";
+    goto L_StartTimer;
+}

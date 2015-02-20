@@ -1,0 +1,74 @@
+
+008-1,135,25,0	script	Mikhail	120,{
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    @state = ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if (@state >= 6) goto L_Done;
+    if (@state == 5) goto L_Progress;
+    if (@state == 4) goto L_Start;
+    goto L_Con_Mik_First;
+
+L_Con_Mik_First:
+    mes "[Mikhail]";
+    mes "\"Hello... I'm supposed to be helping Bernard from the Inn but...\"";
+    mes "His eyes grow wide";
+    mes "\"Eeekkk another one.\"";
+    mes "";
+    mes "It seems that the boy would like to say more, but seems too terrified at the moment. Maybe you should help someone else first, so that he sees your intentions are good.";
+    goto L_Close;
+
+L_Start:
+    mes "[Mikhail]";
+    mes "\"Bernard sent me to get five Maggot Slimes from the maggots in the fields, but they scare me so bad!\"";
+    next;
+    mes "\"You look like a nice person. Would you go get them for me?\"";
+    menu
+        "Of course, I'll go get them for you.", L_Accept,
+        "I've got other things to do right now.", L_Close;
+
+L_Accept:
+    mes "[Mikhail]";
+    mes "\"Thank you so much!  I'll wait for you here.\"";
+    @state = 5;
+    callsub S_Update_Var;
+    close;
+
+L_Progress:
+    mes "[Mikhail]";
+    mes "\"Did you bring me the five Maggot Slimes I need?\"";
+    next;
+    menu
+        "Yes, here they are, kiddo!", L_try,
+        "Not yet, but I'll be back soon.", L_Close;
+
+L_try:
+    if (countitemcolor("MaggotSlime") >= 5)
+        goto L_Get;
+    mes "[Mikhail]";
+    mes "\"It doesn't look like you have them all...\"";
+    goto L_Close;
+
+L_Get:
+    delitem "MaggotSlime", 5;
+    getexp 100, 0;
+    @state = 6;
+    callsub S_Update_Var;
+    mes "[Mikhail]";
+    mes "\"Ooh!  Thank you so much!  I can get back to Bernard now!\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Mikhail]";
+    mes "\"Thanks again for helping me get those Maggot Slimes!\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    close;
+
+S_Update_Var:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    return;
+}

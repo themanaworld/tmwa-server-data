@@ -1,0 +1,75 @@
+
+048-2,40,41,0	script	Elias	365,{
+    @investigate = ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+
+    if (@investigate == 11) goto L_Thank;
+    if ((@investigate == 4) || (@investigate == 7) || (@investigate == 10)) goto L_Confirmed;
+    if ((@investigate == 3) || (@investigate == 6) || (@investigate == 9)) goto L_Worry;
+    if (QUEST_BlueSage > 0) goto L_ShortHello;
+
+    mes "[Elias]";
+    mes "\"Welcome to the residence of Nikolai, member of the Sages of Kaizei.\"";
+    next;
+    mes "\"Our house is famous for its extraordinary and well equipped library.";
+    mes "Ahm, usually well equipped.\"";
+    next;
+    mes "\"We had an accident with some magic experiments, that caused some slimes to get out of control. They ate most of the books in the library.\"";
+    mes "He sighs with a regretful look on his face.";
+    next;
+    mes "[Elias]";
+    mes "\"So, if you came because of the library, I'll have to disappoint you, because there isn't much left.";
+    mes "Though you look like a skilled adventurer. If you'd like to offer your help that'd be greatly appreciated.\"";
+    next;
+    mes "\"The library is on the third floor.\"";
+    goto L_Close;
+
+L_ShortHello:
+    mes "[Elias]";
+    mes "\"Welcome back. I heard you're helping with the cleanup efforts in the library.";
+    mes "Thank you very much.\"";
+    if ((@investigate != 2) && (@investigate != 5) && (@investigate != 8))
+        goto L_Close;
+    menu
+        "Can you tell me if there were any unusual visitors before the accident?",L_Next;
+
+L_Next:
+    mes "[Elias]";
+    mes "\"Mh, let me think. There were quite a few visitors with different concerns, but that's usual at this time of the year.";
+    mes "One of them was a bit odd, he was wearing a mask and had a strange way of talking. He said he comes from Thermin, which is a mining town in the west. I figured his face might have gotten deformed in some mining accident, but I didn't ask, that would've been rude.";
+    mes "If I remember correctly he wanted to see the library.\"";
+    next;
+    mes "Elias gets a bit excited now.";
+    mes "[Elias]";
+    mes "\"Do you think he may have had something to do with the accident? We're a very hospitable house, so I didn't see a reason to deny him the entrance. I mean, his mask might have been a bit unusual, but hey, there could've been many reasons why someone would wear a mask, don't you think?\"";
+
+    @investigate = @investigate + 1;
+    callfunc "updateBlueSageInvestigate";
+
+    menu
+        "Sure, but it's interesting that he was here shortly before the accident.",L_Close,
+        "I'll ask some more people about that guy.",L_Close;
+
+L_Worry:
+    mes "[Elias]";
+    mes "\"After your questions I'm really getting worried about this guy with the mask. In retrospect it really seems suspicous.";
+    mes "It might be a good idea to ask around if anyone else observed something odd connected to this person.\"";
+    goto L_Close;
+
+L_Confirmed:
+    mes "[Elias]";
+    mes "\"I heard your investigations reminded other people that they observed suspicious behaviour too.\"";
+    next;
+    mes "\"It's all my fault, I should've paid more attention! You should talk to Chief Oskari about this.\"";
+    goto L_Close;
+
+L_Thank:
+    mes "[Elias]";
+    mes "\"Now that Chief Oskari knows about the sequence of events, the Sages will take care of it. It's really a shame how malicious people can be.\"";
+    next;
+    mes "\"Thanks a lot for your help revealing the truth.\"";
+    goto L_Close;
+
+L_Close:
+    @investigate = 0;
+    close;
+}

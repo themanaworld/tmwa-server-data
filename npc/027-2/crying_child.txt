@@ -1,0 +1,209 @@
+
+027-2,50,92,0	script	Aldred	314,{
+
+    @Graveyard_Inn_MASK = NIBBLE_2_MASK;
+    @Graveyard_Inn_SHIFT = NIBBLE_2_SHIFT;
+
+    @state = ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+
+    @minLevel = 85;
+
+    if (Sex == 0) set @madamsir$, "Madam";
+    if (Sex == 1) set @madamsir$, "Sir";
+    if (@state == 7) goto L_Return5;
+    if (@state == 6) goto L_Return4;
+    if (@state == 4 || @state == 5) goto L_Return3;
+    if (@state == 3) goto L_Return2;
+    if (@state == 2) goto L_Return1;
+    if (@state == 1) goto L_Return;
+    if (BaseLevel >= @minLevel) goto L_Intro;
+    goto L_cry;
+
+L_cry:
+    mes "[Crying Child]";
+    mes "\"Waaahhhhh!\"";
+    goto L_Close;
+
+L_Intro:
+    mes "[Crying Child]";
+    mes "\"Waaah!\"";
+    next;
+    mes "\"Waaahhhaaa!\"";
+    next;
+    mes "You bend your knees near the child, trying to gain his confidence and ask why he is crying. But looking closely, you are surprised to see that his skin color is an awful, cadaveric grey...";
+    menu
+        "Calm down kid, what happened?",L_WhatHappen,
+        "Leave the kid alone.",L_Close;
+
+L_WhatHappen:
+    mes "[Crying Child]";
+    mes "\"Oh, what? Who are you "+@madamsir$+", what are you doing here?\"";
+    next;
+    menu
+        "My name is "+strcharinfo(0)+". I heard you cry and decided to check if you needed any help.",L_MyNameIs;
+
+L_MyNameIs:
+    mes "The child looks at you from head to toe and says: \"" +@madamsir$+ ", aren't you scared of me?\"";
+    next;
+    menu
+        "No... Why would I be scared of you?",L_NotScaredOf;
+
+L_NotScaredOf:
+    mes "[Crying Child]";
+    mes "\"I am, you know... dead. Like Mom and Dad, and a lot of other people in this inn... But most of them don't like to talk about it.\"";
+    menu
+        "You are a brave and smart kid... I have nothing to be afraid of.",L_BraveSmart;
+
+L_BraveSmart:
+    mes "[Crying Child]";
+    mes "\"It's nice to talk to you. I don't have any friends and Mom is always sad and Dad is always angry about something I don't know... and... Did you see the man in the room next to me? The one with horns? Oh, I don't like him! \"";
+    next;
+    mes "[Crying Child]";
+    mes "\"My parents told me not to talk to strangers... But you look nice... I guess I can trust you... I'm Aldred and we live here, my parents and I. This is our inn.\"";
+    next;
+    mes "[Aldred]";
+    mes "\"You asked why I was crying. My problem is... I don't know what to do... My dad will be so angry with me... He used to be very nice, but now... if you do something wrong... he... Waaaaa!\"";
+    next;
+    menu
+        "There, there. Don't cry... What did you do?",L_DontCryWhat;
+
+L_DontCryWhat:
+    mes "[Aldred]";
+    mes "\"Umm... I was looking at my parents' stuff and I found this funny thing! It looked like a normal ring, but with a round empty space... I thought it would be fun to take it with me and maybe look for a stone or a gem to fit into the empty space. But I... I lost it...\"";
+    next;
+    mes "\"I don't know what happened. I was in this room and... I heard some very loud noises, people screaming, cracking sounds... and a smell, a terrible smell, like something rotten. And then... I can't remember anything else!\"";
+    next;
+    mes "\"I think it was something very bad, because, after all that, I woke up the way I am now and I couldn't find the ring in my pocket. Oh, and my parents are acting like they're not themselves. I don't know what happened, maybe it was my fault... I shouldn't have played with that ring... \"";
+    next;
+    menu
+        "Don't worry, I will look around. Maybe I can find it for you...",L_DontWorryFind,
+        "Hey, you messed up. Deal with it.",L_Close;
+
+L_DontWorryFind:
+    mes "[Aldred]";
+    mes "\"Thank you " +strcharinfo(0)+"! Find it for me, pleeeease! Oh, and don't tell my parents that I lost their ring, okay?\"";
+    @state = 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Return:
+    mes "[Aldred]";
+    mes "\"Please, help me " +@madamsir$+ ". If you find that ring, I think things will be a little better between me and my parents.\"";
+    goto L_Close;
+
+
+L_Return1:
+    menu
+        "Hi Aldred. I found the ring!",L_RingFoundHere;
+
+L_RingFoundHere:
+    mes "[Aldred]";
+    mes "\"Great! You're the best! Where did you find it?\"";
+    next;
+    menu
+        "It was easy, I found it on one of the monsters outside.",L_RingMonstersOut;
+
+L_RingMonstersOut:
+    mes "[Aldred]";
+    mes "\"Ohh.. a monster? It must've been a nice monster since it returned it so easily to you!\"";
+    next;
+    menu
+        "Err... kind of...",L_ErrKindOf;
+
+L_ErrKindOf:
+    mes "[Aldred]";
+    mes "\"Now, I'll put this thing back in its proper place... Thank you!\"";
+    @state = 3;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Return2:
+    mes "[Aldred]";
+    mes "\"Hi "+strcharinfo(0)+ "! I was thinking... you were sooo nice helping me find the ring... I think I should give you a gift, but I'm just a dead kid, I have nothing to give you!\"";
+    next;
+    menu
+        "Don't worry, you don't need to give me anything...",L_GiveMeAnything;
+
+L_GiveMeAnything:
+    mes "[Aldred]";
+    mes "\"Are you sure? That's why you're so great! But hey, I have an idea. What if you talk to my parents about this thing? If it's not important or valuable, I don't think it would be a problem to let you keep it. And I really want to know if they're acting all weird because I lost it. Would you do this for me?\"";
+    next;
+    menu
+        "Sounds interesting... But who are your parents?",L_WhereParents,
+        "Bad idea, it will only bring more problems...",L_Close;
+
+L_WhereParents:
+    @state = 4;
+    callsub S_Update_Mask;
+    mes "[Aldred]";
+    mes "\"Okay, great... But please, don't tell them about it. I don't want my parents to know I was playing with their stuff. My father is always carrying a lantern... I guess he's still afraid of the dark. My mother is the innkeeper. She's very beautiful and she's wearing a red dress.\"";
+    next;
+    mes "\"Don't forget to come back with the ring after you've talked to my parents.\"";
+    message strcharinfo(0), "Aldred hands you the ring and you keep it in a small pocket on your backpack.";
+    goto L_Close;
+
+L_Return3:
+    mes "[Aldred]";
+    mes "\"I hope this ring doesn't mean a lot to my parents. That way you can keep it as a gift and I won't feel guilty about taking it.\"";
+    goto L_Close;
+
+L_Return4:
+    menu
+        "Hi, I talked to your parents.",L_TalkParents;
+
+L_TalkParents:
+    mes "[Aldred]";
+    mes "\"Really? What did my father say about it?\"";
+    menu
+        "He said it's just a cheap ring. And it doesn't belong to him.",L_JustCheapRing;
+
+L_JustCheapRing:
+    mes "[Aldred]";
+    mes "\"And what did my mother say?\"";
+    menu
+        "She said it was a gift, but she doesn't want it anymore.",L_GiftNoWant;
+
+L_GiftNoWant:
+    mes "[Aldred]";
+    mes "\"Really? A gift? And why doesn't she want it anymore?\"";
+    next;
+    menu
+        "She said it makes her sad.",L_MakesHerSad;
+
+L_MakesHerSad:
+    mes "\"Ohh... really? I don't like it when my mother gets sad... If this ring is making her feel bad, I should keep it away from her. \"";
+    next;
+    mes "\"Well, I guess you can keep it, but don't show it to my mother again, she's already very sad. But now I'm really curious. Who else would give a gift to my mother? There are so many strange things happening lately...\"";
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full;
+    getitem "SimpleRing", 1;
+    @state = 7;
+    callsub S_Update_Mask;
+    mes "\"I'll tell my parents how great and helpful you are. Maybe they can even let you stay here at the inn for free!\"";
+    goto L_Close;
+
+L_Return5:
+    mes "[Aldred]";
+    mes "\"Thank you for all your help.\"";
+    goto L_Close;
+
+L_Full:
+    mes "[Aldred]";
+    mes "\"I dont think you can carry this ring... Your backpack is full! Throw something away and come back to get it.\"";
+    goto L_Close;
+
+L_Close:
+    @madamsir$ = "";
+    @Graveyard_Inn_MASK = 0;
+    @Graveyard_Inn_SHIFT = 0;
+    @state = 0;
+    @minLevel = 0;
+    close;
+
+S_Update_Mask:
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+            | (@state << @Graveyard_Inn_SHIFT);
+    return;
+}

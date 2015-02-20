@@ -1,0 +1,225 @@
+
+027-6,39,25,0	script	General Krukan	400,{
+    if ($@CRYPT_FIGHT1 != 0)
+        end;
+
+    @KRUKAN_SOUL_REQ = 1;
+    @KRUKAN_SKULL_REQ = 5;
+    @KRUKAN_DARK_CRYSTAL_REQ = 5;
+    @KRUKAN_BONE_REQ = 5;
+    @minLevel = 60;
+
+    mes "[Tome]";
+    mes "The Tome is open to a page about a summon ritual that can be performed in this chamber.";
+    next;
+    goto L_TomeMain;
+
+L_TomeMain:
+    mes "What do you want to do?";
+    menu
+        "Read reagent List.", L_SummonReagents,
+        "Perform Ritual.", L_Ritual,
+        "Nothing.", L_Close;
+
+L_SummonReagents:
+    mes "Says we need " + @KRUKAN_SOUL_REQ + " Soul, " + @KRUKAN_SKULL_REQ + " Skulls, " + @KRUKAN_DARK_CRYSTAL_REQ + " Dark Crystals, and " + @KRUKAN_BONE_REQ + " Bones to perform the ritual.";
+    next;
+    goto L_TomeMain;
+
+L_MissingReagents:
+    mes "It appears we are missing something, lets check the reagent list again.";
+    next;
+    goto L_SummonReagents;
+
+L_Ritual:
+    if (BaseLevel < @minLevel)
+        goto L_ToWeak;
+    if ( (countitemcolor("Soul") < @KRUKAN_SOUL_REQ)
+        || (countitemcolor("Skull") < @KRUKAN_SKULL_REQ)
+        || (countitemcolor("DarkCrystal") < @KRUKAN_DARK_CRYSTAL_REQ)
+        || (countitemcolor("Bone") < @KRUKAN_BONE_REQ) )
+        goto L_MissingReagents;
+    delitem "Soul", @KRUKAN_SOUL_REQ;
+    delitem "Skull", @KRUKAN_SKULL_REQ;
+    delitem "DarkCrystal", @KRUKAN_DARK_CRYSTAL_REQ;
+    delitem "Bone", @KRUKAN_BONE_REQ;
+    mes "As you perform the ritual you can feel the energy amass.";
+    next;
+    mes "A cold shiver runs down your spine as you feel something manifesting out of the void.";
+    if ($@CRYPT_FIGHT1 != 0)
+        goto L_Close;
+
+    // initialize fight
+    $@CRYPT_FIGHT1 = 1;
+    $@CRYPT_FIGHT1_WAVE = 0;
+    $@CRYPT_FIGHT1_SUMMONS_COUNT = 2;
+    $@CRYPT_FIGHT1_PLAYER_COUNT = getmapusers("027-6");
+    areamonster "027-6", 0, 0, 79, 84, "", 1043, 1, "General Krukan::OnPetDeath";
+    areamonster "027-6", 0, 0, 79, 84, "", 1044, 1, "General Krukan::OnPetDeath";
+
+    initnpctimer;
+    goto L_Announce;
+
+L_ToWeak:
+    mes "You try to perform the ritual but nothing happens. You don't seem experienced enough.";
+    goto L_Close;
+
+L_Close:
+    @bonus = 0;
+    @minLevel = 0;
+    @KRUKAN_SOUL_REQ = 0;
+    @KRUKAN_SKULL_REQ = 0;
+    @KRUKAN_DARK_CRYSTAL_REQ = 0;
+    @KRUKAN_BONE_REQ = 0;
+    close;
+
+OnTimer5000:
+    setnpctimer 0;
+    if ($@CRYPT_FIGHT1 != 0)
+        goto L_CryptLogic;
+    goto L_Return_1;
+
+L_Return_1:
+    $@CRYPT_FIGHT1_PLAYER_COUNT = 0;
+    areatimer "027-6", 0, 0, 79, 84, 10, "General Krukan::OnTick";
+    end;
+
+L_CryptLogic:
+    $@CRYPT_FIGHT1_ROUND_PEN = $@CRYPT_FIGHT1_PLAYER_COUNT;
+    if ($@CRYPT_FIGHT1_ROUND_PEN > 60)
+        $@CRYPT_FIGHT1_ROUND_PEN = 60;
+    if ($@CRYPT_FIGHT1_PLAYER_COUNT <= 0)
+        goto L_CleanUpLosers;
+    set $@CRYPT_FIGHT1_SUMMONS_ROUND_TIMER, $@CRYPT_FIGHT1_SUMMONS_ROUND_TIMER + 5; // Advance 5 seconds
+    if (mobcount("027-6", "General Krukan::OnPetDeath") < 0)
+        goto L_NextWave;
+    if ($@CRYPT_FIGHT1_SUMMONS_ROUND_TIMER + $@CRYPT_FIGHT1_ROUND_PEN >= 120)
+        goto L_NextWave;
+    goto L_Return_1;
+
+L_NextWave:
+    $@CRYPT_FIGHT1_SUMMONS_ROUND_TIMER = 0;
+    $@CRYPT_FIGHT1_WAVE = $@CRYPT_FIGHT1_WAVE + 1;
+    if ( ($@CRYPT_FIGHT1_WAVE > 10) && ($@CRYPT_FIGHT1_SUMMONS_COUNT == 0) )
+        goto L_CleanUp;
+    if ( ($@CRYPT_FIGHT1_WAVE > 10) && ($@CRYPT_FIGHT1_WAVE < 22) )
+        goto L_Return_1;
+    if ($@CRYPT_FIGHT1_WAVE > 22)
+        goto L_SummonNuke;
+    if ($@CRYPT_FIGHT1_WAVE < 5)
+        goto L_WeakSummons;
+    if ( ($@CRYPT_FIGHT1_WAVE < 10) && ($@CRYPT_FIGHT1_WAVE >= 5) )
+        goto L_StrongSummons;
+    if ($@CRYPT_FIGHT1_WAVE == 10)
+        goto L_BossSummons;
+    goto L_SummonNuke;
+
+L_SummonNuke:
+    $@CRYPT_FIGHT1_SUMMONS_COUNT = $@CRYPT_FIGHT1_SUMMONS_COUNT + $@CRYPT_FIGHT1_WAVE*2 + $@CRYPT_FIGHT1_PLAYER_COUNT*4;
+    areamonster "027-6", 0, 0, 79, 84, "", 1043, $@CRYPT_FIGHT1_WAVE*2 + $@CRYPT_FIGHT1_PLAYER_COUNT*4, "General Krukan::OnPetDeath";
+    goto L_Announce;
+
+L_WeakSummons:
+    $@CRYPT_FIGHT1_SUMMONS_NUMBER = (5 + (1 * $@CRYPT_FIGHT1_WAVE) + (2 * $@CRYPT_FIGHT1_PLAYER_COUNT))/2;
+    $@CRYPT_FIGHT1_SUMMONS_COUNT = $@CRYPT_FIGHT1_SUMMONS_COUNT + ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2) + ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2);
+
+    areamonster "027-6", 0, 0, 79, 84, "", 1043, ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2), "General Krukan::OnPetDeath";
+    areamonster "027-6", 0, 0, 79, 84, "", 1044, ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2), "General Krukan::OnPetDeath";
+    goto L_Announce;
+
+L_StrongSummons:
+    $@CRYPT_FIGHT1_SUMMONS_NUMBER = (5 + (1 * $@CRYPT_FIGHT1_WAVE) + (2 * $@CRYPT_FIGHT1_PLAYER_COUNT))/2;
+    $@CRYPT_FIGHT1_SUMMONS_COUNT = $@CRYPT_FIGHT1_SUMMONS_COUNT + ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2) + ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2);
+
+    areamonster "027-6", 0, 0, 79, 84, "", 1036, ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2), "General Krukan::OnPetDeath";
+    areamonster "027-6", 0, 0, 79, 84, "", 1045, ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2), "General Krukan::OnPetDeath";
+    goto L_Announce;
+
+L_BossSummons:
+    $@CRYPT_FIGHT1_SUMMONS_NUMBER = (5 + (1 * $@CRYPT_FIGHT1_WAVE) + (2 * $@CRYPT_FIGHT1_PLAYER_COUNT))/2;
+    $@CRYPT_FIGHT1_SUMMONS_COUNT = $@CRYPT_FIGHT1_SUMMONS_COUNT + ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2) + ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2);
+    areamonster "027-6", 0, 0, 79, 84, "", 1036, ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2), "General Krukan::OnPetDeath";
+    areamonster "027-6", 0, 0, 79, 84, "", 1045, ($@CRYPT_FIGHT1_SUMMONS_NUMBER/2), "General Krukan::OnPetDeath";
+    areamonster "027-6", 0, 0, 79, 84, "", 1127, 1, "General Krukan::OnPetDeath";
+    $@CRYPT_FIGHT1_SUMMONS_COUNT = $@CRYPT_FIGHT1_SUMMONS_COUNT + 1;
+    goto L_Announce;
+
+L_Announce:
+    $@msg$ = $@CRYPT_FIGHT1_MESSAGES$[$@CRYPT_FIGHT1_WAVE];
+    if ($@msg$ == "")
+        goto L_Return_1;
+    mapannounce "027-6", $@msg$, 0;
+    mapannounce "027-3", $@msg$, 0;
+    $@msg$ = "";
+    goto L_Return_1;
+
+OnTick:
+    if (ispcdead()) end;
+    $@CRYPT_FIGHT1_PLAYER_COUNT = $@CRYPT_FIGHT1_PLAYER_COUNT + 1;
+    end;
+
+OnPetDeath:
+    $@CRYPT_FIGHT1_SUMMONS_COUNT = $@CRYPT_FIGHT1_SUMMONS_COUNT - 1;
+    end;
+
+L_CleanUpLosers:
+    $@CRYPT_FIGHT1 = 0;
+    $@CRYPT_FIGHT1_PLAYER_COUNT = 0;
+    $@CRYPT_FIGHT1_WAVE = 0;
+    $@CRYPT_FIGHT1_SUMMONS_ROUND_TIMER = 0;
+    $@CRYPT_FIGHT1_SUMMONS_COUNT = 0;
+    $@CRYPT_FIGHT1_ROUND_PEN = 0;
+    $@CRYPT_FIGHT1_SUMMONS_NUMBER = 0;
+    killmonster "027-6", "General Krukan::OnPetDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+L_CleanUp:
+    areatimer "027-6", 0, 0, 79, 84, 10, "General Krukan::OnReward";
+    $@CRYPT_FIGHT1 = 0;
+    $@CRYPT_FIGHT1_PLAYER_COUNT = 0;
+    $@CRYPT_FIGHT1_WAVE = 0;
+    $@CRYPT_FIGHT1_SUMMONS_ROUND_TIMER = 0;
+    $@CRYPT_FIGHT1_SUMMONS_COUNT = 0;
+    $@CRYPT_FIGHT1_ROUND_PEN = 0;
+    $@CRYPT_FIGHT1_SUMMONS_NUMBER = 0;
+    killmonster "027-6", "General Krukan::OnPetDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnReward:
+    if (ispcdead()) end;
+    @bonus = (BaseLevel/4);
+    DailyQuestBonus = DailyQuestBonus + @bonus;
+    message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained." ;
+    BOSS_POINTS = BOSS_POINTS + 25;
+    message strcharinfo(0), "You gain 25 Boss Points giving you a total of " + BOSS_POINTS + ".";
+    goto L_End;
+
+L_End:
+    @bonus = 0;
+    @minLevel = 0;
+    @KRUKAN_SOUL_REQ = 0;
+    @KRUKAN_SKULL_REQ = 0;
+    @KRUKAN_DARK_CRYSTAL_REQ = 0;
+    @KRUKAN_BONE_REQ = 0;
+    end;
+
+OnInit:
+    setarray $@CRYPT_FIGHT1_MESSAGES$,
+        "General Krukan:* Haha, Thank you mortal. You have released me from my prison. To show my graditude you can die swiftly at my hands and become part of my undead army. MUhahahahaha! Minions, Dispose of these Adventurers!",
+        "General Krukan:* Ha, Looks like your tougher then I thought.",
+        "General Krukan:* and here I thought I wasn't going to enjoy this.",
+        "General Krukan:* More of them are coming!",
+        "General Krukan:* Minions! Kill them already!",
+        "General Krukan:* *facepalm* I knew I should have hired better help.",
+        "General Krukan:* Well at least you will make a good addition to my army.",
+        "General Krukan:* To the Abyss with you already!",
+        "General Krukan:* How about you try a different approach and kill them already!",
+        "General Krukan:* Minions! Last chance or it's back to being part of an ossuary for you!",
+        "General Krukan:* Looks like if you want something done right you have to do it yourself.",
+        "General Krukan:* Charge!.";
+    end;
+}

@@ -1,0 +1,98 @@
+013-2,25,37,0	script	Fabius	115,{
+    mes "[Fabius]";
+    mes "\"Hey! Wanna have a drink or something? High quality, low cost. A poor fella like me needs a bit of extra cash, ye know.\"";
+    next;
+    menu
+        "Yes please!", L_Yes,
+        "No thanks.", L_No,
+        "No way, I thought it was for free!", L_Not_Free;
+
+L_Yes:
+    mes "[Fabius]";
+    mes "\"So what would ya like, then?\"";
+    next;
+    menu
+        "A beer", L_Beer,
+        "A milk", L_Milk,
+        "Nevermind", L_No;
+
+L_No:
+    mes "[Fabius]";
+    mes "\"Suit yourself.\"";
+    next;
+    goto L_Finish;
+
+L_Not_Free:
+    mes "[Fabius]";
+    mes "\"Oh, you stupid git! ... But hey, let me tell ya something...\"";
+    next;
+    mes "[Fabius]";
+    mes "\"There's notes flying around in the room up there. Did ya try reading some?\"";
+    close;
+
+L_Beer:
+    mes "[Fabius]";
+    mes "\"That'll be 175 GP.\"";
+    next;
+    menu
+        "Here you are", L_Beer_yes,
+        "No thanks", L_Beer_no;
+
+L_Beer_yes:
+    if (Zeny < 175)
+        goto L_Low_money;
+    getinventorylist;
+    if (@inventorylist_count == 100
+        && countitemcolor("Beer") == 0)
+            goto L_TooMany;
+    getitem "Beer", 1;
+    Zeny = Zeny - 175;
+    goto L_Finish;
+
+L_Beer_no:
+    mes "[Fabius]";
+    mes "\"No beer, no civilization!\"";
+    next;
+    goto L_Finish;
+
+L_Milk:
+    mes "[Fabius]";
+    mes "\"That'll be 300 GP.\"";
+    next;
+    menu
+        "Here you are", L_Milk_yes,
+        "No thanks", L_Milk_no;
+
+L_Milk_yes:
+    if (Zeny < 300)
+        goto L_Low_money;
+    getinventorylist;
+    if (@inventorylist_count == 100
+        && countitemcolor("Milk") == 0)
+            goto L_TooMany;
+    getitem "Milk", 1;
+    Zeny = Zeny - 300;
+    goto L_Finish;
+
+L_Milk_no:
+    mes "[Fabius]";
+    mes "\"Oh alright. Milk is a deadly poison anyway...\"";
+    next;
+    goto L_Finish;
+
+L_Low_money:
+    mes "[Fabius]";
+    mes "\"Aw, you don't have enough gold on you!\"";
+    next;
+    goto L_Finish;
+
+L_Finish:
+    mes "[Fabius]";
+    mes "\"By the way, have you seen those flying notes and the mirror in the room next door? They're WAY COOL! Try reading some of the notes!\"";
+    close;
+
+L_TooMany:
+    mes "[Fabius]";
+    mes "\"You don't have room for it.\"";
+    close;
+}

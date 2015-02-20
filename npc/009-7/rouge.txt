@@ -1,0 +1,129 @@
+009-7,32,45,0	script	Rouge#Duels	181,{
+if (getgmlevel() >= 40 && (getequipid(equip_head) == 647 || getequipid(equip_head) == 725)) goto L_CallDebug;
+goto L_Main;
+
+L_CallDebug:
+    mes "You are wearing a dev cap: calling debug menu...";
+    mes "For the documentation, @@https://wiki.themanaworld.org/index.php/FightClub|click here@@##0";
+    callfunc "fightclub_Debug";
+    goto L_End;
+
+L_Main:
+    @requests = 0;
+    if(@Duel_Queue$[0] != "") goto L_Queue;
+    if(@Duel_Queue$[1] != "") goto L_Decline; // if the user previously closed without declining we resume the procedure
+    mes "[Rouge]";
+    mes "Welcome to the Sanguine Vault's duel arena.";
+    if($SANGUINE & $@SV_FCDBit != 0) goto L_Disabled;
+    mes "What do you want to do?";
+    menu
+        "See the commands.", L_Challenge,
+        "Set my rules.", L_Rules,
+        "Nevermind.", L_End;
+
+L_Queue:
+    @caster_name$ = @Duel_Queue$[0];
+    @caster_time = @Duel_Queue[0];
+    @target_name$ = strcharinfo(0);
+    @target = getcharid(3, @caster_name$);
+    $@my_rid = getcharid(3);
+    @Duel_Queue$[0] = "";
+    @Duel_Queue[0] = 0;
+    if((gettimetick(2) - @caster_time) >= $@Duel_PlayerQueueTimeOut) goto L_Decline;
+    if(attachrid(@target) != 1) goto L_Missing;
+    if(getmapname() != "009-7") goto L_Missing;
+    if(attachrid($@my_rid) != 1) goto L_End;
+    @requests = (@requests + 1);
+    set $@my_rid, 0; // clean this ASAP
+    mes @caster_name$ + " wishes to challenge you to a duel.";
+    mes "";
+    callfunc "fightclub_getrules";
+    mes "";
+    mes "Do you accept?";
+    next;
+    menu
+            "Yes, I do!", L_Accept,
+            "No.", L_Decline;
+
+L_ShiftQueue: // here we shift the array to the left
+    if((@Duel_Queue$[@loop] == "" ) && (@requests < 1)) goto L_Main;
+    if(@Duel_Queue$[@loop] == "") goto L_End;
+    @Duel_Queue$[(@loop - 1)] = @Duel_Queue$[@loop];
+    @Duel_Queue[(@loop - 1)] = @Duel_Queue[@loop];
+    @Duel_Queue$[@loop] = "";
+    @Duel_Queue[@loop] = 0;
+    @loop = (@loop + 1);
+    if(@loop >= getarraysize(@Duel_Queue$)) goto L_Queue;
+    goto L_ShiftQueue;
+
+L_Accept:
+    callfunc "fightclub_AddToQueue";
+    @loop = 1;
+    goto L_ShiftQueue;
+
+L_Decline:
+    @loop = 1;
+    goto L_ShiftQueue;
+
+L_Missing:
+    if(attachrid($@my_rid) != 1) goto L_End;
+    set $@my_rid, 0; // clean this ASAP
+    goto L_Decline;
+
+L_Challenge:
+    if($SANGUINE & $@SV_FCDBit != 0) goto L_Disabled;
+    @ms = $@Duel_PlayerQueueTimeOut * 1000;
+    callfunc "HumanTime";
+    next;
+    mes "[Rouge]";
+    mes "To challenge a player to a duel, you need to write this command:";
+    mes "%%E        ##a"+ getspellinvocation("duel") +" (name)##0";
+    next;
+    mes "Your opponent will have to talk to me to accept or decline your offer.";
+    mes "The request will expire ##2"+ @time$ +"##0 after being sent.";
+    next;
+    mes "Keep in mind that you can ignore incoming duel requests with this command:";
+    mes "%%E        ##a"+ getspellinvocation("dueloff") +"##0";
+    next;
+    mes "To un-ignore, simply write the same command again.";
+    goto L_End;
+
+L_Disabled:
+    mes "Sadly, the duel system is currently disabled. Please try again later.";
+    goto L_End;
+
+L_Rules:
+    callfunc "fightclub_setrules";
+    goto L_End;
+
+L_End:
+    close;
+
+OnAnnounceNext:
+    npctalk "##0The next battle ("+ $@Duel_Queue_ID[0] +") is ##1" + $@Duel_Queue_Red$[0] + "##0 vs. ##3" + $@Duel_Queue_Blue$[0] + "##0.The battle will start in "+ $@Duel_TimeBeforeWarp +" seconds.";
+    end;
+
+OnAnnounceIntrusion:
+    npctalk "Intrusion detected. Annihilation in progress... Done.";
+    end;
+
+OnAnnounceTimeOut:
+    npctalk "Time limit reached! Both player lose!";
+    end;
+
+OnAnnounceRedWins:
+    npctalk $@Duel_Queue_Red$[0] + " wins the duel against "+ $@Duel_Queue_Blue$[0] +"!";
+    end;
+
+OnAnnounceRedForfeit:
+    npctalk $@Duel_Queue_Red$[0] + " wins by forfeit!";
+    end;
+
+OnAnnounceBlueWins:
+    npctalk $@Duel_Queue_Blue$[0] + " wins the duel against "+ $@Duel_Queue_Red$[0] +"!";
+    end;
+
+OnAnnounceBlueForfeit:
+    npctalk $@Duel_Queue_Blue$[0] + " wins by forfeit!";
+    end;
+}

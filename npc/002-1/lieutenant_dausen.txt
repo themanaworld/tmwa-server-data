@@ -1,0 +1,127 @@
+
+002-1,63,67,0	script	Lieutenant Dausen	122,{
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    @state = ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+
+    if (@state == 21) goto L_LD_Key;
+    if (@state == 7) goto L_LD_Miners;
+    if (@state == 6) goto L_LD_Orders;
+    if (@state == 5) goto L_LD_Nickos_Waits;
+    if (@state == 4) goto L_LD_Nickos;
+    if (@state == 3) goto L_LD_Waits;
+    if (@state == 2) goto L_LD_Woe_Is_Me;
+    if (@state == 1) goto L_LD_Drinks;
+
+    mes "[Lieutenant Dausen]";
+    mes "\"Hello. I am Lieutenant Dausen. I monitor the monster threat around the city to ensure the safety of its citizens.\"";
+    if (@state)
+        goto L_Close;
+    goto L_LD_Start;
+
+L_LD_Start:
+    @state = 1;
+    callsub S_Update_Var;
+    next;
+    mes "\"Out here in the desert, it sure does get hot!  My men and I get thirsty rather quickly. Cactus Drinks are our favourite; if you can get some for us, we'd surely appreciate your effort. About 10 would do.\"";
+    goto L_Close;
+
+L_LD_Drinks:
+    if (countitem ("CactusDrink") < 10)
+        goto L_LD_NotEnough_Drink;
+    getinventorylist;
+    if (@inventorylist_count - (countitemcolor("CactusDrink") == 10) > 99)
+        goto L_LD_TooMany;
+    @state = 2;
+    callsub S_Update_Var;
+    delitem "CactusDrink", 10;
+    getitem "Boots", 1;
+    mes "[Lieutenant Dausen]";
+    mes "\"Great!  This will help us make it through the hot day. As a gift for your troubles, take these boots to keep your feet from burning on the sand. Have a good day...\"";
+    next;
+    mes "Lieutenant Dausen mumbles to himself and rubs his head.";
+    next;
+    mes "\"I have another problem, though. I mixed up the orders to my men, Nickos and Stewen. Someone needs to let them know they're going to have to hold their post for a while longer instead of taking a break. However, I can't leave my post!  Oh, what to do, what to do...\"";
+    menu
+        "I can help you out, since you helped me too.", L_LD_Help,
+        "Thanks for the boots, gotta run now.", L_LD_NoHelp;
+
+L_LD_NotEnough_Drink:
+    mes "[Lieutenant Dausen]";
+    mes "\"Hi again. My men and I sure are thirsty for our favorite drink, the Cactus Drink. If we had about 10, it would help us out a great deal in this sandstorm.\"";
+    goto L_Close;
+
+L_LD_TooMany:
+    mes "[Lieutenant Dausen]";
+    mes "\"Oh, it seems you have too many items for me to give you a reward. Come back after you drop or sell some items.\"";
+    goto L_Close;
+
+L_LD_Woe_Is_Me:
+    mes "[Lieutenant Dausen]";
+    mes "\"I have a problem. I mixed up the orders to my men!  Someone needs to let them know they're going to have to hold their post for a while longer instead of taking a break. However, I can't leave my post. Oh, what to do, what to do...\"";
+    menu
+        "I can help you out, since you helped me out too.", L_LD_Help,
+        "Bye-bye.", L_LD_NoHelp;
+
+L_LD_Help:
+    @state = 3;
+    callsub S_Update_Var;
+    mes "[Lieutenant Dausen]";
+    mes "\"Oh!  Would you?  You are ever most helpful!  Could you let Stewen know first?  I'm the most worried about the monsters from the eastern desert and he should know first to hold his post. Come back to me after you see him. Hope to hear from you soon!\"";
+    goto L_Close;
+
+L_LD_NoHelp:
+    mes "[Lieutenant Dausen]";
+    mes "\"See you later then.\"";
+    goto L_Close;
+
+L_LD_Waits:
+    mes "[Lieutenant Dausen]";
+    mes "\"I do hope Stewen holds his post. If you could tell them to do so, it would help me out a great deal.\"";
+     goto L_Close;
+
+L_LD_Nickos:
+    @state = 5;
+    callsub S_Update_Var;
+    mes "[Lieutenant Dausen]";
+    mes "\"Thanks for letting Stewen know. Can you now tell Nickos to hold his post too?  He guards the mine to the south, monitoring the monster threat and protecting the miners when he can.\"";
+    goto L_Close;
+
+L_LD_Nickos_Waits:
+    mes "[Lieutenant Dausen]";
+    mes "\"Could you let Nickos know to hold his post?  It would be very helpful. He is guarding the mine south of here.\"";
+    goto L_Close;
+
+L_LD_Orders:
+    @state = 7;
+    callsub S_Update_Var;
+    Zeny = Zeny + 500;
+    mes "[Lieutenant Dausen]";
+    mes "\"Thank you for clearing up the orders to my men!  Here's some gold for your efforts.\"";
+    next;
+    mes "\"If you think you can handle the monsters lurking out here, I'm sure Nickos and the miners could use some help. Talk to you later.\"";
+    goto L_Close;
+
+L_LD_Miners:
+    mes "[Lieutenant Dausen]";
+    mes "\"I monitor the monster threat around the city to ensure the safety of its citizens.\"";
+    next;
+    mes "\"If you think you can handle the monsters lurking out here, I'm sure Nickos and the miners could use some help. Talk to you later.\"";
+    goto L_Close;
+
+L_LD_Key:
+    @state = 22;
+    callsub S_Update_Var;
+    mes "[Lieutenant Dausen]";
+    mes "\"Oh, Naem lost his key?  Here, take this spare. It should help you get into the underground palace.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    close;
+
+S_Update_Var:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
+    return;
+}

@@ -1,0 +1,252 @@
+
+
+-	script	#XmasConfig	-1,{
+    end;
+
+OnCommandRestartQuest:
+    goto L_Main;
+
+OnInit:
+    goto L_Main;
+
+L_Main:
+    // Xmas Key Identifier Set through Botcheck Debug
+    if(!($XMAS_TIME_KEY) || (getarraysize($XMAS_TIME_KEY) != 6))
+        setarray $XMAS_TIME_KEY, 12,12,1,25,6,gettime(7);
+    if(($XMAS_TIME_KEY[0] == 0) || ($XMAS_TIME_KEY[0] > 12))
+        goto L_XmasError;
+    if(($XMAS_TIME_KEY[1] == 0) || ($XMAS_TIME_KEY[1] > 12))
+        goto L_XmasError;
+    if(($XMAS_TIME_KEY[2] == 0) || ($XMAS_TIME_KEY[2] > 12))
+        goto L_XmasError;
+    if(($XMAS_TIME_KEY[3] == 0) || ($XMAS_TIME_KEY[3] > 31))
+        goto L_XmasError;
+    if(($XMAS_TIME_KEY[4] == 0) || ($XMAS_TIME_KEY[4] > 31))
+        goto L_XmasError;
+    if($XMAS_TIME_KEY[5] == 0)
+        goto L_XmasError;
+
+    // Event Runs until Reward Period.
+    // Month Start/End
+    $@xmas_start_month = $XMAS_TIME_KEY[0];
+    $@xmas_reward_start_month = $XMAS_TIME_KEY[1];
+    $@xmas_end_month = $XMAS_TIME_KEY[2];
+
+    // Reward Day Start/End
+    $@xmas_reward_start_day = $XMAS_TIME_KEY[3];
+    $@xmas_reward_end_day = $XMAS_TIME_KEY[4];
+
+    // Time Settings
+    $@xmas_no_event_time = 0;
+    $@xmas_event_time = 1;
+    $@xmas_reward_time = 2;
+
+    // Main Quest Settings
+    // Bit used to Set Which one of the 2 quests you are on
+    $@xmas_side_bit = (1 << 31);
+    $@xmas_base_bonus_xp = 4;
+    $@xmas_karma_bonus = 1;
+    $@xmas_reward_max_karma = 15;
+    $@xmas_reward_hero_boss = 15;
+    $@xmas_reward_all_lists = 10;
+    $@xmas_reward_all_helpers = 10;
+    $@xmas_reward_tally_rare = 80;
+    $@xmas_reward_tally_common = 40;
+    // Guidance System
+    $@xmas_route_bit = (1 << 23);
+    // Basement Passage way
+    $@xmas_basement_passage = (1 << 24);
+    // Thrown Out
+    $@xmas_thrown_out_bit = (1 << 25);
+    // Quest Start (@xmas_state)
+    $@xmas_list_path2_state = 1;
+    $@xmas_list_path1_state = 2;
+    $@xmas_list_both_state = 3;
+    $@xmas_list_complete_state = 4;
+    $@xmas_list_deliver_state = 5;
+    // Helper SubQuest
+    $@xmas_helpers_start_state = 6;
+    $@xmas_helpers_done_state = 7;
+    // Reagents
+    $@xmas_reagents_start = 8;
+    $@xmas_reagents_done = 9;
+    // Boss Door State
+    $@xmas_boss_door_open_state = 10;
+    // Reward State
+    $@xmas_reward_start = 11;
+    $@xmas_reward1_done = 12;
+    $@xmas_reward2_done = 13;
+    $@xmas_reward_done = 14;
+
+    // Boss Fight Required Level for Hard Mode
+    $@BossHardLevel = 70;
+    $@xmas_boss_start_bit = (1 << 26);
+    $@xmas_boss_hero_bit = (1 << 27);
+    $@xmas_boss_start_shift = 26;
+    $@xmas_boss_hero_shift = 27;
+    setarray $@xmas_boss_req$, "IronPotion", "DarkCrystal";
+    setarray $@xmas_boss_amount, 15, 10;
+    if(getarraysize($@xmas_boss_amount) != getarraysize($@xmas_boss_req$))
+        goto L_XmasError;
+    // Santas Helper quest rewards
+    setarray $@SantasHelper_Annual_Reward$,
+        "RedTurtleneckSweater",
+        "YellowTurtleneckSweater",
+        "LightBlueTurtleneckSwea",
+        "PinkTurtleneckSweater",
+        "OrangeTurtleneckSweater",
+        "PurpleTurtleneckSweater",
+        "KnitCap",
+        "KnitCap";
+
+    // Main Quest rewards
+    setarray $@xmas_present_from$, "Santa", "Orum";
+    setarray $@xmas_rare_reward$, "FunkyChristmasSweater", "DarkChristmasSweater";
+    setarray $@xmas_uncommon_reward$, "NutcrackerHat", "AmberChristmasSweater", "RedStockings", "PinkChristmasSweater", "BlueChristmasSweater";
+    // Quest Side 0 Settings
+    setarray $@xmas_zero_reagents$, "ShockSweet", "EmptyBottle", "EmeraldPowder";
+    setarray $@xmas_zero_reagents_names$, "Shock Sweet", "Empty Bottles", "Emerald Powders";
+    setarray $@xmas_zero_reagents_amounts, 1, 4, 10;
+    if(getarraysize($@xmas_zero_reagents_amounts) != getarraysize($@xmas_zero_reagents$))
+        goto L_XmasError;
+
+    // Quest Side 1 Settings
+    setarray $@xmas_one_reagents$, "DarkCrystal", "IronPotion", "EmeraldPowder";
+    setarray $@xmas_one_reagents_names$, "Dark Crystal", "Iron Potions", "Emerald Powders";
+    setarray $@xmas_one_reagents_amounts, 1, 4, 10;
+    if(getarraysize($@xmas_one_reagents_amounts) != getarraysize($@xmas_one_reagents$))
+        goto L_XmasError;
+
+    // List Bits
+    $@xmas_all_lists_bit = (1 << 29);
+    setarray $@xmas_child_list, (1 << 8), (1 << 9), (1 << 10), (1 << 11), (1 << 12), (1 << 13), (1 << 14), (1 << 15);
+    setarray $@xmas_child_list_name$, "Ayasha", "Latif", "Charda", "Faris", "Rasin", "Ghada", "Rossy", "Kadiya";
+    if(getarraysize($@xmas_child_list) != getarraysize($@xmas_child_list_name$))
+        goto L_XmasError;
+
+    $@xmas_perfect_list_count = getarraysize($@xmas_child_list);
+    $@xmas_required_list_count = (getarraysize($@xmas_child_list) / 2);
+
+    // Santa's Helper
+    $@xmas_sh_bit = (1 << 22);
+    $@xmas_sh_purple_amount = 25;
+    $@xmas_sh_blue_amount = 20;
+    $@xmas_sh_green_amount = 5;
+
+    // Main Helper Bit
+    $@xmas_helper_bit = (1 << 30);
+    $@xmas_all_helpers_bit = (1 << 28);
+
+    // Acorns
+    $@xmas_helper_bit_acorns = (1 << 21);
+    $@xmas_acorn_amount = 10;
+    $@xmas_iron_potion_amount = 1;
+
+    // Bedding
+    $@xmas_helper_bit_bed_starts = (1 << 16);
+    $@xmas_helper_bit_bed_ends = (1 << 17);
+    $@xmas_bedding_amount = 10;
+
+    // Boxes
+    $@xmas_log_amount = 2;
+
+    // Wrap
+    $@xmas_reed_amount = 2;
+    $@xmas_water_amount = 1;
+    $@xmas_wrap_reward = 1;
+
+    // Wrap Dye Amounts
+    $@xmas_poa_amount = 2;
+    $@xmas_wrap_yellow_amount = 2;
+    $@xmas_wrap_ltblue_amount = 2;
+    $@xmas_wrap_purple_amount = 2;
+    $@xmas_wrap_green_amount = 2;
+
+    // Present Return
+    $@xmas_present_amount = 5;
+
+    // Shipping
+    $@xmas_wrap_amount = 1;
+    $@xmas_empty_box_amount = 1;
+    $@xmas_ship_present_amount = 1;
+
+    // Glitter
+    $@xmas_helper_bit_glitter_starts = (1 << 18);
+    $@xmas_helper_bit_glitter_ends = (1 << 19);
+    $@xmas_red_amount = 5;
+    $@xmas_yellow_amount = 5;
+
+    // Storage (Daily Xmas)
+    $@xmas_helper_bit_storage = (1 << 20);
+    // Good Daily Ammounts
+    $@xmas_good_level = 30;
+    $@xmas_good_cost = 12;
+    $@xmas_good_count = 3;
+    $@xmas_good_name$ = "Candy";
+    $@xmas_good_friendly_name$ = "Candies";
+    $@xmas_good_money = 500;
+    $@xmas_good_exp = 200;
+
+    // Bad Daily Ammounts
+    $@xmas_bad_level = 30;
+    $@xmas_bad_cost = 12;
+    $@xmas_bad_count = 3;
+
+    $@xmas_bad_name$ = "RedApple";
+    $@xmas_bad_friendly_name$ = "Red Apples";
+    $@xmas_bad_money = 500;
+    $@xmas_bad_exp = 200;
+
+    //Boss Fight Reward
+    $@xmas_boss_bp = 50;
+
+    // Helpers Flags needed to set $@xmas_all_helpers_bit
+    setarray $@xmas_helper_list, $@xmas_helper_bit_bed_ends, $@xmas_helper_bit_glitter_ends, $@xmas_helper_bit_storage, $@xmas_helper_bit_acorns, $@xmas_sh_bit;
+    $@xmas_perfect_helpers_count = getarraysize($@xmas_helper_list);
+    $@xmas_required_helpers_count = (getarraysize($@xmas_helper_list) / 2);
+
+    // MobManager
+    setarray $@xmas_mob_names$, "Santa Slime", "Candied Slime", "Candied Slime";
+    setarray $@xmas_mob_spawns, "1015", "1111", "1111";
+    setarray $@xmas_mob_counts, 10, 5, 5;
+    setarray $@xmas_map_spawns$, "019-1", "019-3", "030-3";
+    if(getarraysize($@xmas_mob_spawns) != getarraysize($@xmas_map_spawns$))
+        goto L_XmasError;
+    if(getarraysize($@xmas_mob_names$) != getarraysize($@xmas_map_spawns$))
+        goto L_XmasError;
+    if(getarraysize($@xmas_mob_counts) != getarraysize($@xmas_map_spawns$))
+        goto L_XmasError;
+
+    $@xmas_spawn_x1 = 54;
+    $@xmas_spawn_y1 = 48;
+    $@xmas_spawn_x2 = 79;
+    $@xmas_spawn_y2 = 89;
+    $@xmas_respawn_count = 9;
+
+    $@start_month = $@xmas_start_month;
+    $@end_month = $@xmas_end_month;
+    $@start_day = 1;
+    $@end_day = $@xmas_reward_end_day;
+    $@reward_start_month = $@xmas_reward_start_month;
+    $@reward_start_day = $@xmas_reward_start_day;
+
+    callfunc "GetEventTime";
+    $@xmas_time = $@event_time;
+
+    if($@xmas_time == 0 && $XMAS_TIME_KEY[5] < gettime(7))
+        setarray $XMAS_TIME_KEY, $XMAS_TIME_KEY[0],$XMAS_TIME_KEY[1],$XMAS_TIME_KEY[2],$XMAS_TIME_KEY[3],$XMAS_TIME_KEY[4],gettime(7);
+    goto L_Return;
+
+L_Return:
+    // technically this only needs to skip the npctimer in SpawnMobs,
+    // but this is a low-level debug setting so whatever.
+    if (debug >= 2) end;
+    callfunc "SpawnMobs";
+    callfunc "PresentHandler";
+    callfunc "ReplaceTrees";
+    end;
+
+L_XmasError:
+    debugmes "Xmas is Dead Jim.";
+    mapexit;
+}

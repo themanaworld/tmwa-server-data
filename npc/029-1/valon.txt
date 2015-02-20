@@ -1,0 +1,148 @@
+-	script	#ValonConfig	-1,{
+    end;
+
+OnInit:
+    setarray $@ValonMob, 1002,1050,1046,1003;
+    setarray $@ValonMobName$, "Maggots","House Maggots","Tame Scorpions","Scorpion";
+    setarray $@ValonMobCnt, 10,5,3,1;
+    end;
+}
+function	script	ValonState	{
+    @valon_state = ((STARTAREA & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    @valon_mob = 0;
+    if (@valon_state >= 2)
+        @valon_mob = (@valon_state - 2);
+    @valon_count = ((STARTAREA & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    return;
+}
+function	script	setValonMask	{
+    STARTAREA = (STARTAREA & ~(NIBBLE_1_MASK) | (@valon_tmp << NIBBLE_1_SHIFT));
+    @valon_tmp = 0;
+    return;
+}
+function	script	ResetValonCntMask	{
+    STARTAREA = (STARTAREA & ~(NIBBLE_2_MASK) | (0 << NIBBLE_2_SHIFT));
+    return;
+}
+function	script	AddValonCntMask	{
+    @valon_tmp = (@valon_count + 1);
+    if (@valon_tmp > $@ValonMobCnt[@valon_mob])
+        @valon_tmp = $@ValonMobCnt[@valon_mob];
+    STARTAREA = (STARTAREA & ~(NIBBLE_2_MASK) | (@valon_tmp << NIBBLE_2_SHIFT));
+    @valon_tmp = 0;
+    callfunc "ValonProgress";
+    return;
+}
+function	script	ValonProgress	{
+    callfunc "ValonState";
+    if ((@valon_state > 1) && (@valon_state < 6))
+        message strcharinfo(0), $@ValonMobName$[@valon_mob] + ": " + @valon_count + "/" + $@ValonMobCnt[@valon_mob];
+    return;
+}
+029-1,74,86,0	script	ValonDebug	156,{
+    mes "[Valon Debug]";
+    mes "Reset?";
+    menu
+        "Yes.", L_Reset,
+        "No.", L_Close;
+
+L_Reset:
+    STARTAREA = (STARTAREA & ~(NIBBLE_1_MASK) | (0 << NIBBLE_1_SHIFT));
+    STARTAREA = (STARTAREA & ~(NIBBLE_2_MASK) | (0 << NIBBLE_2_SHIFT));
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "ValonDebug";
+    end;
+}
+029-1,72,86,0	script	Valon	156,{
+    setarray @npc_loc, 72, 86, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
+    callfunc "ValonState";
+    if (@valon_state >= 6)
+        goto L_QuestComplete;
+    if (@valon_start == 1)
+        goto L_QuestAskAgain;
+    if (@valon_count >= $@ValonMobCnt[@valon_mob])
+        goto L_NextMob;
+    if ((@valon_state >= 2) && (@valon_state < 6))
+        goto L_QuestStarted;
+    goto L_QuestAsk;
+
+L_QuestAskAgain:
+    mes "[Valon]";
+    mes "\"Hello, Adventurer! Have you come back to help?\"";
+    menu
+        "Yes. I will help with the island beasts.", L_Accept,
+        "Maybe some other time.", L_Close;
+
+L_QuestAsk:
+    mes "[Valon]";
+    mes "\"Hello!";
+    mes "You're looking for adventures, right?\"";
+    mes "\"But you shouldn't underestimate this island, it is dangerous.\"";
+    mes "\"It's crawling with scorpions, and the heat has overcome adventurers tougher than you are.\"";
+    mes "\"I should know I guard this gate from all manner of island beasts.\"";
+    mes "\"Maybe you would like help and earn your stripes?\"";
+    mes "\"The Council of Wizard's does offer a reward for helping...\"";
+    @valon_tmp = 1;
+    callfunc "setValonMask";
+    callfunc "ResetValonCntMask";
+    menu
+        "YES!!! let me at them!", L_Accept,
+        "Maybe some other time.", L_Close;
+
+L_Accept:
+    @valon_tmp = 2;
+    callfunc "setValonMask";
+    callfunc "ValonState";
+    goto L_NewMob;
+
+L_NextMob:
+    getexp 40, 0;
+    mes "\"I see you killed all the " + $@ValonMobName$[@valon_mob] + " needed.\"";
+    mes "\"The Wizard's thank thee as well.\"";
+    Zeny = Zeny + 25;
+    @valon_tmp = (@valon_state + 1);
+    callfunc "setValonMask";
+    callfunc "ResetValonCntMask";
+    callfunc "ValonState";
+    if (@valon_mob == getarraysize($@ValonMob))
+        goto L_QuestOver;
+    goto L_NewMob;
+
+L_NewMob:
+    mes "\"Let's see whats on the list. Ah ok, I need you to kill me " + $@ValonMobCnt[@valon_mob] + " " + $@ValonMobName$[@valon_mob] + "\"";
+    mes "\"I'll be waiting here, come back and see after you've killed those mobs.\"";
+    goto L_Close;
+
+L_QuestStarted:
+    mes "[Valon]";
+    mes "Hail adventurer! You are well on your way to mastering the beasts of the island.\"";
+    mes "\"You need to kill " + $@ValonMobName$[@valon_mob] + ": " + @valon_count + "/" + $@ValonMobCnt[@valon_mob] + "\"";
+    mes "\"Come back and see me when the job is done.\"";
+    goto L_Close;
+
+L_QuestOver:
+    mes "[Valon]";
+    mes "\"Thanks once again for helping with the monsters in the island.\"";
+    getexp 50, 0;
+    @valon_tmp = (@valon_state + 1);
+    callfunc "setValonMask";
+    goto L_Close;
+
+L_QuestComplete:
+    mes "[Valon]";
+    mes "\"Thanks once again for helping with the monsters in the island.\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}

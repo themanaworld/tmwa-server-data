@@ -1,0 +1,170 @@
+
+008-1,36,26,0	script	Andra	201,{
+    @water_amount = 1;
+    @seeds_amount = 4;
+    if ($@andra_status == 1) goto L_Planting;
+    if (BaseLevel < 30) goto L_TooYoung;
+    if (FLAGS & FLAG_ANDRA_HELPED) goto L_Return;
+    mes "[Andra]";
+    mes "\"Hello, my name is Andra. You see those nice trees? I planted every single one of them! I'm very proud of my work!\"";
+    next;
+    menu
+        "Nice! I imagine you planted them a long time ago, right?", L_Next,
+        "Sorry, but I'm not interested in plants and trees.", L_DislikePlants;
+
+L_Next:
+    mes "[Andra]";
+    mes "\"That is the fun part... It took only some months... and look how healthy and beautiful they are!\"";
+    next;
+    menu
+        "How is that possible?", L_Next1;
+
+L_Next1:
+    mes "[Andra]";
+    mes "\"A few years ago, a nice woman from Tulimshar did something amazing to the land around here... I guess her name was Eomie. I have no idea what she did, but since she worked on this land, everything you plant here will grow really fast!\"";
+    next;
+    mes "\"But I am very worried about something she told me when she left... She warned me that this place needs constant care. If one small spot is not cultivated for a long time, it will become less and less fertile.\"";
+    next;
+    mes "And she also told me that this soil is so fertile because it has a lot of nutrients not only on this side, but everywhere. So it is certain that all soil in this place will become weaker if we let a lot of unfertilized spots...\"";
+    next;
+    menu
+        "That sounds bad! But you just need to keep planting, right?", L_Next2;
+
+L_Next2:
+    mes "[Andra]";
+    mes "\"Exactly! But it is a big place. And I don't have too much money to buy seeds. If only I could find someone who could help me... ah... I know you are probably busy, but since you are here, would you like to help me in this noble task?\"";
+    menu
+        "Of course! What can I do to help you?", L_Next3,
+        "Not right now, I'm really busy.", L_Busy;
+
+L_Next3:
+    mes "[Andra]";
+    mes "\"Yay! I knew you would help me! I just need seeds and water... I think " + @seeds_amount + " Grass Seeds and " + @water_amount + " Bottle(s) of Water should be enough to grow some plants on the place. If you give the items, you can let the rest with me.\"";
+    next;
+    menu
+        "I don't have it right now, but I will come back later.", L_Close,
+        "Here are the seeds and the water.", L_Next4;
+
+L_Next4:
+    if (countitemcolor("BottleOfWater") < @water_amount || countitemcolor("GrassSeed") < @seeds_amount) goto L_NotEnough;
+    if ($@spawned_plants >= $@MAX_GLOBAL_PLANTS) goto L_Gather;
+    mes "[Andra]";
+    mes "\"Great! Thank you for you help. If you have more items and want to help again, feel free to talk to me. We just have to be careful to not oversoak the soil with water.. but you don't need to worry, I will know when it is the right time to stop planting.";
+    next;
+    delitem "BottleOfWater", @water_amount;
+    delitem "GrassSeed", @seeds_amount;
+    FLAGS = FLAGS | FLAG_ANDRA_HELPED;
+    mes "Andra pours some water in a lot of different places and then throws some seeds to the sky. The wind carries some of them really far from her.";
+    close2;
+    goto L_PreSummon;
+
+L_PreSummon:
+    $@andra_status = 1;
+    $@farmer$ = strcharinfo(0);
+    startnpctimer;
+    end;
+
+OnTimer1000:
+    $@plant_id = rand(1029,1032);
+    areamonster "008-1",44,18,135,46,"plant",$@plant_id,$@PLANTS_PER_SEED, "Andra::OnPlantDeath";
+    if (attachrid(getcharid(3,$@farmer$)) == 0)
+        goto L_Spawn1000;
+    message strcharinfo(0), "Andra: I think some plants will grow almost instantly! Just Watch...";
+    goto L_Spawn1000;
+
+L_Spawn1000:
+    $@spawned_plants = $@spawned_plants + $@PLANTS_PER_SEED;
+    end;
+
+OnTimer3000:
+    $@plant_id = rand(1029,1032);
+    areamonster "008-1",44,18,135,46,"plant",$@plant_id,$@PLANTS_PER_SEED, "Andra::OnPlantDeath";
+    $@spawned_plants = $@spawned_plants + $@PLANTS_PER_SEED;
+    end;
+
+OnTimer5000:
+    $@plant_id = rand(1029,1032);
+    areamonster "008-1",44,18,135,46,"plant",$@plant_id,$@PLANTS_PER_SEED, "Andra::OnPlantDeath";
+    $@spawned_plants = $@spawned_plants + $@PLANTS_PER_SEED;
+    end;
+
+OnTimer7000:
+    $@plant_id = rand(1029,1032);
+    areamonster "008-1",44,18,135,46,"plant",$@plant_id,$@PLANTS_PER_SEED, "Andra::OnPlantDeath";
+    if (attachrid(getcharid(3,$@farmer$)) == 0)
+        goto L_Spawn7000;
+    message strcharinfo(0), "Andra: Good... Just take a walk and you will be able to see how your seeds turned into some nice looking plants.";
+    goto L_Spawn7000;
+
+L_Spawn7000:
+    $@spawned_plants = $@spawned_plants + $@PLANTS_PER_SEED;
+    $@andra_status = 0;
+    $@farmer$ = "";
+    setnpctimer 0;
+    stopnpctimer;
+    end;
+
+L_Return:
+    mes "[Andra]";
+    mes "\"Hi " + strcharinfo(0) + ", good to see you! You came back to help me again?\"";
+    next;
+    menu
+        "Yes, and I already have the seeds and the water.", L_Next5,
+        "No, I just wanted to say hello.", L_Bye;
+
+L_Next5:
+    if ($@spawned_plants >= $@MAX_GLOBAL_PLANTS) goto L_Gather;
+    if (countitemcolor("BottleOfWater") < @water_amount || countitemcolor("GrassSeed") < @seeds_amount) goto L_NotEnough;
+    delitem "BottleOfWater", @water_amount;
+    delitem "GrassSeed", @seeds_amount;
+    mes "Andra pours some water in a lot of different places and then throws the seeds to the sky. The wind carries some of them really far from her.";
+    close2;
+    goto L_PreSummon;
+
+OnPlantDeath:
+    $@spawned_plants = $@spawned_plants - 1;
+    end;
+
+L_NotEnough:
+    mes "[Andra]";
+    mes "\"Sorry, but you don't have the items I need... Please, come back when you have them.\"";
+    close;
+
+L_Gather:
+    mes "[Andra]";
+    mes "\"Look at all those plants! I think we shoudn't plant more seeds until someone gather those herbs...\"";
+    close;
+
+L_Bye:
+    mes "[Andra]";
+    mes "\"Oh, you are a nice person... Thanks!\"";
+    close;
+
+L_Busy:
+    mes "[Andra]";
+    mes "\"Ok, I understand. Come back if have some free time!\"";
+    close;
+
+L_DislikePlants:
+    mes "[Andra]";
+    mes "\"Really? How can someone dislike plants and trees? What a strange thing...\"";
+    close;
+
+L_Planting:
+    mes "[Andra]";
+    mes "\"Sorry, I can't talk right now. I am planting some seeds " + $@farmer$ + " gave me.\"";
+    close;
+
+L_Close:
+    close;
+
+L_TooYoung:
+    mes "[Andra]";
+    mes "\"I'm sorry, I can't talk right now. I am really busy with those trees! If you feel like talking, maybe you should come back later.\"";
+    close;
+
+OnInit:
+    $@PLANTS_PER_SEED = 3;
+    set $@MAX_GLOBAL_PLANTS, 100; // You can plant only if the amount of plants currently in the map is < than this value.
+    end;
+}

@@ -1,0 +1,98 @@
+029-2,33,88,24,7	monster	HouseMaggot	1050,2,100000,30000,Barrel#0::OnMaggotDeath
+-	script	#BarrelConfig	-1,{
+    end;
+
+OnInit:
+    setarray $@BarrelBits, (1 << 20), (1 << 21), (1 << 22), (1 << 23), (1 << 24), (1 << 25), (1 << 26), (1 << 27);
+    setarray $@BarrelRewards, 533, 507, 505, 518, 537, 526;
+    $@BarrelSpawnCnt = 1;
+    $@BarrelSpawnId = 1050;
+    $@BarrelSpawnName$ = "House Maggot";
+    $@BarrelMax = getarraysize($@BarrelBits);
+    end;
+}
+function	script	SetBarrelMask	{
+    STARTAREA = (STARTAREA & ~(NIBBLE_4_MASK) | (@barrel_tmp << NIBBLE_4_SHIFT));
+    @barrel_tmp = 0;
+    return;
+}
+function	script	CheckBarrelQuest	{
+    callfunc "CountBarrels";
+    @barrel_quest = ((STARTAREA & NIBBLE_4_MASK) >> NIBBLE_4_SHIFT);
+    return;
+}
+function	script	CountBarrels	{
+    @barrel_count = 0;
+    @count_tmp = 0;
+    goto L_Loop;
+
+L_Loop:    
+    if (STARTAREA & $@BarrelBits[@barrel_count])
+        goto L_AddOne;
+    goto L_LoopAgain;
+
+L_AddOne:
+    @barrel_count = (@barrel_count + 1);
+    goto L_LoopAgain;
+
+L_LoopAgain:
+    @count_tmp = (@count_tmp + 1);
+    if (@count_tmp == getarraysize($@BarrelBits))
+        goto L_BarrelTally;
+    goto L_Loop;
+
+L_BarrelTally:
+    return;
+}
+function	script	CheckBarrel	{
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Range;
+    callfunc "CheckBarrelQuest";
+    if (!(@barrel_quest == 2))
+        goto L_NoI;
+    if (STARTAREA & $@BarrelBits[@barrel])
+        goto L_Empty;
+    STARTAREA = STARTAREA | $@BarrelBits[@barrel];
+
+    callfunc "CountBarrels";
+    if (@barrel_count == $@BarrelMax)
+        goto L_QuestReward;
+    @player_random = rand(@barrel_count * 10);
+    @barrel_random = rand(@barrel_count * $@BarrelMax);
+    if (@barrel_random > @player_random)
+        goto L_Spawn;
+    goto L_Reward;
+
+L_Range:
+    message strcharinfo(0), "You'll need to get closer.";
+    goto L_Return;
+
+L_NoI:
+    message strcharinfo(0), "Nothing interesting here.";
+    goto L_Return;
+
+L_Empty:
+    message strcharinfo(0), "You've already searched this barrel.";
+    goto L_Return;
+
+L_QuestReward:
+    message strcharinfo(0), "You found the bug bomb.";
+    misceffect 33;
+    @barrel_tmp = 3;
+    callfunc "SetBarrelMask";
+    killmonster getmapname() + "", "Barrel#0::OnMaggotDeath";
+    goto L_Return;
+
+L_Spawn:
+    message strcharinfo(0), "Uck, More Maggots!";
+    areamonster getmapname() + "", @npc_loc[0], @npc_loc[1], (@npc_loc[0] + 1), (@npc_loc[1] + 1), $@BarrelSpawnName$, $@BarrelSpawnId, $@BarrelSpawnCnt, "Barrel#0::OnMaggotDeath";
+    goto L_Return;
+
+L_Reward:
+    getitem $@BarrelRewards[rand(getarraysize($@BarrelRewards))], 1;
+    goto L_Return;
+
+L_Return:
+    return;
+}

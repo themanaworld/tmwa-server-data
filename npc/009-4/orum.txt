@@ -1,0 +1,607 @@
+
+009-4,35,115,0	script	OrumDebug	158,{
+    mes "[Orum Debug]";
+    menu
+        "Set Quest State", L_SetQuest,
+        "Reset Quest", L_ResetQuest,
+        "Display Quest", L_Display;
+
+L_SetQuest:
+    input @quest_state;
+    OrumQuest = @quest_state;
+    goto L_Close;
+
+L_ResetQuest:
+    OrumQuest = 0;
+    OrumQuestBarrier = 0;
+    OrumQuestTorch = 0;
+    goto L_Close;
+
+L_Display:
+    mes OrumQuest;
+    goto L_Close;
+
+L_Close:
+    end;
+
+OnInit:
+    if (!debug)
+        disablenpc "OrumDebug";
+    end;
+}
+009-4,37,115,0	script	Orum#barrier	158,{
+    // needed to pass the very first barrier
+    @B0_WISPPOWDER = 4;
+    @B0_POLTERGEISTPOWDER = 2;
+    @B0_SPECTREPOWDER = 1;
+    @B0_HARDSPIKES = 1;
+
+    // needed stuff to get colorful powders
+    @BT_IRONPOWDER = 10;
+    @BT_PILESOFASH = 10;
+    @BT_HERBS = 15;
+
+    // how many colorful powders each do you get as reward?
+    @BT_REWARDCOUNT = 10;
+
+    @Exp_BREAK_BARRIERS = 5000;
+
+    if (OrumQuest > 0) goto L_Started;
+
+    mes "[Orum]";
+    mes "\"It's not wise to venture around this place! Well hmm... I guess since you're here, maybe you can lend a little help?\"";
+    menu
+        "What exactly is 'this place'?", L_Explain,
+        "Umm... what kind of help?", L_Explain,
+        "You're right, I'll be on my way.", L_Next;
+
+L_Next:
+    mes "[Orum]";
+    mes "\"Very smart thinking!\"";
+    goto L_Close;
+
+L_Explain:
+    mes "[Orum]";
+    mes "\"Recently a woman claiming to be a witch came to my village seeking help from my mentor Waric, who is a very powerful wizard, but he refused and she left. But...\"";
+    next;
+    mes "\"The next day he went missing! I'm no wizard yet, but from what I overheard... I think that witch is attempting some very foul magic and has kidnapped him for some reason!\"";
+    next;
+    mes "\"I traveled in the direction she left until I came accross this cave, but it appears to be protected by some type of magical barrier and I haven't been able to get further than this room.\"";
+    menu
+        "So where would I come in?", L_Explain_Barriers,
+        "I'd like to help but I have to go...", L_Next1;
+
+L_Next1:
+    mes "[Orum]";
+    mes "\"Thats too bad... well, if you ever have some free time, I probably won't figure this out any time soon.\"";
+    goto L_Close;
+
+L_Explain_Barriers:
+    mes "[Orum]";
+    mes "\"I've examined this room and it appears that the barrier is made up of two torches on each side. The flame on them has a strange glow. They must be imbued with magical properties.\"";
+    next;
+    mes "\"I've never come across anything like this barrier before. It must be drawing it's power from the torches. I tried putting them out with conventional means but I had no luck.\"";
+    menu
+        "Have any other ideas on how we get past it?", L_Explain_Note,
+        "I think its meant to keep us out... Bye.", L_Next2;
+
+L_Next2:
+    mes "[Orum]";
+    mes "\"You may be right... but she kidnapped Waric. I know it! So I must do something! If you ever change your mind I could surely use the help.\"";
+    goto L_Close;
+
+L_Explain_Note:
+    mes "[Orum]";
+    mes "\"Actually! After Waric went missing I looked around at his house a bit and came across a note the witch must have dropped. I skimmed over it and didn't pay much attention but I think it mentioned something about this barrier!\"";
+    next;
+    mes "He pulls it out of his pocket and begins examining it.";
+    next;
+    mes "[Orum]";
+    mes "\"Ah! Here it is! If I'm reading this right we may have found a way past it after all. I guess she would need a way to come and go unaffected while everyone else is kept from entering.\"";
+    menu
+        "What does it say?", L_Explain_Aura,
+        "Looks like you can do this without me.", L_Next3;
+
+L_Next3:
+    mes "[Orum]";
+    mes "\"Eh... well I guess I can't force you to stay.\"";
+    goto L_Close;
+
+L_Explain_Aura:
+    mes "[Orum]";
+    mes "\"Appears to be some kind of spell to place a magical aura around someone... Hmm, with these materials listed on here I'm going to guess this aura makes the wearer partly incorporeal.\"";
+    next;
+    mes "\"It looks like the barrier requires substances from 3 different incorporeal creatures. I've heard of Wisps, Poltergeists, and Spectres before but I've never seen such a thing.\"";
+    next;
+    mes "\"Luckily I happen to be skilled in this field of magic! I'm pretty sure if I can get my hands on the materials listed on here I'll be able to cast this aura on us, and hopefully then we can get past this barrier!\"";
+    menu
+        "Let me guess... that is my job?", L_Offer_Quest,
+        "I think someone is calling me... Bye!", L_Close;
+
+L_Offer_Quest:
+    mes "[Orum]";
+    mes "\"Well you would probably do better than me since I don't know this area very well. It's not too much stuff so I'm sure you won't have any trouble at all.\"";
+    menu
+        "Alright alright, just give me a list.", L_Start_Quest,
+        "I'm not your servant! Bye.", L_Leave1;
+
+L_Leave1:
+    mes "[Orum]";
+    mes "\"Everyone answers to someone... that's just how the world is. If you ever change your mind I'll probably be here forever gathering these materials on my own.\"";
+    goto L_Close;
+
+L_Start_Quest:
+    mes "He pulls a crumpled piece of paper from his pocket, smooths it out and writes a list on it before handing it to you.";
+    next;
+    mes "" + @B0_WISPPOWDER + " Wisp Powders,";
+    mes "" + @B0_POLTERGEISTPOWDER + " Poltergeist Powders,";
+    mes "" + @B0_SPECTREPOWDER + " Spectre Powders,";
+    mes "" + @B0_HARDSPIKES + " Hard Spikes";
+    menu
+        "Alright, I'll go get these.", L_Start_Gathering,
+        "You can forget it! I quit!", L_Next4;
+
+L_Next4:
+    mes "[Orum]";
+    mes "\"I know you'll be back... they always come back!\"";
+    goto L_Close;
+
+L_Start_Gathering:
+    mes "[Orum]";
+    mes "\"That's the spirit! But try not to take too long.\"";
+    OrumQuest = 1;
+    goto L_Close;
+
+L_Started:
+    if (OrumQuest == 1) goto L_Gathering;
+    if (OrumQuest == 2) goto L_Use_First_Barrier;
+    if (OrumQuest == 3) goto L_Explore;
+    if (OrumQuest == 4) goto L_Found_Barriers;
+    if (OrumQuest == 5) goto L_Found_Barriers;
+    if (OrumQuest == 6) goto L_Found_Torches;
+    if (OrumQuest == 7) goto L_Still_Gathering;
+    if (OrumQuest == 8) goto L_Finish_Up;
+    if (OrumQuest >= 9) goto L_Finished_Up;
+    goto L_Close;
+
+L_Gathering:
+    mes "[Orum]";
+    mes "\"Got all the things I asked for yet?\"";
+    menu
+        "Yep, I have every last one of them!", L_Check_Materials,
+        "Can I get another list?", L_List_Materials,
+        "I still need a few things...", L_Next5;
+
+L_Next5:
+    mes "Orum shakes his head in frustration.";
+    next;
+    mes "[Orum]";
+    mes "\"You'd better get that stuff soon!\"";
+    goto L_Close;
+
+L_List_Materials:
+    mes "He scavenges around in his pocket for another piece of paper then writes a new list.";
+    next;
+    mes @B0_WISPPOWDER + " Wisp Powders,";
+    mes @B0_POLTERGEISTPOWDER + " Poltergeist Powders,";
+    mes @B0_SPECTREPOWDER + " Spectre Powders,";
+    mes @B0_HARDSPIKES + " Hard Spikes";
+    next;
+    mes "[Orum]";
+    mes "\"And try not to lose this one... I'm running out of stuff to write on!\"";
+    goto L_Close;
+
+L_Check_Materials:
+    if (countitemcolor("WispPowder") < @B0_WISPPOWDER ||
+        countitemcolor("PoltergeistPowder") < @B0_POLTERGEISTPOWDER ||
+        countitemcolor("SpectrePowder") < @B0_SPECTREPOWDER ||
+        countitemcolor("HardSpike") < @B0_HARDSPIKES)
+            goto L_Missing_Materials;
+
+    // check directly before deleting the objects.
+    delitem "WispPowder", @B0_WISPPOWDER;
+    delitem "PoltergeistPowder", @B0_POLTERGEISTPOWDER;
+    delitem "SpectrePowder", @B0_SPECTREPOWDER;
+    delitem "HardSpike", @B0_HARDSPIKES;
+
+    mes "Orum carefully looks over all of the items then grins.";
+    next;
+    mes "[Orum]";
+    mes "\"Well done! And you did not even take as long as I thought you would!\"";
+    next;
+    mes "Orum takes the hard spikes in his hand and begins chanting some words.";
+    next;
+    mes "You watch as they begin to mold together, glowing brightly. He sprinkles in the powder you gathered and presses his hands together.";
+    misceffect sfx_magic_transmute;
+    next;
+    mes "Suddenly a feeling of dizzyness hits you and you begin to feel weightless... It passes after a moment...";
+    misceffect sfx_magic_nature;
+    misceffect 11, strcharinfo(0);
+    next;
+    mes "[Orum]";
+    mes "\"Well we are both still in one piece so that is a good sign! Now we'll have to see if I did it right... mind going first?\"";
+    goto L_Setup_Lair;
+
+L_Missing_Materials:
+    mes "Orum carefully looks over all of the items then squints his eyes at you.";
+    next;
+    mes "[Orum]";
+    mes "\"I'm not going to attempt this spell until I have ALL the items on this note. Go gather the missing materials!\"";
+    goto L_Close;
+
+L_Setup_Lair:
+    OrumQuest = 2;
+    callfunc "SetUpOrumQuest";
+    goto L_Close;
+
+L_Use_First_Barrier:
+    mes "[Orum]";
+    mes "\"Casting that aura took a lot out of me. Why don't you go explore the cave a bit while I rest?\"";
+    goto L_Close;
+
+L_Explore:
+    mes "Orum looks up as you approach.";
+    next;
+    mes "[Orum]";
+    mes "\"Find anything interesting in this place?\"";
+    next;
+    menu
+        "Yep. A whole mess of torches!", L_Explain_Objective,
+        "I'm not sure what to look for...", L_Explain_Objective,
+        "Going to explore more, bye.", L_Leave2;
+
+L_Leave2:
+    mes "[Orum]";
+    mes "\"Be sure to let me know if you find anything. I've almost gained my energy back.\"";
+    goto L_Close;
+
+L_Explain_Objective:
+    mes "[Orum]";
+    mes "\"I'm positive this is where that witch took Waric, so this cave must lead to somewhere. Try looking around for another exit. I've almost gained my energy back and then I can help.\"";
+    goto L_Close;
+
+L_Found_Barriers:
+    mes "Orum looks up as you approach.";
+    next;
+    mes "[Orum]";
+    mes "\"Find anything interesting in this place?\"";
+    menu
+        "Yep. A whole mess of torches!", L_Explain_Objective,
+        "I'm not sure what to look for...", L_Explain_Objective,
+        "I found more barriers, but...", L_Explain_Barriers_More,
+        "Going to explore more, bye.", L_Leave3;
+
+L_Leave3:
+    mes "[Orum]";
+    mes "\"Be sure to let me know if you find anything. I'm still gaining my energy back.\"";
+    goto L_Close;
+
+L_Explain_Barriers_More:
+    mes "[Orum]";
+    mes "\"Hm let me guess... the aura is ineffective on the rest of the barriers here?\"";
+    menu
+        "How did you know?", L_Explain_Note_More,
+        "I'm not sure, I'll go try again.", L_Next6;
+
+L_Next6:
+    mes "[Orum]";
+    mes "\"Always a good idea to double check things!\"";
+    goto L_Close;
+
+L_Explain_Note_More:
+    mes "[Orum]";
+    mes "\"Well while I was resting I spent more time looking over the note that witch dropped. And I think the aura is only to get past the entrance.\"";
+    next;
+    mes "[Orum]";
+    mes "\"It mentions some sort of security system to keep people from entering the actual lair but it doesn't explain in great detail. Try exploring more, maybe we will find some answers.\"";
+    next;
+    mes "Orum continues examining the note.";
+    goto L_Close;
+
+L_Found_Torches:
+    mes "Orum looks up as you approach.";
+    next;
+    mes "[Orum]";
+    mes "\"Did you find something interesting?\"";
+    next;
+    menu
+        "Yep. A whole mess of torches!", L_Explain_Objective,
+        "I'm not sure what to look for...", L_Explain_Objective,
+        "I found more barriers, but...", L_Explain_Barriers_More,
+        "I found a strange torch by itself.", L_Explain_Torches,
+        "Going to explore more, bye.", L_Leave4;
+
+L_Leave4:
+    mes "[Orum]";
+    mes "\"Be sure to let me know if you find anything new.\"";
+    goto L_Close;
+
+L_Explain_Torches:
+    mes "Orum has you direct him to the torch and he walks off to examine it before returning shortly after.";
+    next;
+    mes "[Orum]";
+    mes "\"Ah yes! I was hoping we would find something like this!\"";
+    next;
+    mes "\"While examining the note I found another set of spells to create some type of powder and with them was a few notes on using it with some type of torch.\"";
+    next;
+    mes "\"I bet this torch has something to do with the rest of these barriers which are probably the security system this note mentions.\"";
+    next;
+    mes "\"We will probably need to transmute this powder before we can get any further past these barriers. Would you mind gathering a few more materials?\"";
+    menu
+        "It better be the last time.", L_Gather_More,
+        "I'm done doing stuff for you!", L_Next61;
+
+L_Next61:
+    mes "[Orum]";
+    mes "\"I'm surprised you give up after we've gotten so far. Shame.\"";
+    goto L_Close;
+
+L_Gather_More:
+    mes "Orum begins writing down another list of materials.";
+    next;
+    mes @BT_IRONPOWDER + " Piles of Iron Powder,";
+    mes @BT_PILESOFASH + " Piles of Sand or Ash,";
+    mes @BT_HERBS + " Gamboge Herbs,";
+    mes @BT_HERBS + " Alizarin Herbs,";
+    mes @BT_HERBS + " Cobalt Herbs";
+    menu
+        "Yikes! I'll try...", L_Gathering_More,
+        "No way! Too much stuff!", L_Next7;
+
+L_Next7:
+    mes "[Orum]";
+    mes "\"The note says to get these and I'm not going to attempt this spell until I have what the note says.\"";
+    goto L_Close;
+
+L_Gathering_More:
+    OrumQuest = 7;
+    mes "[Orum]";
+    mes "\"Wonderful! Try to make it quick, we must save Waric!\"";
+    goto L_Close;
+
+L_Still_Gathering:
+    mes "[Orum]";
+    mes "\"Have you finished gathering those things yet?\"";
+    menu
+        "I believe I have!", L_F_Gather_More,
+        "I lost my list... again.", L_List_Materials_More,
+        "I've almost got them all.", L_Next8;
+
+L_Next8:
+    mes "[Orum]";
+    mes "\"Don't make me remind you again! Warics life is on the line here! Hurry up!\"";
+    goto L_Close;
+
+L_List_Materials_More:
+    mes "He scavenges around in his pocket for another piece of paper then writes a new list.";
+    next;
+    mes @BT_IRONPOWDER + " Piles of Iron Powder,";
+    mes @BT_PILESOFASH + " Piles of Sand or Ash,";
+    mes @BT_HERBS + " Gamboge Herbs,";
+    mes @BT_HERBS + " Alizarin Herbs,";
+    mes @BT_HERBS + " Cobalt Herbs";
+    next;
+    mes "[Orum]";
+    mes "\"And try not to lose this one. I don't have much more to write on!\"";
+    goto L_Close;
+
+L_F_Gather_More:
+    if (countitemcolor("IronPowder") < @BT_IRONPOWDER ||
+        countitemcolor("PileOfAsh") < @BT_PILESOFASH ||
+        countitemcolor("GambogeHerb") < @BT_HERBS ||
+        countitemcolor("AlizarinHerb") < @BT_HERBS ||
+        countitemcolor("CobaltHerb") < @BT_HERBS)
+            goto L_Missing_Mats_M;
+
+    delitem "IronPowder", @BT_IRONPOWDER;
+    delitem "PileOfAsh", @BT_PILESOFASH;
+    delitem "GambogeHerb", @BT_HERBS;
+    delitem "AlizarinHerb", @BT_HERBS;
+    delitem "CobaltHerb", @BT_HERBS;
+
+    mes "[Orum]";
+    mes "\"Excellent work! And once again you did not take as long as I was expecting. I guess I will get started.\"";
+    next;
+    mes "You watch as Orum takes the iron powder and ash and begins chanting some words. The two start to glow and mold together turning into a light, metallic looking powder.";
+    next;
+    misceffect sfx_magic_transmute;
+    mes "He then splits the powder into three piles and performs separate spells on each using the herbs. After he finishes you see 3 piles of colored metallic powder that appear to be red, yellow, and blue.";
+    next;
+    misceffect sfx_magic_transmute;
+    mes "[Orum]";
+    mes "\"Well if I did it right... These three powders are hopefully the key to getting past these barriers!\"";
+    next;
+    mes "\"I'm weary, I must take some time to rest. Why don't you go ahead and experiment with these powders on that torch and let me know if you figure what they have to do with it.\"";
+
+    getitem "RedPowder", @BT_REWARDCOUNT;
+    getitem "YellowPowder", @BT_REWARDCOUNT;
+    getitem "BluePowder", @BT_REWARDCOUNT;
+    OrumQuest = 8;
+    goto L_Close;
+
+L_Missing_Mats_M:
+    mes "Orum carefully looks over all of the items then squints his eyes at you.";
+    next;
+    mes "[Orum]";
+    mes "\"You really enjoy playing games with Warics life, don't you! Come back when you have ALL of the items I told you.\"";
+    goto L_Close;
+
+L_Finish_Up:
+    mes "Orum seems to be sitting around doing nothing as you approach.";
+    next;
+    mes "[Orum]";
+    mes "\"Did you find a way past any of the barriers yet?\"";
+    menu
+        "No, I'm still not sure how.", L_Explain_Torches_More,
+        "I need more of that powder.", L_More_Powder,
+        "I'm still trying...", L_Next9;
+
+L_Next9:
+    mes "[Orum]";
+    mes "\"Excellent! Let me know when you've made any progress.\"";
+    goto L_Close;
+
+L_Explain_Torches_More:
+    mes "[Orum]";
+    mes "\"Most of the barriers here have a certain color radiating from them and so do the torches. The torches seem to react with this powder so maybe we have to make these torches turn a certain color in order to lower the barriers.\"";
+    next;
+    mes "\"It seems that the powders are only in these 3 colors, so you may have to experiment a bit to get the colors right.\"";
+    next;
+    mes "\"Also while looking around I saw that behind one of the barriers was a cave. Maybe Waric is in there... we should try to get that barrier dropped.\"";
+    goto L_Close;
+
+L_More_Powder:
+    mes "[Orum]";
+    mes "\"You really used up that powder fast. Luckily I can make more as long as you can bring me those materials again.\"";
+    menu
+        "I have them right here!", L_More_Powder_Make,
+        "Hmmm... what are they again?", L_List_Materials_More,
+        "I'll go get those for you.", L_Next10;
+
+L_Next10:
+    mes "[Orum]";
+    mes "\"You better not waste any time gathering those materials!\"";
+    goto L_Close;
+
+L_More_Powder_Make:
+    if (countitemcolor("IronPowder") < @BT_IRONPOWDER ||
+        countitemcolor("PileOfAsh") < @BT_PILESOFASH ||
+        countitemcolor("GambogeHerb") < @BT_HERBS ||
+        countitemcolor("AlizarinHerb") < @BT_HERBS ||
+        countitemcolor("CobaltHerb") < @BT_HERBS)
+            goto L_Missing_Mats_M;
+
+    delitem "IronPowder", @BT_IRONPOWDER;
+    delitem "PileOfAsh", @BT_PILESOFASH;
+    delitem "GambogeHerb", @BT_HERBS;
+    delitem "AlizarinHerb", @BT_HERBS;
+    delitem "CobaltHerb", @BT_HERBS;
+
+    mes "[Orum]";
+    mes "\"Hmm all of the items appear to be here. Give me a moment to make that powder for you.\"";
+    next;
+    mes "Orum begins chanting the same words as he did when he made the powder before. He seems to be quicker this time.";
+    misceffect sfx_magic_transmute;
+    next;
+    mes "[Orum]";
+    mes "\"Here you are. And try to conserve this time! The more powder I have to make, the more time and resources we use up that we could be using to save Waric!\"";
+
+    getitem "RedPowder", @BT_REWARDCOUNT;
+    getitem "YellowPowder", @BT_REWARDCOUNT;
+    getitem "BluePowder", @BT_REWARDCOUNT;
+    goto L_Close;
+
+L_Finished_Up:
+    mes "As you approch you think you see Orum rolling his eyes... maybe you're imagining it.";
+    next;
+    mes "[Orum]";
+    mes "\"I hope you finally dropped that barrier we need to get past!\"";
+    menu
+        "Actually... I have!", L_Enter_Cavern,
+        "I need more of that powder.", L_More_Powder,
+        "Cut me some slack! I'm working on it!", L_Next11;
+
+L_Next11:
+    mes "[Orum]";
+    mes "\"Just hurry it up! Warics life is on the line here!\"";
+    goto L_Close;
+
+L_Enter_Cavern:
+    if (OrumQuest >= 10) goto L_Ready_Cavern;
+
+    mes "Orum heads to the barrier then gives you a look as if he does not believe you before walking forward.";
+    next;
+    mes "He is suddenly thrown against the wall behind him! Angered, he gets up, brushes himself off, and heads back to the entrance without speaking.";
+    goto L_Close;
+
+L_Ready_Cavern:
+    // you should not get that twice ;)
+    if (OrumQuest == 12) goto L_Got_Reward;
+
+    mes "Orum heads to the barrier then gives you a look as if he does not believe you before walking forward.";
+    next;
+    mes "He makes it through without any problems and grins.";
+    next;
+    mes "[Orum]";
+    mes "\"Very good work you have done! Please take this for your efforts. It has helped me in a bind.\"";
+    next;
+    getinventorylist;
+    if ((checkweight("CandleHelmet", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    getexp @Exp_BREAK_BARRIERS, 0;
+    getitem "CandleHelmet", 1;
+    OrumQuest = 12;
+    mes "You receive the Candle Helmet.";
+    next;
+    mes "\"You've done enough here to help. I will go the rest of the way alone so that your life is not endangered. You must promise me not to go any further!\"";
+    menu
+        "Sure, I promise!", L_Next12,
+        "I thought this would never be over!", L_Next12;
+
+L_Next12:
+    mes "[Orum]";
+    mes "\"Well I guess this is farewell!\"";
+    goto L_Close;
+
+L_Inventory:
+    mes "\"You're carrying too much. Come back to me after you got rid of some stuff. And hurry, I don't want to spent all day waiting on you.\"";
+    goto L_Close;
+
+L_Got_Reward:
+    mes "\"You've done enough here to help. I will go the rest of the way alone so that your life is not endangered.\"";
+    goto L_Close;
+
+L_Close:
+    @B0_WISPPOWDER = 0;
+    @B0_POLTERGEISTPOWDER = 0;
+    @B0_SPECTREPOWDER = 0;
+    @B0_HARDSPIKES = 0;
+
+    @BT_IRONPOWDER = 0;
+    @BT_PILESOFASH = 0;
+    @BT_HERBS = 0;
+
+    @BT_REWARDCOUNT = 0;
+
+    @Exp_BREAK_BARRIERS = 0;
+
+    @Barrier = 0;
+    @BarrierColor = 0;
+    @Torch = 0;
+    @TorchColor = 0;
+    close;
+}
+function	script	SetUpOrumQuest	{
+    // Second Barrier
+    @BarrierColor = 1 + rand(3) * 4;
+    @Barrier = 0;
+    callfunc "SetBarrierColor";
+
+    @TorchIntensity = 0;
+
+    @Torch = 0;
+    @TorchColor = rand(1, 12);
+    callfunc "SetTorchColor";
+    callfunc "SetTorchIntensity";
+
+    // Third Barrier
+    @BarrierColor = 3 + rand(3) * 4;
+    @Barrier = 1;
+    callfunc "SetBarrierColor";
+
+    @Torch = 1;
+    @TorchColor = rand(1, 12);
+    callfunc "SetTorchColor";
+    callfunc "SetTorchIntensity";
+
+    // End Barrier
+    @BarrierColor = 2 + rand(6) * 2;
+    @Barrier = 2;
+    callfunc "SetBarrierColor";
+
+    @Torch = 2;
+    @TorchColor = rand(1, 12);
+    callfunc "SetTorchColor";
+    callfunc "SetTorchIntensity";
+    return;
+}

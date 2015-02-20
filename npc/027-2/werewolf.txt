@@ -1,0 +1,176 @@
+
+027-2,118,23,0	script	Wolfgang	305,{
+    @Graveyard_Inn_MASK = NIBBLE_5_MASK;
+    @Graveyard_Inn_SHIFT = NIBBLE_5_SHIFT;
+
+    @state = ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+
+    @ANIMALBONES_AMOUNT = 30;
+    @ANIMALBONES_EXP = 40000;
+    @money = 1000;
+    @minLevel = 80;
+
+    if (@state > 1) goto L_Happy;
+    if (@state == 1) goto L_Bones;
+
+    mes "[Wolfgang]";
+    mes "\"What a nice place here, isn't it?\"";
+    next;
+    mes "\"Just the stuff they call 'food' in here is awful, bah.\"";
+    if (BaseLevel < @minLevel)
+        goto L_Close;
+    next;
+    mes "\"I like bones from big animals, the best would be with some raw flesh on it. But just the bones are fine too.\"";
+    next;
+    mes "\"Can you bring me " + @ANIMALBONES_AMOUNT + " of them?\"";
+    @state = 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Bones:
+    mes "[Wolfgang]";
+    mes "\"Do you have " + @ANIMALBONES_AMOUNT + " bones of an animal for me?\"";
+    next;
+    if ((countitemcolor("Bone") > 0)
+        && (countitemcolor("AnimalBones") >= @ANIMALBONES_AMOUNT))
+            menu
+                "Yes, here they are.",L_Bring,
+                "What about this normal bone?",L_Human,
+                "Not yet.",L_Close;
+    if (countitemcolor("Bone") > 0)
+        menu
+            "What about this normal bone?",L_Human,
+            "Not yet.",L_Close;
+    if (countitemcolor("AnimalBones") >= @ANIMALBONES_AMOUNT)
+        menu
+            "Yes, here they are.",L_Bring,
+            "Not yet.",L_Close;
+    menu
+        "Not yet.",L_Close;
+
+L_Bring:
+    if (countitemcolor("AnimalBones") < @ANIMALBONES_AMOUNT)
+        goto L_Not_Enough;
+    delitem "AnimalBones", @ANIMALBONES_AMOUNT;
+    getexp @ANIMALBONES_EXP, 0;
+    mes "[Wolfgang]";
+    mes "\"Ah! Wonderful! Thank you.\"";
+    @state = 2;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Human:
+    mes "[Wolfgang]";
+    mes "\"What?! That's a humans bone! I don't eat humans. That brings only trouble.\"";
+    next;
+    mes "\"Besides, from that I heard, they taste bad.\"";
+    goto L_Close;
+
+L_Not_Enough:
+    mes "[Wolfgang]";
+    mes "\"Are you trying to kid me? I can count.\"";
+    goto L_Close;
+
+L_Happy:
+    mes "You see the werewolf happily crunching the bones you brought him.";
+    mes "[Wolfgang]";
+    mes "\"Delicious. Thanks again.\"";
+    next;
+    mes "\"By the way... would you be interested in a little round of blackjack?\"";
+    mes "He pulls a deck of cards out of his pocket.";
+    next;
+    mes "[Wolfgang]";
+    mes "\"You will need " + @money + " GP.\"";
+    menu
+        "Sure, why not?",L_Game,
+        "No, thanks.",L_Close;
+
+L_Game:
+    if (Zeny < @money)
+        goto L_No_Money;
+    mes "[Wolfgang]";
+    mes "\"Very nice. Let's start.\"";
+    mes "He shuffles the cards.";
+    next;
+    Zeny = Zeny - @money;
+    @croupier = rand(0, 4);
+    @croupier = @croupier + 17;
+    @player = rand(4, 21);
+    mes "\"You got " + @player + " with your cards.";
+    if (@player == 21)
+        goto L_End;
+    mes "Do you want another card?\"";
+    next;
+    menu
+        "Yes.", L_Another,
+        "No.", L_End;
+
+L_Another:
+    @tempace = rand(2, 11);
+    if (@tempace == 11)
+        goto L_Ace;
+    @player = @player + @tempace;
+    if (@player > 21)
+        goto L_Lost;
+    if (@player == 21)
+        goto L_End;
+    mes "\"You got " + @player + " with your cards.";
+    mes "Do you want another card?\"";
+    next;
+    menu
+        "Yes", L_Another,
+        "No", L_End;
+
+L_End:
+    if (@player <= @croupier)
+        goto L_Lost;
+    mes "\"You won! Hrm, here is your money.\"";
+    Zeny = Zeny + (3 * @money);
+    goto L_Close;
+
+L_No_Money:
+    mes "\"You need at least " + @money + " GP.\"";
+    goto L_Close;
+
+L_Lost:
+    mes "[Wolfgang]";
+    mes "\"Fine! I won!";
+    mes "You got " + @player + " with your cards.";
+    mes "I had " + @croupier + ".\"";
+    goto L_Close;
+
+L_Ace:
+    @player = @player + 11;
+    if (@player > 21)
+        @player = @player - 10;
+    if (@player > 21)
+        goto L_Lost;
+    if (@player == 21)
+        goto L_End;
+    mes "You got " + @player + " with your cards.";
+    mes "Do you want another card?";
+    next;
+    menu
+        "Yes", L_Another,
+        "No", L_End;
+
+L_Close:
+    @Graveyard_Inn_MASK = 0;
+    @Graveyard_Inn_SHIFT = 0;
+    @state = 0;
+    @ANIMALBONES_AMOUNT = 0;
+    @ANIMALBONES_EXP = 0;
+    @money = 0;
+    @minLevel = 0;
+
+    @croupier = 0;
+    @player = 0;
+    @tempace = 0;
+    close;
+
+S_Update_Mask:
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+            | (@state << @Graveyard_Inn_SHIFT);
+    return;
+}

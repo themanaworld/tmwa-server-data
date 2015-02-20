@@ -1,0 +1,219 @@
+
+030-2,198,61,0	script	Avalia	356,{
+    callfunc "XmasStates";
+
+    if(($@xmas_time) && !(@xmas_side))
+        goto L_XmasMain;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[Avalia]";
+    mes "\"What are you doing in here? Get out!\"";
+    warp "030-2",88,80;
+    close;
+
+L_XmasMain:
+    if(@xmas_reward_done_state) goto L_ThankYou;
+    if(@xmas_reward1_done_state) goto L_Thanks;
+    if(@xmas_reward_start_state) goto L_Reward;
+    if(@xmas_reward2_done_state) goto L_Reward;
+    if(@xmas_boss_door_state) goto L_Quick;
+    if(@xmas_reagent_done_state) goto L_PowerReagents;
+    if(@xmas_reagent_start_state) goto L_PowerReagents;
+    if(@xmas_helper_done_state) goto L_HelperQuest;
+    if(@xmas_helper_start_state) goto L_HelperQuest;
+    if(@xmas_list_deliver) goto L_ListReturn;
+    goto L_OffSeason;
+
+L_ListReturn:
+    mes "[Avalia]";
+    mes "\"This had better be important, I have got enough to worry about.\"";
+    menu
+        "Sorry for interrupting, but I have been sent up here with the List", L_Next;
+
+L_Next:
+    mes "She stares blankly at you for a bit...";
+    next;
+    mes "\"YAHOO!!\"";
+    next;
+    mes "\"One problem down, only a few more to go.\"";
+    next;
+    mes "\"Since you have already been so helpful, I was wondering if you could continue to do so?\"";
+    mes "\"I do have the power to reward you handsomely.\"";
+    next;
+    mes "\"You see this nutcracker here beside me? He is different from the rest. He had a will of his own. It started shortly after we installed the new power core.\"";
+    next;
+    mes "\"At first, it was just magical research that had me keep him close to me. As time wore on, mine and his interactions became more intimate. I was hoping to get my research done before the Holidays.\"";
+    next;
+    mes "\"I wanted to show Santa and ask to if he knew how to help make it permanent, but Someone didn't approve. Took away our central spell power core. Now all the nutcrackers are back to being mindless automatons. Now the Christmas Sages must use magic to animate them.\"";
+    next;
+    mes "\"Please you must help me find a way to restore our power core before Christmas. I want to show Santa Millis, so he can give him life permanently for me.\"";
+    mes "\"First I need time to do some more research. Which means I need to spend less time helping with the holidays. Can you check with the helpers and make sure everything is going smoothly?\"";
+    menu
+        "Sure.", L_Start;
+
+L_Start:
+    mes "\"Ok, go check in with Chief Warrick. You might have to persist a bit but he will let you help.\"";
+    mes "\"Once you have completed this task come back and talk to me. As he reports to me.\"";
+    @xmas_state = $@xmas_helpers_start_state;
+    callfunc "XmasSetState";
+    goto L_Close;
+
+L_HelperQuest:
+    mes "[Avalia]";
+    mes "\"Welcome Back!\"";
+    mes "\"So how are the Holiday Preparations coming along?\"";
+    menu
+        "It's a mess but they got things handled.", L_Continue,
+        "I'd better get back to helping.", L_Close;
+
+L_Continue:
+    callfunc "XmasHelperPoints";
+    callfunc "XmasStates";
+    if(@xmas_helper_done_state)
+        goto L_ManaBattery;
+    goto L_NotHelpEnough;
+
+L_NotHelpEnough:
+    mes "\"Hrmm... I'm still getting bugged. You better go back there and see whats going on.\"";
+    goto L_Close;
+
+L_ManaBattery:
+    mes "\"Now that we are caught up on the holidays and I've finished my research, I know what is needed to make the spell permanent.\"";
+    next;
+    callfunc "ListReagents";
+    mes "\"When you have gathered the required materials please come back and see me.\"";
+    @xmas_state = $@xmas_reagents_start;
+    callfunc "XmasSetState";
+    callfunc "XmasXpReward";
+    goto L_Close;
+
+L_IngredientList:
+    callfunc "ListReagents";
+    mes "\"When you have gathered the required materials please come back and see me.\"";
+    goto L_Close;
+
+L_PowerReagents:
+    mes "[Avalia]";
+    mes "\"Welcome Back!\"";
+    mes "\"Have you gotten the reagents?\"";
+    menu
+        "Yes.", L_CheckReagents,
+        "What were they again?", L_IngredientList,
+        "No.", L_NotEnough;
+
+L_CheckReagents:
+    callfunc "CheckReagents";
+    callfunc "XmasStates";
+    if(!(@xmas_reagent_done_state))
+        goto L_NotEnough;
+    callfunc "DeleteReagents";
+    mes "\"Huzzah!, you have all the required components!\"";
+    mes "\"Now I can create a ManaBattery to power the Nutcrackers from a central location.\"";
+    mes "\"Our sages will now be free to perform other tasks. Oh boy the holidays are going to get easy again!\"";
+    mes "\"Stand back, this spell could backfire.\"";
+    next;
+    mes "You watch as she puts equal amounts of emerald powder into each of the empty bottles.";
+    mes "She methodically crushes up the shock sweet and spreads it amongst the empty bottles.";
+    mes "She positions the four bottles in a stand so all the openings are mostly facing each other.";
+    mes "She Begins to chant.";
+    next;
+    mes "[Avalia]";
+    mes "O";
+    next;
+    mes "wat";
+    next;
+    mes "goo";
+    next;
+    mes "siam";
+    next;
+    mes "The bottles begin to pulse with mana.";
+    mes "She continues to chant";
+    next;
+    mes "[Avalia]";
+    mes "Aye";
+    next;
+    mes "Am";
+    next;
+    mes "Knot";
+    next;
+    mes "Phunee";
+    next;
+    mes "Mana surges to life in the bottles making a peel of thunder.";
+    next;
+    mes "[Avalia]";
+    mes "\"Phew! That takes alot out of a person.\"";
+    mes "\"I'm in no condition to go anywhere.\"";
+    mes "\"Take the Mana Battery and install it in the warehouse.\"";
+    mes "\"It's found behind Chief Warrick\"";
+    @xmas_state = $@xmas_boss_door_open_state;
+    callfunc "XmasSetState";
+    callfunc "XmasXpReward";
+    goto L_Close;
+
+L_NotEnough:
+    mes "\"I need all the reagents before Santa visits. Come back and see me when you have them.\"";
+    goto L_Close;
+
+L_Quick:
+    mes "[Avalia]";
+    mes "\"What are you still doing here?\"";
+    mes "\"Quickly, to the warehouse.\"";
+    goto L_Close;
+
+L_Reward:
+    mes "[Avalia]";
+    mes "\"Thanks for all the help.\"";
+    mes "\"Take this as a token of my gratitude.\"";
+    if (@xmas_reward2_done_state)
+        @xmas_state = $@xmas_reward_done;
+    if (@xmas_reward_start_state)
+        @xmas_state = $@xmas_reward1_done;
+    callfunc "XmasSetState";
+    callfunc "XmasMainXpBpReward";
+    goto L_Close;
+
+L_Thanks:
+    mes "[Avalia]";
+    mes "\"Please feel free to continue to help us while we prepare your reward.\"";
+    goto L_Close;
+
+L_ThankYou:
+    mes "\"We can't thank you enough for restoring the nutcrackers humanity.\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}
+
+030-2,190,64,0	script	Milis	330,{
+    callfunc "XmasStates";
+
+    if($@xmas_time)
+        goto L_XmasMain;
+    goto L_OffSeason;
+
+L_OffSeason:
+    mes "[Milis]";
+    mes "\"What are you doing in here, get out!\"";
+    warp "030-2",88,80;
+    close;
+
+L_XmasMain:
+    if(@xmas_reward_start_state)
+        goto L_Reward;
+    goto L_NoResponse;
+
+L_Reward:
+    mes "[Milis]";
+    mes "\"Thanks for you help! I a REAL MAN, once again.\"";
+    goto L_Close;
+
+L_NoResponse:
+    mes "[Milis]";
+    mes "...";
+    goto L_Close;
+
+L_Close:
+    close;
+}

@@ -1,0 +1,51 @@
+
+031-2,27,26,0	script	Cindy#house	197,{
+    @Q_Nivalis_state_MASK = NIBBLE_5_MASK;
+    @Q_Nivalis_state_SHIFT = NIBBLE_5_SHIFT;
+
+    @rescue_Cindy = ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
+
+    if (@rescue_Cindy > 2) goto L_Happy_Random;
+
+    mes "...";
+    goto L_Close;
+
+L_Happy_Random:
+    getinventorylist;
+    @candy = rand(50);
+    if (@inventorylist_count < 100 && @candy == 42)
+        goto L_Candy;
+
+    setarray @quote_Cindy$, "Thank you so much for rescuing me!",
+    "My mother made really tasty cookies yesterday. But I already ate them all...",
+    "I want to go ice skating tomorrow. That will be fun!",
+    "I wonder when Daddy will come home next time. He always brings exciting stuff!",
+    strcharinfo(0) + "! You're my hero!",
+    "My mother is so upset about the Yetis - they are very very shy usually. You have to be lucky to see one. I wonder what's wrong with them.",
+    "When I'm a little older, I want to travel like you and my father. I want to see every place on the world!",
+    "Did you ever meet Santa? He's very kind! He always gives me some candy when we go to see him.",
+    strcharinfo(0) + ", you are sooo strong! Amazing! But my dad is strong too!";
+    @random = rand(9);
+    if (@random != 5)
+        emotion EMOTE_HAPPY;
+    @quote$ = "\"" + @quote_Cindy$[@random] + "\"";
+    mes "[Cindy]";
+    mes @quote$;
+    goto L_Close;
+
+L_Candy:
+    mes "[Cindy]";
+    mes "\"Santa gave me some candy! Please, take that!\"";
+    getitem "Candy", 1;
+    goto L_Close;
+
+L_Close:
+    @Q_Nivalis_state_MASK = 0;
+    @Q_Nivalis_state_SHIFT = 0;
+    @rescue_Cindy = 0;
+    @candy = 0;
+    @inventorylist_count = 0;
+    @random = 0;
+    @quote$ = "";
+    close;
+}

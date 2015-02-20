@@ -1,0 +1,67 @@
+
+048-2,35,27,0	script	Miro	366,{
+    @investigate = ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    if (@slimes == 255) goto L_Thank;
+    if (@slimes > 0) goto L_Progress;
+
+    mes "[Miro]";
+    mes "\"Hm? Oh, excuse me. I'm feeling so tired. We currently have some problems with some slimes out of control in the library. They ate most of the books and caused total chaos.\"";
+    next;
+    mes "\"We need to clean up the mess and it's so much to do. I was cleaning the floor for hours and I'm having a break now.\"";
+    goto L_Investigate;
+
+L_Progress:
+    mes "[Miro]";
+    mes "\"Pyry mentioned you're helping with the leftover slimes. You're really brave! I'd be afraid they'd eat me like they ate the books!\"";
+    goto L_Investigate;
+
+L_Thank:
+    mes "[Miro]";
+    mes "\"Wow, the way you took care of the slimes in the library! Amazing! This makes our job there much easier... and safer. Thank you so much!\"";
+    goto L_Investigate;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Do you know anything about the visitor with the mask?",L_Visitor,
+        "See you.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Do you know anything about the visitor with the mask?",L_Visitor,
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "I need to leave.",L_Close;
+
+L_Visitor:
+    mes "[Miro]";
+    mes "\"With a mask? I really don't know. I'm usually in the workshop and most of the visitors spend their time in the library. Sometimes they come to have a quick look in the workshop too, but I don't really pay attention to that, so... I can't recall a visitor with a mask, sorry.\"";
+    goto L_Close;
+
+L_Helper:
+    mes "[Miro]";
+    mes "\"Peetu? It was his job to seal away the slimes before the night, right? I have to say I'm really surprised about what happened, because he's a very cautious person. I'd have never guessed that he'd mess up something as important as this.\"";
+    next;
+    mes "\"If Nikolai's helpers weren't so carefully chosen, I'd think this was some kind of a bad joke from someone.\"";
+    if ((@investigate != 5) && (@investigate != 6) && (@investigate != 7))
+        goto L_Close;
+    @investigate = @investigate + 3;
+    callfunc "updateBlueSageInvestigate";
+    goto L_Close;
+
+L_Close:
+    @investigate = 0;
+    @slimes = 0;
+    close;
+}

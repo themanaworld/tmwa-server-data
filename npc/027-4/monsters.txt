@@ -1,0 +1,67 @@
+
+027-4,39,84,38,22	monster	Fallen	1045,3,60000,8000,specialMob027-4::On1045
+027-4,27,57,15,22	monster	Zombie	1036,2,60000,8000,specialMob027-4::On1036
+027-4,108,77,39,14	monster	Fallen	1045,3,60000,8000,specialMob027-4::On1045
+027-4,61,37,38,30	monster	Zombie	1036,2,60000,8000,specialMob027-4::On1036
+027-4,101,36,38,30	monster	Zombie	1036,2,60000,8000,specialMob027-4::On1036
+
+027-4,0,0,0	script	specialMob027-4	-1,{
+    end;
+
+On1036:
+    @mobId = 1036;
+    callsub S_MOBCOUNT_ZOMBIES;
+    callfunc "MobPoints";
+    end;
+
+On1045:
+    @mobId = 1045;
+    callsub S_MOBCOUNT_FALLENS;
+    callfunc "MobPoints";
+    end;
+
+S_MOBCOUNT_ZOMBIES:
+
+    @Graveyard_Inn_MASK = NIBBLE_2_MASK;
+    @Graveyard_Inn_SHIFT = NIBBLE_2_SHIFT;
+
+    @state = ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+
+    if (@state != 1)
+        goto L_Return;
+    @ring = @ring + 1;
+    if (@ring < 10)
+        goto L_Return;
+    if (rand(8) != 0)
+        goto L_Return;
+    message strcharinfo(0), "You found a ring hidden in the zombie's rotten rags. Maybe this is what Aldred was looking for...";
+    @state = 2;
+    callsub S_Update_Mask;
+    return;
+
+S_MOBCOUNT_FALLENS:
+
+    @Graveyard_Inn_MASK = NIBBLE_2_MASK;
+    @Graveyard_Inn_SHIFT = NIBBLE_2_SHIFT;
+
+    @state = ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+
+    if (@state != 1)
+        goto L_Return;
+    @ring = @ring + 1;
+    if (@ring < 10)
+        goto L_Return;
+    if (rand(8) != 0)
+        goto L_Return;
+    message strcharinfo(0), "You found a ring inside the fallen's broken helmet. Maybe this is what Aldred was looking for...";
+    @state = 2;
+    callsub S_Update_Mask;
+    return;
+
+L_Return:
+    return;
+
+S_Update_Mask:
+    QUEST_Graveyard_Inn = (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK)) | (@state << @Graveyard_Inn_SHIFT);
+    return;
+}

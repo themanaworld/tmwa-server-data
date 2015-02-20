@@ -1,0 +1,251 @@
+
+031-4,42,42,0	script	Cindy	198,{
+    if ($@FIGHT_YETI_STATUS != 0) goto L_Yeti;
+
+    @KEYS_AMOUNT = 10;
+    @minLevel = 70;
+
+    @Q_Nivalis_state_MASK = NIBBLE_5_MASK;
+    @Q_Nivalis_state_SHIFT = NIBBLE_5_SHIFT;
+
+    @rescue_Cindy = ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
+
+    if (Sex == 0) set @title$, "Misses";
+    if (Sex == 1) set @title$, "Mister";
+
+    if (@rescue_Cindy >= 3) goto L_Please_Visit;
+    if (@rescue_Cindy == 2) goto L_Reward;
+    if (@rescue_Cindy == 1) goto L_Please_Help;
+
+    mes "There is a little girl in a cage. As you come near, she starts to shiver and back off from you as far as she can in that small cage.";
+    next;
+    mes "You don't know what to do.";
+    goto L_Close;
+
+L_Please_Help:
+    mes "There is a little girl in a cage. As you come near, she starts to shiver and back off from you as far as she can in that small cage.";
+    next;
+    menu
+        "Hello Cindy, I'm here to save you.", L_Next;
+
+L_Next:
+    mes "Cindy doesn't look so scared anymore.";
+    next;
+    mes "[Cindy]";
+    mes "\"Hello, dear " + @title$ + " adventurer. Did my mother send you?\"";
+    next;
+    mes "\"It's so cold in here! Can you please open the cage?\"";
+    next;
+    mes "\"But be careful. If the Yetis hear you, they will come!\"";
+    menu
+        "Try to open the cage", L_Try_Cage,
+        "Leave", L_Close;
+
+L_Try_Cage:
+    if (BaseLevel < @minLevel)
+        goto L_To_Weak;
+    if (countitemcolor("TreasureKey") < @KEYS_AMOUNT)
+        goto L_Not_Enough_Keys;
+    delitem "TreasureKey", @KEYS_AMOUNT;
+    mes "As you try to open the door of the cage, there is a loud squeaking noise.";
+    next;
+    mes "You get an uncomfortable feeling and Cindy starts to shiver.";
+    if ($@FIGHT_YETI_STATUS != 0)
+        goto L_Yeti;
+    npctalk "Oh no, the Yetis...";
+
+    // initialize fight
+    $@FIGHT_YETI_STATUS = 1;
+    $@FIGHT_YETI_WAVE = 0;
+    $@YETI_COUNT = 1;
+    $@FIGHT_YETI_PLAYER_COUNT = getmapusers("031-4");
+    areamonster "031-4", 0, 0, 95, 91, "", 1072, 1, "Cindy::OnPetDeath";
+
+    initnpctimer;
+    goto L_Close;
+
+L_Yeti:
+    mes "[Cindy]";
+    mes "\"Watch out, the Yetis!\"";
+    goto L_Close;
+
+L_Reward:
+    mes "[Cindy]";
+    mes "\"You are a hero! All these strong monsters!\"";
+    next;
+    mes "\"I've found this thing in the cave - it looks valuable. I want you to have it.\"";
+    next;
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
+
+    @reward = rand(15);
+    if (@reward < 10)
+        goto L_Wizard_Hat;
+    getitem "WoodenStaff", 1;
+    @rescue_Cindy = 3;
+    callsub S_Update_Mask;
+    goto L_Visit;
+
+L_Wizard_Hat:
+    // get a wizard hat in one of the ten colors - no white
+    setarray @wizardhats, 2200, 2201, 2202, 2203, 2204, 2205, 2206, 2207, 2208, 2209;
+    getitem @wizardhats[@reward], 1;
+    @rescue_Cindy = 3;
+    callsub S_Update_Mask;
+    goto L_Visit;
+
+L_Visit:
+    mes "\"Thank you so much; please come to my home. It's the house at the beach.\"";
+    next;
+    mes "\"I'm sure my mother wants to thank you as well.\"";
+    goto L_Close;
+
+L_Please_Visit:
+    mes "[Cindy]";
+    mes "\"Thank you, thank you! You're a hero! Please come home with me to our house at the beach!\"";
+    goto L_Close;
+
+L_To_Weak:
+    mes "You try to open the cage, but it's stuck. It seems you're too weak!";
+    goto L_Close;
+
+L_Not_Enough_Keys:
+    mes "You don't have enough keys to open the cage.";
+    goto L_Close;
+
+L_Full_Inv:
+    mes "\"Oh, it seems you carry so much stuff - I will keep it for you until you can take it.\"";
+    goto L_Close;
+
+L_Close:
+    @KEYS_AMOUNT = 0;
+    @Q_Nivalis_state_MASK = 0;
+    @Q_Nivalis_state_SHIFT = 0;
+    @rescue_Cindy = 0;
+    @title$ = "";
+    @minLevel = 0;
+    @inventorylist_count = 0;
+    cleararray @wizardhats, 0, 10;
+    @reward = 0;
+    close;
+
+OnTimer5000:
+    setnpctimer 0;
+    if ($@FIGHT_YETI_STATUS != 0)
+        goto L_CaveLogic;
+    goto L_Return_1;
+
+L_Return_1:
+    $@FIGHT_YETI_PLAYER_COUNT = 0;
+    areatimer "031-4", 0, 0, 95, 91, 10, "Cindy::OnTick";
+    end;
+
+L_CaveLogic:
+    $@FIGHT_YETI_ROUND_PEN = $@FIGHT_YETI_PLAYER_COUNT;
+    if ($@FIGHT_YETI_ROUND_PEN > 60)
+        $@FIGHT_YETI_ROUND_PEN = 60;
+    if ($@FIGHT_YETI_PLAYER_COUNT <= 0)
+        goto L_CleanUp;
+    set $@FIGHT_YETI_ROUND_TIMER, $@FIGHT_YETI_ROUND_TIMER + 5; // Advance 5 seconds
+    if (mobcount("031-4", "Cindy::OnPetDeath") < 0)
+        goto L_NextWave;
+    if ($@FIGHT_YETI_ROUND_TIMER + $@FIGHT_YETI_ROUND_PEN >= 120)
+        goto L_NextWave;
+    goto L_Return_1;
+
+L_NextWave:
+    $@FIGHT_YETI_ROUND_TIMER = 0;
+    $@FIGHT_YETI_WAVE = $@FIGHT_YETI_WAVE + 1;
+    if ($@FIGHT_YETI_WAVE > 10
+        && $@YETI_COUNT == 0)
+            goto L_CleanUp;
+    if ($@FIGHT_YETI_WAVE > 10
+        && $@FIGHT_YETI_WAVE < 22)
+            goto L_Return_1;
+    if ($@FIGHT_YETI_WAVE > 22)
+        areamonster "031-4", 0, 0, 95, 91, "", 1072, $@FIGHT_YETI_WAVE*2 + $@FIGHT_YETI_PLAYER_COUNT*5, "Cindy::OnPetDeath";
+    if ($@FIGHT_YETI_WAVE > 22)
+        $@YETI_COUNT = $@YETI_COUNT + $@FIGHT_YETI_WAVE*2 + $@FIGHT_YETI_PLAYER_COUNT*5;
+    $@FIGHT_YETI_NUMBER = (5 + (1 * $@FIGHT_YETI_WAVE) + (2 * $@FIGHT_YETI_PLAYER_COUNT))/4;
+    $@YETI_COUNT = $@YETI_COUNT + $@FIGHT_YETI_NUMBER;
+
+    areamonster "031-4", 0, 0, 95, 91, "", 1072, $@FIGHT_YETI_NUMBER, "Cindy::OnPetDeath";
+
+    $@msg$ = $@FIGHT_YETI_MESSAGES$[$@FIGHT_YETI_WAVE];
+    if ($@msg$ == "")
+        goto L_Return_1;
+    mapannounce "031-4", $@msg$, 0;
+    mapannounce "031-3", $@msg$, 0;
+    $@msg$ = "";
+    goto L_Return_1;
+
+OnTick:
+    if (ispcdead()) end;
+    $@FIGHT_YETI_PLAYER_COUNT = $@FIGHT_YETI_PLAYER_COUNT + 1;
+    end;
+
+OnPetDeath:
+    $@YETI_COUNT = $@YETI_COUNT - 1;
+    end;
+
+L_CleanUp:
+    areatimer "031-4", 0, 0, 95, 91, 10, "Cindy::OnReward";
+    $@FIGHT_YETI_STATUS = 0;
+    $@FIGHT_YETI_PLAYER_COUNT = 0;
+    $@FIGHT_YETI_WAVE = 0;
+    $@FIGHT_YETI_ROUND_TIMER = 0;
+    $@YETI_COUNT = 0;
+    $@FIGHT_YETI_ROUND_PEN = 0;
+    $@FIGHT_YETI_NUMBER = 0;
+    killmonster "031-4", "Cindy::OnPetDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnReward:
+    if (ispcdead()) end;
+    @bonus = (BaseLevel/2);
+    DailyQuestBonus = DailyQuestBonus + @bonus;
+    message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained." ;
+    @Q_Nivalis_state_MASK = NIBBLE_5_MASK;
+    @Q_Nivalis_state_SHIFT = NIBBLE_5_SHIFT;
+    @rescue_Cindy = ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
+    if (@rescue_Cindy != 1 )
+        goto L_End;
+    @rescue_Cindy = 2;
+    callsub S_Update_Mask;
+    message strcharinfo(0), "Cindy looks relieved and as if she wants to talk with you.";
+    BOSS_POINTS = BOSS_POINTS + 70;
+    message strcharinfo(0), "You gain 70 Boss Points giving you a total of " + BOSS_POINTS + ".";
+    goto L_End;
+
+L_End:
+    @bonus = 0;
+    @Q_Nivalis_state_MASK = 0;
+    @Q_Nivalis_state_SHIFT = 0;
+    @rescue_Cindy = 0;
+    end;
+
+OnInit:
+    setarray $@FIGHT_YETI_MESSAGES$,
+        "", // unused
+        // ":* " is magic so that it says "global announcement from"
+        "Cindy:* Yetis!",
+        "Cindy:* Watch out!",
+        "Cindy:* More of them are coming!",
+        "Cindy:* Be careful! More of them!",
+        "Cindy:* Attention! There is another bunch of them!",
+        "Cindy:* Hang on! More of them!",
+        "Cindy:* More Yetis! Will this never end?",
+        "Cindy:* There are coming more and more!",
+        "Cindy:* Watch your back! There are so many of them!",
+        "Cindy:* This seems to be their final attack! I believe in you!";
+    end;
+
+S_Update_Mask:
+    set QUEST_Nivalis_state,
+        (QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
+            | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
+    return;
+}

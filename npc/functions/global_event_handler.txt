@@ -1,0 +1,41 @@
+017-9,0,0,0	script	#GlobalHandler	-1,{
+    end;
+
+OnPCLoginEvent: // this does not work yet but as soon as it is implemented it will start working
+    callfunc "ClearVariables";
+    end;
+
+OnPCKillEvent:
+    set Death_Kill, Death_Kill + 1; // this counts the number of players you have killed
+    end;
+
+OnPCKilledEvent:
+    goto L_Fightclub_Killed; // this is used by the 1v1 arena
+
+OnPCDieEvent:
+    callfunc "fightclub_GoBack"; // this used by the battle master
+    goto L_Fightclub_Die; // this is used by the 1v1 arena
+
+
+L_Fightclub_Killed:
+    @duel_killer = 0;
+    if(@Duel_Fighter != 1) goto L_End;
+    if(getmapname() != "009-7") goto L_End;
+    set $@duel_loser, getcharid(3); // grab the rid of the victim
+    set $@duel_winner, @killerrid; // grab the rid of the killer
+    set @killerrid, 0; // reset killerid
+    callfunc "fightclub_death";
+    goto L_End;
+
+L_Fightclub_Die:
+    @duel_killer = 0;
+    if(@Duel_Fighter != 1) goto L_End;
+    if(getmapname() != "009-7") goto L_End;
+    set @killerrid, 0; // since the player was not murdered, the killerrid is 0
+    set $@duel_loser, getcharid(3); // grab the rid of the victim
+    callfunc "fightclub_death";
+    goto L_End;
+
+L_End:
+    end;
+}

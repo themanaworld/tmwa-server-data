@@ -1,0 +1,252 @@
+
+
+
+
+009-6,36,40,0	script	Brodomir	116,{
+    @brodomir_money = 0;
+    @brodomir_item_amount = 0;
+    @brodomir_item$ = "";
+
+    if ($@BRODOMIR_PVP_STATUS == 2)
+        goto L_AlreadyStarted;
+    if ($@BRODOMIR_PVP_STATUS == 1)
+        goto L_Wait;
+    mes "[Brodomir]";
+    mes "\"Hi Warrior.\"";
+    mes "\"Do you know me? I'm pretty old and I have never been good with faces?\"";
+    menu
+        "Yes of course! Don't you remember me?", L_Shorttalk,
+        "No, who are you?", L_Longtalk,
+        "I don't want to know you!", L_Close;
+
+L_Longtalk:
+    mes "[Brodomir]";
+    mes "\"I'm Brodomir\"";
+    mes "Brodomir sighs.";
+    mes "\"Once I as well was a powerful warrior. It's been quite a while. But before that I was a miner in Tonori. I can still remember it very good. The Earth was shaking for hours and everything was torn apart. Many many of my friends and beloved ones were devoured by the crevasses which opened up. It was horrific and I am very lucky to have survived that.\"";
+    next;
+    mes "\"Then everything was pure chaos and I had to fight to survive. We had hardly anything to eat, therefore the strongest survived. I turned out to be a very good warrior. I fought hard. When I felt strong enough to defend others I created a school of martial arts. I took in the weak and tended to them and made them stronger.\"";
+    next;
+    mes "\"I trained them to fight with all weapons and how to fight bare handed. Taught them how to make their own weapons and what could be used as a weapon. Those were dark times. I'm happy that those times are over and you do not have to live through it.\"";
+    next;
+    mes "\"When my shelter was no longer required I started to wander around. Now I ended up here old and wrinkly. I'm only able to drive away those weak creatures who try to enter my home all the time. Slowly they learn to leave me alone or I'll squish them.\"";
+    next;
+    mes "\"I am sorry but I cannot teach you anything anymore. I am too old. But I am still quite good with my pickaxe and I made a cave where you can fight against your friends.\"";
+    mes "\"The only things you need is to sponsor some prize money and at least two of your friends. If you pay me I will give you about five minutes and after that I will bring you to the cave where you can fight. I will reward the winner. Do you want to give it a shot?\"";
+    goto L_Menu;
+
+L_Shorttalk:
+    mes "Well... I'm sorry I cannot remember. I'm old. I hope you can forgive me. Well then. Do you want to fight with your friends in my cave? All you need is to sponsor some prize money and at least two of your friends.";
+    goto L_Menu;
+
+L_Menu:
+    menu
+        "No.", L_Exit,
+        "Yes.", L_Pay,
+        "I'd like this item to be the prize.", L_Item;
+
+L_Exit:
+    mes "[Brodomir]";
+    mes "\"Okay, you can come back anytime.\"";
+    goto L_Close;
+
+L_Item:
+    mes "[Brodomir]";
+    mes "\"Ok, which item?\"";
+    mes "Make sure to spell correctly and if the item name contains whitespaces, leave them out.";
+    input @brodomir_item$;
+    mes "[Brodomir]";
+    mes "\"And how many?\"";
+    input @brodomir_item_amount;
+    if (@brodomir_item_amount < 1)
+        goto L_Fool;
+    mes "[Brodomir]";
+    mes "\"So the prize should be " + @brodomir_item_amount + " " + @brodomir_item$ + "?\"";
+    mes "\"In case there aren't enough people to start the fight, I'll try to give it back to you. If you're not here then... well, then I'll keep it for myself.\"";
+    menu
+        "Ok.", L_Next,
+        "No, you missunderstood me.", L_Item,
+        "I changed my mind, forget it.", L_Close;
+
+L_Next:
+    if ($@BRODOMIR_PVP_STATUS == 1)
+        goto L_Wait;
+    if (countitemcolor(@brodomir_item$) < @brodomir_item_amount)
+        goto L_NoItem;
+
+    // we need this loop because for items that can't be stacked, delitem can only delete a single one
+    @loopcounter = @brodomir_item_amount;
+    goto L_Delitem;
+
+L_Delitem:
+    delitem @brodomir_item$, 1;
+    @loopcounter = @loopcounter - 1;
+    if (@loopcounter > 0)
+        goto L_Delitem;
+
+    $@BRODOMIR_SPONSOR = getcharid(3);
+    goto L_Go;
+
+L_NoItem:
+    mes "[Brodomir]";
+    mes "\"Hey, you don't have " + @brodomir_item_amount + " " + @brodomir_item$ + "!\"";
+    goto L_Close;
+
+L_Fool:
+    mes "[Brodomir]";
+    mes "\"Are you trying to fool me? Come back when you're more serious.\"";
+    goto L_Close;
+
+L_Pay:
+    mes "[Brodomir]";
+    mes "\"How much money do you want to sponsor as prize? It should be at least 5000GP.\"";
+    input @brodomir_money;
+    if (@brodomir_money < 5000)
+        goto L_TooCheap;
+    if ($@BRODOMIR_PVP_STATUS == 1)
+        goto L_Wait;
+    if (Zeny < @brodomir_money)
+        goto L_NotEnoughMoney;
+    Zeny = Zeny - @brodomir_money;
+    goto L_Go;
+
+L_Go:
+    $@BRODOMIR_ITEM$ = @brodomir_item$;
+    $@BRODOMIR_ITEM_AMOUNT = @brodomir_item_amount;
+    $@BRODOMIR_MONEY = @brodomir_money;
+    $@brodomir_delay_seconds = 600;
+    $@BRODOMIR_PVP_STATUS = 1;
+    announce "Brodomir: In "+$@brodomir_delay_seconds/60+" minutes, I will start a PvP tournament, if at least 3 fighters are present. Make your way in Hurnscald Underground Caves!", 0;
+    if ($@BRODOMIR_ITEM_AMOUNT > 0)
+        announce "Brodomir: The winner will receive 150GP per fighter and " + $@BRODOMIR_ITEM_AMOUNT + " " + $@BRODOMIR_ITEM$ + ".", 0;
+    if ($@BRODOMIR_MONEY > 0)
+        announce "Brodomir: The winner will receive " + $@BRODOMIR_MONEY + "GP and additionally 150GP per fighter.", 0;
+    mes "[Brodomir]";
+    mes "\"In "+$@brodomir_delay_seconds/60+" minutes I will bring you all to the PvP cave. If there are less than 3 players here the event will not start and your money will be lost.\"";
+    $@BRODOMIR_START_TIME = gettimetick(2) + $@brodomir_delay_seconds;
+    $@brodomir_delay_seconds = 0;
+    initnpctimer;
+    goto L_Close;
+
+L_Wait:
+    $@brodomir_seconds = ($@BRODOMIR_START_TIME - gettimetick(2));
+    mes "[Brodomir]";
+    if ($@brodomir_seconds/60 == 0)
+        mes "\"Just a little longer. I will bring you there in " + $@brodomir_seconds + " seconds.\"";
+    if ($@brodomir_seconds/60 > 0)
+        mes "\"Just a little longer. I will bring you there in " + $@brodomir_seconds/60 + " minute(s).\"";
+    $@brodomir_seconds = 0;
+    goto L_Close;
+
+OnTimer5000:
+    setnpctimer 0;
+    if ($@BRODOMIR_PVP_STATUS > 1)
+        goto L_Check;
+    if (gettimetick(2) >= $@BRODOMIR_START_TIME)
+        goto L_Warp;
+    end;
+
+L_Warp:
+    if (getareausers("009-6", 20, 20, 80, 80, 1) < 3)
+        goto L_Warpfail;
+    $@BRODOMIR_PVP_STATUS = $@BRODOMIR_PVP_STATUS + 1;
+    $@BRODOMIR_PLAYERS = getareausers("009-6", 20, 20, 80, 80, 1);
+    mapwarp "009-6", "009-5", 0, 0;
+    mapannounce "009-5", "PvP On!", 0;
+    pvpon "009-5";
+    end;
+
+L_Warpfail:
+    mapannounce "009-6", "There are not enough players around to start!", 0;
+    if ($@BRODOMIR_ITEM_AMOUNT == 0 || $@BRODOMIR_ITEM$ == "")
+        goto L_CleanUp;
+    if (attachrid($@BRODOMIR_SPONSOR) == 0)
+        goto L_SkipItemback;
+    // we need this loop because for items that can't be stacked, getitem will stack them nevertheless
+    goto L_GetitemLoop;
+
+L_GetitemLoop:
+    getitem $@BRODOMIR_ITEM$, 1;
+    $@BRODOMIR_ITEM_AMOUNT = $@BRODOMIR_ITEM_AMOUNT - 1;
+    if ($@BRODOMIR_ITEM_AMOUNT > 0)
+        goto L_GetitemLoop;
+    goto L_SkipItemback;
+
+L_SkipItemback:
+    $@BRODOMIR_ITEM_AMOUNT = 0;
+    $@BRODOMIR_ITEM$ = "";
+    $@BRODOMIR_SPONSOR = 0;
+    goto L_CleanUp;
+
+L_Check:
+    if (getareausers("009-5", 20, 20, 80, 80, 1) > 1)
+        end;
+    areatimer "009-5", 20, 20, 80, 80, 0, "Brodomir::OnReward";
+    goto L_End;
+
+OnReward:
+    if (ispcdead())
+        goto L_Dead;
+    message strcharinfo(0), "Congratulations you won!";
+    Zeny = Zeny + ($@BRODOMIR_MONEY + 150 * $@BRODOMIR_PLAYERS);
+    if ($@BRODOMIR_ITEM_AMOUNT == 0 || $@BRODOMIR_ITEM$ == "")
+        goto L_SkipItem;
+    // we need this loop because for items that can't be stacked, getitem will stack them nevertheless
+    goto L_Getitem;
+
+L_Getitem:
+    getitem $@BRODOMIR_ITEM$, 1;
+    $@BRODOMIR_ITEM_AMOUNT = $@BRODOMIR_ITEM_AMOUNT - 1;
+    if ($@BRODOMIR_ITEM_AMOUNT > 0)
+        goto L_Getitem;
+    goto L_SkipItem;
+
+L_SkipItem:
+    $@BRODOMIR_ITEM$ = "";
+    $@BRODOMIR_SPONSOR = 0;
+    $@BRODOMIR_MONEY = 0;
+    $@BRODOMIR_PLAYERS = 0;
+    end;
+
+L_Dead_Duels:
+    DUELS = DUELS &~ $@DuelPvpBit;
+    warp "009-7", 39, 37;
+    end;
+
+L_Dead:
+    if(DUELS & $@DuelPvpBit) goto L_Dead_Duels;
+    warp "009-3", 155,83;
+    end;
+
+L_End:
+    mapwarp "009-5", "009-6", 36, 42;
+    goto L_CleanUp;
+
+L_AlreadyStarted:
+    mes "[Brodomir]";
+    mes "\"Please wait until the cave is clear again.\"";
+    goto L_Close;
+
+L_NotEnoughMoney:
+    mes "[Brodomir]";
+    mes "\"You don't have enough money.\"";
+    goto L_Close;
+
+L_TooCheap:
+    mes "[Brodomir]";
+    mes "\"That's too cheap as a prize.\"";
+    goto L_Close;
+
+L_CleanUp:
+    pvpoff "009-5";
+    $@BRODOMIR_PVP_STATUS  = 0;
+    $@BRODOMIR_START_TIME = 0;
+    stopnpctimer;
+    end;
+
+L_Close:
+    @brodomir_money = 0;
+    @brodomir_item_amount = 0;
+    @brodomir_item$ = "";
+    close;
+}

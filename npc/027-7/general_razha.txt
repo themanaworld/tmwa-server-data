@@ -1,0 +1,229 @@
+
+027-7,39,25,0	script	General Razha	400,{
+    if ($@CRYPT_FIGHT2 != 0)
+        end;
+
+    @RAZHA_SOUL_REQ = 3;
+    @RAZHA_DISEASED_HEARTS_REQ = 5;
+    @RAZHA_UNDEAD_EYE_REQ = 5;
+    @RAZHA_UNDEAD_EAR_REQ = 5;
+    @minLevel = 70;
+
+    mes "[Tome]";
+    mes "The Tome is open to a page about a summon ritual that can be performed in this chamber.";
+    next;
+    goto L_TomeMain;
+
+L_TomeMain:
+    mes "What do you want to do?";
+    menu
+        "Read reagent List.", L_SummonReagents,
+        "Perform Ritual.", L_Ritual,
+        "Nothing.", L_Close;
+
+L_SummonReagents:
+    mes "Says we need " + @RAZHA_SOUL_REQ + " Souls, " + @RAZHA_DISEASED_HEARTS_REQ + " Diseased Hearts, " + @RAZHA_UNDEAD_EYE_REQ + " Undead Eyes, and " + @RAZHA_UNDEAD_EAR_REQ + " Undead Ears to perform the ritual.";
+    next;
+    goto L_TomeMain;
+
+L_MissingReagents:
+    mes "It appears we are missing something, lets check the reagent list again.";
+    next;
+    goto L_SummonReagents;
+
+L_Ritual:
+    if (BaseLevel < @minLevel)
+        goto L_ToWeak;
+    if ( (countitemcolor("Soul") < @RAZHA_SOUL_REQ)
+        || (countitemcolor("DiseasedHeart") < @RAZHA_DISEASED_HEARTS_REQ)
+        || (countitemcolor("UndeadEye") < @RAZHA_UNDEAD_EYE_REQ)
+        || (countitemcolor("UndeadEar") < @RAZHA_UNDEAD_EAR_REQ) )
+        goto L_MissingReagents;
+    delitem "Soul", @RAZHA_SOUL_REQ;
+    delitem "DiseasedHeart", @RAZHA_DISEASED_HEARTS_REQ;
+    delitem "UndeadEye", @RAZHA_UNDEAD_EYE_REQ;
+    delitem "UndeadEar", @RAZHA_UNDEAD_EAR_REQ;
+    mes "As you perform the ritual you can feel the energy amass.";
+    next;
+    mes "A cold shiver runs down your spine as you feel something manifesting out of the void.";
+    if ($@CRYPT_FIGHT2 != 0)
+        goto L_Close;
+
+    // initialize fight
+    $@CRYPT_FIGHT2 = 1;
+    $@CRYPT_FIGHT2_WAVE = 0;
+    $@CRYPT_FIGHT2_SUMMONS_COUNT = 2;
+    $@CRYPT_FIGHT2_PLAYER_COUNT = getmapusers("027-7");
+    areamonster "027-7", 0, 0, 79, 84, "", 1036, 1, "General Razha::OnPetDeath";
+    areamonster "027-7", 0, 0, 79, 84, "", 1124, 1, "General Razha::OnPetDeath";
+
+    initnpctimer;
+    goto L_Announce;
+
+L_ToWeak:
+    mes "You try to perform the ritual but nothing happens. You don't seem experienced enough.";
+    goto L_Close;
+
+L_Close:
+    @bonus = 0;
+    @minLevel = 0;
+    @RAZHA_SOUL_REQ = 0;
+    @RAZHA_DISEASED_HEARTS_REQ = 0;
+    @RAZHA_UNDEAD_EYE_REQ = 0;
+    @RAZHA_UNDEAD_EAR_REQ = 0;
+    close;
+
+OnTimer5000:
+    setnpctimer 0;
+    if ($@CRYPT_FIGHT2 != 0)
+        goto L_CryptLogic;
+    goto L_Return_1;
+
+L_Return_1:
+    $@CRYPT_FIGHT2_PLAYER_COUNT = 0;
+    areatimer "027-7", 0, 0, 79, 84, 10, "General Razha::OnTick";
+    end;
+
+L_CryptLogic:
+    $@CRYPT_FIGHT2_ROUND_PEN = $@CRYPT_FIGHT2_PLAYER_COUNT;
+    if ($@CRYPT_FIGHT2_ROUND_PEN > 60)
+        $@CRYPT_FIGHT2_ROUND_PEN = 60;
+    if ($@CRYPT_FIGHT2_PLAYER_COUNT <= 0)
+        goto L_CleanUpLosers;
+    set $@CRYPT_FIGHT2_SUMMONS_ROUND_TIMER, $@CRYPT_FIGHT2_SUMMONS_ROUND_TIMER + 5; // Advance 5 seconds
+    if (mobcount("027-7", "General Razha::OnPetDeath") < 0)
+        goto L_NextWave;
+    if ($@CRYPT_FIGHT2_SUMMONS_ROUND_TIMER + $@CRYPT_FIGHT2_ROUND_PEN >= 120)
+        goto L_NextWave;
+    goto L_Return_1;
+
+L_NextWave:
+    $@CRYPT_FIGHT2_SUMMONS_ROUND_TIMER = 0;
+    $@CRYPT_FIGHT2_WAVE = $@CRYPT_FIGHT2_WAVE + 1;
+    if ( ($@CRYPT_FIGHT2_WAVE > 10) && ($@CRYPT_FIGHT2_SUMMONS_COUNT == 0) )
+        goto L_CleanUp;
+    if ( ($@CRYPT_FIGHT2_WAVE > 10) && ($@CRYPT_FIGHT2_WAVE < 22) )
+        goto L_Return_1;
+    if ($@CRYPT_FIGHT2_WAVE > 22)
+        goto L_SummonNuke;
+    if ($@CRYPT_FIGHT2_WAVE < 5)
+        goto L_WeakSummons;
+    if ( ($@CRYPT_FIGHT2_WAVE < 10) && ($@CRYPT_FIGHT2_WAVE >= 5) )
+        goto L_StrongSummons;
+    if ($@CRYPT_FIGHT2_WAVE == 10)
+        goto L_BossSummons;
+    goto L_SummonNuke;
+
+L_SummonNuke:
+    $@CRYPT_FIGHT2_SUMMONS_COUNT = $@CRYPT_FIGHT2_SUMMONS_COUNT + $@CRYPT_FIGHT2_WAVE*2 + $@CRYPT_FIGHT2_PLAYER_COUNT*4;
+    areamonster "027-7", 0, 0, 79, 84, "", 1036, $@CRYPT_FIGHT2_WAVE*2 + $@CRYPT_FIGHT2_PLAYER_COUNT*4, "General Razha::OnPetDeath";
+    goto L_Announce;
+
+L_WeakSummons:
+    $@CRYPT_FIGHT2_SUMMONS_NUMBER = (5 + (1 * $@CRYPT_FIGHT2_WAVE) + (2 * $@CRYPT_FIGHT2_PLAYER_COUNT))/2;
+    $@CRYPT_FIGHT2_SUMMONS_COUNT = $@CRYPT_FIGHT2_SUMMONS_COUNT + ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2) + ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2);
+
+    areamonster "027-7", 0, 0, 79, 84, "", 1036, ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2), "General Razha::OnPetDeath";
+    areamonster "027-7", 0, 0, 79, 84, "", 1045, ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2), "General Razha::OnPetDeath";
+    goto L_Announce;
+
+L_StrongSummons:
+    $@CRYPT_FIGHT2_SUMMONS_NUMBER = (5 + (1 * $@CRYPT_FIGHT2_WAVE) + (2 * $@CRYPT_FIGHT2_PLAYER_COUNT))/2;
+    $@CRYPT_FIGHT2_SUMMONS_COUNT = $@CRYPT_FIGHT2_SUMMONS_COUNT + ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2) + ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2);
+
+    areamonster "027-7", 0, 0, 79, 84, "", 1036, ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2), "General Razha::OnPetDeath";
+    areamonster "027-7", 0, 0, 79, 84, "", 1124, ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2), "General Razha::OnPetDeath";
+    goto L_Announce;
+
+L_BossSummons:
+    $@CRYPT_FIGHT2_SUMMONS_NUMBER = (5 + (1 * $@CRYPT_FIGHT2_WAVE) + (2 * $@CRYPT_FIGHT2_PLAYER_COUNT))/2;
+    $@CRYPT_FIGHT2_SUMMONS_COUNT = $@CRYPT_FIGHT2_SUMMONS_COUNT + ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2) + ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2);
+    areamonster "027-7", 0, 0, 79, 84, "", 1036, ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2), "General Razha::OnPetDeath";
+    areamonster "027-7", 0, 0, 79, 84, "", 1124, ($@CRYPT_FIGHT2_SUMMONS_NUMBER/2), "General Razha::OnPetDeath";
+    areamonster "027-7", 0, 0, 79, 84, "", 1128, 1, "General Razha::OnPetDeath";
+    $@CRYPT_FIGHT2_SUMMONS_COUNT = $@CRYPT_FIGHT2_SUMMONS_COUNT + 1;
+    goto L_Announce;
+
+L_Announce:
+    $@msg$ = $@CRYPT_FIGHT2_MESSAGES$[$@CRYPT_FIGHT2_WAVE];
+    if ($@msg$ == "")
+        goto L_Return_1;
+    mapannounce "027-7", $@msg$, 0;
+    mapannounce "027-4", $@msg$, 0;
+    $@msg$ = "";
+    goto L_Return_1;
+
+OnTick:
+    if (ispcdead()) end;
+    $@CRYPT_FIGHT2_PLAYER_COUNT = $@CRYPT_FIGHT2_PLAYER_COUNT + 1;
+    end;
+
+OnPetDeath:
+    $@CRYPT_FIGHT2_SUMMONS_COUNT = $@CRYPT_FIGHT2_SUMMONS_COUNT - 1;
+    end;
+
+L_CleanUpLosers:
+    mapannounce "027-7", "General Razha:* Oh where did you all go, I was beginning to have fun here.", 0;
+    mapannounce "027-4", "The battle is lost.", 0;
+    $@CRYPT_FIGHT2 = 0;
+    $@CRYPT_FIGHT2_PLAYER_COUNT = 0;
+    $@CRYPT_FIGHT2_WAVE = 0;
+    $@CRYPT_FIGHT2_SUMMONS_ROUND_TIMER = 0;
+    $@CRYPT_FIGHT2_SUMMONS_COUNT = 0;
+    $@CRYPT_FIGHT2_ROUND_PEN = 0;
+    $@CRYPT_FIGHT2_SUMMONS_NUMBER = 0;
+    killmonster "027-7", "General Razha::OnPetDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+L_CleanUp:
+    mapannounce "027-7", "General Razha:* How in all hells could that happen? I am lost forever.", 0;
+    mapannounce "027-4", "General Razha is defeated.", 0;
+    areatimer "027-7", 0, 0, 79, 84, 10, "General Razha::OnReward";
+    $@CRYPT_FIGHT2 = 0;
+    $@CRYPT_FIGHT2_PLAYER_COUNT = 0;
+    $@CRYPT_FIGHT2_WAVE = 0;
+    $@CRYPT_FIGHT2_SUMMONS_ROUND_TIMER = 0;
+    $@CRYPT_FIGHT2_SUMMONS_COUNT = 0;
+    $@CRYPT_FIGHT2_ROUND_PEN = 0;
+    $@CRYPT_FIGHT2_SUMMONS_NUMBER = 0;
+    killmonster "027-7", "General Razha::OnPetDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnReward:
+    if (ispcdead()) end;
+    @bonus = (BaseLevel/2);
+    DailyQuestBonus = DailyQuestBonus + @bonus;
+    message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained." ;
+    BOSS_POINTS = BOSS_POINTS + 50;
+    message strcharinfo(0), "You gain 50 Boss Points giving you a total of " + BOSS_POINTS + ".";
+    goto L_End;
+
+L_End:
+    @bonus = 0;
+    @minLevel = 0;
+    @RAZHA_SOUL_REQ = 0;
+    @RAZHA_DISEASED_HEARTS_REQ = 0;
+    @RAZHA_UNDEAD_EYE_REQ = 0;
+    @RAZHA_UNDEAD_EAR_REQ = 0;
+    end;
+
+OnInit:
+    setarray $@CRYPT_FIGHT2_MESSAGES$,
+        "General Razha:* Haha, Thank you mortal. You have released me from my prison. To show my graditude you can die swiftly at my hands and become part of my undead army. MUhahahahaha! Minions, Dispose of these Adventurers!",
+        "General Razha:* Ha, Looks like your tougher then I thought.",
+        "General Razha:* and here I thought I wasn't going to enjoy this.",
+        "General Razha:* More of them are coming!",
+        "General Razha:* Minions! Kill them already!",
+        "General Razha:* *facepalm* I knew I should have hired better help.",
+        "General Razha:* Well at least you will make a good addition to my army.",
+        "General Razha:* To the Abyss with you already!",
+        "General Razha:* How about you try a different approach and kill them already!",
+        "General Razha:* Minions! Last chance or it's back to being part of an ossuary for you!",
+        "General Razha:* Looks like if you want something done right you have to do it yourself.",
+        "General Razha:* Charge!.";
+    end;
+}

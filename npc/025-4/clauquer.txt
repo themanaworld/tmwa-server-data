@@ -1,0 +1,114 @@
+
+025-4,30,30,0	script	Clauquer	169,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED) goto L_Rescued;
+    if (Rossy_Quest == 15) goto L_Hmmm;
+    if (Rossy_Quest == 14) goto L_Help;
+    if (Rossy_Quest <= 13) goto L_Huh;
+    goto L_Help;
+
+L_Help:
+    mes "[Clauquer]";
+    mes "\"Hello stranger, are you lost?\"";
+    next;
+    mes "\"Don't answer, I know you are looking for someone... A little girl, is that right?\"";
+    next;
+    menu
+        "I must admit you're right, but how come you...", L_LittleGirl,
+        "I'm not lost and I don't need help, bye.", L_No;
+
+L_LittleGirl:
+    mes "[Clauquer]";
+    mes "\"How do I know you're looking for her? Well, because I am a very good observer. I know you were helping her family. Besides, I saw the little girl. I also heard her. She screamed, and probably still screams like hell. Moreover, I don't think you would enter these caves just for fun!\"";
+    next;
+    menu
+        "Of course not.", L_Next;
+
+L_Next:
+    mes "[Clauquer]";
+    mes "\"I can see that you really want to save the little girl. She is trapped in a place inside one of these caves, protected by a magic barrier created by a fey spirit. To save her, you have to annulate the energy sources of this barrier. They are located in 10 different spots, each one in a different cave.\"";
+    next;
+    menu
+        "But how can I annulate this barrier?", L_ButBarrier;
+
+L_ButBarrier:
+    mes "\"It is simple, you just have to place a root on the exact center of the energy source. Once you do this, its entire power will transmute into some terrible earth monsters. If you defeat them, this source of energy will be close to nothing and the barrier will be weaker.\"";
+    next;
+    mes "\"If my observations are correct, the girl is trapped in a cave protected by a barrier fed by 9 different power sources. And inside this cave, there is another barrier, fed by a single, but very strong, power source. The girl is inside that cave, protected by that strong barrier.\"";
+    next;
+    mes "\"Be prepared before you enter one of those caves, because once you put the root in the power source, you won't be able to get out. Also, remember that you can't stay in those caves for a long time, because of the foul air.\"";
+    next;
+    mes "\"Now I should tell you more about how that little girl got into that cave and warn you about what you are going to face there...\"";
+    next;
+    menu
+        "Please go on.", L_Advice;
+
+L_Advice:
+    mes "[Clauquer]";
+    mes "\"I advise you to be mentally prepared for this rescue operation. A fey nature spirit kidnapped the little girl and is planning to replace her with a changeling.\"";
+    next;
+    mes "\"The old tales of Hurnscald say this spirit always exchanges his offspring with beautiful and smart human children, to use them as servants. And his offspring usually forget about their own origin, growing up in a human family. But they are usually 'people' with really bad tempers, the kind of people who do terrible things in this world...\"";
+    next;
+    mes "However, the girl you are looking for is mentally too strong, and the spirit is having problems creating a changeling identical to her. So it locked her in one of those terrible caves, trying to scare the poor girl and make his task easier.\"";
+    next;
+    mes "\"Oh, and if you really plan to rescue the girl, I advise you to use potions for every single battle. I'm thinking of Concentration and Iron Potions. You might want to take some food with you too. I would personally take some water, I'm always thirsty. Don't be afraid to bring too much with you, these battles take time to end.\"";
+    next;
+    mes "\"I think you're now ready to explore these caves and fight.\"";
+    if (Rossy_Quest == 14) set Rossy_Quest, 15;
+    close;
+
+L_Hmmm:
+    @cleaned_caves = 0;
+    if (cavefights & BATTLE_CAVE1)
+        @cleaned_caves = @cleaned_caves + 1;
+    if (cavefights & BATTLE_CAVE2)
+        @cleaned_caves = @cleaned_caves + 1;
+    if (cavefights & BATTLE_CAVE3)
+        @cleaned_caves = @cleaned_caves + 1;
+    if (cavefights & BATTLE_CAVE4)
+        @cleaned_caves = @cleaned_caves + 1;
+    if (cavefights & BATTLE_CAVE5)
+        @cleaned_caves = @cleaned_caves + 1;
+    if (cavefights & BATTLE_CAVE6)
+        @cleaned_caves = @cleaned_caves + 1;
+    if (cavefights & BATTLE_CAVE7)
+        @cleaned_caves = @cleaned_caves + 1;
+    if (cavefights & BATTLE_CAVE8)
+        @cleaned_caves = @cleaned_caves + 1;
+    if (cavefights & BATTLE_CAVE9)
+        @cleaned_caves = @cleaned_caves + 1;
+    mes "[Clauquer]";
+    mes "\"You already know everything about these caves. You don't need me anymore to find the little girl.\"";
+    next;
+    menu
+        "But please, I really need your help!", L_NeedYourHelp,
+        "Oh, so many caves! Do you know how many are still left?", L_Feedback,
+        "You're right, I don't need your help!", L_No;
+
+L_NeedYourHelp:
+    mes "\"Ok, if you insist... But I can only repeat what I already said.\"";
+    goto L_Advice;
+
+L_Feedback:
+    if (@cleaned_caves > 0
+        && @cleaned_caves < 9)
+            mes "\"You are doing good... If I am right, you already eliminated " + @cleaned_caves + " of the 9 energy sources of the barrier that protects the cave in which Julia is hidden.\"";
+    if (@cleaned_caves == 9)
+        mes "\"I am amazed... You eliminated all the 9 energy sources. Now is the difficult part. To save Julia, you need to eliminate the last and most powerful barrier. Good Luck!\"";
+    if (@cleaned_caves <= 0)
+        mes "\"Well... You didn't eliminate any of the barriers, so that means there are still 9 caves and the tenth one, the strongest...\"";
+    close;
+
+L_Huh:
+    mes "[Clauquer]";
+    mes "\"Why are you here? Get out.\"";
+    close;
+
+L_No:
+    close;
+
+L_Rescued:
+    mes "[Clauquer]";
+    mes "\"I'm very impressed!";
+    mes "Now this fey nature spirit will never kidnap a poor child again.\"";
+    close;
+}

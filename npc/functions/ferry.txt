@@ -1,0 +1,155 @@
+
+017-9,27,28,0	script	#FerryConfig	-1,{
+    end;
+
+OnInit:
+    disablenpc "Hurnscald South Koga";
+    disablenpc "Candor Koga";
+    disablenpc "Nivalis Koga";
+    disablenpc "Hurnscald North Koga";
+    disablenpc "Tulimshar Koga";
+    $@MainCurrentDock = 0;
+    $@CandorCurrentDock = 0;
+    $@DockTickCount = 0;
+    $@DockLeaveCount = 1;
+    setarray $@MainDocks$, "Hurnscald North", "Nivalis", "Tulimshar";
+    setarray $@CandorDocks$, "Candor", "Hurnscald South";
+    donpcevent "#"+$@MainDocks$[$@MainCurrentDock]+"Dock::OnCommandArrive";
+    donpcevent "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock::OnCommandArrive";
+    if (debug >= 2) end;
+    initnpctimer;
+    end;
+
+L_NextDock:
+    $@MainLastDock = $@MainCurrentDock;
+    $@CandorLastDock = $@CandorCurrentDock;
+    $@MainCurrentDock = $@MainCurrentDock + 1;
+    $@CandorCurrentDock = $@CandorCurrentDock + 1;
+    if($@MainCurrentDock == getarraysize($@MainDocks$))
+        $@MainCurrentDock = 0;
+    if($@CandorCurrentDock == getarraysize($@CandorDocks$))
+        $@CandorCurrentDock = 0;
+    $@DockTickCount = 0;
+    donpcevent "#"+$@MainDocks$[$@MainLastDock]+"Dock::OnCommandWarp";
+    donpcevent "#"+$@MainDocks$[$@MainCurrentDock]+"Dock::OnCommandArrive";
+    donpcevent "#"+$@CandorDocks$[$@CandorLastDock]+"Dock::OnCommandWarp";
+    donpcevent "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock::OnCommandArrive";
+
+    donpcevent "#k1sound::OnCommandDing";
+    donpcevent "#k2sound::OnCommandDing";
+
+    //mapannounce "035-2", " Koga - Main:* Now arriving in "+$@MainDocks$[$@MainCurrentDock]+".", 0;
+    //mapannounce "036-2", " Koga - Candor:* Now arriving in "+$@CandorDocks$[$@CandorCurrentDock]+".", 0;
+    initnpctimer;
+
+    if($@MainCurrentDock == 2) goto L_k1city1;
+    if($@MainCurrentDock == 0) goto L_k1city2;
+    if($@MainCurrentDock == 1) goto L_k1city3;
+    end;
+
+OnTimer8000:
+    if ($@DockTickCount > $@DockLeaveCount)
+        goto L_NextDock;
+    //mapannounce "035-2", "Koga - Main:* Now docked in "+$@MainDocks$[$@MainCurrentDock]+", Departing soon", 0;
+    //mapannounce "036-2", "Koga - Candor:* Now docked in "+$@CandorDocks$[$@CandorCurrentDock]+", Departing soon", 0;
+    $@DockTickCount = $@DockTickCount + 1;
+    initnpctimer;
+    end;
+
+
+L_k1city1:
+  enablenpc "#k1city1e"; disablenpc "#k1city2e"; disablenpc "#k1city3e";
+  disablenpc "#k1city1d"; enablenpc "#k1city2d"; enablenpc "#k1city3d";
+  if($@CandorCurrentDock == 1) goto L_k2city1;
+  if($@CandorCurrentDock == 0) goto L_k2city2;
+end;
+
+L_k1city2:
+  disablenpc "#k1city1e"; enablenpc "#k1city2e"; disablenpc "#k1city3e";
+  enablenpc "#k1city1d"; disablenpc "#k1city2d"; enablenpc "#k1city3d";
+  if($@CandorCurrentDock == 1) goto L_k2city1;
+  if($@CandorCurrentDock == 0) goto L_k2city2;
+end;
+
+L_k1city3:
+  disablenpc "#k1city1e"; disablenpc "#k1city2e"; enablenpc "#k1city3e";
+  enablenpc "#k1city1d"; enablenpc "#k1city2d"; disablenpc "#k1city3d";
+  if($@CandorCurrentDock == 1) goto L_k2city1;
+  if($@CandorCurrentDock == 0) goto L_k2city2;
+end;
+
+L_k2city1:
+  enablenpc "#k2city1e"; disablenpc "#k2city2e";
+  disablenpc "#k2city1d"; enablenpc "#k2city2d";
+end;
+
+L_k2city2:
+  disablenpc "#k2city1e"; enablenpc "#k2city2e";
+  enablenpc "#k2city1d"; disablenpc "#k2city2d";
+end;
+}
+
+function	script	FerryHelp	{
+    mes "\"You wait on the dock for the ship to come in. You'll be given a chance to board the boat when it comes into port.\"";
+    mes "\"It lingers in port to allow you some time to board in case you are running behind.\"";
+    mes "\"Once on the ship, it will sail to different ports and annouce where it is docking.\"";
+    mes "\"There are 2 Ferrys, both ferrys are free to ride.\"";
+    mes "\"The Main ferry travels from Argeas, Kaizei and Tonori. It docks in the major ports Hurnscald North, Nivalis and the Tulimshar Dock.\"";
+    mes "\"The Candor Ferry only travels betwen Candor and the Hurnscald South Dock.\"";
+    mes "\"Refreshments and supplies are offered aboard both ships during the voyage.\"";
+    mes "\"We also have some slot machines in case you get bored.\"";
+    return;
+}
+function	script	FerryManifest	{
+    mes "Which Ferry do you want to check the schedule for?";
+    menu
+        "World Ferry.", L_WorldFerry,
+        "Candor Ferry.", L_CandorFerry;
+
+L_CandorFerry:
+    mes "The ferry is currently at "+$@CandorDocks$[$@CandorCurrentDock];
+    @NextDock = ($@CandorCurrentDock + 1);
+    if(@NextDock == getarraysize($@CandorDocks$))
+        @NextDock = 0;
+    mes "The ferry will be arriving at "+$@CandorDocks$[@NextDock]+" next";
+    goto L_Close;
+
+L_WorldFerry:
+    mes "The ferry is currently at "+$@MainDocks$[$@MainCurrentDock];
+    @NextDock = ($@MainCurrentDock + 1);
+    if(@NextDock == getarraysize($@MainDocks$))
+        @NextDock = 0;
+    mes "The ferry will be arriving at "+$@MainDocks$[@NextDock]+" next";
+    goto L_Close;
+
+L_Close:
+    close;
+}
+
+function	script	BoardFerry	{
+    mes "Board the ferry?";
+    menu
+        "Yes.", L_Board,
+        "No.", L_Return;
+
+L_Board:
+    warp "035-2",39,29;
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function	script	BoardCandorFerry	{
+    mes "Board the ferry?";
+    menu
+        "Yes.", L_Board,
+        "No.", L_Return;
+
+L_Board:
+    warp "036-2",39,29;
+    goto L_Return;
+
+L_Return:
+    return;
+}

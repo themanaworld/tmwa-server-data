@@ -1,0 +1,132 @@
+
+051-1,142,39,0	script	Bones	367,{
+    mes "You find a ruined paper next to these bones.";
+    mes "It says...";
+    next;
+    mes "\"This waterfall is cursed... it feeds on living souls... I could not get past throught it.\"";
+    mes "\"God, they appeared from nowhere...\"";
+    mes "\"...\"";
+    next;
+    mes "The rest isn't legible.";
+    close;
+
+}
+
+051-1,170,24,0	script	Cursed Waterfall	400,{
+    $@illia_num_sealed_souls = 7;
+    @step = 3;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if ($@illia_level_3_progress == 0 && strcharinfo(0) == $@ILLIA_HERO$) goto L_GiveTask;
+    if ($@illia_level_3_progress == 0 && strcharinfo(0) != $@ILLIA_HERO$) goto L_HintToHelpers;
+    if ($@illia_level_3_progress == 1) goto L_GiveSouls;
+    mes "Jump in the waterfall?";
+    menu
+        "Yes", L_Warp,
+        "No", L_Close;
+
+OnTimer1000:
+    npctalk "Youuuuuuu... Bring me souls... " + $@illia_num_sealed_souls + " fresh souls... Nooooow. And you shall paaass.";
+    end;
+
+OnTimer4750:
+    mapannounce "051-1", "You hear a loud scream coming from the wind... Something terrifying raised out there.", 0;
+    end;
+
+OnTimer6500:
+    npctalk "Nooooo... Do not let these things take them from youuuuuu!";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+
+L_HintToHelpers:
+    mes "[Cursed Waterfall]";
+    mes "\"Who are you?... Bring " + $@ILLIA_HERO$ + " to me!\"";
+    close;
+
+L_GiveTask:
+    $@illia_level_3_progress = 1;
+    mes "[Cursed Waterfall]";
+    mes "\"Yooouuuuuu...\"";
+    next;
+
+    mes "You look around and see this ghostly voice comes from the waterfall.";
+    next;
+
+    // This message will be in the timed messages,
+    // but display it here anyway to be sure the hero sees it.
+    mes "\"Youuuuuuu... Bring me souls... " + $@illia_num_sealed_souls + " fresh souls... Nooooow.\"";
+    mes "\"And you shall paaass.\"";
+
+    // Reset the soul eaters counters.
+    $@SoulEaters0_count = 0;
+    $@SoulEaters1_count = 0;
+    $@SoulEaters2_count = 0;
+    $@SoulEaters3_count = 0;
+    $@SoulEaters4_count = 0;
+    // Spawn 7 additional soul snakes in the north building, as a bait.
+    areamonster "051-1", 125, 14, 143, 18, "", 1096, 7, "IlliaDMobs051-1::On1096";
+    // Same with 5, in the island
+    areamonster "051-1", 138, 34, 145, 41, "", 1096, 5, "IlliaDMobs051-1::On1096";
+    // Start timed messages
+    initnpctimer;
+    goto L_Close;
+
+L_GiveSouls:
+    if (strcharinfo(0) != $@ILLIA_HERO$)
+        goto L_GiveSoulsToHero;
+    mes "[Cursed Waterfall]";
+    mes "\"Give me the souuuuuuls... Noooooooow!!\"";
+    menu
+        "Please, have a look at these.", L_CheckSouls,
+        "Sorry, I don't have any.", L_Close;
+
+L_GiveSoulsToHero:
+    mes "[Cursed Waterfall]";
+    mes "\"Who are you?.... I want the souuuuuuls from " + $@ILLIA_HERO$ + "!\"";
+    goto L_Close;
+
+L_CheckSouls:
+    if (countitem ("SealedSoul") < $@illia_num_sealed_souls)
+        goto L_NotEnough;
+    delitem "SealedSoul", $@illia_num_sealed_souls;
+    $@illia_level_3_progress = 2;
+    $@illia_progress = 4;
+    callfunc "UpdateIlliaProgress";
+    $@illia_max_time = $@illia_max_time + 540;
+
+    // Clean all spawned monsters
+    killmonster "051-1", "IlliaDMobs051-1::On1096";
+    killmonster "051-1", "#SoulEaters0::OnSoulEaterDeath";
+    killmonster "051-1", "#SoulEaters1::OnSoulEaterDeath";
+    killmonster "051-1", "#SoulEaters2::OnSoulEaterDeath";
+    killmonster "051-1", "#SoulEaters3::OnSoulEaterDeath";
+    killmonster "051-1", "#SoulEaters4::OnSoulEaterDeath";
+
+
+    mes "\"Goooood... Tasty souuuuuls...\"";
+    mes "You shall pass now... before I change my mind...\"";
+    next;
+    mes "A blinding light appears from inside the waterfall.";
+
+    // Display an effect to show the waterfall opens itself / kills remaining monsters
+    misceffect FX_MEDIUM_BLINDINGLIGHT;
+    goto L_Close;
+
+L_NotEnough:
+    mes "[Cursed Waterfall]";
+    mes "\"Moooooooooore... Give me more...\"";
+    goto L_Close;
+
+L_Warp:
+    warp "052-1", 23, 52;
+    // Count the player who reached the island.
+    $@illia_players_in_luvia_territory = $@illia_players_in_luvia_territory + 1;
+    goto L_Close;
+
+L_Close:
+    close;
+}

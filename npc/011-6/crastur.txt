@@ -1,0 +1,220 @@
+011-6,172,250,0	script	Crastur the Ugly	418,{
+    @spants_state = ((QUEST_WG_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    @inspector = ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+    if (@spants_state < 3) goto L_Regular;
+    if (@spants_state == 3) goto L_Ask;
+    if (@spants_state == 4 || @spants_state == 5 || @spants_state == 6) goto L_Ask_Again;
+    goto L_Main;
+
+
+L_Ask:
+    mes "[Crastur]";
+    mes "";
+    mes "\"Well, well, well\"";
+    next;
+    mes "[Crastur]";
+    mes "";
+    mes "\"Just look who arrived here\"";
+    emotion EMOTE_EVIL;
+    next;
+    mes "[Crastur]";
+    mes "";
+    mes "\"If this isn't the person that cleared my way to success\"";
+    menu
+        "\"Who? Me?\"", L_Unsure,
+        "\"Yes I killed the Bandit Lord, but not to make room for more scumbags\"", L_Insult,
+        "\"I heard you know a lot\"", L_Ask_Cont,
+        "\"Ugh, no. I have to leave now. Bye.\"", L_Close;
+
+L_Ask_Again:
+    mes "[Crastur]";
+    mes "";
+    mes "\"Hello again\"";
+    mes "\"Did you do your part of the deal yet?\"";
+    menu
+        "\"No, I wanted to know if you can tell me anything about me\"", L_Personal,
+        "\"Probably not, what was that again?\"", L_Pirate_Proof,
+        "\"Yes, check this Bandana I brought.\"", L_Bandana,
+        "\"No Idea, Bye.\"", L_Close;
+
+L_Ask_Cont:
+    mes "[Crastur]";
+    mes "";
+    mes "\"Yes I do, for a price.\"";
+    menu
+        "Explain Hetchels story", L_Jibber,
+        "Interesting", L_Main;
+
+L_Jibber:
+    mes "You begin to tell Crastur about Hetchel and her Problems";
+    next;
+    mes "Crastur interrupts you";
+    mes "[Crastur]";
+    mes "";
+    mes "\"I do not care about petty problems, get to the point!\"";
+    @spants_state = 4;
+    callsub S_Update_Spants;
+    menu
+        "\"Hetchel needs the Plans for Cotton Trousers Stolen from Lora Tay\"", L_Jibber_Cont,
+        "\"Don't talk to me like that\" (Leave)", L_Close;
+
+L_Jibber_Cont:
+    mes "[Crastur]";
+    mes "";
+    mes "\"this can be done quickly\"";
+    next;
+    mes "Crastur pauses and checks his papers";
+    mes "\"...\"";
+    next;
+    mes "[Crastur]";
+    mes "";
+    mes "\"The issue here is\"";
+    mes "\"you have literally nothing that is of any value to me\"";
+    next;
+    mes "[Crastur]";
+    mes "";
+    mes "\"Although... Since you claim to be a hero and everything...\"";
+    mes "\"I do have a problem with those pirates in Tulimshar. They are ruining my Business\"";
+    next;
+    mes "[Crastur]";
+    mes "";
+    mes "\"Bring me proof that you killed all of the pirates!\"";
+    next;
+    menu
+        "\"I have it right here\"", L_Bandana,
+        "\"What kind of proof?\"", L_Pirate_Proof;
+
+
+L_Pirate_Proof:
+    mes "[Crastur]";
+    mes "";
+    mes "\"It is for sure the Pirates give their souls for the rescue of their booty.\"";
+    mes "\"Bring me something unique from their treasure and I will give you those plans in return.\"";
+    @spants_state = 5;
+    callsub S_Update_Spants;
+    menu
+        "\"I have it with me.\"", L_Bandana,
+        "\"I will try my best.\"", L_Close;
+
+L_Bandana:
+    getinventorylist;
+    if (countitemcolor("Bandana") < 1) goto L_No_Item;
+    if (@spants_state != 6) goto L_Wrong_Item;
+    mes "Crasturs gazes at the bandana in your hand. He scratches his right arm, then he nods";
+    mes "[Crastur]";
+    mes "";
+    mes "\"I am a man of honour, I always pay my debt\"";
+    next;
+    mes "[Crastur]";
+    mes "";
+    mes "\"Here, I couldnt get the original Sheet but this copy should do well enough\"";
+    next;
+    mes "\"Crastur hands you a page ripped out of his Almanach that has dotted lines in green and red Ink all over it";
+    next;
+    mes "You put the plans into a hidden pocket";
+    @spants_state = 7;
+    callsub S_Update_Spants;
+    goto L_Close;
+
+L_No_Item:
+    mes "[Crastur]";
+    mes "";
+    mes "\"What Bandana are we talking about? - Next time you come to me, bring your stuff.\"";
+    goto L_Close;
+
+L_Wrong_Item:
+    mes "Crastur takes a look at the bandana.";
+    next;
+     mes "[Crastur]";
+    mes "THIS IS NOT FROM THE PIRATES FROM TULIMSHAR, it is a cheap scam.";
+    emotion EMOTE_PERTURBED;
+    mes "As far as you can tell through his mask he seems very mad";
+    goto L_Insult;
+
+L_Regular:
+    mes "[Crastur]";
+    mes "";
+    mes "\"Well, well, well\"";
+    next;
+    mes "[Crastur]";
+    mes "";
+    mes "\"Just look who arrived here\"";
+    next;
+    mes "[Crastur]";
+    mes "";
+    mes "\"If this isn't the person that cleared my way to success\"";
+    menu
+        "\"Who? Me?\"", L_Unsure,
+        "\"Yes I killed the Bandit Lord, but not to make room for more scumbags\"", L_Insult,
+        "\"Ugh, no. I have to leave now. Bye.\"", L_Close;
+
+L_Insult:
+    mes "Die " + strcharinfo(0) + "!";
+    heal -10000, 0;
+    emotion EMOTE_VICIOUS;
+    mes "[Crastur]";
+    mes "";
+    mes "\"Oh I am so sorry, my Dagger must have slipped\"";
+    goto L_Close;
+
+L_Unsure:
+    mes "[Crastur]";
+    mes "";
+    mes "\"Yes I hid in a corner while you killed my former master\"";
+    mes "\"When he left I claimed command over Argaeses Rats, Caves and Dungeons.\"";
+    mes "\"Do not underestimate me, I do know a lot more than you might guess\"";
+    goto L_Main;
+
+L_Main:
+    if((@inspector >= 1  && @inspector <= 7) || @inspector == 9) goto L_Main_Inspector;
+    menu
+        "\"What things do you know about me?\"", L_Personal,
+        "\"Bye\"", L_Close;
+
+L_Main_Inspector:
+    menu
+        "\"What things do you know about me?\"", L_Personal,
+        "\"Do you know anything about the Robberies in Hurnscald?\"", L_Hurnscald,
+        "\"Bye\"", L_Close;
+
+L_Personal:
+    mes "";
+    mes "Crastur digs in a pile of old paper";
+    next;
+    mes "[Crastur]";
+    mes "";
+    mes "\"Ah. Here it is:\"";
+    mes "\"Today you have accomplished tasks that are worth " + DailyQuestPoints + " Hours in the Northern Mines\"";
+    next;
+    if (BOSS_POINTS < 1000) goto L_Worm;
+    emotion EMOTE_DEAD;
+    mes "[Crastur]";
+    mes "";
+    mes "\"Also you seem to be quite a hero, it appears you have a record in the Almanach\"";
+    mes "Crastur turns a giant book upside down";
+    mes "\"According to this you have gained " + BOSS_POINTS / 1000 + "thousand Points in the eternal charts already.\"";
+    mes "Crastur shudders";
+    goto L_Close;
+
+L_Worm:
+    emotion EMOTE_SUSPICIOUS;
+    mes "[Crastur]";
+    mes "\"Other than that you have not done anything notable for the mana world.\"";
+    goto L_Close;
+
+L_Hurnscald:
+    emotion EMOTE_FACEPALM;
+    mes "Crastur makes a barking sound that probably was meant as a laugh.";
+    mes "[Crastur]";
+    mes "";
+    mes "\"I am sorry but it is not in my best interest to talk about my business with you.\"";
+    goto L_Close;
+
+S_Update_Spants:
+    QUEST_WG_state = (QUEST_WG_state & ~(NIBBLE_2_MASK) | (@spants_state << NIBBLE_2_SHIFT));
+    return;
+
+L_Close:
+    @spants_state = 0;
+    close;
+}

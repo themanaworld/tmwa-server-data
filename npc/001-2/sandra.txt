@@ -1,0 +1,116 @@
+
+001-2,98,88,0	script	Sandra	114,{
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    @state = ((QUEST_SouthTulimshar & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    if (@state >= 2) goto L_Done;
+    if (@state == 1) goto L_Progress;
+
+    mes "[Sandra]";
+    mes "\"Hunting monsters for potion ingredients can sometimes be a difficult task.\"";
+    next;
+
+    @temp = rand(4);
+    if(@temp == 1) goto L_Opening1;
+    if(@temp == 2) goto L_Opening2;
+    if(@temp == 3) goto L_Opening3;
+    goto L_Opening0;
+
+L_Opening0:
+    mes "\"In the outskirts of Tulimshar, there are some scorpions... I need  help!  Will you help?\"";
+    next;
+    goto L_Ask;
+
+L_Opening1:
+    mes "\"When you venture to the outskirts of Tulimshar, you can spot scorpions. Will you help me kill some?\"";
+    next;
+    goto L_Ask;
+
+L_Opening2:
+    mes "\"The Scorpion Stinger carries many properties used in potions. Would you get some for me?\"";
+    next;
+    goto L_Ask;
+
+L_Opening3:
+    mes "\"You look sturdy enough, will you help me get something?\"";
+    next;
+    goto L_Ask;
+
+L_Ask:
+    menu
+        "Yes.", L_Yes,
+        "No.", L_Close;
+
+L_Yes:
+    @temp = rand(3);
+    if(@temp == 1) goto L_Req1;
+    if(@temp == 2) goto L_Req2;
+    goto L_Req0;
+
+L_Req0:
+    mes "[Sandra]";
+    mes "\"I need 5 Scorpion Stingers.\"";
+    next;
+    goto L_Set;
+
+L_Req1:
+    mes "[Sandra]";
+    mes "\"I heard a while ago that stingers from scorpions can be used for medical purposes. I need you to help me get 5 Scorpion Stingers.\"";
+    next;
+    goto L_Set;
+
+L_Req2:
+    mes "[Sandra]";
+    mes "\"Bring me 5 Scorpion Stingers. I'll give you something if you do!\"";
+    next;
+    goto L_Set;
+
+L_Set:
+    @state = 1;
+    callsub S_Update_Var;
+    mes "\"Please get them for me!\"";
+    goto L_Close;
+
+L_Progress:
+    if (countitemcolor("ScorpionStinger") < 5)
+        goto L_NotEnough;
+    mes "[Sandra]";
+    mes "\"Excellent! You brought me 5 Scorpion Stingers!";
+    mes "Here's something for you.\"";
+    getinventorylist;
+    if (@inventorylist_count + (countitemcolor("ScorpionStinger") == 5) - (countitemcolor("Arrow") == 0) > 99)
+        goto L_TooMany;
+    delitem "ScorpionStinger", 5;
+    getitem "Bow", 1;
+    getitem "Arrow", 100;
+    @state = 2;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_NotEnough:
+    mes "[Sandra]";
+    mes "\"Please hurry and bring me 5 Scorpion Stingers.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Sandra]";
+    mes "\"Thank you for all your help!\"";
+    goto L_Close;
+
+L_Close:
+    @temp = 0;
+    @state = 0;
+    close;
+
+L_TooMany:
+    next;
+    mes "[Sandra]";
+    mes "\"You don't have room for my reward. I'll wait until you do.\"";
+    goto L_Close;
+
+S_Update_Var:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_3_MASK) | (@state << NIBBLE_3_SHIFT));
+    return;
+}

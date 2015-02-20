@@ -1,0 +1,94 @@
+
+048-2,97,78,0	script	Santeri	366,{
+    @investigate = ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    @claw_amount = 8;
+    @claw_exp = 10000;
+
+    if (QUEST_BlueSage & $@Q_BlueSageMaterialClaw) goto L_Done;
+    if (BaseLevel >= $@Q_BlueSageMinimumLevel) goto L_Quest;
+
+    mes "[Santeri]";
+    mes "\"Hm. Please don't disturb me, I'm trying to concentrate.\"";
+    goto L_Close;
+
+L_Quest:
+    mes "[Santeri]";
+    mes "\"Welcome. Are you an adventurer? I could use some help.\"";
+    menu
+        "I am. What heroic action is needed?",L_HeroicAction,
+        "How can I help?",L_HeroicAction,
+        "I'm not interested.",L_Close;
+
+L_HeroicAction:
+    mes "[Santeri]";
+    mes "\"You see, we're working on repairing all of the damaged books and creating new ones for those that were lost.";
+    mes "Therefore we need a lot of glue, but our supplies are nearly used up. I need " + @claw_amount + " Yeti Claws as ingredient to make new glue. Do you have that?\"";
+    menu
+        "Yes, here you go.",L_TurnIn,
+        "I need to look in my storage.",L_Close,
+        "No, sorry.",L_Investigate;
+
+L_TurnIn:
+    if(countitemcolor("YetiClaw") < @claw_amount)
+        goto L_NoItem;
+    delitem "YetiClaw", @claw_amount;
+    getexp @claw_exp, 0;
+    QUEST_BlueSage = (QUEST_BlueSage | $@Q_BlueSageMaterialClaw);
+    mes "[Santeri]";
+    mes "\"Great! Thank you!\"";
+    goto L_Investigate;
+
+L_Done:
+    mes "[Santeri]";
+    mes "\"Thanks to you, our glue supply is replenished and we can repair those books.\"";
+    goto L_Investigate;
+
+L_NoItem:
+    mes "[Santeri]";
+    mes "\"What are you telling me? You don't have it!\"";
+    goto L_Close;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "I need to leave.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "See you later.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Visitor:
+    mes "[Santeri]";
+    mes "\"There was a visitor with a mask? I didn't notice. You see, I spend most of my time in the workshop, and concentrate on my work. There are other helpers who attend to the visitors. And hopefully keep them from disturbing my concentration.\"";
+    goto L_Close;
+
+L_Helper:
+    mes "[Santeri]";
+    mes "\"Oh, that's an interesting question. I was really surprised when I heard that he was responsible for the sealing spell. I've worked together with him before, and I have to say, it really was a pleasure. He's very accurate and diligent, but also polite and helpful.\"";
+    next;
+    mes "\"I really wonder what went wrong with that sealing spell. I can't imagine Peetu messing up something so important.\"";
+    if ((@investigate != 5) && (@investigate != 6) && (@investigate != 7))
+        goto L_Close;
+    @investigate = @investigate + 3;
+    callfunc "updateBlueSageInvestigate";
+    goto L_Close;
+
+L_Close:
+    @investigate = 0;
+    @claw_amount = 0;
+    @claw_exp = 0;
+    close;
+}

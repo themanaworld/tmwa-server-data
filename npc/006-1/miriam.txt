@@ -1,0 +1,320 @@
+
+006-1,115,111,0	script	Miriam	175,{
+    setarray @npc_loc, 115, 111, 2;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
+
+    if (getskilllv(SKILL_SPEED)) goto L_fast;
+    if (getequipid(equip_torso) < 0) goto L_Naked;
+    if (QUEST_MIRIAM == 0) goto L_Intro;
+    if (QUEST_MIRIAM == 1) goto L_ask1;
+    if (QUEST_MIRIAM == 2) goto L_ask2;
+    if (QUEST_MIRIAM == 3) goto L_Teach;
+    if (QUEST_MIRIAM == 4) goto L_testoffer;
+    if (QUEST_MIRIAM_run != 0) goto L_checktime;
+    if (QUEST_MIRIAM_start != 0) goto L_wasting;
+    if (QUEST_MIRIAM == 5) goto L_testoffer;
+    goto L_Intro;
+
+L_Intro:
+    mes "You see a woman sitting in the hot sand with eyes wide open... But she does not seem to be looking at something in particular...";
+    next;
+    menu
+        "Ehr... Hi, my name is " +strcharinfo(0)+ ". Are you OK?",L_Next;
+
+L_Next:
+    mes "[Miriam]";
+    mes "\"...";
+    next;
+    menu
+        "Hello?",L_Continue;
+
+L_Continue:
+    mes "[Miriam]";
+    mes "\"Yes, I am. Why? Do you think I am not OK? I am OK. You interrupted my meditation. Now I will need hours to calm down and stay quiet! Yes, yes, I know, I'm a fast talker!\"";
+    next;
+    mes "\"In fact, I am fast in everything I do! I can kill a Mountain Snake before it even starts to think about attacking me! Yes my friend, in a battle, speed is power!";
+    next;
+    menu
+        "Wow! Very impressi...",L_More;
+
+L_More:
+    mes "[Miriam]";
+    mes "\"Yes, yes, I know. But if there is one thing I am NOT good at, it is meditation! My master said I need to meditate, but... Ohh! So difficult to stay quiet! And when you FINALLY do, someone INTERRUPTS you, asking if you are 'OK'...\"";
+    next;
+    menu
+        "Oh, I am sorry! I didn't know you were meditating...",L_WallText;
+
+L_WallText:
+    mes "[Miriam]";
+    mes "\"You are really sorry? Ok, but that is not enough... I need you to do something for me. As you can imagine, I will need a lot of time to concentrate and get back to the state I was when you interrupted me.\"";
+    next;
+    mes "\"But the problem is that I wasn't expecting to be here for so long, so I will need some food and something to drink.\"";
+    next;
+    mes "\"So, if you really want to prove that you are sorry, bring me 5 Concentration Potions and 10 Snake Tongues.\"";
+    next;
+    menu
+        "Ok, but those potions will not help with your mental concent...",L_MoreTalking,
+        "Sorry, but I can't help you right now.",L_canthelp;
+
+L_MoreTalking:
+    mes "[Miriam]";
+    mes "\"ah, ah, ah... I know what I am doing! Now run and get what I asked.\"";
+    QUEST_MIRIAM = 2;
+    close;
+
+L_canthelp:
+    mes "[Miriam]";
+    mes "\"Oh, really? So you better pray to not need my help in the future!\"";
+    QUEST_MIRIAM = 1;
+    close;
+
+L_canthelp2:
+    mes "[Miriam]";
+    mes "\"...\"";
+    next;
+    mes "\"...\"";
+    next;
+    mes "\"Well, if you don't have time to help, at least don't make things difficult for me!\"";
+    close;
+
+L_ask1:
+    mes "[Miriam]";
+    mes "\"So, you are back... have you changed your mind about my request?\"";
+    next;
+    menu
+        "Yes, I will get what you want!",L_WillGetItems,
+        "No, I have no time right now.",L_canthelp2;
+
+L_WillGetItems:
+    QUEST_MIRIAM = 2;
+    mes "\"Good. So, run and get it!\"";
+    close;
+
+L_ask2:
+    mes "[Miriam]";
+    mes "\"Did you get what I asked for?\"";
+    next;
+    menu
+        "Yes, here it is!",L_Getitems,
+        "What was that again?", L_ask3,
+        "No, not yet.",L_Hurry;
+
+L_Hurry:
+    mes "\"So please hurry up!\"";
+    close;
+
+L_ask3:
+    mes "[Miriam]";
+    mes "\"You have a small mind, haven't you? I am meditating here and I asked you to bring me stuff, so I can concentrate better.\"";
+    next;
+    mes "\"And stop asking such silly questions in the future.\"";
+    next;
+    mes "\"So, if you really want to help me now, bring me 5 Concentration Potions and 10 Snake Tongues.\"";
+    close;
+
+L_Getitems:
+    if (countitemcolor("SnakeTongue") < 10
+        || countitemcolor("ConcentrationPotion") < 5)
+            goto L_NotEnough;
+    delitem "SnakeTongue", 10;
+    delitem "ConcentrationPotion", 5;
+    QUEST_MIRIAM = 3;
+    mes "[Miriam]";
+    mes "\"Good job! Now I have enough food to stay in this desert for days!\"";
+    next;
+    mes "\"Now, since you helped me, maybe I can teach you a basic skill, but only if you prove yourself to be a fast runner! Come back and talk to me when you think you are prepared to learn.\"";
+    close;
+
+L_NotEnough:
+    mes "[Miriam]";
+    mes "\"Hey, you don't have all that I asked. Come back when you have everything.\"";
+    close;
+
+L_Teach:
+    mes "[Miriam]";
+    mes "\"Hmm... do you think you can learn the special Speed skill?\"";
+    next;
+    menu
+        "Yes, I am prepared...", L_Prepared,
+        "I am already fast.", L_notfast;
+
+L_Prepared:
+    @agi = readparam(bAgi);
+    @torso$ = getitemname(getequipid(equip_torso));
+    @weight = MaxWeight/Weight;
+    if (@weight < 3)
+        goto L_heavyweight;
+    if (@agi < 60)
+        goto L_slow;
+    if (BaseLevel < 60)
+        goto L_LowLevel;
+    if (countitemcolor("SteelShield") > 0
+        || countitemcolor("WarlordHelmet") > 0
+        || countitemcolor("CrusadeHelmet") > 0
+        || countitemcolor("WarlordPlate") > 0
+        || countitemcolor("KnightsHelmet") > 0
+        || countitemcolor("InfantryHelmet") > 0
+        || countitemcolor("ChainmailShirt") > 0
+        || countitemcolor("WarlordBoots") > 0
+        || countitemcolor("LightPlatemail") > 0
+        || countitemcolor("CandleHelmet") > 0)
+            goto L_heavymetal;
+    goto L_Offer;
+
+L_heavyweight:
+    mes "[Miriam]";
+    mes "\"Wow... Why do you bring so many things with you? You must be carrying more than one third of your own weight! I won't teach you unless you get rid of some stuff... \"";
+    close;
+
+L_heavymetal:
+    mes "[Miriam]";
+    mes "\"Hmm... I see... You want to be one of those lazy slow warriors... wasting all their strength carrying kilos of metal clothes... Why does no one see the great advantages of a beautiful, flexible, lightweight armor nowadays?\"";
+    next;
+    mes "\"Come back here when you get rid of this junk...\"";
+    close;
+
+L_slow:
+    mes "[Miriam]";
+    mes "Oh, wait, wait... " +@agi+ " Agility? Are you serious? What do you do with all your Character points? Put them all to 'Strength'? Really... I don't even want to know... Come back here when you have a decent character points distribution!\"";
+    close;
+
+L_LowLevel:
+    mes "[Miriam]";
+    mes "\"Come back here when you are old enough. I even wonder how you could get here so unexperienced as you are.\"";
+    close;
+
+L_Offer:
+    mes "[Miriam]";
+    mes "\"Hmm! You look great in these clothes! They look very comfortable too... And it seems like you are not carrying too much weight.\"";
+    next;
+    if (!(getskilllv(SKILL_POOL)))
+        goto L_noskill;
+    menu
+        "Yes, I look really good in this " +@torso$+ ".",L_TorsoNext;
+
+L_TorsoNext:
+    mes "[Miriam]";
+    mes "\"I see. I like the way you distributed your Character Points too... " +@agi+ " points to Agility! You really know how to prepare yourself for a good fight!\"";
+    next;
+    mes "\"Well... Even if you have a potential to be a good fighter, moving the way you do will not help. You need to be fast to avoid the monsters. \"";
+    next;
+    mes "\"So, if you pass a small test I can teach you a skill that will increase your walking speed! You will not be as fast as I am, but I am sure it will be useful.\"";
+    next;
+    menu
+        "I'm in! What kind of test is it?",L_test,
+        "I don't think I need more speed right now",L_GiveUp;
+
+L_test:
+    mes "[Miriam]";
+    mes "\"Great! The test is simple. You need to run as fast as you can from the place where I am sitting to the mountains and talk to Pachua, the chief. When you get there and talk to Pachua, he will send a special smoke signal to me, so I can know how much time it took for you to get there.\"";
+    next;
+    mes "\"If you make it in a good time, I will teach you the special speeding skill. If not, you can always try again. So, are you ready?\"";
+    next;
+    menu
+        "Yes, let's do it!",L_LetsDoThis,
+        "No, I need to stretch my muscles first!",L_stretch;
+
+L_LetsDoThis:
+    close2;
+    message strcharinfo(0), "Miriam quickly grabs your arm and pull you to the place where she is sitting.";
+    // Warp the player to the place where the NPC is defined, so he can't cheat.
+    warp "032-1",55,21;
+    npctalk "Run " +strcharinfo(0)+ ", run!";
+    QUEST_MIRIAM = 5;
+    QUEST_MIRIAM_start = gettimetick(2);
+    QUEST_MIRIAM_cheat = 0;
+    end;
+
+L_Naked:
+    mes "[Miriam]";
+    mes "\"Hmmm?! Please put on some clothes before talking to me.\"";
+    close;
+
+L_notfast:
+    mes "[Miriam]";
+    mes "\"Hah! If you think so...\"";
+    close;
+
+L_noskill:
+    mes "[Miriam]";
+    mes "\"For a person like you, I could even teach a useful skill! Too bad you don't have the basic abillities to learn it...\"";
+    close;
+
+L_GiveUp:
+    mes "[Miriam]";
+    mes "\"Oh, that is too bad... But if you change your mind, come back!\"";
+    QUEST_MIRIAM = 4;
+    close;
+
+L_testoffer:
+    mes "[Miriam]";
+    mes "\"Are you ready for the test now?\"";
+    next;
+    menu
+        "Yes!",L_test,
+        "Not yet.",L_Close;
+
+L_Close:
+    close;
+
+L_warning:
+    mes "[Miriam]";
+    mes "\"I know very well what you tried to do. I will not teach you the speed skill if you keep trying this kind of trick!\"";
+    next;
+    goto L_testoffer;
+
+L_stretch:
+    mes "[Miriam]";
+    mes "\"Ok. Good idea... Stretching exercises can increase your flexibility and even prevent injuries!\"";
+    QUEST_MIRIAM = 4;
+    close;
+
+L_wasting:
+    mes "[Miriam]";
+    mes "\"Don't waste your time talking to me! RUN and talk to Pachua!\"";
+    close;
+
+L_checktime:
+    if (QUEST_MIRIAM_cheat != 0)
+        goto L_warning;
+    if (QUEST_MIRIAM_run <= 210)
+        goto L_Goodjob;
+    goto L_tryagain;
+
+L_tryagain:
+    mes "[Miriam]";
+    mes "\"You needed " + QUEST_MIRIAM_run + " seconds to reach Pachua. It is not enough.\"";
+    QUEST_MIRIAM_run = 0;
+    close;
+
+L_Goodjob:
+    mes "[Miriam]";
+    mes "\"Great job! You needed " + QUEST_MIRIAM_run + " seconds to reach Pachua. Very impressive for a person like you.\"";
+    next;
+    mes "\"Now I need you to relax. Do NOT move. This teaching process can be painful sometimes.\"";
+    next;
+    mes "Miriam stares into your eyes and starts to scream some strange words very close to your ears.";
+    next;
+    mes "You feel dizzy and as soon as you move your head and look to the ground, Miriam pushes you hard, sending you meters away from her.";
+    close2;
+    warp "032-1",55,22;
+    // free all used player variables. This can be done, since there is a conditional on the speedskill at the beginning.
+    QUEST_MIRIAM_start = 0;
+    QUEST_MIRIAM_run = 0;
+    QUEST_MIRIAM = 0;
+    message strcharinfo(0), "[You gain 2500 experience points]";
+    message strcharinfo(0), "[You learned Speed Skill]";
+    addtoskill SKILL_SPEED, 1;
+    getexp 2500, 0;
+    set QUEST_MIRIAM_cheat, 0; // reset just in case it is still set.
+    close;
+
+L_fast:
+    mes "[Miriam]";
+    mes "\"I hope you make a good use of your new skill... Take care!\"";
+    set QUEST_MIRIAM_cheat, 0; // reset just in case it is still set.
+    close;
+
+}

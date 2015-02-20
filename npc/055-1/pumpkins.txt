@@ -1,0 +1,66 @@
+055-1,48,25,16,8	monster	Pumpkin	1063,12,10000,5000,PumpkinMob055-1::On1063
+055-1,139,29,5,7	monster	Pumpkin	1063,7,10000,5000,PumpkinMob055-1::On1063
+055-1,132,24,6,4	monster	Pumpkin	1063,4,10000,5000,PumpkinMob055-1::On1063
+
+
+055-1,0,0,0	script	PumpkinMob055-1	-1,{
+    end;
+
+On1063:
+    if (Quest_Halloween != 1 || !(gettime(6) == 11 && (gettime(5) >= 4 && gettime(5) <= 30)))
+        goto L_HeavyPoison;
+    if (@discover_poisonous_pumpkin == 0)
+        message strcharinfo(0), "Yuke, this pumpkin released some ugly poison gas!";
+    @discover_poisonous_pumpkin = 1;
+    misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
+    heal -15, 0;
+    sc_start SC_POISON, 1, 4;
+    if (rand(0,100) < 10)
+        getitem "PumpkinSeeds", 1;
+
+    if (countitemcolor("PumpkinSeeds") >= $@halloween_num_seeds)
+        goto L_EnoughSeeds;
+
+    @mobId = 1063;
+    callfunc "MobPoints";
+    end;
+
+L_EnoughSeeds:
+    message strcharinfo(0), $@halloween_num_seeds + " should be enough seeds for Oscar. And this pumpkin gas gets too bad to stand it any longer...";
+    Quest_Halloween = 2;
+    // Reset this to get the message for the "heavy" poison
+    @discover_poisonous_pumpkin = 0;
+    end;
+
+L_HeavyPoison:
+    if (@discover_poisonous_pumpkin == 0)
+        goto L_HeavyPoison0;
+    if (@discover_poisonous_pumpkin == 1)
+        goto L_HeavyPoison1;
+    if (@discover_poisonous_pumpkin > 1)
+        goto L_HeavyPoison2;
+    end;
+
+L_HeavyPoison0:
+    @discover_poisonous_pumpkin = @discover_poisonous_pumpkin + 1;
+    message strcharinfo(0), "Ouch, this pumpkin is totally poisonous! Let's get away from them!";
+    misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
+    heal -150,0;
+    sc_start SC_POISON, 1, 60;
+    end;
+
+L_HeavyPoison1:
+    @discover_poisonous_pumpkin = @discover_poisonous_pumpkin + 1;
+    message strcharinfo(0), "This is really awful! I should not touch them!";
+    misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
+    heal -350,0;
+    sc_start SC_POISON, 1, 120;
+    end;
+
+L_HeavyPoison2:
+    @discover_poisonous_pumpkin = @discover_poisonous_pumpkin + 1;
+    misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
+    percentheal -100,0;
+    end;
+
+}

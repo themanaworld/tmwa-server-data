@@ -1,0 +1,405 @@
+
+
+
+
+
+033-1,74,32,0	script	Kimarr	218,{
+    @halloween_npc_id = $@halloween_npc_kimarr;
+    callfunc "TrickOrTreat";
+    
+    if ($@Fluffy_FighterID == getcharid(3))
+        goto L_Attention;
+
+    @state = ((QUEST_Barbarians & $@Q_Barbarians_MASK) >> $@Q_Barbarians_SHIFT);
+
+    if (@state >= 3) goto L_Again;
+    if (@state == 2) goto L_Reward;
+    if (@state == 1) goto L_Ask;
+
+    mes "[Barbarian]";
+    mes "\"Greetings, little person.\"";
+    next;
+    mes "\"I am Kimarr, hunter and warrior of the Mangarr.\"";
+    next;
+    mes "\"You are very small and must be careful in these snowy mountains. It is cold, and dangerous monsters are here.\"";
+    menu
+        "Hello, my name is " + strcharinfo(0) + " and I'm not small. I'm a great warrior!",L_Next,
+        "I'm " + strcharinfo(0) + ", don't underestimate me. I'm an experienced adventurer!",L_Next,
+        "I'm the legendary " + strcharinfo(0) + ", I've fought countless battles.",L_Next;
+
+L_Next:
+    mes "Kimarr seems to be amused.";
+    mes "[Kimarr]";
+    mes "\"Really? Do you want to prove it?\"";
+    menu
+        "Sure! What shall I do?",L_Continue,
+        "No, I don't need to prove anything.",L_Close;
+
+L_Continue:
+    mes "\"Every young member of our tribe proves his or her worth by hunting monsters.\"";
+    next;
+    mes "\"The first monsters to hunt are Fluffies. Fluffies give a good meal for a young person and the fur can be used to make clothes and blankets.\"";
+    next;
+    @state = 1;
+    callsub S_Update_Mask;
+    goto L_ExplainGame;
+
+L_ExplainGame:
+    mes "[Kimarr]";
+    mes "\"In that cave there are living Fluffies. They like to eat apples.\"";
+    next;
+    mes "\"I also saw one of them getting excited about one of those sweet things you call 'cake'.\"";
+    next;
+    mes "\"Go to the cave entrance and throw food on the floor to make them come out.\"";
+    next;
+    mes "\"You should be careful, other monsters living here might like the food as well.\"";
+    next;
+    mes "\"Hunt as many Fluffies as you can until I tell you to stop.\"";
+    next;
+    mes "\"Drop more food when no Fluffies are left.\"";
+    next;
+    goto L_Ask;
+
+L_Ask:
+    mes "[Kimarr]";
+    mes "\"So, are you going to try?\"";
+    menu
+        "Yeah, let's start!",L_Game,
+        "Could you explain again?",L_ExplainGame,
+        "Can you tell me who were the most successful Fluffy hunters?",L_ShowRecord,
+        "Maybe later.",L_Close;
+
+L_AlreadyGotReward:
+    npctalk strcharinfo(0) + " killed " + $@Fluffy_Kills + " Fluffies and has once again proven to be a good hunter.";
+    message strcharinfo(0), "Kimarr: Once again you prove your worth as a hunter! You killed " + $@Fluffy_Kills + " Fluffies.";
+    callsub S_Clean;
+    goto L_Close;
+
+L_Reward1:
+    @state = ((QUEST_Barbarians & $@Q_Barbarians_MASK) >> $@Q_Barbarians_SHIFT);
+
+    if (@state >= 2)
+        goto L_AlreadyGotReward;
+
+    npctalk "Hooray! " + strcharinfo(0) + " killed " + $@Fluffy_Kills + " Fluffies and is now a worthy hunter.";
+
+    // as far as I can tell, this fails because it won't resume from the "next"
+    // when the script is executed via the "OnFluffyDeath" callback
+    // (I haven't tried via the 301st call of OnTimer1000)
+    message strcharinfo(0), "Kimarr: Hooray! You hunted " + $@Fluffy_Kills + " Fluffies. Talk to me for your reward.";
+
+    @state = 2;
+    callsub S_Update_Mask;
+    callsub S_Clean;
+    goto L_Close;
+
+L_Reward:
+    mes "[Kimarr]";
+    mes "\"That was very impressive. Now you can call yourself a hunter, " + strcharinfo(0) + ".\"";
+    next;
+
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
+    @inventorylist_count = 0;
+
+    mes "\"Take this as a symbol of your strength. You're a member of our tribe now.\"";
+    getitem "YetiSkinShirt", 1;
+    @state = 3;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Full_Inv:
+    mes "\"You can't carry the reward I want to give you.\"";
+    goto L_Close;
+
+L_Again:
+    mes "[Kimarr]";
+    mes "\"Does the hunter " + strcharinfo(0) + " want to hunt some Fluffies again?\"";
+    menu
+        "Yeah!",L_Game,
+        "Can you tell me who were the most successful Fluffy hunters?",L_ShowRecord,
+        "Not now.",L_Close;
+
+L_Game:
+    if ($@Fluffy_Hunting)
+        goto L_Someone_Else;
+    $@Fluffy_Hunting = 1;
+    $@Fluffy_Kills = 0;
+    $@Fluffy_PC_Deaths = PC_DIE_COUNTER;
+    $@Fluffy_Fighter$ = strcharinfo(0);
+    $@Fluffy_FighterID = getcharid(3);
+    $@Fluffy_Time = 180;
+    $@Fluffy_Min = 1 + (BaseLevel*7)/10;
+
+    warp "033-1", 79, 34;
+    initnpctimer;
+    goto L_Close;
+
+L_Someone_Else:
+    mes "[Kimarr]";
+    mes "\"Someone else is hunting right now. Let's wait until that hunt has ended.\"";
+    goto L_Close;
+
+L_Attention:
+    message strcharinfo(0), "Kimarr: You should be focused on hunting Fluffies, not talking.";
+    end;
+
+OnTimer1000:
+    if ($@Fluffy_Hunting == 3)
+        goto L_Action;
+    $@Fluffy_Hunting = $@Fluffy_Hunting + 1;
+    goto L_ContinueTimer;
+L_Action:
+    if (attachrid($@Fluffy_FighterID) == 0)
+        goto L_GotOut;
+    if (getareausers("033-1", 79, 28, 88, 42) == 0)
+        goto L_GotOut;
+    if (PC_DIE_COUNTER > $@Fluffy_PC_Deaths)
+        goto L_Died;
+    if (getareausers("033-1", 79, 28, 88, 42) > 1)
+        areatimer "033-1", 79, 28, 88, 42, 10, "Kimarr::OnTooMany";
+
+    if ($@Fluffy_Time == 180)
+        npctalk strcharinfo(0) + ", you have 3 minutes.";
+    if ($@Fluffy_Time == 120)
+        npctalk "You have 2 minutes left.";
+    if ($@Fluffy_Time == 60)
+        npctalk "You have 1 minute left.";
+    if ($@Fluffy_Time == 30)
+        npctalk "You have 30 seconds left.";
+    if ($@Fluffy_Time == 15)
+        npctalk "You have 15 seconds left.";
+    if ($@Fluffy_Time == 10)
+        npctalk "You have 10 seconds left.";
+    if ($@Fluffy_Time == 5)
+        npctalk "You have 5 seconds left.";
+    $@Fluffy_Time = $@Fluffy_Time - 1;
+    if ($@Fluffy_Time < 0)
+        goto L_TimeOver;
+    goto L_CheckDrops;
+
+L_ContinueTimer:
+    setnpctimer 0;
+    end;
+
+L_GotOut:
+    npctalk "What a strange thing... " + $@Fluffy_Fighter$ + " just disappeared!";
+    callsub S_Clean;
+    end;
+
+OnTooMany:
+    if (getcharid(3) == $@Fluffy_FighterID)
+        end;
+    npctalk "Hey " + strcharinfo(0) + "! What are you doing there? This hunt is for " + $@Fluffy_Fighter$ + " alone!";
+    warp "033-1", 77, 34;
+    end;
+
+L_Died:
+    warp "033-1", 77, 34;
+    message strcharinfo(0), "You are dead.";
+    npctalk "Oh no! " + $@Fluffy_Fighter$ + " got overwhelmed!";
+    callsub S_Clean;
+    end;
+
+L_TimeOver:
+    message strcharinfo(0), "Your time is over.";
+    goto L_MaybeRecordScore;
+
+L_CheckDrops:
+    @Fluffy_RedApple = getareadropitem("033-1", 79, 29, 88, 42, "RedApple", 1);
+    @Fluffy_XmasCake = getareadropitem("033-1", 79, 29, 88, 42, "XmasCake", 1);
+    @Fluffy_Cake = getareadropitem("033-1", 79, 29, 88, 42, "Cake", 1);
+    @Fluffy_GreenApple = getareadropitem("033-1", 79, 29, 88, 42, "GreenApple", 1);
+    if (@Fluffy_RedApple || @Fluffy_XmasCake || @Fluffy_Cake || @Fluffy_GreenApple)
+        goto L_BeginHunting;
+    goto L_ContinueTimer;
+
+L_BeginHunting:
+    $@Fluffy_Spawn = @Fluffy_RedApple + 5 * @Fluffy_XmasCake + 3 * @Fluffy_Cake + @Fluffy_GreenApple;
+    // limit the number of monsters that can be spawned, to prevent people creating lag with massive amount of monsters
+    if (($@Fluffy_Spawn + $@Fluffy_Alive) <= 100)
+        goto L_SpawnFluffies;
+    message strcharinfo(0), "Wow, calm down, there are already too many Fluffies around here.";
+    $@Fluffy_Spawn = 100 - $@Fluffy_Alive;
+    if ($@Fluffy_Spawn <= 0)
+        goto L_ContinueTimer;
+    goto L_SpawnFluffies;
+
+L_SpawnFluffies:
+    areamonster "033-1", 79, 29, 88, 42, "", 1089, $@Fluffy_Spawn, "Kimarr::OnFluffyDeath";
+
+    $@Fluffy_Extra = 5 * @Fluffy_XmasCake + 3 * @Fluffy_Cake + 12 * ($@Fluffy_Alive + $@Fluffy_Spawn) + 7 * BaseLevel;
+    if ((BaseLevel > 40) && (rand($@Fluffy_Extra) > 500)) // Ice Goblin
+        areamonster "033-1", 79, 29, 88, 42, "", 1058, 1, "Kimarr::OnIceGoblinDeath";
+    if ((BaseLevel > 60) && (rand($@Fluffy_Extra) > 550)) // Wolvern
+        areamonster "033-1", 79, 29, 88, 42, "", 1090, 1, "Kimarr::OnWolvernDeath";
+    if ((BaseLevel > 70) && (rand($@Fluffy_Extra) > 600)) // Yeti
+        areamonster "033-1", 79, 29, 88, 42, "", 1072, 1, "Kimarr::OnYetiDeath";
+
+    $@Fluffy_Extra = 0;
+    @Fluffy_RedApple = 0;
+    @Fluffy_XmasCake = 0;
+    @Fluffy_Cake = 0;
+    @Fluffy_GreenApple = 0;
+    $@Fluffy_Alive = $@Fluffy_Alive + $@Fluffy_Spawn;
+    goto L_ContinueTimer;
+
+OnIceGoblinDeath:
+    @mobId = 1058;
+    if (getcharid(3) != $@Fluffy_FighterID)
+        goto L_Punish;
+    @mobId = 0;
+    end;
+
+OnWolvernDeath:
+    @mobId = 1090;
+    if (getcharid(3) != $@Fluffy_FighterID)
+        goto L_Punish;
+    @mobId = 0;
+    end;
+
+OnYetiDeath:
+    @mobId = 1072;
+    if (getcharid(3) != $@Fluffy_FighterID)
+        goto L_Punish;
+    @mobId = 0;
+    end;
+
+OnFluffyDeath:
+    @mobId = 1089;
+    if ($@Fluffy_Hunting == 0)
+        end;
+    if (getcharid(3) != $@Fluffy_FighterID)
+        goto L_Punish;
+    @mobId = 0;
+    $@Fluffy_Kills = $@Fluffy_Kills + 1;
+    $@Fluffy_Alive = $@Fluffy_Alive - 1;
+    if ($@Fluffy_Alive != 0)
+        end;
+    if (attachrid($@Fluffy_FighterID) == 1)
+        goto L_Killedall;
+    goto L_GotOut;
+
+L_Punish:
+    if (@mobId == 1089)
+        areamonster "033-1", 79, 29, 88, 42, "", 1089, 1, "Kimarr::OnFluffyDeath";
+    if (@mobId == 1058)
+        areamonster "033-1", 79, 29, 88, 42, "", 1058, 1, "Kimarr::OnIceGoblinDeath";
+    if (@mobId == 1090)
+        areamonster "033-1", 79, 29, 88, 42, "", 1090, 1, "Kimarr::OnWolvernDeath";
+    if (@mobId == 1072)
+        areamonster "033-1", 79, 29, 88, 42, "", 1072, 1, "Kimarr::OnYetiDeath";
+
+    npctalk strcharinfo(0) + "! This hunt is for " + $@Fluffy_Fighter$ + " alone!";
+    percentheal -100, 0;
+    @mobId = 0;
+    end;
+
+L_Killedall:
+    message strcharinfo(0), "Good job, but you still have time to throw more food on the ground.";
+    end;
+
+S_Clean:
+    stopnpctimer;
+    $@Fluffy_Hunting = 0;
+    $@Fluffy_Time = 0;
+    $@Fluffy_PC_Deaths = 0;
+    $@Fluffy_Fighter$ = "";
+    $@Fluffy_FighterID = 0;
+    $@Fluffy_Kills = 0;
+    $@Fluffy_Spawn = 0;
+    $@Fluffy_Alive = 0;
+    killmonster "033-1", "Kimarr::OnIceGoblinDeath";
+    killmonster "033-1", "Kimarr::OnWolvernDeath";
+    killmonster "033-1", "Kimarr::OnYetiDeath";
+    killmonster "033-1", "Kimarr::OnFluffyDeath";
+    @state = 0;
+    return;
+
+L_MaybeRecordScore:
+    warp "033-1", 77, 34;
+    if ($@Fluffy_Kills < $@Fluffy_Min)
+        goto L_NotGoodEnough;
+    @rank = 0;
+    goto L_MaybeInsertNext;
+
+L_MaybeInsertNext:
+    if ($@Fluffy_Kills > $Record_Fluffy_Kills[@rank])
+        goto L_InsertScore;
+    // you already had a better score
+    if (strcharinfo(0) == $Record_Fluffy_Name$[@rank])
+        goto L_Reward1;
+    @rank = @rank + 1;
+    if (@rank == MAX_HIGH_SCORES)
+        goto L_Reward1;
+    goto L_MaybeInsertNext;
+
+L_InsertScore:
+    @loop = @rank;
+    goto L_FindLastScore;
+
+L_FindLastScore:
+    // comment this out to allow the player to be in the list more than once
+    // though actually, it might be better just to assume the list is full
+    if (strcharinfo(0) == $Record_Fluffy_Name$[@loop])
+        goto L_MoveStuff;
+
+    @loop = @loop + 1;
+    if (@loop == MAX_HIGH_SCORES)
+        goto L_MoveStuff;
+    goto L_FindLastScore;
+
+L_MoveStuff:
+    if (@loop == @rank)
+        goto L_FinallyInsertMe;
+    $Record_Fluffy_Kills[@loop] = $Record_Fluffy_Kills[@loop - 1];
+    $Record_Fluffy_Name$[@loop] = $Record_Fluffy_Name$[@loop - 1];
+    $Record_Fluffy_Date$[@loop] = $Record_Fluffy_Date$[@loop - 1];
+    @loop = @loop - 1;
+    goto L_MoveStuff;
+
+L_FinallyInsertMe:
+    $Record_Fluffy_Kills[@rank] = $@Fluffy_Kills;
+    $Record_Fluffy_Name$[@rank] = strcharinfo(0);
+    callfunc "time_stamp";
+    $Record_Fluffy_Date$[@rank] = @ts_date$ + " " + @ts_time$;
+    @ts_date$ = "";
+    @ts_time$ = "";
+    goto L_Reward1;
+
+L_NotGoodEnough:
+    npctalk  "What a disappointment, " + strcharinfo(0) + " hunted only " + $@Fluffy_Kills + " Fluffies.";
+    message strcharinfo(0), "Kimarr: What a disappointment, you hunted only " + $@Fluffy_Kills + " Fluffies.";
+    callsub S_Clean;
+    end;
+
+L_ShowRecord:
+    @rank = 0;
+    @loop = 0;
+    goto L_ShowNextRecord;
+
+L_ShowNextRecord:
+    if ($Record_Fluffy_Kills[@loop] == 0)
+        goto L_Close;
+    mes (@loop + 1) + " - " + $Record_Fluffy_Name$[@loop] + " - " + $Record_Fluffy_Kills[@loop] + " Fluffies killed at " + $Record_Fluffy_Date$[@loop];
+    @loop = @loop + 1;
+    goto L_ShowNextRecord;
+
+L_Close:
+    // clear all temporary player variables that are not otherwise cleared
+
+    // it is not feasible to otherwise clear @loop
+    // but, not all jumpers to L_Close have necessarily used it ...
+    // still, I think it's a good precent to ALWAYS exit via L_Close
+    @loop = 0;
+
+    // if you unset @state, it might break the script
+    // If only we had the concept of "local constants" ...
+    close;
+
+S_Update_Mask:
+    set QUEST_Barbarians,
+        (QUEST_Barbarians & ~($@Q_Barbarians_MASK)) | (@state << $@Q_Barbarians_SHIFT);
+    return;
+}

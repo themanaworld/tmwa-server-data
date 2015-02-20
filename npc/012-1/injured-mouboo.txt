@@ -1,0 +1,224 @@
+
+function	script	QuestMoubooHeal	{
+    @Q_MASK = NIBBLE_2_MASK;
+    @Q_SHIFT = NIBBLE_2_SHIFT;
+
+    @Q_status = (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+    @Q_status_upper = @Q_status & 12;
+    @Q_status = @Q_status & 3;
+
+    @STATE_INITIAL = 0;
+    @STATE_HEALED_MOUBOO = 3;
+
+    if (@Q_status != @STATE_INITIAL)
+        goto L_Nothing;
+
+    @Q_status = @STATE_HEALED_MOUBOO;
+    callsub S_Update_Var;
+    mes "[Injured Mouboo]";
+    mes "A soft white glow surrounds the mouboo's leg, which slowly shifts back into place.";
+    mes "As the glow subsides, the mouboo gets up, carefully, and takes a few steps. It seems to be fully healed!";
+    mes "[5000 experience points]";
+    getexp 5000, 0;
+    next;
+    mes "[Injured Mouboo]";
+    mes "Visibly happy, the mouboo lies down on the ground and snuggles with a black piece of cloth it had been lying on.";
+    mes "The healing process must have been exhausting, for it is asleep in an instant.";
+    next;
+    @value = 15;
+    callfunc "QuestSagathaHappy";
+    close;
+
+L_Nothing:
+    mes "Your spell has no effect.";
+    close;
+
+S_Update_Var:
+    @Q_wr_status = @Q_status | @Q_status_upper;
+    set QUEST_MAGIC,
+        (QUEST_MAGIC & ~(@Q_MASK)
+        | (@Q_wr_status << @Q_SHIFT));
+    return;
+}
+
+012-1,57,153,0	script	Mouboo	171,{
+    @Q_MASK = NIBBLE_2_MASK;
+    @Q_SHIFT = NIBBLE_2_SHIFT;
+
+    @Q_status = (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+    @Q_status_upper = @Q_status & 12;
+    @Q_status = @Q_status & 3;
+
+    @STATE_INITIAL = 0;
+    @STATE_KILLED_MOUBOO = 1;
+    @STATE_TOOK_KILL_REWARD = 2;
+    @STATE_HEALED_MOUBOO = 3;
+
+    if (@Q_status == @STATE_KILLED_MOUBOO)
+        goto L_Dead;
+    if (@Q_status == @STATE_TOOK_KILL_REWARD)
+        goto L_took_reward;
+    if (@Q_status == @STATE_HEALED_MOUBOO)
+        goto L_healed;
+
+    mes "[Injured Mouboo]";
+    mes "You notice a mouboo lying on the ground, groaning, as if in pain.";
+    next;
+    goto L_Menu;
+
+L_Menu:
+    menu
+        "Examine the mouboo", L_examine,
+        "Give the mouboo something", L_Give,
+        "Kill the mouboo", L_Kill,
+        "Leave", L_Close;
+
+L_examine:
+    mes "[Injured Mouboo]";
+    mes "Looking closer, you notice that the mouboo's left hind leg is bent at a very unnatural angle – that seems to be the cause for its pain.";
+    next;
+    mes "[Injured Mouboo]";
+    mes "You also notice that the mouboo is lying on top of what appears to be a black turtleneck sweater.";
+    mes "Do you want to pick up the sweater?";
+    next;
+    menu
+        "Yes.", L_pickup_alive,
+        "No.", L_Menu;
+
+L_pickup_alive:
+    mes "[Injured Mouboo]";
+    mes "The Mouboo groans and pushes your hand away. It seems to be rather fond of the sweater.";
+    next;
+    goto L_Menu;
+
+L_Give:
+    @items_nr = 12;
+    setarray @items$, "CactusDrink", "CactusPotion", "ChocolateBar", "Milk", "OrangeCupcake", "RedApple", "Beer", "BottleOfWater", "TinyHealingPotion", "SmallHealingPotion", "MediumHealingPotion", "LargeHealingPotion";
+    setarray @itemeat, 0,   0,   1,   0,   1,   1,   0,   1,   0,   0,   0,   0;
+
+    setarray @menuitems$, "", "", "", "", "", "", "", "", "", "", "", "", "";
+    @choices_nr = 0;
+    setarray @menuNames$, "", "", "", "", "", "", "", "", "", "", "", "", "";
+    setarray @choice_eat, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
+
+    @n = 0;
+    @ct = 0;
+    goto L_nloop;
+
+L_nloop:
+    @k$ = @items$[@n];
+    if (countitemcolor(@k$) == 0)
+        goto L_nloop_skip;
+
+    @name$ = getitemname(@k$);
+    @menuitems$[@ct] = @name$;
+    @menuNames$[@ct] = @k$;
+    @choice_eat[@ct] = @itemeat[@n];
+    @ct = @ct + 1;
+    goto L_nloop_skip;
+
+L_nloop_skip:
+    @n = @n+1;
+    if (@n < @items_nr)
+        goto L_nloop;
+
+    @menuitems$[@ct] = "Nevermind";
+
+    menu
+        @menuitems$[0], L_MenuItems,
+        @menuitems$[1], L_MenuItems,
+        @menuitems$[2], L_MenuItems,
+        @menuitems$[3], L_MenuItems,
+        @menuitems$[4], L_MenuItems,
+        @menuitems$[5], L_MenuItems,
+        @menuitems$[6], L_MenuItems,
+        @menuitems$[7], L_MenuItems,
+        @menuitems$[8], L_MenuItems,
+        @menuitems$[9], L_MenuItems,
+        @menuitems$[10], L_MenuItems,
+        @menuitems$[11], L_MenuItems,
+        @menuitems$[12], L_MenuItems;
+
+L_MenuItems:
+    @menu = @menu - 1;
+    if (@menu == @ct)
+        goto L_Menu;
+    @choice$ = @menuNames$[@menu];
+    @verb$ = "drinks";
+    if (@choice_eat[@menu])
+        @verb$ = "eats";
+    if (@choice$ != "" && countitemcolor(@choice$))
+        goto L_consume;
+    goto L_Menu;
+
+L_consume:
+    mes "[Injured Mouboo]";
+    mes "The mouboo " + @verb$ + " your " + getitemname(@choice$) + ".";
+    delitem @choice$, 1;
+    next;
+    if (@choice$ == "LargeHealingPotion")
+        goto L_do_heal;
+    mes "[Injured Mouboo]";
+    mes "Unfortunately, it seems to have had no effect.";
+    next;
+    goto L_Menu;
+
+L_do_heal:
+    callfunc "QuestMoubooHeal";
+    goto L_Kill;
+
+L_Kill:
+    mes "[Injured Mouboo]";
+    if (BaseLevel > 44)
+        goto L_Kill_success;
+    mes "The mouboo deflects your attack and counterattacks!";
+    mes "It misses you only barely.";
+    mes "Injured though it may be, this mouboo is still more than a match for you!";
+    next;
+    goto L_Menu;
+
+L_Kill_success:
+    mes "After some wrestling, the mouboo succumbs to your attacks.";
+    mes "[100 experience points]";
+    getexp 100, 0;
+    @Q_status = @STATE_KILLED_MOUBOO;
+    callsub S_Update_Var;
+    next;
+    goto L_Dead;
+
+L_Dead:
+    mes "[Dead Mouboo]";
+    mes "The dead mouboo is lying on top of a black T-neck sweater.";
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_nopickup;
+    getitem "BlackTurtleneckSweater", 1;
+    mes "You pull out the sweater and stuff it into your backpack.";
+    @Q_status = @STATE_TOOK_KILL_REWARD;
+    callsub S_Update_Var;
+    close;
+
+L_took_reward:
+    mes "[Dead Mouboo]";
+    mes "You see a dead mouboo.";
+    close;
+
+L_nopickup:
+    mes "Unfortunately, you can't carry any more.";
+    close;
+
+L_healed:
+    mes "[Mouboo]";
+    mes "The mouboo is sleeping soundly, smiling in its dreams.";
+    close;
+
+L_Close:
+    close;
+
+S_Update_Var:
+    @Q_wr_status = @Q_status | @Q_status_upper;
+    set QUEST_MAGIC,
+        (QUEST_MAGIC & ~(@Q_MASK)
+        | (@Q_wr_status << @Q_SHIFT));
+    return;
+}

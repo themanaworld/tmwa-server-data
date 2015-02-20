@@ -1,0 +1,83 @@
+051-3,47,30,0	script	#BndtRnfrcmtsTrigger	32767,2,3,{
+    @step = 2;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if ($@illia_level_2_progress == 2) goto L_CallReinforcements;
+    end;
+
+L_CallReinforcements:
+    donpcevent "Door::OnRnfrcmts";
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+}
+
+051-3,37,24,0	script	Door	400,{
+    @step = 2;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    mes "Try open the door?";
+    menu
+        "Yes", L_TryOpen,
+        "Do nothing", L_Close;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+
+L_TryOpen:
+    if ($@illia_level_2_progress < 4)
+        goto L_KeyNotFound;
+    goto L_Warp;
+
+L_KeyNotFound:
+    mes "You do not see a way to open this door.";
+    close;
+
+L_Warp:
+    mes "You place the key in the door and open the lock.";
+    warp "051-1", 118, 55;
+    close;
+
+OnRnfrcmts:
+    $@illia_level_2_progress = 3;
+    // Spawn 20 bandits
+    areamonster "051-3", 29, 25, 48, 39, "", 1064, 18, "Door::OnB";
+    // Spawn 4 bandit lords
+    areamonster "051-3", 29, 25, 48, 39, "", 1065, 3, "Door::OnB";
+    initnpctimer;
+    mapannounce "051-3", "Bandit Lords:* Do not let them escape!!" , 0;
+    areatimer "051-3", 25, 20, 80, 85, 10, "Door::OnDRnfrcmts";
+    end;
+
+OnB:
+    end;
+
+OnDRnfrcmts:
+    message strcharinfo(0), "Oh no, reinforcements! We must kill them all!";
+    end;
+
+OnTimer2000:
+    setnpctimer 0;
+    if ($@illia_level_2_progress != 3 || $@illia_progress != 2)
+        end;
+    if (mobcount("051-3", "Door::OnB") < 0)
+        goto L_OpenDoor;
+    end;
+
+L_OpenDoor:
+    $@illia_level_2_progress = 4;
+    $@illia_progress = 3;
+    callfunc "UpdateIlliaProgress";
+    $@illia_max_time = $@illia_max_time + 300;
+    areatimer "051-3", 25, 20, 80, 85, 10, "Door::OnKeyFound";
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnKeyFound:
+    message strcharinfo(0), "One of the defeated bandit lords had a door key attached to his belt.";
+    end;
+L_Close:
+    close;
+}

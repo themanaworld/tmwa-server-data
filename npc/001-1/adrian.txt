@@ -1,0 +1,46 @@
+
+
+001-1,113,64,0	script	Adrian	213,{
+    @state = ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
+
+    mes "[Adrian]";
+    mes "\"Hello. Are you here to get the luggage for some of our passengers?\"";
+    if (@state == 1)
+        menu
+            "Yes, Kylian sent me to get his luggage.",L_Get,
+            "No.",L_No;
+    menu
+        "No.",L_No;
+L_No:
+    mes "[Adrian]";
+    mes "\"Too bad. I want to go and drink a beer, but I have to wait here until all the luggage is picked up.\"";
+    mes "He sighs.";
+    goto L_Close;
+
+L_Get:
+    mes "[Adrian]";
+    mes "\"Wonderful! Show me the ticket.\"";
+    mes "He checks the paper Kylian gave you and then takes a critical look at you.";
+    next;
+    getinventorylist;
+    if ((checkweight("LeatherSuitcase", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    mes "[Adrian]";
+    mes "\"Alright, here it is.\"";
+    mes "Adrain hands you a very heavy suitcase.";
+    getitem "LeatherSuitcase", 1;
+    @state = 2;
+    QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(NIBBLE_5_MASK)) | (@state << NIBBLE_5_SHIFT);
+    goto L_Close;
+
+L_Inventory:
+    mes "[Adrian]";
+    mes "\"The suitcase is rather heavy. You doesn't look as if you can handle that.";
+    mes "Maybe if you get rid of some of the other stuff you're carrying.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @inventorylist_count = 0;
+    close;
+}

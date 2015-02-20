@@ -1,0 +1,380 @@
+
+
+
+
+-	script	#businessmanNTconfig	-1,{
+    end;
+
+OnInit:
+    // Nibble 4
+    // Used in Random Quest later as a Nibble
+    $@knowYanisNT = (1 << 16);
+    $@knowLatoyNT = (1 << 17);
+    $@knowWeellosNT = (1 << 18);
+    $@knowCasinoNT = (1 << 19);
+
+    // Random Quests for Later
+    setarray $@random_quests$, "None", "Falkurn", "Old Wizard", "Baktar";
+    $@delivery_money = 100;
+    $@delivery_exp_mod = 10;
+    end;
+}
+002-2,44,107,0	script	#KylianOut	32767,1,1,{
+    @KylianNTLicense = 0;
+    @KylianNTSightSeeing = 0;
+    @KylianNTCasino = 0;
+    end;
+}
+002-2,43,101,0	script	Kylian	193,{
+    @state = ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
+
+    @acorn_amount = 12;
+    @suitcase_money = 100;
+    @suitcase_exp = 50;
+    @license_money = 50;
+    @license_exp = 20;
+    @sightseeing_money = 50;
+    @sightseeing_exp = 20;
+    @food_money = 50;
+    @food_exp = 20;
+    @clothes_money = 50;
+    @clothes_exp = 20;
+    @fun_money = 50;
+    @fun_exp = 20;
+
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+    @fieri = ((QUEST_SouthTulimshar & NIBBLE_6_MASK) >> NIBBLE_6_SHIFT);
+
+    if (@state == 15) goto L_Done;
+    if (@state >= 11) goto L_Helping;
+    if (@state == 10) goto L_OfferedJob;
+    if (@state == 9) goto L_Shop;
+    if (@KylianNTCasino) goto L_CasinoDone;
+    if (@state == 8) goto L_DesertHat;
+    if (@state == 7) goto L_Clothes;
+    if (@KylianNTSightSeeing) goto L_SightSeeingDone;
+    if (@state == 6) goto L_Casino;
+    if (@state == 5) goto L_Food;
+    if (@KylianNTLicense) goto L_LicenseDone;
+    if (@state == 4) goto L_SightSeeing;
+    if (@state == 3) goto L_ShopLicense;
+    if (@state >= 1) goto L_Suitcase;
+
+    mes "[Kylian]";
+    mes "\"Ah, are you the room service? I've some requests.\"";
+    menu
+        "Sure, what can I do for you?",L_Luggage,
+        "No, I'm not!",L_Next;
+
+L_Next:
+    mes "[Kylian]";
+    mes "\"Too bad. Would you be interested in earning some quick money with some errands regardless?\"";
+    menu
+        "I'm a great adventurer! I don't do errands.",L_Close,
+        "No, I'm busy.",L_Close,
+        "Mh, ok.",L_Luggage;
+
+L_Luggage:
+    mes "[Kylian]";
+    mes "\"I need someone to get my luggage from the docks. Show this paper to the sailor who's watching the luggage.\"";
+    mes "He gives you his ticket which you store in your pocket, separated from your inventory.";
+    @state = 1;
+    callfunc "SetKylianQuest";
+    goto L_Close;
+
+L_Suitcase: // @state >= 1, but below 3
+    mes "[Kylian]";
+    mes "\"Did you already get my luggage from the docks?\"";
+    if (@state != 2)
+        goto L_Close;
+    menu
+        "Here it is.",L_Continue,
+        "I'm on my way, don't worry.",L_Close;
+
+L_Continue:
+    if (countitemcolor("LeatherSuitcase") < 1)
+        goto L_NoItem;
+    delitem "LeatherSuitcase", 1;
+    Zeny = Zeny + @suitcase_money;
+    getexp @suitcase_exp, 0;
+    @state = 3;
+    callfunc "SetKylianQuest";
+    mes "[Kylian]";
+    mes "\"Ah, very good. I really need to have a look at some of my papers in there.\"";
+    mes "He gives you some money.";
+    next;
+    mes "[Kylian]";
+    mes "\"Oh, and I have some acorns left, I had them with me as travelling fare. You can have them, they're tasty.";
+    mes "In case you don't like them, you could also bring them to the Tulimshar bakery. I heard they use them to make some special flour.\"";
+    getitem "Acorn", @acorn_amount;
+    next;
+    goto L_ShopLicense;
+
+L_ShopLicense: // @state == 3
+    mes "[Kylian]";
+    mes "\"I'm a salesman and came to Tulimshar because I'm thinking about establishing a shop here. While I'm going through my papers, could you find out who I have to talk to about opening a shop in this city?\"";
+    if (!(QUEST_NorthTulimshar & $@knowYanisNT))
+        goto L_Close;
+    menu
+        "You need to talk to Yanis in the government building.",L_GovBuild,
+        "I'll see what I can do.",L_Close;
+
+L_GovBuild:
+    Zeny = Zeny + @license_money;
+    getexp @license_exp, 0;
+    @state = 4;
+    callfunc "SetKylianQuest";
+    @KylianNTLicense = 1;
+    mes "[Kylian]";
+    mes "\"Ah, excellent. That's very helpful. Could you tell me how to get to that building?\"";
+    mes "You explain the way to the building.";
+    next;
+    goto L_LicenseDone;
+
+L_LicenseDone: // the player didn't log out yet after telling about Yanis
+    mes "[Kylian]";
+    mes "\"I need to prepare my papers now. I might have some more questions later.\"";
+    goto L_Close;
+
+L_SightSeeing: // @state == 4 and logged out sometime between getting to that state and now
+    mes "[Kylian]";
+    mes "\"You just came here the right moment. I have finished my business affairs. I think I should use my time here to also get a bit of cultural knowledge about the area. Can you tell me if there are any historical places to visit?\"";
+    if (!(QUEST_NorthTulimshar & $@knowWeellosNT))
+        goto L_Close;
+    menu
+        "There is a very old historic building not far from here.",L_HistBuild,
+        "I don't know, but will have a look around.",L_Close;
+
+L_HistBuild:
+    Zeny = Zeny + @sightseeing_money;
+    getexp @sightseeing_exp, 0;
+    @state = 5;
+    callfunc "SetKylianQuest";
+    mes "[Kylian]";
+    mes "\"This sounds interesting. Please tell me the way.\"";
+    mes "You tell him how to get to the historic building.";
+    next;
+    goto L_Food;
+
+L_Food: // @state == 5
+    mes "[Kylian]";
+    mes "\"While I'm out, I could also get something to eat. Maybe some typical dish for this region. Do you have a good suggestion for that?\"";
+    if (@fieri < 4) // didn't yet help Fieri make Tonori Delight
+        goto L_Close;
+    menu
+        "Fieri at the castle makes great Tonori Delight.",L_SoupBer,
+        "No idea, I'll try to find out.",L_Close;
+
+L_SoupBer:
+    Zeny = Zeny + @food_money;
+    getexp @food_exp, 0;
+    @state = 6;
+    callfunc "SetKylianQuest";
+    @KylianNTSightSeeing = 1;
+    goto L_SightSeeingDone;
+
+L_SightSeeingDone:
+    mes "[Kylian]";
+    mes "\"I'm going to see the historic building you told me about and try this local food at the castle. Thank you for the suggestions.\"";
+    goto L_Close;
+
+L_Casino: // @state == 6 and logged out sometime between getting to that state and now
+    mes "[Kylian]";
+    mes "\"Hello. I just came back from my sight-seeing tour. And this Tonori Delight really was delicious. I wonder what it's made of...\"";
+    next;
+    mes "\"However, I was wondering if you know about a good place to spend the evening? Some place to have fun?\"";
+    if (!(QUEST_NorthTulimshar & $@knowCasinoNT))
+        goto L_Close;
+    menu
+        "Of course! The casino!",L_CasinoFound,
+        "Not really.",L_Close;
+
+L_CasinoFound:
+    Zeny = Zeny + @casino_money;
+    getexp @casino_exp, 0;
+    @state = 7;
+    callfunc "SetKylianQuest";
+    mes "[Kylian]";
+    mes "\"Oh, there's a casino in this city? That's a wonderful thing. Where can I find it?\"";
+    mes "You explain how to get to the casino.";
+    next;
+    goto L_Clothes;
+
+L_Clothes: // @state == 7
+    mes "[Kylian]";
+    mes "\"I should get proper clothing before I go to the casino tonight. Do you know a reputable shop where clothing of high quality is sold?\"";
+    if (!(QUEST_NorthTulimshar & $@knowLatoyNT))
+        goto L_Close;
+    menu
+        "Latoy's shop. On the west side of Tulimshar.",L_HarborDistrict,
+        "Mh, I don't know.",L_Close;
+
+L_HarborDistrict:
+    Zeny = Zeny + @clothes_money;
+    getexp @clothes_exp, 0;
+    @state = 8;
+    callfunc "SetKylianQuest";
+    @KylianNTCasino = 1;
+    mes "You explain about Latoy and the high quality shop.";
+    mes "[Kylian]";
+    mes "\"This seems to be exactly what I need. Thanks a lot.\"";
+    goto L_Close;
+
+L_CasinoDone:
+    mes "[Kylian]";
+    mes "\"I'm looking forward to going to the casino tonight. See me tomorrow.\"";
+    goto L_Close;
+
+L_DesertHat: // @state == 8
+    mes "Kylian looks a bit tired.";
+    mes "[Kylian]";
+    mes "\"That was an interesting night. Thanks for your suggestion to visit the casino.\"";
+    next;
+    getinventorylist;
+    mes "\"You helped me a lot, so I bought a souvenir for you while I was shopping.\"";
+    if ((checkweight("DesertHat", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    getitem "DesertHat", 1;
+    @state = 9;
+    callfunc "SetKylianQuest";
+    next;
+    goto L_Close;
+
+L_Shop:
+    mes "[Kylian]";
+    mes "\"The Council of Wizards approved my shop license!\"";
+    mes "\"I purchased a store just acorss the way from the hotel exit.\"";
+    next;
+    mes "\"If you are looking for work, go see the shop keeper I have working for me.\"";
+    mes "\"Mention your name and he will know I sent you.\"";
+    @state = 10;
+    callfunc "SetKylianQuest";
+    goto L_Close;
+
+L_OfferedJob:
+    mes "[Kylian]";
+    mes "\"I spoke with the shopkeeper, They said you haven't stopped in yet.\"";
+    next;
+    mes "\"I wish you would consider working for KPS.\"";
+    next;
+    mes "\"KPS needs a well-traveled go getter like you.\"";
+    goto L_Close;
+
+L_Helping:
+    mes "[Kylian]";
+    mes "\"I've heard you decided to come work for me. That is great news.\"";
+    mes "\"Keep up the good work and I might have something a little extra for you.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Kylian]";
+    mes "\"Thanks a bunch, buisness is booming!\"";
+    mes "\"For your hard work take this.\"";
+    next;
+    Zeny = Zeny + $@delivery_money;
+    getexp ($@delivery_exp_mod * BaseLevel), 0;
+    @run_cnt = 0;
+    callfunc "SetKylianRunCnt";
+    @state = 12;
+    callfunc "SetKylianQuest";
+    mes "[" + $@delivery_money + " money]";
+    mes "[" + ($@delivery_exp_mod * BaseLevel) + " experience points]";
+    next;
+    goto L_Close;
+
+L_Inventory:
+    mes "[Kylian]";
+    mes "\"Oh, you're carrying a lot of things. Come back when you have more room.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Kylian]";
+    mes "\"I don't see it! Are you trying to tease me? This is not funny!\"";
+    goto L_Close;
+
+L_Close:
+    @acorn_amount = 0;
+    @suitcase_money = 0;
+    @suitcase_exp = 0;
+    @license_money = 0;
+    @license_exp = 0;
+    @sightseeing_money = 0;
+    @sightseeing_exp = 0;
+    @food_money = 0;
+    @food_exp = 0;
+    @clothes_money = 0;
+    @clothes_exp = 0;
+    @fun_money = 0;
+    @fun_exp = 0;
+    @inventorylist_count = 0;
+    @fieri = 0;
+    // NOT set to zero: @KylianNTLicense, @KylianNTSightSeeing and @KylianNTCasino
+    // those are used to check if the player logged out in the meanwhile
+    close;
+}
+function	script	SetKylianQuest	{
+    QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(NIBBLE_5_MASK)) | (@state << NIBBLE_5_SHIFT);
+    return;
+}
+function	script	KylianDebug	{
+    @state = ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
+    callfunc "ClearVarTMW_Quest";
+    @fieri = ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    @run = ((QUEST_NorthTulimshar & TWOBIT_8_MASK) >> TWOBIT_8_SHIFT);
+    @run_cnt = ((QUEST_NorthTulimshar & TWOBIT_9_MASK) >> TWOBIT_9_SHIFT);
+    goto L_Menu;
+
+L_Menu:
+    mes "[Kylian Debug]";
+    menu
+        "Show Quest State", L_ShowState,
+        "Set Quest State", L_SetState,
+        "Reset Timer to now", L_WorkTimer,
+        "Reset Timer + 24 hours", L_MoreWorkTimer,
+        "Close.", L_Close;
+
+L_ShowState:
+    mes "State: " + @state;
+    mes "Timer: " + Kylian_Timer;
+    mes "Time: " + gettimetick(2);
+    mes "Elapsed Time: " + (gettimetick(2) - Kylian_Timer);
+    mes "Reset Timer: 86400 > " + (gettimetick(2) - Kylian_Timer);
+    mes "Run: " + @run;
+    mes "Run NPC: " + $@random_quests$[@run];
+    mes "Run Count: " + @run_cnt;
+    goto L_Menu;
+
+L_SetState:
+    mes "\"Input the quest state desired.\"";
+    input @state;
+    callfunc "SetKylianQuest";
+    goto L_Menu;
+
+L_WorkTimer:
+    Kylian_Timer = gettimetick(2);
+    goto L_Menu;
+
+L_MoreWorkTimer:
+    Kylian_Timer = (gettimetick(2) - 86401);
+    goto L_Menu;
+
+L_Close:
+    close;
+}
+002-2,40,101,0	script	KylianDebug#1	193,{
+    callfunc "KylianDebug";
+    end;
+OnInit:
+    if (!debug)
+        disablenpc "KylianDebug#1";
+    end;
+}
+002-2,118,89,0	script	KylianDebug#2	193,{
+    callfunc "KylianDebug";
+    end;
+OnInit:
+    if (!debug)
+        disablenpc "KylianDebug#2";
+    end;
+}

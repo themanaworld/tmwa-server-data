@@ -1,0 +1,244 @@
+
+014-1,31,31,0	script	Wedding Officiator	164,{
+    mes "[Wedding Officiator]";
+    mes "A young lady in a long, green dress is overseeing the park. As she notices you looking at her, she gives you a broad and happy smile.";
+    mes "\"Hi there!  I'm Wendy, here for all your marriage needs!\"";
+    next;
+    goto L_Main;
+
+L_Main:
+    if (getpartnerid())
+        goto L_Main_married;
+
+    menu
+        "What exactly do you do?", L_explain_self,
+        "How do I get married?", L_explain_marriage,
+        "I would like to get married.", L_Get_married,
+        "Goodbye.", L_End;
+
+L_explain_self:
+    mes "[Wedding Officiator]";
+    mes "\"I'm responsible for marriage and divorce proceedings. Every married couple must be registered, so I keep a looong list of couples and send that to the magistrates every now and then.\"";
+    next;
+    mes "[Wedding Officiator]";
+    mes "\"So if you have a sweetheart and the two of you are getting along particularly well, and you think that you are ready to make that big final step – well, then come here and talk to me!\"";
+    next;
+    goto L_Main;
+
+L_explain_marriage:
+    mes "[Wedding Officiator]";
+    mes "\"If you are sure that you are ready to get married, then first you come and talk to me here – I need to register you, after all. You will first have to pay me a small fee of " + WEDDING_FEE + " GP.\"";
+    next;
+    mes "[Wedding Officiator]";
+    mes "\"Both you and your partner must be at least " + WEDDING_MIN_LEVEL + " levels of age, though; the law is very firm on that. But if all of that works out, I will give you two wedding rings for the ceremony.\"";
+    next;
+    mes "[Wedding Officiator]";
+    mes "\"To complete the marriage, each of you has to put on one of these rings, and you have to stand next to each other in the southern part of this park. Then one of you says `marry' and then the other person's name.\"";
+    next;
+    mes "[Wedding Officiator]";
+    mes "\"So if you would want to marry me, for example, you would say `marry Wendy'. Just like that. Your partner then has to decide whether he or she wants that. And if you both agree, then you're married!\"";
+    mes "She again smiles that broad smile of hers.";
+    next;
+    goto L_Main;
+
+L_Get_married:
+    if (Zeny < WEDDING_FEE)
+        goto L_too_poor;
+    if (BaseLevel < WEDDING_MIN_LEVEL)
+        goto L_too_young;
+
+    mes "[Wedding Officiator]";
+    mes "Wendy's eyes are sparkling.";
+    mes "\"Wow. So you and your sweetheart are ready to take the big step, then?\"";
+    next;
+    menu
+        "Yes, we are ready.", L_Next,
+        "On second thought, perhaps not.", L_End;
+
+L_Next:
+    mes "[Wedding Officiator]";
+    mes "She bounces.";
+    mes "\"That's so sweet!  You must really love each other, then...?\"";
+    next;
+    menu
+        "We certainly do.", L_Next1,
+        "Yes, of course.", L_Next1,
+        "Please get on with it.", L_Next1,
+        "Hmm. Let me think about this some more.", L_End;
+
+L_Next1:
+    mes "[Wedding Officiator]";
+    mes "Wendy blushes.";
+    mes "\"Sorry if I am asking so many questions, but I have to make sure, you see... rules and all. Where were we...\"";
+    next;
+    mes "[Wedding Officiator]";
+    mes "She composes herself again.";
+    mes "\"OK. Now, what vows you exchange precisely is your choice. But a marriage is really something that is meant to last. So please take a moment to think.\"";
+    next;
+    mes "[Wedding Officiator]";
+    mes "\"Is your partner really someone you are serious about, someone you want to be with even when things get nasty, someone whom you will stick your head out for no matter how bad things get?";
+    mes "And do both of you feel that you could spend the rest of your time in this mana world together?\"";
+    next;
+    menu
+        "Yes.", L_Next2,
+        "YES.", L_Next2,
+        "Absolutely.", L_Next2,
+        "Yes. We love each other.", L_Next2,
+        "This is taking too long.", L_End,
+        "No.", L_End;
+
+L_Next2:
+    if (Zeny < WEDDING_FEE)
+        goto L_too_poor;
+    if (BaseLevel < WEDDING_MIN_LEVEL)
+        goto L_too_young;
+    getinventorylist;
+    if (@inventorylist_count > 98)
+        goto L_no_room_for_rings;
+
+    Zeny = Zeny - WEDDING_FEE;
+    getitem "WeddingRing", 1;
+    getitem "WeddingRing", 1;
+
+    mes "[Wedding Officiator]";
+    mes "Wendy collects the fee.";
+    mes "\"Okay... here are your wedding rings. Each of you has to have one. Put them on, stand next to each other in the southern part of this park and say `marry ...' and the name of your partner.";
+    mes "So your partner might just say `marry " + strcharinfo(0) + "' to marry you.\"";
+    next;
+    mes "[Wedding Officiator]";
+    mes "Wendy hesitates, then gives you a quick hug. There are tears are in her eyes.";
+    mes "\"Sorry, I always get a bit... emotional, I think... but I'm so happy for you!\"";
+    mes "She smiles and wipes the tears from her eyes.";
+    next;
+    mes "[Wedding Officiator]";
+    mes "\"So... I wish you the very, very best, a wonderful and happy and successful marriage!\"";
+    mes "She smiles at you again.";
+    close;
+
+L_End:
+    close;
+
+L_too_young:
+    mes "[Wedding Officiator]";
+    mes "Wendy looks at her notes, shaking her head; pain is evident in her eyes.";
+    mes "\"I'm really, really sorry – I wish I could allow that, but you are still too young. You have to be at least " + WEDDING_MIN_LEVEL + " levels of age.\"";
+    close;
+
+L_too_poor:
+    mes "[Wedding Officiator]";
+    mes "\"Oh, this is so sad... you want to get married but don't have the money!\"";
+    mes "Wendy is visibly unhappy.";
+    mes "\"I wish I could help you, but the rules... you see... Well, I'm afraid that you will just have to come back when you have " + WEDDING_FEE + " GP.\"";
+    close;
+
+L_Main_married:
+    mes "[Wedding Officiator]";
+    mes "\"I hope that you and your partner are doing well?\"";
+    next;
+    menu
+        "We are very happy, thanks for asking!", L_Farewell,
+        "Actually, things aren't so good...", L_talk_divorce;
+
+L_Farewell:
+    mes "[Wedding Officiator]";
+    mes "Wendy is beaming.";
+    mes "\"That's wonderful!  Please do say `hi' to your spouse from me!\"";
+    close;
+
+L_talk_divorce:
+    mes "[Wedding Officiator]";
+    mes "\"Oh... I am sorry to hear that. What's the problem, then?\"";
+    next;
+    menu
+        "We don't love each other anymore.", L_nolove,
+        "My partner loves someone else.", L_partner_otherlove,
+        "I think I love someone else.", L_self_otherlove,
+        "We can't agree on who carries the loot.", L_loot;
+
+L_nolove:
+    mes "[Wedding Officiator]";
+    mes "Wendy sighs.";
+    mes "\"I am really sorry to hear that. Have you tried talking to your partner?  Tried some new dungeons?  Solved some quests together?\"";
+    next;
+    mes "[Wedding Officiator]";
+    mes "\"I mean... I am sure that you have many things in common that you are not aware of. If you just do something new, perhaps you will learn something about each other that you will like?\"";
+    next;
+    menu
+        "We tried that, it didn't work.", L_makesure_divorce,
+        "Perhaps we should give it another try.", L_End;
+
+L_partner_otherlove:
+    mes "[Wedding Officiator]";
+    mes "Wendy frowns.";
+    mes "\"Are you really sure?  Perhaps that other person is just a friend, or even if it isn't, perhaps it was just a small mistake on your partner's side... nobody is perfect, after all!\"";
+    next;
+    menu
+        "I'm sure. I want a divorce.", L_makesure_divorce,
+        "Perhaps we should discuss this some more first.", L_End;
+
+L_self_otherlove:
+    mes "[Wedding Officiator]";
+    mes "Wendy sighs.";
+    mes "\"Oh dear... well, I suppose that happens. You don't have any children, I think, but still, you made a promise to your partner.\"";
+    next;
+    mes "[Wedding Officiator]";
+    mes "\"Are you really sure that you love the new person so much that you want to leave your partner?  Perhaps it would be good to take some time off first to make sure that you are not making a mistake here.\"";
+    next;
+    menu
+        "I'm sure. I want a divorce.", L_makesure_divorce,
+        "Let me think about this more.", L_End;
+
+L_loot:
+    mes "[Wedding Officiator]";
+    mes "Wendy blinks.";
+    mes "\"Err... have you thought about just splitting it up?\"";
+    next;
+    menu
+        "No way. I want a divorce.", L_makesure_divorce,
+        "Oh... oh!  But of course!", L_End;
+
+L_makesure_divorce:
+    @divorce_cost = DIVORCE_FEE_PER_LEVEL * BaseLevel;
+
+    mes "[Wedding Officiator]";
+    mes "Resigned, Wendy looks down at her notes.";
+    mes "\"Okay. I suppose that if you are sure, I will get your divorce underway. But that will cost you " + @divorce_cost + " in administrative fees.\"";
+    next;
+    menu
+        "Let me think about this again.", L_End,
+        "HOW much?  Never mind, then.", L_End,
+        "That's OK. I want the divorce.", L_do_divorce;
+
+L_divorce_nomoney:
+    mes "[Wedding Officiator]";
+    mes "\"I am sorry, but you can't seem to afford the " + @divorce_cost + " GP for a divorce at this time. Please come back later.\"";
+    close;
+
+L_do_divorce:
+    if (Zeny < @divorce_cost)
+        goto L_divorce_nomoney;
+    if (divorce())
+        goto L_DidDivorce;
+
+    mes "[Wedding Officiator]";
+    mes "The officiator searches through her records for your partner.";
+    mes "\"I can't find your partner's record, you'll have to come back later.\"";
+    next;
+    mes "[Server]";
+    mes "Try again when your partner is online too.";
+    close;
+
+L_DidDivorce:
+    Zeny = Zeny - @divorce_cost;
+
+    mes "[Wedding Officiator]";
+    mes "After collecting her fee, Wendy licks her quill and writes down some notes.";
+    mes "Then she sighs heavily.";
+    mes "\"You are divorced now. Thank you for your business.\"";
+    close;
+
+L_no_room_for_rings:
+    mes "[Wedding Officiator]";
+    mes "\"You don't have room to carry the rings.\"";
+    close;
+}

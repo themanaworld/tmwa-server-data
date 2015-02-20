@@ -1,0 +1,646 @@
+
+020-2,24,26,0	script	Agostine Debug	137,{
+    mes "[Agostine Debug]";
+    mes "What do you want to do?";
+    menu
+        "Show Quest State", L_ShowState,
+        "Set Quest State", L_SetState,
+        "Reset", L_Reset,
+        "Nothing.", L_Close;
+
+L_ShowState:
+    @wg_state = ((QUEST_WG_state & BYTE_0_MASK) >> BYTE_0_SHIFT);
+    mes "Current State is " + @wg_state;
+    goto L_Close;
+
+L_SetState:
+    mes "What state do you want?";
+    input @wg_state;
+    callfunc "setWGState";
+    mes "Set to " + @wg_state;
+    goto L_Close;
+
+L_Reset:
+    @wg_state = 0;
+    callfunc "setWGState";
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "Agostine Debug";
+    end;
+}
+020-2,27,26,0	script	Agostine	137,{
+    @CUTFUR_EXP = 10;
+    @FINEDRESS_COTTON_CLOTHS = 20;
+    @FINEDRESS_GP = 20000;
+    @wg_state = ((QUEST_WG_state & BYTE_0_MASK) >> BYTE_0_SHIFT);
+
+
+    if (@wg_state == 1) goto L_State_0_3;
+    if (@wg_state == 2) goto L_State_1;
+    if (@wg_state == 3) goto L_State_2;
+    if (@wg_state == 4) goto L_State_4;
+    if (@wg_state == 5) goto L_State_4_success;
+    if (@wg_state == 6) goto L_State_6;
+    if (@wg_state == 7) goto L_State_11;
+    if (@wg_state == 8) goto L_State_12;
+    if (@wg_state >= 9 && @wg_state < 11) goto L_State_13;
+    if (@wg_state == 11) goto L_State_14;
+    if (@wg_state == 12) goto L_State_14_AA;
+    if (@wg_state == 13) goto L_State_15;
+    if (@wg_state > 13 && @wg_state < 16) goto L_State_15_Repeat;
+    if (@wg_state == 16) goto L_State_16;
+    if (@wg_state > 16 && @wg_state < 20) goto L_State_16_Repeat;
+    if (@wg_state == 20) goto L_State_17;
+    if (@wg_state == 21) goto L_State_17_AskItems;
+    if (@wg_state == 22) goto L_State_17_PBD;
+    if (@wg_state >= 23) goto L_State_18;
+
+    mes "\"This goes up, this goes left...\"";
+    next;
+    mes "\"Mmmm...?\"";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Oh, a customer! Let me introduce myself! My name is Agostine!";
+    mes "Some people say that I am the best tailor in the world,";
+    mes "but I think I am the best one in the universe!";
+    mes "So, What can I do for you, my friend?\"";
+    next;
+    menu
+        "I want something new for my wardrobe!", L_State_0_1,
+        "Oh, nothing, thanks!", L_Close;
+
+
+L_State_0_1:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Well.. you know... working so hard makes me so tired!";
+    mes "Can you bring me something tasty to drink, my friend?\"";
+    next;
+    menu
+        "Sure, what kind of drink you like?", L_State_0_2,
+        "I'm not your waiter!", L_Close;
+
+L_State_0_2:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Here we do not have a bar. Let me taste different beverages.";
+    mes "I want something new to drink.\"";
+    next;
+    menu
+        "I'll bring you different drinks to try!", L_State_Accept,
+        "Maybe a bar will open soon, wait for it.", L_Close;
+
+L_State_Accept:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Thanks so much.\"";
+    @wg_state = 1;
+    callfunc "setWGState";
+    goto L_Close;
+
+L_State_0_3:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Well, what have you brought me?\"";
+    next;
+    menu
+        "A Cactus Drink.", L_State_0_4,
+        "A Cactus Potion.", L_State_0_5,
+        "Some milk.", L_State_0_6,
+        "A pint of beer.", L_State_0_7,
+        "An Iron potion.", L_State_0_9,
+        "A Concentration Potion.", L_State_0_8,
+        "Nothing, at the moment.", L_Close;
+
+L_State_0_4:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"So, a Cactus Drink?\"";
+    if (countitemcolor("CactusDrink") < 1) goto L_State_neg;
+    delitem "CactusDrink", 1;
+    goto L_State_bad;
+
+L_State_0_5:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"So, a Cactus Potion?\"";
+    if (countitemcolor("CactusPotion") < 1) goto L_State_neg;
+    delitem "CactusPotion", 1;
+    goto L_State_bad;
+
+L_State_0_6:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"So, some milk for me?\"";
+    if (countitemcolor("Milk") < 1) goto L_State_neg;
+    delitem "Milk", 1;
+    goto L_State_bad;
+
+L_State_0_7:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"So, a beer?\"";
+    if (countitemcolor("Beer") < 1) goto L_State_neg;
+    delitem "Beer", 1;
+    goto L_State_bad;
+
+L_State_0_8:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"So, a Concentration Potion?\"";
+    if (countitemcolor("ConcentrationPotion") < 1) goto L_State_neg;
+    delitem "ConcentrationPotion", 1;
+    goto L_State_bad;
+
+L_State_0_9:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"So, an Iron Potion?\"";
+    if (countitemcolor("IronPotion") < 1) goto L_State_neg;
+    delitem "IronPotion", 1;
+    next;
+    mes "Agostine looks pleased as he drinks the potion.";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Oh! This is damn good! I feel a new man, my friend!\"";
+    next;
+    Zeny = Zeny + 500;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"This is a little reward for your help. Take 500 GP, my friend!\"";
+    @wg_state = 2;
+    callfunc "setWGState";
+    goto L_Close;
+
+L_State_neg:
+    next;
+    mes "\"Seems that you lied. You don't have the drink you told me.\"";
+    goto L_Close;
+
+L_State_bad:
+    next;
+    mes "\"Well, I don't like it so much. Bring me something else.\"";
+    goto L_Close;
+
+
+L_State_1:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Mmmm... Let me see... This year light colours are fashionable!";
+    mes "Would you like a pair of snow-white Winter Gloves?\"";
+    next;
+    menu
+        "No, thanks. I love dark clothes...", L_Close,
+        "You really can do this for me?", L_State_2;
+
+L_State_2:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Well, Winter Gloves are so fashionable for their lovable fur!";
+    mes "Only the best furs can be used for these gloves!";
+    mes "But, as you see, I am a tailor, not a hunter! So, why don't you bring me the best fluffy's fur you can find?\"";
+    @wg_state = 3;
+    callfunc "setWGState";
+    next;
+    menu
+        "You are crazy! I won't kill any animal for this!", L_Close,
+        "Sure, I will be back soon!", L_State_3;
+
+L_State_3:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Remember, I want the best of fur!\"";
+    @wg_state = 4;
+    callfunc "setWGState";
+    goto L_Close;
+
+L_State_4:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Oh, my friend! Have you brought me some good furs?\"";
+    if (countitemcolor("WhiteFur") < 1) goto L_Close;
+    next;
+    menu
+        "Here, take a look!", L_State_4_try,
+        "Yes, but I need it for something else.", L_Close;
+
+L_State_4_try:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Let me see, my friend! It needs to be perfect for my gloves!\"";
+    mes "Agostine examines the patch of fur.";
+    next;
+    if (countitemcolor("WhiteFur") < 1) goto L_No_Fur;
+    delitem "WhiteFur", 1;
+    @Temp1 = rand(30);
+    if (@Temp1 == 0) goto L_State_4_success;
+    mes "Agostine throws away the white fur.";
+    getexp @CUTFUR_EXP, 0;
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"It was awfully cut! You should pay more attention when you kill fluffies!\"";
+    if (countitemcolor("WhiteFur") < 1) goto L_Close;
+    next;
+    menu
+        "Here I have another one!", L_State_4_try,
+        "Sorry, I will be careful...", L_Close;
+
+L_State_4_success:
+    mes "Agostine breaks into a smile";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"It's perfect! Perfect! Good job, my friend! I will prepare your gloves right now!\"";
+    next;
+    @wg_state = 5;
+    callfunc "setWGState";
+    goto L_State_5;
+
+L_State_5:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Ehm, my friend, my work is not free. I need 15,000 GP for the work.\"";
+    next;
+    menu
+        "You are not a tailor, you are a thief!!", L_Close,
+        "I think it's a reasonable price...", L_State_5_pay;
+
+L_State_5_pay:
+    if (Zeny < 15000) goto L_State_5_nocash;
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_TooMany;
+    Zeny = Zeny - 15000;
+    getitem "WinterGloves", 1;
+    @wg_state = 6;
+    callfunc "setWGState";
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Here they are. You will have the most fashionable hands in the world!\"";
+    goto L_Close;
+
+L_State_5_nocash:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Seems like you are out of cash. Come back when you have the money.\"";
+    goto L_Close;
+
+L_State_6:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Oh, I remember you! Your gloves are sooo fashionable, my friend!";
+    mes "Well, I have a good news for you. In this issue of 'TMW Fashion'";
+    mes "I saw a pretty accessory, a pair of Furry Boots, my friend.";
+    mes "I can make your own pair, if you want!\"";
+    next;
+    menu
+        "It's a great idea!", L_State_10,
+        "I'm glamourous enough, thanks", L_Close;
+
+L_State_10:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Perfect! For satisfying your request I need another perfect White Fur";
+    mes "and a pair of Boots, like those you can find in the mines.";
+    mes "They will make you lovely, my friend!\"";
+    @wg_state = 7;
+    callfunc "setWGState";
+    goto L_Close;
+
+L_State_11:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"So, my friend, have you brought me the right Fur?\"";
+    if (countitemcolor("WhiteFur") < 1) goto L_Close;
+    next;
+    menu
+        "Sure, I'm a fluffy hunter!", L_State_11_try,
+        "Not yet, sorry.", L_Close;
+
+L_State_11_try:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"I'd rather see the patch of fur, first.\"";
+    next;
+    mes "Agostine examines the patch of fur.";
+    next;
+    if (countitemcolor("WhiteFur") < 1) goto L_No_Fur;
+    delitem "WhiteFur", 1;
+    @Temp2 = rand(30);
+    if (@Temp2 == 0) goto L_State_11_success;
+    mes "Agostine rips the white fur.";
+    getexp @CUTFUR_EXP, 0;
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"That fur was terrible. I won't work with it!\"";
+    if (countitemcolor("WhiteFur") < 1) goto L_Close;
+    next;
+    menu
+        "Well, maybe this is better!", L_State_11_try,
+        "I will hunt other fluffies...", L_Close;
+
+L_State_11_success:
+    mes "Agostine breaks into a smile";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"This one is good enough, my friend. Good job.\"";
+    @wg_state = 8;
+    callfunc "setWGState";
+    goto L_State_12;
+
+L_State_12:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"I need also a pair of Boots for the work.";
+    mes "And my payment, obviously. 15,000 GP is right.\"";
+    next;
+    menu
+        "Sure, here it all is.", L_State_12_pay,
+        "I missed something, I will be back soon!", L_Close;
+
+L_State_12_pay:
+    if (Zeny < 15000) goto L_State_12_missing;
+    if (countitemcolor("Boots") < 1) goto L_State_12_missing;
+    // No inventory check needed, as boots are removed, opening a slot
+    Zeny = Zeny - 15000;
+    delitem "Boots", 1;
+    getitem "FurBoots", 1;
+    @wg_state = 9;
+    callfunc "setWGState";
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Enjoy your new boots, my friend!\"";
+    goto L_Close;
+
+L_State_12_missing:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Seems you have forgotten something. Check your inventory";
+    mes "and your pockets!\"";
+    goto L_Close;
+
+L_State_13:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"You are so glamourous, my dear friend!";
+    mes "I have done a very good job on your clothes!\"";
+    goto L_Close;
+
+L_TooMany:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"You don't have anywhere to put them. Come back when you do.\"";
+    goto L_Close;
+
+L_No_Fur:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"You don't have any white fur! Stop talking nonsense.\"";
+    goto L_Close;
+
+L_State_14:
+    if (BaseLevel < 60)
+        goto L_State_13;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"You are so glamourous, my dear friend!";
+    mes "I have done a very good job on your clothes... But...\"";
+    next;
+
+    menu
+        "But?", L_Next;
+
+L_Next:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"There is a new fashion I've been dying to try out!";
+    mes "But I don't have all the knowledge in the world about seaming this wonderful fashion.\"";
+    next;
+
+    menu
+        "Ah, that's too bad...", L_Close,
+        "I know another tailor who might know!", L_Next1;
+
+L_Next1:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"What tailor may that be?";
+    mes "I haven't been out of Nivalis for quite some time since I have been busy with clothes for the people of the town.";
+    mes "If you can tell me the name of this great tailor, maybe we can work something out, like a collaboration!\"";
+    next;
+
+    menu
+        "Well... There is a tailor in Dimond's Cove who makes pretty good clothing. Her name is Lora Tay.", L_Next2;
+
+L_Next2:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"I had almost forgotten about Lora Tay.";
+    mes "She has tried to put me out of business a few times long ago.";
+    mes "But I am willing to collaborate with her to make this fine fashion come alive.";
+    mes "Will you go ask her if she is willing to help sew and seam this fashion I will create?\"";
+
+    menu
+        "Sure thing! Be back soon.", L_State_14_Accept,
+        "It will never happen. I won't waste my time.", L_Close;
+
+L_State_14_Accept:
+    @wg_state = 12;
+    callfunc "setWGState";
+    goto L_Close;
+
+L_State_14_AA:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Please my friend, go talk to Lora Tay about our possible collaboration!\"";
+    goto L_Close;
+
+L_State_15:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Hi there fashionable friend, have you talked to Lora Tay about my request?\"";
+    next;
+    menu
+        "Yes, but she would like to know more information about it and I'm kind of curious myself.", L_Next3,
+        "I haven't yet, sorry.", L_Close;
+
+L_Next3:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Well I had a dream of a woman in a beautiful dress I would like to recreate from my dream...";
+    mes "But the thing is I have never sewn a dress this fabulous in my life!";
+    mes "This is why I wanted an experienced tailor to help me with it.\"";
+    next;
+
+    menu
+        "You must be thinking of fashion a lot if it's in your dreams! I shall bring this information to Lora Tay.", L_Next4,
+        "You're obsessed, I cant help you.", L_Close;
+
+L_Next4:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Please take these materials with you to show Lora Tay the kind of vision I have!";
+    mes "These are the finest materials in my whole house and have been saving them for something special such as this.\"";
+    next;
+
+    message strcharinfo(0), "Agostine gives you bundles of luxurious cloth that you carefully put in your backpack.";
+    mes "Agostine gives you bundles of luxurious cloth that you carefully put in your backpack.";
+    next;
+
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Hurry back my friend!\"";
+
+    @wg_state = 14;
+    callfunc "setWGState";
+
+    goto L_Close;
+
+L_State_15_Repeat:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Please take these materials with you to show Lora Tay the kind of vision I have!";
+    mes "Hurry back my friend!\"";
+    goto L_Close;
+
+L_State_16:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Hello there! Did you tell Lora Tay about the type of fashion I was hoping to create?\"";
+    next;
+
+    menu
+        "Yes, she is also working on threading to sew the materials together.", L_Next5,
+        "Why would I do that for?", L_Close;
+
+L_Next5:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Wow she did not only accept but she is willing to sew these materials for me?";
+    mes "This is amazing... I was quite worried I would ruin these fine cloths sewing them myself.\"";
+    next;
+
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Is there anything I can do in the meanwhile?\"";
+    next;
+    menu
+        "Actually she wanted the design drawings to know what it should look like.", L_Next6;
+
+L_Next6:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Of course! How could I forget, I drew the designs right after the dream I had.";
+    mes "Please take these to Lora Tay and ask her to try and make it as close as she can.\"";
+    next;
+
+    menu
+        "Sure thing be back soon!", L_Next7,
+        "... I'll take a nap first.", L_Close;
+
+L_Next7:
+    @wg_state = 17;
+    callfunc "setWGState";
+
+    message strcharinfo(0), "Agostine gives you a folio containing his designs, that you put in a hidden compartment in your backpack.";
+    mes "Agostine gives you a folio containing his designs, that you put in a hidden compartment in your backpack.";
+
+    goto L_Close;
+
+L_State_16_Repeat:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Please my friend, bring my designs to Lora Tay.\"";
+    goto L_Close;
+
+L_State_17:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Wow is that the dress?";
+    mes "It looks fabulous...\"";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"But I do notice it is missing something from my design.\"";
+    next;
+
+    menu
+        "Lora Tay mentioned the bottom has to be edged with cotton cloths but she cannot do the design you wanted.", L_Next8;
+
+L_Next8:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"That's fine. I will finish it with the cloth but it seems I don't have anymore around...\"";
+    next;
+
+    goto L_State_17_AskItems;
+
+L_State_17_AskItems:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"I will need about " + @FINEDRESS_COTTON_CLOTHS + " cotton cloths to finish this master piece. Do you think you can get some for me?\"";
+    next;
+
+    menu
+        "Sure thing, I will go get them!", L_Next9,
+        "Here you are!", L_State_17_GiveItems;
+
+L_Next9:
+    @wg_state = 21;
+    callfunc "setWGState";
+    goto L_Close;
+
+L_State_17_NoItems:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"My friend, sorry to disappoint you, but you are lacking some cloth.";
+    mes "I need exactly " + @FINEDRESS_COTTON_CLOTHS + " cotton cloths to finish this master piece.\"";
+    goto L_Close;
+
+L_State_17_GiveItems:
+    if (countitem ("CottonCloth") < @FINEDRESS_COTTON_CLOTHS)
+        goto L_State_17_NoItems;
+    delitem "CottonCloth", @FINEDRESS_COTTON_CLOTHS;
+    @wg_state = 22;
+    callfunc "setWGState";
+
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Great now just a little cloth here........\"";
+    next;
+    mes "............................";
+    next;
+    mes "...................";
+    next;
+    mes "..............";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"It's finished!";
+    mes "The finest dress in my design is finally finished!\"";
+    next;
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"I don't know how I can repay you for all your hard work...\"";
+    next;
+
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Hmmm I know something that will be good for you and for myself!\"";
+    next;
+
+    menu
+        "What is it?", L_Next10;
+
+L_Next10:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"How about I let you buy the dress off me?";
+    mes "This will allow you to have a fine dress and allow me to show the world what I'm capable of.";
+    mes "I would charge " + @FINEDRESS_GP +" GP, which I think is a magnificent price for something this fine.\"";
+    next;
+
+    goto L_State_17_BuyDress;
+
+L_State_17_PBD:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Did you consider buying the dress off me?";
+    mes "I would charge " + @FINEDRESS_GP +" GP, which I think is a magnificent price for something this fine.\"";
+    next;
+
+    goto L_State_17_BuyDress;
+
+L_State_17_BuyDress:
+    menu
+        "Wow that sounds great I'll take it!", L_Next11,
+        "I'll think about it...", L_Close;
+
+L_Next11:
+    if (Zeny < @FINEDRESS_GP)
+        goto L_State_17_NoMoney;
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_State_17_InvFull;
+
+    Zeny = Zeny - @FINEDRESS_GP;
+    getitem "FineDress", 1;
+    @wg_state = 23;
+    callfunc "setWGState";
+    goto L_Close;
+
+L_State_17_NoMoney:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"Check your pockets my friend,";
+    mes "and come back when you have the money.\"";
+    goto L_Close;
+
+L_State_17_InvFull:
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"My friend, you don't have room to carry my master piece. Come back when you do.\"";
+    goto L_Close;
+
+L_State_18:
+    // Same dialog as on state 13, but we could add something about the dress
+    mes "[Agostine, The Legendary Tailor]";
+    mes "\"You are so glamourous, my dear friend!";
+    mes "I have done a very good job on your clothes!\"";
+    goto L_Close;
+
+L_Close:
+    @wg_state = 0;
+    close;
+}
+function	script	setWGState	{
+    QUEST_WG_state = (QUEST_WG_state & ~(BYTE_0_MASK) | (@wg_state << BYTE_0_SHIFT));
+    return;
+}

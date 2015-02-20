@@ -1,0 +1,115 @@
+
+
+function	script	time_stamp	{
+    // local variables
+    // if there is reasonable demand, these might be exported
+    // (that is what the builtin is likely to do)
+    @ts_year = gettime(7);
+    @ts_month = gettime(6);
+    @ts_mday = gettime(5);
+    //set @ts_wday,       gettime(4);
+    @ts_hour = gettime(3);
+    @ts_minute = gettime(2);
+    @ts_second = gettime(1);
+
+    // locals used to generate leading zeroes
+    @ts_month_pad$ = "";
+    @ts_mday_pad$ = "";
+    @ts_hour_pad$ = "";
+    @ts_minute_pad$ = "";
+    @ts_second_pad$ = "";
+
+    if (@ts_month < 10)
+        @ts_month_pad$ = "0";
+    if (@ts_mday < 10)
+        @ts_mday_pad$ = "0";
+    if (@ts_hour < 10)
+        @ts_hour_pad$ = "0";
+    if (@ts_minute < 10)
+        @ts_minute_pad$ = "0";
+    if (@ts_second < 10)
+        @ts_second_pad$ = "0";
+
+    @ts_date$ = @ts_year + "-" + @ts_month_pad$ + @ts_month + "-" + @ts_mday_pad$ + @ts_mday;
+    @ts_time$ = @ts_hour_pad$ + @ts_hour + ":" + @ts_minute_pad$ + @ts_minute + ":" +@ts_second_pad$ + @ts_second;
+
+    // cleanup
+    @ts_year = 0;
+    @ts_month = 0;
+    @ts_mday = 0;
+    @ts_hour = 0;
+    @ts_minute = 0;
+    @ts_second = 0;
+    @ts_month_pad$ = "";
+    @ts_mday_pad$ = "";
+    @ts_hour_pad$ = "";
+    @ts_minute_pad$ = "";
+    @ts_second_pad$ = "";
+
+    return;
+}
+
+
+
+
+
+function	script	HumanTime	{
+    @time$ = "now";
+    if(@ms < 1000) goto L_Millis; // under 1 second we have nothing to count
+    @seconds = @ms / 1000;
+    @ms = @ms % 1000;
+    if(@seconds < 60) goto L_Seconds;
+    @minutes = @seconds / 60;
+    @seconds = @seconds % 60;
+    if(@minutes < 60) goto L_Minutes;
+    @hours = @minutes / 60;
+    @minutes = @minutes % 60;
+    if(@hours < 60) goto L_Hours;
+    return;
+
+L_Millis:
+    @time$ = @ms + "ms";
+    return;
+
+L_Seconds:
+    @unit$ = "second";
+    if(@seconds > 1) set @unit$, "seconds";
+    @unit2$ = "millisecond";
+    if(@ms > 1) set @unit2$, "milliseconds";
+    @time$ = @seconds + " " + @unit$;
+    if(@ms) set @time$, @time$ + " and " + @ms + " " + @unit2$;
+    return;
+
+L_Minutes:
+    @unit$ = "minute";
+    if(@minutes > 1) set @unit$, "minutes";
+    @unit2$ = "second";
+    if(@seconds > 1) set @unit2$, "seconds";
+    @unit3$ = "millisecond";
+    if(@ms > 1) set @unit3$, "milliseconds";
+    @time$ = @minutes + " " + @unit$;
+    @separator$ = " and ";
+    if(@ms) set @separator$, ", ";
+    if(@seconds) set @time$, @time$ + @separator$ + @seconds + " " + @unit2$;
+    if(@ms) set @time$, @time$ + " and " + @ms + " " + @unit3$;
+    return;
+
+L_Hours:
+    @unit$ = "hour";
+    if(@hours > 1) set @unit$, "hours";
+    @unit2$ = "minute";
+    if(@minutes > 1) set @unit2$, "minutes";
+    @unit3$ = "second";
+    if(@seconds > 1) set @unit3$, "seconds";
+    @unit4$ = "millisecond";
+    if(@ms > 1) set @unit4$, "milliseconds";
+    @time$ = @hours + " " + @unit$;
+    @separator$ = " and ";
+    if(@seconds || @ms) set @separator$, ", ";
+    if(@minutes) set @time$, @time$ + @separator$ + @minutes + " " + @unit2$;
+    @separator$ = " and ";
+    if(@ms) set @separator$, ", ";
+    if(@seconds) set @time$, @time$ + @separator$ + @seconds + " " + @unit3$;
+    if(@ms) set @time$, @time$ + " and " + @ms + " " + @unit4$;
+    return;
+}

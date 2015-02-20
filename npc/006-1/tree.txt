@@ -1,0 +1,164 @@
+function	script	QuestTreeTrigger	{
+    @Q_MASK = NIBBLE_2_MASK;
+    @Q_SHIFT = NIBBLE_2_SHIFT;
+
+    @Q_status = (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+    @Q_status_lower = @Q_status & 3;
+    @Q_status = (@Q_status & 12) >> 2;
+
+    if (@Q_status & @flag) goto L_Close;  // already did that
+
+    if (@flag == 2) goto L_hug;
+    goto L_Cont;
+
+L_Cont:
+    @Q_status = @Q_status | @flag;
+    callsub S_Update_Var;
+
+    if (@Q_status != 3) goto L_Close;
+
+    if (MAGIC_FLAGS & MFLAG_DID_CUTTREE) goto L_Close;
+
+    mes "Maybe it is just a trick of the light, but you can't help but think that the tree looks different... healthier, almost younger.";
+    mes "[20000 experience points]";
+    getexp 20000, 0;
+    @value = 15;
+    callfunc "QuestSagathaHappy";
+    goto L_Close;
+
+L_hug:
+    mes "You hug the tree.";
+    next;
+    goto L_Cont;
+
+L_Close:
+    @Q_MASK = 0;
+    @Q_SHIFT = 0;
+    @Q_status = 0;
+    @Q_status_lower = 0;
+    @Q_wr_status = 0;
+    @value = 0;
+    close;
+
+S_Update_Var:
+    @Q_wr_status = (@Q_status << 2) | @Q_status_lower;
+    QUEST_MAGIC = (QUEST_MAGIC & ~(@Q_MASK) | (@Q_wr_status << @Q_SHIFT));
+    return;
+}
+
+function	script	QuestTreeTouch	{
+    @Q_MASK = NIBBLE_2_MASK;
+    @Q_SHIFT = NIBBLE_2_SHIFT;
+
+    @Q_status = (QUEST_MAGIC & @Q_MASK) >> @Q_SHIFT;
+    @Q_status = (@Q_status & 12) >> 2;
+
+    if (@Q_status == 3) goto L_Happy;
+
+    if ((MAGIC_FLAGS & (MFLAG_KNOWS_DRUIDTREE | MFLAG_KNOWS_CUTTREE)) == MFLAG_KNOWS_CUTTREE) goto L_cut;
+
+    if ((MAGIC_FLAGS & (MFLAG_KNOWS_DRUIDTREE | MFLAG_KNOWS_CUTTREE)) == MFLAG_KNOWS_DRUIDTREE) goto L_Water;
+
+    if ((MAGIC_FLAGS & (MFLAG_KNOWS_DRUIDTREE | MFLAG_KNOWS_CUTTREE)) > 0)   //i.e., both are set
+        goto L_both;
+
+    mes "[Dying Tree]";
+    mes "You see a strange tree.";
+    goto L_Close;
+
+L_cut:
+    mes "[Dying Tree]";
+    mes "This must be the tree that the earth spirit was referring to.";
+    next;
+    menu
+        "Cut off a branch", L_do_cut,
+        "Leave it alone", L_Close;
+
+L_Water:
+    mes "[Dying Tree]";
+    mes "This must be the druid tree.";
+    next;
+    menu
+        "Water the tree", L_Givewater,
+        "Kiss tree", L_kiss,
+        "Leave it alone", L_Close;
+
+L_both:
+    mes "[Dying Tree]";
+    mes "This must be the druid tree that Wyara and the earth spirit were talking about.";
+    next;
+    menu
+        "Water the tree", L_Givewater,
+        "Kiss tree", L_kiss,
+        "Cut off a branch", L_do_cut,
+        "Leave it alone", L_Close;
+
+L_Givewater:
+    if (countitemcolor("BottleOfWater") < 1) goto L_No_Water;
+    delitem "BottleOfWater", 1;
+    getitem "EmptyBottle", 1;
+
+    mes "[Dying Tree]";
+    mes "You pour a bottle of water into the sand. The water dissipates quickly, without any effect.";
+    goto L_Close;
+
+L_No_Water:
+    mes "[Dying Tree]";
+    mes "You don't have any water.";
+    goto L_Close;
+
+L_kiss:
+    mes "[Dying Tree]";
+    mes "You pluck out a splinter from your lip.";
+    mes "Somehow, you don't think that this helped.";
+    goto L_Close;
+
+L_do_cut:
+    if (countitemcolor("BoneKnife") < 1) goto L_no_boneknife;
+
+    if (MAGIC_FLAGS & MFLAG_DID_CUTTREE) goto L_really_cut;
+
+    mes "[Dying Tree]";
+    mes "You find a suitable branch and put your bone knife in position.";
+    mes "Holding the branch, you have an uneasy feeling – as if something inside the tree were trying to resist you...";
+    mes "Do you want to continue cutting?";
+    next;
+    menu
+        "Nah... better not.", L_Close,
+        "Yes, let's cut!", L_really_cut;
+
+L_really_cut:
+    MAGIC_FLAGS = MAGIC_FLAGS | MFLAG_DID_CUTTREE;
+    getitem "DruidTreeBranch", 1;
+    mes "[Dying Tree]";
+    mes "You cut off a branch from the tree.";
+    mes "For an instant, you have an uneasy feeling, as if the branch were writhing in your hand...";
+    goto L_Close;
+
+L_no_boneknife:
+    mes "[Dying Tree]";
+    mes "Try as you might, you can't seem to find a way to cut off a branch. Perhaps you need a different tool for cutting?";
+    goto L_Close;
+
+L_Happy:
+    mes "[Druid Tree]";
+    mes "The tree looks younger and healthier now.";
+    goto L_Close;
+
+L_Close:
+    @Q_MASK = 0;
+    @Q_SHIFT = 0;
+    @Q_status = 0;
+    close;
+
+}
+
+006-1,82,59,0	script	#DruidTree0#_M	400,{
+    callfunc "QuestTreeTouch";
+    end;
+}
+
+006-1,83,59,0	script	#DruidTree1#_M	400,{
+    callfunc "QuestTreeTouch";
+    end;
+}

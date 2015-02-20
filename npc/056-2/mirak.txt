@@ -1,0 +1,139 @@
+056-2,67,24,0	script	Mirak	372,{
+
+    callfunc "DailyQuestPointsFunc";
+
+    @Mirak_MASK = NIBBLE_0_MASK;
+    @Mirak_SHIFT = NIBBLE_0_SHIFT;
+
+    @talk = ((QUEST_Mirak & @Mirak_MASK) >> @Mirak_SHIFT);
+
+    @Mirak_Annoy_MASK = NIBBLE_1_MASK;
+    @Mirak_Annoy_SHIFT = NIBBLE_1_SHIFT;
+
+    @annoy = ((QUEST_Mirak & @Mirak_Annoy_MASK) >> @Mirak_Annoy_SHIFT);
+
+
+    if (Mirak_Questtime > gettimetick(2))
+        goto L_TooSoon;
+    if (@annoy > 3)
+        goto L_Kill;
+    if (Mirak_Bantime > gettimetick(2))
+        goto L_Ban;
+    if (@talk < 3)
+        goto L_Talk;
+    goto L_Ban;
+
+L_Ban:
+    mes "[Mirak]";
+    mes "\"How did you get back here?\"";
+    goto L_Kill;
+
+L_Talk:
+    Mirak_Bantime = 0;
+    Mirak_Questtime = 0;
+    if (@talk == 1)
+        goto L_Talk1;
+    if (@talk == 2)
+        goto L_Talk2;
+    mes "The old man reads a book and looks up when he sees you coming.";
+    mes "He looks at you angrily.";
+    next;
+    mes "[Mirak]";
+    mes "\"Hi, my name is Mirak. You might have the impression that I am nice, but I am NOT! I want to be left alone to read in peace! I tried that at my mansion in Port City but it did not work. My damn brother, he always kept going on about Bat Wings...\"";
+    next;
+    mes "Suddenly his face gets red. He breathes slowly three times...";
+    next;
+    mes "He seems to be calm again.";
+    next;
+    mes "[Mirak]";
+    mes "\"Eh... Ah! That's why I bought this house in this goddamn woods. I hoped nobody would come by here. It seems I was wrong. I believe that you did not read the notes I left behind. Read them on your way out.\"";
+    mes "He looks down on his book and ignores you.";
+    @talk = 1;
+    callsub S_Update_Mask;
+    close;
+
+L_Talk1:
+    mes "[Mirak]";
+    mes "\"What?! You again? Get going!\"";
+    @talk = 2;
+    callsub S_Update_Mask;
+    close;
+
+L_Talk2:
+    mes "[Mirak]";
+    mes "\"What do you want?!\"";
+    menu
+        "Nothing.", L_Nothing,
+        "Money!", L_Quest;
+
+L_Nothing:
+    mes "[Mirak]";
+    mes "\"Ahhhh! Get lost, or you'll regret it!\"";
+    @annoy = @annoy+1;
+    callsub S_Update_Mask_Annoy;
+    close;
+
+L_Quest:
+    @dq_cost = DailyQuestPoints;
+    @dq_money = 20;
+    @dq_exp = 20;
+    mes "[Mirak]";
+    mes "\"If you have some energy left, which I need, I can give you money for it. But only if you will leave me alone!\"";
+    menu
+        "Okay.", L_Trade,
+        "Nah, I won't leave you alone.", L_Kill;
+
+L_TooSoon:
+    mes "Mirak looks up, sees you, and gets angry.";
+    mes "[Mirak]";
+    mes "\"I told you not to bother me again! That's why I paid you!\"";
+    goto L_Kill;
+
+L_Kill:
+    misceffect sfx_magic_war, strcharinfo(0);
+    percentheal -100, 0;
+    @annoy = 0;
+    callsub S_Update_Mask_Annoy;
+    Mirak_Bantime = gettimetick(2) + 86400;
+    Mirak_Questtime = 0;
+    mes "The old man stands up and looks at you angrier than ever. He mumbles something and your head explodes.";
+    next;
+    mes "[Mirak]";
+    mes "\"That's what you get for annoying me! I studied under the Mages of Tulimshar!";
+    mes "I feel better now.\"";
+    next;
+    mes "The old man sits back down and continues to read.";
+    close;
+
+L_Trade:
+    if (DailyQuestPoints == 0)
+        goto L_NoPoints;
+    Zeny = Zeny + (@dq_money * @dq_cost);
+    getexp @dq_exp * @dq_cost, 0;
+    DailyQuestPoints = DailyQuestPoints - @dq_cost;
+
+    mes "[" + @dq_money * @dq_cost + " money]";
+    mes "[" + @dq_exp * @dq_cost + " experience points]";
+    mes "\"Now leave or you'll regret it. Don't come back!\"";
+    Mirak_Questtime = gettimetick(2) + 86400;
+    Mirak_Bantime = 0;
+    close;
+
+L_NoPoints:
+    mes "[Mirak]";
+    mes "\"Why do you bother me!? You have no energy left!\"";
+    goto L_Kill;
+
+
+S_Update_Mask_Annoy:
+    set QUEST_Mirak,
+        (QUEST_Mirak & ~(@Mirak_Annoy_MASK))
+            | (@annoy << @Mirak_Annoy_SHIFT);
+    return;
+
+S_Update_Mask:
+    set QUEST_Mirak,
+        (QUEST_Mirak & ~(@Mirak_MASK))
+            | (@talk << @Mirak_SHIFT);
+    return;
+}

@@ -1,0 +1,74 @@
+
+048-2,139,99,0	script	Arvo	366,{
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    @investigate = ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+
+    if (@slimes == 255) goto L_Thank;
+    if (@slimes > 0) goto L_Progress;
+
+    mes "[Arvo]";
+    mes "\"Oh, this is so much work... I can't believe they let this happen! You would think they'd be careful when playing around with such powerful forces. Hah! Big mistake!\"";
+    goto L_Investigate;
+
+L_Progress:
+    mes "[Arvo]";
+    mes "\"We really appreciate your help with the slimes.\"";
+    mes "He sighs.";
+    goto L_Investigate;
+
+L_Thank:
+    mes "[Arvo]";
+    mes "\"Good work with the slimes. This will make our task much easier.\"";
+    mes "He sighs and takes a careful look around.";
+    next;
+    mes "[Arvo]";
+    mes "\"But it shows that Nikolai's position isn't what it used to be. There's disturbance in the great circle of our Sages and things have changed. About one year ago, Nikolai's helpers wouldn't have needed the help of a mere adventurer - no offense.\"";
+    next;
+    mes "\"But it appears we were focusing too much on research and this lead to neglect of other duties of a Sage's household. This is dangerous in times of changes. I'm worried about the future.\"";
+    goto L_Investigate;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "I need to leave.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "See you later.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Visitor:
+    mes "[Arvo]";
+    mes "\"Yes, I remember that one! I welcomed him in the libary and showed him around. But I didn't have the impression he was really listening to what I was saying, though that's hard to tell with the mask.\"";
+    next;
+    mes "\"But when I left him to look at the books on his own, he sneaked over to the workshop area. Visitors are allowed to have a look there, but only if they don't interfere with any research and experiments. But it seems he was being rather disturbing, since they sent them back to the library part.\"";
+    next;
+    mes "\"I tried to keep an eye on him after that, but when I got distracted by some newly arriving visitor he went over to the workshop again! Usually I enjoy my job, because I like talking to people, but this guy... was a pain, really.\"";
+    if ((@investigate != 3) && (@investigate != 6) && (@investigate != 9))
+        goto L_Close;
+    @investigate = @investigate + 1;
+    callfunc "updateBlueSageInvestigate";
+    goto L_Close;
+
+L_Helper:
+    mes "[Arvo]";
+    mes "\"Peetu? That's one of the high rank helpers. As far as I know, he's very talented with magic and takes part in some important research. But I don't really know about those things.\"";
+    goto L_Close;
+
+L_Close:
+    @investigate = 0;
+    @slimes = 0;
+    close;
+}

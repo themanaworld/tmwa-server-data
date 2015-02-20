@@ -1,0 +1,67 @@
+
+048-2,100,125,0	script	Mirjami	363,{
+    @investigate = ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    if (@slimes == 255) goto L_Thank;
+
+    mes "[Mirjami]";
+    mes "\"Where is it? Everything's upside down. These terrible slimes.\"";
+    menu
+        "What are you doing?",L_Next;
+
+L_Next:
+    mes "[Mirjami]";
+    mes "\"Oh? I'm just searching for some cleaning supplies. They must be somewhere around here, but everything went upside down when the slimes escaped.\"";
+    goto L_Investigate;
+
+L_Thank:
+    mes "[Mirjami]";
+    mes "\"I heard you fought the slimes that were still roaming between the bookshelves. Thank you!\"";
+    next;
+    mes "\"I was a bit worried that they might ruin our efforts by messing everything up again after we just cleaned.\"";
+    goto L_Investigate;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "I need to leave.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "See you later.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Visitor:
+    mes "[Mirjami]";
+    mes "\"Ohh, I think I know who you mean. That was a strange guy. He always came over here in the workshop, said he's very interested in the research. I suppose that's ok, but he didn't keep his hands to himself, and touched some experiments and I caught him near some storage racks.\"";
+    next;
+    mes "\"Visitors should keep away from those!\"";
+    if ((@investigate != 3) && (@investigate != 6) && (@investigate != 9))
+        goto L_Close;
+    @investigate = @investigate + 1;
+    callfunc "updateBlueSageInvestigate";
+    goto L_Close;
+
+L_Helper:
+    mes "[Mirjami]";
+    mes "\"Oh, eh, why are you asking me? I've only been here a short while and don't really know all of the people well enough yet.\"";
+    goto L_Close;
+
+L_Close:
+    @investigate = 0;
+    @slimes = 0;
+    close;
+}

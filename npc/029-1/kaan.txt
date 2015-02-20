@@ -1,0 +1,122 @@
+
+029-1,46,95,0	script	Kaan	160,{
+    setarray @npc_loc, 46, 97, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_OutOfRange;
+
+    callfunc "TutorialState";
+    if (!(@kaan_talked)) goto L_Tanisha;
+    if (@tutorial >= 13) goto L_TutDone;
+    if (@tutorial == 12) goto L_Plan;
+    if (@tutorial == 11) goto L_TrickKnown;
+    if (@tutorial == 10) goto L_Trick;
+    if (@tutorial == 9) goto L_Hasan;
+    goto L_Out;
+
+L_OutOfRange:
+    message strcharinfo(0), "Come closer!";
+    goto L_Close;
+
+L_Tanisha:
+    STARTAREA = STARTAREA | $@SpokeToKaan;
+    mes "[Young Man]";
+    mes "\"You're the person I brought here, right?";
+    mes "My name is Kaan, I'm Tanisha's brother.\"";
+    mes "\"She was babbling at me about it all the morning until I sent her to take care of the maggots in the cafe.\"";
+    mes "Kaan grins mischieviously.";
+    mes "[Kaan]";
+    mes "\"She hates maggots.\"";
+    mes "\"Did you already talk to Tanisha?\"";
+    menu
+        "Yes, I helped her with the maggots.",L_Tanisha1,
+        "Yeah, and she's done with the maggots.",L_Tanisha1;
+
+L_Tanisha1:
+    mes "[Kaan]";
+    mes "\"Ah, that is good news.";
+    mes "You know, we have a lot of problems with bugs here.\"";
+    mes "\"I've slain many bugs here to keep them out of our fields.\"";
+    mes "\"If we don't watch out the maggots will eat all of our stocks.";
+    mes "And the island is crawling with scorpions.\"";
+    mes "\"Are you going to visit Hurnscald?";
+    mes "Hurnscald is a wondeful place! Traders, entertainers, adventurers - it's very exciting.\"";
+    mes "\"And Ian the trainer is hanging around there often. You should talk to him, he's a smart guy.\"";
+    mes "\"The ferry to the south takes your there for free.\"";
+    goto L_Close;
+
+L_Out:
+    mes "[Kaan]";
+    mes "\"Hello! How are you? Did you already visit Hurnscald?\"";
+    menu
+        "Yes.", L_Close,
+        "Not yet.",L_Close;
+
+L_Hasan:
+    mes "[Kaan]";
+    mes "\"Hello! How are you? Did you already visit Hurnscald?\"";
+    menu
+        "A guy named Hasan is bullying someone.",L_Next1,
+        "Yes.", L_Close,
+        "Not yet.",L_Close;
+
+L_Next1:
+    mes "\"Hasan! That's crazy. He becomes more cheeky with every day.";
+    mes "I'd like to help you, but - I won't risk an open confrontation with him.\"";
+    mes "\"Sometimes he just freaks out and then he's dangerous.";
+    mes "He might listen to one of the adult men, but they're all off to work in Hurnscald during the day.\"";
+    mes "\"We should think about some kind of trick. Ah, if only I knew his weak point.\"";
+    @tutorial_tmp = 10;
+    callfunc "SetTutorialMask";
+    goto L_Trick;
+
+L_Trick:
+    mes "[Kaan]";
+    mes "\"Do you have any idea what Hasan's weakness could be?";
+    mes "I wonder if Sorfina know something about him that could help us.\"";
+    menu
+        "No idea.",L_Close;
+
+L_TrickKnown:
+    mes "[Kaan]";
+    mes "\"Do you have any idea what Hasan's weakness could be?";
+    menu
+        "He's afraid of scorpions.",L_Next2,
+        "No idea.",L_Close;
+
+L_Next2:
+    mes "[Kaan]";
+    mes "\"Scorpions?! Right! How could I forget?";
+    mes "When he was a child, he nearly died because he fell into a scorpion nest.\"";
+    @tutorial_tmp = 12;
+    callfunc "SetTutorialMask";
+    next;
+    goto L_Explain;
+
+L_Explain:
+    mes "\"Ok, then here's the plan:";
+    mes "\"You'll go to Hasan and give me a sign when you're ready.";
+    mes "Lets say the sign is that you're scratching your head.";
+    mes "I'll watch you from this point.\"";
+    mes "\"When you give me the sign, I'll summon a scorpion on him.";
+    mes "I bet that will show him for the coward he really is.\"";
+    mes "\"How's that? We can start as soon as you're ready.\"";
+    goto L_Close;
+
+L_Plan:
+    mes "[Kaan]";
+    mes "\"I'm ready. Just give me the sign when you're down there.";
+    mes "Or do you want me to explain the plan again?\"";
+    menu
+        "Yes please.",L_Explain,
+        "No, everything's alright.",L_Close;
+
+L_TutDone:
+    mes "[Kaan]";
+    mes "\"Hi there. I hope you enjoy your time in Hurnscald.";
+    mes "Hasan can be a real troublemaker, but it seems like he has calmed down for now.\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}

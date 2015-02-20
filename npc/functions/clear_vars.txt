@@ -1,0 +1,372 @@
+
+function	script	ClearVariables	{
+    // Tutorial
+    if ((TUTORIAL) || (sorfina))
+        goto L_ResetTut;
+    goto L_Heathin;
+
+L_ResetTut:
+    //TUTORIAL to STARTAREA
+    if ((sorfina) || (kaan) || (hasan) || (tanisha))
+        goto L_ResetAllTut;
+    @tutorial_tmp = ((TUTORIAL & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    // Tutorial
+    // Nibble 0 (sorfina, tanisha, kaan & hasan)
+    STARTAREA = (STARTAREA & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
+    // Nibble 1 (valon)
+    @tutorial_tmp = ((TUTORIAL & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    @valon_done = (TUTORIAL & (1 << 7));
+    @valon_start = (TUTORIAL & (1 << 6));
+    if (@valon_start)
+        @tutorial_tmp = (@tutorial_tmp + 2);
+    if (@valon_done)
+        @tutorial_tmp = 7;
+    STARTAREA = (STARTAREA & ~(NIBBLE_1_MASK) | (@tutorial_tmp << NIBBLE_1_SHIFT));
+    // Nibble 2 (Counts)
+    @tutorial_tmp = ((TUTORIAL & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+    STARTAREA = (STARTAREA & ~(NIBBLE_2_MASK) | (@tutorial_tmp << NIBBLE_2_SHIFT));
+    // Nibble 3 (Morgan)
+    @tutorial_tmp = ((TUTORIAL & NIBBLE_6_MASK) >> NIBBLE_6_SHIFT);
+    STARTAREA = (STARTAREA & ~(NIBBLE_3_MASK) | (@tutorial_tmp << NIBBLE_3_SHIFT));
+    // Nibble 4 (Zegas) Barrels shuffled
+    @zegas_done = (TUTORIAL & (1 << 23));
+    @zegas_start = (TUTORIAL & (1 << 16));
+    @zegas_met = (TUTORIAL & (1 << 30));
+    @tutorial_tmp = 0;
+    if (@zegas_met)
+        @tutorial_tmp = 1;
+    if (@zegas_start)
+        @tutorial_tmp = 2;
+    if (@zegas_done)
+        @tutorial_tmp = 4;
+    STARTAREA = (STARTAREA & ~(NIBBLE_4_MASK) | (@tutorial_tmp << NIBBLE_4_SHIFT));
+    // Nibble 5 (Barrels)
+    @tutorial_tmp = 0;
+    STARTAREA = (STARTAREA & ~(NIBBLE_5_MASK) | (@tutorial_tmp << NIBBLE_5_SHIFT));
+    // Nibble 6 (Barrels)
+    STARTAREA = (STARTAREA & ~(NIBBLE_6_MASK) | (@tutorial_tmp << NIBBLE_6_SHIFT));
+    TUTORIAL = 0;
+    goto L_Heathin;
+
+L_ResetAllTut:
+    sorfina = 0;
+    tanisha = 0;
+    hasan = 0;
+    kaan = 0;
+    TUTORIAL = 0;
+    STARTAREA = 0;
+    FLAGS = FLAGS &~ FLAG_TUTORIAL_DONE;
+    goto L_Heathin;
+
+L_Heathin:
+    if (HEATHIN_QUEST > 0)
+        QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(NIBBLE_6_MASK)) | (HEATHIN_QUEST << NIBBLE_6_SHIFT);
+    HEATHIN_QUEST = 0;
+    goto L_Easter;
+
+L_Easter:
+    // Easter
+    EasterQuest = 0;
+
+    // Halloween 2006
+    HWQUEST1 = 0;
+    HWQUEST2 = 0;
+    HWQUEST3 = 0;
+    HWQUEST4 = 0;
+    HWQUEST5 = 0;
+    HWQUEST6 = 0;
+    HWQUEST7 = 0;
+    HWQUEST8 = 0;
+    HWQUEST9 = 0;
+    HWQUEST10 = 0;
+    HWQUEST11 = 0;
+    HWQUEST12 = 0;
+    HWQUEST13 = 0;
+    HWQUEST14 = 0;
+    HWQUEST15 = 0;
+    HWQUEST16 = 0;
+    HWQUEST17 = 0;
+    HWQUEST18 = 0;
+    HWQUEST18 = 0;
+    HWQUEST19 = 0;
+    HWQUEST20 = 0;
+
+    // Christmas 2006
+    XMASQUEST1 = 0;
+    XMASQUEST2 = 0;
+    XMASQUEST3 = 0;
+    XMASQUEST4 = 0;
+    XMASQUEST5 = 0;
+    XMASQUEST6 = 0;
+    XMASQUEST7 = 0;
+    XMASQUEST8 = 0;
+    XMASQUEST9 = 0;
+    XMASQUEST10 = 0;
+    XMASQUEST11 = 0;
+    XMASQUEST12 = 0;
+    XMASQUEST13 = 0;
+    XMASQUEST14 = 0;
+    XMASQUEST15 = 0;
+    XMASQUEST16 = 0;
+    XMASQUEST17 = 0;
+    XMASQUEST18 = 0;
+    XMASQUEST19 = 0;
+    XMASQUEST20 = 0;
+
+    QUEST_Halloween07_state = 0;
+
+    QUEST_xmas07_state = 0;
+    QUEST_xmas07_milk = 0;
+    QUEST_xmas07_cookies = 0;
+    QUEST_xmas07_presents = 0;
+
+    QUEST_Easter08_state = 0;
+
+    Halloween08 = 0;
+
+    QUEST_xmas08_state = 0;
+
+    QUEST_Easter09 = 0;
+
+    set Candyman, 0; // Halloween 2009
+
+    QUEST_Christmas09_state = 0;
+
+    QUEST_Easter09_slots = 0;
+
+    // easter 2010
+    // This must not be cleared: since some people would like to go to the easter island!
+    // set Easter_2010_QuestState, 0;
+    Easter_2010_EggState1 = 0;
+    Easter_2010_EggState2 = 0;
+    Easter_2010_EggState3 = 0;
+    Easter_2010_EggState4 = 0;
+    Easter_2010_EggState5 = 0;
+
+    // halloween 2010
+    hween10 = 0;
+    hween10_collect_canpump = 0;
+    hween10_credits = 0;
+    hween10_collect = 0;
+    hween10_collect_mmallow = 0;
+    hween10_collect_jelskul = 0;
+    hween10_bonecount = 0;
+    hween10_collect_tondel = 0;
+    hween10_paid = 0;
+
+    // Xmas 2010:
+    Count_Yellow = 0;
+    Count_White = 0;
+    Maze = 0;
+    Yellow = 0;
+    White = 0;
+    Xmas2010 = 0;
+    Golbenez_Inn_Cost = 0;
+
+    QUEST_Easter11 = 0;
+
+    // contains bad karma information
+    // set hw2011, 0;
+
+    xmas11 = 0;
+
+    QUEST_Easter12 = 0;
+
+    xmas2012 = 0;
+
+    QUEST_clothdyer_angus = 0;
+
+    // Tulimshar and Mine Variables which aren't used anymore
+    Scorp = 0;
+    //set BugLeg, 0;
+    // variable isn't used
+    QUEST_clothdyer_state = 0;
+    // variable was moved to a temporary player variable
+    KatzeBeenOutside = 0;
+    // variable was moved to Nibble 1 of the variable Katze
+    LastHiss = 0;
+    // quest was turned into a Daily Quest, so the variable isn't needed anymore
+    //set CaveSnakeLamp, 0;
+
+    // move Scythe quest into bitmasked variable QUEST_Hurnscald
+    if (QUEST_Scythe_state)
+        QUEST_Hurnscald = (QUEST_Hurnscald & ~(NIBBLE_1_MASK)) | (QUEST_Scythe_state << NIBBLE_1_SHIFT);
+    QUEST_Scythe_state = 0;
+
+    // move Demon Mask quest into bitmasked variable QUEST_Hurnscald
+    if (QUEST_demon_mines)
+        QUEST_Hurnscald = (QUEST_Hurnscald & ~(NIBBLE_2_MASK)) | (QUEST_demon_mines << NIBBLE_2_SHIFT);
+    QUEST_demon_mines = 0;
+
+    // move Inspector quest into bitmasked variable QUEST_Hurnscald
+    @inspector = ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+    if (Inspector > @inspector)
+        QUEST_Hurnscald = (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (Inspector << NIBBLE_3_SHIFT);
+    Inspector = 0;
+    @inspector = 0;
+
+    //These lines are needed to migrate stuff from variables to flags
+    if (Open_Underground_Palace_Barrier)
+        FLAGS = FLAGS | FLAG_OPENED_UNDERGROUND;
+    Open_Underground_Palace_Barrier = 0;
+
+    if (Naem_Quest_Done)
+        FLAGS = FLAGS | FLAG_GOT_NAEM_GLOVES;
+    Naem_Quest_Done = 0;
+
+    if (ChristmasQuest)
+        FLAGS = FLAGS | FLAG_SNOWMAN;
+    ChristmasQuest = 0;
+
+    if (ChristmasQuest2)
+        FLAGS = FLAGS | FLAG_SANTAS_HELPER;
+    ChristmasQuest2 = 0;
+
+    if (ChestQuest)
+        FLAGS = FLAGS | FLAG_HURNSMINE_CHEST;
+    ChestQuest = 0;
+
+    if (#BankAccount < 0)
+        goto L_FixBank;
+
+    goto L_Fix_Skills;
+
+L_FixBank:
+    if (Zeny >= -#BankAccount)
+        goto L_Fix_Full;
+
+    // Partial fix
+    #BankAccount = #BankAccount + Zeny;
+    Zeny = 0;
+    goto L_Fix_Skills;
+
+L_Fix_Full:
+    Zeny = Zeny + #BankAccount;
+    #BankAccount = 0;
+    goto L_Fix_Skills;
+
+L_Fix_Skills:
+    if(getskilllv(SKILL_TRADE) > 0) addtoskill SKILL_TRADE, 0;
+    if(getskilllv(SKILL_PARTY) > 0) addtoskill SKILL_PARTY, 0;
+    if(getskilllv(SKILL_EMOTE) > 0) addtoskill SKILL_EMOTE, 0;
+    goto L_Barber_Janitor;
+
+L_Barber_Janitor:
+    callfunc "getHeadStyles"; // this converts class, color and hair
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function	script	ClearVarTMW_Quest	{
+    if (TMW_Quest == 0) goto L_Done;
+    if (TMW_Quest <= 6)  goto L_Bernard_Mikhail;
+    if (TMW_Quest <= 8)  goto L_Sarah;
+    if (TMW_Quest <= 10)  goto L_Vincent;
+    if (TMW_Quest <= 12)  goto L_Sandra;
+    if (TMW_Quest <= 40)  goto L_Desert;
+    goto L_Bandit;
+
+L_Bandit:
+    @bandit = TMW_Quest - 40;
+    QUEST_Hurnscald = (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@bandit << NIBBLE_0_SHIFT));
+    TMW_Quest = 40;
+    @bandit = 0;
+    goto L_Desert;
+
+L_Desert:
+    @miners = TMW_Quest - 12;
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@miners << BYTE_2_SHIFT));
+    TMW_Quest = 12;
+    @miners = 0;
+    goto L_Sandra;
+
+L_Sandra:
+    @sandra = TMW_Quest - 10;
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_3_MASK) | (@sandra << NIBBLE_3_SHIFT));
+    TMW_Quest = 10;
+    @sandra = 0;
+    goto L_Vincent;
+
+L_Vincent:
+    @vincent = TMW_Quest - 8;
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_2_MASK) | (@vincent << NIBBLE_2_SHIFT));
+    TMW_Quest = 8;
+    @vincent = 0;
+    goto L_Sarah;
+
+L_Sarah:
+    @sarah = TMW_Quest - 6;
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_1_MASK) | (@sarah << NIBBLE_1_SHIFT));
+    TMW_Quest = 6;
+    @sarah = 0;
+    goto L_Bernard_Mikhail;
+
+L_Bernard_Mikhail:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (TMW_Quest << NIBBLE_0_SHIFT));
+    TMW_Quest = 0;
+    goto L_Done;
+
+L_Done:
+    return;
+}
+
+-	script	#ClearGlobalVars	-1,{
+    end;
+
+OnInit:
+
+    $@loop = 5;
+    goto L_FluffyClear;
+
+L_FluffyClear:
+    if ($@loop == 12)
+        goto L_IlliaClear;
+
+    $Record_Fluffy_Name$[$@loop] = "";
+    $Record_Fluffy_Date$[$@loop] = "";
+    $Record_Fluffy_Kills[$@loop] = 0;
+
+    $@loop = $@loop + 1;
+    goto L_FluffyClear;
+
+
+L_IlliaClear:
+    $@loop = 0;
+    goto L_IlliaLoop;
+
+L_IlliaLoop:
+    if ($Illia_Win_Records$[$@loop] == "")
+        goto L_EventClear;
+
+    $Illia_Win_Records$[$@loop] = "";
+
+    $@loop = $@loop + 1;
+    goto L_IlliaLoop;
+
+L_EventClear:
+    $@loop = 0;
+
+    $CandyOpsComplete = 0;
+
+    $Easter_2010_Npc_State1 = 0;
+    $Easter_2010_Npc_State2 = 0;
+    $Easter_2010_Egg_Loc_State1 = 0;
+    $Easter_2010_Egg_Loc_State2 = 0;
+    $Easter_2010_Egg_Loc_State3 = 0;
+    $Easter_2010_Egg_Loc_State4 = 0;
+    $Easter_2010_Egg_Loc_State5 = 0;
+
+    $hween10 = 0;
+    $hween10_tondel = 0;
+    $hween10_mmallow = 0;
+    $hween10_jelskul = 0;
+    $hween10_canpump = 0;
+
+    $Golbenez_Inn_Cost = 0;
+
+    $state = 0;
+
+    end;
+}

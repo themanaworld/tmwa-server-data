@@ -1,0 +1,220 @@
+
+function	script	XmasDebug	{
+    if(debug)
+        goto L_Debug;
+    goto L_Live;
+
+L_Live:
+    mes "What do you want to do?";
+    menu
+        "Debug Vars", L_DebugLive,
+        "Xmas Time Key Change.", L_XmasTimeKey,
+        "Reset Xmas Chamber.", L_XmasChamberReset,
+        "Do nothing.", L_Close;
+
+L_DebugLive:
+    mes "--Sever--";
+    mes "Event State: " + $@xmas_time;
+    mes "Event Start" + $XMAS_TIME_KEY[0] + "/1";
+    mes "Reward Start: " + $XMAS_TIME_KEY[1] + "/" + $XMAS_TIME_KEY[3];
+    mes "Event End: " + $XMAS_TIME_KEY[2] + "/" + $XMAS_TIME_KEY[4];
+    mes "Event Time Key (year (CCYY)): " + $XMAS_TIME_KEY[5];
+    goto L_Close;
+
+L_Debug:
+    mes "What do you want to do?";
+    menu
+        "Debug Vars", L_DebugVars,
+        "Set Quest State.", L_XmasState,
+        "Set Karma. [0-15] 15 Nice", L_XmasKarma,
+        "Set All Lists", L_SetAllLists,
+        "Set All Helpers", L_SetAllHelpers,
+        "Set Boss Hero", L_SetBossHero,
+        "Reset Quest State.", L_Reset,
+        "Set Old Event Flag.", L_LastReset,
+        "Xmas Time Key Change.", L_XmasTimeKey,
+        "Reset Xmas Chamber.", L_XmasChamberReset,
+        "Do nothing.", L_Close;
+
+L_DebugVars:
+    callfunc "XmasStates";
+    mes "--Sever--";
+    mes "Event State: " + $@xmas_time;
+    mes "Event Start" + $XMAS_TIME_KEY[0] + "/1";
+    mes "Reward Start: " + $XMAS_TIME_KEY[1] + "/" + $XMAS_TIME_KEY[3];
+    mes "Event End: " + $XMAS_TIME_KEY[2] + "/" + $XMAS_TIME_KEY[4];
+    mes "Event Time Key (year (CCYY)): " + $XMAS_TIME_KEY[5];
+    next;
+    mes "--Player--";
+    mes "Player Event Time Key " + XMASYEAR;
+    mes "xmas_state: " + @xmas_state;
+    mes "xmas_karma: " + @xmas_karma;
+    mes "xmas_side: " + @xmas_side;
+    next;
+    mes "xmas_list_gather: " + @xmas_list_gather;
+    mes "xmas_list_complete: " + @xmas_list_complete;
+    mes "xmas_list_deliver: " + @xmas_list_deliver;
+    mes "xmas_helper_start_state: " + @xmas_helper_start_state;
+    mes "xmas_helper_done_state: " + @xmas_helper_done_state;
+    mes "xmas_reagent_start_state: " + @xmas_reagent_start_state;
+    mes "xmas_reagent_done_state: " + @xmas_reagent_done_state;
+    mes "xmas_boss_door_state: " + @xmas_boss_door_state;
+    mes "xmas_reward_start_state " + @xmas_reward_start_state;
+    mes "xmas_reward1_done_state " + @xmas_reward1_done_state;
+    mes "xmas_reward2_done_state " + @xmas_reward2_done_state;
+    mes "xmas_reward_done_state: " + @xmas_reward_done_state;
+    next;
+    mes "xmas_basement_passage: " + @xmas_basement_passage;
+    mes "xmas_thrown_out: " + @xmas_thrown_out;
+    mes "xmas_hard_mode: " + @xmas_boss_hero;
+    next;
+    mes "xmas_sweater: " + @xmas_sh_done;
+    next;
+    mes "xmas_all_lists: " + @xmas_all_lists;
+    next;
+    mes "xmas_helper_bit: " + @xmas_helper_bit;
+    mes "xmas_all_helpers: " + @xmas_all_helpers;
+    mes "xmas_helper_acorn: " + @xmas_helper_acorn;
+    mes "xmas_helper_bedding: " + @xmas_helper_bedding;
+    mes "xmas_helper_glitter: " + @xmas_helper_glitter;
+    mes "xmas_helper_storage: " + @xmas_helper_storage;
+    mes "xmas_knows_route: " + @xmas_knows_route;
+    goto L_Close;
+
+L_LastReset:
+    XMASTIME = 255;
+    XMASYEAR = 2012;
+    goto L_Close;
+
+L_Reset:
+    XMASTIME = 0;
+    XMASYEAR = $XMAS_TIME_KEY[5];
+    goto L_Close;
+
+L_XmasTimeKey:
+    if (getgmlevel() < 20) goto L_Close;
+    mes "Xmas Time Key Change.";
+    mes "Start Month?";
+    input @xmas_time_key_smonth;
+    if((@xmas_time_key_smonth == 0) || (@xmas_time_key_smonth > 12))
+        goto L_XmasError;
+    mes "Reward Start Month?";
+    input @xmas_time_key_srmonth;
+    if((@xmas_time_key_srmonth == 0) || (@xmas_time_key_srmonth > 12))
+        goto L_XmasError;
+    mes "End Month?";
+    input @xmas_time_key_emonth;
+    if((@xmas_time_key_emonth == 0) || (@xmas_time_key_emonth > 12))
+        goto L_XmasError;
+    mes "Reward Start Day?";
+    input @xmas_time_key_rsday;
+    if((@xmas_time_key_rsday == 0) || (@xmas_time_key_rsday > 31))
+        goto L_XmasError;
+    mes "Reward End Day?";
+    input @xmas_time_key_reday;
+    if((@xmas_time_key_reday == 0) || (@xmas_time_key_reday > 31))
+        goto L_XmasError;
+    mes "Time Key (CCYY) ";
+    input @xmas_time_key_year;
+    goto L_SetNewKey;
+
+L_XmasError:
+    mes "Incorrect Entry. Try again.";
+    goto L_Close;
+
+L_SetNewKey:
+    setarray $XMAS_TIME_KEY, @xmas_time_key_smonth, @xmas_time_key_srmonth, @xmas_time_key_emonth, @xmas_time_key_rsday, @xmas_time_key_reday, @xmas_time_key_year;
+    donpcevent "#XmasConfig::OnCommandRestartQuest";
+    goto L_Close;
+
+L_XmasChamberReset:
+    donpcevent "AniManOMat::OnCommandChamberReset";
+    goto L_Close;
+
+L_XmasState:
+    mes "Quest state?";
+    input @xmas_state;
+    callfunc "XmasSetState";
+    goto L_Close;
+
+L_XmasKarma:
+    mes "Karma (0-15) 0: Naughty, 15: Good";
+    input @xmas_karma;
+    XMASTIME = (XMASTIME & ~(NIBBLE_1_MASK) | (@xmas_karma << NIBBLE_1_SHIFT));
+    goto L_Close;
+
+L_SetAllLists:
+    XMASTIME = XMASTIME | $@xmas_all_lists_bit;
+    goto L_Close;
+
+L_SetAllHelpers:
+    XMASTIME = XMASTIME | $@xmas_all_helpers_bit;
+    goto L_Close;
+
+L_SetBossHero:
+    XMASTIME = XMASTIME | $@xmas_boss_hero_bit;
+    goto L_Close;
+
+L_Close:
+    @xmas_state = 0;
+    @xmas_karma = 0;
+    @xmas_hard_mode = 0;
+    @xmas_time_key_smonth = 0;
+    @xmas_time_key_emonth = 0;
+    @xmas_time_key_rsday = 0;
+    @xmas_time_key_reday = 0;
+    @xmas_time_key_year = 0;
+    close;
+}
+
+020-1.gat,86,76,0	script	XmasDebug#1	105,{
+    callfunc "XmasDebug";
+    goto L_End;
+
+OnInit:
+    if(!(debug))
+        disablenpc "XmasDebug#1";
+    goto L_End;
+
+L_End:
+    end;
+}
+
+030-2.gat,193,62,0	script	XmasDebug#2	105,{
+    callfunc "XmasDebug";
+    goto L_End;
+
+OnInit:
+    if(!(debug))
+        disablenpc "XmasDebug#2";
+    goto L_End;
+
+L_End:
+    end;
+}
+
+030-3.gat,26,26,0	script	XmasDebug#3	105,{
+    callfunc "XmasDebug";
+    goto L_End;
+
+OnInit:
+    if(!(debug))
+        disablenpc "XmasDebug#3";
+    goto L_End;
+
+L_End:
+    end;
+}
+
+030-4.gat,30,30,0	script	XmasDebug#4	111,{
+    callfunc "XmasDebug";
+    goto L_End;
+
+OnInit:
+    if(!(debug))
+        disablenpc "XmasDebug#4";
+    goto L_End;
+
+L_End:
+    end;
+}

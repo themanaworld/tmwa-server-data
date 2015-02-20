@@ -1,0 +1,267 @@
+
+052-2,88,19,0	script	#TriggerDialog	32767,3,2,{
+    @step = 7;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if ($@illia_level_7_progress == 0 && strcharinfo(0) == $@ILLIA_HERO$) goto L_SpawnLuvia;
+    end;
+
+L_SpawnLuvia:
+    $@illia_level_7_progress = 1;
+    donpcevent "Luvia::OnCommandStart";
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+
+}
+
+052-2,77,48,0	script	#TriggerPlaceLuvia	32767,1,1,{
+    if (strcharinfo(0) != $@ILLIA_HERO$) end;
+    if ($@illia_progress == 7 && $@illia_level_7_progress == 0) goto L_PlaceLuvia;
+    end;
+
+L_PlaceLuvia:
+    npcwarp 88, 15, "#LuviaDaemon";
+    npcwarp 88, 15, "Luvia";
+    end;
+
+}
+
+052-2,88,15,0	script	Luvia	371,{
+    @step = 7;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if ($@illia_level_7_progress == 0 && strcharinfo(0) == $@ILLIA_HERO$) goto L_Start;
+    end;
+
+OnCommandStart:
+    goto L_Start;
+
+L_Start:
+    setnpctimer 0;
+    if ($@illia_level_7_progress == 1)
+        startnpctimer;
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+
+OnTimer1000:
+    npctalk "Oh well, who thought you would survive so far?";
+    end;
+
+OnTimer5000:
+    npctalk "All this way, for nothing, only to die from my hands...";
+    end;
+
+OnTimer10000:
+    npctalk "Don't worry, you will continue to live, for my sake.";
+    end;
+
+OnTimer15000:
+    npctalk "One piece of advice: get prepared!";
+    stopnpctimer;
+    setnpctimer 0;
+    donpcevent "#LuviaDaemon::OnCommandInvoke";
+    end;
+
+}
+
+052-2,88,15,0	script	#LuviaDaemon	127,{
+end;
+
+OnCommandInvoke:
+    setnpctimer 0;
+    if ($@illia_level_7_progress == 1)
+        startnpctimer;
+    end;
+
+OnTimer2000:
+    if ($@illia_level_7_progress != 1) end;
+    misceffect FX_DARK_TELEPORT;
+    // Kill any mob existing on the map
+    // That's to terminate any attempt at players mass-summoning mobs
+    // and hide in a corner of the map.
+    killmonster "052-2", "All";
+    npcwarp 1, 1, "Luvia";
+    end;
+
+OnTimer100:
+    if ($@illia_progress != 7)
+        goto L_Clear;
+    if ($@illia_level_7_progress != 3)
+        end;
+    // Trance mode
+    callsub S_SpawnWitchGuard;
+    end;
+
+OnTimer2600:
+    if ($@illia_level_7_progress != 3)
+        end;
+    npcwarp 1, 1, "#LuviaDaemon";
+    setnpctimer 0;
+    end;
+
+OnTimer5000:
+    if ($@illia_level_7_progress != 1)
+        end;
+    // Warp to the place to spawn luvia once the teleport sequence is finished
+    if (!(attachrid($@ILLIA_HERO_ID)))
+        end;
+    $@illia_luvia_x = getx();
+    $@illia_luvia_y = gety();
+    npcwarp $@illia_luvia_x, $@illia_luvia_y, "#LuviaDaemon";
+
+    detachrid;
+    // This is a fix to force the official mana client to display a npc after a warp.
+    // Note: the manaplus client do not need this.
+    disablenpc "#LuviaDaemon";
+    end;
+
+OnTimer5500:
+    if ($@illia_level_7_progress != 1) end;
+    // See the note above.
+    enablenpc "#LuviaDaemon";
+    misceffect FX_EVIL_SUMMON;
+    misceffect FX_CHANNELLING_CAST;
+    monster "052-2", $@illia_luvia_x, $@illia_luvia_y, "", 1102, 1, "#LuviaDaemon::OnDeath";
+    $@illia_luvia_x = 0;
+    $@illia_luvia_y = 0;
+    end;
+
+OnTimer9000:
+    if ($@illia_level_7_progress != 1) end;
+    set $@illia_luvia_trance_delay, 480; // 8 minutes before turning in trance mode
+    $@illia_witch_guard_threshold = 30 + ($Illia_Luvia_Harvest*3)/5;
+    if ($@illia_witch_guard_threshold > 100)
+        $@illia_witch_guard_threshold = 100;
+    $@illia_level_7_progress = 2;
+    npcwarp 1, 1, "#LuviaDaemon";
+    setnpctimer 0;
+    end;
+
+OnTimer26000:
+    if ($@illia_progress != 7)
+        goto L_Clear;
+    if ($@illia_level_7_progress != 2)
+        end;
+    // The more players Luvia "harvested", the stronger she is.
+    if (rand(100) >= $@illia_witch_guard_threshold)
+        end;
+    // Decrease her power over time.
+    $@illia_witch_guard_threshold = $@illia_witch_guard_threshold - 7;
+    // Keep always a small probability when it reached the minimum
+    if ($@illia_witch_guard_threshold <= 0)
+        $@illia_witch_guard_threshold = 6 + $Illia_Luvia_Harvest/5;
+    callsub S_SpawnWitchGuard;
+    end;
+
+S_SpawnWitchGuard:
+    if (!(attachrid($@ILLIA_HERO_ID)))
+        end;
+    npcwarp getx(), gety(), "#LuviaDaemon";
+    misceffect FX_EVIL_SUMMON;
+    misceffect FX_GROUND_SPAWN;
+    monster "052-2", getx(), gety(), "", 1103, 1, "#LuviaDaemon::OnWGD";
+    detachrid;
+    areatimer "052-2", 73, 11, 115, 49, 0, "#LuviaDaemon::OnWGS";
+    return;
+
+OnTimer30000:
+    if ($@illia_level_7_progress != 2)
+        end;
+    npcwarp 1, 1, "#LuviaDaemon";
+    $@illia_luvia_trance_delay = $@illia_luvia_trance_delay - 30;
+    if ($@illia_luvia_trance_delay <= 0)
+        goto L_TriggerTrance;
+    setnpctimer 0;
+    end;
+
+L_TriggerTrance:
+    $@illia_level_7_progress = 3;
+    $@illia_luvia_trance_delay = 0;
+    areatimer "052-2", 73, 11, 115, 49, 0, "#LuviaDaemon::OnTT";
+    setnpctimer 0;
+    end;
+
+L_Clear:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+OnDeath:
+    stopnpctimer;
+    setnpctimer 0;
+    if ($@illia_progress != 7)
+        end;
+    $@illia_level_7_progress = 4;
+    killmonster "052-2", "#LuviaDaemon::OnWGD";
+    mapannounce "052-2", "Luvia:* How? By mere humans! But we will see again! Enjoy your victory while it lasts, " + $@ILLIA_HERO$ + "!!", 0;
+
+    $@illia_bp = $Illia_Luvia_Harvest * 16 / 10 + 120;
+    areatimer "052-2", 73, 11, 115, 49, 0, "#LuviaDaemon::OnBP";
+
+    areatimer "052-2", 73, 11, 115, 49, 2000, "#LuviaDaemon::OnW00t";
+
+    $@illia_progress = 8;
+    callfunc "UpdateIlliaProgress";
+    // Set the number of common rewards rewards
+    if ($Illia_Luvia_Harvest < 15)
+        $@illia_num_common_reward_items = 0;
+    if ($Illia_Luvia_Harvest >= 15 && $Illia_Luvia_Harvest < 35)
+        $@illia_num_common_reward_items = 1;
+    if ($Illia_Luvia_Harvest >= 35)
+        $@illia_num_common_reward_items = 2;
+
+    // Set the number of unique rewards
+    if ($Illia_Luvia_Harvest < 40)
+        $@illia_num_unique_reward_items = 1;
+    if ($Illia_Luvia_Harvest >= 40)
+        $@illia_num_unique_reward_items = 2;
+    $Illia_Luvia_Harvest = 0;
+
+    // Extend the time limit of +7 mins to leave enough time to pick
+    // the rewards even if close to the time limit
+    $@illia_max_time = $@illia_max_time + 300;
+
+    // Record how many times the quest was finished
+    $Illia_Win_Counter = $Illia_Win_Counter + 1;
+
+    end;
+
+OnBP:
+    BOSS_POINTS = BOSS_POINTS + $@illia_bp;
+    message strcharinfo(0), "You gain " + $@illia_bp + " Boss Points giving you a total of " + BOSS_POINTS + ".";
+    end;
+
+OnWGD:
+    end;
+
+OnWGS:
+    if ($@illia_level_7_progress == 2)
+        message strcharinfo(0), "One of Luvia's guard spawned from the depths to assist her!";
+    end;
+
+OnTT:
+    if ($@illia_level_7_progress == 3)
+        message strcharinfo(0), "Luvia seems to become in trance!";
+    end;
+
+OnW00t:
+    message strcharinfo(0), "You defeated this evil sorceress... But what about her sister now?";
+    end;
+
+}
+
+052-2,88,12,0	script	#ToLuviaRoomDoor	32767,1,2,{
+    @step = 7;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if ($@illia_level_7_progress < 4) end;
+    warp "052-2", 133, 84;
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+}

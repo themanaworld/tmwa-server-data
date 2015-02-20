@@ -1,0 +1,22 @@
+017-9,0,0,0	script	UnequipCB	-1,{
+    end;
+
+OnUnequip:
+    unequipbyid (@unequip_slot - 1);
+    @unequip_slot = 0;
+    end;
+}
+
+function	script	UnequipLater	{
+    // if there are multiple items that want to be removed,
+    // only schedule one timer - scripts will be called again
+    if (@unequip_slot)
+        goto L_Return;
+
+    @unequip_slot = (@slotId + 1);
+    addtimer 0, "UnequipCB::OnUnequip";
+    goto L_Return;
+
+L_Return:
+    return;
+}

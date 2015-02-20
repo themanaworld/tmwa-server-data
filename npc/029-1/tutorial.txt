@@ -1,0 +1,67 @@
+-	script	#TutorialConfig	-1,{
+    end;
+
+OnInit:
+    $@ScorpionFighter = 0;
+    $@ScorpionTimer = 0;
+    set $@ScorpDeath, 0; 
+    $@SpokeToKaan = (1 << 31);
+    end;
+}
+function	script	TutorialState	{
+    callfunc "ClearVariables";
+    @tutorial = ((STARTAREA & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    @kaan_talked = (STARTAREA & $@SpokeToKaan);
+    return;
+}
+function	script	SetTutorialMask	{
+    STARTAREA = (STARTAREA & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
+    @tutorial_tmp = 0;
+    return;
+}
+029-2,21,26,0	script	TutDebug	154,{
+    mes "[TutDebug]";
+    mes "Reset?";
+    menu
+        "Reset Kaan/Hasan",L_Kaan,
+        "Yes.",L_Reset,
+        "No.",L_Close;
+
+L_Kaan:
+    @tutorial_tmp = 8;
+    STARTAREA = (STARTAREA & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
+    STARTAREA = STARTAREA &~ $@SpokeToKaan;
+    mes "Reset!";
+    goto L_Close;
+
+L_Reset:
+    TUT_var = 0;
+    @tutorial_tmp = 0;
+    STARTAREA = (STARTAREA & ~(NIBBLE_0_MASK) | (@tutorial_tmp << NIBBLE_0_SHIFT));
+    STARTAREA = STARTAREA &~ $@SpokeToKaan;
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if(!debug)
+        disablenpc "TutDebug";
+    end;
+}
+029-1,32,99,0	script	#tutorialoutside	45,0,0,{
+    callfunc "TutorialState";
+    if (@tutorial >= 8)
+        goto L_Warp;
+    goto L_ResetTutorial;
+
+L_ResetTutorial:
+    @tutorial_tmp = 8;
+    callfunc "SetTutorialMask";
+    goto L_Warp;
+
+L_Warp:
+    warp "029-2", 114, 92;
+    end;
+}

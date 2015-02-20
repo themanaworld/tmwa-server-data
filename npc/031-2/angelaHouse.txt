@@ -1,0 +1,104 @@
+
+031-2,29,28,0	script	Angela#house	196,{
+    @Q_Nivalis_state_MASK = NIBBLE_5_MASK;
+    @Q_Nivalis_state_SHIFT = NIBBLE_5_SHIFT;
+
+    @rescue_Cindy = ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
+
+    if (@rescue_Cindy == 4) goto L_Hello_Again;
+    if (@rescue_Cindy == 3) goto L_Reward;
+
+    mes "...";
+    goto L_Close;
+
+L_Reward:
+    mes "[Angela]";
+    mes "\"Hello " + strcharinfo(0) + ", thank you again. I'm so glad Cindy is back home safe.\"";
+    next;
+    mes "\"As I told you, my husband is an adventurer. He is on one of his travels, so he couldn't rescue Cindy himself.\"";
+    next;
+    mes "\"I want to give you one of his treasures. Beside all the junk he brings, there are some very valuable things.\"";
+    next;
+    mes "\"This item is called the Rock Knife. When you wield it, you feel as robust as a rock.\"";
+
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
+    getitem "RockKnife", 1;
+    @rescue_Cindy = 4;
+    callsub S_Update_Mask;
+
+    next;
+    mes "\"I hope this will be useful for you.\"";
+    next;
+    mes "\"I am so glad Cindy is safe. But there is still another problem. The Yetis took away all the white and yellow present boxes we wanted to bring to Santa!\"";
+    next;
+    mes "\"Usually, Yetis are very shy - I wonder why they did that. There is something strange going on.\"";
+    next;
+    mes "\"May I ask you for help again? I'll give you a small reward for every 3 boxes of one color you bring me.\"";
+    goto L_Close;
+
+L_Full_Inv:
+    mes "\"Oh, it seems you carry so much stuff - I will keep it for you until you can take it.\"";
+    goto L_Close;
+
+L_Hello_Again:
+    mes "[Angela]";
+    mes "\"Hello! Good to see you again. Please warm yourself.\"";
+    next;
+    menu
+        "I just wanted to say hello.",L_Close,
+        "I have some yellow present boxes.",L_Yellow,
+        "I have some white present boxes.",L_White;
+
+L_Yellow:
+    @dq_level = 70;
+    @dq_cost = 32;
+    @dq_count = 3;
+    @dq_name$ = "YellowPresentBox";
+    @dq_friendly_name$ = "yellow present box";
+    @dq_money = 5300;
+    @dq_exp = 1300;
+
+    callfunc "DailyQuest";
+    next;
+    if (@dq_return == 4)
+        mes "\"Santa will be glad to have them back.\"";
+    goto L_Close;
+
+L_White:
+    @dq_level = 80;
+    @dq_cost = 64;
+    @dq_count = 3;
+    @dq_name$ = "WhitePresentBox";
+    @dq_friendly_name$ = "white present box";
+    @dq_money = 10800;
+    @dq_exp = 2800;
+
+    callfunc "DailyQuest";
+    next;
+    if (@dq_return == 4)
+        mes "\"You are a great help!\"";
+    goto L_Close;
+
+L_Close:
+    @Q_Nivalis_state_MASK = 0;
+    @Q_Nivalis_state_SHIFT = 0;
+    @rescue_Cindy = 0;
+
+    @dq_level = 0;
+    @dq_cost = 0;
+    @dq_count = 0;
+    @dq_name$ = "";
+    @dq_friendly_name$ = "";
+    @dq_money = 0;
+    @dq_exp = 0;
+    @dq_return = 0;
+    close;
+
+S_Update_Mask:
+    set QUEST_Nivalis_state,
+        (QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
+            | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
+    return;
+}

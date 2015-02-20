@@ -1,0 +1,307 @@
+
+027-2,43,73,0	script	Savaric	317,{
+    @Graveyard_Inn_MASK = NIBBLE_1_MASK;
+    @Graveyard_Inn_SHIFT = NIBBLE_1_SHIFT;
+
+    @state = ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+
+    @Graveyard_Inn_Woman_MASK = NIBBLE_0_MASK;
+    @Graveyard_Inn_Woman_SHIFT = NIBBLE_0_SHIFT;
+
+    @woman = ((QUEST_Graveyard_Inn & @Graveyard_Inn_Woman_MASK) >> @Graveyard_Inn_Woman_SHIFT);
+
+    @Graveyard_Inn_Golbenez_MASK = NIBBLE_4_MASK;
+    @Graveyard_Inn_Golbenez_SHIFT = NIBBLE_4_SHIFT;
+
+    @golbanez = ((QUEST_Graveyard_Inn & @Graveyard_Inn_Golbenez_MASK) >> @Graveyard_Inn_Golbenez_SHIFT);
+
+    @minLevel = 85;
+    @CRYSTAL_AMOUNT = 500;
+    @CRYSTAL_EXP = 200000;
+    @CRYSTAL_EXTRA_EXP = 100;
+    @CRYSTAL_MAX = 2000;
+    set @DIAMOND_AMOUNT, 20; // caution, this value needs to be the same as in the innkeepers script!
+
+    if (@state >= 7) goto L_Have_Soul;
+    if (@state == 6) goto L_Want_Soul;
+    if (@state == 5) goto L_Apologize;
+    if (@state == 4) goto L_Waiting;
+    if (@state == 3) goto L_Golb;
+    if (@state == 2) goto L_News;
+    if (@state == 1) goto L_Crystals;
+
+    mes "You see a dead man hanging. This place is creepy!";
+    next;
+    if (BaseLevel < @minLevel)     goto L_Close;
+    mes "Suddenly the man opens his eyes and looks at you.";
+    next;
+    mes "[Hanged Man]";
+    mes "\"Oh, hello. Nice to see you - I seem to be dead, but I don't know why and why I'm still consciousness. This is very interesting.\"";
+    menu
+        "INTERESTING? Are you crazy?",L_Next;
+
+L_Next:
+    mes "[Hanged Man]";
+    mes "\"Well, as you mention it, it is quite annoying and uncomfortable. Would you mind helping me down to the floor?\"";
+    next;
+    mes "You take a step towards him, but some invisible force holds you back.";
+    next;
+    mes "[Hanged Man]";
+    mes "\"Oh, someone is holding you back with magic! I sense a really dark and mighty power. What has happened!?\"";
+    next;
+    mes "\"Can I ask you for a favor? Can you bring me lots of Dark Crystals? You might need to ask a dark mage for it. I want to try to break the barrier.\"";
+    next;
+    mes "\"I'll need... well, at least " + @CRYSTAL_AMOUNT + ". But if you have more, I can use extras!\"";
+    @state = 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Crystals:
+    mes "[Hanged Man]";
+    mes "\"Ah, you're back! Did you get the Dark Crystals?\"";
+
+    if (countitemcolor("DarkCrystal") == 0)
+        menu
+            "Not yet.", L_Close;
+
+    if (countitemcolor("DarkCrystal") < @CRYSTAL_AMOUNT)
+        goto L_Not_Enough_Crystals;
+
+    delitem "DarkCrystal", @CRYSTAL_AMOUNT;
+    getexp @CRYSTAL_EXP, 0;
+    next;
+    mes "\"Oh, I can feel them! Please lay them down on the floor.\"";
+    next;
+    mes "You lay "+ @CRYSTAL_AMOUNT + " dark crystals down on the floor and step back, nervously expecting the coming.";
+    next;
+    if (countitemcolor("DarkCrystal") == 0) goto L_Skip;
+    mes "[Hanged Man]";
+    mes "\"You have more of them, haven't you? It will work better if you give them to me too.\"";
+    menu
+        "Ok, here you go.",L_Next1,
+        "I prefer to keep them.",L_Skip;
+
+L_Next1:
+    @crystal = countitemcolor("DarkCrystal");
+    if (@crystal > @CRYSTAL_MAX)
+        @crystal = @CRYSTAL_MAX;
+    delitem "DarkCrystal", @crystal;
+    getexp @crystal*@CRYSTAL_EXTRA_EXP, 0;
+    goto L_Skip;
+
+L_Skip:
+    mes "[Hanged Man]";
+    mes "\"Well, let's start now.\"";
+    next;
+    mes "The hanged man seems very concentrated now, which looks absurd with him hanging there.";
+    next;
+    mes "The dark crystals start to glow and buzz. You take another step back.";
+    next;
+    mes "The buzzing gets louder and louder, so you can't hear a word the hanged man is saying now.";
+    next;
+    Hp = 5;
+    mes "The crystals explode and hit you!";
+    next;
+    mes "You fall down on the floor and blink frantically to regain your eyesight.";
+    next;
+    mes "[Hanged Man]";
+    mes "\"Hello? You're ok? I'm sorry, something went wrong. It seems, not only is there a magical barrier, but also my manaflow is blocked. I don't know if this is because I'm dead or part of the barrier spell.\"";
+    next;
+    mes "\"I never was dead before, so I can't be sure. But I was able to access my magic - it just got out of control at the critical moment.\"";
+    next;
+    mes "\"This is fascinating!\"";
+    menu
+        "Ok, you are crazy!",L_Next2,
+        "Yes, it is very fascinating to be blown up!",L_Next2,
+        "I NEARLY DIED! AND YOU THINK THIS IS FASCINATING?!",L_Next2;
+
+L_Next2:
+    mes "[Hanged Man]";
+    mes "\"I sometimes forget the fact that not everybody is fascinated by the riddles of magic. Please forgive me.\"";
+    next;
+    mes "\"And I even didn't introduce myself! I am very sorry for my rude behavior!\"";
+    next;
+    mes "\"My name is Savaric, first apprentice of the Great Demon Summoner Ymbert.\"";
+    next;
+    mes "\"If you can forgive me my behaviour, may I ask you for another favor? Can you please search for someone or something in this inn that could be the source of this dark magic?\"";
+    @state = 2;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_News:
+    mes "[Savaric]";
+    mes "\"Welcome back. Did you find a possible source for the dark magic?\"";
+    if ((@woman < 6)
+        && (@golbanez == 0))
+            menu
+                "Not yet, I'm still searching.",L_Close;
+    if ((@woman < 6)
+        && (@golbanez > 0))
+            menu
+                "Yes, let me tell you.",L_Golbenez,
+                "I don't think so.",L_Close;
+    if ((@woman >=  6)
+        && (@golbanez == 0))
+            menu
+                "Can you tell me about your relationship to Reid?",L_Reid,
+                "Not yet, I'm still searching.",L_Close;
+    if ((@woman >=  6)
+        && (@golbanez >= 0))
+            menu
+                "Can you tell me about your relationship to Reid?",L_Reid,
+                "Yes, let me tell you.",L_Golbenez,
+                "I don't think so.",L_Close;
+    goto L_Golbenez;
+
+L_Golbenez:
+    mes "You explain how you came to the inn and what Golbenez said to you.";
+    next;
+    mes "[Savaric]";
+    mes "\"This... this is very disturbing news. Playground he said? Mh.. \"";
+    next;
+    mes "\"Savaric seems to be completely absorbed in his thoughts.\"";
+    menu
+        "Hello? Are you still there?",L_Next3,
+        "Excuse me, I don't want to interrupt you, but can you explain to me what's going on? I'm confused.",L_Next3,
+        "Hey! I'm talking with you!",L_Next3;
+
+L_Next3:
+    mes "Savaric winces.";
+    next;
+    mes "\"Oh, right - I was just thinking. It makes me feel uncomfortable to hear about Golbenez being involved in this.\"";
+    next;
+    mes "\"I told you I'm the apprentice of a demon summoner, remember? Well, this includes learning about the astral beings in this world.\"";
+    next;
+    mes "\"And Golbenez - he is a very powerful being, a Demi-God, with a very questionable sense of humor. He was worshipped by a group of cultists some hundred years ago - uhm, some hundred years ago from my lifetime, I mean.\"";
+    next;
+    mes "\"But most of his adherents died when he thought it would be funny to test their loyality by sending them on a journey over the sea to a paradise island he promised them - of course, there was no such island.\"";
+    next;
+    mes "\"Maybe now you understand what I mean about a questionable sense of humor.\"";
+    next;
+    mes "\"But on the other hand, he can grant great power to those who are capable of dealing with him and who offer him enough for his service. Trying to do that would be a risky undertaking in any case.\"";
+    next;
+    mes "\"He told you this inn was one of his favorite playgrounds - so it seems he was playing one of his evil games with the people in this inn. And now, he resurrected our memories to this parody of life!\"";
+    next;
+    mes "\"" + strcharinfo(0) + "! I need your help again! Please return to Golbenez and try to get out of him what was happening here. But be careful when negotiating.. he will demand a service in return.\"";
+    @state = 3;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Golb:
+    mes "[Savaric]";
+    mes "\"Good to see you back my friend. What did you find out?\"";
+    if (@golbanez < 5)
+        menu
+            "I'm still working on doing all the stuff Golbenez wants me to do.",L_Close;
+    menu
+        "Now I know what happened. I'll tell you.",L_Next4,
+        "I'm sorry to tell you, but this was all your fault.",L_Next4;
+
+L_Next4:
+    mes "You tell Savaric about what Golbenez showed to you.";
+    next;
+    mes "[Savaric]";
+    mes "\"I.. I can't believe.. My master told me, I need to be careful because of my temper - but I never thought it would lead me to make such a terrible mistake. Oh, Reid - and all the people in the inn! What have I done?!\"";
+    next;
+    mes "He seems pained by his guilt.";
+    next;
+    mes "[Savaric]";
+    mes "\"" + strcharinfo(0) + ", please, can you go to Reid and tell her about what I've done? And then ask her if she will ever be able to forgive me?\"";
+    next;
+    mes "\"But wait. It is not enough just to ask for forgiveness. Please, can you bring her " + @DIAMOND_AMOUNT + " Diamonds? They symbolize my pure feelings for her.\"";
+    @state = 4;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Waiting:
+    mes "[Savaric]";
+    mes "\"Have you already brought the Diamonds to Reid?\"";
+    goto L_Close;
+
+L_Apologize:
+    mes "[Savaric]";
+    mes "\"Oh thank you! I thank you so much! Reid came here to talk to me.\"";
+    next;
+    mes "\"She forgave me! I'm so happy!\"";
+    next;
+    mes "\"You did so much for me, can I ask you for one last favor?\"";
+    next;
+    mes "\"Golbenez took my soul and I want it back. You were very clever with how you negotiated with him so far. Could you get my soul back for me?\"";
+    @state = 6;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Want_Soul:
+    if (@golbanez >= 7)
+        goto L_Soul;
+    mes "[Savaric]";
+    mes "\"Welcome back! Are you still working on getting my soul back?\"";
+    menu
+        "I'm doing my best.",L_NextEnd,
+        "Yes, but it isn't easy.",L_NextEnd;
+
+L_NextEnd:
+    mes "[Savaric]";
+    mes "\"Thank you so much! I'm counting on you!\"";
+    goto L_Close;
+
+L_Soul:
+    mes "[Savaric]";
+    mes "\"My soul came back! Oh thank you!\"";
+    next;
+    mes "\"Please take this as a symbol of my gratitude.\"";
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
+    getitem "SorcererRobeRed", 1;
+    @state = 7;
+    callsub S_Update_Mask;
+    mes "\"This is what mages and their apprentices wore when I lived. It is white because I wasn't a master yet.\"";
+    next;
+    mes "\"But I guess the old traditions have changed since then.\"";
+    goto L_Close;
+
+L_Have_Soul:
+    mes "[Savaric]";
+    mes "\"I'll be in your debt forever. Thank you so much.\"";
+    goto L_Close;
+
+L_Reid:
+    mes "[Savaric]";
+    mes "\"Relationship? Well, she is the innkeeper of this inn and I'm a patron. There is nothing more to say about this.\"";
+    goto L_Close;
+
+L_Not_Enough_Crystals:
+    mes "It seems you managed to get some, but not enough. Can you bring me more?";
+    goto L_Close;
+
+L_Full_Inv:
+    mes "[Savaric]";
+    mes "\"Oh, you can't carry anything more. Come back when you can take it.\"";
+    goto L_Close;
+
+L_Close:
+    @Graveyard_Inn_MASK = 0;
+    @Graveyard_Inn_SHIFT = 0;
+    @state = 0;
+    @Graveyard_Inn_Woman_MASK = 0;
+    @Graveyard_Inn_Woman_SHIFT = 0;
+    @woman = 0;
+    @Graveyard_Inn_Golbenez_MASK = 0;
+    @Graveyard_Inn_Golbenez_SHIFT = 0;
+    @golbanez = 0;
+    @minLevel = 0;
+    @CRYSTAL_AMOUNT = 0;
+    @CRYSTAL_EXP = 0;
+    @CRYSTAL_EXTRA_EXP = 0;
+    @CRYSTAL_MAX = 0;
+    @DIAMOND_AMOUNT = 0;
+    @crystal = 0;
+    close;
+
+S_Update_Mask:
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+            | (@state << @Graveyard_Inn_SHIFT);
+    return;
+}

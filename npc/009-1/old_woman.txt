@@ -1,0 +1,87 @@
+
+009-1,29,43,0	script	Old Woman	154,{
+    callfunc "ClearVariables";
+
+    @inspector = ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    if (BaseLevel < 40) goto L_Lower;
+
+    mes "[Old Woman]";
+    mes "\"Hello deary.\"";
+    next;
+    goto L_Continue;
+
+L_Lower:
+    mes "[Old Woman]";
+    mes "\"Watch out for these flowers. They don't like to be messed with.\"";
+    next;
+    goto L_Continue;
+
+L_Continue:
+    if ((@inspector >= 1  && @inspector <= 7) || @inspector == 9)
+        goto L_NohMask;
+    goto L_Close;
+
+L_NohMask:
+    if (@inspector == 7)
+        goto L_NohMask_Alibi;
+    callfunc "ProcessEquip";
+    if (@torsoC == cDarkBlue && @legsC == cDarkBlue)
+        goto L_NohMask_Fake;
+    if (@inspector >= 3 && @inspector <= 6)
+        goto L_Close;
+    menu
+        "Have you seen anything strange lately?", L_NohMask_FirstAsk,
+        "Do you know anything about the recent robberies?", L_NohMask_FirstAsk,
+        "Hello", L_Close;
+
+L_NohMask_FirstAsk:
+    mes "[Old Woman]";
+    mes "\"Yes, but I'm only talking to the inspector himself!\"";
+    if (@inspector != 1)
+        goto L_Close;
+    @inspector = 2;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_NohMask_Alibi:
+    menu
+        "Was your husband with you at home all night the last night that the troupe was in town?", L_Next;
+
+L_Next:
+    mes "[Old Woman]";
+    mes "\"Yes, we were both at home all night.\"";
+    @inspector = 8;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_NohMask_Fake:
+    if (@inspector == 9) goto L_NohMask_Fake_Satchel;
+    if (@inspector >= 3 && @inspector <= 6) goto L_NohMask_Filler;
+
+    mes "[Old Woman]";
+    mes "\"I saw someone sneaking around town wearing a theater mask. It looked like one of the masks used by the troupe that was in town recently.\"";
+    @inspector = 3;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_NohMask_Filler:
+    mes "[Old Woman]";
+    mes "\"I hope you catch that naughty person!\"";
+    goto L_Close;
+
+L_NohMask_Fake_Satchel:
+    mes "[Old Woman]";
+    mes "\"I've remembered something else. The night the troupe left, I saw someone with a theater mask take a large satchel out of town. He was heading north.\"";
+    @inspector = 10;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Close:
+    @inspector = 0;
+    close;
+
+S_Update_Mask:
+    QUEST_Hurnscald = (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (@inspector << NIBBLE_3_SHIFT);
+    return;
+}

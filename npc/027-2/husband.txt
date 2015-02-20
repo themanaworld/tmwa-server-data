@@ -1,0 +1,356 @@
+
+027-2,22,84,0	script	Hamond	319,{
+    @Graveyard_Inn_MASK = NIBBLE_3_MASK;
+    @Graveyard_Inn_SHIFT = NIBBLE_3_SHIFT;
+
+    @state = ((QUEST_Graveyard_Inn & @Graveyard_Inn_MASK) >> @Graveyard_Inn_SHIFT);
+
+    @Graveyard_Inn_Woman_MASK = NIBBLE_0_MASK;
+    @Graveyard_Inn_Woman_SHIFT = NIBBLE_0_SHIFT;
+
+    @woman = ((QUEST_Graveyard_Inn & @Graveyard_Inn_Woman_MASK) >> @Graveyard_Inn_Woman_SHIFT);
+
+    @Graveyard_Inn_Kid_MASK = NIBBLE_2_MASK;
+    @Graveyard_Inn_Kid_SHIFT = NIBBLE_2_SHIFT;
+
+    @kidstate = ((QUEST_Graveyard_Inn & @Graveyard_Inn_Kid_MASK) >> @Graveyard_Inn_Kid_SHIFT);
+
+    @Graveyard_Inn_Golbenez_MASK = NIBBLE_4_MASK;
+    @Graveyard_Inn_Golbenez_SHIFT = NIBBLE_4_SHIFT;
+
+    @golbanez = ((QUEST_Graveyard_Inn & @Graveyard_Inn_Golbenez_MASK) >> @Graveyard_Inn_Golbenez_SHIFT);
+
+    @minLevel = 85;
+    @ICE_CUBE_AMOUNT = 100;
+    @ICE_CUBE_EXP = 75000;
+    @BONE_AMOUNT = 100;
+    @SKULL_AMOUNT = 75;
+    @BONE_EXP = 100000;
+    set @RUBY_AMOUNT, 25; // caution, this value needs to be the same as in the innkeepers script!
+
+    if (@state >= 7) goto L_Thanks;
+    if (@state == 6) goto L_Apologize;
+    if (@state == 5) goto L_Waiting;
+    if (@state == 4) goto L_News;
+    if (@state == 3) goto L_Brought_Bones;
+    if (@state == 2) goto L_Check_Bones;
+    if (@state == 1) goto L_Ice_Cube;
+
+    mes "[Pale Man]";
+    mes "\"Hello, I hope you're enjoying your time in Reid's Inn. My name is Hamond, and I'm running this inn together with my beautiful wife Reid. If there is anything I can do for you, please let me know.\"";
+    if (BaseLevel < @minLevel)
+        goto L_Close;
+    next;
+    menu
+        "I'd like to know why all the people in here are dead.",L_Next,
+        "Are you feeling well? You look very pale... In fact, deathly pale.",L_Next,
+        "Thank you, but I'm fine.", L_Close;
+
+L_Next:
+    mes "Hamond seems very confused. Then he notices the grey color of his hands and begins to shake his head in panic.";
+    mes "[Hamond]";
+    mes "\"WHAT IS THIS?\"";
+    next;
+    mes "Because of the fast movement of his head, it hinges back in his neck along a cut in his throat.. a deep cut you didn't notice before.";
+    next;
+    mes "You're trying hard not to run away screaming. Instead, you grab his hair and pull his head back into place.";
+    next;
+    mes "Hamond blinks a few times, with a puzzled look on his face.";
+    mes "[Hamond]";
+    mes "\"That was uncomfortable! I guess you are right. I am dead. Weird.\"";
+    next;
+    mes "\"How can I be dead if I am walking around and talking? This is very strange. \"";
+    next;
+    mes "\"But nevertheless, I will continue to run this inn and do my best to make all our patrons happy and satisfied - be they alive or dead.\"";
+    next;
+    menu
+        "Can I help with that?", L_Continue;
+
+L_Continue:
+    mes "[Hamond]";
+    mes "\"Help me? Normally I would never ask you for this, but actually, I do need something to cool the drinks. Maybe you can find something.\"";
+
+    @state = 1;
+    callsub S_Update_Mask;
+
+    goto L_Close;
+
+L_Ice_Cube:
+    mes "[Hamond]";
+    mes "\"Hello my friend! Good to see you again. Did you find something to cool the drinks?\"";
+    next;
+
+    if ((@kidstate == 4)
+        && countitemcolor("IceCube") > 0)
+            menu
+                "Maybe this never melting Ice Cube?", L_Check_Ice,
+                "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
+                "I'm still searching.", L_Close;
+    if (@kidstate == 4)
+        menu
+            "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
+            "I'm still searching.", L_Close;
+    if (countitemcolor("IceCube") > 0)
+        menu
+            "Maybe this never melting Ice Cube?", L_Check_Ice,
+            "I'm still searching.", L_Close;
+    mes "\"You didn't? Too bad.\"";
+    goto L_Close;
+
+L_Check_Ice:
+    if (countitemcolor("IceCube") < @ICE_CUBE_AMOUNT)
+        goto L_Not_Enough_Cubes;
+    delitem "IceCube", @ICE_CUBE_AMOUNT;
+
+    getexp @ICE_CUBE_EXP, 0;
+
+    @state = 2;
+    callsub S_Update_Mask;
+
+    mes "[Hamond]";
+    mes "\"Yes, wonderful! That's exactly what I need.\"";
+    next;
+    mes "\"I put all my effort in making this inn a well running place for my beloved Reid.\"";
+    next;
+    mes "\"You know, she had a very hard childhood.\"";
+    next;
+    mes "\"Her parents were the former owners of the inn. But they had some problems and the inn wasn't running well.\"";
+    next;
+    mes "\"Also they died very early and Reid was so lonely and sad. She is such a wonderful woman, I'd do anything for her.\"";
+    next;
+    mes "He mumbles the next sentence as if to himself.";
+    next;
+    mes "\"And I won't let a wannabe mage take her away from me...\"";
+    next;
+    menu
+        "What do you mean?",L_More;
+
+L_More:
+    mes "[Hamond]";
+    mes "\"Nevermind, nevermind. I'd like to ask you for another favor, if I might.\"";
+    next;
+    mes "\"A patron asked for - uhm, bones. He said he needed to replace some of his bones, which were damaged in a scuffle with mortals.\"";
+    next;
+    mes "\"I know, this is a bit strange - I'm still getting used to being dead. But a patron's wish is a patron's wish!\"";
+    next;
+    mes "\"Can you bring me a huge amount of bones and skulls? This way I can fulfill that peculiar wish and make another patron very happy!\"";
+    goto L_Close;
+
+L_Check_Bones:
+    mes "[Hamond]";
+    mes "\"Welcome back! Let me see what you have.\"";
+    if ((countitemcolor("Bone") < @BONE_AMOUNT)
+        || (countitemcolor("Skull") < @SKULL_AMOUNT))
+            goto L_Not_Enough_B;
+    delitem "Bone", @BONE_AMOUNT;
+    delitem "Skull", @SKULL_AMOUNT;
+
+    getexp @BONE_EXP, 0;
+
+    @state = 3;
+    callsub S_Update_Mask;
+    goto L_Brought_Bones;
+
+L_Brought_Bones:
+    mes "[Hamond]";
+    mes "\"Thanks for your help! Now I'll be able to satisfy another strange request from one of our patrons.\"";
+    next;
+
+    if ((@kidstate == 4)
+        && (@woman > 5))
+            menu
+                "Would you tell me about this mage named Savaric?", L_Savaric,
+                "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
+                "You're welcome.", L_Close;
+    if (@kidstate == 4)
+        menu
+            "I found this in the main hall. Do you know to whom it belongs?", L_Ring,
+            "You're welcome.", L_Close;
+    if (@woman > 5)
+        menu
+            "Would you tell me about this mage named Savaric?", L_Savaric,
+            "You're welcome.",L_Welcome;
+    goto L_Welcome;
+
+L_Welcome:
+    mes "[Hamond]";
+    mes "\"Please make yourself at home.\"";
+    goto L_Close;
+
+L_Savaric:
+    mes "Hamond's face turns into an ugly grimace.";
+    mes "[Hamond]";
+    mes "\"That cheeky egomaniac - \"";
+    next;
+
+    if ((Sex == 0)
+        && (@kidstate < 7))
+            goto L_Woman;
+    if ((Sex == 1)
+        && (@kidstate < 7))
+            goto L_Man;
+    mes "\"Well, I have been thinking about you. You seem to be a very helpful and wise person. Even my son told me good things about you, making a long speech about how great you are and your ability to comprehend and deal with delicate matters. I wonder how he reached that conclusion... But anyway, I'll tell you about Savaric.\"";
+    next;
+    goto L_Jealousy;
+
+L_Jealousy:
+    mes "[Hamond]";
+    mes "\"Savaric calls himself the first apprentice of a great wizard and seems to hold his head very high because of that. Pah, that snooty-nosed little upstart.\"";
+    next;
+    mes "\"Don't get me wrong, usually I'm a very open minded man, everyone can live their life as ever they like. But I never saw a wizard do anything good. They're in their books and ancient riddles and speaking with demons and whatever else they might come up with.\"";
+    next;
+    mes "\"But do they care for normal people? I've never seen that. And not only that! This Savaric guy seems to think it is fun to play games with my wife.\"";
+    next;
+    mes "Hamond seems to nearly burst with anger.";
+    next;
+    mes "\"I guess, they think I don't see what they are doing! But they are flirting all the time, my poor Reid seems unable to have a straight thought anymore.\"";
+    next;
+    mes "\"I already thought about throwing him out of the inn - but he is a patron! I can't be rude to a patron.\"";
+    next;
+    mes "\"Ah, this is annoying.\"";
+    @state = 4;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Man:
+    mes "[Hamond]";
+    mes "\"You're a man - I think you would understand what is happening to me.\"";
+    mes "\"But, to be honest, I think I'd only be able to talk about such a complicated matter if I am sure I am sharing my feelings with a good, wise and understanding person. No offense, it is just that I barely know you...\"";
+    goto L_Close;
+
+L_Woman:
+    mes "[Hamond]";
+    mes "\"Hrm - I don't think you'll understand. It is a problem between men.\"";
+    next;
+    mes "\"And, to be honest, I'd only be able to talk about such a complicated matter if I am sure I am sharing my feelings with a good, wise and understanding person. No offense, it is just that I barely know you...\"";
+    goto L_Close;
+
+L_Ring:
+    mes "[Hamond]";
+    mes "\"Well.. this is just a cheap ring. It is very popular with the young kids, especially the magic students.\"";
+    next;
+    mes "\"They say the ring increases 'magic attack' if you add a sapphire gem to it... But, in fact, I think these kids are delusional. Magic, pah.\"";
+    next;
+    mes "\"Anyway, I remember you could easily find one of these in a lot of small shops in town. I am pretty sure that whoever lost it won't bother coming all the way back to get it.\"";
+    @kidstate = 5;
+    callsub S_Update_Mask_Kid;
+    goto L_Close;
+
+L_News:
+    mes "[Hamond]";
+    mes "\"Ah, dear friend. How are you?\"";
+    if (@golbanez < 5)
+        menu
+            "I'm enjoying myself.",L_Close;
+    menu
+        "I'm enjoying myself.",L_Close,
+        "I found out what happened to you and this place.",L_FoundOut;
+
+L_FoundOut:
+    mes "[Hamond]";
+    mes "\"You did? Amazing! Please tell me.\"";
+    next;
+    mes "You explain to him how you came here, the results of your research and what Golbenez showed to you.";
+    next;
+    mes "[Hamond]";
+    mes "\"WHAT? This is just crazy! But - you've shown me that you're trustworthy. This must be the truth.\"";
+    next;
+    mes "\"But still, it is hard to believe - I can't imagine I would ever hurt Reid and that she - that she would cheat on me.\"";
+    next;
+    mes "\"How did this come about? What did I do wrong? I should have shown her my love more. I should have protected her from the allurements of that sneaky mage. And I - I should have never ever hurt her.\"";
+    next;
+    mes "Hamond seems about to break down.";
+    menu
+        "Maybe it was just fate.",L_HamondFate,
+        "You got very upset, don't blame yourself",L_HamondFate,
+        "You're right. You were very violent. How could you do that if you love her?",L_HamondFate;
+
+L_HamondFate:
+    mes "[Hamond]";
+    mes "\"I- I need to apologize.\"";
+    next;
+    mes "\"" + strcharinfo(0) + "! Can you help me once more? Please get " + @RUBY_AMOUNT + " Rubies and bring them to her as a symbol of my love and my remorse.\"";
+    @state = 5;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Waiting:
+    mes "[Hamond]";
+    mes "\"Did you bring Reid the " + @RUBY_AMOUNT + " Rubies?\"";
+    goto L_Close;
+
+L_Apologize:
+    mes "[Hamond]";
+    mes "\"I thank you! Reid came to me to talk about what happened.\"";
+    next;
+    mes "\"We talked about all the stuff that happened. It's hard for me, but I accepted her feelings for that mage. I mean - we are dead! And we have to stay in this place together for the rest of eternity! This is just perverted.\"";
+    next;
+    mes "\"But whatever, we need to get along with each other someway and I won't be the one who makes this difficult.\"";
+    next;
+    mes "\"And frankly, it gives me a bitter satisfaction that they long for each other but can't touch each other.\"";
+    next;
+    mes "\"However, you are a great friend and did a lot for me. I want you to have this.\"";
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
+    getitem "BowlerHatBrown", 1;
+    @state = 7;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Thanks:
+    mes "[Hamond]";
+    mes "\"Good to see you, my friend! The inn is running well and I'm getting used to being dead.\"";
+    goto L_Close;
+
+L_Not_Enough_B:
+    if (countitemcolor("Bone") < @BONE_AMOUNT)
+        mes "\"I need more Bones than you have with you right now.\"";
+    if (countitemcolor("Skull") < @SKULL_AMOUNT)
+        mes "\"Maybe you should come back with more Skulls than you have now. I don't think it is enough.\"";
+    goto L_Close;
+
+L_Not_Enough_Cubes:
+    mes "[Hamond]";
+    mes "\"Yes, they look good! But I think I need more of them. Maybe " + @ICE_CUBE_AMOUNT + "?\"";
+    goto L_Close;
+
+L_Full_Inv:
+    mes "[Hamond]";
+    mes "\"You have a really full backpack, haven't you? Come back when you have some room in there.\"";
+    goto L_Close;
+
+L_Close:
+    @Graveyard_Inn_MASK = 0;
+    @Graveyard_Inn_SHIFT = 0;
+    @state = 0;
+    @Graveyard_Inn_Woman_MASK = 0;
+    @Graveyard_Inn_Woman_SHIFT = 0;
+    @woman = 0;
+    @Graveyard_Inn_Kid_MASK = 0;
+    @Graveyard_Inn_Kid_SHIFT = 0;
+    @Graveyard_Inn_Golbenez_MASK = 0;
+    @Graveyard_Inn_Golbenez_SHIFT = 0;
+    @golbanez = 0;
+    @kidstate = 0;
+    @minLevel = 0;
+    @ICE_CUBE_AMOUNT = 0;
+    @ICE_CUBE_EXP = 0;
+    @BONE_AMOUNT = 0;
+    @SKULL_AMOUNT = 0;
+    @BONE_EXP = 0;
+    @RUBY_AMOUNT = 0;
+    close;
+
+S_Update_Mask_Kid:
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_Kid_MASK))
+            | (@kidstate << @Graveyard_Inn_Kid_SHIFT);
+    return;
+
+S_Update_Mask:
+    set QUEST_Graveyard_Inn,
+        (QUEST_Graveyard_Inn & ~(@Graveyard_Inn_MASK))
+            | (@state << @Graveyard_Inn_SHIFT);
+    return;
+}

@@ -1,0 +1,103 @@
+
+048-2,95,103,0	script	Eevert	365,{
+    @investigate = ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    @water_amount = 5;
+    @spectre_amount = 3;
+    @poltergeist_amount = 3;
+    @wisp_amount = 3;
+    @ironpowder_amount = 4;
+    @ink_exp = 7000;
+
+    if (QUEST_BlueSage & $@Q_BlueSageMaterialInk) goto L_Done;
+
+    mes "[Eevert]";
+    mes "\"Mh. I wonder how I'm expected to perform my task with this meager equipment. The new books will look pathetic.\"";
+    mes "He sighs.";
+    if (BaseLevel < $@Q_BlueSageMinimumLevel)
+        goto L_Close;
+    menu
+        "What do you need?",L_Need,
+        "Not my problem.",L_Investigate;
+
+L_Need:
+    mes "[Eevert]";
+    mes "\"I'm doing the covers and illustrations for the new books we create from the pieces of the old ones. But due to all of the chaos from when the slimes escaped, most of the phials of colored ink were broken. How am I supposed to do the illustrations without color?\"";
+    next;
+    mes "\"I think I'll need at least " + @water_amount + " Bottles of Water, " + @spectre_amount + " Spectre Powders, " + @poltergeist_amount + " Poltergeist Powders, " + @wisp_amount + " Wisp Powders and " + @ironpowder_amount + " Iron Powders to create new ink.\"";
+    menu
+        "I have those with me!",L_TurnIn,
+        "I'll try to get those.",L_Close,
+        "Too bad.",L_Investigate;
+
+L_TurnIn:
+    if ((countitemcolor("BottleOfWater") < @water_amount) || (countitemcolor("SpectrePowder") < @spectre_amount) || (countitemcolor("PoltergeistPowder") < @poltergeist_amount) || (countitemcolor("WispPowder") < @wisp_amount) || (countitemcolor("IronPowder") < @ironpowder_amount))
+        goto L_NoItem;
+    delitem "BottleOfWater", @water_amount;
+    delitem "SpectrePowder", @spectre_amount;
+    delitem "PoltergeistPowder", @poltergeist_amount;
+    delitem "WispPowder", @wisp_amount;
+    delitem "IronPowder", @ironpowder_amount;
+    getexp @ink_exp, 0;
+    QUEST_BlueSage = (QUEST_BlueSage | $@Q_BlueSageMaterialInk);
+    mes "[Eevert]";
+    mes "\"Wonderful! Now I can prepare the ink for magnificent illustrations! You're very generous.\"";
+    goto L_Investigate;
+
+L_Done:
+    mes "[Eevert]";
+    mes "\"Thanks for your help with the inks! Now I'll be able to fulfill my tasks adequately. Some of these books were really valuable, and it's important to recreate them as good as possible.\"";
+    goto L_Investigate;
+
+L_NoItem:
+    mes "[Eevert]";
+    mes "\"What does this mean? You don't have it!\"";
+    goto L_Close;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "I need to leave.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "See you later.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Visitor:
+    mes "[Eevert]";
+    mes "\"A visitor? I don't really pay attention to visitors, unless it's someone notable.\"";
+    goto L_Close;
+
+L_Helper:
+    mes "[Eevert]";
+    mes "\"Ah, Peetu. I really appreciate his sense for high quality work. The requirements to become a helper of a sage are already high, but Peetu is outstanding. He has a talent for magic and combined with his diligence, it's quite remarkable.\"";
+    next;
+    mes "\"That's why I'm really confused about this situation, since he was the one performing the sealing of the slimes. I wonder what went wrong.\"";
+    if ((@investigate != 5) && (@investigate != 6) && (@investigate != 7))
+        goto L_Close;
+    @investigate = @investigate + 3;
+    callfunc "updateBlueSageInvestigate";
+    goto L_Close;
+
+L_Close:
+    @investigate = 0;
+    @water_amount = 0;
+    @spectre_amount = 0;
+    @poltergeist_amount = 0;
+    @wisp_amount = 0;
+    @ironpowder_amount = 0;
+    @ink_exp = 0;
+    close;
+}

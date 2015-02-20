@@ -1,0 +1,76 @@
+
+051-1,64,46,0	script	Strange Stone	400,{
+    @step = 1;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if (isin("051-1", 65,45, 67,48) == 0) end;
+    if (strcharinfo(0) != $@ILLIA_HERO$) goto L_HandleHelper;
+    if ($@illia_level_1_progress == 0) goto L_GiveTask;
+    if ($@illia_level_1_progress == 1) goto L_TaskNotComplete;
+    if ($@illia_level_1_progress == 2) goto L_TaskComplete;
+    if ($@illia_level_1_progress == 3) goto L_NothingElseToDo;
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+
+L_HandleHelper:
+    mes "This stuff sounds complicated.";
+    mes "I should ask " + $@ILLIA_HERO$ + " what to do.";
+    close;
+
+L_NothingElseToDo:
+    mes "The door is opened... What am I waiting for?";
+    close;
+
+L_GiveTask:
+    mes "You look at the rocks with attention.";
+    mes "You are smart enough to notice that there seems to be a missing rock that could activate a mechanism.";
+    next;
+    menu
+        "This rock must not be far... Let's look around.", L_Foo;
+L_Foo:
+    $@illia_level_1_progress = 1;
+    $@illia_level_1_num_deaths = 0;
+    close;
+
+L_TaskNotComplete:
+    mes "It's not working. I have to find the rock.";
+    mes "With all the slimes around here, maybe one absorbed it.";
+    close;
+
+L_TaskComplete:
+    $@illia_level_1_progress = 3;
+    $@illia_progress = 2;
+    callfunc "UpdateIlliaProgress";
+    $@illia_max_time = $@illia_max_time + 360;
+    mes "You insert the rock in the mechanism, then hear an unlock noise. The rocks move by themselves in a rumbling noise, making an opening in the wall.";
+    close;
+
+}
+
+051-1,66,44,0	script	#ToCave	32767,1,1,{
+    @step = 1;
+    if ($@illia_progress < @step) goto L_ShouldNotBeHere;
+    if ($@illia_level_1_progress < 2) goto L_Blocked;
+    if ($@illia_level_1_progress == 2 && strcharinfo(0) == $@ILLIA_HERO$) goto L_SeeStone;
+    if ($@illia_level_1_progress == 3) goto L_Warp;
+    end;
+
+L_ShouldNotBeHere:
+    percentheal -100, 0;
+    end;
+
+L_Blocked:
+    message strcharinfo(0), "There should be a way to open this... but not with my bare hands.";
+    end;
+
+L_SeeStone:
+    message strcharinfo(0), "I should take a look at the stone.";
+    end;
+
+L_Warp:
+    warp "051-3", 24, 60;
+    end;
+}
+

@@ -1,0 +1,120 @@
+
+002-1,91,33,0	script	Bard	152,{
+    setarray @songs$, "\"There once was a bard, who had it hard, because a man in dark green, was very mean.\"",
+        "\"At Hurnscald inn, there was a person of fairest skin, declining wedding bands from quite a many hands.\"",
+        "\"As the Sun sets down in the forest's brown, she whom the fragrance holds counts her gold.\"";
+    @name$ = "Bill Ballshaker the Bard";
+    mes "[" + @name$ + "]";
+    if (Sex)
+        mes "\"Greetings, traveler!  Have you come to listen to my stories?\"";
+    if (!Sex)
+        mes "\"Greetings, fair lady!  Well met, on such a lovely day!  Might I entertain you with a tale or two?\"";
+    next;
+    goto L_Main;
+
+L_Main:
+    menu
+        "Sing me a song, lute man!", L_Song,
+        "Have you heard any news?", L_News,
+        "What do you know about...", L_Question,
+        "Farewell!", L_Close;
+
+L_News:
+
+    mes "[" + @name$ + "]";
+    mes "\"News I have for you indeed, lest you have already overheard (for then it would no longer be news to you!)\"";
+    next;
+    mes "[" + @name$ + "]";
+    mes "\"Rumor has it that an ancient source of magic, a Mana Seed, has been sighted in the west, beyond the fair town of Hurnscald.\"";
+    next;
+    MAGIC_FLAGS = MAGIC_FLAGS | MFLAG_MANASEED_RUMOUR;
+    mes "[" + @name$ + "]";
+    mes "\"Whence it came, nobody knows... but they say that sometimes such Mana Seeds may choose a powerful individual to impart some of its mystic power to!\"";
+    next;
+    mes "[" + @name$ + "]";
+    mes "\"I wonder who might be qualified?\"";
+    next;
+    goto L_Main;
+
+L_Question:
+    callfunc "MagicTalkOptionsSetup";
+    @ignore = @QQ_ASTRALSOUL;
+    callfunc "MagicTalkMenu";
+
+    if (@c == 0) goto L_Main;
+    if (@c == @QQ_ELANORE) goto L_Q_elanore;
+    if (@c == @QQ_MANASEED) goto L_Q_manaseed;
+    if (@c == @QQ_WYARA) goto L_Q_wyara;
+    if (@c == @QQ_SAGATHA) goto L_Q_sagatha;
+    if (@c == @QQ_AULDSBEL) goto L_Q_auldsbel;
+    if (@c == @QQ_OLDWIZ) goto L_Q_oldwiz;
+
+    mes "[" + @name$ + "]";
+    mes "\"Alas, I know very little about this matter.\"";
+    next;
+    goto L_Main;
+
+L_Q_oldwiz:
+    mes "[" + @name$ + "]";
+    mes "\"The old wizard has been an old man for as long as I remember, living near the mountains in his magic hut – a hut that is bigger on the inside, just like in the old tales of Gyer Filla the Wise....\"";
+    next;
+    mes "[" + @name$ + "]";
+    mes "\"I doubt that they are the same person, though. For one, I have never seen his hut fly. For another, Gyer never took apprentices.\"";
+    next;
+    goto L_Main;
+
+L_Q_elanore:
+    mes "[" + @name$ + "]";
+    mes "\"Elanore is this town's healer. Rumor has it that she traveled far and wide when she was younger, to learn the deepest secrets of healing magic, after her brother caught a mysterious illness.\"";
+    next;
+    goto L_Main;
+
+L_Q_manaseed:
+    mes "[" + @name$ + "]";
+    mes "\"The Mana Seed is said to be a source of great magic. Perhaps some witch or wizard might know more about it?\"";
+    next;
+    goto L_Main;
+
+L_Q_wyara:
+    mes "[" + @name$ + "]";
+    mes "\"Wyara is not actually from Hurnscald. As a young witch, she decided to settle down there to help the people of Hurnscald. She is kind and gentle, except towards the Doctor, who seems to have little respect for her potions.\"";
+    next;
+    goto L_Main;
+
+L_Q_sagatha:
+    mes "[" + @name$ + "]";
+    mes "\"Sagatha!  Ah, such a wonderful and mysterious being; the center of many a tale...\"";
+    next;
+    mes "[" + @name$ + "]";
+    mes "\"Some say that she is the most powerful witch in all of Argaes. I don't know whether that is true or not, but I am quite certain that she is the most beautiful witch of all!  Alas, she will let no man touch her...\"";
+    mes "He sighs.";
+    next;
+    mes "[" + @name$ + "]";
+    mes "\"I met her only twice, back in my traveling days, but there are two pieces of advice I can give you:\"";
+    next;
+    mes "[" + @name$ + "]";
+    mes "\"First, she will suffer no fool easily, particularly no man.\"";
+    next;
+    mes "[" + @name$ + "]";
+    mes "\"Second, the creatures of the forest mean everything to her. Harm them, and you may find her an enemy – and a powerful one at that...\"";
+    next;
+    goto L_Main;
+
+L_Q_auldsbel:
+    mes "[" + @name$ + "]";
+    mes "\"Auldsbel is a wizard further north. From what I have gathered he bought a hut near Hurnscald some years back and often comes here to experiment on things. This is probably because he is not allowed to do these experiments where he comes from.\"";
+    next;
+    goto L_Main;
+
+L_Song:
+    mes "[" + @name$ + "]";
+    @id = rand(3);
+    mes @songs$[@id];
+    goto L_Close;
+
+L_Close:
+    @name$ = "";
+    @id = 0;
+    cleararray @songs$[0], "", 2;
+    close;
+}

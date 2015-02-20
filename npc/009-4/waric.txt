@@ -1,0 +1,100 @@
+
+009-4,99,33,0	script	#WizardTrap	127,2,1,{
+    @gender$ = "They're";
+    if (Sex == 0)
+        @gender$ = "She's";
+    if (Sex == 1)
+        @gender$ = "He's";
+
+    mes "As you explore further into the cave you see a figure looking at you who appears angry. But as you begin to speak, he quickly chants some words and you start to lose conciousness!";
+    next;
+    warp "009-4", 117, 40;
+    mes "When you awake you find yourself unable to move. You seem to be held in place by something. As your eyes regain focus you see Orum talking with the figure you saw earlier. Orum looks over at you and mumbles.";
+    mes "";
+    mes "[Orum]";
+    mes "\"Be quiet Waric... " + @gender$ + " awake...\"";
+    @gender$ = "";
+    close;
+}
+
+009-4,120,43,0	script	Orum#trap	158,{
+    mes "[Orum]";
+    mes "\"I told you to forget about this place but you did not heed my advice!\"";
+    next;
+    mes "\"Your fate is up to Waric now... don't expect me to do anything else for you.\"";
+    close;
+}
+
+009-4,118,42,0	script	Waric#trap	153,{
+    @Exp_LEARNED_ALOT = 10000;
+    if (OrumQuest >= 13)
+        goto L_Behave;
+    mes "Waric looks toward you rubbing his chin...";
+    next;
+    mes "[Waric]";
+    mes "\"So... Orum tells me your the one that helped him break me out of this dreadful place, so I guess I must thank you for that.\"";
+    menu
+        "My pleasure! Mind letting me out of here?", L_Explain,
+        "This doesn't look like a thank you!", L_Explain,
+        "Let me out of here at once!", L_Next;
+
+L_Next:
+    mes "Waric turns toward Orum.";
+    next;
+    mes "[Waric]";
+    mes "\"We've got a feisty one here, Orum!\"";
+    next;
+    mes "They begin discussing plans of some sort...";
+    OrumQuest = 13;
+    goto L_Close;
+
+L_Behave:
+    mes "Waric looks toward you shaking his finger.";
+    next;
+    mes "[Waric]";
+    mes "\"So... are you ready to behave yourself now?\"";
+    menu
+        "Yes mister...", L_Explain,
+        "Let me out here!", L_Next1;
+
+L_Next1:
+    mes "[Waric]";
+    mes "\"Having fun I take it?\"";
+    next;
+    mes "They continue discussing their plans.";
+    goto L_Close;
+
+L_Explain:
+    mes "[Waric]";
+    mes "\"I'm not sure what Orum told you but I was not kidnapped and brought here. I was in fact imprisoned here very long ago by a witch for practicing spells on the insignificant forest life.\"";
+    next;
+    mes "\"She cared about the forest and all of that stuff you see. Now this cave is not bad... I actually enjoyed it the first nights, but after a few years...\"";
+    next;
+    mes "Waric gets a bitter look and his face and pauses for a moment.";
+    next;
+    mes "[Waric]";
+    mes "\"So now you can see my motive to get out of here. The only air and water I get is what's given to me through that cave over there. And as for food... theres only so many recipes for cave snakes and silk worms.\"";
+    next;
+    mes "Waric shivers in disgust.";
+    next;
+    mes "[Waric]";
+    mes "\"I'm sorry I had to constrain you like this but now that I'm free, I'm not about to let anyone stand in my way!\"";
+    next;
+    mes "\"Now if you'll excuse us, Orum and I have some things to attend to. And don't bother coming back to stop us because we'll be long gone.\"";
+    next;
+    mes "Waric raises his hands and begins chanting some words. You watch as streams of energy begin swirling around you.";
+    next;
+    mes "Once more you start to lose conciousness as your surroundings begin to fade...";
+    next;
+    OrumQuest = 14;
+    misceffect 10;
+    warp "008-1", 65, 90;
+    getexp @Exp_LEARNED_ALOT, 0;
+    mes "You awake on your back with a squirrel sitting on top of you arranging it's acorns. It quickly gathers them up and runs off as it sees you looking at it them.";
+    monster "008-1", 65, 90, "Squirrel", 1038, 1;
+    goto L_Close;
+
+L_Close:
+    @Exp_LEARNED_ALOT = 0;
+    close;
+}
