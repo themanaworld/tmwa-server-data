@@ -1,0 +1,47 @@
+function|script|SetContributor
+{
+    callsub S_Clean;
+    set $@contributor_target$, strcharinfo(0);
+    set $@contributor_target, getcharid(3);
+    set $@contributor_level, #Contributor;
+
+    set $@contributor_caster, getcharid(3, @caster_name$);
+    if(attachrid($@contributor_caster) != 0) goto L_Menu;
+    callsub S_Clean;
+    end;
+
+L_Menu:
+    if(getgmlevel() < 99) end;
+    mes "[Contributor Setup]";
+    mes "Target: "+ $@contributor_target$;
+    mes "Contributor level: "+ $@contributor_level;
+    menu
+        "Do nothing", L_Close,
+        "Set level 0", L_Set,
+        "Set level 1", L_Set,
+        "Set level 2", L_Set,
+        "Set level 3", L_Set,
+        "Set level 4", L_Set;
+
+L_Set:
+    set $@contributor_level, @menu - 2;
+    if(attachrid($@contributor_target) != 0) goto L_Set2;
+    mes "Unable to set contributor level. The target may have logged out.";
+    goto L_Close;
+
+L_Set2:
+    set #Contributor, $@contributor_level;
+    if(attachrid($@contributor_caster) != 0) goto L_Close;
+    goto L_Close;
+
+L_Close:
+    callsub S_Clean;
+    close;
+
+S_Clean:
+    set $@contributor_target$, "";
+    set $@contributor_target, 0;
+    set $@contributor_level, 0;
+    set $@contributor_caster, 0;
+    return;
+}
