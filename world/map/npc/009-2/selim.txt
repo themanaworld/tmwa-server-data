@@ -1,46 +1,20 @@
-function|script|SelimDebug
-{
-    set @w, 0;
-    mes "[Selim Debug]";
-    menu
-        "Debug item array.", L_DebugArrayExplain,
-        "Exit debug.", L_Return;
-
-L_DebugArrayExplain:
-    mes "[How it works]";
-    mes "Click on the link to verify that it is the red variation of the item.";
-    mes "If, for example, you see [Skirt] then when you click on it you should see Red Skirt.";
-    next;
-    goto L_DebugArray;
-
-L_DebugArray:
-    mes "[@@" + @items_new[@w] + "|" + @item_names$[@w] + "@@]";
-    set @w, @w + 1;
-    if(@w >= getarraysize(@items_new)) goto L_Return;
-    menu
-        "Next.", L_DebugArray,
-        "Exit debug.", L_Return;
-
-L_Return:
-    return;
-}
-
 009-2,32,104,0|script|Selim|326
 {
-    setarray @all_colours$, "red", "green", "dark blue", "yellow", "light blue", "pink", "black", "orange", "purple", "dark green";
-
     cleararray @items$, "", getarraysize(@items$);
     cleararray @item_names$, "", getarraysize(@item_names$);
-    cleararray @items_new, "", getarraysize(@items_new);
-    setarray @items_new,   2050,           2250,           2060,             2070,                 2110,            2180,              2100,           2170,        2090,       2120,             2080,        2140,              2130,         2150,           2160,            2190,          2200,         2210,         2230,                 2240,         5131,                2220,                      5000,                        5011,                            5022,                         5033,                             5044,                       5055,                        5066,                         5077,                         5088,                             5099;
-    setarray @items$,      "CottonShirt",  "CottonCloth",  "VNeckSweater",   "Turtleneck",         "CottonShorts",  "CottonTrousers",  "CottonSkirt",  "Miniskirt", "TankTop",  "ShortTankTop",   "SilkRobe",  "CottonHeadband",  "DesertHat",  "CottonBoots",  "CottonGloves",  "RabbitEars",  "WizardHat",  "BowlerHat",  "BowlerHatBrown",     "FineDress",  "Contributor",       "SorcererRed",             "SorcererGreen",             "SorcererDBlue",                 "SorcererYellow",             "SorcererLBlue",                  "SorcererPink",             "SorcererBlack",             "SorcererOrange",             "SorcererPurple",             "SorcererDGreen",                 "SorcererWhite";
-    setarray @item_names$, "Cotton Shirt", "Cotton Cloth", "V-Neck Sweater", "Turtleneck Sweater", "Cotton Shorts", "Cotton Trousers", "Cotton Skirt", "Miniskirt", "Tank Top", "Short Tank Top", "Silk Robe", "Cotton Headband", "Desert Hat", "Cotton Boots", "Cotton Gloves", "Rabbit Ears", "Wizard Hat", "Bowler Hat", "Bowler Hat (brown)", "Fine Dress", "Contributor Shirt", "Red lined Sorcerer Robe", "Green lined Sorcerer Robe", "Dark Blue lined Sorcerer Robe", "Yellow lined Sorcerer Robe", "Light Blue lined Sorcerer Robe", "Pink lined Sorcerer Robe", "Black lined Sorcerer Robe", "Orange lined Sorcerer Robe", "Purple lined Sorcerer Robe", "Dark Green lined Sorcerer Robe", "White lined Sorcerer Robe";
-    if ((getgmlevel() >= 40 || debug) && (getequipid(equip_head) == 647 || getequipid(equip_head) == 725)) goto L_Debug;
+    set @r, 0;
+    set @j, getarraysize($@DYE_items$);
+    goto L_CloneArray; // clone the array from DyeConfig
+
+L_CloneArray:
+    set @items$[@r],      $@DYE_items$[@r];
+    set @item_names$[@r], $@DYE_item_names$[@r];
+    set @r, @r + 1;
+    if(@r < @j) goto L_CloneArray;
+    set @r, 0;
+    set @j, 0;
     goto L_Main;
 
-L_Debug:
-    callfunc "SelimDebug";
-    close;
 
 L_Main:
     mes "[Selim]";
@@ -86,7 +60,6 @@ L_clothes_choice:
     callfunc "DynamicItemMenu$";
     set @default_choice$, "";
     set @item_del$, @item$;
-    set @item_new, @items_new[@index];
     set @name$, @item_names$[@index];
     cleararray @items$, "", getarraysize(@items$);
     cleararray @item_names$, "", getarraysize(@item_names$);
@@ -114,7 +87,6 @@ L_Next:
     mes "\"Of course I can help you by dyeing the materials your tailor will want.";
     mes "All I need is a piece of Cotton Cloth.\"";
     set @item_del$, "CottonCloth";
-    set @item_new, 2250;
     menu
         "Sure. Here is one.", L_picked_item,
         "I have to go pick that.", L_Close;
@@ -127,8 +99,9 @@ L_colour:
     mes "[Selim]";
     mes "\"Excellent. Now, what color do you want?\"";
     next;
-    setarray @items$, "RedDye", "GreenDye", "DarkBlueDye", "YellowDye", "LightBlueDye", "PinkDye", "BlackDye", "OrangeDye", "PurpleDye", "DarkGreenDye";
-    setarray @item_names$, "red", "green", "dark blue", "yellow", "light blue", "pink", "black", "orange", "purple", "dark green";
+    set @r, 0;
+    set @j, getarraysize($@DYE_colors$);
+    callsub S_CloneColors;
     set @default_choice$, "I have no dye.";
     callfunc "DynamicItemMenu$";
     cleararray @items$, "", getarraysize(@items$);
@@ -136,8 +109,16 @@ L_colour:
     set @default_choice$, "";
     if (@item$ == "") goto L_no_dye;
     set @colour, @index;
-    set @vial, 690 + @colour;
     goto L_finish;
+
+S_CloneColors:
+    set @items$[@r],      $@DYE_colors$[@r] + "Dye";
+    set @item_names$[@r], $@DYE_color_names$[@r];
+    set @r, @r + 1;
+    if(@r < @j) goto S_CloneColors;
+    set @r, 0;
+    set @j, 0;
+    return;
 
 L_no_dye:
     mes "[Selim]";
@@ -159,11 +140,13 @@ L_explain_dye:
     goto L_Close;
 
 L_finish:
-    delitem @vial, 1;
+    if(getitemname($@DYE_colors$[@colour] + @item_del$) == "Unknown Item") mapexit;
+    if(countitem(@item_del$) < 1) goto L_havenone;
+    delitem @item$, 1;
     delitem @item_del$, 1;
-    getitem @item_new + @colour, 1;
+    getitem $@DYE_colors$[@colour] + @item_del$, 1;
     mes "[Selim]";
-    mes "\"Here's your " + @all_colours$[@colour] + " " + @name$ + "!  Please let dry for a minute.\"";
+    mes "\"Here's your " + $@DYE_color_names$[@colour] + " " + @name$ + "!  Please let dry for a minute.\"";
     goto L_Close;
 
 L_havenone:
