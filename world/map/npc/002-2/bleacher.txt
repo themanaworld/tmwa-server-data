@@ -3,16 +3,27 @@
 002-2,72,92,0|script|Candide|156
 {
     mes "[Candide]";
-    mes "\"I've figured out how that volcanic ash bleaches cloth.";
-    mes "I could do it for you, but I'll need three piles of ash and 5,000 GP for supplies per item.\"";
+    mes "\"Greetings! I am Candide the Bleacher.";
+    mes "Tulimshar is my homeland, where I learned the ancient art of bleaching.\"";
     next;
-    if (countitem("PileOfAsh") < 3) goto L_no_ash;
-    if (Zeny < 5000) goto L_no_money;
+    mes "\"Bleaching was originally done by the sun, but now we use ash combined with special ingredients to remove color from fabric.\"";
+    next;
+    menu
+        "What is needed for the bleaching process?", L_Materials,
+        "I'd like to bleach something.", L_bleach_menu,
+        "So long.", L_Close;
+
+L_Materials:
+    mes "[Candide]";
+    mes "\"For each item, I will need 3 piles of ash and 5,000 GP for the special ingredients.\"";
+    next;
     menu
         "I'd like to bleach something.", L_bleach_menu,
-        "No thanks.", L_Close;
+        "So long.", L_Close;
 
 L_bleach_menu:
+    if (countitem("PileOfAsh") < 3) goto L_no_ash;
+    if (Zeny < 5000) goto L_no_money;
     cleararray @CANDIDE_items,0,getarraysize(@CANDIDE_items);
     cleararray @CANDIDE_color,0,getarraysize(@CANDIDE_color);
     cleararray @CANDIDE_menu$,"",getarraysize(@CANDIDE_menu$);
@@ -23,6 +34,10 @@ L_bleach_menu:
     set @w, 0;
     set @c, 0;
     set @p, 0;
+    if(@CANDIDE_menu$[0] == "") goto L_Nothing;
+    mes "[Candide]";
+    mes "\"Yes?\"";
+    next;
     menu
         "Nevermind.", L_Close,
         @CANDIDE_menu$[0], L_MenuItems, // base array was too big for a dynamic menu so we can't use it
@@ -68,6 +83,12 @@ L_LoopColor2:
     if(@c < getarraysize($@DYE_colors$)) goto S_LoopColor;
     return;
 
+L_Nothing:
+    mes "[Candide]";
+    mes "\"Sorry, you have nothing to bleach.\"";
+    next;
+    goto L_Close;
+
 L_MenuItems:
     if (countitem("PileOfAsh") < 3) goto L_no_ash;
     if (Zeny < 5000) goto L_no_money;
@@ -92,16 +113,20 @@ L_no_ash:
     mes "[Candide]";
     mes "\"You don't have enough ash for me to bleach anything.";
     mes "I need three piles.\"";
+    next;
     goto L_Close;
 
 L_no_money:
     mes "[Candide]";
     mes "\"You don't have enough gold for me to bleach anything.";
     mes "I need 5,000 GP for supplies.\"";
+    next;
     goto L_Close;
 
 L_Close:
     mes "[Candide]";
     mes "\"Come again.\"";
-    close;
+    close2;
+    emotion EMOTE_GRIN;
+    end;
 }
