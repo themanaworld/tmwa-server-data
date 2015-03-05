@@ -1,5 +1,51 @@
 //
 
+function|script|SkillReset
+{
+    set @cost, (BaseLevel * 100) + (JobLevel * 50);
+    set @points, JobLevel - 1; // you start at the game job 1
+    cleararray @poolskills, 0, getarraysize(@poolskills);
+    setarray @poolskills,SKILL_MALLARDS_EYE,SKILL_BRAWLING,SKILL_SPEED,SKILL_RESIST_POISON,SKILL_ASTRAL_SOUL,SKILL_RAGING;
+    set @y, 0;
+
+    mes "[" + @NpcName$ + "]";
+    mes "\"I have come across a spell that will";
+    mes "reset your skill points.";
+    mes "Normally this spell is expensive, but";
+    mes "due to an unusual constellation of the";
+    mes "stars I can cast it very cheaply!";
+    mes "For you it will cost only "+@cost+" gp.\"";
+    next;
+    menu
+        "Reset my skills",L_Next,
+        "Forget about it",L_Pass;
+
+L_Next:
+    if (Zeny<@cost) goto L_NoMoney;
+    goto L_Reset;
+
+L_Reset:
+    if(getskilllv(@poolskills[@y])) setskill @poolskills[@y], 1;
+    set @y, @y + 1;
+    if(@y < getarraysize(@poolskills)) goto L_Reset;
+    set @y, 0;
+    set SkillPoint, @points;
+    set Zeny, Zeny - @cost;
+    return;
+
+L_Pass:
+    mes "[" + @NpcName$ + "]";
+    mes "\"Very well then, see you.\"";
+    return;
+
+L_NoMoney:
+    mes "[" + @NpcName$ + "]";
+    mes "\"Oh dear, the price cannot be bargained.";
+    mes "";
+    mes "Perhaps you can borrow from a friend?\"";
+    return;
+}
+
 function|script|StatReset
 {
 // if (ResetA_charstate == 1) goto L_Multiple;
