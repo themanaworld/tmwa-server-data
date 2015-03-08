@@ -1,0 +1,42 @@
+009-2,32,105,0|script|#DyeChecker|-1
+{
+    end;
+OnInit:
+    /******************************
+        Config Starts Here
+    ******************************/
+    setarray $@DYE_color_names$, "Red", "Green", "Dark Blue", "Yellow", "Light blue", "Pink", "Black", "Orange", "Purple", "Dark Green";
+    setarray $@DYE_colors$,      "Red", "Green", "DarkBlue",  "Yellow", "LightBlue",  "Pink", "Black", "Orange", "Purple", "DarkGreen";
+
+    setarray $@DYE_items$,      "CottonShirt",  "CottonCloth",  "VNeckSweater",   "Turtleneck",         "CottonShorts",  "CottonTrousers",  "CottonSkirt",  "Miniskirt", "TankTop",  "ShortTankTop",   "SilkRobe",  "CottonHeadband",  "DesertHat",  "CottonBoots",  "CottonGloves",  "RabbitEars",  "WizardHat",  "BowlerHat",  "BowlerHatBrown",     "FineDress",  "Contributor",       "SorcererRed",         "SorcererGreen",         "SorcererDBlue",             "SorcererYellow",         "SorcererLBlue",              "SorcererPink",         "SorcererBlack",         "SorcererOrange",         "SorcererPurple",         "SorcererDGreen",             "SorcererWhite";
+    setarray $@DYE_item_names$, "Cotton Shirt", "Cotton Cloth", "V-Neck Sweater", "Turtleneck Sweater", "Cotton Shorts", "Cotton Trousers", "Cotton Skirt", "Miniskirt", "Tank Top", "Short Tank Top", "Silk Robe", "Cotton Headband", "Desert Hat", "Cotton Boots", "Cotton Gloves", "Rabbit Ears", "Wizard Hat", "Bowler Hat", "Bowler Hat (brown)", "Fine Dress", "Contributor Shirt", "Sorcerer Robe (Red)", "Sorcerer Robe (Green)", "Sorcerer Robe (Dark Blue)", "Sorcerer Robe (Yellow)", "Sorcerer Robe (Light Blue)", "Sorcerer Robe (Pink)", "Sorcerer Robe (Black)", "Sorcerer Robe (Orange)", "Sorcerer Robe (Purple)", "Sorcerer Robe (Dark Green)", "Sorcerer Robe (White)";
+    /******************************
+        Config Ends Here
+    ******************************/
+
+    set $@w, 0;
+    freeloop 1; // do not check for infinity loop
+    callsub S_Array;
+    freeloop 0; // re-enable infinity loop check
+    set $@w, 0;
+    set $@c, 0;
+    end;
+
+S_Array:
+    if(getitemname($@DYE_items$[$@w]) == "Unknown Item") goto L_Fail;
+    set $@c, 0;
+    callsub S_Color;
+    set $@w, $@w + 1;
+    if($@w < getarraysize($@DYE_items$)) goto S_Array;
+    return;
+
+L_Fail:
+    debugmes "Dye Fail: "+$@DYE_items$[$@w];
+    mapexit;
+
+S_Color:
+    if(getitemname($@DYE_colors$[$@c] + $@DYE_items$[$@w]) == "Unknown Item") goto L_Fail;
+    set $@c, $@c + 1;
+    if($@c < getarraysize($@DYE_colors$)) goto S_Color;
+    return;
+}
