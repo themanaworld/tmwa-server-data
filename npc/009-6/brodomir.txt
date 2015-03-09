@@ -116,11 +116,11 @@ L_Go:
     $@BRODOMIR_MONEY = @brodomir_money;
     $@brodomir_delay_seconds = 600;
     $@BRODOMIR_PVP_STATUS = 1;
-    announce "Brodomir: In "+$@brodomir_delay_seconds/60+" minutes, I will start a PvP tournament, if at least 3 fighters are present. Make your way in Hurnscald Underground Caves!", 0;
+    announce "Brodomir : In "+$@brodomir_delay_seconds/60+" minutes, I will start a PvP tournament, if at least 3 fighters are present. Make your way in Hurnscald Underground Caves!", 0;
     if ($@BRODOMIR_ITEM_AMOUNT > 0)
-        announce "Brodomir: The winner will receive 150GP per fighter and " + $@BRODOMIR_ITEM_AMOUNT + " " + $@BRODOMIR_ITEM$ + ".", 0;
+        announce "Brodomir : The winner will receive 150GP per fighter and " + $@BRODOMIR_ITEM_AMOUNT + " " + $@BRODOMIR_ITEM$ + ".", 0;
     if ($@BRODOMIR_MONEY > 0)
-        announce "Brodomir: The winner will receive " + $@BRODOMIR_MONEY + "GP and additionally 150GP per fighter.", 0;
+        announce "Brodomir : The winner will receive " + $@BRODOMIR_MONEY + "GP and additionally 150GP per fighter.", 0;
     mes "[Brodomir]";
     mes "\"In "+$@brodomir_delay_seconds/60+" minutes I will bring you all to the PvP cave. If there are less than 3 players here the event will not start and your money will be lost.\"";
     $@BRODOMIR_START_TIME = gettimetick(2) + $@brodomir_delay_seconds;
@@ -129,13 +129,10 @@ L_Go:
     goto L_Close;
 
 L_Wait:
-    $@brodomir_seconds = ($@BRODOMIR_START_TIME - gettimetick(2));
+    @ms = ($@BRODOMIR_START_TIME - gettimetick(2)) * 1000;
+    callfunc "HumanTime";
     mes "[Brodomir]";
-    if ($@brodomir_seconds/60 == 0)
-        mes "\"Just a little longer. I will bring you there in " + $@brodomir_seconds + " seconds.\"";
-    if ($@brodomir_seconds/60 > 0)
-        mes "\"Just a little longer. I will bring you there in " + $@brodomir_seconds/60 + " minute(s).\"";
-    $@brodomir_seconds = 0;
+    mes "\"Just a little longer. I will bring you there in " + @time$ + ".\"";
     goto L_Close;
 
 OnTimer5000:
@@ -152,12 +149,12 @@ L_Warp:
     $@BRODOMIR_PVP_STATUS = $@BRODOMIR_PVP_STATUS + 1;
     $@BRODOMIR_PLAYERS = getareausers("009-6", 20, 20, 80, 80, 1);
     mapwarp "009-6", "009-5", 0, 0;
-    mapannounce "009-5", "PvP On!", 0;
+    mapannounce "009-5", "Brodomir : PvP On!", 0;
     pvpon "009-5";
     end;
 
 L_Warpfail:
-    mapannounce "009-6", "There are not enough players around to start!", 0;
+    mapannounce "009-6", "Brodomir : There are not enough players around to start!", 0;
     if ($@BRODOMIR_ITEM_AMOUNT == 0 || $@BRODOMIR_ITEM$ == "")
         goto L_CleanUp;
     if (attachrid($@BRODOMIR_SPONSOR) == 0)

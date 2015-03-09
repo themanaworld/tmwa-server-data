@@ -5,6 +5,11 @@ all: maps conf news updates
 maps:
 	tools/tmx_converter.py client-data/ world/map/
 
+convert:
+	cd ../; python ./evol-tools/hercules/convert_server.py; 
+	tools/herc_converter.py client-data/ .
+	cd ../evol-tools/hercules/ ;python ./convert_tmx_to_mapcache.py;
+
 herc-maps:
 	tools/herc_converter.py client-data/ .
 	cd ../evol-tools/hercules/ ;python ./convert_tmx_to_mapcache.py;
@@ -23,6 +28,9 @@ conf/char-server.conf \
 conf/inter-server.conf \
 conf/map-server.conf \
 sql-files/init.sql 
+
+herc-trans:
+	cd ../evol-tools/lang/ ;python ./updatelang.py; python ./converttopo.py; cp -a ./po/* ../../server-data/langs/po/;
 
 world/map/conf/magic-secrets.sex: world/map/conf/magic-secrets.sex.template world/map/conf/secrets-build
 	cd world/map/conf && ./build-magic.sh

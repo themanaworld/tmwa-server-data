@@ -1,5 +1,6 @@
 function	script	WarpTowel	{
-    if (TowelLastUsed > (gettimetick(2) - 1800))
+    @seconds = TowelLastUsed - (gettimetick(2) - 1800);
+    if (@seconds > 0)
         goto L_DontPanic;
     if (isin("botcheck",25,27,51,47))
         goto L_Prison;
@@ -100,6 +101,13 @@ L_Lime:
     @NextLocationMap$ = "006-1";
     @NextLocationX = 28;
     @NextLocationY = 97;
+    if(QUEST_MIRIAM_start != 0) goto L_Cheat;
+    goto L_WarpPlayer;
+
+L_Cheat:
+    QUEST_MIRIAM_cheat = 1;
+    QUEST_MIRIAM_run = gettimetick(2) - QUEST_MIRIAM_start;
+    QUEST_MIRIAM_start = 0;
     goto L_WarpPlayer;
 
 L_Save:
@@ -121,15 +129,16 @@ L_BreakChance:
     goto L_End;
 
 L_Forbid:
-    message strcharinfo(0), "This area is protected by a force that doesn't tolerate the power of the Towel.";
+    message strcharinfo(0), "##1Towel : This area is protected by a force that doesn't tolerate the power of the Towel.";
     goto L_Keep;
 
 L_Prison:
-    message strcharinfo(0), "You must be warped by a GM to leave the botcheck area.";
+    message strcharinfo(0), "##1Towel : You must be warped by a GM to leave the botcheck area.";
     goto L_Keep;
 
 L_DontPanic:
-    message strcharinfo(0), "Your towel is still too low on power to jump again.";
+    callfunc "HumanTime";
+    message strcharinfo(0), "##3Towel : Your towel is still too low on power to jump again. Try again in ##B"+ @time$ + "##b.";
     goto L_Keep;
 
 L_Keep:
@@ -165,4 +174,3 @@ L_Return:
     cleararray $@warpTowels$, "", getarraysize($@warpTowels$);
     return;
 }
-

@@ -42,7 +42,6 @@ OnInit:
     @FINEDRESS_COCOONS = 180;
     @SORCERER_ROBE_SEW_ZENY = 25000;
     @SORCERER_ROBE_NUM_COTTON_CLOTH = 2;
-    setarray @item_colors$, "red", "green", "dark blue", "yellow", "light blue", "pink", "black", "orange", "purple", "dark green", "white";
     @wg_state = ((QUEST_WG_state & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     if (@loratay_asking_robe == 1) goto L_ExamineSR;
@@ -485,28 +484,30 @@ L_desert_hat:
     mes "The seamstress sighs.";
     mes "\"One of these days it would be nice to have an actual challenge... yes, of course I can make a desert hat.  A Cotton Headband, three pieces of cotton cloth.  Hmm.  And let's add 300 GP to that.\"";
     next;
-    cleararray @items, 0, getarraysize(@items);
+    cleararray @items$, "", getarraysize(@items$);
     cleararray @item_names$, "", getarraysize(@item_names$);
-    setarray @items, 724, 2140, 2141, 2142, 2143, 2144, 2145, 2146, 2147, 2148, 2149;
-    setarray @item_names$, "Here is a Cotton Headband.", "Here is a Red Cotton Headband.", "Here is a Green Cotton Headband.", "Here is a Dark Blue Cotton Headband.", "Here is a Yellow Cotton Headband.", "Here is a Light Blue Cotton Headband.", "Here is a Pink Cotton Headband.", "Here is a Black Cotton Headband.", "Here is an Orange Cotton Headband.", "Here is a Puple Cotton Headband.", "Here is a Dark Green Cotton Headband.";
+    @o = 1;
+    setarray @items$, "CottonHeadband";
+    setarray @item_names$, "Here is a Cotton Headband.";
+    callsub S_CottonHeadbandColors;
 
-    callfunc "DynamicItemMenu";
-    if (@item == 0)
+    callfunc "DynamicItemMenu$";
+    if (@item$ == "")
         goto L_Main_menu;
-    if (@item == 724)
-        @genitem = 723;
-    if (@item != 724)
-        @genitem = @item - 10;
-    if (countitemcolor(@item) < 1)
+    if (@item$ == "CottonHeadband")
+        @genitem$ = "DesertHat";
+    if (@item$ != "CottonHeadband")
+        @genitem$ = $@DYE_colors$[@index] + "DesertHat";
+    if (countitemcolor(@item$) < 1)
         goto L_desert_hat_noheadband;
     if (countitemcolor("CottonCloth") < 3)
         goto L_desert_hat_nocotton;
     if (Zeny < 300)
         goto L_desert_hat_nogp;
-    delitem @item, 1;
+    delitem @item$, 1;
     delitem "CottonCloth", 3;
     Zeny = Zeny - 300;
-    getitem @genitem, 1;
+    getitem @genitem$, 1;
     mes "[Lora Tay the Seamstress]";
     mes "\"Now then, this should only take a minute.\"";
     mes "The seamstress folds your cotton cloth in a complicated fashion, wraps the resulting bundle into and out of the headband, and finally sews together several loose ends.";
@@ -517,6 +518,13 @@ L_desert_hat:
     mes "\"Here you are.\"";
     next;
     goto L_Main_menu;
+
+S_CottonHeadbandColors:
+    @items$[@o] = $@DYE_colors$[@o]+"CottonHeadband";
+    @item_names$[@o] = "Here is a "+$@DYE_color_names$[@o]+" Cotton Headband";
+    @o = @o + 1;
+    if(@o < getarraysize($@DYE_colors$)) goto S_CottonHeadbandColors;
+    return;
 
 L_desert_hat_nocotton:
     mes "[Lora Tay the Seamstress]";
@@ -928,7 +936,7 @@ L_ExamineSR:
     mes "Lora Tay takes a closer look at what you are wearing.";
     next;
     mes "[Lora Tay the Seamstress]";
-    mes "\"Hmm. This " + @item_colors$[@current_linecolor] + " lined " + @item_colors$[@current_maincolor] + " sorcerer robe. I see. Is that ok?\"";
+    mes "\"Hmm. This " + $@DYE_color_names$[@current_linecolor] + " lined " + $@DYE_color_names$[@current_maincolor] + " sorcerer robe. I see. Is that ok?\"";
     if (@current_maincolor == -1 || @current_linecolor == -1)
         goto L_NotSR;
     menu
@@ -945,17 +953,17 @@ L_ChooseSRLineColor:
     mes "[Lora Tay the Seamstress]";
     mes "\"And which Cotton Cloth color will you give me?\"";
     menu
-        "A " + @item_colors$[0] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[1] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[2] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[3] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[4] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[5] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[6] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[7] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[8] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[9] + " one.", L_ItemMenus2,
-        "A " + @item_colors$[10] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[0] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[1] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[2] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[3] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[4] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[5] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[6] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[7] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[8] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[9] + " one.", L_ItemMenus2,
+        "A " + $@DYE_color_names$[10] + " one.", L_ItemMenus2,
         "Hum. I changed my mind. Later maybe.", L_End;
 
 L_ItemMenus2:
@@ -983,8 +991,8 @@ L_ItemMenus2:
     delitem @chest_equip_id, 1;
     Zeny = Zeny - @SORCERER_ROBE_SEW_ZENY;
     getitem @new_sr_id, 1;
-    mes "Lora Tay adjusts her glasses and removes carefully the " + @item_colors$[@current_linecolor] + " string of the robe.";
-    mes "Then she grabs the " + @item_colors$[@chosen_color] + " cotton cloth, unfolds it and pins her needle in it.";
+    mes "Lora Tay adjusts her glasses and removes carefully the " + $@DYE_color_names$[@current_linecolor] + " string of the robe.";
+    mes "Then she grabs the " + $@DYE_color_names$[@chosen_color] + " cotton cloth, unfolds it and pins her needle in it.";
     next;
     mes "She begins to sew the new string onto the sorcerer robe.";
     next;
