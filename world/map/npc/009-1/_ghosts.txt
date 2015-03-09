@@ -1,0 +1,29 @@
+009-1,1,1,0|script|#GhostController|-1
+{
+    end;
+OnInit:
+    set $@GHOSTS_population, 10; // population at all time (players + ghosts >= $@GHOSTS_population)
+    set $@GHOSTS_spawned, 0; // number of ghosts currently in town; (ghosts <= $@GHOSTS_population)
+    if(debug >= 2) end;
+    goto OnTimer30000;
+
+S_Check:
+    if((getmapusers("009-1") >= $@GHOSTS_population) && $@GHOSTS_spawned) goto S_Kill;
+    if((getmapusers("009-1") + $@GHOSTS_spawned) < $@GHOSTS_population) goto S_Spawn;
+    return;
+
+S_Kill: // this normally wouldn't be necessary but it's the only way to respawn after a @killall
+    killmonster "009-1", "#GhostController::OnTimer30000";
+    set $@GHOSTS_spawned, 0;
+    goto S_Check;
+
+S_Spawn:
+    areamonster "009-1", 24, 24, 97, 55, "", 1125, 1, "#GhostController::OnTimer30000";
+    set $@GHOSTS_spawned, $@GHOSTS_spawned + 1;
+    goto S_Check;
+
+OnTimer30000:
+    callsub S_Check;
+    initnpctimer;
+    end;
+}
