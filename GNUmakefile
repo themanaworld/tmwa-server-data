@@ -30,7 +30,7 @@ conf/map-server.conf \
 sql-files/init.sql 
 
 herc-trans:
-	cd ../evol-tools/lang/ ;python ./updatelang.py; python ./converttopo.py; cp -a ./po/* ../../server-data/langs/po/;
+	cd ../evol-tools/lang/ ;python ./updatelang.py; cp -a ./po/* ../../server-data/langs/po/;
 
 world/map/conf/magic-secrets.sex: world/map/conf/magic-secrets.sex.template world/map/conf/secrets-build
 	cd world/map/conf && ./build-magic.sh
