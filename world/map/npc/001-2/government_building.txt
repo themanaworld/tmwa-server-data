@@ -19,9 +19,9 @@ L_main_married:
         "Nothing, I guess.", L_Close;
 
 L_marry:
-    if (BaseLevel < WEDDING_MIN_LEVEL)
+    if (LEVEL < WEDDING_MIN_LEVEL)
         goto L_marry_too_young;
-    if (Zeny < WEDDING_FEE)
+    if (ZENY < WEDDING_FEE)
         goto L_marry_too_poor;
 
     mes "[Estard]";
@@ -55,10 +55,10 @@ L_get_rings:
     mes "[Estard]";
     mes "\"Yes. They are " + WEDDING_FEE + " GP. That covers all administrative fees for the marriage.\"";
 
-    if (Zeny < WEDDING_FEE)
+    if (ZENY < WEDDING_FEE)
         menu
             "Thanks anyways. I don't have enough with me.", L_Close;
-    if (Zeny >= WEDDING_FEE)
+    if (ZENY >= WEDDING_FEE)
         menu
             "I'll buy a pair.", L_get_rings_pay,
             "Thanks anyways.", L_Close;
@@ -72,9 +72,9 @@ L_get_rings_pay:
     close;
 
 L_divorce:
-    set @divorce_cost, DIVORCE_FEE_PER_LEVEL * BaseLevel;
+    set @divorce_cost, DIVORCE_FEE_PER_LEVEL * LEVEL;
 
-    if (Zeny < @divorce_cost)
+    if (ZENY < @divorce_cost)
         goto L_divorce_not_enough;
 
     mes "[Estard]";
@@ -85,7 +85,7 @@ L_divorce:
         "I don't want it.", L_Close;
 
 L_do_divorce:
-    if (Zeny < @divorce_cost)
+    if (ZENY < @divorce_cost)
         goto L_not_enough_money;
 
     if (divorce())
@@ -98,7 +98,7 @@ L_do_divorce:
     close;
 
 L_divorce_done:
-    set Zeny, Zeny - @divorce_cost;
+    set ZENY, ZENY - @divorce_cost;
 
     mes "[Estard]";
     mes "\"You have been divorced. Come again.\"";
@@ -123,13 +123,13 @@ L_Close:
     close;
 
 S_give_rings:
-    if (Zeny < WEDDING_FEE)
+    if (ZENY < WEDDING_FEE)
         goto L_not_enough_money;
     getinventorylist;
     if (@inventorylist_count > 98)
         goto L_no_room_for_rings;
 
-    set Zeny, Zeny - WEDDING_FEE;
+    set ZENY, ZENY - WEDDING_FEE;
     getitem "WeddingRing", 1;
     getitem "WeddingRing", 1;
     return;

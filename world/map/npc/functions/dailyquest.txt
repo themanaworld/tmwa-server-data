@@ -23,7 +23,7 @@
 // Variables used inside:
 // DailyQuestPoints - The number of points the player currently has
 // DailyQuestTime - Time since DailyQuestPoints was lasted renewed
-// DailyQuestBonus - Additional points added in addition to player BaseLevel
+// DailyQuestBonus - Additional points added in addition to player LEVEL
 
 // (DailyQuestBonus makes a good reward from non-daily quests)
 
@@ -35,18 +35,18 @@ function|script|DailyQuestPoints
 
     // how many whole daily quest points the player has earned
     // we increment DailyQuestTime by the number of seconds in that many increments
-    set @dq_increments, (gettimetick(2) - DailyQuestTime)*BaseLevel / 86400;
-    set DailyQuestTime, DailyQuestTime + @dq_increments*86400/BaseLevel;
+    set @dq_increments, (gettimetick(2) - DailyQuestTime)*LEVEL / 86400;
+    set DailyQuestTime, DailyQuestTime + @dq_increments*86400/LEVEL;
 
     // player can't regenerate any quest points, but might have a bonus
-    if (DailyQuestPoints >= BaseLevel)
+    if (DailyQuestPoints >= LEVEL)
         goto L_Bonus;
 
     // normal recharging case - increment, but don't let it recharge more than a day's worth
     set DailyQuestPoints, DailyQuestPoints + @dq_increments;
-    if (DailyQuestPoints > BaseLevel)
-        set DailyQuestPoints, BaseLevel;
-    // fallthrough to bonus, which *is* allowed to push DailyQuestPoints above BaseLevel
+    if (DailyQuestPoints > LEVEL)
+        set DailyQuestPoints, LEVEL;
+    // fallthrough to bonus, which *is* allowed to push DailyQuestPoints above LEVEL
     goto L_Bonus;
 
 L_Bonus:
@@ -60,7 +60,7 @@ function|script|DailyQuest
 {
     callfunc "DailyQuestPoints";
 
-    if (BaseLevel < @dq_level)
+    if (LEVEL < @dq_level)
         goto L_Low_Level;
     if (DailyQuestPoints < @dq_cost)
         goto L_Not_Enough_Points;
@@ -80,7 +80,7 @@ L_Trade:
         goto L_Not_Enough;
     delitem @dq_name$, @dq_count;
 
-    set Zeny, Zeny + @dq_money;
+    set ZENY, ZENY + @dq_money;
     getexp @dq_exp, 0;
 
     set DailyQuestPoints, DailyQuestPoints - @dq_cost;
@@ -125,13 +125,13 @@ S_SayPhrase:
         goto L_Return;
     if (DailyQuestPoints < @dq_cost)
         goto L_Exhausted;
-    if (DailyQuestPoints > BaseLevel)
+    if (DailyQuestPoints > LEVEL)
         goto L_Over;
-    if (DailyQuestPoints > (BaseLevel*9)/10)
+    if (DailyQuestPoints > (LEVEL*9)/10)
         goto L_P90;
-    if (DailyQuestPoints > (BaseLevel*7)/10)
+    if (DailyQuestPoints > (LEVEL*7)/10)
         goto L_P70;
-    if (DailyQuestPoints > (BaseLevel*5)/10)
+    if (DailyQuestPoints > (LEVEL*5)/10)
         goto L_P50;
     goto L_Low;
 
