@@ -7,7 +7,7 @@
     set @kylian, ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
     if (@kylian != 6)
         goto L_End;
-    message strcharinfo(0), "You wonder if Kylian would like to visit the casino in the evening.";
+    message strcharinfo(0), "You wonder if Kylian would be interested in visiting the Casino.";
     goto L_End;
 
 L_End:
@@ -18,7 +18,7 @@ L_End:
 002-2,86,29,0|script|Valdo|117
 {
     mes "[Valdo the Worker]";
-    mes "\"Please let me work. I'm really in a hurry!\"";
+    mes "\"Please let me work. I've got a lot to do and not enough time to do it!\"";
     close;
 }
 
@@ -49,8 +49,8 @@ L_End:
     mes "You will need 15 casino coins.\"";
     next;
     menu
-        "Yes", L_Begin,
-        "No", L_Close;
+        "Sure.", L_Begin,
+        "Not now.", L_Close;
 
 L_Begin:
     if(countitem("CasinoCoins") < 15) goto L_NoCoin;
@@ -58,13 +58,12 @@ L_Begin:
     set @croupier, rand(0, 4);
     set @croupier, @croupier + 17;
     set @player, rand(4, 21);
-    mes "\"You got " + @player + " with your cards.";
+    mes "Your cards are worth " + @player + " points.";
     if(@player == 21) goto L_End;
     mes "Do you want another card?\"";
-    next;
     menu
-        "Yes", L_Another,
-        "No", L_End;
+        "Yes.", L_Another,
+        "No.", L_End;
 
 L_Another:
     set @tempace, rand(2, 11);
@@ -72,29 +71,29 @@ L_Another:
     set @player, @player + @tempace;
     if (@player > 21) goto L_Lost;
     if (@player == 21) goto L_End;
-    mes "\"You got " + @player + " with your cards.";
+    mes "Your cards are worth " + @player + " points.";
     mes "Do you want another card?\"";
-    next;
     menu
-        "Yes", L_Another,
-        "No", L_End;
+        "Yes.", L_Another,
+        "No.", L_End;
 
 L_End:
     if (@player <= @croupier) goto L_Lost;
-    mes "\"Congratulations, you won!";
-    mes "I had " + @croupier + ".";
-    mes "You get 45 casino coins.\"";
+    mes "Your cards are worth " + @player + " points.";
+    mes "\"I have " + @croupier + " points.";
+    mes "Congratulations! You won!";
+    mes "You get 45 casino coins!\"";
     getitem "CasinoCoins", 45;
     goto L_Close;
 
 L_NoCoin:
-    mes "\"You need at least 15 coins.\"";
+    mes "\"Sorry, but you need at least 15 coins to play.\"";
     goto L_Close;
 
 L_Lost:
-    mes "\"I'm sorry but you lost.";
-    mes "You got " + @player + " with your cards.";
-    mes "I had " + @croupier + ".\"";
+    mes "\"I'm sorry, but you lost.";
+    mes "Your cards are worth " + @player + " points.";
+    mes "I have " + @croupier + " points.\"";
     goto L_Close;
 
 L_Ace:
@@ -102,15 +101,14 @@ L_Ace:
     if (@player > 21) set @player, @player - 10;
     if (@player > 21) goto L_Lost;
     if (@player == 21) goto L_End;
-    mes "You got " + @player + " with your cards.";
-    mes "Do you want another card?";
-    next;
+    mes "Your cards are worth " + @player + " points.";
+    mes "Do you want to take another card?";
     menu
         "Yes", L_Another,
         "No", L_End;
 
 L_Close:
-    mes "\"As you wish.\"";
+    mes "\"Be sure to come back again.\"";
     set @croupier, 0;
     set @player, 0;
     set @tempace, 0;
@@ -129,7 +127,7 @@ L_Close:
         "10 coins", L_b10,
         "50 coins", L_b50,
         "100 coins", L_b100,
-        "Maybe I'll play later", L_Close;
+        "Maybe I'll play later.", L_Close;
 
 L_b1:
     set @bet, 1;
@@ -154,13 +152,13 @@ L_b100:
 L_Check:
     if(countitem("CasinoCoins") < @bet) goto L_NoCoin;
     menu
-        "Choose a color", L_PickColor,
-        "Choose a number", L_Number;
+        "Choose a color...", L_PickColor,
+        "Choose a number...", L_Number;
 
 L_PickColor:
     menu
-        "Black", L_Color,
-        "Red", L_Color;
+        "Black.", L_Color,
+        "Red.", L_Color;
 
 L_Color:
     delitem "CasinoCoins", @bet;
@@ -184,23 +182,23 @@ L_Menuitems:
     if (@menu >= 3) set @number, @menu - 2;
 
     set @roulette, rand(38);
-    if (@roulette == 37) mes "The ball stopped on 00";
-    if (@roulette < 37) mes "The ball stopped on " + @roulette;
+    if (@roulette == 37) mes "The ball stopped on 00.";
+    if (@roulette < 37) mes "The ball stopped on " + @roulette + ".";
     if (@number != @roulette) goto L_Lost;
     mes "\"You won!\"";
     getitem "CasinoCoins", @bet * 10;
     goto L_Close;
 
 L_NoCoin:
-    mes "\"You don't have enough coins.\"";
+    mes "\"You don't have enough coins to play.\"";
     goto L_Close;
 
 L_Lost:
-    mes "\"I'm sorry, you lost.\"";
+    mes "\"I'm sorry, but you lost.\"";
     goto L_Close;
 
 L_Close:
-    mes "Come again.";
+    mes "Come again!";
     set @number, 0;
     set @roulette, 0;
     set @color, 0;
