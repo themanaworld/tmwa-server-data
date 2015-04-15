@@ -235,9 +235,9 @@ function|script|fightclub_Victory
 function|script|fightclub_DestroyMe
 {
     set @Duel_Fighter, 0;
+    setpvpchannel @previous_channel;
     sc_end 132; sc_end 14; sc_end 37; sc_end 185; sc_end 194; sc_end 195; sc_end 196; sc_end 197; sc_end 198; sc_end 199; // remove effects
-    heal -Hp, 0; // doing @killer is unreliable
-    gmcommand "@alive"; // refill hp/mana
+    heal MaxHp, MaxSp; // refill hp/mana
     if(getmap() == "009-7") warp "009-7", rand($@fightclub_x1, $@fightclub_x2), rand(($@fightclub_y1 - 2), ($@fightclub_y1 - 3));
     return;
 }
@@ -303,6 +303,7 @@ function|script|fightclub_StartUp
     setarray $@Duel_Queue_Red$, "";
     cleararray $@Duel_Queue_Red$, "", ($@Duel_QueueLimit + 1);
     set $@Duel_TotalTime, 0;
+    set $@Duel_Channel, 20;
     if($fightclub_enabled) set $fightclub_enabled, 0; // this var moved to $SANGUINE
     // DUELS flags below
     set $@DuelPvpBit, (1 << 1);
@@ -435,7 +436,7 @@ function|script|fightclub_enter
 {
     set @Duel_Fighter, 1;
     warp "009-7", rand($@fightclub_x1,$@fightclub_x2), rand($@fightclub_y1,$@fightclub_y2);
-    gmcommand "@alive"; // ensure that you can't duel wih a corpse
+    heal MaxHp, MaxSp; // ensure that you can't duel wih a corpse
     sc_end 132; sc_end 14; sc_end 37; sc_end 185; sc_end 194; sc_end 195; sc_end 196; sc_end 197; sc_end 198; sc_end 199; // remove effects
     message strcharinfo(0), "Get Ready.";
     addtimer ($@Duel_TimeBeforeStart * 1000), "#FightClubUtils::OnBecomeKiller"; // call fightclub_enter_killer in 3 seconds
@@ -445,8 +446,8 @@ function|script|fightclub_enter
 // ** called 3 seconds after a player enters the ring
 function|script|fightclub_enter_killer
 {
-    gmcommand "@killable";
-    gmcommand "@killer"; // add both killable and killer so if one doesn't kick in, the other (hopefully) will
+    if(getpvpflag(0) != $@Duel_Channel) set @previous_channel, getpvpflag(0);
+    setpvpchannel $@Duel_Channel;
     message strcharinfo(0), "GO !";
     return;
 }

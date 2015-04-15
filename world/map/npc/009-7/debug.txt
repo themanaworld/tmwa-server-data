@@ -19,6 +19,7 @@ L_Menu:
     mes "##3$##0Duel_LastDuel: ##7" + $Duel_LastDuel + "##0";
     mes "---";
     mes "##2@##0Duel_Fighter: ##7" + @Duel_Fighter + "##0";
+    mes "pvp channel: ##7" + getpvpflag(0) + "##0";
     next;
     menu
         "toggle|Toggle $Duel_Enabled", L_DuelEnabled,
@@ -31,6 +32,7 @@ L_Menu:
         "edit|Set $@Duel_PlayerQueueLimit", L_PlayerQueueLimit,
         "edit|Set $@Duel_PlayerQueueTimeOut", L_PlayerQueueTimeOut,
         "edit|Set $Duel_LastDuel", L_LastDuel,
+        "edit|Set pvp channel", L_Channel,
         "toggle|Toggle @Duel_Fighter", L_DuelFighter,
         "toggle|Toggle killer state", L_Killer,
         "toggle|Toggle killable state", L_Killable,
@@ -126,6 +128,13 @@ L_LastDuel:
     set $Duel_LastDuel, @last;
     next;
     goto L_Restart;
+
+L_Channel:
+    mes "range: 0~32767";
+    input @chn;
+    if(@last > 32767) goto L_OutOfRange;
+    setpvpchannel @chn;
+    goto L_Menu;
 
 L_OutOfRange:
     mes "Value out of range or empty.";
