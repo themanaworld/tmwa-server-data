@@ -14,18 +14,6 @@ OnInit:
     set $@BarrelMax, getarraysize($@BarrelBits);
     end;
 }
-function|script|SetBarrelMask
-{
-    set STARTAREA, (STARTAREA & ~(NIBBLE_4_MASK) | (@barrel_tmp << NIBBLE_4_SHIFT));
-    set @barrel_tmp, 0;
-    return;
-}
-function|script|CheckBarrelQuest
-{
-    callfunc "CountBarrels";
-    set @barrel_quest, ((STARTAREA & NIBBLE_4_MASK) >> NIBBLE_4_SHIFT);
-    return;
-}
 function|script|CountBarrels
 {
     set @barrel_count, 0;
@@ -55,8 +43,7 @@ function|script|CheckBarrel
     callfunc "PCtoNPCRange";
     if (@npc_check)
         goto L_Range;
-    callfunc "CheckBarrelQuest";
-    if (!(@barrel_quest == 2))
+    if (!(QL_ZEGAS == 2))
         goto L_NoI;
     if (STARTAREA & $@BarrelBits[@barrel])
         goto L_Empty;
@@ -86,8 +73,7 @@ L_Empty:
 L_QuestReward:
     message strcharinfo(0), "You found the bug bomb.";
     misceffect 33;
-    set @barrel_tmp, 3;
-    callfunc "SetBarrelMask";
+    set QL_ZEGAS, 3;
     killmonster getmap() + "", "Barrel#0::OnMaggotDeath";
     goto L_Return;
 

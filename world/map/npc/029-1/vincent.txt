@@ -9,7 +9,7 @@
         "No.", L_Close;
 
 L_Reset:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_2_MASK) | (0 << NIBBLE_2_SHIFT));
+    set QL_VINCENT, 0;
     mes "Reset!";
     goto L_Close;
 
@@ -23,15 +23,11 @@ OnInit:
 }
 029-1,107,110,0|script|Vincent|113
 {
-    // This NPC previously used the variable TMW_Quest
-    callfunc "ClearVarTMW_Quest";
     set @halloween_npc_id, $@halloween_npc_vincent;
     callfunc "TrickOrTreat";
 
-    set @state, ((QUEST_SouthTulimshar & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
-
-    if (@state >= 2) goto L_Done;
-    if (@state == 1) goto L_Progress;
+    if (QL_VINCENT >= 2) goto L_Done;
+    if (QL_VINCENT == 1) goto L_Progress;
     goto L_Con_Vin_First;
 
 L_Con_Vin_First:
@@ -73,8 +69,7 @@ L_Ask:
         "No.", L_Close;
 
 L_Sure:
-    set @state, 1;
-    callsub S_Update_Var;
+    set QL_VINCENT, 1;
     set @TEMP, rand(4);
     if(@TEMP == 1) goto L_Req2;
     if(@TEMP == 2) goto L_Req3;
@@ -125,8 +120,7 @@ L_Have:
     delitem "BugLeg", 5;
     getexp 50, 0;
     set Zeny, Zeny + 1000;
-    set @state, 2;
-    callsub S_Update_Var;
+    set QL_VINCENT, 2;
 
     mes "[Vincent]";
     mes "\"Here you go, a little of my appreciation!\"";
@@ -140,11 +134,5 @@ L_Done:
     goto L_Close;
 
 L_Close:
-    set @TEMP, 0;
-    set @state, 0;
     close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_2_MASK) | (@state << NIBBLE_2_SHIFT));
-    return;
 }

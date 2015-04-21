@@ -10,19 +10,12 @@ OnInit:
     setarray $@ValonMobCnt, 10,5,3,1;
     end;
 }
-function|script|ValonState
+function|script|ValonCount
 {
-    set @valon_state, ((STARTAREA & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
     set @valon_mob, 0;
-    if (@valon_state >= 2)
-        set @valon_mob, (@valon_state - 2);
+    if (QL_VALON >= 2)
+        set @valon_mob, (QL_VALON - 2);
     set @valon_count, ((STARTAREA & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
-    return;
-}
-function|script|setValonMask
-{
-    set STARTAREA, (STARTAREA & ~(NIBBLE_1_MASK) | (@valon_tmp << NIBBLE_1_SHIFT));
-    set @valon_tmp, 0;
     return;
 }
 function|script|ResetValonCntMask
@@ -42,8 +35,8 @@ function|script|AddValonCntMask
 }
 function|script|ValonProgress
 {
-    callfunc "ValonState";
-    if ((@valon_state > 1) && (@valon_state < 6))
+    callfunc "ValonCount";
+    if ((QL_VALON > 1) && (QL_VALON < 6))
         message strcharinfo(0), $@ValonMobName$[@valon_mob] + ": " + @valon_count + "/" + $@ValonMobCnt[@valon_mob];
     return;
 }
@@ -56,7 +49,7 @@ function|script|ValonProgress
         "No.", L_Close;
 
 L_Reset:
-    set STARTAREA, (STARTAREA & ~(NIBBLE_1_MASK) | (0 << NIBBLE_1_SHIFT));
+    set QL_VALON, 0;
     set STARTAREA, (STARTAREA & ~(NIBBLE_2_MASK) | (0 << NIBBLE_2_SHIFT));
     mes "Reset!";
     goto L_Close;
@@ -75,14 +68,14 @@ OnInit:
     callfunc "PCtoNPCRange";
     if (@npc_check)
         goto L_Close;
-    callfunc "ValonState";
-    if (@valon_state >= 6)
+    callfunc "ValonCount";
+    if (QL_VALON >= 6)
         goto L_QuestComplete;
-    if (@valon_start == 1)
+    if (QL_VALON == 1)
         goto L_QuestAskAgain;
     if (@valon_count >= $@ValonMobCnt[@valon_mob])
         goto L_NextMob;
-    if ((@valon_state >= 2) && (@valon_state < 6))
+    if ((QL_VALON >= 2) && (QL_VALON < 6))
         goto L_QuestStarted;
     goto L_QuestAsk;
 
@@ -102,17 +95,15 @@ L_QuestAsk:
     mes "\"I should know I guard this gate from all manner of island beasts.\"";
     mes "\"Maybe you would like help and earn your stripes?\"";
     mes "\"The Council of Wizard's does offer a reward for helping...\"";
-    set @valon_tmp, 1;
-    callfunc "setValonMask";
+    set QL_VALON, 1;
     callfunc "ResetValonCntMask";
     menu
         "YES!!! let me at them!", L_Accept,
         "Maybe some other time.", L_Close;
 
 L_Accept:
-    set @valon_tmp, 2;
-    callfunc "setValonMask";
-    callfunc "ValonState";
+    set QL_VALON, 2;
+    callfunc "ValonCount";
     goto L_NewMob;
 
 L_NextMob:
@@ -120,10 +111,9 @@ L_NextMob:
     mes "\"I see you killed all the " + $@ValonMobName$[@valon_mob] + " needed.\"";
     mes "\"The Wizard's thank thee as well.\"";
     set Zeny, Zeny + 25;
-    set @valon_tmp, (@valon_state + 1);
-    callfunc "setValonMask";
+    set QL_VALON, (QL_VALON + 1);
     callfunc "ResetValonCntMask";
-    callfunc "ValonState";
+    callfunc "ValonCount";
     if (@valon_mob == getarraysize($@ValonMob))
         goto L_QuestOver;
     goto L_NewMob;
@@ -144,8 +134,7 @@ L_QuestOver:
     mes "[Valon]";
     mes "\"Thanks once again for helping with the monsters in the island.\"";
     getexp 50, 0;
-    set @valon_tmp, (@valon_state + 1);
-    callfunc "setValonMask";
+    set QL_VALON, (QL_VALON + 1);
     goto L_Close;
 
 L_QuestComplete:

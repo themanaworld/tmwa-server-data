@@ -3,18 +3,6 @@
 // Gains Access to Magic School
 // See 024-2 clean that shit up
 // Morgan, liana
-function|script|MorganState
-{
-    callfunc "ClearVariables";
-    set @morgan, ((STARTAREA & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-    return;
-}
-function|script|SetMorganMask
-{
-    set STARTAREA, (STARTAREA & ~(NIBBLE_3_MASK) | (@morgan_tmp << NIBBLE_3_SHIFT));
-    set @morgan_tmp, 0;
-    return;
-}
 029-2,105,57,0|script|MorganDebug|355
 {
     mes "[Morgan Debug]";
@@ -23,7 +11,7 @@ function|script|SetMorganMask
         "Yes.", L_Reset,
         "No.", L_End;
 L_Reset:
-    set STARTAREA, (STARTAREA & ~(NIBBLE_3_MASK) | (0 << NIBBLE_3_SHIFT));
+    set QL_MORGAN, 0;
     mes "Reset!";
     goto L_End;
 
@@ -37,6 +25,7 @@ OnInit:
 }
 029-2,101,57,0|script|Morgan#_M|355
 {
+    callfunc "ClearVariables";
     setarray @npc_loc, 101, 57, 4;
     callfunc "PCtoNPCRange";
     if (@npc_check)
@@ -47,21 +36,20 @@ OnInit:
     goto L_NotMagic;
 
 L_Learn:
-    if (@morgan == 0)
+    if (QL_MORGAN == 0)
         goto L_NotSeen;
-    if (@morgan == 1)
+    if (QL_MORGAN == 1)
         goto L_Seen;
-    if (@morgan == 2)
+    if (QL_MORGAN == 2)
         goto L_Started;
-    if (@morgan == 3)
+    if (QL_MORGAN == 3)
         goto L_CastOnce;
-    if (@morgan == 4)
+    if (QL_MORGAN == 4)
         goto L_LearningDone;
     goto L_Close;
 
 L_NotSeen:
-    set @morgan_tmp, 1;
-    callfunc "SetMorganMask";
+    set QL_MORGAN, 1;
     mes "[Morgan]";
     mes "\"Welcome to the magic school of Candor\"";
     mes "\"My name is Morgan, I'm Head of Wizardry.\"";
@@ -86,8 +74,7 @@ L_NotMagic:
     goto L_Close;
 
 L_Start:
-    set @morgan_tmp, 2;
-    callfunc "SetMorganMask";
+    set QL_MORGAN, 2;
     mes "\"Great, lets begin your first lesson.\"";
     getitem 1171, 1;
     mes "\"This is a wand, there are many like it but this one is now yours.\"";
@@ -115,8 +102,6 @@ L_CastOnce:
     mes "\"Each time you attack the wand will convert a bit of you mana into a magic bolt.\"";
     mes "\"After so many attacks, you will need to recast the invocation to stay attuned to the wand.\"";
     mes "\"(Logging out will also cancel any spell effects currently active in-game.).\"";
-    set @morgan_tmp, 4;
-    callfunc "SetMorganMask";
     goto L_Close;
 
 L_LearningDone:
