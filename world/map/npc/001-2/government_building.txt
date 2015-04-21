@@ -1,22 +1,22 @@
-// The government builing in the south west
+// The government building in the south west
 
 // A clerk
 001-2,25,21,0|script|Estard|107
 {
     mes "[Estard]";
-    mes "\"Hello what can I do for you?\"";
+    mes "\"Hello. What can I do for you?\"";
     next;
     if (getpartnerid2())
         goto L_main_married;
 
     menu
-        "I'm looking at getting married.", L_marry,
-        "Nothing, I guess.", L_Close;
+        "I'd like to get married.", L_marry,
+        "Never mind.", L_Close;
 
 L_main_married:
     menu
-        "I'd like a divorce.", L_divorce,
-        "Nothing, I guess.", L_Close;
+        "I'd like to file for divorce.", L_divorce,
+        "Never mind.", L_Close;
 
 L_marry:
     if (BaseLevel < WEDDING_MIN_LEVEL)
@@ -24,51 +24,56 @@ L_marry:
     if (Zeny < WEDDING_FEE)
         goto L_marry_too_poor;
 
+    mes "";
     mes "[Estard]";
-    mes "\"Are you sure you want to get married? It'll cost " + WEDDING_FEE + " GP.\"";
+    mes "\"Are you sure that you want to get married? It'll cost you ##B" + WEDDING_FEE + " GP##b.\"";
     menu
-        "Yes", L_marry_do,
-        "No", L_Close;
+        "Yes!", L_marry_do,
+        "I'm having second thoughts...", L_Close;
 
 L_marry_do:
     callsub S_give_rings;
-
+    mes "";
     mes "[Estard]";
-    mes "\"Here are your rings. You can get married by standing in one of the designated places (like that small rug over there) with your partner, give them their ring, and say 'marry (their name here)'. You both need to have your rings on.\"";
+    mes "\"Here are your rings. In order to marry each other, you both must stand within one of the designated areas (like that small rug over there in the corner), wear your rings, and say 'marry (your partner's name).'\"";
     close;
 
 L_marry_too_young:
+    mes "";
     mes "[Estard]";
-    mes "\"I'm sorry, but you are too young to get married. You must be atleast " + WEDDING_MIN_LEVEL + " levels old.\"";
+    mes "\"I'm sorry, but you are too young to get married. You must be at least " + WEDDING_MIN_LEVEL + " levels old.\"";
     next;
 
     menu
-        "Can I at least get wedding rings?", L_get_rings,
+        "Can I at least get the wedding rings now?", L_get_rings,
         "Thanks anyways.", L_Close;
 
 L_marry_too_poor:
+    mes "";
     mes "[Estard]";
-    mes "\"You need " + WEDDING_FEE + " GP to get married. That covers all administrative fees for the marriage and provides two wedding rings.\"";
+    mes "\"It costs ##B" + WEDDING_FEE + " GP##b to get married. That covers all the processing fees for the marriage and provides you with two wedding rings.\"";
     close;
 
 L_get_rings:
+    mes "";
     mes "[Estard]";
-    mes "\"Yes. They are " + WEDDING_FEE + " GP. That covers all administrative fees for the marriage.\"";
+    mes "\"Yes! You certainly can. They're ##B" + WEDDING_FEE + " GP##b. That covers all the processing fees for the marriage and provides you with two wedding rings.\"";
 
     if (Zeny < WEDDING_FEE)
         menu
-            "Thanks anyways. I don't have enough with me.", L_Close;
+            "Thanks, but I don't have enough with me right now.", L_Close;
     if (Zeny >= WEDDING_FEE)
         menu
-            "I'll buy a pair.", L_get_rings_pay,
-            "Thanks anyways.", L_Close;
+            "Sounds great!", L_get_rings_pay,
+            "No thanks.", L_Close;
     goto L_get_rings_pay;
 
 L_get_rings_pay:
     callsub S_give_rings;
 
+    mes "";
     mes "[Estard]";
-    mes "\"There you go. Come again.\"";
+    mes "\"There you go! %%1\"";
     close;
 
 L_divorce:
@@ -78,11 +83,11 @@ L_divorce:
         goto L_divorce_not_enough;
 
     mes "[Estard]";
-    mes "\"If you're sure you want a divorce, it'll cost you " + @divorce_cost + " GP.\"";
+    mes "\"I'm sorry to hear that. If you're sure you want a divorce, it'll cost you %%B" + @divorce_cost + " GP%%b.\"";
     next;
     menu
-        "I am sure I want it.", L_do_divorce,
-        "I don't want it.", L_Close;
+        "I'm sure.", L_do_divorce,
+        "I'm having second thoughts...", L_Close;
 
 L_do_divorce:
     if (Zeny < @divorce_cost)
@@ -91,35 +96,45 @@ L_do_divorce:
     if (divorce())
         goto L_divorce_done;
 
+    mes "";
     mes "[Estard]";
-    mes "\"I'm having trouble finding the record. \"";
+    mes "\"I'm having trouble finding your documents. Please come back later.\"";
+    mes "";
     mes "[Server]";
-    mes "Try again when your partner is online too.";
+    mes "There was an unexpected error when processing your divorce. Please report this to the developers.";
     close;
 
 L_divorce_done:
     set Zeny, Zeny - @divorce_cost;
 
+    mes "";
     mes "[Estard]";
-    mes "\"You have been divorced. Come again.\"";
+    mes "\"You have now officially divorced your spouse.\"";
     close;
 
 L_divorce_not_enough:
+    mes "";
     mes "[Estard]";
-    mes "\"I'm sorry , but you don't have enough money to get a divorce. You need " + @divorce_cost + " GP.\"";
+    mes "\"I'm sorry, but you don't have enough money to get a divorce. You need ##B" + @divorce_cost + " GP##b.\"";
     close;
 
 L_not_enough_money:
+    mes "";
     mes "[Estard]";
-    mes "\"Seems you don't have enough money.\"";
+    mes "\"I'm sorry, but it seems as though you don't have enough money.\"";
     close;
 
 L_no_room_for_rings:
+    mes "";
     mes "[Estard]";
-    mes "\"You don't have enough room to carry these rings.\"";
+    mes "\"Hm... it doesn't look like you have enough room to carry these rings.";
+    mes "Free up some space, and then I'd be happy to give them to you.\"";
     close;
 
 L_Close:
+    mes "";
+    mes "[Estard]";
+    mes "\"OK. Just come back whenever you're ready.\"";
     close;
 
 S_give_rings:
@@ -139,6 +154,6 @@ S_give_rings:
 001-2,22,21,0|script|Guard#govt_in|123
 {
     mes "[Guard]";
-    mes "\"You can't come back here.\"";
+    mes "\"You're not allowed back here.\"";
     close;
 }

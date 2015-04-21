@@ -102,62 +102,65 @@ OnInit:
     if (@state >= 1) goto L_Suitcase;
 
     mes "[Kylian]";
-    mes "\"Ah, are you the room service? I've some requests.\"";
+    mes "\"Ah! Are you the room service? I've some requests.\"";
     menu
-        "Sure, what can I do for you?",L_Luggage,
-        "No, I'm not!",L_Next;
+        "Sure... What can I do for you?",L_Luggage,
+        "No I'm not!",L_Next;
 
 L_Next:
     mes "[Kylian]";
     mes "\"Too bad. Would you be interested in earning some quick money with some errands regardless?\"";
     menu
-        "I'm a great adventurer! I don't do errands.",L_Close,
-        "No, I'm busy.",L_Close,
-        "Mh, ok.",L_Luggage;
+        "I'm a great adventurer! I don't do petty errands.",L_Close,
+        "No. I'm busy.",L_Close,
+        "Well... OK.",L_Luggage;
 
 L_Luggage:
     mes "[Kylian]";
-    mes "\"I need someone to get my luggage from the docks. Show this paper to the sailor who's watching the luggage.\"";
-    mes "He gives you his ticket which you store in your pocket, separated from your inventory.";
+    mes "\"I need you to get my luggage from the docks. Just show this paper to the sailor who's watching the luggage.\"";
+    mes "He gives you his ticket, which you promptly store in a safe pocket outside of your inventory.";
     set @state, 1;
     callfunc "SetKylianQuest";
     goto L_Close;
 
 L_Suitcase: // @state >= 1, but below 3
     mes "[Kylian]";
-    mes "\"Did you already get my luggage from the docks?\"";
+    mes "\"Did you get my luggage from the docks?\"";
     if (@state != 2)
         goto L_Close;
     menu
         "Here it is.",L_Continue,
-        "I'm on my way, don't worry.",L_Close;
+        "Don't worry; I'm on my way.",L_Close;
 
 L_Continue:
     if (countitem("LeatherSuitcase") < 1)
         goto L_NoItem;
     delitem "LeatherSuitcase", 1;
     set Zeny, Zeny + @suitcase_money;
+    getitem "Acorn", @acorn_amount;
     getexp @suitcase_exp, 0;
     set @state, 3;
     callfunc "SetKylianQuest";
+    next;
     mes "[Kylian]";
-    mes "\"Ah, very good. I really need to have a look at some of my papers in there.\"";
+    mes "\"Ah! Very good. I have some urgent paperwork that I've been needing to attend to.\"";
     mes "He gives you some money.";
     next;
     mes "[Kylian]";
-    mes "\"Oh, and I have some acorns left, I had them with me as travelling fare. You can have them, they're tasty.";
-    mes "In case you don't like them, you could also bring them to the Tulimshar bakery. I heard they use them to make some special flour.\"";
-    getitem "Acorn", @acorn_amount;
+    mes "\"Before you go, I also happen to have some acorns left over from my trip.\"";
+    mes "\"You can have them if you wish; they're rather tasty.\"";
+    mes "If, however, you don't like them, you could take them to the Tulimshar bakery. I heard they use them to make a special kind of flour.\"";
     next;
     goto L_ShopLicense;
 
 L_ShopLicense: // @state == 3
     mes "[Kylian]";
-    mes "\"I'm a salesman and came to Tulimshar because I'm thinking about establishing a shop here. While I'm going through my papers, could you find out who I have to talk to about opening a shop in this city?\"";
+    mes "\"I'm a salesman and came to Tulimshar because I'm thinking about establishing a shop here.\"";
+    mes "\"While I'm going through my papers, could you find out whom I have to talk to about opening up a shop in this city?\"";
     if (!(QUEST_NorthTulimshar & $@knowYanisNT))
         goto L_Close;
     menu
-        "You need to talk to Yanis in the government building.",L_GovBuild,
+        "You need to go and talk to Yanis in the government building.",L_GovBuild,
         "I'll see what I can do.",L_Close;
 
 L_GovBuild:
@@ -167,24 +170,24 @@ L_GovBuild:
     callfunc "SetKylianQuest";
     set @KylianNTLicense, 1;
     mes "[Kylian]";
-    mes "\"Ah, excellent. That's very helpful. Could you tell me how to get to that building?\"";
-    mes "You explain the way to the building.";
+    mes "\"Ah... excellent! That's very helpful. Could you tell me how to get to that building?\"";
+    mes "You give him directions to the building.";
     next;
     goto L_LicenseDone;
 
 L_LicenseDone: // the player didn't log out yet after telling about Yanis
     mes "[Kylian]";
-    mes "\"I need to prepare my papers now. I might have some more questions later.\"";
+    mes "\"I need to prepare my papers now. I might have some more questions later on though.\"";
     goto L_Close;
 
 L_SightSeeing: // @state == 4 and logged out sometime between getting to that state and now
     mes "[Kylian]";
-    mes "\"You just came here the right moment. I have finished my business affairs. I think I should use my time here to also get a bit of cultural knowledge about the area. Can you tell me if there are any historical places to visit?\"";
+    mes "\"You came here at just the right moment! I have finished my business affairs, and I think I should use my time here to learn a bit about the culture in the area. Can you tell me if there are any historical places or landmarks to visit?\"";
     if (!(QUEST_NorthTulimshar & $@knowWeellosNT))
         goto L_Close;
     menu
-        "There is a very old historic building not far from here.",L_HistBuild,
-        "I don't know, but will have a look around.",L_Close;
+        "There's a very old building not far from here.",L_HistBuild,
+        "I don't know, but I'll have a look around.",L_Close;
 
 L_HistBuild:
     set Zeny, Zeny + @sightseeing_money;
@@ -199,12 +202,12 @@ L_HistBuild:
 
 L_Food: // @state == 5
     mes "[Kylian]";
-    mes "\"While I'm out, I could also get something to eat. Maybe some typical dish for this region. Do you have a good suggestion for that?\"";
+    mes "\"While I'm out, I could also get something to eat. Do you have any suggestions for local cuisine?\"";
     if (@fieri < 4) // didn't yet help Fieri make Tonori Delight
         goto L_Close;
     menu
-        "Fieri at the castle makes great Tonori Delight.",L_SoupBer,
-        "No idea, I'll try to find out.",L_Close;
+        "A man named Fieri makes a tasty Tonori Delight over at the castle.",L_SoupBer,
+        "No idea. I'll try to find out.",L_Close;
 
 L_SoupBer:
     set Zeny, Zeny + @food_money;
@@ -216,14 +219,14 @@ L_SoupBer:
 
 L_SightSeeingDone:
     mes "[Kylian]";
-    mes "\"I'm going to see the historic building you told me about and try this local food at the castle. Thank you for the suggestions.\"";
+    mes "\"I'm going to see the historic building you told me about and try the local food at the castle. Thank you for the suggestions.\"";
     goto L_Close;
 
 L_Casino: // @state == 6 and logged out sometime between getting to that state and now
     mes "[Kylian]";
-    mes "\"Hello. I just came back from my sight-seeing tour. And this Tonori Delight really was delicious. I wonder what it's made of...\"";
+    mes "\"Hello. I just came back from my sight-seeing tour, and this Tonori Delight really was delicious. I wonder what it's made of...\"";
     next;
-    mes "\"However, I was wondering if you know about a good place to spend the evening? Some place to have fun?\"";
+    mes "\"However, I was wondering if you know about some evening attractions. Maybe somewhere to have fun?\"";
     if (!(QUEST_NorthTulimshar & $@knowCasinoNT))
         goto L_Close;
     menu
@@ -236,19 +239,19 @@ L_CasinoFound:
     set @state, 7;
     callfunc "SetKylianQuest";
     mes "[Kylian]";
-    mes "\"Oh, there's a casino in this city? That's a wonderful thing. Where can I find it?\"";
+    mes "\"Oh! There's a casino in this city? That's wonderful! Where can I find it?\"";
     mes "You explain how to get to the casino.";
     next;
     goto L_Clothes;
 
 L_Clothes: // @state == 7
     mes "[Kylian]";
-    mes "\"I should get proper clothing before I go to the casino tonight. Do you know a reputable shop where clothing of high quality is sold?\"";
+    mes "\"I should acquire proper clothing before I go to the casino tonight. Do you know a reputable shop where high-quality clothing is sold?\"";
     if (!(QUEST_NorthTulimshar & $@knowLatoyNT))
         goto L_Close;
     menu
-        "Latoy's shop. On the west side of Tulimshar.",L_HarborDistrict,
-        "Mh, I don't know.",L_Close;
+        "Latoy's shop. It's on the west side of Tulimshar.",L_HarborDistrict,
+        "Hmmm... I don't know.",L_Close;
 
 L_HarborDistrict:
     set Zeny, Zeny + @clothes_money;
@@ -256,23 +259,25 @@ L_HarborDistrict:
     set @state, 8;
     callfunc "SetKylianQuest";
     set @KylianNTCasino, 1;
-    mes "You explain about Latoy and the high quality shop.";
+    mes "You explain about Latoy and the quality of his shop.";
+    next;
     mes "[Kylian]";
     mes "\"This seems to be exactly what I need. Thanks a lot.\"";
     goto L_Close;
 
 L_CasinoDone:
     mes "[Kylian]";
-    mes "\"I'm looking forward to going to the casino tonight. See me tomorrow.\"";
+    mes "\"I'm looking forward to going to the casino tonight. See me tomorrow, and I might have more requests.\"";
     goto L_Close;
 
 L_DesertHat: // @state == 8
     mes "Kylian looks a bit tired.";
+    next;
     mes "[Kylian]";
     mes "\"That was an interesting night. Thanks for your suggestion to visit the casino.\"";
     next;
     getinventorylist;
-    mes "\"You helped me a lot, so I bought a souvenir for you while I was shopping.\"";
+    mes "\"You helped me out a lot, so I bought a souvenir for you while I was out shopping.\"";
     if ((checkweight("DesertHat", 1) == 0) || (@inventorylist_count == 100))
         goto L_Inventory;
     getitem "DesertHat", 1;
@@ -284,33 +289,33 @@ L_DesertHat: // @state == 8
 L_Shop:
     mes "[Kylian]";
     mes "\"The Council of Wizards approved my shop license!\"";
-    mes "\"I purchased a store just acorss the way from the hotel exit.\"";
+    mes "\"I purchased a store just across the way from the inn.\"";
     next;
-    mes "\"If you are looking for work, go see the shop keeper I have working for me.\"";
-    mes "\"Mention your name and he will know I sent you.\"";
+    mes "\"If you are looking for work, go see the shop keeper I have working for me there.\"";
+    mes "\"Mention your name, and he will know I sent you.\"";
     set @state, 10;
     callfunc "SetKylianQuest";
     goto L_Close;
 
 L_OfferedJob:
     mes "[Kylian]";
-    mes "\"I spoke with the shopkeeper, They said you haven't stopped in yet.\"";
+    mes "\"I spoke with the shopkeeper, and he said you haven't stopped in yet.\"";
     next;
-    mes "\"I wish you would consider working for KPS.\"";
+    mes "\"I wish you would consider working for me.\"";
     next;
-    mes "\"KPS needs a well-traveled go getter like you.\"";
+    mes "\"KPS needs a determined, experienced adventurer like you.\"";
     goto L_Close;
 
 L_Helping:
     mes "[Kylian]";
-    mes "\"I've heard you decided to come work for me. That is great news.\"";
-    mes "\"Keep up the good work and I might have something a little extra for you.\"";
+    mes "\"I've heard you decided to come work for me. That's great news!\"";
+    mes "\"Keep up the good work, and I might have something a little extra for you.\"";
     goto L_Close;
 
 L_Done:
     mes "[Kylian]";
-    mes "\"Thanks a bunch, buisness is booming!\"";
-    mes "\"For your hard work take this.\"";
+    mes "\"Thanks a bunch, business is booming!\"";
+    mes "\"Please, take this for all your hard work.\"";
     next;
     set Zeny, Zeny + $@delivery_money;
     getexp ($@delivery_exp_mod * BaseLevel), 0;
@@ -325,12 +330,12 @@ L_Done:
 
 L_Inventory:
     mes "[Kylian]";
-    mes "\"Oh, you're carrying a lot of things. Come back when you have more room.\"";
+    mes "\"Oh my. You're carrying quite a lot. Come back when you have more room.\"";
     goto L_Close;
 
 L_NoItem:
     mes "[Kylian]";
-    mes "\"I don't see it! Are you trying to tease me? This is not funny!\"";
+    mes "\"I don't see it! Are you trying to tease me? This isn't funny!\"";
     goto L_Close;
 
 L_Close:
@@ -372,8 +377,8 @@ L_Menu:
     menu
         "Show Quest State", L_ShowState,
         "Set Quest State", L_SetState,
-        "Reset Timer to now", L_WorkTimer,
-        "Reset Timer + 24 hours", L_MoreWorkTimer,
+        "Reset Timer to Now", L_WorkTimer,
+        "Reset Timer + 24 Hours", L_MoreWorkTimer,
         "Close.", L_Close;
 
 L_ShowState:
