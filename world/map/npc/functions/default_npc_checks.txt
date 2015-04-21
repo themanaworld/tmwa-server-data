@@ -1,13 +1,16 @@
 // Default NPC Checks
-// Author: Wushin
+// Author: Wushin, mekolat
 
 // Range
-// Map, X, Y, Distance in Tiles
-// setarray @npc_loc, 24, 113, 4;
+// Distance in Tiles
+// set @npc_distance, 4;
 function|script|PCtoNPCRange
 {
     set @npc_check, 0;
-    set @Nmap$, getmap() + "";
+    set @Nmap$, strnpcinfo(3);
+    if(!@npc_distance) set @npc_distance, 4; // <== default distance
+    cleararray @npc_loc, 0, 3;
+    setarray @npc_loc, getnpcx(), getnpcy(), @npc_distance;
     set @Nx1, (@npc_loc[0] - @npc_loc[2]);
     set @Ny1, (@npc_loc[1] - @npc_loc[2]);
     set @Nx2, (@npc_loc[0] + @npc_loc[2]);
@@ -15,9 +18,22 @@ function|script|PCtoNPCRange
     if (isin(@Nmap$, @Nx1, @Ny1, @Nx2, @Ny2))
         goto L_Return;
     set @npc_check, 1;
+    if(@distance_handler) goto L_Return;
+    set @dnpc_name$, strnpcinfo(1);
+    if(@dnpc_name$ != "") goto L_Named;
+    mes "You need to move closer to interact with this npc.";
+    close2;
     goto L_Return;
 
+L_Named:
+    message strcharinfo(0), "##3"+@dnpc_name$+" : ##BPlease move closer.";
+    end;
+
 L_Return:
+    set @dnpc_name$, "";
+    set @distance_handler, 0;
+    set @npc_distance, 0;
+    cleararray @npc_loc, 0, 3;
     return;
 }
 

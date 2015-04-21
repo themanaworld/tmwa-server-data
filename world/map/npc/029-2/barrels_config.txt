@@ -20,7 +20,7 @@ function|script|CountBarrels
     set @count_tmp, 0;
     goto L_Loop;
 
-L_Loop:    
+L_Loop:
     if (STARTAREA & $@BarrelBits[@barrel_count])
         goto L_AddOne;
     goto L_LoopAgain;
@@ -40,9 +40,8 @@ L_BarrelTally:
 }
 function|script|CheckBarrel
 {
+    set @npc_distance, 2;
     callfunc "PCtoNPCRange";
-    if (@npc_check)
-        goto L_Range;
     if (!(QL_ZEGAS == 2))
         goto L_NoI;
     if (STARTAREA & $@BarrelBits[@barrel])
@@ -57,10 +56,6 @@ function|script|CheckBarrel
     if (@barrel_random > @player_random)
         goto L_Spawn;
     goto L_Reward;
-
-L_Range:
-    message strcharinfo(0), "You'll need to get closer.";
-    goto L_Return;
 
 L_NoI:
     message strcharinfo(0), "Nothing interesting here.";
@@ -79,7 +74,9 @@ L_QuestReward:
 
 L_Spawn:
     message strcharinfo(0), "Uck, More Maggots!";
-    areamonster getmap() + "", @npc_loc[0], @npc_loc[1], (@npc_loc[0] + 1), (@npc_loc[1] + 1), $@BarrelSpawnName$, $@BarrelSpawnId, $@BarrelSpawnCnt, "Barrel#0::OnMaggotDeath";
+    setarray @npc_loc, getnpcx(), getnpcy();
+    areamonster getmap(), @npc_loc[0], @npc_loc[1], (@npc_loc[0] + 1), (@npc_loc[1] + 1), $@BarrelSpawnName$, $@BarrelSpawnId, $@BarrelSpawnCnt, "Barrel#0::OnMaggotDeath";
+    cleararray @npc_loc, 0, 2;
     goto L_Return;
 
 L_Reward:
