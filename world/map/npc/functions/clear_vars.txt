@@ -2,7 +2,14 @@
 
 function|script|ClearVariables
 {
-    callfunc "getHeadStyles"; // this converts class, color and hair
+    if(@login_event != 1) goto L_Deprecated;
+
+    callsub S_Bernard_Mikhail;
+    callsub S_Sarah;
+    callsub S_Vincent;
+    callsub S_Sandra;
+    callsub S_Desert;
+    callsub S_Bandit;
     callsub S_Tutorial;
     callsub S_Heathin;
     callsub S_Remove_Skills;
@@ -37,9 +44,7 @@ function|script|ClearVariables
 S_Return: // this is to end execution of a sub
     return;
 
-
-
-
+////////////////////////////////////////////////////////////////
 
 S_Xmas2007:
     if(!QUEST_xmas07_state) goto S_Return;
@@ -320,88 +325,61 @@ S_Heathin:
     set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(NIBBLE_6_MASK)) | (HEATHIN_QUEST << NIBBLE_6_SHIFT);
     set HEATHIN_QUEST, 0;
     return;
-}
 
-
-
-
-
-
-// The variable TMW_Quest was used to save the progress in several subquests linearly.
-// The subquests are moved to different nibbles of other variables
-// to make it possible to do some of the quests in parallel.
-function|script|ClearVarTMW_Quest
-{
-    if (TMW_Quest == 0) goto L_Done;
-    if (TMW_Quest <= 6)  goto L_Bernard_Mikhail;
-    if (TMW_Quest <= 8)  goto L_Sarah;
-    if (TMW_Quest <= 10)  goto L_Vincent;
-    if (TMW_Quest <= 12)  goto L_Sandra;
-    if (TMW_Quest <= 40)  goto L_Desert;
-    goto L_Bandit;
-
-L_Bandit:
-// move Bandit subquest into Nibble 0 of QUEST_Hurnscald
-    set @bandit, TMW_Quest - 40;
-    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@bandit << NIBBLE_0_SHIFT));
-    set TMW_Quest, 40;
-    set @bandit, 0;
-    goto L_Desert;
-
-L_Desert:
-// move guard and miner subquest into Byte 2 (Nibble 4 and 5) of QUEST_SouthTulimshar
+S_Desert: // move guard and miner subquest into Byte 2 (Nibble 4 and 5) of QUEST_SouthTulimshar
+    if(!TMW_QUEST || TMW_QUEST > 40) goto S_Return;
     set @miners, TMW_Quest - 12;
     set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@miners << BYTE_2_SHIFT));
     set TMW_Quest, 12;
     set @miners, 0;
-    goto L_Sandra;
+    return;
 
-L_Sandra:
-// move Sandra subquest into Nibble 3 of QUEST_SouthTulimshar
+S_Sandra: // move Sandra subquest into Nibble 3 of QUEST_SouthTulimshar
+    if(!TMW_QUEST || TMW_QUEST > 12) goto S_Return;
     set @sandra, TMW_Quest - 10;
     set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_3_MASK) | (@sandra << NIBBLE_3_SHIFT));
     set TMW_Quest, 10;
     set @sandra, 0;
-    goto L_Vincent;
+    return;
 
-L_Vincent:
-// move Vincent subquest into Nibble 2 of QUEST_SouthTulimshar
+S_Vincent: // move Vincent subquest into Nibble 2 of QUEST_SouthTulimshar
+    if(!TMW_QUEST || TMW_QUEST > 10) goto S_Return;
     set @vincent, TMW_Quest - 8;
     set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_2_MASK) | (@vincent << NIBBLE_2_SHIFT));
     set TMW_Quest, 8;
     set @vincent, 0;
-    goto L_Sarah;
+    return;
 
-L_Sarah:
-// move Sarah subquest into Nibble 1 of QUEST_SouthTulimshar
+S_Sarah: // move Sarah subquest into Nibble 1 of QUEST_SouthTulimshar
+    if(!TMW_QUEST || TMW_QUEST > 8) goto S_Return;
     set @sarah, TMW_Quest - 6;
     set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_1_MASK) | (@sarah << NIBBLE_1_SHIFT));
     set TMW_Quest, 6;
     set @sarah, 0;
-    goto L_Bernard_Mikhail;
+    return;
 
-L_Bernard_Mikhail:
-// move Bernard and Mikhail subquest into Nibble 0 of QUEST_SouthTulimshar
+S_Bernard_Mikhail: // move Bernard and Mikhail subquest into Nibble 0 of QUEST_SouthTulimshar
+    if(!TMW_QUEST || TMW_QUEST > 6) goto S_Return;
     set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (TMW_Quest << NIBBLE_0_SHIFT));
     set TMW_Quest, 0;
-    goto L_Done;
-
-L_Done:
     return;
+
+S_Bandit: // move Bandit subquest into Nibble 0 of QUEST_Hurnscald
+    if(!TMW_QUEST) goto S_Return;
+    set @bandit, TMW_Quest - 40;
+    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@bandit << NIBBLE_0_SHIFT));
+    set TMW_Quest, 40;
+    set @bandit, 0;
+    return;
+
+L_Deprecated:
+    debugmes "Explicitely calling ClearVariables after login is deprecated.";
+    mapexit;
 }
 
 
-
-
-
-
-
--|script|#ClearGlobalVars|-1
+function|script|ClearGlobalVars
 {
-    end;
-
-OnInit:
-
 // Clear some entries of the arrays which save the Fluffy Hunting highscore list
     set $@loop, 5;
     goto L_FluffyClear;
