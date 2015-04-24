@@ -33,20 +33,20 @@
     if (@state == 8) goto L_GetStuff;
 
     mes "[Eomie]";
-    mes "\"I maintain this little spot of grass in the desert.\"";
+    mes "\"I maintain this little oasis in the desert.\"";
     if (@state != 7)
         goto L_Close;
     menu
-        "I have this magic fertilizer from Tinris and need a spell cast on it.",L_Next;
+        "I need to learn a spell to use Tinris' magic fertilizer. Can you help me out?",L_Next;
 
 L_Next:
     mes "[Eomie]";
-    mes "\"Oh? I see, that's a difficult task.";
-    mes "I'd be glad to help you, but unfortunately I can't interrupt the magic I use to keep this spot of grass alive.\"";
+    mes "\"Oh? Well, that's a rather difficult task.";
+    mes "I'd be glad to help you, but unfortunately, I can't. If I were to interrupt the magic I use to keep this alive, it would die.\"";
     next;
-    mes "\"It's unusually hot at the moment, even for this desert area. It might have something to do with the aftereffects of the earthquake.\"";
+    mes "\"It's unusually hot at the moment – even for this desert area – so it's really out of the question.\"";
     menu
-        "Isn't there any possibility?",L_Continue;
+        "Is there any chance you could help me?",L_Continue;
 
 L_Continue:
     mes "She hesitates.";
@@ -57,13 +57,13 @@ L_Continue:
 L_GetStuff:
     // @state == 8
     mes "[Eomie]";
-    mes "\"I could try to interrupt my spells to be able to cast the spell on the fertilizer, but then I need to prepare the grass for this.";
-    mes "Bring me " + @grass_amount + " Grass Seeds, " + @water_amount + " Bottles of Water and " + @ice_amount + " Ice Cubes.\"";
+    mes "\"I could try to briefly interrupt my magic and then cast the spell on the fertilizer, but I would need to prepare the grass beforehand.";
+    mes "Bring me " + @grass_amount + " " + getitemlink("GrassSeed") + ", " + @water_amount + " " + getitemlink("BottleOfWater") + ", and " + @ice_amount + " " + getitemlink("IceCube") + ".\"";
     menu
-        "I have it.",L_More,
+        "I've got everything.",L_More,
         "Where can I get Grass Seeds?",L_Hurnscald,
-        "How can I get Ice Cubes? We're in the desert!",L_Mine,
-        "Ok, I'll go and get it.",L_Close;
+        "How can I get Ice Cubes? We're in the middle of the desert!",L_Mine,
+        "Ok. I'll go and get them.",L_Close;
 L_More:
     if ((countitem("GrassSeed") < @grass_amount) || (countitem("BottleOfWater") < @water_amount) || (countitem("IceCube") < @ice_amount))
         goto L_NoItem;
@@ -74,38 +74,37 @@ L_More:
     set @state, 9;
     callsub S_Update_Mask;
     mes "[Eomie]";
-    mes "\"Very good.\"";
-    mes "She takes the things you brought her and uses them to create a bubble of coolness around the spot of grass.";
+    mes "\"Very good!\"";
+    mes "She takes the ingredients you brought her and uses them to cast a cool mist into the air.";
     misceffect sfx_magic_nature;
     next;
     mes "[Eomie]";
-    mes "\"This should last long enough to keep the spot of grass alive until I cast the spell on the fertilizer. And if some of it shrivels I still have the seeds you brought me which I can use to recover it.\"";
+    mes "\"That should last long enough to keep the plants alive while I cast the spell on the fertilizer. Besides, I can replant anything that dies with the seeds you brought me.\"";
     next;
-    mes "She takes the fertilizer and casts some invocations. After a while she's done and gives it back to you with a smile.";
-    misceffect sfx_magic_nature;
+    mes "She takes the fertilizer and casts some invocations. After a minute, she hands the now-glowing substance back to you.";
     mes "[Eomie]";
-    mes "\"This should help you. I'm glad you're taking care of the plants. Not enough people do that nowadays.\"";
+    mes "\"That should work now. I'm glad you're taking care of the plants! Not enough people do that nowadays.\" %%1";
     goto L_Close;
 
 L_Hurnscald: // player asked how to get Grass Seeds
     mes "[Eomie]";
-    mes "\"Squirrels tend to pick up Grass Seeds as they gather food. You can find them around Hurnscald. To get there you will have to take the ferry in the harbor district.\"";
+    mes "\"Squirrels tend to pick up " + getitemlink("GrassSeed") + " as they gather food. You can find them around Hurnscald if you ride the ferry over.\"";
     goto L_Close;
 
 L_Mine: // player asked how to get Ice Cubes
     mes "[Eomie]";
-    mes "\"Hm, that's a difficult task, indeed. Naturally you will find them on the continent of Kaizei, which is high up in the north and covered with snow most time of the year. But it might be difficult to get there.\"";
+    mes "\"Quite the quandary – isn't it? Naturally, you can easily find them on the continent of Kaizei, which is far up north and covered with snow most time of the year. But it might be a bit difficult to get there.\"";
     next;
-    mes "\"I heard that Ice Goblins were seen in the caves that are around Nivalis. Maybe you can find Ice Cubes in there.\"";
+    mes "\"I heard that Ice Goblins were seen in the caves surrounding Nivalis. Maybe you can find " + getitemlink("IceCube") + " there.\"";
     goto L_Close;
 
 L_CastedSpell: // @state >= 9 but below 14
     mes "[Eomie]";
-    mes "\"The grass wasn't damaged due to the interruption. I hope the magic fertilizer is useful for Anwar.\"";
+    mes "\"Thankfully, the grass wasn't damaged. I hope Anwar finds the magic fertilizer to be useful.\"";
     if (@state != 13)
         goto L_Close;
     menu
-        "It was and he created this Silk Headband as a present for you.",L_Present,
+        "It was. He even created this Silk Headband as a present for you!",L_Present,
         "(Mumble something and leave)",L_Close;
 
 L_Present:
@@ -116,18 +115,18 @@ L_Present:
     set @state, 14;
     callsub S_Update_Mask;
     mes "[Eomie]";
-    mes "\"Oh, this is very friendly! Please tell him I'm very happy about it.\"";
+    mes "\"Oh, that's so nice of him! Please tell him that I really like it!\"";
     mes "She smiles.";
     goto L_Close;
 
 L_Done: // @state >= 14
     mes "[Eomie]";
-    mes "\"Hello. I'm happy to see someone like you being dedicated to the needs of plants and people.\"";
+    mes "\"Hello! I'm happy to see someone like you so dedicated to the environment.\" %%8";
     goto L_Close;
 
 L_NoItem:
     mes "[Eomie]";
-    mes "\"Where is it?\"";
+    mes "\"Where is it?\" %%3";
     goto L_Close;
 
 L_Close:
