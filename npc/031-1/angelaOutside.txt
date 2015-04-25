@@ -1,0 +1,111 @@
+
+031-1,79,24,0	script	Angela	195,{
+    @Q_Nivalis_state_MASK = NIBBLE_5_MASK;
+    @Q_Nivalis_state_SHIFT = NIBBLE_5_SHIFT;
+
+    @rescue_Cindy = ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
+
+    @minLevel = 70;
+
+    if (@rescue_Cindy > 3) goto L_Please_Visit_Again;
+    if (@rescue_Cindy > 1) goto L_Please_Visit;
+    if (@rescue_Cindy == 1) goto L_Please_Help;
+
+    mes "[Angela]";
+    mes "\"Please, I need help! My little daughter!\"";
+    next;
+    mes "\"It's terrible, oh my dear child!\"";
+    next;
+    if (countitemcolor("ConcentrationPotion") > 0 && BaseLevel >= @minLevel)
+        goto L_Menu_Potion;
+
+    menu
+        "\"Please calm down and tell me what happened.\"", L_Whining,
+        "Leave", L_Close;
+
+L_Whining:
+    mes "[Angela]";
+    mes "\"My poor little daughter, please! Oh no, oh no...\"";
+    next;
+    mes "\"We need to do something! My poor little Cindy! My cute little girl!\"";
+    next;
+    mes "\"It's so terrible, how could that happen? Please, I need help, it's so terrible.\"";
+    next;
+    mes "\"Those awful filthy monsters - terrible!\"";
+    next;
+    mes "\"Oh Cindy, my little Cindy - oh no...\"";
+    next;
+    mes "\"Please help, we need to do something!\"";
+    next;
+    mes "\"It's so terrible, my poor cute little Cindy...\"";
+    next;
+    mes "\"Oh, when I think what might happen to her right now!\"";
+    next;
+    mes "She is crying and sobbing.";
+    next;
+    mes "It seems she is too upset to tell you anything helpful. If she would just calm down and concentrate a bit...";
+    goto L_Close;
+
+L_Menu_Potion:
+    menu
+        "\"Please calm down and tell me what happened.\"", L_Whining,
+        "Give her a concentration potion.", L_Calm_Down,
+        "Leave", L_Close;
+
+L_Calm_Down:
+    if (countitemcolor("ConcentrationPotion") == 0)
+        goto L_No_Potion;
+    delitem "ConcentrationPotion", 1;
+    mes "She drinks the concentration potions and calms down.";
+    mes "[Angela]";
+    mes "\"Thank you, this was helpful.\"";
+    next;
+    mes "\"My daughter Cindy and I were on our way to Santa, to bring him some presents. Many people here in Nivalis are helping Santa with his business.\"";
+    next;
+    mes "\"When we passed the entrance of this cave, a pack of Yetis came out of there. It's disturbing, because usually they are very shy.\"";
+    next;
+    mes "\"We tried to run away, but there were too many of them. They took my poor little Cindy and all the presents with them.\"";
+    next;
+    mes "\"Oh my poor little girl. I'm so worried - what might they do with her? Oh no!\"";
+    next;
+    mes "\"You look like an adventurer! Please, can you go in that cave and rescue my little Cindy? I beg you for help!\"";
+    @rescue_Cindy = 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_No_Potion:
+    mes "You don't have a concentration potion.";
+    goto L_Close;
+
+L_Please_Help:
+    mes "[Angela]";
+    mes "\"Please go in that cave and rescue my daughter!\"";
+    goto L_Close;
+
+L_Please_Visit:
+    mes "[Angela]";
+    mes "\"Thank you so much for rescuing my beloved Cindy. Please come to visit us in our house at the beach.\"";
+    next;
+    mes "\"My husband is an adventurer like you, and I want to give you something he got on his travels to show my gratitude.\"";
+    goto L_Close;
+
+L_Please_Visit_Again:
+    mes "[Angela]";
+    mes "\"Hello! You are welcome to visit us in our house at the beach everytime. Cindy loves to see you!\"";
+    next;
+    mes "\"If you have found any present boxes the Yetis took away, please bring them to our house. Usually, the Yetis are very shy... their behavior is a bit odd.\"";
+    goto L_Close;
+
+L_Close:
+    @Q_Nivalis_state_MASK = 0;
+    @Q_Nivalis_state_SHIFT = 0;
+    @rescue_Cindy = 0;
+    @minLevel = 0;
+    close;
+
+S_Update_Mask:
+    set QUEST_Nivalis_state,
+        (QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
+            | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
+    return;
+}

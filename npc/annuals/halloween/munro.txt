@@ -1,0 +1,56 @@
+026-1.gat,24,37,0	script	Munro	183,{
+    callfunc "HalloweenCheckOld";
+    callfunc "TrickOrTreatTally";
+    if (($@halloween_time == $@halloween_reward_time) && (@npc_tally >= $@halloween_charm_count) && !(HALLOWEENTIME & $@halloween_got_charm_reward))
+        goto L_Halloween;
+    goto L_NoReward;
+
+L_NoReward:
+    mes "[Munro]";
+    mes "\"Greetings mortal.\"";
+    next;
+    mes "\"Once again we come to that time of year when the veil is thin\"";
+    next;
+    mes "\"All those who have passed on can part the veil to return.\"";
+    next;
+    mes "\"A time to celebrate our ancestors and chase evil away.\"";
+    next;
+    mes "\"Celebrate the holiday with me and I will reward you later.\"";
+    goto L_Exit;
+
+L_Halloween:
+    mes "[Munro]";
+    mes "\"You have shown to have the Halloween spirit. Take this charm.\"";
+    HALLOWEENTIME = HALLOWEENTIME | $@halloween_got_charm_reward;
+    getitem "SkeletonCharm",1;
+    goto L_Exit;
+
+L_Exit:
+    close;
+}
+function	script	SpawnMunro	{
+    if ($@halloween_time)
+        goto L_EnableMunro;
+    goto L_DisableMunro;
+
+L_EnableMunro:
+    enablenpc "Munro";
+    goto L_Return;
+
+L_DisableMunro:
+    disablenpc "Munro";
+    goto L_Return;
+
+L_Return:
+    return;
+}
+function	script	CheckMunro	{
+    if (($@halloween_time) || ($@xmas_time))
+        goto L_Return;
+
+    callfunc "UnequipLater";
+    goto L_Return;
+
+L_Return:
+    return;
+}

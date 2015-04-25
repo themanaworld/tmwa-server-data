@@ -1,0 +1,130 @@
+
+002-2,72,92,0	script	Candide	156,{
+    mes "[Candide]";
+    mes "\"Greetings! I am Candide the Bleacher.";
+    mes "Tulimshar is my homeland, where I learned the ancient art of bleaching.\"";
+    next;
+    mes "\"Bleaching was originally done by the sun, but now we use ash combined with special ingredients to remove color from fabric.\"";
+    next;
+    menu
+        "What is needed for the bleaching process?", L_Materials,
+        "I'd like to bleach something.", L_bleach_menu,
+        "So long.", L_Close;
+
+L_Materials:
+    mes "[Candide]";
+    mes "\"For each item, I will need 3 piles of ash and 5,000 GP for the special ingredients.\"";
+    next;
+    menu
+        "I'd like to bleach something.", L_bleach_menu,
+        "So long.", L_Close;
+
+L_bleach_menu:
+    if (countitemcolor("PileOfAsh") < 3) goto L_no_ash;
+    if (Zeny < 5000) goto L_No_Money;
+    cleararray @CANDIDE_items,0,getarraysize(@CANDIDE_items);
+    cleararray @CANDIDE_color,0,getarraysize(@CANDIDE_color);
+    cleararray @CANDIDE_menu$,"",getarraysize(@CANDIDE_menu$);
+    @w = 0;
+    freeloop 1; // do not check for infinity loop
+    callsub S_LoopArray;
+    freeloop 0; // re-enable infinity loop check
+    @w = 0;
+    @c = 0;
+    @p = 0;
+    if(@CANDIDE_menu$[0] == "") goto L_Nothing;
+    mes "[Candide]";
+    mes "\"Yes?\"";
+    next;
+    menu
+        "Nevermind.", L_Close,
+        @CANDIDE_menu$[0], L_MenuItems, // base array was too big for a dynamic menu so we can't use it
+        @CANDIDE_menu$[1], L_MenuItems,
+        @CANDIDE_menu$[2], L_MenuItems,
+        @CANDIDE_menu$[3], L_MenuItems,
+        @CANDIDE_menu$[4], L_MenuItems,
+        @CANDIDE_menu$[5], L_MenuItems,
+        @CANDIDE_menu$[6], L_MenuItems,
+        @CANDIDE_menu$[7], L_MenuItems,
+        @CANDIDE_menu$[8], L_MenuItems,
+        @CANDIDE_menu$[9], L_MenuItems,
+        @CANDIDE_menu$[10], L_MenuItems,
+        @CANDIDE_menu$[11], L_MenuItems,
+        @CANDIDE_menu$[12], L_MenuItems,
+        @CANDIDE_menu$[13], L_MenuItems,
+        @CANDIDE_menu$[14], L_MenuItems,
+        @CANDIDE_menu$[15], L_MenuItems,
+        @CANDIDE_menu$[16], L_MenuItems,
+        @CANDIDE_menu$[17], L_MenuItems;
+
+S_LoopArray:
+    @c = 0;
+    callsub S_LoopColor;
+    @w = @w + 1;
+    if(@w < getarraysize($@DYE_items$)) goto S_LoopArray;
+    return;
+
+S_LoopColor:
+    if(countitemcolor($@DYE_colors$[@c] + $@DYE_items$[@w]) > 0)
+        goto L_AddToMenu;
+    goto L_LoopColor2;
+
+L_AddToMenu:
+    @CANDIDE_items[@p] = @w;
+    @CANDIDE_color[@p] = @c;
+    @CANDIDE_menu$[@p] = $@DYE_color_names$[@c]+" "+$@DYE_item_names$[@w];
+    @p = @p + 1;
+    goto L_LoopColor2;
+
+L_LoopColor2:
+    @c = @c + 1;
+    if(@c < getarraysize($@DYE_colors$)) goto S_LoopColor;
+    return;
+
+L_Nothing:
+    mes "[Candide]";
+    mes "\"Sorry, you have nothing to bleach.\"";
+    next;
+    goto L_Close;
+
+L_MenuItems:
+    if (countitemcolor("PileOfAsh") < 3) goto L_no_ash;
+    if (Zeny < 5000) goto L_No_Money;
+    @m = @menu - 2;
+    @it$ = $@DYE_colors$[@CANDIDE_color[@m]] + $@DYE_items$[@CANDIDE_items[@m]];
+    if(getitemname(@it$) == "Unknown Item") mapexit;
+    delitem @it$, 1;
+    delitem "PileOfAsh", 3;
+    Zeny = Zeny - 5000;
+    getitem $@DYE_items$[@CANDIDE_items[@m]], 1;
+    goto L_Again;
+
+L_Again:
+    mes "[Candide]";
+    mes "\"Would you like to bleach something else?\"";
+    next;
+    menu
+        "Yes.", L_bleach_menu,
+        "No.", L_Close;
+
+L_no_ash:
+    mes "[Candide]";
+    mes "\"You don't have enough ash for me to bleach anything.";
+    mes "I need three piles.\"";
+    next;
+    goto L_Close;
+
+L_No_Money:
+    mes "[Candide]";
+    mes "\"You don't have enough gold for me to bleach anything.";
+    mes "I need 5,000 GP for supplies.\"";
+    next;
+    goto L_Close;
+
+L_Close:
+    mes "[Candide]";
+    mes "\"Come again.\"";
+    close2;
+    emotion EMOTE_GRIN;
+    end;
+}

@@ -1,0 +1,159 @@
+
+
+function	script	MagicGainBasic	{
+    MAGIC_FLAGS = MAGIC_FLAGS | MFLAG_DRANK_POTION;
+    close;
+}
+
+function	script	MagicTalkOptionsSetup	{
+    @QQ_ELANORE = 1;
+    @QQ_MANASEED = 2;
+    @QQ_MANAPOTION = 4;
+    @QQ_WYARA = 8;
+    @QQ_SAGATHA = 16;
+    @QQ_AULDSBEL = 32;
+    @QQ_IMP = 64;
+    @QQ_OLDWIZ = 128;
+    @QQ_ASTRALSOUL = 256;
+    return;
+}
+
+
+function	script	MagicTalkMenu	{
+    setarray @choice$, "", "", "", "", "", "", "", "", "", "";
+    @choices_nr = 0;
+    setarray @choice_idx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
+
+    if (@ignore & @QQ_ELANORE)
+        goto L_Q_post_elanore;
+    @choice$[@choices_nr] = "...Elanore the Healer?";
+    @choice_idx[@choices_nr] = @QQ_ELANORE;
+    @choices_nr = @choices_nr + 1;
+    goto L_Q_post_elanore;
+
+L_Q_post_elanore:
+    if (@ignore == @QQ_MANASEED)
+        goto L_Q_post_manaseed;
+    if (!(MAGIC_FLAGS & (MFLAG_KNOWS_MANASEED | MFLAG_MANASEED_RUMOUR)))
+        goto L_Q_post_manaseed;
+    @choice$[@choices_nr] = "...the Mana Seed?";
+    @choice_idx[@choices_nr] = @QQ_MANASEED;
+    @choices_nr = @choices_nr + 1;
+    goto L_Q_post_manaseed;
+
+L_Q_post_manaseed:
+    if (@ignore & @QQ_MANAPOTION)
+        goto L_Q_post_manapotion;
+    if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANAPOTION))
+        goto L_Q_post_manapotion;
+    @choice$[@choices_nr] = "...Mana Potions?";
+    @choice_idx[@choices_nr] = @QQ_MANAPOTION;
+    @choices_nr = @choices_nr + 1;
+    goto L_Q_post_manapotion;
+
+L_Q_post_manapotion:
+    if (@ignore & @QQ_WYARA)
+        goto L_Q_post_wyara;
+    if (!(MAGIC_FLAGS & MFLAG_KNOWS_WYARA))
+        goto L_Q_post_wyara;
+    @choice$[@choices_nr] = "...Wyara the Witch?";
+    @choice_idx[@choices_nr] = @QQ_WYARA;
+    @choices_nr = @choices_nr + 1;
+    goto L_Q_post_wyara;
+
+L_Q_post_wyara:
+    if (@ignore & @QQ_SAGATHA)
+        goto L_Q_post_sagatha;
+    if (!(MAGIC_FLAGS & MFLAG_KNOWS_SAGATHA))
+        goto L_Q_post_sagatha;
+    @choice$[@choices_nr] = "...Sagatha the Witch?";
+    @choice_idx[@choices_nr] = @QQ_SAGATHA;
+    @choices_nr = @choices_nr + 1;
+    goto L_Q_post_sagatha;
+
+L_Q_post_sagatha:
+    if (@ignore & @QQ_AULDSBEL)
+        goto L_Q_post_auldsbel;
+    if (!(MAGIC_FLAGS & MFLAG_KNOWS_AULDSBEL))
+        goto L_Q_post_auldsbel;
+    @choice$[@choices_nr] = "...Auldsbel the Wizard?";
+    @choice_idx[@choices_nr] = @QQ_AULDSBEL;
+    @choices_nr = @choices_nr + 1;
+    goto L_Q_post_auldsbel;
+
+L_Q_post_auldsbel:
+    if (@ignore & @QQ_OLDWIZ)
+        goto L_Q_post_oldwiz;
+    if (!(MAGIC_FLAGS & MFLAG_KNOWS_OLD_WIZARD))
+        goto L_Q_post_oldwiz;
+    @choice$[@choices_nr] = "...the Old Wizard?";
+    @choice_idx[@choices_nr] = @QQ_OLDWIZ;
+    @choices_nr = @choices_nr + 1;
+    goto L_Q_post_oldwiz;
+
+L_Q_post_oldwiz:
+    if (@ignore & @QQ_IMP)
+        goto L_Q_post_imp;
+    if (!(MAGIC_FLAGS & MFLAG_KNOWS_IMP))
+        goto L_Q_post_imp;
+    @choice$[@choices_nr] = "...the Earth Spirit in the desert well?";
+    @choice_idx[@choices_nr] = @QQ_IMP;
+    @choices_nr = @choices_nr + 1;
+    goto L_Q_post_imp;
+
+L_Q_post_imp:
+    if (@ignore & @QQ_ASTRALSOUL)
+        goto L_Q_post_astralsoul;
+    if (!(getskilllv(SKILL_MAGIC)))
+        goto L_Q_post_astralsoul;
+    if (!(getskilllv(SKILL_POOL)))
+        goto L_Q_post_astralsoul;
+    @choice$[@choices_nr] = "...ways to improve my magic?";
+    @choice_idx[@choices_nr] = @QQ_ASTRALSOUL;
+    @choices_nr = @choices_nr + 1;
+    goto L_Q_post_astralsoul;
+
+L_Q_post_astralsoul:
+    @choice$[@choices_nr] = "...never mind.";
+    @choice_idx[@choices_nr] = 0;
+    @choices_nr = @choices_nr + 1;
+
+    menu
+        @choice$[0], L_MenuItems,
+        @choice$[1], L_MenuItems,
+        @choice$[2], L_MenuItems,
+        @choice$[3], L_MenuItems,
+        @choice$[4], L_MenuItems,
+        @choice$[5], L_MenuItems,
+        @choice$[6], L_MenuItems,
+        @choice$[7], L_MenuItems,
+        @choice$[8], L_MenuItems,
+        @choice$[9], L_MenuItems;
+
+L_MenuItems:
+    @menu = @menu - 1;
+
+    if (@menu >= @choices_nr)
+        @menu = 0;
+
+    @c = @choice_idx[@menu];
+    return;
+}
+
+
+function	script	SkillUp	{
+    if (getskilllv(@SUP_id) >= @SUP_lvl)
+        goto L_Shortcut;
+
+    misceffect sfx_skillup, strcharinfo(0);
+    addtoskill @SUP_id, @SUP_lvl;
+    getexp @SUP_xp, 0;
+    if (@SUP_xp)
+        mes "[" + @SUP_xp + " experience points]";
+    mes "[Level " + @SUP_lvl + " in " + @SUP_name$ + "]";
+    return;
+
+L_Shortcut:
+    mes "[You already have level " + getskilllv(@SUP_id) + " in " + @SUP_name$ + "]";
+    return;
+}

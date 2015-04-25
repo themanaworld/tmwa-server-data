@@ -1,0 +1,103 @@
+029-1,45,85,0	script	Zegas	165,{
+    setarray @npc_loc, 45, 85, 2;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Range;
+
+    callfunc "CheckBarrelQuest";
+    if (@barrel_quest == 1)
+        goto L_Find;
+    if (@barrel_quest == 2)
+        goto L_Looking;
+    if (@barrel_quest == 3)
+        goto L_QuestEnd;
+    if (@barrel_quest == 4)
+        goto L_Thanks;
+    goto L_Meet;
+
+L_Range:
+    message strcharinfo(0), "Whats that? Come closer I can't hear you.";
+    goto L_Close;
+
+L_Meet:
+    mes "[Zegas]";
+    mes "\"Hey do you have a second?\"";
+    next;
+    mes "\"The storehouse here is over run with house maggots.\"";
+    next;
+    mes "\"Wouldn't you know it, the bug bomb Eomie gave us is in one of the store room barrels.\"";
+    next;
+    mes "\"Can you search the barrels for the bug bomb and set it off when you find it?\"";
+    @barrel_tmp = 1;
+    callfunc "SetBarrelMask";
+    menu
+        "Sure.",L_Start,
+        "Maybe some other time.",L_Close;
+
+L_Find:
+    mes "[Zegas]";
+    mes "\"The storehouse is still over run with house maggots.\"";
+    next;
+    mes "\"Please help me find the bug bomb Eomie gave us is in one of the store room barrels?\"";
+    menu
+        "Sure.",L_Start,
+        "Maybe some other time.",L_Close;
+
+L_Start:
+    mes "[Zegas]";
+    @barrel_tmp = 2;
+    callfunc "SetBarrelMask";
+    mes "\"Thanks, come back and see me once you found the bug bomb and set it off.\"";
+    goto L_Close;
+
+L_Looking:
+    mes "[Zegas]";
+    mes "\"Still haven't found it? Well keep looking I know it's in there some where.\"";
+    goto L_Close;
+
+L_QuestEnd:
+    mes "[Zegas]";
+    mes "\"From the smell I can see you found the bug bomb!\"";
+    mes "\"Thanks once again, I know it's not much but here is 50 GP for your troubles.\""; 
+    getexp 50, 0;
+    Zeny = (Zeny + 50);
+    @barrel_tmp = 4;
+    callfunc "SetBarrelMask";
+    goto L_Close;
+
+L_Thanks:
+    mes "[Zegas]";
+    mes "\"Thanks for Helping with clear out the store room!\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}
+029-1,47,86,0	script	ZegasDebug	165,{
+    mes "[Zegas Debug]";
+    mes "Reset ?";
+    menu
+        "Yes.", L_Reset,
+        "No.", L_Close;
+
+L_Reset:
+    STARTAREA = (STARTAREA & ~(NIBBLE_4_MASK) | (0 << NIBBLE_4_SHIFT));
+    STARTAREA = STARTAREA &~ (1 << 20);
+    STARTAREA = STARTAREA &~ (1 << 21);
+    STARTAREA = STARTAREA &~ (1 << 22);
+    STARTAREA = STARTAREA &~ (1 << 23);
+    STARTAREA = STARTAREA &~ (1 << 24);
+    STARTAREA = STARTAREA &~ (1 << 25);
+    STARTAREA = STARTAREA &~ (1 << 26);
+    STARTAREA = STARTAREA &~ (1 << 27);
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "ZegasDebug";
+    end;
+}

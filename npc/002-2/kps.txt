@@ -1,0 +1,155 @@
+002-2,120,89,0	script	KPS Manager	191,{
+    @state = ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
+    @run = ((QUEST_NorthTulimshar & TWOBIT_8_MASK) >> TWOBIT_8_SHIFT);
+    @run_cnt = ((QUEST_NorthTulimshar & TWOBIT_9_MASK) >> TWOBIT_9_SHIFT);
+    if (@state == 15)
+        goto L_SeeKylian;
+    if (@state == 14)
+        goto L_RunComplete;
+    if (@state == 13)
+        goto L_RunStarted;
+    if (@state == 12) 
+        goto L_JobSelect;
+    if (@state == 11)
+        goto L_AcceptJob;
+    if (@state == 10)
+        goto L_OfferJob;
+    goto L_Default;
+
+L_Default:
+    mes "[KPS Manager]";
+    mes "\"Kylian staying at the Inn bought this shop recently.\"";
+    mes "\"I'm waiting for him to open the shop.\"";
+    next;
+    mes "\"I wonder if he needs any help?\"";
+    goto L_Close;
+
+L_OfferJob:
+    mes "[KPS Manager]";
+    mes "\"Hello and what how can I help you today?\"";
+    menu
+        "My name is " + strcharinfo(0), L_MyName,
+        "Nothing.", L_Close;
+
+L_MyName:
+    @state = 11;
+    callfunc "SetKylianQuest";
+    mes "\"Ahhh, Kylian said you would be dropping by.\"";
+    next;
+    mes "\"I assume you are looking for some work?\"";
+    menu
+        "Yes.", L_StartJob,
+        "No.", L_Close;
+
+L_AcceptJob:
+    mes "[KPS Manager]";
+    mes "\"Interested in some work?\"";
+    menu
+        "Yes.", L_StartJob,
+        "No.", L_Close;
+
+L_StartJob:
+    @run = 0;
+    callfunc "SetKylianRun";
+    @run_cnt = 0;
+    callfunc "SetKylianRunCnt";
+    @state = 12;
+    callfunc "SetKylianQuest";
+    goto L_JobSelect;
+
+L_StartJobAgain:
+    @run = 0;
+    callfunc "SetKylianRun";
+    @state = 12;
+    callfunc "SetKylianQuest";
+    goto L_JobSelect;
+
+L_JobSelect:
+    if ((gettimetick(2) - Kylian_Timer) < 86400)
+        goto L_NoPackages;
+    mes "[KPS Manager]";
+    mes "\"We have a number of deliveries that need to go all over the world.\"";
+    next;
+    goto L_RandJob;
+
+L_RandJob:
+    @rand_quest = rand(1,3);
+    goto L_JobInfo;
+
+L_JobInfo:
+    mes "\"We have a delivery for:* " + $@random_quests$[@rand_quest] + "\"";
+    menu
+        "Take It.", L_StartRun,
+        "Anything Else?", L_RandJob,
+        "I need a break.", L_Close;
+
+L_StartRun:
+    @state = 13;
+    callfunc "SetKylianQuest";
+    @run = @rand_quest;
+    callfunc "SetKylianRun";
+    Kylian_Timer = gettimetick(2);
+    goto L_Close;
+
+L_RunStarted:
+    mes "Deliver this package to:* " + $@random_quests$[@run] + "\"";
+    goto L_Close;
+
+L_RunComplete:
+    @elapsed_time = (gettimetick(2) - Kylian_Timer);
+    if (@elapsed_time > 600)
+        goto L_Failed;
+    @run_cnt = (@run_cnt + 1);
+    callfunc "SetKylianRunCnt";
+    // Set Kylian wants to see you reward state
+    if (@run_cnt > 3)
+        goto L_KylianReward;
+    goto L_RunAgain;
+
+L_SeeKylian:
+    mes "\"You need to go see Kylian before I can give you any more work.\"";
+    goto L_Close;
+
+L_Failed:
+    mes "\"You need to be faster next time to earn a bonus.\"";
+    next;
+    goto L_RunAgain;
+
+L_KylianReward:
+    Zeny = Zeny + $@delivery_money;
+    getexp ($@delivery_exp_mod * BaseLevel), 0;
+    callfunc "SetKylianRun";
+    @state = 15;
+    callfunc "SetKylianQuest";
+    mes "[" + $@delivery_money + " money]";
+    mes "[" + ($@delivery_exp_mod * BaseLevel) + " experience points]";
+    next;
+    mes "\"I have a message Kylian wants me to send you over right away.\"";
+    goto L_Close;
+
+L_RunAgain:
+    Zeny = Zeny + $@delivery_money;
+    getexp ($@delivery_exp_mod * BaseLevel), 0;
+    callfunc "SetKylianRun";
+    mes "[" + $@delivery_money + " money]";
+    mes "[" + ($@delivery_exp_mod * BaseLevel) + " experience points]";
+    next;
+    mes "\"Good job, keep up the nice work and I'm sure the bonus will give you a bonus.\"";
+    next;
+    goto L_StartJobAgain;
+
+L_NoPackages:
+    mes "\"Come back tomorrow, maybe we will have some more work.\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}
+function	script	SetKylianRun	{
+    QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(TWOBIT_8_MASK)) | (@run << TWOBIT_8_SHIFT);
+    return;
+}
+function	script	SetKylianRunCnt	{
+    QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(TWOBIT_9_MASK)) | (@run_cnt << TWOBIT_9_SHIFT);
+    return;
+}

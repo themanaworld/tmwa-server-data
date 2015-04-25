@@ -1,0 +1,331 @@
+function	script	KadiyaSubquestConsts	{
+    @Q_kadiya_status = (QUEST_MAGIC2 & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT;
+
+    @Q_STATUS_NONE = 0;
+    @Q_STATUS_KNOWS_MOPOX = 1;
+    @Q_STATUS_MADE_MOPOX = 2;
+    @Q_STATUS_DIDNT_DRINK = 3;
+    @Q_STATUS_WANTS_CHOCOCAKE = 4;
+    @Q_STATUS_WANTS_ORANGECUPCAKE = 5;
+    @Q_STATUS_COMPLETED = 6;
+    @Q_STATUS_COMPLETED_ELANORE = 7;
+    @Q_STATUS_COMPLETED_NOELANORE = 8;
+    @Q_STATUS_COMPLETED_POST_ELANORE = 9;
+
+    if (((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) < 4) set @Q_kadiya_status, @Q_STATUS_NONE;
+
+    if (((QUEST_MAGIC2 & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT) > 4) set @Q_kadiya_status, @Q_STATUS_COMPLETED_POST_ELANORE;
+
+    return;
+}
+
+002-2,117,126,0	script	Omar	162,{
+    callfunc "ElanoreFix";
+    callfunc "KadiyaSubquestConsts";
+
+    @Q_status = @Q_kadiya_status;
+
+    if (@Q_status >= @Q_STATUS_COMPLETED) goto L_cured;
+
+    if (@Q_status == @Q_STATUS_DIDNT_DRINK) goto L_didnt_drink;
+
+    if (@Q_status > @Q_STATUS_DIDNT_DRINK) goto L_make_food;
+
+    mes "[Omar]";
+    mes "\"Welcome to my humble abode.\"";
+    next;
+    menu
+        "Well met!  May I ask who you are?", L_omar,
+        "What's wrong with your daughter?", L_kadiya_sick,
+        "Thank you!", L_Close;
+
+L_omar:
+    mes "[Omar]";
+    mes "\"My name is Omar;  I am a trader of oils and spices.\"";
+    goto L_Close;
+
+L_kadiya_sick:
+    mes "[Omar]";
+    mes "\"Kadiya has caught Ponderpox, I fear.\"";
+    mes "He sighs.";
+    mes "\"She's has been feverish for many days now. I wish there were something I could do.\"";
+    next;
+    menu
+        "Have you asked Elanore the healer?", L_sick_elanore,
+        "How about the Hurnscald hospital?", L_sick_hospital,
+        "Can I help?", L_sick_self,
+        "I'm sorry to hear that.", L_Next;
+
+L_Next:
+    mes "[Omar]";
+    mes "\"Well, she is a strong girl. I am sure that she will get over it eventually.\"";
+    mes "He smiles, but you see doubt in his eyes.";
+    goto L_Close;
+
+L_sick_elanore:
+    mes "[Omar]";
+    mes "\"Elanore?\"";
+    mes "He frowns.";
+    mes "\"She knows nothing. I see no point in talking to her.\"";
+    goto L_Close;
+
+L_sick_hospital:
+    mes "[Omar]";
+    mes "\"Hurnscald is too far away. I don't think that it would be good for her to go on such a long trip.\"";
+    goto L_Close;
+
+L_sick_self:
+    mes "[Omar]";
+    mes "\"You are very kind, but I don't think there is anything you can do.\"";
+    goto L_Close;
+
+L_didnt_drink:
+    mes "[Omar]";
+    mes "\"So she has Mopox, not Ponderpox, you say?  Hmm. That is much harder to cure, I think.\"";
+    mes "\"I am grateful for the effort you put into brewing a potion for her. But it does smell vile...\"";
+    next;
+    mes "[Omar]";
+    mes "\"I promised my dear wife that I would never make Kadiya eat or drink anything she doesn't like. So I won't force her to drink this.\"";
+    next;
+    mes "[Omar]";
+    @Q_status = (@Q_STATUS_WANTS_CHOCOCAKE + rand(2));
+    callsub S_Update_Var;
+    if (@Q_status == @Q_STATUS_WANTS_ORANGECUPCAKE)
+        mes "\"If only we could make it smell and taste like orange cupcakes... she really loves those cupcakes.\"";
+    if (@Q_status == @Q_STATUS_WANTS_CHOCOCAKE)
+        mes "\"If only this were a chocolate cake and not a potion... she really loves chocolate cakes.\"";
+    goto L_Close;
+
+L_make_food:
+    mes "[Omar]";
+    mes "\"I should stay here to watch over her. I wish I could think of a way to convince her to drink the potion...\"";
+    if (@Q_status == @Q_STATUS_WANTS_ORANGECUPCAKE)
+        mes "\"Alas, it is not an orange cupcake.\"";
+    if (@Q_status == @Q_STATUS_WANTS_CHOCOCAKE)
+        mes "\"If only it were to smell and taste like her favourite chocolate cake...\"";
+    goto L_Close;
+
+L_cured:
+    if (@Q_status == @Q_STATUS_COMPLETED) goto L_cured_choice;
+    mes "[Omar]";
+    mes "\"She is sleeping now, but she seems to be much better. I am sure that she will be up and running around again soon.\"";
+    goto L_Close;
+
+L_cured_choice:
+    mes "[Omar]";
+    mes "\"I am very grateful for your help. I really was sure that it was Ponderpox, not Mopox, that she had.\"";
+    next;
+    menu
+        "Oh, it was nothing.", L_cured_nothing,
+        "I didn't do it alone; Elanore helped.", L_cured_elanore,
+        "That will be 5000 GP.", L_Next1;
+
+L_Next1:
+    mes "[Omar]";
+    mes "\"Ah, certainly.\"";
+    mes "He hands you a small bag of money.";
+    next;
+    @Q_status = @Q_STATUS_COMPLETED_NOELANORE;
+    callsub S_Update_Var;
+    Zeny = Zeny + 5000;
+    goto L_Close;
+
+L_cured_nothing:
+    mes "[Omar]";
+    mes "\"No, this wasn't nothing. She is everything to me. Here, you deserve a reward.\"";
+    mes "He hands you a bag of money containing 10,000 GP and two pearls.";
+    mes "\"And feel free to drop by again whenever you would like!\"";
+    @Q_status = @Q_STATUS_COMPLETED_NOELANORE;
+    callsub S_Update_Var;
+    getitem "Pearl", 2;
+    Zeny = Zeny + 10000;
+    goto L_Close;
+
+L_cured_elanore:
+    mes "[Omar]";
+    mes "Omar frowns.";
+    mes "\"That witch?  You worked with her without telling me?\"";
+    mes "He looks over to his daughter, concern suddenly in his eyes.";
+    mes "\"She is looking better, though...\"";
+    next;
+    mes "[Omar]";
+    mes "Omar shakes his head.";
+    mes "\"I will have to think about this. Please leave me alone.\"";
+    next;
+    @Q_status = @Q_STATUS_COMPLETED_ELANORE;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_Close:
+    @Q_STATUS_KNOWS_MOPOX = 0;
+    @Q_STATUS_MADE_MOPOX = 0;
+    @Q_STATUS_DIDNT_DRINK = 0;
+    @Q_STATUS_WANTS_CHOCOCAKE = 0;
+    @Q_STATUS_WANTS_ORANGECUPCAKE = 0;
+    @Q_STATUS_COMPLETED = 0;
+    @Q_STATUS_COMPLETED_ELANORE = 0;
+    @Q_STATUS_COMPLETED_NOELANORE = 0;
+    @Q_STATUS_COMPLETED_POST_ELANORE = 0;
+    @Q_status = 0;
+    close;
+
+
+S_Update_Var:
+    QUEST_MAGIC2 = (QUEST_MAGIC2 & ~(NIBBLE_3_MASK) | (@Q_status << NIBBLE_3_SHIFT));
+    return;
+}
+
+002-2,124,124,0	script	Kadiya	174,{
+    @child_number = 7;
+    callfunc "XmasList";
+
+    callfunc "ElanoreFix";
+    @Q_MASK = NIBBLE_3_MASK;
+    @Q_SHIFT = NIBBLE_3_SHIFT;
+    callfunc "KadiyaSubquestConsts";
+    @Q_status = @Q_kadiya_status;
+    if (@Q_status >= @Q_STATUS_COMPLETED) goto L_cured;
+
+    mes "You see a young girl lying in bed. At first she doesn't seem to notice you approaching.";
+    mes "Finally, she turns her head towards you. Judging from the sweat on her forehead and look in her eyes, she is suffering from some kind of fever.";
+    next;
+    mes "[Kadiya]";
+    mes "\"Hello,\" she says in a tiny voice.";
+    next;
+    @M_NAME = 1;
+    @M_CANDY = 2;
+    @M_POTION = 3;
+    @M_CHOCOCAKE = 4;
+    @M_CUPCAKE = 5;
+
+    setarray @choice$, "Hello!  What's your name?", "Would you like some candy?", "", "", "", "", "", "";
+    setarray @choice_idx, @M_NAME, @M_CANDY, 0, 0, 0, 0, 0, 0;
+    @choices_nr = 2;
+
+    if (countitemcolor("MopoxCurePotion") == 0) goto L_M_no_cure;
+
+    @choice_idx[@choices_nr] = @M_POTION;
+    @choice$[@choices_nr] = "This potion will cure your illness!";
+    @choices_nr = @choices_nr + 1;
+    goto L_M_no_cure;
+
+L_M_no_cure:
+    if ((countitemcolor("LacedChocolateCake") == 0) || (@Q_status != @Q_STATUS_WANTS_CHOCOCAKE))
+        goto L_M_no_chococake;
+    @choice_idx[@choices_nr] = @M_CHOCOCAKE;
+    @choice$[@choices_nr] = "Would you like special chocolate cake?";
+    @choices_nr = @choices_nr + 1;
+    goto L_M_no_chococake;
+
+L_M_no_chococake:
+    if ((countitemcolor("LacedOrangeCupcake") == 0) || (@Q_status != @Q_STATUS_WANTS_ORANGECUPCAKE))
+        goto L_M_no_cupcake;
+    @choice_idx[@choices_nr] = @M_CUPCAKE;
+    @choice$[@choices_nr] = "Would you like special orange cupcake?";
+    @choices_nr = @choices_nr + 1;
+    goto L_M_no_cupcake;
+
+L_M_no_cupcake:
+    @choice_idx[@choices_nr] = 0;
+    @choice$[@choices_nr] = "Goodbye.";
+    @choices_nr = @choices_nr + 1;
+
+    menu
+        @choice$[0], L_MenuItems,
+        @choice$[1], L_MenuItems,
+        @choice$[2], L_MenuItems,
+        @choice$[3], L_MenuItems,
+        @choice$[4], L_MenuItems,
+        @choice$[5], L_MenuItems;
+
+L_MenuItems:
+    @choice = @choice_idx[@menu - 1];
+
+    if (@choice == @M_NAME) goto L_name;
+    if (@choice == @M_CANDY) goto L_no_candy;
+    if (@choice == @M_POTION) goto L_potion;
+    if (@choice == @M_CHOCOCAKE) goto L_chococake;
+    if (@choice == @M_CUPCAKE) goto L_cupcake;
+    goto L_Close;
+
+L_name:
+    mes "[Kadiya]";
+    mes "She smiles a faint smile.";
+    mes "\"My name is Kadiya.\"";
+    goto L_Close;
+
+L_no_candy:
+    mes "[Kadiya]";
+    mes "She hesitates for a moment.";
+    mes "\"No, thank you. I don't think I should.\"";
+    goto L_Close;
+
+L_potion:
+    mes "[Kadiya]";
+    if (@Q_status < @Q_STATUS_DIDNT_DRINK) set @Q_status, @Q_STATUS_DIDNT_DRINK;
+    callsub S_Update_Var;
+
+    mes "Kadiya grimaces and pushes the bottle away.";
+    mes "\"That smells terrible!\"";
+    next;
+    mes "[Kadiya]";
+    mes "She pulls the sheets over her head.";
+    mes "\"I won't drink that!\"";
+    goto L_Close;
+
+L_chococake:
+    delitem "LacedChocolateCake", 1;
+    goto L_do_cure;
+
+L_cupcake:
+    delitem "LacedOrangeCupcake", 1;
+    goto L_do_cure;
+
+L_do_cure:
+    if (@Q_status < @Q_STATUS_COMPLETED) set @Q_status, @Q_STATUS_COMPLETED;
+    callsub S_Update_Var;
+
+    mes "[Kadiya]";
+    mes "Kadiya's eyes widen.";
+    mes "\"Oh!  Daddy, is it okay if I eat this?\"";
+    mes "Omar nods and smiles. \"You should eat a bit to regain your strength, sweetheart.\"";
+    next;
+    mes "[Kadiya]";
+    mes "Kadiya devours your gift in just a handful of bites.";
+    next;
+    mes "[Kadiya]";
+    mes "She smiles. \"Thank you!  I feel better already!\".";
+    next;
+    mes "[Kadiya]";
+    mes "She looks much healthier, too. Omar walks over and touches her forehead.";
+    mes "\"Now that is funny – your fever has gone down quite a bit!\"";
+    mes "He smiles at you. \"Thank you for your help!\"";
+    next;
+    mes "[Kadiya]";
+    mes "\"You should get some sleep now, sweetheart. I'm sure that you will be better soon.\"";
+    goto L_Close;
+
+L_cured:
+    mes "[Kadiya]";
+    mes "Kadiya seems to be sleeping calmly. She looks much less sweaty than earlier; unless you are very much mistaken, her fever has disappeared.";
+    goto L_Close;
+
+L_Close:
+    @Q_status = 0;
+    @Q_MASK = 0;
+    @Q_SHIFT = 0;
+    @M_NAME = 0;
+    @M_CANDY = 0;
+    @M_POTION = 0;
+    @M_CHOCOCAKE = 0;
+    @M_CUPCAKE = 0;
+    @choice = 0;
+    @choices_nr = 0;
+    cleararray @choice_idx[0], 0, 7;
+    cleararray @choice$[0], "", 7;
+    close;
+
+S_Update_Var:
+    QUEST_MAGIC2 = (QUEST_MAGIC2 & ~(@Q_MASK) | (@Q_status << @Q_SHIFT));
+    return;
+}

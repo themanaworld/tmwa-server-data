@@ -1,0 +1,107 @@
+
+008-1,70,42,0	script	Banu	154,{
+    @state = ((QUEST_NorthTulimshar & TWOBIT_5_MASK) >> TWOBIT_5_SHIFT);
+    @Exp = 100;
+    @money_water = 250;
+    @money_knife = 100;
+
+    if (@state >= 3) goto L_Done;
+    if (@state == 2) goto L_Knife;
+    if (@state == 1) goto L_Water;
+
+    mes "[Banu]";
+    mes "\"Ah, hello. You've come at just the right moment. The field work is hard and the sun is burning.";
+    mes "Would you mind refilling an old woman's Empty Bottle with water?\"";
+    menu
+        "Sure!",L_Next,
+        "Sorry, I'm busy.",L_Close;
+
+L_Next:
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_FullInv;
+
+    mes "She smiles.";
+    mes "[Banu]";
+    mes "\"Here is my Empty Bottle. There is a well right over there at Hurnscald.\"";
+    getitem "EmptyBottle", 1;
+    @state = 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Water:
+    mes "[Banu]";
+    mes "\"Ah, you're back. I'm so thirsty.\"";
+    next;
+    if (countitemcolor("BottleOfWater") < 1)
+        goto L_NoWater;
+    delitem "BottleOfWater", 1;
+    mes "She grabs the Bottle of Water and drinks.";
+    getexp @Exp, 0;
+    Zeny = Zeny + @money_water;
+    @state = 2;
+    callsub S_Update_Mask;
+    mes "[Banu]";
+    mes "\"Ah, that's refreshing. Thank you. You're a good kid. Have this for your expenses.";
+    mes "Maybe you can do me another favor?\"";
+    next;
+    mes "\"I need a new Knife. Peter in the Hurnscald forge to the South of here is selling some. But it's such a long way for my old legs.";
+    mes "Would you go to get me a Knife?\"";
+    goto L_Close;
+
+L_Knife:
+    mes "[Banu]";
+    mes "\"Hello dear. Did you get the knife for me?\"";
+    menu
+        "Yeah, here is it.",L_Next1,
+        "Not yet.",L_Close;
+
+L_Next1:
+    if (countitemcolor("Knife") < 1)
+        goto L_NoKnife;
+    delitem "Knife", 1;
+    getexp @Exp, 0;
+    Zeny = Zeny + @money_knife;
+    @state = 3;
+    callsub S_Update_Mask;
+    mes "[Banu]";
+    mes "\"Thank you! You're a darling. Please take this for your effort.\"";
+    goto L_Close;
+
+L_Done:
+    mes "[Banu]";
+    @rand = rand(3);
+    if (@rand == 0)
+        mes "\"I spent all my life here in Hurnscald. It's a good place to live.\"";
+    if (@rand == 1)
+        mes "\"Did you see the kids playing hide and seek? Ah, when I was young I used to play with my good friend Sorfina. She lives in Candor now, East of Hurnscald by boat.\"";
+    if (@rand == 2)
+        mes "\"Tonori is ruled by a council of wise wizards.\"";
+    goto L_Close;
+
+L_NoWater:
+    mes "[Banu]";
+    mes "\"You didn't get it yet? Shame on you, an old woman is depending on you.\"";
+    goto L_Close;
+
+L_NoKnife:
+    mes "[Banu]";
+    mes "\"Where is it? Don't play tricks on an old woman! That's not nice.\"";
+    goto L_Close;
+
+L_FullInv:
+    mes "[Banu]";
+    mes "\"Oh my dear! You're carrying so many things that you can't take my Empty Bottle.\"";
+    goto L_Close;
+
+L_Close:
+    @inventorylist_count = 0;
+    @Exp = 0;
+    @state = 0;
+    @rand = 0;
+    close;
+
+S_Update_Mask:
+    QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(TWOBIT_5_MASK)) | (@state << TWOBIT_5_SHIFT);
+    return;
+}

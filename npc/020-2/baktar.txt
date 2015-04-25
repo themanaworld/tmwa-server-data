@@ -1,0 +1,257 @@
+020-2,70,61,0	script	Baktar	191,{
+    @npcname$ = "[Baktar]";
+
+    @Q_MASK = BYTE_0_MASK;
+    @Q_SHIFT = BYTE_0_SHIFT;
+    @Q_status = ((QUEST_Nivalis_state) & @Q_MASK) >> @Q_SHIFT;
+
+    @Q_MASK2 = NIBBLE_2_MASK;
+    @Q_SHIFT2 = NIBBLE_2_SHIFT;
+    @Q_status2 = ((QUEST_Nivalis_state) & @Q_MASK2) >> @Q_SHIFT2;
+
+    @Q_MASK2_BITS = NIBBLE_3_MASK;
+    @Q_SHIFT2_BITS = NIBBLE_3_SHIFT;
+    @Q_status2_bits = ((QUEST_Nivalis_state) & @Q_MASK2_BITS) >> @Q_SHIFT2_BITS;
+
+    @BIT_KNOWHIM = 0;
+
+    @BIT_DESERTHAT = 1;
+    @MONEY_DESERTHAT = 1500;
+    @XP_DESERTHAT = 500;
+
+    @BIT_DESERTSHIRT = 2;
+    @MONEY_DESERTSHIRT = 1500;
+    @XP_DESERTSHIRT = 600;
+
+    @BIT_SERFHAT = 3;
+    @MONEY_SERFHAT = 800;
+    @XP_SERFHAT = 350;
+
+    @BIT_MS_TONGUE = 4;
+    @MONEY_MS_TONGUE = 800;
+    @XP_MS_TONGUE = 350;
+
+    @BIT_MS_EGG = 5;
+    @MONEY_MS_EGG = 800;
+    @XP_MS_EGG = 350;
+
+    @BIT_SNAKESKIN = 6;
+    @MONEY_SNAKESKIN = 800;
+    @XP_SNAKESKIN = 350;
+
+    @BIT_BUGLEG = 7;
+    @MONEY_BUGLEG = 20;
+    @XP_BUGLEG = 130;
+
+    @run = ((QUEST_NorthTulimshar & TWOBIT_8_MASK) >> TWOBIT_8_SHIFT);
+    @state = ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
+    if ((@run == 3) && (@state == 13))
+        goto L_Deliver;
+    goto L_Start;
+
+L_Deliver:
+    menu
+        "I have a delivery for you", L_Delivery;
+
+L_Delivery:
+    mes "[Baktar]";
+    mes "\"Ahh my delivery from Tulimshar, how nice it is to get some comforts from back home.\"";
+    @state = 14;
+    callfunc "SetKylianQuest";
+    goto L_Close;
+
+L_Start:
+    if(Sex)
+        @type$ = "man";
+    if(!Sex)
+        @type$ = "woman";
+
+    if(@Q_status & (1<<@BIT_KNOWHIM)) goto L_KnowAlready;
+        mes @npcname$;
+        mes "\"Hello, " +  @type$ + ", did you come from Tulimshar? Because you have a nice tan. \"";
+    menu
+        "Yes, I'm from Tulimshar", L_exotic,
+        "Well, I just like sunbathing", L_Close,
+        "Good bye", L_Close;
+
+L_KnowAlready:
+    mes @npcname$;
+    mes "\"I love Tulimshar's stuff. I'm collecting souvenirs from Tulimshar to help remind me of all the great times I had there. If you give me an interesting item from the area, I'll give you a nice reward. So, you have a new item?\"";
+    goto L_startitem;
+
+L_exotic:
+    mes @npcname$;
+    mes "\"I said that because I love Tulimshar's stuff...I'm collecting souvenirs from Tulimshar to help remind me of all the great times I had there. If you give me an interesting item maybe I can give you a nice reward. But I don't need a lot, I just need one of each item.\"";
+    menu
+        "I have some items on me maybe you'll like them ", L_startitem,
+        "Don't touch my stuff!", L_Close,
+        "I'll get them. Bye.", L_Close;
+
+L_startitem:
+    setarray @exotic_item$, "", "", "", "", "", "", "";
+    @c = 0;
+    @Q_status = @Q_status | (1<<@BIT_KNOWHIM);
+    callsub S_Update_Var;
+    if (countitemcolor("DesertHat") < 1 || @Q_status & (1<<@BIT_DESERTHAT) ) goto L_DesertShirt;
+    @exotic_item$[@c] = "a Desert Hat ?";
+    @menuid[@c] = 0;
+    @c = @c + 1;
+    goto L_DesertShirt;
+
+L_DesertShirt:
+    if (countitemcolor("DesertShirt") < 1 || @Q_status & (1<<@BIT_DESERTSHIRT) ) goto L_SerfHat;
+    @exotic_item$[@c] = "a Desert Shirt ?";
+    @menuid[@c] = 1;
+    @c = @c + 1;
+    goto L_SerfHat;
+
+L_SerfHat:
+    if (countitemcolor("SerfHat") < 1 || @Q_status & (1<<@BIT_SERFHAT) ) goto L_tongue;
+    @exotic_item$[@c] = "a Serf Hat ?";
+    @menuid[@c] = 2;
+    @c = @c + 1;
+    goto L_tongue;
+
+L_tongue:
+    if (countitemcolor("MountainSnakeTongue") < 1 || @Q_status & (1<<@BIT_MS_TONGUE)) goto L_egg;
+    @exotic_item$[@c] = "a Mountain Snake Tongue ?";
+    @menuid[@c] = 3;
+    @c = @c + 1;
+    goto L_egg;
+
+L_egg:
+    if (countitemcolor("MountainSnakeEgg") < 1 || @Q_status & (1<<@BIT_MS_EGG)) goto L_Skin;
+    @exotic_item$[@c] = "a Mountain Snake Egg?";
+    @menuid[@c] = 4;
+    @c = @c + 1;
+    goto L_Skin;
+
+L_Skin:
+    if (countitemcolor("SnakeSkin") < 1 || @Q_status & (1<<@BIT_SNAKESKIN)) goto L_bugleg;
+    @exotic_item$[@c] = "a Snake Skin?";
+    @menuid[@c] = 5;
+    @c = @c + 1;
+    goto L_bugleg;
+
+L_bugleg:
+    if (countitemcolor("BugLeg") < 1 || @Q_status & (1<<@BIT_BUGLEG)) goto L_NeverMind;
+    @exotic_item$[@c] = "a Bug Leg?";
+    @menuid[@c] = 6;
+    @c = @c + 1;
+    goto L_NeverMind;
+
+L_NeverMind:
+    @exotic_item$[@c] = "Nevermind";
+    @menuid[@c] = 6;
+    menu
+        @exotic_item$[0], L_MenuItems,
+        @exotic_item$[1], L_MenuItems,
+        @exotic_item$[2], L_MenuItems,
+        @exotic_item$[3], L_MenuItems,
+        @exotic_item$[4], L_MenuItems,
+        @exotic_item$[5], L_MenuItems,
+        @exotic_item$[6], L_MenuItems;
+
+L_MenuItems:
+    @menu = @menu -1;
+
+    if (@menuid[@menu] == 0) goto L_DesertHat_Item;
+    if (@menuid[@menu] == 1) goto L_DesertShirt_Item;
+    if (@menuid[@menu] == 2) goto L_SerfHat_Item;
+    if (@menuid[@menu] == 3) goto L_tongue_Item;
+    if (@menuid[@menu] == 4) goto L_egg_Item;
+    if (@menuid[@menu] == 5) goto L_skin_Item;
+    if (@menuid[@menu] == 6) goto L_BugLegItem;
+    mes @npcname$;
+    mes "\"Ok, goodbye then.\"";
+    close;
+
+L_DesertHat_Item:
+    if(@Q_status & (1<<@BIT_DESERTHAT)) goto L_havealready;
+    if (countitemcolor("DesertHat") < 1) goto L_NoItem;
+    delitem "DesertHat", 1;
+    Zeny = Zeny + @MONEY_DESERTHAT;
+    getexp @XP_DESERTHAT,0;
+    @Q_status = @Q_status | (1<<@BIT_DESERTHAT);
+    callsub S_Update_Var;
+    close;
+
+L_DesertShirt_Item:
+    if(@Q_status & (1<<@BIT_DESERTSHIRT)) goto L_havealready;
+    if (countitemcolor("DesertShirt") < 1) goto L_NoItem;
+    delitem "DesertShirt", 1;
+    Zeny = Zeny + @MONEY_DESERTSHIRT;
+    getexp @XP_DESERTSHIRT,0;
+    @Q_status = @Q_status | (1<<@BIT_DESERTSHIRT);
+    callsub S_Update_Var;
+    close;
+
+L_SerfHat_Item:
+    if(@Q_status & (1<<@BIT_SERFHAT)) goto L_havealready;
+    if (countitemcolor("SerfHat") < 1) goto L_NoItem;
+    delitem "SerfHat", 1;
+    Zeny = Zeny + @MONEY_SERFHAT;
+    getexp @XP_SERFHAT,0;
+    @Q_status = @Q_status | (1<<@BIT_SERFHAT);
+    callsub S_Update_Var;
+    close;
+
+L_tongue_Item:
+    if(@Q_status & (1<<@BIT_MS_TONGUE)) goto L_havealready;
+    if (countitemcolor("MountainSnakeTongue") < 1) goto L_NoItem;
+    delitem "MountainSnakeTongue", 1;
+    Zeny = Zeny + @MONEY_MS_TONGUE;
+    getexp @XP_MS_TONGUE,0;
+    @Q_status = @Q_status | (1<<@BIT_MS_TONGUE);
+    callsub S_Update_Var;
+    close;
+
+L_egg_Item:
+    if(@Q_status & (1<<@BIT_MS_EGG)) goto L_havealready;
+    if (countitemcolor("MountainSnakeEgg") < 1) goto L_NoItem;
+    delitem "MountainSnakeEgg", 1;
+    Zeny = Zeny + @MONEY_MS_EGG;
+    getexp @XP_MS_EGG,0;
+    @Q_status = @Q_status | (1<<@BIT_MS_EGG);
+    callsub S_Update_Var;
+    close;
+
+L_skin_Item:
+    if(@Q_status & (1<<@BIT_SNAKESKIN)) goto L_havealready;
+    if (countitemcolor("SnakeSkin") < 1) goto L_NoItem;
+    delitem "SnakeSkin", 1;
+    Zeny = Zeny + @MONEY_SNAKESKIN;
+    getexp @XP_SNAKESKIN,0;
+    @Q_status = @Q_status | (1<<@BIT_SNAKESKIN);
+    callsub S_Update_Var;
+    close;
+
+L_BugLegItem:
+    if(@Q_status & (1<<@BIT_BUGLEG)) goto L_havealready;
+    if (countitemcolor("BugLeg") < 1) goto L_NoItem;
+    delitem "BugLeg", 1;
+    Zeny = Zeny + @MONEY_BUGLEG;
+    getexp @XP_BUGLEG,0;
+    @Q_status = @Q_status | (1<<@BIT_BUGLEG);
+    callsub S_Update_Var;
+    close;
+
+L_NoItem:
+    mes @npcname$;
+    mes "\"Well, if you happen to get items from Tulimshar, see me first before you sell anything.\"";
+    close;
+
+L_havealready:
+    mes @npcname$;
+    mes "\"I already collected what you can offer me.\"";
+    close;
+
+L_Close:
+    close;
+
+S_Update_Var:
+    set QUEST_Nivalis_state,
+        (QUEST_Nivalis_state & ~(@Q_MASK)
+        | (@Q_status << @Q_SHIFT));
+    return;
+}

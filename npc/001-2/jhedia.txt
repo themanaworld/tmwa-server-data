@@ -1,0 +1,60 @@
+
+001-2,23,50,0	script	Jhedia	160,{
+    @Cost_Per_Ingot = 1000;
+    @Iron_Ore_Per = 5;
+    @Coal_Per = 10;
+
+    mes "[Jhedia]";
+    mes "\"I forge Iron Ore into ingots. Ingots are more useful for skilled smiths, like armorers, because the ore is refined and made into useful units which can be worked with. To make ingots, I need " + @Iron_Ore_Per + " Iron Ore and " + @Cost_Per_Ingot + " gp per ingot. I also need " + @Coal_Per + " Coal for my forge.\"";
+    next;
+    mes "[Jhedia]";
+    mes "\"How many ingots would you like?\"";
+    input @ingot_count;
+
+    if (@ingot_count == 0)
+        goto L_Jhedia_Bye;
+    @Zeny_cost = @ingot_count * @Cost_Per_Ingot;
+    if (countitemcolor("IronOre") < @Iron_Ore_Per * @ingot_count)
+        goto L_Jhedia_NotEnough_Ore;
+    if (countitemcolor("Coal") < @Coal_Per * @ingot_count)
+        goto L_Jhedia_NotEnough_Coal;
+    if (Zeny < @Zeny_cost)
+        goto L_Jhedia_NotEnough_Zeny;
+    getinventorylist;
+    if (@inventorylist_count == 100
+        && countitemcolor("IronIngot") == 0
+        && countitemcolor("IronOre") > @ingot_count * @Iron_Ore_Per
+        | countitemcolor("Coal") > @ingot_count * @Coal_Per)
+            goto L_Jhedia_NotEnoughSlots;
+    Zeny = Zeny - @Zeny_cost;
+    delitem "IronOre", @ingot_count * @Iron_Ore_Per;
+    delitem "Coal", @ingot_count * @Coal_Per;
+    getitem "IronIngot", @ingot_count;
+    close;
+
+L_Jhedia_Bye:
+    mes "[Jhedia]";
+    mes "\"Goodbye then.\"";
+    close;
+
+L_Jhedia_NotEnough_Ore:
+    mes "[Jhedia]";
+    mes "\"You do not seem to have enough Iron Ore.\"";
+    close;
+
+L_Jhedia_NotEnough_Coal:
+    mes "[Jhedia]";
+    mes "\"You do not seem to have enough Coal.\"";
+    close;
+
+L_Jhedia_NotEnough_Zeny:
+    mes "[Jhedia]";
+    mes "\"You do not seem to have enough gold pieces.\"";
+    close;
+
+L_Jhedia_NotEnoughSlots:
+    mes "[Jhedia]";
+    mes "\"You do not seem to have enough room to carry this many ingots.\"";
+    close;
+
+}

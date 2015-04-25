@@ -1,0 +1,165 @@
+function	script	fightclub_Debug	{
+    goto L_Menu;
+
+L_Menu:
+    next;
+    set @bme,0; if($SANGUINE & $@SV_BMDBit == 0) set @bme,1;
+    set @due,0; if($SANGUINE & $@SV_FCDBit == 0) set @due,1;
+    mes "---";
+    mes "##3$##0Duel_Enabled: ##7" + @due;
+    mes "##3$##0fightclub_bm_enabled: ##7" + @bme;
+    mes "##3$##2@##0Duel_TimeBeforeNext: ##7" + $@Duel_TimeBeforeNext;
+    mes "##3$##2@##0Duel_TimeBeforeWarp: ##7" + $@Duel_TimeBeforeWarp;
+    mes "##3$##2@##0Duel_TimeBeforeStart: ##7" + $@Duel_TimeBeforeStart;
+    mes "##3$##2@##0Duel_TimeLimit: ##7" + $@Duel_TimeLimit;
+    mes "##3$##2@##0Duel_QueueLimit: ##7" + $@Duel_QueueLimit;
+    mes "##3$##2@##0Duel_PlayerQueueLimit: ##7" + $@Duel_PlayerQueueLimit;
+    mes "##3$##2@##0Duel_PlayerQueueTimeOut: ##7" + $@Duel_PlayerQueueTimeOut;
+    mes "##3$##0Duel_LastDuel: ##7" + $Duel_LastDuel + "##0";
+    mes "---";
+    mes "##2@##0Duel_Fighter: ##7" + @Duel_Fighter + "##0";
+    next;
+    menu
+        "toggle|Toggle $Duel_Enabled", L_DuelEnabled,
+        "toggle|Toggle $fightclub_bm_enabled", L_BmEnabled,
+        "edit|Set $@Duel_TimeBeforeNext", L_TimeBeforeNext,
+        "edit|Set $@Duel_TimeBeforeWarp", L_TimeBeforeWarp,
+        "edit|Set $@Duel_TimeBeforeStart", L_TimeBeforeStart,
+        "edit|Set $@Duel_TimeLimit", L_TimeLimit,
+        "edit|Set $@Duel_QueueLimit", L_QueueLimit,
+        "edit|Set $@Duel_PlayerQueueLimit", L_PlayerQueueLimit,
+        "edit|Set $@Duel_PlayerQueueTimeOut", L_PlayerQueueTimeOut,
+        "edit|Set $Duel_LastDuel", L_LastDuel,
+        "toggle|Toggle @Duel_Fighter", L_DuelFighter,
+        "toggle|Toggle killer state", L_Killer,
+        "toggle|Toggle killable state", L_Killable,
+        "restart|Restart fightclub.", L_Restart,
+        "quit|Nevermind.", L_End;
+
+L_Killer:
+    atcommand "@killer";
+    goto L_Menu;
+
+L_Killable:
+    atcommand "@killable";
+    goto L_Menu;
+
+L_DuelEnabled:
+    if(@due < 1) goto L_DuelEnabled2;
+    $SANGUINE = $SANGUINE | $@SV_FCDBit;
+    goto L_Menu;
+L_DuelEnabled2:
+    $SANGUINE = $SANGUINE &~ $@SV_FCDBit;
+    goto L_Restart;
+
+L_BmEnabled:
+    if(@bme < 1) goto L_BmEnabled2;
+    $SANGUINE = $SANGUINE | $@SV_BMDBit;
+    goto L_Menu;
+L_BmEnabled2:
+    $SANGUINE = $SANGUINE &~ $@SV_BMDBit;
+    goto L_Menu;
+
+L_DuelFighter:
+    if(@Duel_Fighter < 1) goto L_DuelFighter2;
+    @Duel_Fighter = 0;
+    goto L_Menu;
+L_DuelFighter2:
+    @Duel_Fighter = 1;
+    goto L_Menu;
+
+L_TimeBeforeNext:
+    mes "range: 1~600";
+    input @time;
+    if((@time < 1) || (@time > 600)) goto L_OutOfRange;
+    $@Duel_TimeBeforeNext = @time;
+    goto L_Menu;
+
+L_TimeBeforeWarp:
+    mes "range: 1~600";
+    input @time;
+    if((@time < 1) || (@time > 600)) goto L_OutOfRange;
+    $@Duel_TimeBeforeWarp = @time;
+    goto L_Menu;
+
+L_TimeBeforeStart:
+    mes "range: 1~600";
+    input @time;
+    if((@time < 1) || (@time > 600)) goto L_OutOfRange;
+    $@Duel_TimeBeforeStart = @time;
+    goto L_Menu;
+
+L_TimeLimit:
+    mes "range: 1~900";
+    input @time;
+    if((@time < 1) || (@time > 900)) goto L_OutOfRange;
+    $@Duel_TimeLimit = @time;
+    goto L_Menu;
+
+L_QueueLimit:
+    mes "range: 1~20";
+    input @limit;
+    if((@limit < 1) || (@limit > 20)) goto L_OutOfRange;
+    $@Duel_QueueLimit = @limit;
+    goto L_Menu;
+
+L_PlayerQueueLimit:
+    mes "range: 1~5";
+    input @limit;
+    if((@limit < 1) || (@limit > 5)) goto L_OutOfRange;
+    $@Duel_PlayerQueueLimit = @limit;
+    goto L_Menu;
+
+L_PlayerQueueTimeOut:
+    mes "range: 30~600";
+    input @limit;
+    if((@limit < 30) || (@limit > 600)) goto L_OutOfRange;
+    $@Duel_PlayerQueueTimeOut = @limit;
+    goto L_Menu;
+
+L_LastDuel:
+    mes "range: 1+";
+    mes "[R] This will trigger a reboot";
+    input @last;
+    if(@last < 1) goto L_OutOfRange;
+    $Duel_LastDuel = @last;
+    next;
+    goto L_Restart;
+
+L_OutOfRange:
+    mes "Value out of range or empty.";
+    goto L_Menu;
+
+L_Restart:
+    callfunc "fightclub_EmergencyWipe";
+    donpcevent "#FightClubHandler::OnTimer2000"; // this re-starts the main timer if it was stopped
+    mes "The temporary variables have been reset.";
+    goto L_Menu;
+
+L_End:
+    return;
+}
+
+009-7,41,45,0	script	Debug#Duels	181,{
+    mes "The debug menu can also be accessed by wearing a dev cap while talking to Rouge.";
+    mes "For the documentation, @@https://wiki.themanaworld.org/index.php/User:Meko/FightClub/debug|click here@@##0";
+    callfunc "fightclub_Debug";
+    end;
+
+OnInit:
+    if(!debug) disablenpc "Debug#Duels";
+    end;
+
+    // debug messages below
+OnKillerNotInDuel:
+    npctalk "WARNING: The victim was not killed by its adversary. Aborting duel...";
+    end;
+
+OnVictimNotInDuel:
+    npctalk "WARNING: The victim is not part of the duel";
+    end;
+
+OnVictimInDuelNoDuel:
+    npctalk "WARNING: The victim is part of the duel but no duel is ongoing at the moment.";
+    end;
+}

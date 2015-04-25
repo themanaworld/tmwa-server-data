@@ -1,0 +1,427 @@
+
+function	script	fightclub_sendrequest	{
+    goto L_try;
+
+L_try:
+    @loop = 0;
+    goto L_Loop;
+
+L_Loop:
+    if(@Duel_Queue$[@loop] == @caster_name$) goto L_Exists;
+    if((@Duel_Queue$[@loop] == "") && (@Duel_Queue$[(@loop + 1)] == "")) goto L_Proceed;
+    if((@Duel_Queue$[@loop] == "") && (@Duel_Queue$[(@loop + 1)] != "")) goto L_ShiftQueue;
+    @loop = (@loop + 1);
+    if(@loop >= getarraysize(@Duel_Queue)) goto L_Full; // this shouldn't happen since we check in magic but we still handle it
+    goto L_Loop;
+
+L_ShiftQueue:
+    @Duel_Queue$[@loop] = @Duel_Queue$[(@loop + 1)];
+    @Duel_Queue[@loop] = @Duel_Queue[(@loop + 1)];
+    @Duel_Queue$[(@loop + 1)] = "";
+    @Duel_Queue[(@loop + 1)] = 0;
+    @loop = (@loop + 1);
+    if(@loop >= getarraysize(@Duel_Queue)) goto L_try;
+    goto L_ShiftQueue;
+
+L_Full:
+    message @caster_name$, "There is already "+ $@Duel_PlayerQueueLimit +" duel request(s) in the queue of this player, which is the maximum.";
+    return;
+
+L_Exists:
+    message @caster_name$, "You already requested a duel with this player.";
+    return;
+
+L_Proceed:
+    misceffect FX_MAGIC_DARKRED, @caster_name$;
+    message @caster_name$, "Your request has been sent.";
+    @Duel_Queue$[@loop] = @caster_name$;
+    @Duel_Queue[@loop] = gettimetick(2);
+    if(@Duel_Fighter == 0) message strcharinfo(0), "You have received a new duel request. Talk to Rouge to accept or decline.";
+    if(@Duel_Fighter == 0) misceffect FX_MAGIC_DARKRED, strcharinfo(0);
+    if(@Duel_Fighter == 1) set @Duel_HasPendingRequest, 1;
+    return;
+}
+
+function	script	fightclub_getrules	{
+    $@fightclub_myself = getcharid(3);
+    if(@target < 1) goto L_Proceed; // get our own rules
+    if(attachrid(@target) == 1) goto L_Proceed;
+    goto L_Missing;
+
+L_Proceed:
+    $@Temp_NoMagic = (DUELS & $@NoMagicBit);
+    if($@fightclub_myself == getcharid(3)) goto L_Proceed2; // the target is ourselves
+    if(attachrid($@fightclub_myself) == 1) goto L_Proceed2;
+    goto L_Missing;
+
+L_Missing:
+    end;
+
+L_Proceed2:
+    $@fightclub_myself = 0;
+    @target = 0;
+    if($@Temp_NoMagic == 0)
+        mes "(no rules)";
+    if($@Temp_NoMagic != 0) mes "- No Magic";
+    set $@Temp_NoMagic, 0; // now we clean these vars ASAP because they're globals
+    return;
+}
+
+function	script	fightclub_AddToQueue	{
+    @ATQ_Loop = 0;
+    goto L_Loop;
+
+L_Loop:
+    if(($@Duel_Queue_Blue$[@ATQ_Loop] == @caster_name$) && ($@Duel_Queue_Red$[@ATQ_Loop] == @target_name$)) goto L_Exists;
+    if(($@Duel_Queue_Red$[@ATQ_Loop] == @caster_name$) && ($@Duel_Queue_Blue$[@ATQ_Loop] == @target_name$)) goto L_Exists;
+    @ATQ_Loop = (@ATQ_Loop + 1);
+    if(@ATQ_Loop >= getarraysize($@Duel_Queue_ID)) goto L_Proceed2;
+    goto L_Loop;
+
+L_Exists:
+    mes "This battle is already in the queue.";
+    close;
+
+L_Full:
+    mes "There is already " + $@Duel_QueueLimit + " battles in the queue, which is the maximum. Please try again later.";
+    close;
+
+L_Proceed2:
+    if(getarraysize($@Duel_Queue_ID) >= ($@Duel_QueueLimit + 1)) goto L_Full;
+    @index = getarraysize($@Duel_Queue_ID);
+    if(@index >= 1) goto L_Proceed22;
+    @index = 1;
+    goto L_Proceed22;
+
+L_Proceed22:
+    if($@Duel_Queue_Red$[@index] != "") goto L_NotClean;
+    $@Duel_Queue_Red$[@index] = @caster_name$;
+    if($@Duel_Queue_Blue$[@index] != "") goto L_NotClean;
+    $@Duel_Queue_Blue$[@index] = @target_name$;
+    if($@Duel_Queue_ID[@index] != 0) goto L_NotClean;
+    $@Duel_Queue_ID[@index] = ($@Duel_Queue_ID[(@index - 1)] + 1);
+    if($@Duel_Queue_ID[@index] <= $Duel_LastDuel) goto L_FixId;
+    return;
+
+L_NotClean:
+    message @caster_name$, "An error occured: array element not empty. Try again in 5 seconds.";
+    return;
+
+L_FixId:
+    $@Duel_Queue_ID[@index] = ($Duel_LastDuel + 1);
+    return;
+}
+
+function	script	fightclub_NextBattle	{
+    set $@Duel_Queue_Blue$[0], ""; // clean the 0 index
+    $@Duel_Queue_Red$[0] = "";
+    $@Duel_Queue_ID[0] = 0;
+    set $@Duel_Loop, 1; // start the loop at 1
+    goto L_Loop;
+
+L_Loop: // here we shift the array to the left
+    if($@Duel_Queue_ID[$@Duel_Loop] < 1) goto L_Empty;
+    $@Duel_Queue_Red$[($@Duel_Loop - 1)] = $@Duel_Queue_Red$[$@Duel_Loop];
+    set $@Duel_Queue_Red$[$@Duel_Loop], ""; // it is always important to clean
+    $@Duel_Queue_Blue$[($@Duel_Loop - 1)] = $@Duel_Queue_Blue$[$@Duel_Loop];
+    $@Duel_Queue_Blue$[$@Duel_Loop] = "";
+    $@Duel_Queue_ID[($@Duel_Loop - 1)] = $@Duel_Queue_ID[$@Duel_Loop];
+    $@Duel_Queue_ID[$@Duel_Loop] = 0;
+    $@Duel_Loop = ($@Duel_Loop + 1);
+    if($@Duel_Loop >= getarraysize($@Duel_Queue_ID)) goto L_Proceed;
+    goto L_Loop;
+
+L_Empty:
+    // the queue is now empty
+    return;
+
+L_Proceed:
+    callfunc "fightclub_CleanStage";
+    set $@Duel_CurrentDuel, $@Duel_Queue_ID[0]; // since the array is shifted, the index is always 0
+    set $Duel_LastDuel, $@Duel_Queue_ID[0]; // this is used to keep the same index across reboots
+    $@Duel_BluePlayer = getcharid(3,$@Duel_Queue_Blue$[0]);
+    $@Duel_RedPlayer = getcharid(3,$@Duel_Queue_Red$[0]);
+    if(attachrid($@Duel_BluePlayer) != 1) goto L_Missing;
+    if(attachrid($@Duel_RedPlayer) == 1) goto L_Proceed2;
+    goto L_Missing;
+
+L_Missing:
+    callfunc "fightclub_CleanStage";
+    callfunc "fightclub_NextBattle";
+    return;
+
+L_Proceed2:
+    addtimer ($@Duel_TimeBeforeNext * 1000), "#FightClubUtils::OnDelayedNextBattle";
+    return;
+}
+
+function	script	fightclub_NextBattleProceed	{
+    $@Duel_NoMagic = 0;
+    if((DUELS & $@NoMagicBit) != 0) set $@Duel_NoMagic, 1; // get the rules of the caster
+    donpcevent "Rouge#Duels::OnAnnounceNext";
+    $@Duel_Started = 0;
+    addtimer ($@Duel_TimeBeforeWarp * 1000), "#FightClubUtils::OnDelayedStart";
+    return;
+}
+
+function	script	fightclub_StartBattle	{
+    $@Duel_Started = 1;
+    npcwarp 40, 45, "Rouge#Duels";
+    donpcevent "#FightClubTimeLimit::OnStartTimer";
+    if(attachrid($@Duel_RedPlayer) != 1) goto L_Missing;
+    callfunc "fightclub_enter";
+    if(attachrid($@Duel_BluePlayer) != 1) goto L_Missing;
+    callfunc "fightclub_enter";
+    return;
+
+L_Missing:
+    callfunc "fightclub_CleanStage";
+    callfunc "fightclub_NextBattle";
+    return;
+}
+
+function	script	fightclub_TimeOut	{
+    donpcevent "Rouge#Duels::OnAnnounceTimeOut";
+    if(attachrid($@Duel_RedPlayer) != 1) goto L_Missing;
+    callfunc "fightclub_exit";
+    if(attachrid($@Duel_BluePlayer) != 1) goto L_Missing;
+    callfunc "fightclub_exit";
+    callfunc "fightclub_CleanStage";
+    callfunc "fightclub_NextBattle";
+    return;
+
+L_Missing:
+    callfunc "fightclub_CleanStage";
+    callfunc "fightclub_NextBattle";
+    return;
+}
+
+function	script	fightclub_Intrusion	{
+    // nothing to do here (yet)
+    return;
+}
+
+function	script	fightclub_EmergencyWipe	{
+    callfunc "fightclub_CleanStage";
+    callfunc "fightclub_StartUp";
+    // TODO: check if everything is clean (function) and mapexit otherwise
+    return;
+}
+
+function	script	fightclub_Victory	{
+    // TODO: give some sort of reward
+    // TODO: increase score
+    // TODO: update leaderboard
+    return;
+}
+
+function	script	fightclub_DestroyMe	{
+    @Duel_Fighter = 0;
+    sc_end 132; sc_end 14; sc_end 37; sc_end 185; sc_end 194; sc_end 195; sc_end 196; sc_end 197; sc_end 198; sc_end 199; // remove effects
+    percentheal -100, 0; // doing @killer is unreliable
+    atcommand "@alive"; // refill hp/mana
+    if(getmapname() == "009-7") warp "009-7", rand($@fightclub_x1, $@fightclub_x2), rand(($@fightclub_y1 - 2), ($@fightclub_y1 - 3));
+    return;
+}
+
+function	script	fightclub_Missing	{
+    // $@Duel_Missing 1 = red, 2 = blue
+    if (attachrid($@Duel_BluePlayer) == 1) goto L_Proceed; // we need to attach to at least one player
+    if (attachrid($@Duel_RedPlayer) == 1) goto L_Proceed;
+    goto L_Resume; // can't attach either of them (this is not a problem since it means they are offline so their vars are clean anyway)
+
+L_Proceed:
+    if($@Duel_Missing == 1) goto L_BlueWins;
+    goto L_RedWins;
+
+L_BlueWins:
+    donpcevent "Rouge#Duels::OnAnnounceBlueForfeit";
+    $@duel_winner = $@Duel_BluePlayer;
+    callfunc "fightclub_Victory";
+    goto L_Clean;
+
+L_RedWins:
+    donpcevent "Rouge#Duels::OnAnnounceRedForfeit";
+    $@duel_winner = $@Duel_RedPlayer;
+    callfunc "fightclub_Victory";
+    goto L_Clean;
+
+L_KillBlue:
+    callfunc "fightclub_exit";
+    if(attachrid($@Duel_RedPlayer) == 1) goto L_KillRed;
+    goto L_Resume;
+
+L_KillRed:
+    callfunc "fightclub_exit";
+    goto L_Resume;
+
+L_Clean:
+    if(attachrid($@Duel_BluePlayer) == 1) goto L_KillBlue;
+    if(attachrid($@Duel_RedPlayer) == 1) goto L_KillRed;
+    goto L_Resume; // couldn't kill them
+
+L_Resume:
+    callfunc "fightclub_CleanStage";
+    callfunc "fightclub_NextBattle";
+    return;
+}
+
+function	script	fightclub_StartUp	{
+    if($@Duel_TimeBeforeNext < 1) set $@Duel_TimeBeforeNext, 5; // init the (temporary) TimeBeforeNext global
+    if($@Duel_TimeBeforeWarp < 1) set $@Duel_TimeBeforeWarp, 5; // init the (temporary) TimeBeforeWarp global
+    if($@Duel_TimeBeforeStart < 1) set $@Duel_TimeBeforeStart, 3; // init the (temporary) TimeBeforeStart global
+    if($@Duel_TimeLimit < 1) set $@Duel_TimeLimit, 120; // init the (temporary) TimeLimit global
+    if($@Duel_QueueLimit < 1) set $@Duel_QueueLimit, 5; // init the (temporary) QueueLimit global
+    if($@Duel_PlayerQueueLimit < 1) set $@Duel_PlayerQueueLimit, 2; // init the (temporary) PlayerQueueLimit global
+    if($@Duel_PlayerQueueTimeOut < 1) set $@Duel_PlayerQueueTimeOut, 300; // init the (temporary) PlayerQueueTimeOut global
+    setarray $@Duel_Queue_ID, 0;
+    cleararray $@Duel_Queue_ID, 0, ($@Duel_QueueLimit + 1);
+    setarray $@Duel_Queue_Blue$, "";
+    cleararray $@Duel_Queue_Blue$, "", ($@Duel_QueueLimit + 1);
+    setarray $@Duel_Queue_Red$, "";
+    cleararray $@Duel_Queue_Red$, "", ($@Duel_QueueLimit + 1);
+    $@Duel_TotalTime = 0;
+    if($fightclub_enabled) set $fightclub_enabled, 0; // this var moved to $SANGUINE
+    // DUELS flags below
+    $@DuelPvpBit = (1 << 1);
+    $@NoMagicBit = (1 << 2);
+    // $SANGUINE flags below
+    $@SV_FCDBit = (1 << 1);
+    $@SV_BMDBit = (1 << 2);
+    return;
+}
+
+function	script	fightclub_CleanStage	{
+    if($@Duel_NoWarp != 1) areawarp "009-7", $@fightclub_x1, $@fightclub_y1, $@fightclub_x2, $@fightclub_y2, "009-7", 31, 40; // kick all players from stage
+    $@Duel_NoWarp = 0;
+    set $@Duel_NoMagic, 0; // clean the Duel parameters
+    set $@Duel_CurrentDuel, 0; // no duel atm
+    set $@Duel_Started, 0; // no duel atm
+    $@Duel_RedPlayer = 0;
+    $@Duel_BluePlayer = 0;
+    $@Duel_Missing = 0;
+    $@Duel_TotalTime = 0;
+    npcwarp 32, 45, "Rouge#Duels";
+    donpcevent "#FightClubTimeLimit::OnStopTimer";
+    killmonster "009-7", "All";
+    return;
+}
+
+function	script	fightclub_setrules	{
+    goto L_Main;
+
+L_Main:
+    mes "Your rules are the following: "; mes "";
+    callfunc "fightclub_getrules";
+    mes ""; mes "What do you want to do?";
+    menu
+        "Change my rules.", L_Start,
+        "Nevermind.", L_Return;
+
+L_Start:
+    DUELS = DUELS | $@NoMagicBit;
+    goto L_NoMagic;
+
+L_NoMagic:
+    mes "Do you want to allow magic?";
+    mes "If disabled, the fighters will not be able to use any kind of spell.";
+    menu
+        "Yes.", L_NoMagicYes,
+        "No.", L_Done;
+L_NoMagicYes:
+    DUELS = DUELS &~ $@NoMagicBit;
+    goto L_Done;
+
+L_Done:
+    next;
+    mes "You have succesfully changed your options.";
+    goto L_Main;
+
+L_Return:
+    return;
+}
+
+function	script	fightclub_death	{
+    if(@Duel_Fighter != 1) goto L_NoDuel;
+    if(($@Duel_CurrentDuel < 1) || ($@Duel_Started != 1)) goto L_Reset;
+    if(@killerrid != 0) goto L_Murdered;
+    goto L_Killed;
+
+L_Killed:
+    if(getcharid(3) == $@Duel_RedPlayer) goto L_BlueWins;
+    goto L_RedWins;
+
+L_RedWins:
+    donpcevent "Rouge#Duels::OnAnnounceRedWins";
+    $@duel_winner = $@Duel_RedPlayer;
+    callfunc "fightclub_Victory";
+    callfunc "fightclub_exit";
+    if(attachrid($@Duel_RedPlayer) == 1) goto L_RedWins2;
+    goto L_Missing;
+
+L_RedWins2:
+    callfunc "fightclub_exit";
+    goto L_Proceed;
+
+L_BlueWins:
+    donpcevent "Rouge#Duels::OnAnnounceBlueWins";
+    $@duel_winner = $@Duel_BluePlayer;
+    callfunc "fightclub_Victory";
+    callfunc "fightclub_exit";
+    if(attachrid($@Duel_BluePlayer) == 1) goto L_BlueWins2;
+    goto L_Missing;
+
+L_Missing:
+    goto L_Proceed;
+
+L_BlueWins2:
+    callfunc "fightclub_exit";
+    goto L_Proceed;
+
+L_Proceed:
+    callfunc "fightclub_CleanStage";
+    return;
+
+L_Murdered:
+    if(($@Duel_RedPlayer != @killerrid) && ($@Duel_BluePlayer != @killerrid)) goto L_Stranger;
+    goto L_Killed; // now we proceed the same way as L_Killed
+
+L_Stranger:
+    // the victim was not murdered by its adversary (wtf)
+    if(debug) donpcevent "Debug#Duels::OnKillerNotInDuel";
+    callfunc "fightclub_EmergencyWipe";
+    return;
+
+L_NoDuel:
+    if(debug) donpcevent "Debug#Duels::OnVictimNotInDuel";
+    return;
+
+L_Reset: // the player has duel_fighter but no duel is ongoing (happens if the player quit before fightclub_exit can be called)
+    if(debug) donpcevent "Debug#Duels::OnVictimInDuelNoDuel";
+    callfunc "fightclub_DestroyMe"; // here we attempt to resume the interrupted procedure
+    return;
+}
+
+function	script	fightclub_enter	{
+    @Duel_Fighter = 1;
+    warp "009-7", rand($@fightclub_x1,$@fightclub_x2), rand($@fightclub_y1,$@fightclub_y2);
+    atcommand "@alive"; // ensure that you can't duel wih a corpse
+    sc_end 132; sc_end 14; sc_end 37; sc_end 185; sc_end 194; sc_end 195; sc_end 196; sc_end 197; sc_end 198; sc_end 199; // remove effects
+    message strcharinfo(0), "Get Ready.";
+    addtimer ($@Duel_TimeBeforeStart * 1000), "#FightClubUtils::OnBecomeKiller"; // call fightclub_enter_killer in 3 seconds
+    return;
+}
+
+function	script	fightclub_enter_killer	{
+    atcommand "@killable";
+    atcommand "@killer"; // add both killable and killer so if one doesn't kick in, the other (hopefully) will
+    message strcharinfo(0), "GO !";
+    return;
+}
+
+function	script	fightclub_exit	{
+    callfunc "fightclub_DestroyMe"; // kill and reset state
+    message strcharinfo(0), "Thank you for participating in the fight club!";
+    if(@Duel_HasPendingRequest) message strcharinfo(0), "You have received a new duel request.";
+    return;
+}

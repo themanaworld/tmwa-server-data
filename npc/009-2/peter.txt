@@ -1,0 +1,141 @@
+009-2,183,57,0	shop	#PeterShop	127,1201:50,522:100,521:1000
+
+009-2,183,57,0	script	Peter	157,{
+    @peter_chain_mail_coal = 10;
+    @peter_chain_mail_ingot = 5;
+    @peter_chain_mail_money = 20000;
+
+    @peter_light_plate_coal = 20;
+    @peter_light_plate_ingot = 10;
+    @peter_light_plate_money = 50000;
+
+    @peter_warlord_plate_coal = 30;
+    @peter_warlord_plate_ingot = 15;
+    @peter_warlord_plate_money = 100000;
+
+    @peter_warlord_boots_coal = 16;
+    @peter_warlord_boots_ingot = 8;
+    @peter_warlord_boots_money = 35000;
+
+    mes "[Peter]";
+    mes "\"Hello, I am Peter, apprentice to Nicholas.\"";
+    next;
+    mes "\"I can make you some sturdy armor: you must give me Iron Ingots to craft with and some gold pieces for my efforts.\"";
+    next;
+    mes "[Peter]";
+    mes "\"What would you like me to make?\"";
+    menu
+        "Chain Mail ("+@peter_chain_mail_coal+" coal, "+@peter_chain_mail_ingot+" ingots and "+@peter_chain_mail_money+" GP).", L_Peter_Chain_Mail,
+        "Light Plate ("+@peter_light_plate_coal+" coal, "+@peter_light_plate_ingot+" ingots and "+@peter_light_plate_money+" GP).", L_Peter_Light_Plate,
+        "Warlord Plate ("+@peter_warlord_plate_coal+" coal, "+@peter_warlord_plate_ingot+" ingots and "+@peter_warlord_plate_money+" GP).", L_Peter_Warlord_Plate,
+        "Do you know anything else than armor crafting?", L_Peter_New_Skills,
+        "Do you have anything else for sale?", L_Shop,
+        "Nevermind.", L_Close;
+
+L_Peter_Chain_Mail:
+    @peter_crafting_coal = @peter_chain_mail_coal;
+    @peter_crafting_iron_ingot = @peter_chain_mail_ingot;
+    @peter_crafting_money = @peter_chain_mail_money;
+    @peter_crafting_item$ = "ChainmailShirt";
+    callsub S_Smithery_Item;
+    goto L_Close;
+
+L_Peter_Light_Plate:
+    @peter_crafting_coal = @peter_light_plate_coal;
+    @peter_crafting_iron_ingot = @peter_light_plate_ingot;
+    @peter_crafting_money = @peter_light_plate_money;
+    @peter_crafting_item$ = "LightPlatemail";
+    callsub S_Smithery_Item;
+    goto L_Close;
+
+L_Peter_Warlord_Plate:
+    @peter_crafting_coal = @peter_warlord_plate_coal;
+    @peter_crafting_iron_ingot = @peter_warlord_plate_ingot;
+    @peter_crafting_money = @peter_warlord_plate_money;
+    @peter_crafting_item$ = "WarlordPlate";
+    callsub S_Smithery_Item;
+    goto L_Close;
+
+L_Peter_New_Skills:
+    mes "[Peter]";
+    mes "\"Actually, Nicholas, my master, taught me new smithery techniques.";
+    mes "My very first creation are new kind of steel boots. Interested ? That would be "+@peter_warlord_boots_coal+" Coals, "+@peter_warlord_boots_ingot+" Iron Ingots and "+@peter_warlord_boots_money+" GP.\"";
+    menu
+        "Sure!", L_Peter_Warlord_Boots,
+        "No thanks, that sounds too heavy for me.", L_Close;
+
+L_Shop:
+    close2;
+    shop "#PeterShop";
+
+L_Peter_Warlord_Boots:
+    @peter_crafting_coal = @peter_warlord_boots_coal;
+    @peter_crafting_iron_ingot = @peter_warlord_boots_ingot;
+    @peter_crafting_money = @peter_warlord_boots_money;
+    @peter_crafting_item$ = "WarlordBoots";
+    callsub S_Smithery_Item;
+    goto L_Close;
+
+S_Smithery_Item:
+    if (Zeny < @peter_crafting_money)
+        goto L_Peter_NotEnough_Zeny;
+    if (countitemcolor("IronIngot") < @peter_crafting_iron_ingot)
+        goto L_Peter_NotEnough_Ingot;
+    if (countitemcolor("Coal") < @peter_crafting_coal)
+        goto L_Peter_NotEnough_Coal;
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Peter_TooMany;
+    Zeny = Zeny - @peter_crafting_money;
+    delitem "IronIngot", @peter_crafting_iron_ingot;
+    delitem "Coal", @peter_crafting_coal;
+    getitem @peter_crafting_item$, 1;
+    mes "[Peter]";
+    mes "\"Here you go!\"";
+    return;
+
+L_Peter_NotEnough_Zeny:
+    mes "[Peter]";
+    mes "\"You don't have enough gold.\"";
+    goto L_Close;
+
+L_Peter_NotEnough_Ingot:
+    mes "[Peter]";
+    mes "\"You don't have enough ingots.\"";
+    goto L_Close;
+
+L_Peter_NotEnough_Coal:
+    mes "[Peter]";
+    mes "\"You don't have enough Coal.\"";
+    goto L_Close;
+
+L_Peter_TooMany:
+    mes "[Peter]";
+    mes "\"You have too much stuff. Please get rid of something if you want some armor.\"";
+    goto L_Close;
+
+L_Close:
+    // Clear all local variables
+    @peter_chain_mail_coal = 0;
+    @peter_chain_mail_ingot = 0;
+    @peter_chain_mail_money = 0;
+
+    @peter_light_plate_coal = 0;
+    @peter_light_plate_ingot = 0;
+    @peter_light_plate_money = 0;
+
+    @peter_warlord_plate_coal = 0;
+    @peter_warlord_plate_ingot = 0;
+    @peter_warlord_plate_money = 0;
+
+    @peter_warlord_boots_coal = 0;
+    @peter_warlord_boots_ingot = 0;
+    @peter_warlord_boots_money = 0;
+
+    @peter_crafting_coal = 0;
+    @peter_crafting_iron_ingot = 0;
+    @peter_crafting_money = 0;
+    @peter_crafting_item$ = "";
+    close;
+
+}

@@ -1,0 +1,139 @@
+
+009-2,67,79,0	script	Bernard	117,{
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    @state = ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if (@state >= 6) goto L_Done3;
+    if (@state >= 4) goto L_Done2;
+    if (@state == 3) goto L_Progress2;
+    if (@state == 2) goto L_Done1;
+    if (@state == 1) goto L_Progress;
+
+    @temp = rand(2);
+    if(@temp == 1) goto L_Opening1;
+    goto L_Opening0;
+
+L_Opening0:
+    mes "[Bernard]";
+    mes "\"The fields are crawling with maggots. Where is Mikhail? What is taking them so long?";
+    mes "Could I ask a favor of you?\"";
+    next;
+    goto L_Ask;
+
+L_Opening1:
+    mes "[Bernard]";
+    mes "\"The taste of maggots in soup is... unforgettable, they taste simply divine!";
+    mes "I sent someone to kill me some maggots and they have yet to return. Would you help me kill some?\"";
+    next;
+    goto L_Ask;
+
+L_Ask:
+    menu
+        "Yes.", L_Yes,
+        "No.", L_Close;
+
+L_Yes:
+    @temp = rand(2);
+    if(@temp == 1) goto L_Req1;
+    goto L_Req0;
+
+L_Req0:
+    mes "[Bernard]";
+    mes "\"Great!  I need a Roasted Maggot for my soup.\"";
+    next;
+    goto L_Set;
+
+L_Req1:
+    mes "[Bernard]";
+    mes "\"Bring me a Roasted Maggot. I'll give you something if you do.\"";
+    next;
+    goto L_Set;
+
+L_Set:
+    @state = 1;
+    callsub S_Update_Var;
+    mes "[Bernard]";
+    mes "\"Please bring it to me!\"";
+    goto L_Close;
+
+L_Progress:
+    if (countitemcolor("RoastedMaggot") < 1) goto L_NotEnough;
+    mes "[Bernard]";
+    mes "\"Oooh, perfect! It's perfect!";
+    mes "You brought me my Roasted Maggot!  Here, have some cake for your troubles.\"";
+    getinventorylist;
+    if (@inventorylist_count - (countitemcolor("RoastedMaggot") == 1) > 99 - (countitemcolor("CherryCake") == 0) ) goto L_TooMany;
+    delitem "RoastedMaggot", 1;
+    getexp 100, 0;
+    getitem "CherryCake", 5;
+    @state = 2;
+    callsub S_Update_Var;
+    next;
+    mes "\"Now let's see...\"";
+    goto L_Close;
+
+L_Progress2:
+    if (countitemcolor("MaggotSlime") < 3) goto L_NotEnough1;
+    mes "[Bernard]";
+    mes "\"Nice!  They're perfect, just perfect!";
+    mes "You brought me the 3 Maggot Slimes!  Here, have some beer as reward.\"";
+    getinventorylist;
+    if ((@inventorylist_count - (countitemcolor("MaggotSlime") == 3) > 99  - (countitemcolor("Beer") == 0) )) goto L_TooMany;
+    delitem "MaggotSlime", 3;
+    getexp 100, 0;
+    getitem "Beer", 3;
+    @state = 4;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_NotEnough:
+    mes "[Bernard]";
+    mes "\"Oh, please hurry and bring me a Roasted Maggot. I'm yearning for maggot soup!\"";
+    goto L_Close;
+
+L_NotEnough1:
+    mes "[Bernard]";
+    mes "\"Please do hurry and bring me 3 Maggot Slimes, so I can finish my soup!\"";
+    goto L_Close;
+
+L_Done1:
+    mes "[Bernard]";
+    mes "\"Thank you so much!\"";
+    mes "\"But... something is missing to make the soup creamy.\"";
+    next;
+    mes "\"I need 3 Maggot Slimes for that.\"";
+    mes "\"Bring them to me, and I'll give you something nice.\"";
+    @state = 3;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_Done2:
+    mes "[Bernard]";
+    mes "\"I didn't mention it before, but I also put beer in my soup. I hope you like beer as much as I do, because, you see...\"";
+    next;
+    mes "\"Beer is life!\"";
+    goto L_Close;
+
+L_Done3:
+    mes "[Bernard]";
+    mes "\"My help, Mikhail, finally returned with the slimes I needed.";
+    mes "I wonder what took him so long?\"";
+    goto L_Close;
+
+L_Close:
+    @temp = 0;
+    @state = 0;
+    close;
+
+L_TooMany:
+    next;
+    mes "[Bernard]";
+    mes "\"You don't have room for my reward. I'll wait until you do.\"";
+    goto L_Close;
+
+S_Update_Var:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    return;
+}

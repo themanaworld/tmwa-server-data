@@ -1,0 +1,230 @@
+
+function	script	XmasNaughty	{
+    @xmas_karma = ((XMASTIME & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    if((@xmas_karma - @karma_bonus) >= 0)
+        goto L_SetNaughty;
+    goto L_ResetNaughty;
+
+L_SetNaughty:
+    @xmas_karma = (@xmas_karma - @karma_bonus);
+    goto L_Return;
+
+L_ResetNaughty:
+    @xmas_karma = 0;
+    goto L_Return;
+
+L_Return:
+    XMASTIME = (XMASTIME & ~(NIBBLE_1_MASK) | (@xmas_karma << NIBBLE_1_SHIFT));
+    @karma_bonus = 0;
+    return;
+}
+
+function	script	XmasNice	{
+    @xmas_karma = ((XMASTIME & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    if((@xmas_karma + @karma_bonus) < 16)
+        goto L_SetNice;
+    goto L_ResetNice;
+
+L_SetNice:
+    @xmas_karma = (@karma_bonus + @xmas_karma);
+    goto L_Return;
+
+L_ResetNice:
+    @xmas_karma = 15;
+    goto L_Return;
+
+L_Return:
+    XMASTIME = (XMASTIME & ~(NIBBLE_1_MASK) | (@xmas_karma << NIBBLE_1_SHIFT));
+    @karma_bonus = 0;
+    return;
+}
+
+function	script	XmasXpReward	{
+    if (BaseLevel >= 10)
+        goto L_HigherLevel;
+    goto L_LowLevel;
+
+L_HigherLevel:
+    getexp ((BaseLevel / 10) * ($@xmas_base_bonus_xp * BaseLevel)), 0;
+    goto L_Return;
+
+L_LowLevel:
+    getexp ($@xmas_base_bonus_xp * BaseLevel), 0;
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function	script	XmasSetState	{
+    XMASTIME = (XMASTIME & ~(NIBBLE_0_MASK) | (@xmas_state << NIBBLE_0_SHIFT));
+    return;
+}
+
+function	script	XmasSetSide	{
+    XMASTIME = XMASTIME | $@xmas_side_bit;
+    return;
+}
+
+function	script	XmasSetRoute	{
+    XMASTIME = XMASTIME | $@xmas_route_bit;
+    return;
+}
+
+function	script	XmasThrowOut	{
+    XMASTIME = XMASTIME | $@xmas_thrown_out_bit;
+    return;
+}
+
+function	script	XmasSetBossStart	{
+    XMASTIME = XMASTIME | $@xmas_boss_start_bit;
+    return;
+}
+
+function	script	XmasSetBossHero	{
+    XMASTIME = XMASTIME | $@xmas_boss_hero_bit;
+    return;
+}
+
+function	script	XmasSetReward	{
+    @xmas_endgame = 0;
+    @xmas_reward_side = 0;
+    @xmas_reward_tally = 0;
+    if(@xmas_side)
+        goto L_SetSide;
+    goto L_NotSetSide;
+
+L_SetSide:
+    @xmas_reward_side = 1;
+    @xmas_reward_tally = (@xmas_reward_tally + ($@xmas_reward_max_karma - @xmas_karma));
+    goto L_SetRewardBonus;
+
+L_NotSetSide:
+    @xmas_reward_tally = (@xmas_reward_tally + @xmas_karma);
+    goto L_SetRewardBonus;
+
+L_SetRewardBonus:
+    if(@xmas_boss_hero)
+        @xmas_reward_tally = (@xmas_reward_tally + $@xmas_reward_hero_boss);
+    if(@xmas_all_helpers)
+        @xmas_reward_tally = (@xmas_reward_tally + $@xmas_reward_all_helpers);
+    if(@xmas_all_lists)
+        @xmas_reward_tally = (@xmas_reward_tally + $@xmas_reward_all_lists);
+    //formula should:
+    if (@xmas_reward_tally > 5)
+        @xmas_reward_lower_bound = 2 * @xmas_reward_tally - rand(5);
+    if (@xmas_reward_tally <= 5)
+        @xmas_reward_lower_bound = @xmas_reward_tally;
+    @xmas_reward_upper_bound = @xmas_reward_lower_bound + ((readparam(bLuk)) / 5);
+    @xmas_reward = (rand(@xmas_reward_lower_bound, @xmas_reward_upper_bound));
+    @xmas_reward_lower_bound = 0;
+    @xmas_reward_upper_bound = 0;
+    return;
+}
+
+function	script	XmasMainXpBpReward	{
+    callfunc "XmasSetReward";
+
+    if(BaseLevel >= 99)
+        goto L_EndGameReward;
+    goto L_LevelingReward;
+
+L_EndGameReward:
+    @xmas_bp_reward = 100 + rand(@xmas_reward, 2 * @xmas_reward);
+    BOSS_POINTS = BOSS_POINTS + @xmas_bp_reward;
+    message strcharinfo(0), "You gain " + @xmas_bp_reward + " Bosspoints, giving you a total of " + BOSS_POINTS + ".";
+    @xmas_bp_reward = 0;
+    return;
+
+L_LevelingReward:
+    if(@xmas_reward >= $@xmas_reward_tally_rare)
+        goto L_XmasLevel;
+    goto L_XmasExp;
+
+L_XmasLevel:
+    atcommand "@blvl 1";
+    atcommand "@l I was a good kid this year.";
+    return;
+
+L_XmasExp:
+    getexp ((@xmas_reward * BaseLevel * (BaseLevel + 10)) / 10), 0;
+    return;
+}
+
+function	script	XmasMainItemReward	{
+    callfunc "XmasSetReward";
+
+    if (($@xmas_time == $@xmas_reward_time) && ((@xmas_reward_start_state) || (@xmas_reward1_done_state)))
+        goto L_FinalGift;
+    if (($@xmas_time == $@xmas_reward_time) && ((@xmas_reward_done_state) || (@xmas_reward2_done_state)))
+        goto L_GotGift;
+    if ($@xmas_time == $@xmas_reward_time)
+        goto L_NoGift;
+    goto L_Return;
+
+L_GotGift:
+    mes "Hey, this is not for you!";
+    goto L_Return;
+
+L_NoGift:
+    mes "Oh someone got a present. Maybe you can get one too if help the right person?";
+    goto L_Return;
+
+L_FinalGift:
+    mes "[To: " + strcharinfo(0) + "]";
+    mes "[From: " + $@xmas_present_from$[@xmas_reward_side] + "]";
+    mes "O look, a present from " + $@xmas_present_from$[@xmas_reward_side];
+    next;
+    getinventorylist;
+    if (@inventorylist_count > 97)
+        goto L_FullInv;
+    @xmas_reward = (@xmas_reward + ((BaseLevel + 10)/10));
+    if (debug > 0)
+        message strcharinfo(0), "Reward variable: " + @xmas_reward;
+    @xmas_uncommon_slot1 = rand(getarraysize($@xmas_uncommon_reward$));
+    @xmas_uncommon_slot2 = rand(getarraysize($@xmas_uncommon_reward$));
+    if(@xmas_reward >= $@xmas_reward_tally_rare)
+        @xmas_reward_item$ = $@xmas_rare_reward$[@xmas_reward_side];
+    if(@xmas_reward >= $@xmas_reward_tally_common)
+        @xmas_reward_item1$ = $@xmas_uncommon_reward$[@xmas_uncommon_slot1];
+    @xmas_reward_item2$ = $@xmas_uncommon_reward$[@xmas_uncommon_slot2];
+    if(checkweight("Iten", 1) == 0)
+        goto L_FullInv;
+    if(@xmas_reward >= $@xmas_reward_tally_rare)
+        getitem @xmas_reward_item$, 1;
+    if(@xmas_reward >= $@xmas_reward_tally_common)
+        getitem @xmas_reward_item1$, 1;
+    getitem @xmas_reward_item2$, 1;
+    @xmas_uncommon_slot1 = 0;
+    @xmas_uncommon_slot2 = 0;
+    @xmas_reward_item$ = "";
+    @xmas_reward_item1$ = "";
+    @xmas_reward_item2$ = "";
+    if (@xmas_reward_start_state)
+        @xmas_state = $@xmas_reward2_done;
+    if (@xmas_reward1_done_state)
+        @xmas_state = $@xmas_reward_done;
+    callfunc "XmasSetState";
+    goto L_Return;
+
+L_FullInv:
+    mes "\"You have no place to put the present.\"";
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function	script	XmasCheckOld	{
+    if(XMASYEAR == $XMAS_TIME_KEY[5])
+        goto L_Return;
+    goto L_OldMatch;
+
+L_OldMatch:
+    XMASTIME = 0;
+    XMASYEAR = $XMAS_TIME_KEY[5];
+    goto L_Return;
+
+L_Return:
+    return;
+}

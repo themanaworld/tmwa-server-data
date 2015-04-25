@@ -1,0 +1,462 @@
+002-2,38,57,0	script	Stranger	192,{
+    @IRONINGOT = 5;
+    @PINKANTENNA = 21;
+    @Exp = 20000;
+    setarray @towelReq$, "WhiteHitchhikersTowel","RedHitchhikersTowel","GreenHitchhikersTowel","BlueHitchhikersTowel","YellowHitchhikersTowel","PurpleHitchhikersTowel","OrangeHitchhikersTowel","PinkHitchhikersTowel","TealHitchhikersTowel","LimeHitchhikersTowel","HitchhikersTowel";
+
+    if (FLAGS & FLAG_TOWEL_COMPLETED) goto L_Event_Done;
+    if ((gettimetick(2)-TUT_var < 6*7*86400) || (BaseLevel < 42)) //player must be created at least 6 weeks ago and at least level 42
+        goto L_No_Event;
+    if (FLAGS & FLAG_TOWEL_HelpED) goto L_Towel;
+
+    mes "[Stranger]";
+    mes "\"Hello, hello! It's great to see you. Maybe you can help me with a little problem I have.\"";
+    next;
+    mes "\"I need some materials to repair my spacesh- ahm, it's not important why I need it.\"";
+    next;
+    mes "\"Anyway, I'd be really happy if you can give me " + @IRONINGOT + " Iron Ingots and " + @PINKANTENNA + " Pink Antennas.\"";
+    next;
+    mes "\"Do you have that for me?\"";
+    menu
+        "Yeah, sure.",L_Items,
+        "No.",L_Close;
+
+L_Items:
+    if (countitemcolor("IronIngot") < @IRONINGOT) goto L_No_Item;
+    if (countitemcolor("PinkAntenna") < @PINKANTENNA) goto L_No_Item;
+    delitem "IronIngot", @IRONINGOT;
+    delitem "PinkAntenna", @PINKANTENNA;
+    getexp @Exp, 0;
+    FLAGS = FLAGS | FLAG_TOWEL_HelpED;
+
+    mes "[Stranger]";
+    mes "\"Great! Thank you!\"";
+    next;
+    mes "\"I have a lot of work to do now. But before you leave...\"";
+    next;
+    goto L_Towel;
+
+L_Towel:
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Full_Inv;
+    mes "[Stranger]";
+    mes "\"On May 25th it is a very special day - Towel Day.\"";
+    next;
+    mes "\"To celebrate this I'll ask you some questions about my favourite book, The Hitchhiker's Guide to the Galaxy. If you can answer them, I'll give you something very useful.\"";
+    next;
+    mes "";
+    mes "[Server]";
+    mes "The answers might need to have whitespaces.";
+    mes "If you're using a client which confirms your answer when pressing space, change this setting before continuing.";
+    mes "";
+    next;
+    mes "[Stranger]";
+    mes "\"The first one is easy.\"";
+    next;
+
+    setarray @easy_questions$,
+    "What two words are written in big friendly letters on the back cover?",
+    "What's the name of the paranoid robot?",
+    "What is the answer to life, the universe and everything?",
+    "What is the first name of the author of the hitchhikers guide?",
+    "What is the last name of the author of the hitchhikers guide?",
+    "Who is the male human protagonist?",
+    "Who is the female human protagonist?",
+    "According to the Guide, space is ____?",
+    "What is the name of the spaceship which was stolen by the president of the universe?",
+    "How many heads does Zaphod Beeblebrox have?";
+
+    setarray @easy_answers_amount,2,2,2,2,2,4,4,2,4,2;
+
+    @random = rand(10);
+    mes "\"" + @easy_questions$[@random] + "\"";
+    input @answer$;
+
+    if (@easy_answers_amount[@random] < 4)
+        goto L_Easy_Skip4;
+    @quizparam$ = "towelanswer0" + @random + "d";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Easy;
+    goto L_Easy_Skip4;
+
+L_Easy_Skip4:
+    if (@easy_answers_amount[@random] < 3)
+        goto L_Easy_Skip3;
+    @quizparam$ = "towelanswer0" + @random + "c";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Easy;
+    goto L_Easy_Skip3;
+
+L_Easy_Skip3:
+    @quizparam$ = "towelanswer0" + @random + "b";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Easy;
+
+    @quizparam$ = "towelanswer0" + @random + "a";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Easy;
+
+    goto L_Wrong_Answer;
+
+L_Right_Answer_Easy:
+    mes "[Stranger]";
+    mes "\"You're absolutely right. The next one will be more tricky.\"";
+    next;
+
+    setarray @medium_questions$,
+    "What is the name of the rock group claiming to be the loudest band in the universe?",
+    "What star is near Ford's home planet?",
+    "Which country does the human protagonist come from?",
+    "What is the name of the computer on The Heart of Gold?",
+    "What color is a Babel Fish?",
+    "What did the bowl of petunias think?",
+    "What body orifice should a babel fish be inserted in to work properly?",
+    "What is the name of the super computer?",
+    "What were the second most intelligent creatures on Earth?",
+    "What race creates the worst poetry in universe?",
+    "What is the name of the Vogon home planet?",
+    "What is the name of the Restaurant at the End of the Universe?";
+
+    setarray @medium_answers_amount,2,2,2,2,2,3,2,2,4,4,2,2;
+
+    @random = rand(12);
+    mes "\"" + @medium_questions$[@random] + "\"";
+    input @answer$;
+
+    if (@medium_answers_amount[@random] < 4)
+        goto L_Medium_Skip4;
+
+    @quizparam$ = "towelanswer1" + @random + "d";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Medium;
+    goto L_Medium_Skip4;
+
+L_Medium_Skip4:
+    if (@medium_answers_amount[@random] < 3)
+        goto L_Medium_Skip3;
+    @quizparam$ = "towelanswer1" + @random + "c";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Medium;
+    goto L_Medium_Skip3;
+
+L_Medium_Skip3:
+    @quizparam$ = "towelanswer1" + @random + "b";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Medium;
+
+    @quizparam$ = "towelanswer1" + @random + "a";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Medium;
+
+    goto L_Wrong_Answer;
+
+L_Right_Answer_Medium:
+    mes "[Stranger]";
+    mes "\"Not bad, not bad. Let's see if you can answer an even more difficult one.\"";
+    next;
+
+    setarray @hard_questions$,
+    "Drinking what drink is like having your brain smashed out by a slice of lemon wrapped round a large gold brick?",
+    "How many pints of beers should you drink before hitchhiking?",
+    "What initials are carved into Zaphod Beeblebrox's brain?",
+    "What is Ford Prefect's nickname?",
+    "Who is responsible for the fjords of Norway?",
+    "What game is played on earth as a relict of memories to an ancient war?",
+    "What is the name of the triple-breasted whore from Eroticon VI?",
+    "Who will insult every living being in the universe, because he is immortal and getting bored?",
+    "What is the name of the piteous creature that is continually reincarnated and subsequently killed, each time unknowingly, by Arthur Dent?";
+
+    setarray @hard_answers_amount,4,2,2,2,2,2,2,4,2;
+
+    @random = rand(9);
+    mes "\"" + @hard_questions$[@random] + "\"";
+    input @answer$;
+
+    if (@hard_answers_amount[@random] < 4)
+        goto L_Hard_Skip4;
+    @quizparam$ = "towelanswer2" + @random + "d";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Hard;
+    goto L_Hard_Skip4;
+
+L_Hard_Skip4:
+    if (@hard_answers_amount[@random] < 3)
+        goto L_Hard_Skip3;
+    @quizparam$ = "towelanswer2" + @random + "c";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Hard;
+    goto L_Hard_Skip3;
+
+L_Hard_Skip3:
+    @quizparam$ = "towelanswer2" + @random + "b";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Hard;
+
+    @quizparam$ = "towelanswer2" + @random + "a";
+    callfunc "StrangerQuiz";
+    if (("###" + @answer$ == @quizanswer$))
+        goto L_Right_Answer_Hard;
+
+    goto L_Wrong_Answer;
+
+L_Right_Answer_Hard:
+    mes "[Stranger]";
+    mes "\"Unbelievable! You're really a wise person.\"";
+    next;
+    mes "\"One last question, but this shouldn't be a problem for you.\"";
+    next;
+    mes "\"What is the most important item for every hitchhiker to have?\"";
+    input @answer$;
+    if (@answer$ != "Towel" && @answer$ != "towel")
+        goto L_Wrong_Answer;
+
+    mes "[Stranger]";
+    mes "\"There you are! A towel is really the most important item for a hitchhiker to have.\"";
+    next;
+    mes "\"Please take this.\""; // no full inventory check, this is done before the game
+    FLAGS = FLAGS | FLAG_TOWEL_COMPLETED;
+    next;
+    goto L_Explain;
+
+L_Explain:
+    mes "[Stranger]";
+    mes "\"This towel is even more useful than usual towels are. If you change its color, it uses a special techno-, ahm, let's say, it can help you to get to other places.\"";
+    next;
+    mes "\"Bring me some powder made from gemstones and a bottle of water, and I can prepare it for you.\"";
+    next;
+    mes "\"Depending on the color it will bring you to different places. It might wear out after a while and it'll loose its color, but I can prepare it for you again.\"";
+    next;
+    mes "\"Since I'm not familar with this plane-, ahm, with this area, I can't tell which places you will end up in.\"";
+    goto L_Close;
+
+L_No_Event:
+    mes "[Stranger]";
+    mes "\"Hello. Isn't this a beautiful place?\"";
+    next;
+    mes "\"And it really comes in handy that I have my towel with me. A towel is about the most massively useful thing an inte- ahm, a person can have.\"";
+    next;
+    mes "\"You can read more about that in my favourite book, 'The Hitchhiker's Guide to the Galaxy'.\"";
+    if (FLAGS & FLAG_TOWEL_COMPLETED)
+        menu
+            "Thanks for the advice.",L_Close,
+            "I have my towel with me too.",L_Dye;
+    goto L_Close;
+
+L_Dye:
+    mes "[Stranger]";
+    mes "\"Wonderful! Let me have a look.\"";
+    mes "He's taking a very interested look at your towel.";
+    next;
+    mes "[Stranger]";
+    mes "\"I'm impressed. This is not an usual towel.\"";
+    next;
+    menu
+        "Oh? Can you explain about it?",L_Explain,
+        "I know. Could you dye it for me?",L_StartDyeTowel,
+        "It's great, isn't it? I have to go now.",L_Close;
+
+L_No_Item:
+    mes "[Stranger]";
+    mes "\"Hu? It seems you haven't.\"";
+    goto L_Close;
+
+L_Wrong_Answer:
+    mes "[Stranger]";
+    mes "\"Nah, that's wrong. Come back if you want to try again.\"";
+    goto L_Close;
+
+L_Event_Done:
+    mes "[Stranger]";
+    mes "\"Ah, welcome back. Thanks again for your help.\"";
+    next;
+    mes "\"Shall I dye your towel?\"";
+    menu
+        "That would be great!", L_StartDyeTowel,
+        "No, thanks.", L_Close;
+
+L_StartDyeTowel:
+    mes "[Stranger]";
+    mes "\"Alright, which color do you want?\"";
+    menu
+        "Red",L_Red,
+        "Yellow",L_Yellow,
+        "White",L_White,
+        "Blue",L_Blue,
+        "Green",L_Green,
+        "Purple",L_Purple,
+        "Orange",L_Orange,
+        "Pink",L_Pink,
+        "Lime",L_Lime,
+        "Teal",L_Teal,
+        "I changed my mind.", L_Close;
+
+L_White:
+    // Koga
+    @warpTowelName$ = "WhiteHitchhikersTowel";
+    setarray @towelPowder$, "DiamondPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
+
+L_Red:
+    // Barbarians
+    @warpTowelName$ = "RedHitchhikersTowel";
+    setarray @towelPowder$, "RubyPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
+
+L_Green:
+    // Candor
+    @warpTowelName$ = "GreenHitchhikersTowel";
+    setarray @towelPowder$, "EmeraldPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
+
+L_Blue:
+    // Blue Sages
+    @warpTowelName$ = "BlueHitchhikersTowel";
+    setarray @towelPowder$, "SapphirePowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
+
+L_Yellow:
+    // Tulimshar Mines
+    @warpTowelName$ = "YellowHitchhikersTowel";
+    setarray @towelPowder$, "TopazPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
+
+L_Purple:
+    // Dimonds Inn
+    @warpTowelName$ = "PurpleHitchhikersTowel";
+    setarray @towelPowder$, "AmethystPowder";
+    setarray @towelPowderCnt, 2;
+    goto L_DyeChecks;
+
+L_Orange:
+    // Graveyard
+    @warpTowelName$ = "OrangeHitchhikersTowel";
+    setarray @towelPowder$, "RubyPowder", "TopazPowder";
+    setarray @towelPowderCnt, 1, 1;
+    goto L_DyeChecks;
+
+L_Pink:
+    // Terranite Cave
+    @warpTowelName$ = "PinkHitchhikersTowel";
+    setarray @towelPowder$, "RubyPowder", "DiamondPowder";
+    setarray @towelPowderCnt, 1, 1;
+    goto L_DyeChecks;
+
+L_Teal:
+    // Mana Seed
+    @warpTowelName$ = "TealHitchhikersTowel";
+    setarray @towelPowder$, "EmeraldPowder", "SapphirePowder";
+    setarray @towelPowderCnt, 1, 1;
+    goto L_DyeChecks;
+
+L_Lime:
+    // Panchua
+    @warpTowelName$ = "LimeHitchhikersTowel";
+    setarray @towelPowder$, "EmeraldPowder", "TopazPowder";
+    setarray @towelPowderCnt, 1, 1;
+    goto L_DyeChecks;
+
+L_DyeChecks:
+    mes "[Stranger]";
+    mes "\"Ok, I'll need a bottle of water first.\"";
+    next;
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Full_Inv;
+    if (countitemcolor("BottleOfWater") < 1) goto L_No_Water;
+    @powderCheckCount = 0;
+    goto L_PowderChecks;
+
+L_PowderCheckAgain:
+    mes "[Stranger]";
+    mes "\"Now I need " + @towelPowderCnt[@powderCheckCount] + "  " + @towelPowder$[@powderCheckCount]  + ".\"";
+    next;
+    if((@powderCheckCount + 1) == getarraysize(@towelPowder$))
+        goto L_TowelChecks;
+    @powderCheckCount = (@powderCheckCount + 1);
+    goto L_PowderChecks;
+
+L_PowderChecks:
+    if (countitemcolor(@towelPowder$[@powderCheckCount]) < @towelPowderCnt[@powderCheckCount])
+        goto L_No_Powder;
+    goto L_PowderCheckAgain;
+
+L_TowelCheckAgain:
+    @towelCheckCount = (@towelCheckCount + 1);
+    if(@towelCheckCount >= getarraysize(@towelReq$))
+        goto L_No_Towel;
+    goto L_TowelChecks;
+
+L_TowelChecks:
+    if (countitemcolor(@towelReq$[@towelCheckCount]) > 0)
+        goto L_DeletePowder;
+    goto L_TowelCheckAgain;
+
+L_DeleteAgain:
+    @powderCheckCount = (@powderCheckCount - 1);
+    goto L_DeletePowder;
+
+L_DeletePowder:
+    delitem @towelPowder$[@powderCheckCount], @towelPowderCnt[@powderCheckCount];
+    if (@powderCheckCount)
+        goto L_DeleteAgain;
+    goto L_DyeTowel;
+
+L_DyeTowel:
+    delitem @towelReq$[@towelCheckCount], 1;
+    callfunc "MultiWarpTowel";
+    delitem "BottleOfWater", 1;
+    getitem @warpTowelName$, 1;
+    mes "He takes your towel, the water and the gem powder, then he turns away and does something you can't see. After a few minutes, he turns to you again.";
+    next;
+    mes "[Stranger]";
+    mes "\"Done! It'll use its color after being used, but just come back and I can dye it again for you.\"";
+    goto L_Close;
+
+L_No_Water:
+    mes "[Stranger]";
+    mes "\"You don't have water.\"";
+    goto L_Close;
+
+L_No_Powder:
+    mes "[Stranger]";
+    mes "\"You need to bring me enough gem powder in that color. Maybe someone used to mining can help you with that.\"";
+    goto L_Close;
+
+L_No_Towel:
+    mes "[Stranger]";
+    mes "\"Where's your towel? It is really useful, you should always keep it with you.\"";
+    goto L_Close;
+
+L_Full_Inv:
+    mes "[Stranger]";
+    mes "\"You carry a lot of stuff with you, don't you? Maybe you should get rid of something.\"";
+    goto L_Close;
+
+L_Close:
+    @IRONINGOT = 0;
+    @PINKANTENNA = 0;
+    @Exp = 0;
+    @random = 0;
+    @quizparam$ = "";
+    @warpTowelName$ = "";
+    @powderCheckCount = 0;
+    @towelCheckCount = 0;
+    cleararray @towelPowder$, "", getarraysize(@towelPowder$);
+    cleararray @towelPowderCnt, "", getarraysize(@towelPowderCnt);
+    close;
+}

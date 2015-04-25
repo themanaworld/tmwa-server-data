@@ -1,0 +1,252 @@
+
+008-1,101,30,0	script	Hinnak	142,{
+    callfunc "ClearVariables";
+
+    @inspector = ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    if (@inspector == 10) goto L_NohMask;
+    goto L_No_NohMask;
+
+L_No_NohMask:
+    @state = ((QUEST_Hurnscald & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+
+    if (@state == 1) goto L_Exchange;
+    if (@state == 2) goto L_ThanksAgain;
+    if (getequipid(equip_head) == 751) goto L_Intro_Hat;
+
+    mes "[Farmer Hinnak]";
+    mes "\"Argh! I hate them! I @#$% hate them! I @#$% hate these @#$% pinkies!\"";
+    next;
+    menu
+        "You need some anger control therapy.", L_Close,
+        "Why do you hate them?", L_Reason;
+
+L_Intro_Hat:
+    mes "The farmer lunges at you with a farming implement.";
+    next;
+    heal -50, 0;
+    menu
+        "I'm out of here.", L_Close,
+        "Whoa, what are you doing?", L_Intro_Hat_Explain;
+
+L_Intro_Hat_Explain:
+    mes "[Farmer Hinnak]";
+    mes "\"Sorry, you look like a pinkie. They've been destroying my fields, and I guess I got a bit worked up.\"";
+    next;
+    goto L_Help;
+
+L_Reason:
+    mes "[Farmer Hinnak]";
+    mes "\"These @#$% beasts are jumping around in my fields destroying all my harvest.";
+    mes "But they are too fast. I can't catch them.\"";
+    next;
+    menu
+        "Want me to help you?", L_Help,
+        "Well, life ain't fair.", L_Close;
+
+L_Help:
+    mes "[Farmer Hinnak]";
+    mes "\"Yes, you look quite fast. Maybe you can catch some of them. That will pay them a lesson.";
+    mes "Slay some of them and bring me 10 of their antennae.\"";
+    @state = 1;
+    callsub S_Update_Mask;
+    next;
+    menu
+        "Sure, I'm on my way", L_Close,
+        "How much is this worth to you?", L_Reward;
+
+L_Reward:
+    mes "[Farmer Hinnak]";
+    mes "\"Well, I can't offer you much. But I got an old scythe laying around. Maybe you can use it as a weapon.\"";
+    goto L_Close;
+
+L_Exchange:
+    if (getequipid(equip_head) != 751)
+        goto L_Exchange_Start;
+    mes "The farmer glares at your hat.";
+    next;
+    goto L_Exchange_Start;
+
+L_Exchange_Start:
+    mes "[Farmer Hinnak]";
+    mes "\"Have you got the 10 antennae?\"";
+    next;
+    menu
+        "Not yet, but I am working on it.", L_Close,
+        "Sure, here they are!", L_Exchange_Exchange;
+
+L_Exchange_Exchange:
+    if (countitemcolor("PinkAntenna") < 10)
+        goto L_Exchange_Notenough;
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitemcolor("PinkAntenna") > 10)
+        goto L_Exchange_TooMany;
+    delitem "PinkAntenna", 10;
+    getitem "Scythe", 1;
+    @state = 2;
+    callsub S_Update_Mask;
+    mes "[Farmer Hinnak]";
+    mes "\"Thank you very much. I've got something for you. My old scythe. Maybe you can use it as a weapon. It is a bit cumbersome but its strikes are deadly.\"";
+    goto L_Close;
+
+L_Exchange_Notenough:
+    mes "[Farmer Hinnak]";
+    mes "\"It doesn't look like you do.\"";
+    goto L_Close;
+
+L_Exchange_TooMany:
+    mes "[Farmer Hinnak]";
+    mes "\"Looks like you don't have room for this. Come back later to receive your reward. Hold on to the antennea until then.\"";
+    goto L_Close;
+
+L_ThanksAgain:
+    if (getequipid(equip_head) == 751)
+        goto L_ThanksHat;
+    mes "[Farmer Hinnak]";
+    mes "\"Good to see you again, and thanks again for helping me with the pinkies!\"";
+    next;
+    goto L_ThanksMenu;
+
+L_ThanksHat:
+    mes "[Farmer Hinnak]";
+    mes "\"That better be a trophy on your head.\"";
+    menu
+        "It is.", L_Next;
+
+L_Next:
+    mes "[Farmer Hinnak]";
+    mes "\"Good then. Thanks for your help with the pinkies.\"";
+    goto L_ThanksMenu;
+
+L_ThanksMenu:
+    menu
+        "Sure, any time!", L_Next1,
+        "Anything else you want me to do?", L_Next1,
+        "You're welcome. Bye!", L_Bye;
+
+L_Next1:
+    mes "[Farmer Hinnak]";
+    mes "\"Actually, it's been a long day. If it's no trouble, could you get me a beer?\"";
+    next;
+    menu
+        "Here you are.", L_GiveBeer,
+        "Sure, I'll go get one. Bye!", L_Bye,
+        "You shouldn't drink while working!", L_Next2;
+
+L_Next2:
+    mes "[Farmer Hinnak]";
+    mes "\"Well, I'm done for the day, and I'm quite old enough to decide when I can have a beer, thank you!\"";
+    next;
+    menu
+        "Sorry... here you are.", L_GiveBeer,
+        "I don't have any.", L_NoBeer;
+
+L_GiveBeer:
+    if (countitemcolor("Beer") < 1)
+        goto L_NoBeer;
+    delitem "Beer", 1;
+    mes "[Farmer Hinnak]";
+    mes "Hinnak takes a sip.";
+    mes "\"Aaah!  Nothing like a well-deserved beer after a long day of tending the crops!\"";
+    mes "\"Thanks, that was very kind of you!\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "He takes another sip.";
+    mes "\"Thanks!  You know, I had the strangest thing happen to me. I had this patch of ground that was really clumpy; lots of clay, you see.\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"Right over there.\"";
+    mes "He points to a stretch of soft, raked ground.";
+    mes "\"Looks much better now, doesn't it?  But how I got there is kind-a scary...\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"I'd been trying to break it up for a while, but that kind of work is a pain. So my wife said that I should go and see the witch, just in case she knows something.\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"And sure enough I ask the witch, and she has a look at it. 'Nothing I can do', she says, 'but I can ask a friend'.\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"So the next day another witch shows up. Gorgeous woman, but when she looked at me, the scares went scuttling down my spine....\"";
+    mes "\"First thing she asked was if I'm a farmer. Said her friend had told her that I needed help.\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"I show her what the problem is, and she tells me to go inside and wait.\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"Hinnak drains his beer in one long sip, then hesitates.";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"So I go inside. I'm barely in when it starts raining outside, pouring cats and mouboos!\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"Not so weird, perhaps, except that it was been bright and sunny just a second before!  So I rush out, my wife telling me to leave the witch alone, and I see her standing there in the middle of the rain...\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"None of the raindrops touched her, as if they was afraid!\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"Then she yells out some gobbledygook word, and out of the ground there comes a swarm of maggots, crawling and digging and climbing over each other's backs...\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"And then she turns to me!  Seeing her stare, for a moment there I think that she'll turn me into a pinkie, for sure...\"";
+    next;
+    mes "[Farmer Hinnak]";
+    mes "\"But all she says is, 'if you'd stayed inside, you wouldn't be wet now'.\"";
+    next;
+    menu
+        "Hahaha!", L_Sagatha_hahaha,
+        "Whoah, scary...", L_Sagatha_scary,
+        "What was that gobbledygook word?", L_Sagatha_word,
+        "I better go now.", L_Bye;
+
+L_Sagatha_hahaha:
+    mes "[Farmer Hinnak]";
+    mes "\"Yeah, funny now... But you should've seen that stare!  Ah, well, never mind.\"";
+    goto L_Close;
+
+L_Sagatha_scary:
+    mes "[Farmer Hinnak]";
+    mes "\"Yeah, you could say that...\"";
+    mes "He stares into his empty beer jug, as if wishing it weren't empty yet.";
+    goto L_Close;
+
+L_Sagatha_word:
+    mes "[Farmer Hinnak]";
+    mes "\"Oh, I can't be sure... but something like '" + getspellinvocation("summon-maggots") + "', I think.\"";
+    goto L_Close;
+
+L_NoBeer:
+    mes "[Farmer Hinnak]";
+    mes "\"Ah... no beer?  Oh well.\"";
+    goto L_Close;
+
+L_Bye:
+    mes "[Farmer Hinnak]";
+    mes "\"Bye!\"";
+    goto L_Close;
+
+L_NohMask:
+    menu
+        "Did you see anyone in a mask come by here at night?", L_NohMask_Mask,
+        "Did you see anyone with a large satchel come by here at night?", L_NohMask_Satchel,
+        "Hello.", L_No_NohMask;
+
+L_NohMask_Mask:
+    mes "[Farmer Hinnak]";
+    mes "\"No. It tends to be too dark to see a mask.\"";
+    goto L_Close;
+
+L_NohMask_Satchel:
+    mes "[Farmer Hinnak]";
+    mes "\"Yes, I saw someone with a large sack on their back go to the mining camp.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @inspector = 0;
+    close;
+
+S_Update_Mask:
+    QUEST_Hurnscald = (QUEST_Hurnscald & ~(NIBBLE_1_MASK)) | (@state << NIBBLE_1_SHIFT);
+    return;
+}

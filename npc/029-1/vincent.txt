@@ -1,0 +1,147 @@
+
+029-1,108,108,0	script	Vincent Debug	113,{
+    mes "[Vincent Debug]";
+    mes "Reset?";
+    menu
+        "Yes.", L_Reset,
+        "No.", L_Close;
+
+L_Reset:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_2_MASK) | (0 << NIBBLE_2_SHIFT));
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "Vincent Debug";
+    end;
+}
+029-1,107,110,0	script	Vincent	113,{
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+    @halloween_npc_id = $@halloween_npc_vincent;
+    callfunc "TrickOrTreat";
+
+    @state = ((QUEST_SouthTulimshar & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+
+    if (@state >= 2) goto L_Done;
+    if (@state == 1) goto L_Progress;
+    goto L_Con_Vin_First;
+
+L_Con_Vin_First:
+    mes "[Vincent]";
+    mes "\"I'm making an action figure. I'm almost done with it.\"";
+    next;
+
+    @temp = rand(4);
+    if(@temp == 1) goto L_Opening2;
+    if(@temp == 2) goto L_Opening3;
+    if(@temp == 3) goto L_Opening4;
+    goto L_Opening1;
+
+L_Opening1:
+    mes "\"I just need 5 more Bug Legs to finish my action figure!\"";
+    next;
+    goto L_Ask;
+
+L_Opening2:
+    mes "\"This maggot action figure is awesome! I just need to attach 5 Bug Legs.\"";
+    next;
+    goto L_Ask;
+
+L_Opening3:
+    mes "\"This is a great action figure! A must have! All I need is a few parts...\"";
+    next;
+    goto L_Ask;
+
+L_Opening4:
+    mes "\"Can you get me 5 Bug Legs? I need them to replace the action figure parts.\"";
+    next;
+    goto L_Ask;
+
+L_Ask:
+    mes "\"Will you help me find 5 Bug Legs?\"";
+    next;
+    menu
+        "Yes.", L_Sure,
+        "No.", L_Close;
+
+L_Sure:
+    @state = 1;
+    callsub S_Update_Var;
+    @temp = rand(4);
+    if(@temp == 1) goto L_Req2;
+    if(@temp == 2) goto L_Req3;
+    if(@temp == 3) goto L_Req4;
+    goto L_Req1;
+
+L_Req1:
+    mes "[Vincent]";
+    mes "\"Thank you!\"";
+    next;
+    goto L_Wait;
+
+L_Req2:
+    mes "[Vincent]";
+    mes "\"I don't know how to thank you enough!\"";
+    next;
+    goto L_Wait;
+
+L_Req3:
+    mes "[Vincent]";
+    mes "\"I will thank you when I get them!\"";
+    next;
+    goto L_Wait;
+
+L_Req4:
+    mes "[Vincent]";
+    mes "\"I'm sure I will give a small reward.\"";
+    next;
+    goto L_Wait;
+
+L_Wait:
+    mes "\"Now please go get me 5 Bug Legs.\"";
+    goto L_Close;
+
+L_Progress:
+    if(countitemcolor("BugLeg") >= 5)
+        goto L_Have;
+    mes "[Vincent]";
+    mes "\"Please help me collect 5 Bug Legs! I need them to complete my action figure.\"";
+    goto L_Close;
+
+L_Have:
+    mes "[Vincent]";
+    mes "\"Excellent! Finally I can complete the model!!\"";
+    next;
+    if(countitemcolor("BugLeg") < 5)
+        goto L_Progress;
+    delitem "BugLeg", 5;
+    getexp 50, 0;
+    Zeny = Zeny + 1000;
+    @state = 2;
+    callsub S_Update_Var;
+
+    mes "[Vincent]";
+    mes "\"Here you go, a little of my appreciation!\"";
+    mes "";
+    mes "[1000 gold]";
+    goto L_Close;
+
+L_Done:
+    mes "[Vincent]";
+    mes "\"Thanks for your help!\"";
+    goto L_Close;
+
+L_Close:
+    @temp = 0;
+    @state = 0;
+    close;
+
+S_Update_Var:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(NIBBLE_2_MASK) | (@state << NIBBLE_2_SHIFT));
+    return;
+}

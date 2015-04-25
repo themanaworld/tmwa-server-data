@@ -1,0 +1,96 @@
+function	script	EvilObelisk	{
+    mes "[Evil Obelisk]";
+    mes "(A mystical aura surrounds this stone. It seems to crave money.)";
+    next;
+
+    @Cost_jacko = 6500;
+    @Cost_gy1 = 4000;
+    @Cost_gy2 = 3000;
+    @Cost_skull = 2800;
+    @Cost_snake = 2500;
+
+    menu
+        "Don't pay it anything.", L_Close,
+        "Pay it " + @Cost_jacko + " gold.", L_JACKO,
+        "Pay it " + @Cost_gy1 + " gold.", L_GRAVEYARD1,
+        "Pay it " + @Cost_gy2 + " gold.", L_GRAVEYARD2,
+        "Pay it " + @Cost_skull + " gold.", L_SKULL,
+        "Pay it " + @Cost_snake + " gold.", L_SNAKE;
+
+L_JACKO:
+    if (Zeny < @Cost_jacko)
+        goto L_NotEnough;
+    Zeny = Zeny - @Cost_jacko;
+    @mob_id = 1022;
+    @mob_count = rand(1,2);
+    goto L_Summon;
+
+L_GRAVEYARD1:
+    if (Zeny < @Cost_gy1)
+        goto L_NotEnough;
+    @temp = rand(2);
+    if(@temp == 0)
+        set @mob_id, 1036;  // Zombie
+    if(@temp == 1)
+        set @mob_id, 1045;  // Fallen
+    @mob_count = rand(1,2);
+    Zeny = Zeny - @Cost_gy1;
+    goto L_Summon;
+
+L_GRAVEYARD2:
+    if (Zeny < @Cost_gy2)
+        goto L_NotEnough;
+    @temp = rand(2);
+    if(@temp == 0)
+        set @mob_id, 1044;  // Lady Skelly
+    if(@temp == 1)
+        set @mob_id, 1043;  // Normal Skelly
+    @mob_count = rand(1,2);
+    Zeny = Zeny - @Cost_gy2;
+    goto L_Summon;
+
+L_SKULL:
+    if (Zeny < @Cost_skull)
+        goto L_NotEnough;
+    @temp = rand(2);
+    if(@temp == 0)
+        set @mob_id, 1024;  // Poison
+    if(@temp == 1)
+        set @mob_id, 1023;  // Fire
+    @mob_count = rand(1,4);
+    Zeny = Zeny - @Cost_skull;
+    goto L_Summon;
+
+L_SNAKE:
+    if (Zeny < @Cost_snake)
+        goto L_NotEnough;
+    @temp = rand(4);
+    if(@temp == 0)
+        set @mob_id, 1034;  // Grass
+    if(@temp == 1)
+        set @mob_id, 1026;  // Mnt.
+    if(@temp == 2)
+        set @mob_id, 1010;  // Normal
+    if(@temp == 3)
+        set @mob_id, 1021;  // Cave
+    @mob_count = rand(1,4);
+    Zeny = Zeny - @Cost_snake;
+    goto L_Summon;
+
+L_Summon:
+    areamonster @map$, @x0, @y0, @x1, @y1, "Evil", @mob_id, @mob_count;
+    goto L_Close;
+
+L_NotEnough:
+    mes "You don't have that much money";
+    goto L_Close;
+
+L_Close:
+    @Cost_jacko = 0;
+    @Cost_gy1 = 0;
+    @Cost_gy2 = 0;
+    @Cost_skull = 0;
+    @Cost_snake = 0;
+    return;
+
+}

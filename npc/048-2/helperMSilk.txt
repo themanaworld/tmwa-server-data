@@ -1,0 +1,87 @@
+
+048-2,104,103,0	script	Janika	363,{
+    @investigate = ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    @silk_amount = 80;
+    @silk_exp = 10000;
+
+    if (QUEST_BlueSage & $@Q_BlueSageMaterialSilk) goto L_Done;
+    if (BaseLevel >= $@Q_BlueSageMinimumLevel) goto L_Quest;
+
+    mes "[Janika]";
+    mes "\"This is going to be difficult... oh, hello. I'm working on recreating some of the books that were destroyed.\"";
+    goto L_Close;
+
+L_Quest:
+    mes "[Janika]";
+    mes "\"This is going to be difficult...";
+    mes "Oh, hello. You don't have " + @silk_amount + " Silk Cocoons with you, do you? I need them for the book covers and binding of some of the more valuable books we're trying to recreate.\"";
+    menu
+        "I have!",L_TurnIn,
+        "I haven't, but I can try to get some.",L_Investigate,
+        "No.",L_Investigate;
+
+L_TurnIn:
+    if(countitemcolor("SilkCocoon") < @silk_amount)
+        goto L_NoItem;
+    delitem "SilkCocoon", @silk_amount;
+    getexp @silk_exp, 0;
+    QUEST_BlueSage = (QUEST_BlueSage | $@Q_BlueSageMaterialSilk);
+    mes "[Janika]";
+    mes "\"Excellent! This is exactly what I need. Thanks a lot. I'll tell Nikolai about your generosity.\"";
+    goto L_Investigate;
+
+L_Done:
+    mes "[Janika]";
+    mes "\"Thanks for the Silk Cocoons. With these the new books are going to be exquisite.\"";
+    goto L_Investigate;
+
+L_NoItem:
+    mes "[Janika]";
+    mes "\"Are you kidding? You don't have it!\"";
+    goto L_Close;
+
+L_Investigate:
+    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
+    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
+    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    goto L_Close;
+
+L_Ask_Visitor:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "I need to leave.",L_Close;
+
+L_Ask_Helper:
+    menu
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "See you later.",L_Close;
+
+L_Ask_Both:
+    menu
+        "Can you tell me anything about the visitor with the mask?",L_Visitor,
+        "What's your opinion of Peetu and how he does his work?",L_Helper,
+        "Bye.",L_Close;
+
+L_Visitor:
+    mes "[Janika]";
+    mes "\"Oh, I know who you mean! That impertinent person came over in the workshop area and fiddled about with all kinds of things here! Such a rude person! Didn't he understand that we had delicate things going on here? We had to send him back to the library area several times.\"";
+    next;
+    mes "She shakes her head.";
+    mes "\"Sometimes I think it'd be better not to allow visitors here. But the sages set a high value on keeping contact with the population. Politics.\"";
+    if ((@investigate != 3) && (@investigate != 6) && (@investigate != 9))
+        goto L_Close;
+    @investigate = @investigate + 1;
+    callfunc "updateBlueSageInvestigate";
+    goto L_Close;
+
+L_Helper:
+    mes "[Janika]";
+    mes "\"Mh, I don't know him closely.\"";
+    goto L_Close;
+
+L_Close:
+    @investigate = 0;
+    @silk_amount = 0;
+    @silk_exp = 0;
+    close;
+}

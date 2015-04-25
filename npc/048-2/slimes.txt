@@ -1,0 +1,603 @@
+
+
+
+048-2,181,95,0	script	#Slime0Trigger	32767,2,2,{
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    if (mobcount("048-2", "#Slime0::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime0_Spawn = 0;
+
+    // if finished or haven't started yet or spawn already active or spawn already done, do nothing
+    if ((@slimes == 0) || ($@BlueSageSlime0_Spawn > 0) || (QUEST_BlueSage & $@Q_BlueSageSlime0))
+        end;
+
+    @spawnSlime0 = 0;
+    @chance = rand(20);
+    if (@chance < 6)
+        goto L_End;
+    if (@chance < 7)
+        goto L_BlowUp;
+
+    $@Slime0VictimID = getcharid(3);
+    donpcevent "#Slime0::OnSpawn";
+    goto L_End;
+
+L_BlowUp:
+    percentheal -100, 0;
+    message strcharinfo(0), "A slime dripped out of a bookshelf right in front of you and stepped onto it. It exploded. That hurt.";
+    goto L_End;
+
+L_End:
+    @chance = 0;
+    @slimes = 0;
+    end;
+}
+
+048-2,181,95,0	script	#Slime0	32767,{
+    end;
+
+OnSpawn:
+    if (attachrid($@Slime0VictimID) == 0)
+        goto L_Clean;
+    $@BlueSageSlime0_Spawn = $@BlueSageSlime0_Amount;
+    areamonster "048-2", 178, 92, 184, 98, "", 1093, $@BlueSageSlime0_Spawn, "#Slime0::OnSlimeDeath";
+    message strcharinfo(0), "You notice a group of slimes emerging from the debris among the shelves.";
+    end;
+
+OnSlimeDeath:
+    $@BlueSageSlime0_Spawn = $@BlueSageSlime0_Spawn - 1;
+    if (mobcount("048-2", "#Slime0::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime0_Spawn = 0;
+
+    if ($@Slime0VictimID == getcharid(3))
+        goto L_Count;
+    if ($@BlueSageSlime0_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_Clean:
+    $@Slime0VictimID = 0;
+    end;
+
+L_Count:
+    @spawnSlime0 = @spawnSlime0 + 1;
+    if ($@BlueSageSlime0_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_SlimesEscaped:
+    @spawnSlime0 = 0;
+    message strcharinfo(0), "You don't see any slimes from that nest anymore. But did you really get all of them?";
+    goto L_Clean;
+
+L_ClearedPoint:
+    if (attachrid($@Slime0VictimID) == 0)
+        goto L_Clean;
+    if (rand($@BlueSageSlime0_Amount - @spawnSlime0) != 0)
+        goto L_SlimesEscaped;
+    QUEST_BlueSage = QUEST_BlueSage | $@Q_BlueSageSlime0;
+    message strcharinfo(0), "It wasn't easy, but you think that you extinguished this nest.";
+
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    if (@slimes == 255)
+        message strcharinfo(0), "That was a lot of slimes. You wonder if you're done now.";
+    @slimes = 0;
+    @spawnSlime0 = 0;
+    goto L_Clean;
+}
+
+
+048-2,164,123,0	script	#Slime1Trigger	32767,2,2,{
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    if (mobcount("048-2", "#Slime1::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime1_Spawn = 0;
+
+    // if finished or haven't started yet or spawn already active or spawn already done, do nothing
+    if ((@slimes == 0) || ($@BlueSageSlime1_Spawn > 0) || (QUEST_BlueSage & $@Q_BlueSageSlime1))
+        end;
+
+    @spawnSlime1 = 0;
+    @chance = rand(20);
+    if (@chance < 6)
+        goto L_End;
+    if (@chance < 7)
+        goto L_BlowUp;
+
+    $@Slime1VictimID = getcharid(3);
+    donpcevent "#Slime1::OnSpawn";
+    goto L_End;
+
+L_BlowUp:
+    percentheal -100, 0;
+    message strcharinfo(0), "A slime dripped out of a bookshelf right in front of you and stepped onto it. It exploded. That hurt.";
+    goto L_End;
+
+L_End:
+    @chance = 0;
+    @slimes = 0;
+    end;
+}
+
+048-2,164,123,0	script	#Slime1	32767,{
+    end;
+
+OnSpawn:
+    if (attachrid($@Slime1VictimID) == 0)
+        goto L_Clean;
+    $@BlueSageSlime1_Spawn = $@BlueSageSlime1_Amount;
+    areamonster "048-2", 161, 120, 167, 126, "", 1093, $@BlueSageSlime1_Spawn, "#Slime1::OnSlimeDeath";
+    message strcharinfo(0), "You notice a group of slimes emerging from the debris among the shelves.";
+    end;
+
+OnSlimeDeath:
+    $@BlueSageSlime1_Spawn = $@BlueSageSlime1_Spawn - 1;
+    if (mobcount("048-2", "#Slime1::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime1_Spawn = 0;
+
+    if ($@Slime1VictimID == getcharid(3))
+        goto L_Count;
+    if ($@BlueSageSlime1_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_Clean:
+    $@Slime1VictimID = 0;
+    end;
+
+L_Count:
+    @spawnSlime1 = @spawnSlime1 + 1;
+    if ($@BlueSageSlime1_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_SlimesEscaped:
+    @spawnSlime1 = 0;
+    message strcharinfo(0), "You don't see any slimes from that nest anymore. But did you really get all of them?";
+    goto L_Clean;
+
+L_ClearedPoint:
+    if (attachrid($@Slime1VictimID) == 0)
+        goto L_Clean;
+    if (rand($@BlueSageSlime1_Amount - @spawnSlime1) != 0)
+        goto L_SlimesEscaped;
+    QUEST_BlueSage = QUEST_BlueSage | $@Q_BlueSageSlime1;
+    message strcharinfo(0), "It wasn't easy, but you think that you extinguished this nest.";
+
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    if (@slimes == 255)
+        message strcharinfo(0), "That was a lot of slimes. You wonder if you're done now.";
+    @slimes = 0;
+    @spawnSlime1 = 0;
+    goto L_Clean;
+}
+
+
+048-2,198,115,0	script	#Slime2Trigger	32767,2,2,{
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    if (mobcount("048-2", "#Slime2::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime2_Spawn = 0;
+
+    // if finished or haven't started yet or spawn already active or spawn already done, do nothing
+    if ((@slimes == 0) || ($@BlueSageSlime2_Spawn > 0) || (QUEST_BlueSage & $@Q_BlueSageSlime2))
+        end;
+
+    @spawnSlime2 = 0;
+    @chance = rand(20);
+    if (@chance < 6)
+        goto L_End;
+    if (@chance < 7)
+        goto L_BlowUp;
+
+    $@Slime2VictimID = getcharid(3);
+    donpcevent "#Slime2::OnSpawn";
+    goto L_End;
+
+L_BlowUp:
+    percentheal -100, 0;
+    message strcharinfo(0), "A slime dripped out of a bookshelf right in front of you and stepped onto it. It exploded. That hurt.";
+    goto L_End;
+
+L_End:
+    @chance = 0;
+    @slimes = 0;
+    end;
+}
+
+048-2,198,115,0	script	#Slime2	32767,{
+    end;
+
+OnSpawn:
+    if (attachrid($@Slime2VictimID) == 0)
+        goto L_Clean;
+    $@BlueSageSlime2_Spawn = $@BlueSageSlime2_Amount;
+    areamonster "048-2", 195, 112, 201, 118, "", 1093, $@BlueSageSlime2_Spawn, "#Slime2::OnSlimeDeath";
+    message strcharinfo(0), "You notice a group of slimes emerging from the debris among the shelves.";
+    end;
+
+OnSlimeDeath:
+    $@BlueSageSlime2_Spawn = $@BlueSageSlime2_Spawn - 1;
+    if (mobcount("048-2", "#Slime2::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime2_Spawn = 0;
+
+    if ($@Slime2VictimID == getcharid(3))
+        goto L_Count;
+    if ($@BlueSageSlime2_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_Clean:
+    $@Slime2VictimID = 0;
+    end;
+
+L_Count:
+    @spawnSlime2 = @spawnSlime2 + 1;
+    if ($@BlueSageSlime2_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_SlimesEscaped:
+    @spawnSlime2 = 0;
+    message strcharinfo(0), "You don't see any slimes from that nest anymore. But did you really get all of them?";
+    goto L_Clean;
+
+L_ClearedPoint:
+    if (attachrid($@Slime2VictimID) == 0)
+        goto L_Clean;
+    if (rand($@BlueSageSlime2_Amount - @spawnSlime2) != 0)
+        goto L_SlimesEscaped;
+    QUEST_BlueSage = QUEST_BlueSage | $@Q_BlueSageSlime2;
+    message strcharinfo(0), "It wasn't easy, but you think that you extinguished this nest.";
+
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    if (@slimes == 255)
+        message strcharinfo(0), "That was a lot of slimes. You wonder if you're done now.";
+    @slimes = 0;
+    @spawnSlime2 = 0;
+    goto L_Clean;
+}
+
+
+048-2,167,79,0	script	#Slime3Trigger	32767,2,2,{
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    if (mobcount("048-2", "#Slime3::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime3_Spawn = 0;
+
+    // if finished or haven't started yet or spawn already active or spawn already done, do nothing
+    if ((@slimes == 0) || ($@BlueSageSlime3_Spawn > 0) || (QUEST_BlueSage & $@Q_BlueSageSlime3))
+        end;
+
+    @spawnSlime3 = 0;
+    @chance = rand(20);
+    if (@chance < 6)
+        goto L_End;
+    if (@chance < 7)
+        goto L_BlowUp;
+
+    $@Slime3VictimID = getcharid(3);
+    donpcevent "#Slime3::OnSpawn";
+    goto L_End;
+
+L_BlowUp:
+    percentheal -100, 0;
+    message strcharinfo(0), "A slime dripped out of a bookshelf right in front of you and stepped onto it. It exploded. That hurt.";
+    goto L_End;
+
+L_End:
+    @chance = 0;
+    @slimes = 0;
+    end;
+}
+
+048-2,167,79,0	script	#Slime3	32767,{
+    end;
+
+OnSpawn:
+    if (attachrid($@Slime3VictimID) == 0)
+        goto L_Clean;
+    $@BlueSageSlime3_Spawn = $@BlueSageSlime3_Amount;
+    areamonster "048-2", 164, 76, 170, 82, "", 1093, $@BlueSageSlime3_Spawn, "#Slime3::OnSlimeDeath";
+    message strcharinfo(0), "You notice a group of slimes emerging from the debris among the shelves.";
+    end;
+
+OnSlimeDeath:
+    $@BlueSageSlime3_Spawn = $@BlueSageSlime3_Spawn - 1;
+    if (mobcount("048-2", "#Slime3::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime3_Spawn = 0;
+
+    if ($@Slime3VictimID == getcharid(3))
+        goto L_Count;
+    if ($@BlueSageSlime3_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_Clean:
+    $@Slime3VictimID = 0;
+    end;
+
+L_Count:
+    @spawnSlime3 = @spawnSlime3 + 1;
+    if ($@BlueSageSlime3_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_SlimesEscaped:
+    @spawnSlime3 = 0;
+    message strcharinfo(0), "You don't see any slimes from that nest anymore. But did you really get all of them?";
+    goto L_Clean;
+
+L_ClearedPoint:
+    if (attachrid($@Slime3VictimID) == 0)
+        goto L_Clean;
+    if (rand($@BlueSageSlime3_Amount - @spawnSlime3) != 0)
+        goto L_SlimesEscaped;
+    QUEST_BlueSage = QUEST_BlueSage | $@Q_BlueSageSlime3;
+    message strcharinfo(0), "It wasn't easy, but you think that you extinguished this nest.";
+
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    if (@slimes == 255)
+        message strcharinfo(0), "That was a lot of slimes. You wonder if you're done now.";
+    @slimes = 0;
+    @spawnSlime3 = 0;
+    goto L_Clean;
+}
+
+
+048-2,192,86,0	script	#Slime4Trigger	32767,2,2,{
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    if (mobcount("048-2", "#Slime4::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime4_Spawn = 0;
+
+    // if finished or haven't started yet or spawn already active or spawn already done, do nothing
+    if ((@slimes == 0) || ($@BlueSageSlime4_Spawn > 0) || (QUEST_BlueSage & $@Q_BlueSageSlime4))
+        end;
+
+    @spawnSlime4 = 0;
+    @chance = rand(20);
+    if (@chance < 6)
+        goto L_End;
+    if (@chance < 7)
+        goto L_BlowUp;
+
+    $@Slime4VictimID = getcharid(3);
+    donpcevent "#Slime4::OnSpawn";
+    goto L_End;
+
+L_BlowUp:
+    percentheal -100, 0;
+    message strcharinfo(0), "A slime dripped out of a bookshelf right in front of you and stepped onto it. It exploded. That hurt.";
+    goto L_End;
+
+L_End:
+    @chance = 0;
+    @slimes = 0;
+    end;
+}
+
+048-2,192,86,0	script	#Slime4	32767,{
+    end;
+
+OnSpawn:
+    if (attachrid($@Slime4VictimID) == 0)
+        goto L_Clean;
+    $@BlueSageSlime4_Spawn = $@BlueSageSlime4_Amount;
+    areamonster "048-2", 189, 83, 195, 89, "", 1091, $@BlueSageSlime4_Spawn, "#Slime4::OnSlimeDeath";
+    message strcharinfo(0), "You notice a group of slimes emerging from the debris among the shelves.";
+    end;
+
+OnSlimeDeath:
+    $@BlueSageSlime4_Spawn = $@BlueSageSlime4_Spawn - 1;
+    if (mobcount("048-2", "#Slime4::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime4_Spawn = 0;
+
+    if ($@Slime4VictimID == getcharid(3))
+        goto L_Count;
+    if ($@BlueSageSlime4_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_Clean:
+    $@Slime4VictimID = 0;
+    end;
+
+L_Count:
+    @spawnSlime4 = @spawnSlime4 + 1;
+    if ($@BlueSageSlime4_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_SlimesEscaped:
+    @spawnSlime4 = 0;
+    message strcharinfo(0), "You don't see any slimes from that nest anymore. But did you really get all of them?";
+    goto L_Clean;
+
+L_ClearedPoint:
+    if (attachrid($@Slime4VictimID) == 0)
+        goto L_Clean;
+    if (rand($@BlueSageSlime4_Amount - @spawnSlime4) != 0)
+        goto L_SlimesEscaped;
+    QUEST_BlueSage = QUEST_BlueSage | $@Q_BlueSageSlime4;
+    message strcharinfo(0), "It wasn't easy, but you think that you extinguished this nest.";
+
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    if (@slimes == 255)
+        message strcharinfo(0), "That was a lot of slimes. You wonder if you're done now.";
+    @slimes = 0;
+    @spawnSlime4 = 0;
+    goto L_Clean;
+}
+
+
+048-2,183,110,0	script	#Slime5Trigger	32767,2,2,{
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    if (mobcount("048-2", "#Slime5::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime5_Spawn = 0;
+
+    // if finished or haven't started yet or spawn already active or spawn already done, do nothing
+    if ((@slimes == 0) || ($@BlueSageSlime5_Spawn > 0) || (QUEST_BlueSage & $@Q_BlueSageSlime5))
+        end;
+
+    @spawnSlime5 = 0;
+    @chance = rand(20);
+    if (@chance < 6)
+        goto L_End;
+    if (@chance < 7)
+        goto L_BlowUp;
+
+    $@Slime5VictimID = getcharid(3);
+    donpcevent "#Slime5::OnSpawn";
+    goto L_End;
+
+L_BlowUp:
+    percentheal -100, 0;
+    message strcharinfo(0), "A slime dripped out of a bookshelf right in front of you and stepped onto it. It exploded. That hurt.";
+    goto L_End;
+
+L_End:
+    @chance = 0;
+    @slimes = 0;
+    end;
+}
+
+048-2,183,110,0	script	#Slime5	32767,{
+    end;
+
+OnSpawn:
+    if (attachrid($@Slime5VictimID) == 0)
+        goto L_Clean;
+    $@BlueSageSlime5_Spawn = $@BlueSageSlime5_Amount;
+    areamonster "048-2", 180, 107, 186, 113, "", 1091, $@BlueSageSlime5_Spawn, "#Slime5::OnSlimeDeath";
+    message strcharinfo(0), "You notice a group of slimes emerging from the debris among the shelves.";
+    end;
+
+OnSlimeDeath:
+    $@BlueSageSlime5_Spawn = $@BlueSageSlime5_Spawn - 1;
+    if (mobcount("048-2", "#Slime5::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime5_Spawn = 0;
+
+    if ($@Slime5VictimID == getcharid(3))
+        goto L_Count;
+    if ($@BlueSageSlime5_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_Clean:
+    $@Slime5VictimID = 0;
+    end;
+
+L_Count:
+    @spawnSlime5 = @spawnSlime5 + 1;
+    if ($@BlueSageSlime5_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_SlimesEscaped:
+    @spawnSlime5 = 0;
+    message strcharinfo(0), "You don't see any slimes from that nest anymore. But did you really get all of them?";
+    goto L_Clean;
+
+L_ClearedPoint:
+    if (attachrid($@Slime5VictimID) == 0)
+        goto L_Clean;
+    if (rand($@BlueSageSlime5_Amount - @spawnSlime5) != 0)
+        goto L_SlimesEscaped;
+    QUEST_BlueSage = QUEST_BlueSage | $@Q_BlueSageSlime5;
+    message strcharinfo(0), "It wasn't easy, but you think that you extinguished this nest.";
+
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    if (@slimes == 255)
+        message strcharinfo(0), "That was a lot of slimes. You wonder if you're done now.";
+    @slimes = 0;
+    @spawnSlime5 = 0;
+    goto L_Clean;
+}
+
+
+048-2,164,102,0	script	#Slime6Trigger	32767,2,2,{
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+
+    if (mobcount("048-2", "#Slime6::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime6_Spawn = 0;
+
+    // if finished or haven't started yet or spawn already active or spawn already done, do nothing
+    if ((@slimes == 0) || ($@BlueSageSlime6_Spawn > 0) || (QUEST_BlueSage & $@Q_BlueSageSlime6))
+        end;
+
+    @spawnSlime6 = 0;
+    @chance = rand(20);
+    if (@chance < 6)
+        goto L_End;
+    if (@chance < 7)
+        goto L_BlowUp;
+
+    $@Slime6VictimID = getcharid(3);
+    donpcevent "#Slime6::OnSpawn";
+    goto L_End;
+
+L_BlowUp:
+    percentheal -100, 0;
+    message strcharinfo(0), "A slime dripped out of a bookshelf right in front of you and stepped onto it. It exploded. That hurt.";
+    goto L_End;
+
+L_End:
+    @chance = 0;
+    @slimes = 0;
+    end;
+}
+
+048-2,164,102,0	script	#Slime6	32767,{
+    end;
+
+OnSpawn:
+    if (attachrid($@Slime6VictimID) == 0)
+        goto L_Clean;
+    $@BlueSageSlime6_Spawn = $@BlueSageSlime6_Amount;
+    areamonster "048-2", 161, 99, 167, 105, "", 1091, $@BlueSageSlime6_Spawn, "#Slime6::OnSlimeDeath";
+    message strcharinfo(0), "You notice a group of slimes emerging from the debris among the shelves.";
+    end;
+
+OnSlimeDeath:
+    $@BlueSageSlime6_Spawn = $@BlueSageSlime6_Spawn - 1;
+    if (mobcount("048-2", "#Slime6::OnSlimeDeath") < 0) // returns -1 if no monsters
+        $@BlueSageSlime6_Spawn = 0;
+
+    if ($@Slime6VictimID == getcharid(3))
+        goto L_Count;
+    if ($@BlueSageSlime6_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_Clean:
+    $@Slime6VictimID = 0;
+    end;
+
+L_Count:
+    @spawnSlime6 = @spawnSlime6 + 1;
+    if ($@BlueSageSlime6_Spawn == 0)
+        goto L_ClearedPoint;
+    end;
+
+L_SlimesEscaped:
+    @spawnSlime6 = 0;
+    message strcharinfo(0), "You don't see any slimes from that nest anymore. But did you really get all of them?";
+    goto L_Clean;
+
+L_ClearedPoint:
+    if (attachrid($@Slime6VictimID) == 0)
+        goto L_Clean;
+    if (rand($@BlueSageSlime6_Amount - @spawnSlime6) != 0)
+        goto L_SlimesEscaped;
+    QUEST_BlueSage = QUEST_BlueSage | $@Q_BlueSageSlime6;
+    message strcharinfo(0), "It wasn't easy, but you think that you extinguished this nest.";
+
+    @slimes = ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
+    if (@slimes == 255)
+        message strcharinfo(0), "That was a lot of slimes. You wonder if you're done now.";
+    @slimes = 0;
+    @spawnSlime6 = 0;
+    goto L_Clean;
+}

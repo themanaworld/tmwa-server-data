@@ -5,13 +5,32 @@ all: maps conf news updates
 maps:
 	tools/tmx_converter.py client-data/ world/map/
 
+convert:
+	cd ../; python ./evol-tools/hercules/convert_server.py; 
+	tools/herc_converter.py client-data/ .
+	cd ../evol-tools/hercules/ ;python ./convert_tmx_to_mapcache.py;
+
+herc-maps:
+	tools/herc_converter.py client-data/ .
+	cd ../evol-tools/hercules/ ;python ./convert_tmx_to_mapcache.py;
+
 % : | %.example
 	cp "$|" "$@"
 conf: world/map/conf/magic-secrets.sex \
 login/conf/login_local.conf login/conf/ladmin_local.conf login/save/gm_account.txt login/save/account.txt \
 world/conf/char_local.conf \
 world/map/conf/map_local.conf world/map/conf/battle_local.conf world/map/conf/motd.txt world/map/conf/atcommand_local.conf world/map/db/const-debugflag.txt \
-conf/monitor_local.conf
+conf/monitor_local.conf 
+
+herc-conf: conf/import/inter_conf.txt \
+conf/login-server.conf \
+conf/char-server.conf \
+conf/inter-server.conf \
+conf/map-server.conf \
+sql-files/init.sql 
+
+herc-trans:
+	cd ../evol-tools/lang/ ;python ./updatelang.py; cp -a ./po/* ../../server-data/langs/po/;
 
 world/map/conf/magic-secrets.sex: world/map/conf/magic-secrets.sex.template world/map/conf/secrets-build
 	cd world/map/conf && ./build-magic.sh

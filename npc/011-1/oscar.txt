@@ -1,0 +1,483 @@
+
+
+
+
+function	script	HalloweenQuestWaterPumpkins	{
+    if (Quest_Halloween != 5 || $@HalloweenQuest_PumpkinHunter$ != "")
+        end;
+    $@HalloweenQuest_PumpkinHunter$ = strcharinfo(0);
+    donpcevent "Oscar::OnCommandSpg";
+    end;
+}
+
+011-1,94,38,0	script	Oscar	142,{
+    // Check we are at the good time of the year
+    if (!(gettime(6) == 11 && (gettime(5) >= 4 && gettime(5) <= 30))) goto L_NoEvent;
+    // Check halloween quest has been done or not.
+    @halloween_year = (Annual_Quest & BYTE_0_MASK) >> BYTE_0_SHIFT;
+    if (@halloween_year < (gettime(7) - 2000)) goto L_AdjustYear;
+    goto L_Init;
+
+L_AdjustYear:
+    Quest_Halloween = 0;
+    @halloween_year = gettime(7) - 2000;
+    callsub S_Update_Annual_Quest;
+    goto L_Init;
+
+L_NoEvent:
+    mes "[Oscar]";
+    mes "\"Welcome here!";
+    mes "I'm the owner of this farm. I'm growing fruits around here as you can see.\"";
+    next;
+    mes "\"Some of my fruits are for sale in my shop right here.";
+    mes "Don't hesitate to drop by. They are cheap!\"";
+    close;
+
+L_Init:
+    if (@halloween_year == (gettime(7) - 2000) + 1) goto L_QuestAlreadyDone;
+    if (Quest_Halloween == 0) goto L_Introduce;
+    if (Quest_Halloween == 1 || Quest_Halloween == 2) goto L_CheckSeeds;
+    if (Quest_Halloween == 3) goto L_HelpGrowSeeds;
+    if (Quest_Halloween == 4) goto L_HelpFillWaters;
+    if (Quest_Halloween == 5 && $@HalloweenQuest_PumpkinHunter$ == "") goto L_HelpWaterPatches;
+    if (Quest_Halloween == 5 && $@HalloweenQuest_PumpkinHunter$ == strcharinfo(0)) goto L_HelpCleanPumpkins;
+    if (Quest_Halloween == 5 && $@HalloweenQuest_PumpkinHunter$ != "") goto L_WateringBusy;
+    if (Quest_Halloween == 6) goto L_GetReward;
+    if (Quest_Halloween == 10) goto L_GetSlap;
+    goto L_End;
+
+L_Introduce:
+    mes "[Oscar]";
+    mes "\"Heya!\"";
+    next;
+    mes "\"I just came back from a long trip... Really tiring, but so interesting.\"";
+    menu
+        "Oh? Where did you go?", L_Next,
+        "Well... I believe.", L_End;
+
+L_Next:
+    mes "[Oscar]";
+    mes "\"Well, I travelled to the economic center of this continent.";
+    mes "It's north-east of here. Quite far I must say.\"";
+    next;
+    mes "\"But it was worth it really.";
+    mes "I went there to see ways to improve my little plantation here.";
+    mes "Oh well, sell some of my fruits too, see some of my fellow farmers. Classic business.\"";
+    next;
+    mes "\"Until a few days ago, they were holding a large party to celebrate Halloween.";
+    mes "Very nice really... And in particular, I saw these strange veggies they call pumpkins.\"";
+    next;
+    mes "\"They taste really good you see, but ahah, they weren't really for eating at that moment!";
+    mes "Anyway, I wondered if I could grow some here. Until now I only grow apples and oranges.\"";
+    menu
+        "That's an interesting idea!", L_Next1,
+        "Really, I hate pumpkins.", L_End;
+
+L_Next1:
+    mes "[Oscar]";
+    mes "\"However, I couldn't get any seeds, but I heard rumors in that city, saying we could find pumpkins in the forests north-east of here.";
+    mes "Most likely there are pumpkin seeds laying around them.\"";
+    next;
+    mes "\"They also mentioned something strange about them, but hey, who cares! Just rumors!\"";
+    next;
+
+    if (BaseLevel < 45)
+        goto L_TooYoung;
+
+    mes "\"Do you think you can get some for me?\"";
+    menu
+        "Sure. Leave it to me!", L_Next2,
+        "Well, I don't have time for that right now.", L_End;
+
+L_Next2:
+    mes "[Oscar]";
+    mes "\"Thanks so much " + strcharinfo(0) + "!";
+    mes "I can't wait to try them!\"";
+    Quest_Halloween = 1;
+    goto L_End;
+
+L_TooYoung:
+    mes "\"Ahm... That may be a little dangerous for you though. I don't want to send a kid in the deep forest.\"";
+    goto L_End;
+
+L_End:
+    @halloween_year = 0;
+    close;
+
+L_CheckSeeds:
+    if (countitemcolor("PumpkinSeeds") < $@halloween_num_seeds)
+        goto L_NotEnoughSeeds;
+    delitem "PumpkinSeeds", $@halloween_num_seeds;
+    Quest_Halloween = 3;
+    mes "[Oscar]";
+    mes "\"Yes you found them! I can start to make them grow now!";
+    mes "Thank you so much " + strcharinfo(0) + "!\"";
+    goto L_End;
+
+L_NotEnoughSeeds:
+    mes "[Oscar]";
+    mes "\"Oh, it looks like you didn't find enough seeds yet...\"";
+    goto L_End;
+
+L_HelpGrowSeeds:
+    // Wait 20 seconds before triggering the next step.
+    if (@halloween_seeds_timer == 0)
+        @halloween_seeds_timer = gettimetick(2);
+    if ((gettimetick(2) - @halloween_seeds_timer) < 5)
+        goto L_WaitGrowSeeds;
+    mes "[Oscar]";
+    mes "\"Oh, you are back!\"";
+    next;
+    mes "You notice Oscar looks quite disappointed.";
+    next;
+    mes "[Oscar]";
+    mes "\"You see I could use some more help from you.";
+    mes "My supplies of water are quite low because of the long trip I made.";
+    mes "And I've been watering the pumpkin patches, but unfortunately I'm already out of water before I can see anything growing.\"";
+    next;
+    mes "\"If you could help me fill these " + $@halloween_num_water_bottles + " bottles with water, that would be very kind of you!\"";
+
+    @nature_magic = getskilllv(SKILL_MAGIC_NATURE);
+    if (@nature_magic > 1)
+        goto L_ProposeUseKaflosh;
+    @nature_magic = 0;
+    menu
+        "Yeah sure!", L_Next3,
+        "That sounds boring to do. No thanks.", L_End;
+
+L_Next3:
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitemcolor("EmptyBottle") == 0)
+        goto L_InventoryFull;
+    @inventorylist_count = 0;
+    Quest_Halloween = 4;
+    goto L_GetEmptyBottles;
+
+L_ProposeUseKaflosh:
+    @nature_magic = 0;
+    menu
+        "Yeah sure!", L_Next4,
+        "Maybe I can help you water them with magic!", L_WaterWithKaflosh,
+        "That sounds boring to do. No thanks.", L_End;
+
+L_Next4:
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitemcolor("EmptyBottle") == 0)
+        goto L_InventoryFull;
+    Quest_Halloween = 4;
+    goto L_GetEmptyBottles;
+
+L_GetEmptyBottles:
+    mes "[Oscar]";
+    mes "\"Ok, here are the " + $@halloween_num_water_bottles + " empty bottles.\"";
+    next;
+    mes "\"Oh and while you fill these bottles, why not bring some friends here as well?";
+    mes "Let's not be reckless. Maybe these rumors about the pumpkins are true.";
+    mes "Oh, unless you consider yourself strong enough to take care of this alone!\"";
+    getitem "EmptyBottle", $@halloween_num_water_bottles;
+    goto L_End;
+
+L_WaitGrowSeeds:
+    mes "[Oscar]";
+    mes "\"Thanks again " + strcharinfo(0) + "!";
+    mes "I'm planting these seeds right now.\"";
+    next;
+    mes "\"Stay around if you want to see what it looks like!";
+    mes "Amazing I tell you, amazing!\"";
+    goto L_End;
+
+L_HelpFillWaters:
+    mes "[Oscar]";
+    mes "\"Hey, you again!\"";
+    next;
+    if ($@HalloweenQuest_PumpkinHunter$ != "")
+        goto L_WateringBusy;
+    mes "\"So do you have the " + $@halloween_num_water_bottles + " bottles filled with fresh water?\"";
+    menu
+        "Yes! Fresh and clear water.", L_Next5,
+        "Oh, not yet. I'm on my way.", L_End;
+
+L_Next5:
+    if (countitemcolor("BottleOfWater") < $@halloween_num_water_bottles)
+        goto L_NotEnoughWaters;
+
+    // make an additional check here, since the player had a dialog pause in the above menu.
+    if ($@HalloweenQuest_PumpkinHunter$ != "")
+        goto L_WateringBusy;
+    delitem "BottleOfWater", $@halloween_num_water_bottles;
+
+    mes "[Oscar]";
+    mes "\"Many thanks! I wonder what I would have done without you!";
+    mes "I'll water the patches right away. Watch this!\"";
+    Quest_Halloween = 5;
+    $@HalloweenQuest_PumpkinHunter$ = strcharinfo(0);
+    callsub S_StartPumpkinsSpawn;
+    goto L_End;
+
+L_WaterWithKaflosh:
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitemcolor("BottleOfWater") == 0)
+        goto L_InventoryFull;
+    mes "[Oscar]";
+    mes "\"Oh, I see!";
+    next;
+    mes "\"So, I'm waiting you show me your skills!";
+    mes "Water the pumpkin patches right here with your awesome magic!\"";
+    next;
+    mes "\"Here is one bottle of water to do it.\"";
+    next;
+    mes "\"By the way, I told you about the rumors concerning these pumpkins.";
+    mes "Why not bring some friends here? Oh, unless you consider yourself strong enough!\"";
+    Quest_Halloween = 5;
+    getitem "BottleOfWater", 1;
+    goto L_End;
+
+L_HelpWaterPatches:
+    // We check again here that the player has magic skills
+    // This case happens when the player has logged off
+    // during the infestation phase.
+    @nature_magic = getskilllv(SKILL_MAGIC_NATURE);
+    if (!(@nature_magic > 1))
+        goto L_HelpFillWaters;
+    @nature_magic = 0;
+    mes "[Oscar]";
+    mes "\"Come on, water the pumpkin patches right here with your awesome magic!";
+    mes "For sure you will be more efficient than me!\"";
+    goto L_End;
+
+L_WateringBusy:
+    mes "[Oscar]";
+    mes "\"Sorry. I'm really busy at the moment.";
+    mes "May you come back later? Thank you, thank you...";
+    mes "Sorry I have to take care of this now!\"";
+    goto L_End;
+
+L_HelpCleanPumpkins:
+    mes "[Oscar]";
+    mes "\"Help me clean all these pumpkins! It's a disaster!\"";
+    goto L_End;
+
+L_NotEnoughWaters:
+    mes "[Oscar]";
+    mes "\"That's not enough bottles to water all these pumpkin patches.";
+    mes "Please bring me more.\"";
+    goto L_End;
+
+S_Update_Annual_Quest:
+    Annual_Quest = (Annual_Quest & ~(BYTE_0_MASK) | (@halloween_year << BYTE_0_SHIFT));
+    return;
+
+OnCommandSpg:
+    callsub S_StartPumpkinsSpawn;
+    end;
+
+S_StartPumpkinsSpawn:
+    $@HalloweenQuest_PumpkinsCount = $@halloween_num_pumpkins;
+    $@HalloweenQuest_PumpkinsState = 0;
+    initnpctimer;
+    return;
+
+L_QuestAlreadyDone:
+    mes "[Oscar]";
+    mes "\"I'm relieved all this mess is sorted out now.";
+    mes "That was interesting, but really, fruits are more quiet!\"";
+    goto L_End;
+
+OnInit:
+    $@halloween_num_seeds = 12;
+    $@halloween_num_water_bottles = 15;
+    $@halloween_num_pumpkins = $@halloween_num_seeds * 4;
+    end;
+
+OnTimer1000:
+    goto L_TimerFunction;
+
+OnTimer2000:
+    goto L_TimerFunction;
+
+OnTimer3000:
+    goto L_TimerFunction;
+
+L_TimerFunction:
+    if ($@HalloweenQuest_PumpkinsState != 1)
+        end;
+    callsub S_CheckPlayer;
+    $@HalloweenQuest_PumpkinsTimer = $@HalloweenQuest_PumpkinsTimer + 1;
+    if (mobcount("011-1", "Oscar::OnPD")  < 0 &&
+        mobcount("011-1", "Oscar::OnPDP") < 0 &&
+        $@HalloweenQuest_PumpkinsCount <= 0)
+        goto L_AllPumpkinsDead;
+    // A quick "cheer up"
+    if ($@HalloweenQuest_PumpkinsTimer == 300)
+        npctalk "Hurry up " + $@HalloweenQuest_PumpkinHunter$ + "! My farm is being ruined!";
+    // 7 mins max
+    if ($@HalloweenQuest_PumpkinsTimer > 420)
+        goto L_PumpkinsRuined;
+
+    if (getnpctimer(0) >= 2900)
+        goto L_TrySpawnPumpkin;
+    end;
+
+L_TrySpawnPumpkin:
+    if ($@HalloweenQuest_PumpkinsCount > 0)
+        areamonster "011-1", 97, 40, 101, 44, "", 1063, 1, "Oscar::OnPD";
+    setnpctimer 0;
+    end;
+
+OnTimer2500:
+    if ($@HalloweenQuest_PumpkinsState != 0)
+        end;
+    areamonster "011-1", 97, 40, 101, 44, "", 1063, 2, "Oscar::OnPD";
+    end;
+
+OnTimer6000:
+    if ($@HalloweenQuest_PumpkinsState != 0)
+        end;
+    emotion EMOTE_AFRAID;
+    npctalk "Oh no, these pumpkins look strange and infested with bugs! Help me get rid of them " + $@HalloweenQuest_PumpkinHunter$ + "!";
+    $@HalloweenQuest_PumpkinsState = 1;
+    setnpctimer 0;
+    end;
+
+OnPD:
+    if (strcharinfo(0) != $@HalloweenQuest_PumpkinHunter$)
+        goto L_KillBadHunter;
+    $@HalloweenQuest_PumpkinsCount = $@HalloweenQuest_PumpkinsCount - 1;
+    if (@discover_poisonous_pumpkin_again == 0)
+        message strcharinfo(0), "Oh no! These pumpkins are poisonous as well!";
+    @discover_poisonous_pumpkin_again = 1;
+    // Small damages
+    misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
+    heal -10, 0;
+    sc_start SC_POISON, 1, 3;
+    // Spawn mobs or get items
+    @halloween_rand = rand(0,100);
+    // Seeds reward
+    if (@halloween_rand < 10)
+        getitem "PumpkinSeeds", 1;
+    // Pumpkin helmet reward
+    if (@halloween_rand >= 10 && @halloween_rand < 17)
+        getitem "PumpkinHelmet", 1;
+    // huntsman spider x1
+    if (@halloween_rand < (15*BaseLevel)/100)
+        areamonster "011-1", 97, 40, 101, 44, "", 1083, 1, "Oscar::OnPDP";
+    // Or spider x1
+    if (@halloween_rand >= (15*BaseLevel)/100 && @halloween_rand < (75*BaseLevel)/100)
+        areamonster "011-1", 97, 40, 101, 44, "", 1012, 1, "Oscar::OnPDP";
+    // Or archant x2
+    if (@halloween_rand >= (75*BaseLevel)/100)
+        areamonster "011-1", 97, 40, 101, 44, "", 1060, 2, "Oscar::OnPDP";
+
+    @halloween_rand = 0;
+    end;
+
+OnPDP:
+    end;
+
+L_KillBadHunter:
+    misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
+    percentheal -100, 0;
+    end;
+
+L_PumpkinsRuined:
+    npctalk "No! " + $@HalloweenQuest_PumpkinHunter$ + " how could you let that happen? All my farm is a mess now! All my trees are infested with bugs!";
+    goto L_Fail;
+
+L_AllPumpkinsDead:
+    goto L_Success;
+
+S_CheckPlayer:
+    if (attachrid(getcharid(3, $@HalloweenQuest_PumpkinHunter$)) == 0)
+        goto L_PlayerOff;
+    if (ispcdead())
+        goto L_PlayerDead;
+    if (isin("011-1",20,5,130,110) == 0)
+        goto L_PlayerLeft;
+    detachrid;
+    return;
+
+L_PlayerOff:
+    npctalk "What? Where is " + $@HalloweenQuest_PumpkinHunter$ + "? Someone, help me!";
+    goto L_Fail;
+
+L_PlayerLeft:
+    npctalk "What the!! " + $@HalloweenQuest_PumpkinHunter$ + " left me alone with all this! Someone, help me!";
+    goto L_Fail;
+
+L_PlayerDead:
+    npctalk "Oh no I can't believe it! " + $@HalloweenQuest_PumpkinHunter$ + " just died! Someone, help me!";
+    goto L_Fail;
+
+L_Fail:
+    // If the player is logged off, since we check every second that the player
+    // is online, we can consider it's an accident, so we will allow to redo the quest
+    // Otherwise, it's a "valid" fail.
+    if (attachrid(getcharid(3, $@HalloweenQuest_PumpkinHunter$)))
+        Quest_Halloween = 10;
+    goto L_Clean;
+
+L_Success:
+    // Make this check again or the server will crash.
+    if (attachrid(getcharid(3, $@HalloweenQuest_PumpkinHunter$)) == 0)
+        goto L_PlayerOff;
+    Quest_Halloween = 6;
+    emotion EMOTE_GRIN;
+    npctalk "Hurray, " + $@HalloweenQuest_PumpkinHunter$ + " you did it! Thank you thank you! Come here!";
+    goto L_Clean;
+
+L_Clean:
+    killmonster "011-1", "Oscar::OnPD";
+    killmonster "011-1", "Oscar::OnPDP";
+    $@HalloweenQuest_PumpkinHunter$ = "";
+    $@HalloweenQuest_PumpkinsCount = 0;
+    $@HalloweenQuest_PumpkinsState = 0;
+    $@HalloweenQuest_PumpkinsTimer = 0;
+    stopnpctimer;
+    detachrid;
+    end;
+
+L_GetReward:
+    mes "[Oscar]";
+    mes "\"" + strcharinfo(0) + ", you were wonderful!";
+    mes "My farm is safe thanks to you!\"";
+    next;
+    mes "\"Look, when I went to this city a few days ago, I could find this magnificient fruit.";
+    mes "I believe not many exist in the world, but hey, this one is for you!\"";
+
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitemcolor("GoldenDeliciousApple") == 0)
+        goto L_InventoryFull;
+    @inventorylist_count = 0;
+    getitem "GoldenDeliciousApple", 1;
+    @halloween_year = gettime(7) - 2000 + 1;
+    Quest_Halloween = 0;
+    callsub S_Update_Annual_Quest;
+    goto L_End;
+
+L_GetSlap:
+    mes "[Oscar]";
+    mes "\"Ah! There you are "+strcharinfo(0)+"!";
+    next;
+    mes "\"As you can see, my farm is safe now.";
+    mes "I can't really say it's thanks to you though!\"";
+    next;
+    mes "\"Well, I won't be a bad guy.";
+    mes "Take this for your trouble and farewell!\"";
+
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitemcolor("CandyPumpkin") == 0)
+        goto L_InventoryFull;
+    @inventorylist_count = 0;
+    getitem "CandyPumpkin", 5;
+    @halloween_year = gettime(7) - 2000 + 1;
+    Quest_Halloween = 0;
+    callsub S_Update_Annual_Quest;
+    goto L_End;
+
+L_InventoryFull:
+    @inventorylist_count = 0;
+    next;
+    mes "\"Ah, but you cannot carry anything else!";
+    mes "Make some room first.\"";
+    goto L_End;
+}

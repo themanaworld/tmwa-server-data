@@ -1,0 +1,39 @@
+
+function	script	WaterBottle	{
+    @COST_PER_BOTTLE = 150;
+
+    mes "How many empty bottles do you want to fill with water? It costs " + @COST_PER_BOTTLE + "gp per bottle.";
+    input @count;
+
+    if (@count == 0)
+        close;
+    @Cost = @count * @COST_PER_BOTTLE;
+    @empty = countitemcolor("EmptyBottle");
+
+    if (@empty < @count)
+        goto L_NotEnoughBottles;
+    if (Zeny < @Cost)
+        goto L_NotEnoughMoney;
+    getinventorylist;
+    if (@inventorylist_count == 100
+        && countitemcolor("BottleOfWater") == 0
+        && @empty > @count)
+            goto L_NotEnoughSlots;
+
+    Zeny = Zeny - @Cost;
+    delitem "EmptyBottle", @count;
+    getitem "BottleOfWater", @count;
+    close;
+
+L_NotEnoughBottles:
+    mes "You don't have that many empty bottles!";
+    close;
+
+L_NotEnoughMoney:
+    mes "You don't have enough gp! You need " + @Cost + "gp.";
+    close;
+
+L_NotEnoughSlots:
+    mes "You don't have room for these bottles!";
+    close;
+}

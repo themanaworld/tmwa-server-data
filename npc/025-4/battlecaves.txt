@@ -1,0 +1,953 @@
+
+
+025-4,41,85,0	script	#StartCaveFight1	324,{
+    if ($@battlecave1 == 2 && $@cave1fighter$ == strcharinfo(0))
+        end;
+    if ($@battlecave1 == 2 && $@cave1fighter$ != strcharinfo(0))
+        goto L_Cheat;
+    if (Rossy_Quest < 15)
+        goto L_Cheat;
+    if ($@battlecave1 == 1)
+        goto L_Start;
+    goto L_Cheat;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave1 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave1_loop = $@cave1_loop + 1;
+    areamonster "025-4",26,63,60,97,"",$@cave1_monsters_IDS[$@cave1_loop],$@cave1_monsters_QTY[$@cave1_loop],"#StartCaveFight1::OnMonsterDeath";
+    if ($@cave1_loop <= getarraysize($@cave1_monsters_IDS))
+        goto L_Summon;
+    $@cave1_loop = 0;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBattleCave1::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave1 = $@wave_cave1 + 1;
+    $@cave1_kills = 0;
+    if (attachrid(getcharid(3,$@cave1fighter$)) == 0) goto L_Abort;
+
+    if ($@wave_cave1 == 1)
+        message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation... Maybe it is not healthy to stay in this cave.";
+
+    if ($@wave_cave1 < $@cave1_waves)
+        goto L_Summon;
+    cavefights = (cavefights | BATTLE_CAVE1);
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS    + ".";
+    end;
+
+OnMonsterDeath:
+    $@cave1_kills = $@cave1_kills + 1;
+    if ($@cave1_kills >= $@cave1_monsters_QTY[1] + $@cave1_monsters_QTY[2] + $@cave1_monsters_QTY[3] + $@cave1_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+
+}
+
+
+025-4,41,97,0	script	#CheckCaveFight1	45,1,1,{
+    if (cavefights & BATTLE_CAVE1 || $@battlecave1 == 1)
+        goto L_Done;
+    message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    end;
+
+L_Done:
+    donpcevent "#WarpBattleCave1::OnGetout";
+    end;
+}
+
+
+
+025-4,115,77,0	script	#StartCaveFight2	324,{
+    if ($@battlecave2 == 2 && $@cave2fighter$ == strcharinfo(0))
+        end;
+    if ($@battlecave2 == 2 && $@cave2fighter$ != strcharinfo(0))
+        goto L_Cheat;
+    if (Rossy_Quest < 15)
+        goto L_Cheat;
+    if ($@battlecave2 == 1)
+        goto L_Start;
+    goto L_Cheat;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave2 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave2_loop = $@cave2_loop + 1;
+    areamonster "025-4",97, 62, 126, 96,"",$@cave2_monsters_IDS[$@cave2_loop],$@cave2_monsters_QTY[$@cave2_loop],"#StartCaveFight2::OnMonsterDeath";
+    if ($@cave2_loop <= getarraysize($@cave2_monsters_IDS))
+        goto L_Summon;
+    $@cave2_loop = 0;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBattleCave2::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave2 = $@wave_cave2 + 1;
+    $@cave2_kills = 0;
+    if (attachrid(getcharid(3,$@cave2fighter$)) == 0) goto L_Abort;
+
+
+    if ($@wave_cave2 == 1)
+        message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation... Maybe it is not healthy to stay in this cave.";
+
+    if ($@wave_cave2 < $@cave2_waves)
+        goto L_Summon;
+    cavefights = (cavefights | BATTLE_CAVE2);
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS  + ".";
+    end;
+
+OnMonsterDeath:
+    $@cave2_kills = $@cave2_kills + 1;
+    if ($@cave2_kills >= $@cave2_monsters_QTY[1] + $@cave2_monsters_QTY[2] + $@cave2_monsters_QTY[3] + $@cave2_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+}
+
+
+025-4,110,96,0	script	#CheckCaveFight2	45,1,1,{
+    if (cavefights & BATTLE_CAVE2 || $@battlecave2 == 1)
+        goto L_Done;
+    message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    end;
+
+L_Done:
+    donpcevent "#WarpBattleCave2::OnGetout";
+    end;
+}
+
+025-4,164,103,0	script	#StartCaveFight3	324,{
+    if ($@battlecave3 == 2 && $@cave3fighter$ == strcharinfo(0))
+        end;
+    if ($@battlecave3 == 2 && $@cave3fighter$ != strcharinfo(0))
+        goto L_Cheat;
+    if (Rossy_Quest < 15)
+        goto L_Cheat;
+    if ($@battlecave3 == 1)
+        goto L_Start;
+    goto L_Cheat;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave3 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave3_loop = $@cave3_loop + 1;
+    areamonster "025-4",150, 84, 177, 117,"",$@cave3_monsters_IDS[$@cave3_loop],$@cave3_monsters_QTY[$@cave3_loop],"#StartCaveFight3::OnMonsterDeath";
+    if ($@cave3_loop <= getarraysize($@cave3_monsters_IDS))
+        goto L_Summon;
+    $@cave3_loop = 0;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBattleCave3::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave3 = $@wave_cave3 + 1;
+    $@cave3_kills = 0;
+    if (attachrid(getcharid(3,$@cave3fighter$)) == 0) goto L_Abort;
+
+
+    if ($@wave_cave3 == 1)
+        message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation... Maybe it is not healthy to stay in this cave.";
+
+    if ($@wave_cave3 < $@cave3_waves)
+        goto L_Summon;
+    cavefights = (cavefights | BATTLE_CAVE3);
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS  + ".";
+    end;
+
+OnMonsterDeath:
+    $@cave3_kills = $@cave3_kills + 1;
+    if ($@cave3_kills >= $@cave3_monsters_QTY[1] + $@cave3_monsters_QTY[2] + $@cave3_monsters_QTY[3] + $@cave3_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+
+}
+
+
+025-4,168,117,0	script	#CheckCaveFight3	45,1,1,{
+    if (cavefights & BATTLE_CAVE3 || $@battlecave3 == 1)
+        goto L_Done;
+    message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    end;
+
+L_Done:
+    donpcevent "#WarpBattleCave3::OnGetout";
+    end;
+}
+
+025-4,39,143,0	script	#StartCaveFight4	324,{
+    if ($@battlecave4 == 2 && $@cave4fighter$ == strcharinfo(0))
+        end;
+    if ($@battlecave4 == 2 && $@cave4fighter$ != strcharinfo(0))
+        goto L_Cheat;
+    if (Rossy_Quest < 15)
+        goto L_Cheat;
+    if ($@battlecave4 == 1)
+        goto L_Start;
+    goto L_Cheat;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave4 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave4_loop = $@cave4_loop + 1;
+    areamonster "025-4",28, 124, 57, 156,"",$@cave4_monsters_IDS[$@cave4_loop],$@cave4_monsters_QTY[$@cave4_loop],"#StartCaveFight4::OnMonsterDeath";
+    if ($@cave4_loop <= getarraysize($@cave4_monsters_IDS))
+        goto L_Summon;
+    $@cave4_loop = 0;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBattleCave4::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave4 = $@wave_cave4 + 1;
+    $@cave4_kills = 0;
+    if (attachrid(getcharid(3,$@cave4fighter$)) == 0) goto L_Abort;
+
+
+    if ($@wave_cave4 == 1)
+        message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave4 == 2)
+        message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation... Maybe it is not healthy to stay in this cave.";
+
+    if ($@wave_cave4 < $@cave4_waves)
+        goto L_Summon;
+    cavefights = (cavefights | BATTLE_CAVE4);
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS  + ".";
+    end;
+
+OnMonsterDeath:
+    $@cave4_kills = $@cave4_kills + 1;
+    if ($@cave4_kills >= $@cave4_monsters_QTY[1] + $@cave4_monsters_QTY[2] + $@cave4_monsters_QTY[3] + $@cave4_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+
+}
+
+
+025-4,32,156,0	script	#CheckCaveFight4	45,1,1,{
+    if (cavefights & BATTLE_CAVE4 || $@battlecave4 == 1)
+        goto L_Done;
+    message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    end;
+
+L_Done:
+    donpcevent "#WarpBattleCave4::OnGetout";
+    end;
+}
+
+
+025-4,109,143,0	script	#StartCaveFight5	324,{
+    if ($@battlecave5 == 2 && $@cave5fighter$ == strcharinfo(0))
+        end;
+    if ($@battlecave5 == 2 && $@cave5fighter$ != strcharinfo(0))
+        goto L_Cheat;
+    if (Rossy_Quest < 15)
+        goto L_Cheat;
+    if ($@battlecave5 == 1)
+        goto L_Start;
+    goto L_Cheat;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave5 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave5_loop = $@cave5_loop + 1;
+    areamonster "025-4",91, 131, 124, 160,"",$@cave5_monsters_IDS[$@cave5_loop],$@cave5_monsters_QTY[$@cave5_loop],"#StartCaveFight5::OnMonsterDeath";
+    if ($@cave5_loop <= getarraysize($@cave5_monsters_IDS))
+        goto L_Summon;
+    $@cave5_loop = 0;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBattleCave5::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave5 = $@wave_cave5 + 1;
+    $@cave5_kills = 0;
+    if (attachrid(getcharid(3,$@cave5fighter$)) == 0) goto L_Abort;
+
+
+    if ($@wave_cave5 == 1)
+        message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave5 == 2)
+        message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation... Maybe it is not healthy to stay in this cave.";
+
+    if ($@wave_cave5 < $@cave5_waves)
+        goto L_Summon;
+    cavefights = (cavefights | BATTLE_CAVE5);
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS  + ".";
+    end;
+
+OnMonsterDeath:
+    $@cave5_kills = $@cave5_kills + 1;
+    if ($@cave5_kills >= $@cave5_monsters_QTY[1] + $@cave5_monsters_QTY[2] + $@cave5_monsters_QTY[3] + $@cave5_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+
+}
+
+
+025-4,100,160,0	script	#CheckCaveFight5	45,1,1,{
+    if (cavefights & BATTLE_CAVE5 || $@battlecave5 == 1)
+        goto L_Done;
+    message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    end;
+
+L_Done:
+    donpcevent "#WarpBattleCave5::OnGetout";
+    end;
+}
+
+
+025-4,162,162,0	script	#StartCaveFight6	324,{
+    if ($@battlecave6 == 2 && $@cave6fighter$ == strcharinfo(0))
+        end;
+    if ($@battlecave6 == 2 && $@cave6fighter$ != strcharinfo(0))
+        goto L_Cheat;
+    if (Rossy_Quest < 15)
+        goto L_Cheat;
+    if ($@battlecave6 == 1)
+        goto L_Start;
+    goto L_Cheat;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave6 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave6_loop = $@cave6_loop + 1;
+    areamonster "025-4",153, 143, 178, 174,"",$@cave6_monsters_IDS[$@cave6_loop],$@cave6_monsters_QTY[$@cave6_loop],"#StartCaveFight6::OnMonsterDeath";
+    if ($@cave6_loop <= getarraysize($@cave6_monsters_IDS))
+        goto L_Summon;
+    $@cave6_loop = 0;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBattleCave6::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave6 = $@wave_cave6 + 1;
+    $@cave6_kills = 0;
+    if (attachrid(getcharid(3,$@cave6fighter$)) == 0) goto L_Abort;
+
+
+    if ($@wave_cave6 == 1)
+        message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave6 == 2)
+        message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation... Maybe it is not healthy to stay in this cave.";
+
+    if ($@wave_cave6 < $@cave6_waves)
+        goto L_Summon;
+    cavefights = (cavefights | BATTLE_CAVE6);
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS  + ".";
+    end;
+
+OnMonsterDeath:
+    $@cave6_kills = $@cave6_kills + 1;
+    if ($@cave6_kills >= $@cave6_monsters_QTY[1] + $@cave6_monsters_QTY[2] + $@cave6_monsters_QTY[3] + $@cave6_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+
+}
+
+
+025-4,159,174,0	script	#CheckCaveFight6	45,1,1,{
+    if (cavefights & BATTLE_CAVE6 || $@battlecave6 == 1)
+        goto L_Done;
+    message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    end;
+
+L_Done:
+    donpcevent "#WarpBattleCave6::OnGetout";
+    end;
+}
+
+
+025-4,44,202,0	script	#StartCaveFight7	324,{
+    if ($@battlecave7 == 2 && $@cave7fighter$ == strcharinfo(0))
+        end;
+    if ($@battlecave7 == 2 && $@cave7fighter$ != strcharinfo(0))
+        goto L_Cheat;
+    if (Rossy_Quest < 15)
+        goto L_Cheat;
+    if ($@battlecave7 == 1)
+        goto L_Start;
+    goto L_Cheat;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave7 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave7_loop = $@cave7_loop + 1;
+    areamonster "025-4",27, 185, 61, 219,"",$@cave7_monsters_IDS[$@cave7_loop],$@cave7_monsters_QTY[$@cave7_loop],"#StartCaveFight7::OnMonsterDeath";
+    if ($@cave7_loop <= getarraysize($@cave7_monsters_IDS))
+        goto L_Summon;
+    $@cave7_loop = 0;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBattleCave7::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave7 = $@wave_cave7 + 1;
+    $@cave7_kills = 0;
+    if (attachrid(getcharid(3,$@cave7fighter$)) == 0) goto L_Abort;
+
+
+    if ($@wave_cave7 == 1)
+        message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave7 == 2)
+        message strcharinfo(0), "I can't give up now!";
+    if ($@wave_cave7 == 3)
+        message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation... Maybe it is not healthy to stay in this cave.";
+
+    if ($@wave_cave7 < $@cave7_waves)
+        goto L_Summon;
+    cavefights = (cavefights | BATTLE_CAVE7);
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS  + ".";
+    end;
+
+OnMonsterDeath:
+    $@cave7_kills = $@cave7_kills + 1;
+    if ($@cave7_kills >= $@cave7_monsters_QTY[1] + $@cave7_monsters_QTY[2] + $@cave7_monsters_QTY[3] + $@cave7_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+
+}
+
+
+025-4,42,219,0	script	#CheckCaveFight7	45,1,1,{
+    if (cavefights & BATTLE_CAVE7 || $@battlecave7 == 1)
+        goto L_Done;
+    message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    end;
+
+L_Done:
+    donpcevent "#WarpBattleCave7::OnGetout";
+    end;
+}
+
+
+025-4,105,210,0	script	#StartCaveFight8	324,{
+    if ($@battlecave8 == 2 && $@cave8fighter$ == strcharinfo(0))
+        end;
+    if ($@battlecave8 == 2 && $@cave8fighter$ != strcharinfo(0))
+        goto L_Cheat;
+    if (Rossy_Quest < 15)
+        goto L_Cheat;
+    if ($@battlecave8 == 1)
+        goto L_Start;
+    goto L_Cheat;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave8 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave8_loop = $@cave8_loop + 1;
+    areamonster "025-4",90, 193, 119, 216,"",$@cave8_monsters_IDS[$@cave8_loop],$@cave8_monsters_QTY[$@cave8_loop],"#StartCaveFight8::OnMonsterDeath";
+    if ($@cave8_loop <= getarraysize($@cave8_monsters_IDS))
+        goto L_Summon;
+    $@cave8_loop = 0;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBattleCave8::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave8 = $@wave_cave8 + 1;
+    $@cave8_kills = 0;
+    if (attachrid(getcharid(3,$@cave8fighter$)) == 0) goto L_Abort;
+
+
+    if ($@wave_cave8 == 1)
+        message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave8 == 2)
+        message strcharinfo(0), "I can't give up now!";
+    if ($@wave_cave8 == 3)
+        message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation... Maybe it is not healthy to stay in this cave.";
+
+    if ($@wave_cave8 < $@cave8_waves)
+        goto L_Summon;
+    cavefights = (cavefights | BATTLE_CAVE8);
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS  + ".";
+    end;
+
+OnMonsterDeath:
+    $@cave8_kills = $@cave8_kills + 1;
+    if ($@cave8_kills >= $@cave8_monsters_QTY[1] + $@cave8_monsters_QTY[2] + $@cave8_monsters_QTY[3] + $@cave8_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+
+}
+
+
+025-4,105,216,0	script	#CheckCaveFight8	45,1,1,{
+    if (cavefights & BATTLE_CAVE8 || $@battlecave8 == 1)
+        goto L_Done;
+    message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    end;
+
+L_Done:
+    donpcevent "#WarpBattleCave8::OnGetout";
+    end;
+}
+
+
+025-4,157,220,0	script	#StartCaveFight9	324,{
+    if ($@battlecave9 == 2 && $@cave9fighter$ == strcharinfo(0))
+        end;
+    if ($@battlecave9 == 2 && $@cave9fighter$ != strcharinfo(0))
+        goto L_Cheat;
+    if (Rossy_Quest < 15)
+        goto L_Cheat;
+    if ($@battlecave9 == 1)
+        goto L_Start;
+    goto L_Cheat;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave9 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave9_loop = $@cave9_loop + 1;
+    areamonster "025-4",144, 192, 173, 226,"",$@cave9_monsters_IDS[$@cave9_loop],$@cave9_monsters_QTY[$@cave9_loop],"#StartCaveFight9::OnMonsterDeath";
+    if ($@cave9_loop <= getarraysize($@cave9_monsters_IDS))
+        goto L_Summon;
+    $@cave9_loop = 0;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBattleCave9::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave9 = $@wave_cave9 + 1;
+    $@cave9_kills = 0;
+    if (attachrid(getcharid(3,$@cave9fighter$)) == 0) goto L_Abort;
+
+
+    if ($@wave_cave9 == 1)
+        message strcharinfo(0), "Oh no, more monsters?!";
+    if ($@wave_cave9 == 2)
+        message strcharinfo(0), "I can't give up now!";
+    if ($@wave_cave9 == 3)
+        message strcharinfo(0), "As soon as you kill the last monster, your vision blacks out and you feel a strange sensation... Maybe it is not healthy to stay in this cave.";
+
+    if ($@wave_cave9 < $@cave9_waves)
+        goto L_Summon;
+    cavefights = (cavefights | BATTLE_CAVE9);
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS  + ".";
+    end;
+
+OnMonsterDeath:
+    $@cave9_kills = $@cave9_kills + 1;
+    if ($@cave9_kills >= $@cave9_monsters_QTY[1] + $@cave9_monsters_QTY[2] + $@cave9_monsters_QTY[3] + $@cave9_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+
+}
+
+
+025-4,157,226,0	script	#CheckCaveFight9	45,1,1,{
+    if (cavefights & BATTLE_CAVE9 || $@battlecave9 == 1)
+        goto L_Done;
+    message strcharinfo(0), "You can't get out! Seems like a barrier was created when the energy transmuted itself into monsters.";
+    end;
+
+L_Done:
+    donpcevent "#WarpBattleCave9::OnGetout";
+    end;
+}
+
+
+025-4,157,30,0	script	#StartBossCaveFight	325,{
+    if ($@battlecave10 == 2 && $@cave10fighter$ == strcharinfo(0))
+        end;
+    if (Rossy_Quest >= 16)
+        end;
+    if ($@battlecave10 == 1 && cavefights & BATTLE_CAVE1 && cavefights & BATTLE_CAVE2 && cavefights & BATTLE_CAVE3 && cavefights & BATTLE_CAVE4 && cavefights & BATTLE_CAVE5 && cavefights & BATTLE_CAVE6 && cavefights & BATTLE_CAVE7 && cavefights & BATTLE_CAVE8 && cavefights & BATTLE_CAVE9 && Rossy_Quest == 15)
+        goto L_Start;
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Start:
+    menu
+        "Place a root at the center of the energy source.", L_PlaceCenter,
+        "I am not prepared yet!", L_Close;
+
+L_PlaceCenter:
+    if ((countitemcolor("Root")<1))
+        goto L_no_root;
+    close2;
+    delitem "Root", 1;
+    message strcharinfo(0), "As you place the root on the energy source, earth monsters seem to emerge from the ground.";
+    $@battlecave10 = 2;
+    goto L_Summon;
+
+L_Summon:
+    $@cave10_loop = $@cave10_loop + 1;
+    areamonster "025-4",142, 24, 172, 48,"",$@cave10_monsters_IDS[$@cave10_loop],$@cave10_monsters_QTY[$@cave10_loop],"#StartBossCaveFight::OnMonsterDeath";
+    if ($@cave10_loop <= getarraysize($@cave10_monsters_IDS))
+        goto L_Summon;
+    $@cave10_loop = 0;
+    end;
+
+L_SummonBoss:
+    if (attachrid(getcharid(3,$@cave10fighter$)) == 0) goto L_Abort;
+    areamonster "025-4",142, 24, 172, 48,"",$@cave10_boss_ID,1,"#StartBossCaveFight::OnBossDeath";
+    stopnpctimer;
+    end;
+
+L_Abort:
+    donpcevent "#WarpBossCave::OnNoRid";
+    end;
+
+L_Done:
+    $@wave_cave10 = $@wave_cave10 + 1;
+    $@cave10_kills = 0;
+    if (attachrid(getcharid(3,$@cave10fighter$)) == 0) goto L_Abort;
+
+
+    if ($@wave_cave10 == 1)
+        message strcharinfo(0), "I can't give up now!";
+    if ($@wave_cave10 == 2)
+        message strcharinfo(0), "I feel I'm getting close to the end...";
+    if ($@wave_cave10 == 3)
+        message strcharinfo(0), "What? This is harder than I imagined!";
+    if ($@wave_cave10 == 4)
+        message strcharinfo(0), "Finally! It seems I have defeated all of them!";
+
+    if ($@wave_cave10 < $@cave10_waves)
+        goto L_Summon;
+    $@wave_cave10 = 5;
+    @boss = 0;
+    initnpctimer;
+    end;
+
+OnTimer4000:
+    if (attachrid(getcharid(3,$@cave10fighter$)) == 0) goto L_Abort;
+    @boss = @boss + 1;
+    if (@boss == 1)
+        message strcharinfo(0), "You feel something strange... Looks like something terrible is about to show up in this cave.";
+    if (@boss == 2)
+        goto L_SummonBoss;
+    setnpctimer 0;
+    end;
+
+OnMonsterDeath:
+    $@cave10_kills = $@cave10_kills + 1;
+    if ($@cave10_kills >= $@cave10_monsters_QTY[1] + $@cave10_monsters_QTY[2] + $@cave10_monsters_QTY[3] + $@cave10_monsters_QTY[4])
+        goto L_Done;
+    end;
+
+OnBossDeath:
+    if (attachrid(getcharid(3,$@cave10fighter$)) == 0) goto L_Abort;
+    message strcharinfo(0), "What a harsh battle... You should hurry and save Julia!";
+    Rossy_Quest = 16;
+    getexp 100000, 0;
+    BOSS_POINTS = BOSS_POINTS + 50;
+    message strcharinfo(0), "You gain 50 Boss Points giving you a total of " + BOSS_POINTS  + ".";
+    end;
+
+L_Close:
+    close;
+
+L_no_root:
+    mes "I don't have any roots in my inventory!";
+    close;
+
+}
+
+
+025-4,157,48,0	script	#CheckCaveFightBoss	45,1,1,{
+    if (Rossy_Quest >= 17)
+        goto L_Done;
+    if (Rossy_Quest == 16)
+        goto L_Julia;
+    if (Rossy_Quest < 16 && $@battlecave10 == 1)
+        goto L_Out;
+    if (Rossy_Quest < 16 && $@battlecave10 == 2)
+        goto L_Julia;
+    end;
+
+L_Julia:
+    message strcharinfo(0), "I shouldn't leave yet. Julia is still in danger.";
+    end;
+
+L_Done:
+    warp "025-3", 77, 168;
+    end;
+
+L_Out:
+    donpcevent "#WarpBossCave::OnGetout";
+    end;
+}
+
+
+025-4,157,24,0	script	#CheckJuliaCaveOutside	45,1,1,{
+    if (Rossy_Quest > 15)
+        goto L_Done;
+    message strcharinfo(0), "As you try to walk through, you bump into a strong magical barrier.";
+    percentheal -10, 0;
+    end;
+
+L_Done:
+    donpcevent "#WarpBossCave::OnWin";
+    end;
+}
+
+
+025-4,93,35,0	script	#CheckJuliaCaveInside	45,1,1,{
+    if (Rossy_Quest >= 17)
+        goto L_Done;
+    if (Rossy_Quest == 16)
+        goto L_Save;
+    if (Rossy_Quest <= 15)
+        goto L_Cheat;
+    end;
+
+L_Cheat:
+    message strcharinfo(0), "You shouldn't be here, you cheater.";
+    percentheal -100, 0;
+    end;
+
+L_Done:
+    message strcharinfo(0), "As you go back to the cave you close your eyes, terrified of the bloody battle you just fought in this place, and feel your way back to the entrance of the cave.";
+    warp "025-3", 77, 168;
+    end;
+
+L_Save:
+    message strcharinfo(0), "You can't leave Julia here, all alone!";
+    end;
+}
+

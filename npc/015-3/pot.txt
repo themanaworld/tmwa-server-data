@@ -1,0 +1,122 @@
+
+015-3,37,29,0	script	Pot	400,{
+    @cat = ((Katze & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if (@cat > 0)
+        mes "It's that old pot again.";
+    if (@cat == 0)
+        mes "It's a pot.";
+    next;
+
+    if (@cat == 1 && @catNeedsAlone == 0)
+        goto L_NeedsFood;
+    if (@cat == 1)
+        goto L_HasMilk;
+    if (@cat == 2 && @catNeedsAlone == 0)
+        goto L_NeedsFur;
+    if (@cat == 2)
+        goto L_HasFood;
+    if (@cat == 3)
+        goto L_NeedsWood;
+    if (@cat == 4 && @catNeedsAlone == 1)
+        goto L_HasWood;
+    if (@cat >= 4)
+        goto L_Close;
+    goto L_NeedsMilk;
+
+L_NeedsMilk:
+    if (countitemcolor("Milk") > 0)
+        menu
+            "Pour in some milk.", L_GiveMilk,
+            "Leave it alone.", L_Close;
+    goto L_Close;
+
+L_GiveMilk:
+    delitem "Milk", 1;
+    @cat = 1;
+    callsub S_Update_Katze;
+    @catNeedsAlone = 1;
+    goto L_Close;
+
+L_HasMilk:
+    mes "There is milk in it.";
+    goto L_Close;
+
+L_NeedsFood:
+    mes "The milk is gone!";
+    next;
+
+    if (countitemcolor("ChickenLeg") > 0 && countitemcolor("Steak") > 0)
+        menu
+            "Put in a chicken leg.", L_GiveChicken,
+            "Put in a steak.", L_GiveSteak,
+            "Leave it alone.", L_Close;
+    if (countitemcolor("ChickenLeg") > 0 && countitemcolor("Steak") == 0)
+        menu
+            "Put in a chicken leg.", L_GiveChicken,
+            "Leave it alone.", L_Close;
+    if (countitemcolor("ChickenLeg") == 0 && countitemcolor("Steak") > 0)
+        menu
+            "Put in a steak.", L_GiveSteak,
+            "Leave it alone.", L_Close;
+    goto L_Close;
+
+L_GiveChicken:
+    delitem "ChickenLeg", 1;
+    @cat = 2;
+    callsub S_Update_Katze;
+    @catNeedsAlone = 1;
+    goto L_Close;
+
+L_GiveSteak:
+    delitem "Steak", 1;
+    @cat = 2;
+    callsub S_Update_Katze;
+    @catNeedsAlone = 1;
+    goto L_Close;
+
+L_HasFood:
+    mes "There is some food in it.";
+    goto L_Close;
+
+L_NeedsFur:
+    mes "And it's empty!";
+    next;
+
+    if (countitemcolor("WhiteFur") > 0)
+        menu
+            "Put a white fur next to the pot.", L_GiveFur,
+            "Leave it alone.", L_Close;
+    goto L_Close;
+
+L_GiveFur:
+    mes "You put down the fur, but the cat doesn't seem to take any notice. Maybe there's something else you could do. You pick the fur up again.";
+    goto L_Close;
+
+L_NeedsWood:
+    if (countitemcolor("RawLog") > 0)
+        menu
+            "Put a wooden log next to the pot.", L_GiveWood,
+            "Leave it alone.", L_Close;
+    goto L_Close;
+
+L_GiveWood:
+    delitem "RawLog", 1;
+    @cat = 4;
+    callsub S_Update_Katze;
+    @catNeedsAlone = 1;
+    mes "You put the wooden log next to the pot. The cat eyes it suspiciously, but remains on her spot.";
+    goto L_Close;
+
+L_HasWood:
+    mes "A wooden log is patiently lying next to it.";
+    goto L_Close;
+
+L_Close:
+    @cat = 0;
+    close;
+
+S_Update_Katze:
+    Katze = (Katze & ~(NIBBLE_0_MASK)) | (@cat << NIBBLE_0_SHIFT);
+    return;
+}

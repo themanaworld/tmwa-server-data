@@ -1,0 +1,263 @@
+033-1,72,27,0	script	Birrod	217,{
+    @state = ((QUEST_Barbarians & $@Q_Barbarians_MASK) >> $@Q_Barbarians_SHIFT);
+
+    set @wolvern_level, 40;    // minimum level to do the wolvern hunting
+    @wolvern_exp = 5000;
+
+    @minigame_exp = 5000;
+
+    if (@state >= 6) goto L_Impressed;
+    if (@state == 5) goto L_Questions;
+    if (@state == 4) goto L_Wolverns;
+    if (@state == 3) goto L_Hunting;
+    if (@state == 2) goto L_Kimarr;
+    if (@state == 1) goto L_Fluffy;
+
+    mes "[Barbarian]";
+    mes "\"Welcome. My name is Birrod, warrior of the Mangarr.";
+    mes "We usually live high up in the snowy mountains, but we need to solve a problem, so we came down here.\"";
+    next;
+    mes "\"But this shouldn't concern you.\"";
+    goto L_Close;
+
+L_Fluffy:
+    mes "[Birrod]";
+    mes "\"Kimarr asked you to perform the Fluffy hunting? I'm curious how you're going to do it.\"";
+    mes "He grins.";
+    goto L_Close;
+
+L_Kimarr:
+    mes "[Birrod]";
+    mes "\"Great! Very well done! Welcome to our tribe.\"";
+    next;
+    mes "\"I think Kimarr has something for you.\"";
+    goto L_Close;
+
+L_Hunting:
+    if (BaseLevel < @wolvern_level)
+        goto L_Weak;
+    mes "[Birrod]";
+    mes "\"Hello, " + strcharinfo(0) + "! Would you like to prove your hunting skills again?\"";
+    next;
+    mes "\"I noticed some groups of Wolverns in the forest west of here which are unusually aggressive.";
+    mes "This makes it dangerous for all the small people from the nearby town to go there.\"";
+    next;
+    mes "\"To prove your skills, go to the forest and hunt down " + $@Q_Barbarians_wolvern_amount + " of the very aggressive Wolverns.\"";
+    next;
+    mes "\"There are also some Wolverns that behave normally and attack you only when you come too close to them.";
+    mes "Those are not the ones I mean, but those that seek the battle themselves.\"";
+    @state = 4;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Wolverns:
+    if (wolvern_count >= $@Q_Barbarians_wolvern_amount)
+        goto L_Wolverns_Done;
+    mes "[Birrod]";
+    mes "\"Greetings, my friend.";
+    mes "The aggressive wolverns are still roaming the forest west of here.\"";
+    next;
+    mes "\"This is your chance to prove your worth.\"";
+    goto L_Close;
+
+L_Wolverns_Done:
+    @state = 5;
+    callsub S_Update_Mask;
+    wolvern_count = 0;
+    mes "[Birrod]";
+    mes "\"" + strcharinfo(0) + "!";
+    mes "Good work. This area is much safer now.\"";
+    next;
+    getexp @wolvern_exp, 0;
+    if (getskilllv(SKILL_POOL) == 0)
+        goto L_Not_Ready;
+    mes "\"Your skills are impressive. You are worthy to be called a warrior of the Mangarr, if you accept.\"";
+    next;
+    goto L_Questions;
+
+L_Questions:
+    if (getskilllv(SKILL_POOL) == 0)
+        goto L_Not_Ready;
+    mes "Birrod has a very solemn look on his face.";
+    mes "[Birrod]";
+    mes "\"" + strcharinfo(0) + ", are you ready to become a full-fledged member of our tribe, the Mangarr?\"";
+    menu
+        "Yes, what do I need to do?",L_Next,
+        "That's why I'm here.",L_Next,
+        "Sorry, I have to go. See you.",L_No_Member;
+
+L_Next:
+    mes "Birrod nods earnestly.";
+    mes "[Birrod]";
+    mes "\"I will ask you some questions.";
+    mes "Think well and be honest, because your answers will determine whether you are worthy.\"";
+    next;
+    mes "\"What's the most important thing for a true warrior?\"";
+    menu
+        "Strength!",L_Fail11,
+        "A good weapon.",L_Fail12,
+        "Bravery.",L_Success11;
+
+L_Fail11:
+    mes "[Birrod]";
+    mes "\"Strength is indeed important for a warrior. But before you can show strength, you need to have something else.\"";
+    next;
+    goto L_No_Member;
+
+L_Fail12:
+    mes "[Birrod]";
+    mes "\"Are you kidding?\"";
+    next;
+    goto L_No_Member;
+
+L_Success11:
+    mes "[Birrod]";
+    mes "\"Wise words.\"";
+    next;
+    mes "\"What would you do if you are wounded but Yetis are attacking our tribe?\"";
+    menu
+        "Run as fast as I can.",L_Fail21,
+        "Fight no matter what.",L_Fail22,
+        "Try to hold them back until everyone is safe, then retreat.",L_Success21;
+
+L_Fail21:
+    mes "[Birrod]";
+    mes "\"You will never become an accepted member of our tribe with that attitude.\"";
+    next;
+    goto L_No_Member;
+
+L_Fail22:
+    mes "[Birrod]";
+    mes "\"Honorable, but stupid.\"";
+    next;
+    goto L_No_Member;
+
+L_Success21:
+    mes "[Birrod]";
+    mes "\"Right.\"";
+    next;
+    mes "\"When you are on a hunting trip with your comrades and it's time to set up a camp in the evening, what things do you do?\"";
+    menu
+        "Take care of everyone who got wounded.",L_Success31,
+        "Pitch the tent and make a fire.",L_Success32,
+        "Lay down and rest.",L_Fail31;
+
+L_Success31:
+    mes "[Birrod]";
+    mes "\"You're a caring person. Good.\"";
+    next;
+    goto L_Success3;
+
+L_Success32:
+    mes "[Birrod]";
+    mes "\"You're diligent, good.\"";
+    next;
+    goto L_Success3;
+
+L_Fail31:
+    mes "[Birrod]";
+    mes "\"You wouldn't make friends that way.\"";
+    next;
+    goto L_No_Member;
+
+L_Success3:
+    mes "\"What is your goal in life?\"";
+    menu
+        "Learn new things and see the world.",L_Success41,
+        "Become as powerful as I can.",L_Fail41,
+        "Protect the ones I love.",L_Success42;
+
+L_Success41:
+    mes "[Birrod]";
+    mes "\"You're curious. An attribute we appreciate.\"";
+    next;
+    goto L_Success4;
+
+L_Fail41:
+    mes "[Birrod]";
+    mes "\"You're seeking power? For what?\"";
+    next;
+    goto L_No_Member;
+
+L_Success42:
+    mes "[Birrod]";
+    mes "\"An honorable goal.\"";
+    next;
+    goto L_Success4;
+
+L_Success4:
+    mes "\"What do you think is a good reason to fight and kill?\"";
+    menu
+        "Because I want it.",L_Fail51,
+        "To survive.",L_Success51,
+        "To protect someone in need.",L_Success52;
+
+L_Fail51:
+    mes "[Birrod]";
+    mes "\"You think so?\"";
+    next;
+    goto L_No_Member;
+
+L_Success51:
+    mes "[Birrod]";
+    mes "\"Right.\"";
+    next;
+    goto L_Success5;
+
+L_Success52:
+    mes "[Birrod]";
+    mes "\"Yes, that's the most honorable reason.\"";
+    next;
+    goto L_Success5;
+
+L_Success5:
+    getexp @minigame_exp, 0;
+    addtoskill SKILL_RAGING, 1;
+    @state = 6;
+    callsub S_Update_Mask;
+    mes "You feel an exciting energy inside you.";
+    mes "[Birrod]";
+    mes "\"You are now a warrior of the Mangarr.\"";
+    next;
+    mes "\"As a Mangarr warrior, you gain the ability to put back your own safety for Raging in battle with a tremendous power.";
+    mes "This power now lies within you, waiting for someone to help you focus on it.\"";
+    goto L_Close;
+
+L_Impressed:
+    mes "[Birrod]";
+    mes "\"I'm very proud that you're a member of the tribe.\"";
+    goto L_Close;
+
+L_Not_Ready:
+    mes "[Birrod]";
+    mes "\"" + strcharinfo(0) + ", you've shown great hunting skills and are an enrichment to our tribe.";
+    mes "But you still lack the needed mental skills to become a full member of our tribe.\"";
+    next;
+    mes "\"Roam this world to find more experienced persons than yourself to learn new things.";
+    mes "Then come back when you've gained the ability to focus your mind.\"";
+    goto L_Close;
+
+L_No_Member:
+    mes "Birrod shakes his head.";
+    mes "[Birrod]";
+    mes "\"Think again about your position in our tribe and what you want to achieve.";
+    mes "Come back when you feel better prepared.\"";
+    goto L_Close;
+
+L_Weak:
+    mes "[Birrod]";
+    mes "\"Hello, " + strcharinfo(0) + "! I might have a task for you when you've grown up a bit.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @wolvern_level = 0;
+    @wolvern_exp = 0;
+    @minigame_exp = 0;
+    close;
+
+S_Update_Mask:
+    set QUEST_Barbarians,
+        (QUEST_Barbarians & ~($@Q_Barbarians_MASK)) | (@state << $@Q_Barbarians_SHIFT);
+    return;
+}

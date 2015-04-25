@@ -1,0 +1,108 @@
+002-2,36,75,0	script	Imec	162,{
+    @state = ((QUEST_NorthTulimshar & TWOBIT_4_MASK) >> TWOBIT_4_SHIFT);
+    @Exp = 90;
+    @money = 500;
+
+    if (@state >= 3) goto L_Stingers;
+    if (@state == 2) goto L_Return;
+    if (@state == 1) goto L_Bring;
+
+    mes "[Imec]";
+    mes "\"The Wizard's Council shut down my shop!";
+    mes "They said I was selling illegal things, but what's so illegal about poison?\"";
+    next;
+    mes "\"Anyway, I hope to get a merchant's permit again... One of these days...\"";
+    mes "He looks at you.";
+    next;
+    mes "[Imec]";
+    mes "\"You can do an errand for me. I just finished writing a petition to the Council about my shop.";
+    mes "If you bring it to the government building near the docks, I'll give you a small reward.\"";
+    goto L_Offer;
+
+L_Offer:
+    menu
+        "Where are the docks and what is the government building?",L_Explain,
+        "Ok, sounds good.",L_Next,
+        "No!",L_Close;
+
+L_Next:
+    mes "[Imec]";
+    mes "\"Very good. Here is the paper.\"";
+    mes "Imec gives you a sealed letter. You put it away in a pocket separated from your inventory, so it won't get lost.";
+    @state = 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Explain:
+    mes "[Imec]";
+    mes "\"Follow the road to the north through the gate, then go west when you reach the docks. It's right before the castle mount.\"";
+    next;
+    mes "\"In the building there are several offices. If you want to join or form a party, you have to pay your taxes there first.\"";
+    next;
+    mes "\"So, will you bring my petition to the office in that building?\"";
+    if (@state == 0)
+        goto L_Offer;
+    goto L_Close;
+
+L_Bring:
+    mes "[Imec]";
+    mes "\"What are you waiting for? Bring my petition to the government building.\"";
+    menu
+        "Where is it again?",L_Explain,
+        "I'm on my way.",L_Close;
+
+L_Return:
+    mes "[Imec]";
+    mes "\"Ah, you're back.\"";
+    mes "You hand the letter of acknowledgement over to Imec.";
+    next;
+    mes "[Imec]";
+    mes "\"Very well. I'm sure I'll be able to open my shop again soon.\"";
+    next;
+    mes "It seems Imec doesn't notice you anymore.";
+    menu
+        "You mentioned a reward.",L_Next1;
+
+L_Next1:
+    mes "[Imec]";
+    mes "\"What? Ah, right. Here, have this.\"";
+    getexp @Exp, 0;
+    Zeny = Zeny + @money;
+    @state = 3;
+    callsub S_Update_Mask;
+    next;
+    mes "\"Actually, you could be of further help to me.\"";
+    next;
+    goto L_Stingers;
+
+L_Stingers:
+    mes "[Imec]";
+    @dq_level = 10;
+    @dq_cost = 3;
+    @dq_count = 3;
+    @dq_name$ = "ScorpionStinger";
+    @dq_friendly_name$ = "Scorpion Stingers";
+    @dq_money = 200;
+    @dq_exp = 40;
+
+    callfunc "DailyQuest";
+    goto L_Close;
+
+L_Close:
+    @money = 0;
+    @state = 0;
+
+    @dq_level = 0;
+    @dq_cost = 0;
+    @dq_count = 0;
+    @dq_name$ = "";
+    @dq_friendly_name$ = "";
+    @dq_money = 0;
+    @dq_exp = 0;
+    @dq_return = 0;
+    close;
+
+S_Update_Mask:
+    QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(TWOBIT_4_MASK)) | (@state << TWOBIT_4_SHIFT);
+    return;
+}

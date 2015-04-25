@@ -1,0 +1,454 @@
+
+009-1,81,41,0	script	Milly	114,{
+    callfunc "ClearVariables";
+
+    @inspector = ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    @got_boneknife = ((QUEST_Forestbow_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT) >= 4;
+    @got_setzer = ((QUEST_Forestbow_state & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT) >= 8;
+    @saved_rossy = (FLAGS & FLAG_ROSSI_COMPLETED);
+    @saved_cindy = ((QUEST_Nivalis_state & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT) >= 4;
+
+    if (FLAGS & FLAG_GOT_BEANIEHAT) goto L_FinishedGood;
+    if (FLAGS & FLAG_DECLINED_BEANIEHAT) goto L_FinishedBad;
+
+    if (@saved_rossy && @saved_cindy && @got_setzer && (BOSS_POINTS >= 5000)) goto L_OfferCap;
+    if (@got_setzer)    goto L_GotSetzer;
+    if (@saved_cindy)   goto L_SavedCindy;
+    if (@saved_rossy)   goto L_SavedRossy;
+    if (@got_boneknife) goto L_GotBoneKnife;
+    if (BaseLevel > 40) goto L_NoKnifeYet;
+
+    mes "[Milly]";
+    mes "\"Hello traveler, welcome to Hurnscald.\"";
+    next;
+    callsub S_InspectorMaybe;
+
+    mes "\"Have you met Kfahr yet? He is the greatest hero that ever walked the land of Hurnscald!\"";
+    menu
+        "Hi! No, I haven't seen him yet.", L_Where,
+        "Where can I find him?", L_Where,
+        "Mh, I don't care for heroes.", L_Care,
+        "Hello, yes I have met him.", L_MetKfahr;
+
+L_Where:
+    mes "[Milly]";
+    mes "\"I highly recommend you seek him out! He is a regular at the inn, located in the north-west part of town. If you are lucky he might tell you a story about his adventures.\"";
+    goto L_Close;
+
+L_Care:
+    mes "[Milly]";
+    mes "\"What? Surely you do not appreciate what a hero he is! Mh, or perhaps honor is dead in you; for you to be so slow to comprehend the good that his exploits have wrought for us. Put on your thinking cap and be propelled into high adventure! Go to Kfahr, and listen to his stories.\"";
+    next;
+    mes "\"You can't have met him. No one who has met him would say such silly things.\"";
+    next;
+    goto L_Where;
+
+L_MetKfahr:
+    mes "[Milly]";
+    mes "\"Oh, I hope you stayed and listened to his stories about his adventures.\"";
+    goto L_Close;
+
+L_NoKnifeYet:
+    mes "[Milly]";
+    mes "\"Hi again.\"";
+    next;
+    callsub S_InspectorMaybe;
+
+    mes "\"Have you talked to Kfahr lately?\"";
+    menu
+        "Yes.", L_TalkKfahr,
+        "No.", L_HintKnife;
+
+L_TalkKfahr:
+    mes "[Milly]";
+    mes "\"Is it true as the rumors say? ...\"";
+    next;
+    goto L_HintKnife;
+
+L_HintKnife:
+    mes "[Milly]";
+    mes "\"You really should go meet him.\"";
+    next;
+    mes "\"I've heard that he is helping adventurers such as yourself with some exotic gear.\"";
+    menu
+        "I am not sure, I'd better go talk to him again.", L_Unsure,
+        "Yes, it is true.", L_True;
+
+L_Unsure:
+    mes "[Milly]";
+    mes "\"You better hurry up before he changes his mind!\"";
+    goto L_Close;
+
+L_True:
+    mes "[Milly]";
+    mes "\"So, why haven't you accepted his generous offer?\"";
+    menu
+        "I was just about to...", L_Unsure,
+        "I don't need any help.", L_NoHelp;
+
+L_NoHelp:
+    mes "[Milly]";
+    mes "\"You must be kidding me.\"";
+    next;
+    mes "\"I am just a kid but not as silly as you. My pigtails possess more wisdom than you. You fooled me, you are no adventurer!\"";
+    next;
+    mes "\"You better learn from the wise and accept help from those who offer it.\"";
+    goto L_Unsure;
+
+L_GotBoneKnife:
+    mes "[Milly]";
+    mes "\"Hi there.\"";
+    next;
+    callsub S_InspectorMaybe;
+
+    mes "\"I heard that you got an exotic knife from Kfahr.";
+    mes "Would you kindly show it to me?\"";
+    menu
+        "Sure.", L_ShowKnife,
+        "Haven't I already?", L_ShowKnifeAgain;
+
+L_ShowKnife:
+    if (countitemcolor("BoneKnife") < 1)
+        goto L_ShowKnifeNo;
+    mes "[Milly]";
+    mes "\"Wow! That is a knife fitting a real adventurer!\"";
+    next;
+    mes "\"Kfahr ain't just a hero, he is also a stand up guy.\"";
+    next;
+    mes "\"You should be proud that he is honoring you with his knife like this.\"";
+    next;
+    mes "\"What a hero...\"";
+    goto L_Close;
+
+L_ShowKnifeAgain:
+    mes "[Milly]";
+    mes "\"What possible objection could you have? It's so exiting to see such a fine knife.\"";
+    next;
+    mes "\"It is like cake, sure I might have had it before...\"";
+    next;
+    mes "\"... but does that stop me from wanting it once more?\"";
+    next;
+    mes "\"NO!\"";
+    next;
+    mes "\"Please let me see it!\"";
+    menu
+        "Okay.", L_ShowKnife,
+        "Enough is enough.", L_ShowKnifeNo;
+
+L_ShowKnifeNo:
+    mes "[Milly]";
+    mes "\"I hope that the reason that you don't show it to me is because you have it tucked away somewhere safe.\"";
+    next;
+    mes "\"Otherwise you are just a bore...\"";
+    next;
+    mes "\"Don't be boring!\"";
+    goto L_Close;
+
+L_SavedRossy:
+    mes "[Milly]";
+    mes "\"Hi friend!\"";
+    next;
+    callsub S_InspectorMaybe;
+
+    mes "\"Word of your fame has spread throughout all Hurnscald of your great heroism by helping my friends Rossy and Julia!\"";
+    next;
+    mes "\"Not only did you help Rossy, you saved her sister Julia from that nefarious Fey Element. That was a real act of valor!\"";
+    next;
+    mes "\"You are shaping up to be something of a hero yourself.\"";
+    next;
+    mes "\"I am so happy that you came to Hurnscald, without you I'm not so sure that Julia would have been saved.\"";
+    menu
+        "You're right, I am a hero!", L_Loudmouth,
+        "I'm doing my best!", L_Modesty;
+
+L_Loudmouth:
+    mes "[Milly]";
+    mes "\"You surely are not...\"";
+    next;
+    mes "\"First and foremost you are a loudmouth. You need to learn actions speak better for themselves without your boasting.\"";
+    next;
+    mes "\"A little modesty would be a distinguishing trait for you to cultivate. You are talking as if you think that you are equal with Kfahr.\"";
+    next;
+    mes "\"I think you should show a little more respect when you are this close to legendary heroes.\"";
+    goto L_Close;
+
+L_Modesty:
+    mes "[Milly]";
+    mes "\"Wow, you have been very helpful and unselfish risking your own safety for the sake of others! Thanks to that Julia is back and Olana is able to sleep at night.\"";
+    next;
+    mes "\"If you continue with these valiant deeds you might earn your place in the history books of Hurnscald!\"";
+    goto L_Close;
+
+L_SavedCindy:
+    mes "[Milly]";
+    mes "\"Hi!\"";
+    next;
+    callsub S_InspectorMaybe;
+
+    mes "\"Are the rumors true?\"";
+    next;
+    mes "\"Word is going around that you saved a girl called Cindy who was captured by Yetis in Nivalis, and that you arranged a rescue party getting her back from a deep Yeti inhibited cave.\"";
+    menu
+        "Thanks to the party, yes.", L_Party,
+        "Yes, it is true!", L_Cindy;
+
+L_Party:
+    mes "[Milly]";
+    mes "\"Wow! Not only are you brave, you also have the wisdom to seek help when needed!\"";
+    next;
+    mes "\"Being a skilled fighter is good. But being a skilled fighter coupled with your wits and organizational skill, now that is something special!\"";
+    goto L_HeroGrowing;
+
+L_Cindy:
+    mes "[Milly]";
+    mes "\"Once again you have done good!\"";
+    goto L_HeroGrowing;
+
+L_HeroGrowing:
+    mes "[Milly]";
+    mes "\"You have saved two kids about my own age from horrible situations, it is just like the stories I heard growing up.\"";
+    next;
+    mes "\"Things certainly are shaping up for you. My schoolmates play a game with you as the hero. And poets admire you in verse and song...\"";
+    next;
+    mes "\"Since you have proven yourself with your great acts, I will let you in on an exciting rumor I have heard.\"";
+    next;
+    mes "\"I have heard that Nicholas has learned new techniques in forging and weapon smithing. He is now able to improve a small sword into what is called a Setzer.\"";
+    next;
+    mes "\"Go talk to him and hear if he can help you get hold of one of these weapons.\"";
+    goto L_Close;
+
+L_GotSetzer:
+    mes "[Milly]";
+    mes "\"Hello!\"";
+    next;
+    callsub S_InspectorMaybe;
+
+    mes "\"I heard that you got hold of a Setzer!\"";
+    next;
+    mes "\"And the fact that Kfahr helped you means he really rates you as a fellow adventurer!\"";
+    next;
+    mes "\"Praise does not get much better than that around here. He knows a good adventurer when he see one, you must have impressed him!\"";
+    if (!@saved_cindy || !@saved_rossy)
+        goto L_Close;
+    next;
+    mes "\"To be honest you are fast becoming my favored hero, even... dare I say it? Even more so than Kfahr.\"";
+    next;
+    mes "\"Your skill and good deeds are indisputable! However...\"";
+    next;
+    mes "\"Somehow I feel that you still need to establish your courage. The elders say that although they find you an admirable person, a hero of renown; that you can't be considered as great as Kfahr till you have proven yourself fearless.\"";
+    next;
+    mes "\"You could prove yourself as the greatest hero who has walked the land by accepting Paruas challenge at Candor. Stare death in the eyes, show no fear and conquer! Show everyone that you are worthy of the title: The Greatest Hero Ever!\"";
+    next;
+    mes "\"I myself already consider you my favorite hero, sure Kfahr has done great things, but...\"";
+    next;
+    mes "\"Nowadays he mostly sits around with that sad bunch of drunkards in the Inn, drinking beer and talking about past glory.\"";
+    next;
+    mes "\"For my generation you are the true hero, please prove the stony hearted elders wrong by showing them that you are fearless!\"";
+    next;
+    mes "\"Good luck and good bye! Health, mana, and wealth be yours! \"";
+    goto L_Close;
+
+L_OfferCap:
+    mes "[Milly]";
+    mes "\"Hi there, hero of Hurnscald!\"";
+    next;
+    callsub S_InspectorMaybe;
+
+    mes "\"You really have proven yourself over and over. There is no way anyone could possibly say, you are not the equal of Kfahr!\"";
+    next;
+    mes "\"Now, even the stones of Hurnscald praise you as a hero as great as Kfahr!\"";
+    next;
+    mes "\"I have something I want to give you...\"";
+    next;
+    mes "\"I was given two of those helicopter beanie caps at my birthday. I told everyone that it was what I really wanted so I got two of them...\"";
+    next;
+    mes "\"And some other kids are picking on me for wearing it, they say it is for nerds... I would be happy to give you one of them.\"";
+    next;
+    mes "\"It would be great if you wore a cap just like mine, that would sure shut them up! Also, please accept this rare hat as a token of my gratitude for everything you have done.\"";
+    next;
+    mes "\"It would be an honor to have the same cap as my hero!\"";
+    menu
+        "Thank you!", L_Cap,
+        "No, thanks.", L_Idiot;
+
+L_Cap:
+    mes "[Milly]";
+    mes "\"Wow, thanks for accepting my gift, it is so pleasing to know that you have the exact same cap as me! Friends forever!\"";
+    getinventorylist;
+    if (@inventorylist_count == 100 || (checkweight("BeanieCopter", 1) == 0))
+        goto L_TooMany;
+    getitem "BeanieCopter", 1;
+    FLAGS = FLAGS | FLAG_GOT_BEANIEHAT;
+    next;
+    mes "She is giggling with excitement.";
+    next;
+    mes "[Milly]";
+    mes "\"Come see me anytime! Goodbye!\"";
+    goto L_Close;
+
+L_Idiot:
+    mes "[Milly]";
+    mes "\"Are you really sure? It is such a neat cap.\"";
+    menu
+        "Yes, no nerd hat for me!", L_BadBye,
+        "Just kidding, I want one!", L_Cap;
+
+L_BadBye:
+    mes "Tears are forming in her eyes.";
+    mes "[Milly]";
+    mes "\"I guess they were right, you're not any great hero! I'll give it to Kfahr instead!\"";
+    next;
+    mes "\"Please keep on traveling so I don't have to see you around here. It makes me sad to see you, every time I do I'll remember how wrong I was about you.\"";
+    FLAGS = FLAGS | FLAG_DECLINED_BEANIEHAT;
+    goto L_Close;
+
+L_TooMany:
+    mes "[Milly]";
+    mes "\"You don't have any space left to carry it, go put some stuff in the storage and come back!\"";
+    goto L_Close;
+
+L_FinishedGood:
+    mes "[Milly]";
+    mes "\"Hi there friend, my hero!\"";
+    next;
+    callsub S_InspectorMaybe;
+
+    mes "\"Wear the copter beany cap in good health, mana and wealth! See you around!\"";
+    goto L_Close;
+
+L_FinishedBad:
+    mes "[Milly]";
+    mes "\"Oh, it's you. I suppose you're here to make fun of my hat again.\"";
+    next;
+    callsub S_InspectorMaybe;
+    mes "\"Won't you continue your travels soon?\"";
+    menu
+        "That's what I'm going to do.", L_Next,
+        "I'm really sorry. Of course I want your hat!", L_Apologize;
+
+L_Next:
+    mes "Milly looks away sadly.";
+    goto L_Close;
+
+L_Apologize:
+    getinventorylist;
+    if (@inventorylist_count == 100 || (checkweight("BeanieCopter", 1) == 0))
+        goto L_TooMany;
+    getitem "BeanieCopter", 1;
+    FLAGS = FLAGS | FLAG_GOT_BEANIEHAT;
+    FLAGS = FLAGS & ~FLAG_DECLINED_BEANIEHAT;
+
+    mes "Milly looks surprised.";
+    next;
+    mes "[Milly]";
+    mes "\"Oh, I... uh, thank you! I knew it! I knew such a heroic person as you can't be that mean.\"";
+    goto L_Close;
+
+L_Close:
+    @got_boneknife = 0;
+    @got_setzer = 0;
+    @saved_rossy = 0;
+    @saved_cindy = 0;
+    @inspector = 0;
+    close;
+
+S_InspectorMaybe:
+    if (@inspector != 1)
+        goto L_Return;
+    menu
+        "Have you seen anything strange lately?", L_NohMask_Strange,
+        "Do you know anything about the recent robberies?", L_NohMask_Robbery,
+        "Hello.", L_Return;
+
+L_NohMask_Strange:
+    mes "[Milly]";
+    mes "\"I haven't seen anything strange.\"";
+    next;
+    goto L_Return;
+
+L_NohMask_Robbery:
+    mes "[Milly]";
+    mes "\"No, sorry.\"";
+    next;
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+009-1,82,41,0	script	MillyDebugHelper	114,{
+    mes "You can set certain quests as finished or not finished. What would you like to do?";
+    menu
+        "Bone Knife Quest done.", L_DBoneKnife,
+        "Rossy Quest done.", L_DRossy,
+        "Cindy Quest done.", L_DCindy,
+        "Setzer Quest done.", L_DSetzer,
+        "Gain 5000 Boss Points.", L_DBossPoints,
+        "Bone Knife and Setzer Quest not done.", L_NBoneKnife,
+        "Rossy Quest not done.", L_NRossy,
+        "Cindy Quest not done.", L_NCindy,
+        "Setzer Quest not done.", L_NSetzer,
+        "Remove all Boss Points.", L_NBossPoints,
+        "Nothing.", L_Close;
+
+L_DBoneKnife:
+    QUEST_Forestbow_state = (QUEST_Forestbow_state & ~(NIBBLE_2_MASK)) | (4 << NIBBLE_2_SHIFT);
+    mes "Bone Knife quest set to completed.";
+    close;
+
+L_DSetzer:
+    QUEST_Forestbow_state = (QUEST_Forestbow_state & ~(NIBBLE_2_MASK)) | (4 << NIBBLE_2_SHIFT);
+    QUEST_Forestbow_state = (QUEST_Forestbow_state & ~(NIBBLE_3_MASK)) | (8 << NIBBLE_3_SHIFT);
+    mes "Setzer quest set to completed. This includes the Bone Knife quest.";
+    close;
+
+L_DRossy:
+    FLAGS = FLAGS | FLAG_ROSSI_COMPLETED;
+    mes "Rossy quest set to completed.";
+    close;
+
+L_DCindy:
+    QUEST_Nivalis_state = (QUEST_Nivalis_state & ~(NIBBLE_5_MASK)) | (4 << NIBBLE_5_SHIFT);
+    mes "Cindy quest set to completed.";
+    close;
+
+L_DBossPoints:
+    BOSS_POINTS = 5000;
+    mes "Boss Points set to 5000.";
+    close;
+
+L_NBoneKnife:
+    QUEST_Forestbow_state = (QUEST_Forestbow_state & ~(NIBBLE_2_MASK)) | (0 << NIBBLE_2_SHIFT);
+    QUEST_Forestbow_state = (QUEST_Forestbow_state & ~(NIBBLE_3_MASK)) | (0 << NIBBLE_3_SHIFT);
+    mes "Bone Knife and Setzer quest set to not completed.";
+    close;
+
+L_NSetzer:
+    QUEST_Forestbow_state = (QUEST_Forestbow_state & ~(NIBBLE_3_MASK)) | (0 << NIBBLE_3_SHIFT);
+    mes "Bone Knife and Setzer quest set to not completed.";
+    close;
+
+L_NRossy:
+    FLAGS = FLAGS & ~FLAG_ROSSI_COMPLETED;
+    mes "Rossy quest set to not completed.";
+    close;
+
+L_NCindy:
+    QUEST_Nivalis_state = (QUEST_Nivalis_state & ~(NIBBLE_5_MASK)) | (0 << NIBBLE_5_SHIFT);
+    mes "Cindy quest set to not completed.";
+    close;
+
+L_NBossPoints:
+    BOSS_POINTS = 0;
+    mes "Boss Points set to 0.";
+    close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "MillyDebugHelper";
+    end;
+}

@@ -1,0 +1,202 @@
+
+029-1,35,33,0	script	Scared Man	160,{
+    setarray @npc_loc, 35, 33, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_End;
+    if (@tutorial >= 13)
+        goto L_TutDone;
+    message strcharinfo(0), "He looks too afraid to say anything.";
+    goto L_End;
+
+L_TutDone:
+    message strcharinfo(0), "Thanks. Hasan has been much nicer to me now";
+    goto L_End;
+
+L_End:
+    end;
+}
+029-1,33,33,0	script	Hasan	189,3,3,{
+    setarray @npc_loc, 33, 33, 4;
+    callfunc "PCtoNPCRange";
+    if (@npc_check)
+        goto L_Close;
+    goto L_Main;
+
+L_Main:
+    callfunc "TutorialState";
+    if ((getcharid(3) == $@ScorpionFighter) || ($@ScorpionFighter && $@ScorpionFighter != getcharid(3)))
+        goto L_Afraid;
+    if (@tutorial == 14)
+        goto L_TutDone;
+    if (@tutorial == 13)
+        goto L_Thank;
+    if (@tutorial == 12)
+        goto L_Trick;
+    if ((@tutorial == 9) || (@tutorial == 10) || (@tutorial == 11))
+        goto L_FightAgain;
+
+    mes "You over hear some people nearby.";
+    mes "[Unfriendly Guy]";
+    mes "\"I told you if you didn't get the money, I'd give you swimming lessons, Haha!\"";
+    mes "[Scared Man]";
+    mes "\"But the only person I need protection from is you.\"";
+    mes "[Unfriendly Guy]";
+    mes "\"Thats why the price is so high.\"";
+    mes "\"Because I'm the toughest person in all of Candor\"";
+    mes "[Scared Man]";
+    mes "\"No, your just a mean bully. Wait till I tell the guards about this!\"";
+    mes "[Unfriendly Guy]";
+    mes "\"You do that and the next swimming lesson will be sleeping with the fishes.\"";
+    mes "[Scared Man]";
+    mes "\"No, please don't. *sob*\"";
+    mes "Sounds like this person is in trouble.\"";
+    @tutorial_tmp = 9;
+    callfunc "SetTutorialMask";
+    mes "[Unfriendly Guy]";
+    mes "\"What are you looking at?\"";
+    menu
+        "What ever you call maggot slime scrapped off a boat after a walk through the sewers.", L_Fight,
+        "Who me? I saw nothing, just passing by.", L_Close;
+
+L_FightAgain:
+    mes "[Hasan]";
+    mes "\"Have you come back for a thrashing?\"";
+    menu
+        "No.", L_Close,
+        "Yes.", L_Fight;
+
+L_Fight:
+    mes "[Hasan]";
+    mes "\"Do you really think you can beat me?\"";
+    mes "He pulls out a nasty looking dagger and stabs it in your direction.";
+    Hp = 1;
+    mes "That hurt! You begin to think searching for a different solution might be healthier.";
+    mes "Maybe Kaan can help?";
+    goto L_Close;
+
+L_Trick:
+    mes "[Hasan]";
+    mes "\"Have you come back for another thrashing?\"";
+    menu
+        "No.",L_Close,
+        "Yes, yours! (Scratch your head.)",L_ScratchHead;
+
+L_ScratchHead:
+    if ($@ScorpionFighter)
+        goto L_Wait;
+    $@ScorpionTimer = 0;
+    $@ScorpionFighter = getcharid(3);
+    $@ScorpDeath = PC_DIE_COUNTER;
+    donpcevent "#ScorpionTrigger::OnCommandHasanSpawn";
+    specialeffect 22;
+    mes "While you're scratching your head, a scorpion appears.";
+    close;
+
+L_Thank:
+    mes "[Hasan]";
+    mes "\"You - you saved me!";
+    mes "I was mean to people, but you still saved me!\"";
+    mes "\"Hey, you're a really cool person.";
+    mes "I mean, the way you finished that ghastly scorpion!";
+    mes "Amazing!\"";
+    mes "\"Let me tell you something, I will no longer bully people.";
+    mes "And you can have my Sharp Knife.\"";
+    getitem "SharpKnife", 1;
+    @tutorial_tmp = 14;
+    callfunc "SetTutorialMask";
+    mes "\"You want to go to Hurnscald, right? Shall I tell you how to get there?\"";
+    menu
+        "Sure, thanks.",L_HasanThanks,
+        "I'll try to find the way myself.",L_Explore;
+
+L_HasanThanks:
+    mes "[Hasan]";
+    mes "\"Ok, when you leave here go back to the city. Wait on the south end of";
+    mes "the city for the ferry to arrive at the docks. It will take you to Hurnscald.\"";
+    goto L_Close;
+
+L_Explore:
+    mes "[Hasan]";
+    mes "\"Alright. Take care!\"";
+    goto L_Close;
+
+L_TutDone:
+    mes "[Hasan]";
+    mes "\"You didn't see anything. I tell you what I'll be nicer if you don't tell anyone?\"";
+    menu
+        "As long as you learned your lesson.", L_TutCont;
+
+L_TutCont:
+    mes "\"I have, I promise not to bully people anymore. It's not fun being scared.\"";
+    goto L_Close;
+
+L_Wait:
+    mes "There is a scorpion near Hasan already. I think Kaan is helping someone else... Maybe I should try the plan later.";
+    goto L_Close;
+
+L_Afraid:
+    message strcharinfo(0), "Hasan: \"" + strcharinfo(0) + "! Please help me!\"";
+    end;
+
+L_Close:
+    close;
+
+OnTouch:
+    if (@tutorial >= 13)
+        end;
+    goto L_Main;
+}
+029-1,0,0,0	script	#ScorpionTrigger	32767,{
+    end;
+
+OnCommandHasanSpawn:
+    goto L_Summon;
+
+L_Summon:
+    monster "029-1",33,33,"WeakScorpion",1046,1, "#ScorpionTrigger::OnScorpionDeath";
+    initnpctimer;
+    end;
+
+L_SummonAgain:
+    message strcharinfo(0), "Kaan is mad at you for your interference! He summons a rock above your head, then summons another scorpion near Hasan!";
+    percentheal -100, 0;
+    goto L_Summon;
+
+OnTimer5000:
+    if (attachrid($@ScorpionFighter) == 0)
+        goto L_Clean;
+    $@ScorpionTimer = $@ScorpionTimer + 5;
+    if ($@ScorpionTimer >= 300)
+        goto L_TimeOut;
+    if (PC_DIE_COUNTER > $@ScorpDeath)
+        goto L_MessageDeath;
+    setnpctimer 0;
+    end;
+
+OnScorpionDeath:
+    if (getcharid(3) != $@ScorpionFighter)
+        goto L_SummonAgain;
+    if (@tutorial != 12)
+        goto L_Clean;
+    @tutorial_tmp = 13;
+    callfunc "SetTutorialMask";
+    message strcharinfo(0), "You saved Hasan.";
+    goto L_Clean;
+
+L_TimeOut:
+    message strcharinfo(0), "Hasan, with his eyes almost closed, trembling with fear, runs toward the scorpion and stabs it with all his strength!";
+    goto L_Clean;
+
+L_MessageDeath:
+    message strcharinfo(0), "Ouch... I should be more careful when fighting these monsters.";
+    goto L_Clean;
+
+L_Clean:
+    killmonster "029-1", "#ScorpionTrigger::OnScorpionDeath";
+    $@ScorpionFighter = 0;
+    $@ScorpionTimer = 0;
+    $@ScorpDeath = 0;
+    stopnpctimer;
+    end;
+}

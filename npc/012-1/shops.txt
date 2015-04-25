@@ -1,0 +1,75 @@
+
+012-1,36,99,0	shop	#FlowerShop	127,661:80,664:80,665:80,662:80,667:80,663:80,671:80,673:80,669:80,672:80,674:80
+
+012-1,36,99,0	script	Blossom	163,{
+    mes "[Blossom]";
+    mes "\"Hello, would you like to buy some flowers?\"";
+    menu
+        "Sure.", L_Shop,
+        "Not right now.", L_Close,
+        "Can I trade this Rose Hat for a differently colored one?", L_RoseHat;
+
+L_Shop:
+    close2;
+    shop "#FlowerShop";
+
+L_RoseHat:
+    @base_id = 897;
+    mes "[Blossom]";
+    mes "\"Certainly, which color do you have?\"";
+    menu
+        "A red one.", L_MenuItems,
+        "A white one.", L_MenuItems,
+        "A pink one.", L_MenuItems,
+        "A yellow one.", L_MenuItems,
+        "An orange one.", L_MenuItems,
+        "A blue one.", L_MenuItems;
+
+L_MenuItems:
+    @have_id = @base_id + @menu - 1;
+
+    mes "[Blossom]";
+    mes "\"And which color would you like?\"";
+    menu
+        "A red one.", L_MenuItems1,
+        "A white one.", L_MenuItems1,
+        "A pink one.", L_MenuItems1,
+        "A yellow one.", L_MenuItems1,
+        "An orange one.", L_MenuItems1,
+        "A blue one.", L_MenuItems1;
+
+L_MenuItems1:
+    @receive_id = @base_id + @menu - 1;
+
+    if (@have_id == @receive_id)
+        goto L_SameColor;
+    if (countitemcolor(@have_id) < 1)
+        goto L_NoItem;
+    delitem @have_id, 1;
+    getitem @receive_id, 1;
+    mes "[Blossom]";
+    mes "\"Here it is.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Blossom]";
+    mes "\"Oh, you don't have a Rose Hat in that color.";
+    mes "Did you mean a different color?\"";
+    menu
+        "Yes, I meant a different color.", L_RoseHat,
+        "No, I changed my mind.", L_Close;
+
+L_SameColor:
+    mes "[Blossom]";
+    mes "\"Oh, you already have a hat in that color.";
+    mes "Did you want something else?\"";
+    menu
+        "Yes, let me pick a different color.", L_RoseHat,
+        "No, I changed my mind.", L_Close;
+
+L_Close:
+    @base_id = 0;
+    @have_id = 0;
+    @receive_id = 0;
+    close;
+}

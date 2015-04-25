@@ -1,0 +1,121 @@
+020-1,90,78,0	script	#GhostTreeOne	133,{
+    callfunc "HalloweenTree";
+    close;
+}
+
+020-1,90,78,0	script	#Tree	380,{
+    end;
+}
+
+020-1,90,78,0	script	#XmasTree	379,{
+    end;
+}
+
+020-1,90,79,0	script	Present#1	386,{
+    callfunc "XmasStates";
+    callfunc "XmasMainItemReward";
+    close;
+}
+
+009-1,54,38,0	script	#GhostTreeTwo	133,{
+    callfunc "HalloweenTree";
+    close;
+}
+
+009-1,54,38,0	script	#TreeNoSnow	394,{
+    end;
+}
+
+009-1,54,38,0	script	#XmasTreeNoSnow	381,{
+    end;
+}
+
+009-1,54,39,0	script	Present#2	386,{
+    callfunc "XmasStates";
+    callfunc "XmasMainItemReward";
+    close;
+}
+
+001-1,58,75,0	script	#GhostTreeThree	133,{
+    callfunc "HalloweenTree";
+    close;
+}
+
+001-1,58,75,0	script	#PalmTree	384,{
+    end;
+}
+
+001-1,58,76,0	script	Present#3	386,{
+    callfunc "XmasStates";
+    callfunc "XmasMainItemReward";
+    close;
+}
+
+001-1,58,75,0	script	#XmasPalmTree	383,{
+    end;
+}
+
+function	script	SpawnMobs	{
+    donpcevent "XmasSpawnManager::OnCommandSpawnStart";
+    return;
+}
+
+function	script	PresentHandler	{
+    if($@xmas_time == $@xmas_reward_time)
+        goto L_DeliverPresents;
+    goto L_DisablePresents;
+
+L_DeliverPresents:
+    enablenpc "Present#1";
+    enablenpc "Present#2";
+    enablenpc "Present#3";
+    goto L_Return;
+
+L_DisablePresents:
+    disablenpc "Present#1";
+    disablenpc "Present#2";
+    disablenpc "Present#3";
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function	script	ReplaceTrees	{
+    disablenpc "#Tree";
+    disablenpc "#TreeNoSnow";
+    disablenpc "#PalmTree";
+    disablenpc "#GhostTreeOne";
+    disablenpc "#GhostTreeTwo";
+    disablenpc "#GhostTreeThree";
+    disablenpc "#XmasTree";
+    disablenpc "#XmasTreeNoSnow";
+    disablenpc "#XmasPalmTree";
+
+    if ($@xmas_time)
+        goto L_XmasTree;
+    if ($@halloween_time)
+        goto L_HalloweenLive;
+    goto L_Tree;
+
+L_XmasTree:
+    enablenpc "#XmasTree";
+    enablenpc "#XmasTreeNoSnow";
+    enablenpc "#XmasPalmTree";
+    goto L_Return;
+
+L_HalloweenLive:
+    enablenpc "#GhostTreeOne";
+    enablenpc "#GhostTreeTwo";
+    enablenpc "#GhostTreeThree";
+    goto L_Return;
+
+L_Tree:
+    enablenpc "#Tree";
+    enablenpc "#TreeNoSnow";
+    enablenpc "#PalmTree";
+    goto L_Return;
+
+L_Return:
+    return;
+}

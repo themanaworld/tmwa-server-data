@@ -1,0 +1,200 @@
+
+001-1,69,29,0	script	Tinris	160,{
+    @state = ((QUEST_NorthTulimshar & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    @cake_exp = 50;
+    @sweater_exp = 400;
+
+    @slime_amount1 = 6;
+    @slime_amount2 = 4;
+    @bugleg_amount1 = 4;
+    @bugleg_amount2 = 5;
+    @stinger_amount1 = 3;
+    @stinger_amount2 = 2;
+    @ash_amount1 = 1;
+    @ash_amount2 = 2;
+    @cactusp_amount = 1;
+
+    if (@state >= 12) goto L_Done;
+    if (@state == 11) goto L_GiveGift;
+    if (@state == 9) goto L_FertilizerDone;
+    if (@state >= 7) goto L_Eomie;
+    if (@state == 6) goto L_SecondTry;
+    if (@state >= 4) goto L_FirstTryDone;
+    if (@state == 3) goto L_FirstTry;
+    if (@state == 2) goto L_Annual;
+
+    mes "[Tinris]";
+    mes "\"This is a magic school. I'm a student here and focus on ways to magically enhance growth of plants.";
+    mes "That topic is very important in a desert area.\"";
+    if (@state != 1)
+        goto L_Close;
+    menu
+        "The farmer Anwar sent me to ask for exactly that! Can you give me something for his field?",L_Next;
+
+L_Next:
+    mes "[Tinris]";
+    mes "\"Well... in principle yes. I can try to prepare something for him. But...\"";
+    next;
+    mes "\"The thing is, my girlfriend and I have our anniversary today. And the teachers won't let me leave the campus to get something for her!";
+    mes "Please go to the bakery and buy a Chocolate Cake for me. She loves Chocolate Cakes.\"";
+    next;
+    mes "\"When I have a present for her I can focus on creating some magic fertilizer.\"";
+    @state = 2;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Annual: // @state == 2
+    mes "[Tinris]";
+    mes "\"Hello, did you get the Chocolate Cake for my girlfriend? After that I can focus on creating some magic fertilizer for you.\"";
+    menu
+        "Fresh from the bakery!",L_FreshFrom,
+        "I didn't get it yet.",L_Close;
+
+L_FreshFrom:
+    if (countitemcolor("ChocolateCake") < 1)
+        goto L_NoItem;
+    delitem "ChocolateCake", 1;
+    getexp @cake_exp, 0;
+    @state = 3;
+    callsub S_Update_Mask;
+    mes "[Tinris]";
+    mes "\"Oh, thank you! You saved me!";
+    mes "All right, now we can start with the magic fertilizer.\"";
+    next;
+    goto L_FirstTry;
+
+L_FirstTry:
+    // @state == 3
+    mes "[Tinris]";
+    mes "\"You need to bring me some ingredients.";
+    mes "The ingredients are " + @slime_amount1 + " Maggot Slimes, " + @bugleg_amount1 + " Bug Legs, " + @stinger_amount1 + " Scorpion Stingers and " + @ash_amount1 + " Piles of Ash.\"";
+    menu
+        "I have it.",L_Continue,
+        "Ok, I'll go and get it.",L_Close;
+
+L_Continue:
+    if ((countitemcolor("MaggotSlime") < @slime_amount1) || (countitemcolor("BugLeg") < @bugleg_amount1) || (countitemcolor("ScorpionStinger") < @stinger_amount1) || (countitemcolor("PileOfAsh") < @ash_amount1))
+        goto L_NoItem;
+    delitem "MaggotSlime", @slime_amount1;
+    delitem "BugLeg", @bugleg_amount1;
+    delitem "ScorpionStinger", @stinger_amount1;
+    delitem "PileOfAsh", @ash_amount1;
+    @state = 4;
+    callsub S_Update_Mask;
+    mes "Tinris takes the things and starts to mix them together while mumbling some invocations.";
+    misceffect sfx_magic_nature;
+    next;
+    mes "[Tinris]";
+    mes "\"Ok. This should do it. But I'm not sure. I'm still researching this topic.";
+    mes "Here, bring this to Anwar.\"";
+    mes "He gives you a bottle with the magic fertilizer. You put it away in a separate pocket, so it doesn't get mixed with your inventory.";
+    goto L_Close;
+
+L_FirstTryDone: // @state >= 4 but below 6
+    mes "[Tinris]";
+    mes "\"Bring the fertilizer to Anwar and let me know if it worked.\"";
+    if (@state != 5)
+        goto L_Close;
+    menu
+        "I did, the plants went brown and shriveled.",L_More;
+
+L_More:
+    @state = 6;
+    callsub S_Update_Mask;
+    goto L_SecondTry;
+
+L_SecondTry:
+    // @state == 6
+    mes "[Tinris]";
+    mes "\"Oh no! All right, we need to do another try.";
+    mes "Bring me " + @slime_amount2 + " Maggot Slimes, " + @bugleg_amount2 + " Bug Legs, " + @stinger_amount2 + " Scorpion Stingers, " + @ash_amount2 + " Piles of Ash and " + @cactusp_amount + " Cactus Potion.\"";
+    menu
+        "Here it is.",L_HereItIs,
+        "Ok, I'll go and get it.",L_Close;
+
+L_HereItIs:
+    if ((countitemcolor("MaggotSlime") < @slime_amount2) || (countitemcolor("BugLeg") < @bugleg_amount2) || (countitemcolor("ScorpionStinger") < @stinger_amount2) || (countitemcolor("PileOfAsh") < @ash_amount2) || (countitemcolor("CactusPotion") < @cactusp_amount))
+        goto L_NoItem;
+    delitem "MaggotSlime", @slime_amount2;
+    delitem "BugLeg", @bugleg_amount2;
+    delitem "ScorpionStinger", @stinger_amount2;
+    delitem "PileOfAsh", @ash_amount2;
+    delitem "CactusPotion", @cactusp_amount;
+    @state = 7;
+    callsub S_Update_Mask;
+    mes "Tinris takes the things and starts to mix and mumble again.";
+    misceffect sfx_magic_nature;
+    next;
+    mes "It takes quite a while.";
+    next;
+    mes "He looks rather stressed while working on the mixture.";
+    next;
+    mes "He sighs.";
+    mes "[Tinris]";
+    mes "\"Mh, I think the mixture itself is good. But I can't get the spells right. Maybe you should ask Professor Eomie to cast it; she's a genius with nature magic.\"";
+    mes "He gives you the bottle with the magic fertilizer.";
+    goto L_Close;
+
+L_Eomie:
+    // @state >= 7 but below 9
+    mes "[Tinris]";
+    mes "\"I did the best I could, but it seems I'm not experienced enough to cast the spells correctly. Better ask Professor Eomie for help.\"";
+    goto L_Close;
+
+L_FertilizerDone:
+    // @state == 9
+    mes "[Tinris]";
+    mes "\"I heard Eomie cast the spell? I really hope it'll work this time. Bring the magic fertilizer to Anwar now.\"";
+    goto L_Close;
+
+L_GiveGift:
+    // @state == 11
+    mes "[Tinris]";
+    mes "\"Ah, did Anwar try the new fertilizer?\"";
+    menu
+        "Yes, it works great and he asked me to give you this Green V-Neck Sweater he made.",L_ItWorksGreat,
+        "Not yet.",L_Close;
+
+L_ItWorksGreat:
+    if (countitemcolor("GreenVNeckSweater") < 1)
+        goto L_NoItem;
+    delitem "GreenVNeckSweater", 1;
+    getexp @sweater_exp, 0;
+    @state = 12;
+    callsub S_Update_Mask;
+    mes "[Tinris]";
+    mes "\"Hey, that's really nice. Tell him my thanks.\"";
+    goto L_Close;
+
+L_Done:
+    // @state >= 12
+    mes "[Tinris]";
+    mes "\"My girlfriend was delighted with the Chocolate Cake and Professor Eomie was happy with my work on the magic fertilizer.\"";
+    mes "He twinkles.";
+    mes "[Tinris]";
+    mes "\"We're a good team.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Tinris]";
+    mes "\"You don't have it!\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @slime_amount1 = 0;
+    @slime_amount2 = 0;
+    @bugleg_amount1 = 0;
+    @bugleg_amount2 = 0;
+    @stinger_amount1 = 0;
+    @stinger_amount2 = 0;
+    @ash_amount1 = 0;
+    @ash_amount2 = 0;
+    @cactusp_amount = 0;
+    close;
+
+S_Update_Mask:
+    QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(NIBBLE_3_MASK)) | (@state << NIBBLE_3_SHIFT);
+    return;
+}

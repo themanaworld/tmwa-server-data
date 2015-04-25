@@ -1,0 +1,185 @@
+002-1,95,67,0	script	Anwar	156,{
+    @state = ((QUEST_NorthTulimshar & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    @cloth_amount = 3;
+    @silk_amount = 30;
+
+    @firstTry_exp = 400;
+    @secondTry_exp = 700;
+    @material_exp = 1000;
+    @final_exp = 2000;
+
+    if (@state >= 15) goto L_Done;
+    if (@state >= 13) goto L_GiveEomie;
+    if (@state >= 11) goto L_GiveTinris;
+    if (@state == 10) goto L_GiftMaterial;
+    if (@state >= 5) goto L_SecondTry;
+    if (@state >= 1) goto L_FirstTry;
+
+    mes "[Anwar]";
+    mes "\"Hello. You look like one of those young people who come here to go on an adventure.";
+    mes "Would you be interested in doing some small errand for me?\"";
+    menu
+        "Sure!",L_Sure,
+        "I'm busy, sorry.",L_Close;
+
+L_Sure:
+    mes "[Anwar]";
+    mes "\"That's the spirit! Ok, I'm tired of spending most of my time working on this field. I heard the magicians at the magic school are researching ways to enhance the growth of plants with magic.\"";
+    next;
+    mes "\"I can't go there myself, since this area of the city is full of sneaky ragtags and they will rob my field if I leave here. Could you go to the magic school and ask for some magic enhancement for my field?\"";
+    next;
+    mes "\"To find the school just follow the street north back into town. The school is the castle at the north end of town.\"";
+    @state = 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_FirstTry: // @state >= 1 but below 5
+    mes "[Anwar]";
+    mes "\"I hope the wizards at the magic school can help me with the field. I'd really like to have more free time. I want to make clothing, but I'm not experienced enough to make a living out of that.\"";
+    if (@state != 4)
+        goto L_Close;
+    menu
+        "Tinris gave me a magic fertilizer for your field, but he isn't sure if it works.",L_Next;
+
+L_Next:
+    mes "[Anwar]";
+    mes "\"Really? Well, let's try it out!\"";
+    mes "He takes the fertilizer and starts to bespatter the field.";
+    next;
+    mes "But it doesn't seem to be good for the plants, they start to shrivel and get brown.";
+    mes "[Anwar]";
+    mes "\"Oh no! What is this? It's damaging my plants! Go back to Tinris and tell him it doesn't work!\"";
+    getexp @firstTry_exp, 0;
+    @state = 5;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_SecondTry: // @state >= 5 but below 10
+    mes "[Anwar]";
+    mes "\"I hope Tinris can come up with a better fertilizer. My plants are suffering from the first try.\"";
+    if (@state != 9)
+        goto L_Close;
+    menu
+        "Here is another one. Eomie cast a spell on it.",L_Continue;
+
+L_Continue:
+    mes "[Anwar]";
+    mes "\"Eomie? I heard she's amazingly skilled with nature magic. I'll try if this works better.\"";
+    mes "He takes the fertilizer and puts it on only a few plants, then waits a moment to see the result.";
+    next;
+    mes "The plants recover a bit and become green again.";
+    mes "[Anwar]";
+    mes "\"Ah, this one is better. I'll put it on the entire field.\"";
+    getexp @secondTry_exp, 0;
+    @state = 10;
+    callsub S_Update_Mask;
+    next;
+    goto L_GiftMaterial;
+
+L_GiftMaterial: // @state == 10
+    mes "[Anwar]";
+    mes "\"I want to show my gratitude to Tinris and Eomie. Can you help me once again? I would like to make some clothes for them and need " + @cloth_amount + " pieces of Cotton Cloth and " + @silk_amount + " Silk Cocoons.\"";
+    menu
+        "I have it.",L_GiveGiftStuff,
+        "Where can I get that?",L_Hint,
+        "I'll see what I can do.",L_Close;
+
+L_GiveGiftStuff:
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
+    if ((countitemcolor("CottonCloth") < @cloth_amount) || (countitemcolor("SilkCocoon") < @silk_amount))
+        goto L_NoItem;
+    delitem "CottonCloth", @cloth_amount;
+    delitem "SilkCocoon", @silk_amount;
+    getexp @material_exp, 0;
+
+    getitem "GreenVNeckSweater", 1;
+    @state = 11;
+    callsub S_Update_Mask;
+    mes "[Anwar]";
+    mes "\"Great! I'll start right away with the present for Tinris. That shouldn't take long.\"";
+    mes "After a short while of cutting and sewing he holds a V-Neck Sweater in his hands. Then he dyes it green.";
+    next;
+    mes "[Anwar]";
+    mes "\"Wonderful! Could you please bring this to Tinris to show him my gratitude?\"";
+    goto L_Close;
+
+L_Hint:
+    mes "[Anwar]";
+    mes "\"As far as I know Cotton Cloth is given out as reward for hunting monsters. You should talk to Aidan in Candor.\"";
+    next;
+    mes "\"Otherwise Cotton Cloth can be sheared from Mouboo and silk cocoons come from Silkworms.";
+    mes "They live in the woodland area around Hurnscald. You can get there by taking the ferry.\"";
+    goto L_Close;
+
+L_GiveTinris: // @state >= 11 but below 13
+    mes "[Anwar]";
+    mes "\"Did you already bring the Green V-Neck Sweater to Tinris?\"";
+    if (@state != 12)
+        menu
+            "Not yet.",L_Close;
+    menu
+        "Yes, he was very happy.",L_Happy;
+
+L_Happy:
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
+    mes "[Anwar]";
+    mes "\"Wonderful! I also finished the present for Eomie. Can you bring it to her?\"";
+    getitem "SilkHeadband", 1;
+    @state = 13;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_GiveEomie: // @state >= 13 but below 15
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Full_Inv;
+    mes "[Anwar]";
+    mes "\"Did you give the Silk Headband to Eomie?\"";
+    if (@state != 14)
+        menu
+            "Not yet.",L_Close;
+    menu
+        "Yes. She asked me to thank you.",L_ThankYou;
+
+L_ThankYou:
+    mes "Anwar smiles.";
+    mes "[Anwar]";
+    mes "\"I'm so happy. Thank you so much for your help. I made this for you while you went to see Eomie.\"";
+    getexp @final_exp, 0;
+    getitem "DarkGreenCottonTrousers", 1;
+    @state = 15;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Done: // @state == 15
+    mes "[Anwar]";
+    mes "\"Thank you so much for your help. The plants are growing much better now. I don't have to spend all my time working in the field any more.";
+    mes "Finally I can do what I'm really interested in and work on getting better at sewing clothes.\"";
+    goto L_Close;
+
+L_NoItem:
+    mes "[Anwar]";
+    mes "\"You don't have it!\"";
+    goto L_Close;
+
+L_Full_Inv:
+    mes "[Anwar]";
+    mes "\"You carry a lot of stuff. Come back when you have more room.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    @cloth_amount = 0;
+    @silk_amount = 0;
+    @inventorylist_count = 0;
+    close;
+
+S_Update_Mask:
+    QUEST_NorthTulimshar = (QUEST_NorthTulimshar & ~(NIBBLE_3_MASK)) | (@state << NIBBLE_3_SHIFT);
+    return;
+}

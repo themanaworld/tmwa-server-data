@@ -1,0 +1,265 @@
+function	script	GetBarrierColor	{
+    if (@Barrier < 0 || @Barrier > 2)
+        goto L_Error;
+    if (@BarrierColor <= 0 || @BarrierColor > 12)
+        goto L_Error2;
+    goto L_GetBarrierColor;
+
+L_GetBarrierColor:
+    @Mask = 15;
+    @shift = 4 * @Barrier;
+    @BarrierColor = (OrumQuestBarrier >> @shift) & @Mask;
+    return;
+
+L_Error:
+    mes "Barrier number is out of range.";
+    close;
+
+L_Error2:
+    callfunc "SetUpOrumQuest";
+    goto L_GetBarrierColor;
+}
+
+function	script	SetBarrierColor	{
+    if (@Barrier < 0 || @Barrier > 2)
+        goto L_Error;
+    if (@BarrierColor <= 0 || @BarrierColor > 12)
+        goto L_Error2;
+
+    @Mask = (15 << (4 * @Barrier));
+    OrumQuestBarrier = (OrumQuestBarrier & (~(@Mask))) | @BarrierColor << (4 * @Barrier);
+    return;
+
+L_Error:
+    mes "Barrier number is out of range.";
+    close;
+
+L_Error2:
+    mes "Barrier color is out of range.";
+    close;
+}
+
+
+009-4,37,119,0	script	#OrumCaveStartMessage	127,0,0,{
+    if (OrumQuest >= 3) end;
+    if (OrumQuest == 2) goto L_Started;
+
+    mes "As you try to pass, two torches begin to flare and push you back. They seem to form some kind of barrier.";
+    close;
+
+L_Started:
+    message strcharinfo(0), "The torches dim as you approach, granting you passage.";
+    OrumQuest = 3;
+    end;
+}
+
+009-4,37,120,0	script	#OrumCaveStartBarrier	127,0,0,{
+    if (OrumQuest >= 3) end;
+    warp "009-4", 37, 118;
+    end;
+}
+
+009-4,57,29,0	script	#OrumCaveFirstBarrier	127,0,0,{
+    if (OrumQuest >= 5) end;
+
+    message strcharinfo(0), "Nothing seems to happen as you enter this room. The barrier must need both of its torches to function properly.";
+    OrumQuest = 5;
+    end;
+}
+
+009-4,61,55,0	script	#OrumCaveSecondMessage	127,0,0,{
+    if (OrumQuest >= 9) end;
+    if (OrumQuest == 3) set OrumQuest, 4;
+
+    @Barrier = 0;
+    callfunc("GetBarrierColor");
+    @Torch = 0;
+    callfunc("GetTorchColor");
+    if (OrumQuest > 7 && @TorchColor == @BarrierColor)
+        goto L_Allow_Second_Passage;
+
+    mes "As you try to pass, the torches begin to flare and push you back. Perhaps there's a way to get past it.";
+    mes "";
+    setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
+    mes "Looking closely between the two torches you can see the barrier has a ##B" + @colors$[@BarrierColor] + "##b tint to it.";
+    close;
+
+L_Allow_Second_Passage:
+    if (OrumQuest < 9) goto L_Advance_Quest;
+    end;
+
+L_Advance_Quest:
+    message strcharinfo(0), "The torches dim as you enter like the first. You must be on the right trail.";
+    OrumQuest = 9;
+    end;
+}
+
+009-4,61,54,0	script	#OrumCaveSecondBarrier	127,0,0,{
+    if (OrumQuest >= 9) end;
+    warp "009-4", 60, 56;
+    end;
+}
+
+009-4,24,65,0	script	#OrumCaveThirdMessage	127,0,0,{
+    if (OrumQuest >= 10) end;
+    if (OrumQuest == 3) set OrumQuest, 4;
+    if (OrumQuest > 8 && @Torch1Color == @firstColor && @Torch2Color == @secondColor)
+        goto L_Allow_Third_Passage;
+    if (OrumQuest > 8 && @Torch2Color == @firstColor && @Torch1Color == @secondColor)
+        goto L_Allow_Third_Passage;
+
+    @Barrier = 1;
+    callfunc("GetBarrierColor");
+
+    @Torch = 0;
+    callfunc("GetTorchColor");
+    @Torch1Color = @TorchColor;
+
+    @Torch = 1;
+    callfunc("GetTorchColor");
+    @Torch2Color = @TorchColor;
+
+    @firstColor = @BarrierColor - 2;
+    @secondColor = @BarrierColor + 2;
+    if (@firstColor < 1)
+        @firstColor = 12;
+    if (@secondColor > 12)
+        @secondColor = 1;
+
+    mes "As you try to pass, the torches begin to flare and push you back. Perhaps there is a way to get past it.";
+    mes "";
+    setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
+    mes "Looking closely between the two torches you can see the barrier has a ##B" + @colors$[@BarrierColor] + "##b tint to it.";
+    close;
+
+L_Allow_Third_Passage:
+    if (OrumQuest < 10) goto L_Advance_Quest;
+    end;
+
+L_Advance_Quest:
+    OrumQuest = 10;
+    end;
+}
+
+009-4,24,66,0	script	#OrumCaveThirdBarrier	127,0,0,{
+    if (OrumQuest >= 10) end;
+    warp "009-4", 23, 64;
+    end;
+}
+
+009-4,48,37,0	script	#OrumCaveEndMessage	127,0,0,{
+    if (OrumQuest >= 11) end;
+    if (OrumQuest == 3) set OrumQuest, 4;
+
+    @Barrier = 2;
+    callfunc("GetBarrierColor");
+
+    if (OrumQuest < 10)
+        goto L_Deny_Final_Passage;
+
+    @Torch = 0;
+    callfunc("GetTorchColor");
+    @Torch1Color = @TorchColor;
+
+    @Torch = 1;
+    callfunc("GetTorchColor");
+    @Torch2Color = @TorchColor;
+
+    @Torch = 2;
+    callfunc("GetTorchColor");
+    @Torch3Color = @TorchColor;
+
+    // Extract the secondary color
+    @secondary = @BarrierColor - 1;
+    if (@secondary != 3 && @secondary != 7 && @secondary != 11)
+        @secondary = @BarrierColor + 1;
+
+    // Make sure it's in bounds
+    if (@secondary > 12)
+        @secondary = @secondary - 12;
+    if (@secondary < 1)
+        @secondary = @secondary + 12;
+
+    // Extract first 2 required colors
+    @firstColor = @secondary - 2;
+    @secondColor = @secondary + 2;
+    if (@firstColor > 12)
+        @firstColor = @firstColor - 12;
+    if (@firstColor < 1)
+        @firstColor = @firstColor + 12;
+    if (@secondColor > 12)
+        @secondColor = @secondColor - 12;
+    if (@secondColor < 1)
+        @secondColor = @secondColor + 12;
+
+    @thirdColor = 12;
+    @offsetOne = @BarrierColor + 1;
+    @offsetTwo = @BarrierColor - 1;
+
+    // Make sure they in bounds
+    if (@offsetOne > 12)
+        @offsetOne = @offsetOne - 12;
+    if (@offsetOne < 1)
+        @offsetOne = @offsetOne + 12;
+    if (@offsetTwo > 12)
+        @offsetTwo = @offsetTwo - 12;
+    if (@offsetTwo < 1)
+        @offsetTwo = @offsetTwo + 12;
+
+    // Extract third needed color
+    if (@secondary == @offsetOne)
+        @thirdColor = @firstColor;
+    if (@secondary == @offsetTwo)
+        @thirdColor = @secondColor;
+
+    @firstDone = 0;
+    @secondDone = 0;
+    @thirdDone = 0;
+
+    if (@firstDone == 0 && @secondDone != 1 && @thirdDone != 1 && @Torch1Color == @firstColor)
+        @firstDone = 1;
+    if (@firstDone != 1 && @secondDone == 0 && @thirdDone != 1 && @Torch1Color == @secondColor)
+        @secondDone = 1;
+    if (@firstDone != 1 && @secondDone != 1 && @thirdDone == 0 && @Torch1Color == @thirdColor)
+        @thirdDone = 1;
+
+    if (@firstDone == 0 && @secondDone != 2 && @thirdDone != 2 && @Torch2Color == @firstColor)
+        @firstDone = 2;
+    if (@firstDone != 2 && @secondDone == 0 && @thirdDone != 2 && @Torch2Color == @secondColor)
+        @secondDone = 2;
+    if (@firstDone != 2 && @secondDone != 2 && @thirdDone == 0 && @Torch2Color == @thirdColor)
+        @thirdDone = 2;
+
+    if (@firstDone == 0 && @secondDone != 3 && @thirdDone != 3 && @Torch3Color == @firstColor)
+        @firstDone = 3;
+    if (@firstDone != 3 && @secondDone == 0 && @thirdDone != 3 && @Torch3Color == @secondColor)
+        @secondDone = 3;
+    if (@firstDone != 3 && @secondDone != 3 && @thirdDone == 0 && @Torch3Color == @thirdColor)
+        @thirdDone = 3;
+
+    if (@firstDone != 0 && @secondDone != 0 && @thirdDone != 0)
+        goto L_Allow_Final_Passage;
+    goto L_Deny_Final_Passage;
+
+L_Deny_Final_Passage:
+    mes "As you try to pass, the torches begin to flare and push you back. Perhaps there is a way to get past it.";
+    mes "";
+    setarray @colors$,"transparent","red","dark orange","orange","light orange","yellow","light green","green","dark green","blue","dark purple","purple","light purple";
+    mes "Looking closely between the two torches you can see the barrier has a ##B" + @colors$[@BarrierColor] + "##b tint to it.";
+    close;
+
+L_Allow_Final_Passage:
+    if (OrumQuest < 11) goto L_Advance_Quest;
+    close;
+
+L_Advance_Quest:
+    message strcharinfo(0), "The torches dim as you enter. At last you finally have access!";
+    OrumQuest = 11;
+    close;
+}
+
+009-4,48,38,0	script	#OrumCaveEndBarrier	127,0,0,{
+    if (OrumQuest >= 11) end;
+    warp "009-4", 47, 36;
+    end;
+}

@@ -1,0 +1,558 @@
+
+016-1,33,45,0	script	Gwendolyn	182,{
+    // schoolfee in gp
+    @SCHOOLFEE = 25000;
+    // how many eggs do you need of each kind?
+    @CAVE_EGGS_AMOUNT = 18;
+    @SNAKE_EGGS_AMOUNT = 15;
+    @MOUNTAIN_EGGS_AMOUNT = 5;
+    @GRASS_EGGS_AMOUNT = 2;
+    // experience for eggs
+    @QUEST_EGG_EXP = 10000;
+    // The needed level for the minigame:
+    @BASELEVEL_GAME = 50;
+    // experience gained for hitting the bullseye:
+    @QUEST_HAWK_EXP = 10000;
+
+    @Q_hawkseye_MASK = NIBBLE_6_MASK;
+    @Q_hawkseye_SHIFT = NIBBLE_6_SHIFT;
+
+    @Q_hawkseye = (QUEST_Forestbow_state & @Q_hawkseye_MASK) >> @Q_hawkseye_SHIFT;
+
+    @Q_Forestbow_MASK = NIBBLE_0_MASK;
+    @Q_Forestbow_SHIFT = NIBBLE_0_SHIFT;
+
+    @FORESTBOW = ((QUEST_Forestbow_state) & @Q_Forestbow_MASK) >> @Q_Forestbow_SHIFT;
+
+    if (@Q_hawkseye == 6) goto L_state6;
+    if (@Q_hawkseye == 5) goto L_state5;
+    if (@Q_hawkseye == 4) goto L_state4;
+    if (@Q_hawkseye == 3) goto L_state3;
+    if (@Q_hawkseye == 2) goto L_state2;
+    if (@Q_hawkseye == 1) goto L_state1;
+
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Hello, and welcome to my reopened School of Archery. My name is Gwendolyn Bowmaker; I'm the granddaughter of the famous Gwendolyn Bowmaker.\"";
+    next;
+    mes "\"As you surely know, she was the greatest archer this world had ever seen and opened this School of Archery together with her husband Simon Bowmaker. He was able to make the most well-balanced and the finest bows.\"";
+    next;
+    mes "\"I am now back from my training journey and want to continue with my family's tradition, to teach the Way of Archery.\"";
+    next;
+    mes "\"Are you interested in becoming a student of Archery?\"";
+    next;
+    menu
+        "I want to become an archer!",L_fee,
+        "I'm not interested right now.",L_no_student;
+
+L_fee:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Wonderful! The school's fee is " + @SCHOOLFEE + ".\"";
+    next;
+    menu
+        "That's a lot, but I think it will be worth it.",L_Next,
+        "I'm not sure I want to spend that much.",L_no_student;
+
+L_Next:
+    if (Zeny < @SCHOOLFEE)
+        goto L_No_Money;
+
+    Zeny = Zeny - @SCHOOLFEE;
+    @Q_hawkseye = 2;
+    callsub S_Update_Var;
+
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"The first thing you need is, obviously, a bow. You should not use any you come across, but a high quality one. I think it would be best to go to Alan in Hurnscald. He is my cousin, and knows how to make Forest Bows of exquisite quality. \"";
+
+    if (countitemcolor("ForestBow") < 1)
+        goto L_Close;
+    next;
+    menu
+        "I already have a Forest Bow.",L_state2;
+
+L_state2:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Let me see your bow.\"";
+    next;
+
+    if (countitemcolor("ForestBow") < 1)
+        goto L_no_bow;
+    if (@FORESTBOW < 5)
+        goto L_bow_bought;
+
+    @Q_hawkseye = 3;
+    callsub S_Update_Var;
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Very well, this looks fine. It is time for your first lesson. \"";
+    next;
+    goto L_lesson;
+
+L_lesson:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"The advantage of fighting with a ranged weapon is that you can stay out of the enemy's range. So there is no need to spend training on your resistibility.\"";
+    next;
+    mes "\"But remember: this makes you much more vulnerable, so watch your step and don't stumble into your enemy's attack.\"";
+    next;
+    mes "\"Also your strength doesn't matter much. You might be able to shoot a little harder, but not so much as to make it important.\"";
+    next;
+    mes "\"The most important thing to improve is your dexterity. When you use a bow, it is your dexterity that determines if you are able to hit your enemy where it hurts most.\"";
+    next;
+    mes "\"Also worth mentioning is how to improve your ability to shoot fast. You need to be agile to grab a new arrow from your quiver and aim for the next shot before your enemy has recovered from your last.\"";
+    next;
+    goto L_state3;
+
+L_state3:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"To demonstrate that you understood what I'm trying to teach you, you should go and fight against some snakes. To prove me your results, bring me " + @CAVE_EGGS_AMOUNT + " cave snake eggs, " + @SNAKE_EGGS_AMOUNT + " snake eggs, " + @MOUNTAIN_EGGS_AMOUNT + " mountain snake eggs and " + @GRASS_EGGS_AMOUNT + " grass snake eggs.\"";
+    next;
+    menu
+        "Can you please repeat your lesson?",L_lesson,
+        "I will go and hunt some snakes.",L_Close,
+        "I have what you want.",L_Next1;
+
+L_Next1:
+    if (countitemcolor("CaveSnakeEgg") < @CAVE_EGGS_AMOUNT
+        ||countitemcolor("SnakeEgg") < @SNAKE_EGGS_AMOUNT
+        ||countitemcolor("MountainSnakeEgg") < @MOUNTAIN_EGGS_AMOUNT
+        ||countitemcolor("GrassSnakeEgg") < @GRASS_EGGS_AMOUNT)
+            goto L_not_enough_eggs;
+
+    delitem "CaveSnakeEgg", @CAVE_EGGS_AMOUNT;
+    delitem "SnakeEgg", @SNAKE_EGGS_AMOUNT;
+    delitem "MountainSnakeEgg", @MOUNTAIN_EGGS_AMOUNT;
+    delitem "GrassSnakeEgg", @GRASS_EGGS_AMOUNT;
+
+    getexp @QUEST_EGG_EXP, 0;
+
+    @Q_hawkseye = 4;
+    callsub S_Update_Var;
+
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Very well. That will make a great meal.\"";
+    next;
+    goto L_state4;
+
+L_state4:
+    if (BaseLevel < @BASELEVEL_GAME)
+        goto L_Not_Ready;
+    if (!(getskilllv(SKILL_POOL)))
+        goto L_Not_Ready;
+    mes "Gwendolyn takes an analyzing look at you. Then she nods.";
+    next;
+
+    @Q_hawkseye = 5;
+    callsub S_Update_Var;
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Ok. You have made great progress. I think you are ready for further tasks.\"";
+    next;
+    goto L_Game_explain;
+
+L_Game_explain:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"As you might have noticed, it depends on many circumstances if your arrow finds its target. Your shot may be too powerful or too weak, so the arrow goes far beyond your target or hits the ground before it reaches its destination.\"";
+    next;
+    mes "\"The greater the distance to your target is, the more important is the strength and direction of the wind. Even if you are exploring a cave, there might be air flow caused by the corners in the cave.\"";
+    next;
+    mes "\"Ok, you can see that target over there? I will tell you how strong the wind blows and from which direction. Then you will try to hit the target by moving right or left and decide how powerful you want to shoot.\"";
+    next;
+    goto L_state5;
+
+L_state5:
+    // needed for the minigame:
+    set @wdX, 0; // wind direction x-coordinate, rand
+    set @wdY, 0; // wind direction y-coordinate, rand
+    // set @wp, 0; // windpower
+    set @spX, 0; // start position x-coordinate, player decision
+    // set @spY, 0; // start position y-coordinate, const
+    set @sp, 0; // shotpower, player decision
+    //set @targetX, 0; // target position, const
+    //set @targetY, 20; // target position, const
+    set @pointX, 0; // point the player hits, x-coordinate
+    set @pointY, 0; // point the player hits, y-coordinate
+    @wdIndex = 0;
+    //
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Show me what you can!\"";
+    next;
+    menu
+        "Can you please explain the task again?",L_Game_explain,
+        "I'm ready, let's start!",L_Game,
+        "I'm sorry, I will come back later.",L_Close;
+
+L_Game:
+    if (countitemcolor("ForestBow") < 1)
+        goto L_no_bow;
+    if (countitemcolor("Arrow") < 1)
+        goto L_no_arrows;
+    delitem "Arrow", 1;
+    mes "You go to the training field and stand exactly on the same level with the target. The target is located about 43 feet north of you.You take one arrow and look at Gwendolyn.";
+    next;
+
+    // possibility for wdX and wdY to become zero is reduced, so windless status is less often
+    @wdX = rand(9) - 4;
+    if (@wdX != 2 && @wdX !=-2)  set @wdX, rand(9) - 4;
+    if (@wdX == 0)  set @wdX, rand(9) - 4;
+
+    @wdY = rand(9) - 4;
+    if (@wdY != 2 && @wdY !=-2)  set @wdY, rand(9) - 4;
+    if (@wdY == 0)  set @wdY, rand(9) - 4;
+
+    // wind direction array, where the wind blows to:
+    // 123
+    // 456
+    // 789
+    //here is where the wind comes from, that's why it is the opposite.
+    setarray @wd$,"error1, please report", "southeast", "south", "southwest", "east", "error2, please report", "west", "northeast", "north", "northwest" ;
+    @paramX = @wdX;
+    @paramY = @wdY;
+    callsub S_getDirection;
+    @wdIndex = @returnIndex;
+
+    @wp_sq = (@wdX * @wdX) + (@wdY * @wdY);
+
+    if (@wp_sq == 0)
+        goto L_wp0;
+    if (@wp_sq < 3)
+        goto L_wp1;
+    if (@wp_sq < 9)
+        goto L_wp2;
+    if (@wp_sq < 19)
+        goto L_wp3;
+    goto L_wp4;
+
+
+L_wp0:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"You're lucky. It is windless now.\"";
+    next;
+    goto L_choose_start_pos;
+
+L_wp1:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"There is a slight breeze coming from "+  @wd$[@wdIndex] + ".\"";
+    next;
+    goto L_choose_start_pos;
+
+L_wp2:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"The wind is blowing from "+  @wd$[@wdIndex] + ".\"";
+    next;
+    goto L_choose_start_pos;
+
+L_wp3:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Right now, there is a strong wind blowing from " +  @wd$[@wdIndex] + ".\"";
+    next;
+    goto L_choose_start_pos;
+
+L_wp4:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Here we have a squall from "+  @wd$[@wdIndex] + ".\"";
+    next;
+    goto L_choose_start_pos;
+
+L_choose_start_pos:
+    mes "Do you want to go to the left, the right or stay where you are?";
+    next;
+    menu
+        "I want to move left.",L_step_left,
+        "I go right.",L_step_right,
+        "I stay.",L_step_no,
+        "I will try it later.",L_Close;
+
+L_step_no:
+    @spX = 0;
+    mes "You stay where you are..";
+    next;
+    goto L_choose_shotpower;
+
+L_step_left:
+    mes "How many steps?";
+    next;
+    menu
+        "1",L_step_left1,
+        "2",L_step_left2,
+        "3",L_step_left3,
+        "4",L_step_left4;
+
+L_step_left1:
+    @spX = -1;
+    mes "You take one step to the left.";
+    next;
+    goto L_choose_shotpower;
+
+L_step_left2:
+    @spX = -2;
+    mes "You take two steps to the left.";
+    next;
+    goto L_choose_shotpower;
+
+L_step_left3:
+    @spX = -3;
+    mes "You take three steps to the left.";
+    next;
+    goto L_choose_shotpower;
+
+L_step_left4:
+    @spX = -4;
+    mes "You take four steps to the left.";
+    next;
+    goto L_choose_shotpower;
+
+L_step_right:
+    mes "How many steps?";
+    next;
+    menu
+        "1",L_step_right1,
+        "2",L_step_right2,
+        "3",L_step_right3,
+        "4",L_step_right4;
+
+L_step_right1:
+    @spX = 1;
+    mes "You take one step to the right.";
+    next;
+    goto L_choose_shotpower;
+
+L_step_right2:
+    @spX = 2;
+    mes "You take two steps to the right.";
+    next;
+    goto L_choose_shotpower;
+
+L_step_right3:
+    @spX = 3;
+    mes "You take three steps to the right.";
+    next;
+    goto L_choose_shotpower;
+
+L_step_right4:
+    @spX = 4;
+    mes "You take four steps to the right.";
+    next;
+    goto L_choose_shotpower;
+
+L_choose_shotpower:
+    mes "How powerfully do you want to shoot?";
+    next;
+    menu
+        "very weak shot",L_MenuItems,
+        "rather weak shot",L_MenuItems,
+        "weak shot",L_MenuItems,
+        "somewhat weak shot",L_MenuItems,
+        "medium shot",L_MenuItems,
+        "somewhat powerful shot",L_MenuItems,
+        "powerful shot",L_MenuItems,
+        "rather powerful shot",L_MenuItems,
+        "very powerful shot",L_MenuItems;
+
+L_MenuItems:
+    // we have 9 menu entries, so scale @menu, which is in range 1-9, to a scale in -4 to +4
+    @sp = @menu - 5;
+    // calculate where you hit. You range is in [-8, 8] in X and Y as well
+    @pointX = @wdX + @spX;
+    @pointY = @wdY + @sp;
+
+    if( @pointX==0 && @pointY==0 )
+        goto L_target_hit;
+
+    //set @targethit to these numbers:
+    //1,2,3 for left above, above, right above,
+    //4,5,6 for left, hit, right
+    //7,8,9 for lower left,  below, lower right;
+    setarray @target_direction$, "error3, please report", "left above", "above", "right above","left","error4, please report","right","lower left","below","lower right";
+
+    @paramX  = @pointX;
+    @paramY  = @pointY;
+    callsub S_getDirection;
+    @targethit = @returnIndex;
+
+    //now check how close
+    //get the distance squared:
+    // so it is in range 0 - 64:
+    // 0 is hit
+    // < 5 is very close
+    // <17 is close
+    // rest is a quite fucking shot
+    @target_dist_sq = (@pointX * @pointX) + (@pointY*@pointY);
+
+    if (@target_dist_sq < 5)
+        goto L_target_veryclose;
+    if (@target_dist_sq < 17)
+        goto L_target_close;
+
+    //here are bad shots:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"D'oh, what a terrible shot!\"";
+    next;
+    mes "\"Do you even know what a bow is?\"";
+    next;
+    mes "\"That was far "+@target_direction$[@targethit]+".\"";
+    next;
+    goto L_Game;
+
+L_target_close:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"That was "+@target_direction$[@targethit]+".\"";
+    next;
+    mes "\"I suggest some training.\"";
+    next;
+    goto L_Game;
+
+L_target_veryclose:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"That was quite close. Impressive!\"";
+    next;
+    mes "\"It was a little "+@target_direction$[@targethit]+".\"";
+    next;
+    mes "\"But you did not hit... have another try.\"";
+    next;
+    //like a coin toss: 2 possibilites, the same chance for both:
+    //if(0 == rand(2)) goto L_Game;
+    mes "\"Hurry up, before the wind changes.\"";
+    next;
+    goto L_choose_start_pos;
+L_target_hit:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"Wonderful! That was great! Directly hit the bull's eye!\"";
+    next;
+    mes "\"Seems like you did it!\"";
+    next;
+    mes "\"Let me inspect it...\" She walks to the target.";
+    next;
+    if( rand(500) > (2*readparam(bDex) + readparam(bAgi)))
+        goto L_target_nohit;
+    @Q_hawkseye = 6;
+    callsub S_Update_Var;
+
+    addtoskill SKILL_MALLARDS_EYE, 1;
+    getexp @QUEST_HAWK_EXP, 0;
+
+    mes "\"You proved that you are worthy to call yourself a graduate of the School of Archery.\"";
+    next;
+    mes "\"But remember, there is always something new to learn. And you should not let your training down in order to keep and improve your abilities.\"";
+    goto L_Close;
+
+L_target_nohit:
+    mes "\"Ohh! Half a fingerbreadth aside.\"";
+    next;
+    mes "\"That is quite impressive, but you can perform better with more training.\"";
+    next;
+    goto L_Game;
+
+L_state6:
+    mes "[Gwendolyn Bowmaker]";
+    mes "\"You really have a reason to be proud.\"";
+    goto L_Close;
+
+L_state1:
+    mes "[Gwendoly Bowmaker]";
+    mes "\"Welcome back. Did you decide to follow the Way of Archery?\"";
+    next;
+    menu
+        "I want to become an archer!",L_fee,
+        "I am not interested.",L_no_student;
+
+L_no_student:
+    mes "\"That's a pity. Well, if you change your mind, come back any time.\"";
+    @Q_hawkseye = 1;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_No_Money:
+    mes "\"I am sorry, but it seems that you don't have enough money. Come back when you have reorganized your finances.\"";
+    @Q_hawkseye = 1;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_no_bow:
+    mes "\"As an archer, you should always carry your bow with you. Go and get it.\"";
+    goto L_Close;
+
+L_bow_bought:
+    mes "\"You just bought it? You won't learn anything from that. To understand the nature of this bow, you have to collect the needed material by yourself. Only this way will you get a feeling of what it means to use such a weapon. \"";
+    next;
+    mes "\"The best thing would be to let you make the bow by yourself. But I guess, that would go to far. And it would take ages to get a high quality bow.\"";
+    next;
+    mes "\"Ok, go to Alan and come back with a bow made out of the logs you collected.\"";
+    goto L_Close;
+
+L_not_enough_eggs:
+    mes "\"Maybe I should also give you a lesson in how to count? You haven't enough.\"";
+    goto L_Close;
+
+L_Not_Ready:
+    mes "\"I am pleased about your progrees, but you are not ready for the next step yet. Go and do some more training, before you come back. Remember also: It is wise to speak with people you meet on your journey, there is always something new to learn.\"";
+    goto L_Close;
+
+L_no_arrows:
+    mes "Gwendolyn sighs and shake her head.";
+    next;
+    mes "\"Another lecture: Take always enough arrows with you. Go and come back when you are equipped adequately.\"";
+    goto L_Close;
+
+L_Close:
+    @SCHOOLFEE = 0;
+    @CAVE_EGGS_AMOUNT = 0;
+    @SNAKE_EGGS_AMOUNT = 0;
+    @MOUNTAIN_EGGS_AMOUNT = 0;
+    @GRASS_EGGS_AMOUNT = 0;
+    @QUEST_EGG_EXP = 0;
+    @BASELEVEL_GAME = 0;
+    @QUEST_HAWK_EXP = 0;
+    @Q_hawkseye_MASK = 0;
+    @Q_hawkseye_SHIFT = 0;
+    @Q_hawkseye = 0;
+    @Q_Forestbow_MASK = 0;
+    @Q_Forestbow_SHIFT = 0;
+    @FORESTBOW = 0;
+
+    @wdX = 0;
+    @wdY = 0;
+    @spX = 0;
+    @sp = 0;
+    @pointX = 0;
+    @pointY = 0;
+    @wdIndex = 0;
+    @paramX = 0;
+    @paramY = 0;
+    @returnIndex = 0;
+    @wp_sq = 0;
+    @targethit = 0;
+    @target_dist_sq = 0;
+    cleararray @target_direction, 0, 10;
+    cleararray @wd, 0, 10;
+
+    close;
+
+S_Update_Var:
+        QUEST_Forestbow_state = (QUEST_Forestbow_state & ~(@Q_hawkseye_MASK) | (@Q_hawkseye << @Q_hawkseye_SHIFT));
+        return;
+
+S_getDirection:
+    // get @paramX @paramY  as parameters
+    // returns an index where these parameters are in relation to origin
+    // 123
+    // 456  whereas 5 is the origin. (3,6,9 there is paramX>0);  (1,2,3 there is paramY>0)
+    // 789
+    //first check the quadrants and after check more precisely
+    if(@paramX>0 && @paramY>0) set @returnIndex, 3;
+    if(@paramX>0 && @paramY<0) set @returnIndex, 9;
+    if(@paramX<0 && @paramY>0) set @returnIndex, 1;
+    if(@paramX<0 && @paramY<0) set @returnIndex, 7;
+
+    //straight left
+    if ( (@paramX < 0) && (@paramY >= @paramX/2) && (-@paramY >= @paramX/2) ) set @returnIndex, 4;
+
+    //straight right
+    if ( (@paramX > 0) && (@paramY <= @paramX/2) && (-@paramY <= @paramX/2) ) set @returnIndex, 6;
+
+    //straight above
+    if ( (@paramY > 0) && (@paramX <= @paramY/2) && (-@paramX <= @paramY/2) ) set @returnIndex, 2;
+
+    //straight below
+    if ( (@paramY < 0) && (@paramX >= @paramY/2) && (-@paramX >= @paramY/2) ) set @returnIndex, 8;
+
+    //check the origin, because the origin is found by the "straight" lines as well. (should not, but is.. maybe a bug?)
+    if( @paramX==0 && @paramY==0 ) set @returnIndex, 5;
+    return;
+}

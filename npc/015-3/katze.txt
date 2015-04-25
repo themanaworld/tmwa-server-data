@@ -1,0 +1,185 @@
+
+015-3,32,25,0	script	Katze	172,{
+    @cat = ((Katze & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if (@cat == 1 && @catNeedsAlone == 0) goto L_NeedsFood;
+    if (@cat == 1) goto L_NeedsFood;
+    if (@cat == 2 && @catNeedsAlone == 0) goto L_NeedsFur;
+    if (@cat == 2) goto L_NeedsFur;
+    if (@cat == 3) goto L_NeedsWood;
+    if (@cat == 4 && @catNeedsAlone == 0) goto L_NeedsStuff;
+    if (@cat == 4) goto L_PreNeedsStuff;
+    if (@cat == 5) goto L_NeedsStuff2;
+    if (@cat == 6 && @catNeedsAlone == 0) goto L_GainEars;
+    if (@cat == 6) goto L_PreGainEars;
+    if (@cat == 7) goto L_Finished;
+    goto L_NeedsMilk;
+
+L_NeedsMilk:
+    mes "[Katze]";
+    mes "\"Meow.\"";
+    next;
+    menu "Throw a stone at the cat.", L_ThrowStone,
+         "Leave the cat alone.", L_Close;
+
+L_ThrowStone:
+    @cat = 0;
+    callsub S_Update_Katze;
+    percentheal -30, 0;
+    warp "015-1", 60, 32;
+    mes "\"GRAAUWL! Hissss...\"";
+    mes "Yikes, the cat attacked you! Your whole body is scratched. Maybe throwing a stone wasn't such a great idea...";
+    goto L_Close;
+
+L_NeedsFood:
+    mes "[Katze]";
+    mes "\"Meow, prrrr...\"";
+    next;
+    menu
+        "Throw a stone at the cat.", L_ThrowStone,
+        "Leave the cat alone.", L_Close;
+
+L_NeedsFur:
+    mes "[Katze]";
+    mes "\"Prrr. Meow, prrr...\"";
+    next;
+    if (countitemcolor("WhiteFur") > 0)
+        menu
+            "Make funny movements with the fur near the ground.", L_MoveFur,
+            "Throw a stone at the cat.", L_ThrowStone,
+            "Leave the cat alone.", L_Close;
+    if (countitemcolor("WhiteFur") == 0)
+        menu
+            "Throw a stone at the cat.", L_ThrowStone,
+            "Leave the cat alone.", L_Close;
+    goto L_Close;
+
+L_MoveFur:
+    delitem "WhiteFur", 1;
+    @cat = 3;
+    callsub S_Update_Katze;
+    mes "The cat jumps at the fur! You quickly let go of it. The cat happily returns to its spot, carrying the fur in its mouth.";
+    next;
+    mes "The cat drops the fur and looks at you with half opened eyes. Suddenly she starts talking, and says: \"That was very kind of you.\" She seems to be smiling.";
+    goto L_Close;
+
+L_NeedsWood:
+    mes "[Katze]";
+    mes "\"Prrrr, now I'd like something to sharpen my claws on.\"";
+    next;
+
+    if (countitemcolor("RawLog") > 0)
+        menu
+            "Want this piece of wood?", L_GiveWood,
+            "Ok, see you later.", L_Close;
+    goto L_Close;
+
+L_GiveWood:
+    mes "[Katze]";
+    mes "\"Sure! Please put it next to the pot.\"";
+    goto L_Close;
+
+L_PreNeedsStuff:
+    mes "The cat is still eyeing the piece of wood. She probably needs to be left alone for a bit again.";
+    goto L_Close;
+
+L_NeedsStuff:
+    @cat = 5;
+    callsub S_Update_Katze;
+    mes "[Katze]";
+    mes "\"You've been really kind to me. I can make you something nice, but I will need";
+    mes "2 Snake Skins,";
+    mes "2 Snake Tongues,";
+    mes "2 Maggot Slimes,";
+    mes "2 White Furs,";
+    mes "2 Hard Spikes and";
+    mes "2 Tiny Healing Potions.\"";
+    goto L_Close;
+
+L_NeedsStuff2:
+    mes "[Katze]";
+    mes "\"Did you bring what I asked you for?\"";
+    next;
+    menu
+        "Look here.", L_CatChecksStuff,
+        "What do you need again?", L_WhatsNeeded,
+        "No, I haven't got everything yet.", L_Close;
+
+L_WhatsNeeded:
+    mes "[Katze]";
+    mes "\"Actually, you should have remembered yourself.\"";
+    next;
+    menu
+        "Please tell me.", L_Please,
+        "Never mind.", L_Close;
+
+L_Please:
+    mes "[Katze]";
+    mes "\"Alright... [the cat glares at you] it was";
+    mes "2 Snake Skins,";
+    mes "2 Snake Tongues,";
+    mes "2 Maggot Slimes,";
+    mes "2 White Furs,";
+    mes "2 Hard Spikes and";
+    mes "2 Tiny Healing Potions.\"";
+    goto L_Close;
+
+L_CatChecksStuff:
+    if (countitemcolor("SnakeSkin") > 1
+        && countitemcolor("SnakeTongue") > 1
+        && countitemcolor("MaggotSlime") > 1
+        && countitemcolor("WhiteFur") > 1
+        && countitemcolor("HardSpike") > 1
+        && countitemcolor("TinyHealingPotion") > 1)
+            goto L_GiveStuff;
+    mes "[Katze]";
+    mes "\"You don't seem to have everything yet. Come back later when you do.\"";
+    goto L_Close;
+
+L_GiveStuff:
+    delitem "SnakeSkin", 2;
+    delitem "SnakeTongue", 2;
+    delitem "MaggotSlime", 2;
+    delitem "WhiteFur", 2;
+    delitem "HardSpike", 2;
+    delitem "TinyHealingPotion", 2;
+    @cat = 6;
+    callsub S_Update_Katze;
+    @catNeedsAlone = 1;
+    mes "[Katze]";
+    mes "\"Nicely done! Now leave me alone for a while, I need some time to prepare your present.\"";
+    goto L_Close;
+
+L_PreGainEars:
+    mes "[Katze]";
+    mes "\"Please leave me alone for a while, so I can prepare your present.\"";
+    goto L_Close;
+
+L_GainEars:
+    getitem "CatEars", 1;
+    @xpval = 5000;
+    getexp @xpval, 0;
+    @cat = 7;
+    callsub S_Update_Katze;
+    mes "[Katze]";
+    mes "\"Look what I made for you! It makes you look a bit like me! Maybe it will give you a feeling of what it is like to be a cat.\"";
+    mes "The cat winks at you.";
+    mes "[You gain " + @xpval + " experience points]";
+    goto L_Close;
+
+L_Finished:
+    mes "[Katze]";
+    if (getequipid(equip_head) == 1217)  // Cat ears
+        mes "\"Meow, fellow cat.\"";
+    if (getequipid(equip_head) != 1217)
+        mes "\"Meow. Lost your ears?\"";
+    goto L_Close;
+
+L_Close:
+    @cat = 0;
+    close;
+
+S_Update_Katze:
+    Katze = (Katze & ~(NIBBLE_0_MASK)) | (@cat << NIBBLE_0_SHIFT);
+    return;
+}

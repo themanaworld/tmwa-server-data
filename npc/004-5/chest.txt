@@ -1,0 +1,30 @@
+004-5,89,67,0	script	Old Chest#crastur	111,{
+    setarray @npc_loc, 89, 67, 1;
+    callfunc "PCtoNPCRange";
+    if(@npc_check == 1) goto L_Closer;
+    @spants_state = ((QUEST_WG_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    if(@spants_state > 5) goto L_Looted;
+    if(@spants_state != 5) goto L_Unknown;
+    @spants_state = 6;
+    getitem "Bandana", 1;
+    set Zeny, (Zeny + rand(8000,20000)); // give some random loot
+    mes "This must be the treasure that Crastur was talking about.";
+    mes "You see a pile of gold and a Bandana on top.";
+    QUEST_WG_state = (QUEST_WG_state & ~(NIBBLE_2_MASK) | (@spants_state << NIBBLE_2_SHIFT));
+    goto L_Close;
+
+L_Looted:
+    mes "You have already looted this chest.";
+    goto L_Close;
+
+L_Unknown:
+    mes "You have no idea how to open this chest.";
+    goto L_Close;
+
+L_Closer:
+    mes "You need to move closer to open the chest.";
+    goto L_Close;
+
+L_Close:
+    close;
+}

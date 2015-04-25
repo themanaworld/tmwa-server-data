@@ -1,0 +1,163 @@
+009-2,32,104,0	script	Selim	326,{
+    cleararray @items$, "", getarraysize(@items$);
+    cleararray @item_names$, "", getarraysize(@item_names$);
+    @r = 0;
+    @j = getarraysize($@DYE_items$);
+    goto L_CloneArray; // clone the array from DyeConfig
+
+L_CloneArray:
+    @items$[@r] = $@DYE_items$[@r];
+    @item_names$[@r] = $@DYE_item_names$[@r];
+    @r = @r + 1;
+    if(@r < @j) goto L_CloneArray;
+    @r = 0;
+    @j = 0;
+    goto L_Main;
+
+
+L_Main:
+    mes "[Selim]";
+    mes "\"Greetings, fair traveler. With what may I help you?\"";
+    menu
+        "Greetings, are you the store merchant?", L_ask_selim,
+        "But what are dyes and what purpose do they serve?", L_ask_dye,
+        "Can you dye something for me?", L_clothes_choice,
+        "Can you also remove color from clothing?", L_ask_bleach,
+        "About these sorcerer robes...", L_asksorcererrobe,
+        "Never mind.", L_Close;
+
+L_ask_bleach:
+    mes "[Selim]";
+    mes "\"I'm afraid no.";
+    mes "For that, you would need to visit Candide in the Tulimshar marketplace.\"";
+    goto L_Main;
+
+L_ask_selim:
+    mes "[Selim]";
+    mes "\"That is an honest mistake you have made.";
+    mes "However I am not the merchant, but rather a Master Dyer here to serve the good people of this town.";
+    mes "I dye things, upon request.\"";
+    menu
+        "But what are dyes and where can I get them?", L_ask_dye,
+        "Can you dye something for me?", L_clothes_choice,
+        "Can you also remove color from clothing?", L_ask_bleach,
+        "Good bye.", L_Close;
+
+L_ask_dye:
+    mes "[Selim]";
+    mes "\"Dyes are special liquids used to add color to clothing. If you want me to dye something for you you will have to bring me some dye first.";
+    mes "Those behind me are nearly empty and won't last for your item.\"";
+    menu
+        "What do you mean, `bring you dye'?", L_explain_dye,
+        "Where would I get dye?", L_explain_dye,
+        "Good bye.", L_Close;
+
+L_clothes_choice:
+    mes "[Selim]";
+    mes "\"What can I dye for you today?\"";
+    next;
+    callfunc "DynamicItemMenu$";
+    @default_choice$ = "";
+    @item_del$ = @item$;
+    @name$ = @item_names$[@index];
+    cleararray @items$, "", getarraysize(@items$);
+    cleararray @item_names$, "", getarraysize(@item_names$);
+    if(@item$ == "") goto L_Close;
+    goto L_picked_item;
+
+
+L_asksorcererrobe:
+    mes "[Selim]";
+    mes "\"Yes?\"";
+    next;
+    menu
+        "Do you think you can dye that line to a different color?", L_Next1;
+
+L_Next1:
+    mes "[Selim]";
+    mes "\"Hum, I fear I can't do that. The area is too small and I can operate only on large ones.";
+    mes "But with the appropriate materials, maybe a talented tailor can make the change.\"";
+    next;
+    menu
+        "Oh, I see!", L_Next;
+
+L_Next:
+    mes "[Selim]";
+    mes "\"Of course I can help you by dyeing the materials your tailor will want.";
+    mes "All I need is a piece of Cotton Cloth.\"";
+    @item_del$ = "CottonCloth";
+    menu
+        "Sure. Here is one.", L_picked_item,
+        "I have to go pick that.", L_Close;
+
+L_picked_item:
+    if (countitemcolor(@item_del$) == 0) goto L_havenone;
+    goto L_colour;
+
+L_colour:
+    mes "[Selim]";
+    mes "\"Excellent. Now, what color do you want?\"";
+    next;
+    @r = 0;
+    @j = getarraysize($@DYE_colors$);
+    callsub S_CloneColors;
+    @default_choice$ = "I have no dye.";
+    callfunc "DynamicItemMenu$";
+    cleararray @items$, "", getarraysize(@items$);
+    cleararray @item_names$, "", getarraysize(@item_names$);
+    @default_choice$ = "";
+    if (@item$ == "") goto L_no_dye;
+    @colour = @index;
+    goto L_Finish;
+
+S_CloneColors:
+    @items$[@r] = $@DYE_colors$[@r] + "Dye";
+    @item_names$[@r] = $@DYE_color_names$[@r];
+    @r = @r + 1;
+    if(@r < @j) goto S_CloneColors;
+    @r = 0;
+    @j = 0;
+    return;
+
+L_no_dye:
+    mes "[Selim]";
+    mes "\"I would love to dye your " + @name$ + " for you, but you will have to bring me some dye first.";
+    mes "Those behind me are nearly empty and won't last for your item.\"";
+    next;
+    menu
+        "I wanted to dye a different item anyway.", L_clothes_choice,
+        "What do you mean, `bring you dye'?", L_explain_dye,
+        "Where would I get dye?", L_explain_dye,
+        "Never mind.", L_Close;
+
+L_explain_dye:
+    if (QUEST_clothdyer_knowsdye < 1)
+        QUEST_clothdyer_knowsdye = 1;
+    mes "[Selim]";
+    mes "\"Well, dye is very expensive, and since I don't charge adventurers anything, I can't give you any for free.";
+    mes "But most alchemists can make dye; perhaps you can find one around here.\"";
+    goto L_Close;
+
+L_Finish:
+    if(getitemname($@DYE_colors$[@colour] + @item_del$) == "Unknown Item") mapexit;
+    if(countitemcolor(@item_del$) < 1) goto L_havenone;
+    delitem @item$, 1;
+    delitem @item_del$, 1;
+    getitem $@DYE_colors$[@colour] + @item_del$, 1;
+    mes "[Selim]";
+    mes "\"Here's your " + $@DYE_color_names$[@colour] + " " + @name$ + "!  Please let dry for a minute.\"";
+    goto L_Close;
+
+L_havenone:
+    mes "[Selim]";
+    mes "\"You don't have any uncolored " + @name$ + "?  That's unfortunate.";
+    mes "Would you like to dye something else?\"";
+    next;
+    goto L_clothes_choice;
+
+L_Close:
+    mes "\"Farewell and good luck in your journeys!\"";
+    close2;
+    emotion EMOTE_WINK;
+    end;
+}

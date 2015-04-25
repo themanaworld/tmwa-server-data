@@ -1,0 +1,296 @@
+function	script	EarthImpTouch	{
+    if (getskilllv(SKILL_MAGIC)) goto L_message;
+
+    mes "[Well]";
+    mes "You hear noises from within the well.";
+    close;
+
+L_message:
+    @Q_MASK = NIBBLE_0_MASK;
+    @Q_SHIFT = NIBBLE_0_SHIFT;
+    @Q_status = (QUEST_MAGIC2 & @Q_MASK) >> @Q_SHIFT;
+
+    // Set up SkillUp function
+    @SUP_id = SKILL_MAGIC_NATURE;
+    @SUP_name$ = "Nature Magic";
+    @Q_STATUS_INITIAL = 0;
+    @Q_STATUS_ONQUEST = 1;
+    @Q_STATUS_STUDENT0 = 2;
+    @Q_STATUS_STUDENT1 = 3;
+    @Q_STATUS_STUDENT2 = 4;
+    @Q_STATUS_STUDENT3 = 5;
+
+    @s$ = "girl";
+    if (Sex) set @s$, "boy";
+
+    if (MAGIC_FLAGS & MFLAG_KNOWS_IMP) goto L_wb;
+
+    mes "[Well]";
+    mes "Something is inside that well, and now that you have turned your attention towards it, it seems to be talking to you!";
+    next;
+
+    mes "[Well]";
+    mes "\"Hey!  You there!  Yes, I'm talking to you!\"";
+    mes "That strange voice seems to be coming from inside your head!";
+    next;
+    menu
+        "Who, me?", L_Next,
+        "Leave me alone!", L_Close,
+        "Aaah! I'm hearing voices!", L_silly_close;
+
+L_Next:
+    mes "[Well]";
+    mes "\"I'm in here, in the well, talking to you!  If I'm not very mistaken, you are a powerful wizard-to-be, except that nobody has showed you how to properly do magic yet!\"";
+    next;
+    menu
+        "Who are you?", L_Next1,
+        "Aaaah!  The voices are after me!", L_silly_close,
+        "Whatever it is, I'm not interested.", L_Close;
+
+L_Next1:
+    mes "[Earth Spirit]";
+    mes "\"I'm an earth spirit; my name isn't important... all that matters is that I like you, and that I will help you become a powerful wizard if you help me. Just a fair deal, no more than that...\"";
+    next;
+    MAGIC_FLAGS = MAGIC_FLAGS | MFLAG_KNOWS_IMP;
+    goto L_Main;
+
+L_wb:
+    mes "[Earth Spirit]";
+    mes "\"It's excellent to see you again!\"";
+    next;
+    goto L_Main;
+
+L_Main:
+    menu
+        "How did you get trapped?", L_Q_trapped,
+        "Can you teach me magic and spells?", L_Q_magic,
+        "What do you know about...", L_Q,
+        "Goodbye!", L_Close;
+
+L_Q_trapped:
+    mes "[Earth Spirit]";
+    mes "\"Oh, a wicked witch grew jealous of my power and locked me up in this well.\"";
+    next;
+    goto L_Main;
+
+L_Q:
+    mes "[Earth Spirit]";
+    mes "\"Stop bothering me with your questions, will you?  I'm trying to make you a powerful wizard, after all!\"";
+    next;
+    goto L_Main;
+
+L_Q_magic:
+    if (@Q_status == @Q_STATUS_ONQUEST) goto L_Q_magic_1;
+    if (@Q_status == @Q_STATUS_STUDENT0) goto L_Q_magic_2;
+    if (@Q_status == @Q_STATUS_STUDENT1) goto L_Q_magic_3;
+    if (@Q_status == @Q_STATUS_STUDENT2) goto L_Q_magic_4;
+
+    mes "[Earth Spirit]";
+    mes "\"Good, good... that's the right attitude!  Yes, I can teach you magic, but first you must prove that you are worthy to be my student!\"";
+    next;
+    mes "[Earth Spirit]";
+    mes "\"North-east of here sits and old, dead tree. Well, not completely dead, not yet, but almost. It's nothing special. Well, maybe a little, but not really. I want you to cut off one of its branches.\"";
+    next;
+    menu
+        "No way.", L_silly_close,
+        "Sure.", L_Q_tree_ok,
+        "Why that particular tree?", L_Next2;
+
+L_Next2:
+    mes "[Earth Spirit]";
+    mes "\"Oh, you and your questions!  Well, that tree was a druid once, so the branches contain a bit of its lifeforce. And that's useful.\"";
+    next;
+    menu
+        "Yuck.", L_silly_close,
+        "Sure, whatever.", L_Q_tree_ok,
+        "Isn't that like cutting off someone's arm?", L_Next3;
+
+L_Next3:
+    mes "[Earth Spirit]";
+    mes "\"Oooh... now come on!  Don't be so sentimental. He turned himself into a tree, he can hardly expect everyone to leave him alone.\"";
+    next;
+    mes "[Earth Spirit]";
+    mes "\"Who knows if he can even feel anything anymore?  I'm sure he can't, being wooden and all. Besides, it's only a measly tree. Not like I'm asking you to cut him down!.\"";
+    next;
+    menu
+        "No way.", L_silly_close,
+        "Alright, that makes sense.", L_Q_tree_ok;
+
+L_Q_tree_ok:
+    mes "[Earth Spirit]";
+    mes "\"Good, good, good!  Yes, that will be very good!  So, come back when you have the branch. Oh, and bring 100,000 GP, too, as an enrollment fee.\"";
+    @Q_status = @Q_STATUS_ONQUEST;
+    callsub S_Update_Var;
+    MAGIC_FLAGS = MAGIC_FLAGS | MFLAG_KNOWS_CUTTREE;
+    next;
+    goto L_Main;
+
+L_Q_magic_1:
+    mes "[Earth Spirit]";
+    mes "\"Yes, yes, if you bring me the branch and the money, then I will!\"";
+    next;
+    menu
+        "Here are the branch and the money.", L_Next4,
+        "How much money did you want again?", L_Q_tree_howmuch,
+        "How can I cut it?", L_Q_tree_how,
+        "Where was the tree again?", L_Q_tree_where,
+        "What is that tree?", L_Q_tree_what;
+
+L_Next4:
+    if (countitemcolor("DruidTreeBranch") < 1) goto L_Q_tree_none;
+    if (!(MAGIC_FLAGS & MFLAG_DID_CUTTREE)) goto L_Q_tree_dry;
+    if (Zeny < 100000) goto L_Q_tree_nomoney;
+
+    Zeny = Zeny - 100000;
+    delitem "DruidTreeBranch", 1;
+    mes "[Earth Spirit]";
+    mes "Following the earth sprite's instructions, you throw branch and GP into the well.";
+    next;
+    mes "[Earth Spirit]";
+    mes "\"Well done, very well done!  Consider yourself my student now.\"";
+    @SUP_xp = 5000;
+    @SUP_lvl = 2;
+    callfunc "SkillUp";
+    next;
+    @Q_status = @Q_STATUS_STUDENT0;
+    callsub S_Update_Var;
+    goto L_Main;
+
+L_Q_magic_finish:
+    mes "[1000 experience points]";
+    @Q_status = @Q_status + 1;
+    callsub S_Update_Var;
+    getexp 1000,0;
+    next;
+    goto L_Main;
+
+L_Q_magic_2:
+    mes "[Earth Spirit]";
+    mes "\"Yes, of course!  For just 20,000 GP I will teach you your first spell!\"";
+    next;
+    menu
+        "Here you are.", L_Next5,
+        "No.", L_Main;
+
+L_Next5:
+    if (Zeny < 20000) goto L_no20k;
+
+    Zeny = Zeny - 20000;
+    mes "[Earth Spirit]";
+    mes "\"Kekeke... excellent!  Yes, here goes your first spell, the flying backpack!  If you are overloaded, it will take the load off your shoulders.\"";
+    next;
+    mes "[Earth Spirit]";
+    mes "\"Take a cocoon, living or dead, and suffuse it in magic. Whisper '" + getspellinvocation("flying-backpack") + "', and feel it float!\"";
+    goto L_Q_magic_finish;
+
+L_Q_magic_3:
+    mes "[Earth Spirit]";
+    mes "\"But yes, yes!  Only 20,000 GP, once again, and I will teach you a far more useful spell!\"";
+    next;
+    menu
+        "Here you are.", L_Next6,
+        "No.", L_Main;
+
+L_Next6:
+    if (Zeny < 20000) goto L_no20k;
+    Zeny = Zeny - 20000;
+    mes "[Earth Spirit]";
+    mes "\"Yeees, good!  This one is a protection spell, making your skin harder. You need a hard spike for it, though. Hold that spike in your hands, and focus on it.\"";
+    next;
+    mes "[Earth Spirit]";
+    mes "\"Next, say '" + getspellinvocation("protect") + "', and feel your skin grow rigid!  Very useful against stings and stabs and pokes and pricks and that sort of stuff.\"";
+    goto L_Q_magic_finish;
+
+L_Q_magic_4:
+    mes "[Earth Spirit]";
+    mes "\"Naah, you're too weak now!  Come back later when you have grown!\"";
+    next;
+    goto L_Main;
+
+L_no20k:
+    mes "[Earth Spirit]";
+    mes "\"You can't pay me 20,000 if you don't have that much!\"";
+    next;
+    goto L_Main;
+
+L_Q_tree_none:
+    mes "[Earth Spirit]";
+    mes "\"Where is your branch?\"";
+    next;
+    goto L_Main;
+
+L_Q_tree_dry:
+    mes "[Earth Spirit]";
+    mes "\"That won't do. This branch is completely dead; you'll have to get another.\"";
+    next;
+    goto L_Main;
+
+L_Q_tree_nomoney:
+    mes "[Earth Spirit]";
+    mes "\"No, you don't have enough money!  Come back when you have 100,000.\"";
+    next;
+    goto L_Main;
+
+L_Q_tree_howmuch:
+    mes "[Earth Spirit]";
+    mes "\"It's only 100,000 GP to become my student.\"";
+    next;
+    goto L_Main;
+
+L_Q_tree_how:
+    mes "[Earth Spirit]";
+    mes "\"Oh... right, the tree might be protected. Only a bone knife will cut that. No idea where you can find one, but I'm sure you will manage!\"";
+    next;
+    goto L_Main;
+
+L_Q_tree_where:
+    mes "[Earth Spirit]";
+    mes "\"North-east of here.\"";
+    next;
+    goto L_Main;
+
+L_Q_tree_what:
+    mes "[Earth Spirit]";
+    mes "\"Just some silly druid who turned himself into a tree; nothing important.\"";
+    next;
+    goto L_Main;
+
+L_silly_close:
+    if (MAGIC_FLAGS & MFLAG_KNOWS_IMP)
+        mes "[Earth Spirit]";
+    if (!(MAGIC_FLAGS & MFLAG_KNOWS_IMP))
+        mes "[Well]";
+    mes "\"Silly " + @s$ + ".\"";
+    goto L_Close;
+
+L_Close:
+    @Q_MASK = 0;
+    @Q_SHIFT = 0;
+    @Q_status = 0;
+    @SUP_id = 0;
+    @SUP_name$ = "";
+    @SUP_xp = 0;
+    @SUP_lvl = 0;
+    @Q_STATUS_INITIAL = 0;
+    @Q_STATUS_ONQUEST = 0;
+    @Q_STATUS_STUDENT0 = 0;
+    @Q_STATUS_STUDENT1 = 0;
+    @Q_STATUS_STUDENT2 = 0;
+    @Q_STATUS_STUDENT3 = 0;
+    @s$ = "";
+    close;
+
+S_Update_Var:
+    QUEST_MAGIC2 = (QUEST_MAGIC2 & ~(@Q_MASK) | (@Q_status << @Q_SHIFT));
+    return;
+}
+
+006-1,63,79,0	script	#EarthImp0#_M	400,{
+    callfunc "EarthImpTouch";
+    end;
+}
+
+006-1,64,79,0	script	#EarthImp1#_M	400,{
+    callfunc "EarthImpTouch";
+    end;
+}

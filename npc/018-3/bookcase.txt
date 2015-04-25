@@ -1,0 +1,68 @@
+
+018-3,75,123,0	script	#DemonMineBookcase1	400,{
+    callfunc "ClearVariables";
+
+    @state = ((QUEST_Hurnscald & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+
+    if (@state == 0) goto L_Search;
+
+    mes "You see nothing different about the bookcase.";
+    mes "Do you want to search it again anyways?";
+    next;
+    menu
+        "Yes.", L_Search,
+        "No.", L_Close;
+
+L_Search:
+    mes "After searching the bookcase, you were able to find a few passages that you can read.";
+    next;
+    mes "One of the describes an ancient barrier that guards a great treasure.";
+    mes "";
+    mes "To get through it, you need to consume the soul of a great pumpkin ghost.";
+    next;
+    mes "Another passage describes a ritual needed to open a certain cursed chest.";
+    mes "";
+    mes "It looks like a lot of items will be needed.";
+    next;
+    mes "The slime of a maggot.";
+    mes "A mushroom, big or small.";
+    mes "The petal of a pink flower.";
+    next;
+    mes "A pearl from the sea.";
+    mes "A spike; the harder, the better.";
+    mes "Some raw wood. One log should do.";
+    next;
+    mes "An antenna. Preferably pink.";
+    mes "The tongues of four different snakes.";
+    mes "A key to a treasure chest.";
+    next;
+    mes "A pile of ash.";
+    mes "Four different herbs.";
+    mes "A bug, or part of one.";
+    next;
+    mes "A lamp for the dark.";
+    mes "Rock and metal, as one.";
+    mes "Three different deaths dealt by three different scorpions.";
+    next;
+    mes "The womb that gives birth to butterflies.";
+    mes "The gentle caress of a creature without blemish.";
+    mes "A single piece of darkness.";
+    next;
+    mes "And a bottle's worth of water.";
+    mes "";
+    mes "You begin to wonder if you read that list right.";
+    next;
+    if (@state != 0)
+        goto L_Close;
+    @state = 1;
+    callsub S_Update_Mask;
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    close;
+
+S_Update_Mask:
+    QUEST_Hurnscald = (QUEST_Hurnscald & ~(NIBBLE_2_MASK)) | (@state << NIBBLE_2_SHIFT);
+    return;
+}

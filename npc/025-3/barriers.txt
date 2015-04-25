@@ -1,0 +1,1275 @@
+
+
+025-3,78,127,0	script	#WarpBattleCave1	45,1,1,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        goto L_AlreadyHelped;
+    if (getareausers("025-4", 26, 63, 60, 97) >= 1 || $@battlecave1 > 0)
+        goto L_SomeoneInside;
+    if (cavefights & BATTLE_CAVE1)
+        goto L_AlreadyDone;
+    if (Rossy_Quest < 15)
+        goto L_Block;
+    goto L_StartFight;
+
+L_StartFight:
+    $@battlecave1 = 1;
+    warp "025-4", 41, 95;
+    $@cave1fighter$ = strcharinfo(0);
+    $@cave1fighterdeaths = PC_DIE_COUNTER;
+    $@cave1start = gettimetick(2);
+    message strcharinfo(0), "As you enter, you feel an evil force filling up the cave.";
+    // Cave 1 Configuration.
+    setarray $@cave1_monsters_IDS[1], 1087, 1084;
+    setarray $@cave1_monsters_QTY[1], 3, 3;
+    $@cave1_waves = 1;
+    $@cave1_time = 180;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave1fighter$ + " is already inside. The cave seems to be blocked.";
+    end;
+
+L_AlreadyDone:
+    message strcharinfo(0), "I already eliminated this source of energy.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than dead monster corpses in this cave.";
+    end;
+
+L_Block:
+    message strcharinfo(0), "Maybe I should learn a bit more about this place before I go inside.";
+    end;
+
+OnTimer5000:
+    if ($@battlecave1 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave1fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 26, 63, 60, 97) < 1)
+        goto OnNoRid;
+    if (PC_DIE_COUNTER > $@cave1fighterdeaths)
+        goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE1)
+        goto L_Win;
+    if (gettimetick(2) - $@cave1start >= $@cave1_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave1start) < 60)
+        $@cave1start = $@cave1start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave1_timer = $@cave1_timer + 5;
+    if ($@cave1_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave1 = 0;
+    $@cave1_kills = 0;
+    $@cave1start = 0;
+    $@cave1_timer = 0;
+    $@cave1fighter$ = "";
+    $@cave1fighterdeaths$ = 0;
+    $@battlecave1 = 0;
+    cleararray $@cave1_monsters_IDS[0], 0, 2;
+    cleararray $@cave1_monsters_QTY[0], 0, 2;
+    $@cave1_waves = 0;
+    $@cave1_time = 0;
+    killmonster "025-4", "#StartCaveFight1::OnMonsterDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-3", 78, 129;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 78, 129;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 78, 129;
+    message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave1fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 78, 129;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
+}
+
+
+025-3,53,107,0	script	#WarpBattleCave2	45,1,1,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        goto L_AlreadyHelped;
+    if (getareausers("025-4", 97, 62, 126, 96) >= 1 || $@battlecave2 > 0)
+        goto L_SomeoneInside;
+    if (cavefights & BATTLE_CAVE2)
+        goto L_AlreadyDone;
+    if (Rossy_Quest < 15)
+        goto L_Block;
+    goto L_StartFight;
+
+L_StartFight:
+    $@battlecave2 = 1;
+    warp "025-4", 110, 94;
+    $@cave2fighter$ = strcharinfo(0);
+    $@cave2fighterdeaths = PC_DIE_COUNTER;
+    $@cave2start = gettimetick(2);
+    message strcharinfo(0), "As you enter, you feel an evil force filling up the cave.";
+    // Cave 2 Configuration.
+    setarray $@cave2_monsters_IDS[1], 1083, 1084;
+    setarray $@cave2_monsters_QTY[1], 3, 4;
+    $@cave2_waves = 1;
+    $@cave2_time = 210;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave2fighter$ + " is already inside. The cave seems to be blocked.";
+    end;
+
+L_AlreadyDone:
+    message strcharinfo(0), "I already eliminated this source of energy.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than dead monster corpses in this cave.";
+    end;
+
+L_Block:
+    message strcharinfo(0), "Maybe I should learn a bit more about this place before I go inside.";
+    end;
+
+OnTimer5000:
+    if ($@battlecave2 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave2fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 97, 62, 126, 96) < 1)
+        goto OnNoRid;
+    if (PC_DIE_COUNTER > $@cave2fighterdeaths)
+        goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE2)
+        goto L_Win;
+    if (gettimetick(2) - $@cave2start >= $@cave2_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave2start) < 60)
+        $@cave2start = $@cave2start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave2_timer = $@cave2_timer + 5;
+    if ($@cave2_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave2 = 0;
+    $@cave2_kills = 0;
+    $@cave2start = 0;
+    $@cave2_timer = 0;
+    $@cave2fighter$ = "";
+    $@cave2fighterdeaths$ = 0;
+    $@battlecave2 = 0;
+    cleararray $@cave2_monsters_IDS[0], 0, 2;
+    cleararray $@cave2_monsters_QTY[0], 0, 2;
+    $@cave2_waves = 0;
+    $@cave2_time = 0;
+    killmonster "025-4", "#StartCaveFight2::OnMonsterDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-3", 53, 109;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 53, 109;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 53, 109;
+    message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave2fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 53, 109;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+}
+
+
+025-3,71,83,0	script	#WarpBattleCave3	45,1,1,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        goto L_AlreadyHelped;
+    if (getareausers("025-4", 150, 84, 177, 117) >= 1 || $@battlecave3 > 0)
+        goto L_SomeoneInside;
+    if (cavefights & BATTLE_CAVE3)
+        goto L_AlreadyDone;
+    if (Rossy_Quest < 15)
+        goto L_Block;
+    goto L_StartFight;
+
+L_StartFight:
+    $@battlecave3 = 1;
+    warp "025-4", 168, 115;
+    $@cave3fighter$ = strcharinfo(0);
+    $@cave3fighterdeaths = PC_DIE_COUNTER;
+    $@cave3start = gettimetick(2);
+    message strcharinfo(0), "As you enter, you feel an evil force filling up the cave.";
+    // Cave 3 Configuration.
+    setarray $@cave3_monsters_IDS[1], 1088, 1083;
+    setarray $@cave3_monsters_QTY[1], 4, 4;
+    $@cave3_waves = 1;
+    $@cave3_time = 240;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave3fighter$ + " is already inside. The cave seems to be blocked.";
+    end;
+
+L_AlreadyDone:
+    message strcharinfo(0), "I already eliminated this source of energy.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than dead monster corpses in this cave.";
+    end;
+
+L_Block:
+    message strcharinfo(0), "Maybe I should learn a bit more about this place before I go inside.";
+    end;
+
+OnTimer5000:
+    if ($@battlecave3 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave3fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 150, 84, 177, 117) < 1)
+        goto OnNoRid;
+    if (cavefights & BATTLE_CAVE3)
+        goto L_Win;
+    if (PC_DIE_COUNTER > $@cave3fighterdeaths)
+        goto L_CleaningDead;
+    if (gettimetick(2) - $@cave3start >= $@cave3_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave3start) < 60)
+        $@cave3start = $@cave3start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave3_timer = $@cave3_timer + 5;
+    if ($@cave3_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave3 = 0;
+    $@cave3_kills = 0;
+    $@cave3start = 0;
+    $@cave3_timer = 0;
+    $@cave3fighter$ = "";
+    $@cave3fighterdeaths$ = 0;
+    $@battlecave3 = 0;
+    cleararray $@cave3_monsters_IDS[0], 0, 2;
+    cleararray $@cave3_monsters_QTY[0], 0, 2;
+    $@cave3_waves = 0;
+    $@cave3_time = 0;
+    killmonster "025-4", "#StartCaveFight3::OnMonsterDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-3", 71, 85;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 71, 85;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 71, 85;
+    message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave3fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 71, 85;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+}
+
+
+025-3,80,83,0	script	#WarpBattleCave4	45,1,1,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        goto L_AlreadyHelped;
+    if (getareausers("025-4", 28, 124, 57, 156) >= 1 || $@battlecave4 > 0)
+        goto L_SomeoneInside;
+    if (cavefights & BATTLE_CAVE4)
+        goto L_AlreadyDone;
+    if (Rossy_Quest < 15)
+        goto L_Block;
+    goto L_StartFight;
+
+L_StartFight:
+    $@battlecave4 = 1;
+    warp "025-4", 32, 154;
+    $@cave4fighter$ = strcharinfo(0);
+    $@cave4fighterdeaths = PC_DIE_COUNTER;
+    $@cave4start = gettimetick(2);
+    message strcharinfo(0), "As you enter, you feel an evil force filling up the cave.";
+    // Cave 4 Configuration.
+    setarray $@cave4_monsters_IDS[1], 1087, 1083, 1084;
+    setarray $@cave4_monsters_QTY[1], 2, 2, 4;
+    $@cave4_waves = 2;
+    $@cave4_time = 360;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave4fighter$ + " is already inside. The cave seems to be blocked.";
+    end;
+
+L_AlreadyDone:
+    message strcharinfo(0), "I already eliminated this source of energy.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than dead monster corpses in this cave.";
+    end;
+
+L_Block:
+    message strcharinfo(0), "Maybe I should learn a bit more about this place before I go inside.";
+    end;
+
+OnTimer5000:
+    if ($@battlecave4 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave4fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 28, 124, 57, 156) < 1)
+        goto OnNoRid;
+    if (PC_DIE_COUNTER > $@cave4fighterdeaths)
+        goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE4)
+        goto L_Win;
+    if (gettimetick(2) - $@cave4start >= $@cave4_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave4start) < 60)
+        $@cave4start = $@cave4start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave4_timer = $@cave4_timer + 5;
+    if ($@cave4_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave4 = 0;
+    $@cave4_kills = 0;
+    $@cave4start = 0;
+    $@cave4_timer = 0;
+    $@cave4fighter$ = "";
+    $@cave4fighterdeaths$ = 0;
+    $@battlecave4 = 0;
+    cleararray $@cave4_monsters_IDS[0], 0, 3;
+    cleararray $@cave4_monsters_QTY[0], 0, 3;
+    $@cave4_waves = 0;
+    $@cave4_time = 0;
+    killmonster "025-4", "#StartCaveFight4::OnMonsterDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-3", 80, 85;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 80, 85;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 80, 85;
+    message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave4fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 80, 85;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+}
+
+
+025-3,71,30,0	script	#WarpBattleCave5	45,1,1,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        goto L_AlreadyHelped;
+    if (getareausers("025-4", 91, 131, 124, 160) >= 1 || $@battlecave5 > 0)
+        goto L_SomeoneInside;
+    if (cavefights & BATTLE_CAVE5)
+        goto L_AlreadyDone;
+    if (Rossy_Quest < 15)
+        goto L_Block;
+    goto L_StartFight;
+
+L_StartFight:
+    $@battlecave5 = 1;
+    warp "025-4", 100, 158;
+    $@cave5fighter$ = strcharinfo(0);
+    $@cave5fighterdeaths = PC_DIE_COUNTER;
+    $@cave5start = gettimetick(2);
+    message strcharinfo(0), "As you enter, you feel an evil force filling up the cave.";
+    // Cave 5 Configuration.
+    setarray $@cave5_monsters_IDS[1], 1088, 1083, 1084;
+    setarray $@cave5_monsters_QTY[1], 3, 3, 3;
+    $@cave5_waves = 2;
+    $@cave5_time = 390;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave5fighter$ + " is already inside. The cave seems to be blocked.";
+    end;
+
+L_AlreadyDone:
+    message strcharinfo(0), "I already eliminated this source of energy.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than dead monster corpses in this cave.";
+    end;
+
+L_Block:
+    message strcharinfo(0), "Maybe I should learn a bit more about this place before I go inside.";
+    end;
+
+OnTimer5000:
+    if ($@battlecave5 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave5fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 91, 131, 124, 160) < 1)
+        goto OnNoRid;
+    if (PC_DIE_COUNTER > $@cave5fighterdeaths)
+        goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE5)
+        goto L_Win;
+    if (gettimetick(2) - $@cave5start >= $@cave5_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave5start) < 60)
+        $@cave5start = $@cave5start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave5_timer = $@cave5_timer + 5;
+    if ($@cave5_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave5 = 0;
+    $@cave5_kills = 0;
+    $@cave5start = 0;
+    $@cave5_timer = 0;
+    $@cave5fighter$ = "";
+    $@cave5fighterdeaths$ = 0;
+    $@battlecave5 = 0;
+    cleararray $@cave5_monsters_IDS[0], 0, 3;
+    cleararray $@cave5_monsters_QTY[0], 0, 3;
+    $@cave5_waves = 0;
+    $@cave5_time = 0;
+    killmonster "025-4", "#StartCaveFight5::OnMonsterDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-3", 71, 32;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 71, 32;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 71, 32;
+    message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave5fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 71, 32;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+}
+
+
+025-3,128,35,0	script	#WarpBattleCave6	45,1,1,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        goto L_AlreadyHelped;
+    if (getareausers("025-4", 153, 143, 178, 174) >= 1 || $@battlecave6 > 0)
+        goto L_SomeoneInside;
+    if (cavefights & BATTLE_CAVE6)
+        goto L_AlreadyDone;
+    if (Rossy_Quest < 15)
+        goto L_Block;
+    goto L_StartFight;
+
+L_StartFight:
+    $@battlecave6 = 1;
+    warp "025-4", 159, 172;
+    $@cave6fighter$ = strcharinfo(0);
+    $@cave6fighterdeaths = PC_DIE_COUNTER;
+    $@cave6start = gettimetick(2);
+    message strcharinfo(0), "As you enter, you feel an evil force filling up the cave.";
+    // Cave 6 Configuration.
+    setarray $@cave6_monsters_IDS[1], 1087, 1088, 1083;
+    setarray $@cave6_monsters_QTY[1], 3, 4, 4;
+    $@cave6_waves = 2;
+    $@cave6_time = 450;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave6fighter$ + " is already inside. The cave seems to be blocked.";
+    end;
+
+L_AlreadyDone:
+    message strcharinfo(0), "I already eliminated this source of energy.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than dead monster corpses in this cave.";
+    end;
+
+L_Block:
+    message strcharinfo(0), "Maybe I should learn a bit more about this place before I go inside.";
+    end;
+
+OnTimer5000:
+    if ($@battlecave6 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave6fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 153, 143, 178, 174) < 1)
+        goto OnNoRid;
+    if (PC_DIE_COUNTER > $@cave6fighterdeaths)
+        goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE6)
+        goto L_Win;
+    if (gettimetick(2) - $@cave6start >= $@cave6_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave6start) < 60)
+        $@cave6start = $@cave6start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave6_timer = $@cave6_timer + 5;
+    if ($@cave6_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave6 = 0;
+    $@cave6_kills = 0;
+    $@cave6start = 0;
+    $@cave6_timer = 0;
+    $@cave6fighter$ = "";
+    $@cave6fighterdeaths$ = 0;
+    $@battlecave6 = 0;
+    cleararray $@cave6_monsters_IDS[0], 0, 3;
+    cleararray $@cave6_monsters_QTY[0], 0, 3;
+    $@cave6_waves = 0;
+    $@cave6_time = 0;
+    killmonster "025-4", "#StartCaveFight6::OnMonsterDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-3", 128, 37;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 128, 37;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 128, 37;
+    message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave6fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 128, 37;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+}
+
+
+025-3,70,57,0	script	#WarpBattleCave7	45,1,1,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        goto L_AlreadyHelped;
+    if (getareausers("025-4", 27, 185, 61, 219) >= 1 || $@battlecave7 > 0)
+        goto L_SomeoneInside;
+    if (cavefights & BATTLE_CAVE7)
+        goto L_AlreadyDone;
+    if (Rossy_Quest < 15)
+        goto L_Block;
+    goto L_StartFight;
+
+L_StartFight:
+    $@battlecave7 = 1;
+    warp "025-4", 42, 217;
+    $@cave7fighter$ = strcharinfo(0);
+    $@cave7fighterdeaths = PC_DIE_COUNTER;
+    $@cave7start = gettimetick(2);
+    message strcharinfo(0), "As you enter, you feel an evil force filling up the cave.";
+    // Cave 7 Configuration.
+    setarray $@cave7_monsters_IDS[1], 1087, 1088, 1083, 1084;
+    setarray $@cave7_monsters_QTY[1], 2, 2, 2, 2;
+    $@cave7_waves = 3;
+    $@cave7_time = 540;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave7fighter$ + " is already inside. The cave seems to be blocked.";
+    end;
+
+L_AlreadyDone:
+    message strcharinfo(0), "I already eliminated this source of energy.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than dead monster corpses in this cave.";
+    end;
+
+L_Block:
+    message strcharinfo(0), "Maybe I should learn a bit more about this place before I go inside.";
+    end;
+
+OnTimer5000:
+    if ($@battlecave7 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave7fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 27, 185, 61, 219) < 1)
+        goto OnNoRid;
+    if (PC_DIE_COUNTER > $@cave7fighterdeaths)
+        goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE7)
+        goto L_Win;
+    if (gettimetick(2) - $@cave7start >= $@cave7_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave7start) < 60)
+        $@cave7start = $@cave7start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave7_timer = $@cave7_timer + 5;
+    if ($@cave7_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave7 = 0;
+    $@cave7_kills = 0;
+    $@cave7start = 0;
+    $@cave7_timer = 0;
+    $@cave7fighter$ = "";
+    $@cave7fighterdeaths$ = 0;
+    $@battlecave7 = 0;
+    cleararray $@cave7_monsters_IDS[0], 0, 4;
+    cleararray $@cave7_monsters_QTY[0], 0, 4;
+    $@cave7_waves = 0;
+    $@cave7_time = 0;
+    killmonster "025-4", "#StartCaveFight7::OnMonsterDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-3", 70, 59;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 70, 59;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 70, 59;
+    message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave7fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 70, 59;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+}
+
+
+025-3,138,92,0	script	#WarpBattleCave8	45,1,1,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        goto L_AlreadyHelped;
+    if (getareausers("025-4", 90, 193, 119, 216) >= 1 || $@battlecave8 > 0)
+        goto L_SomeoneInside;
+    if (cavefights & BATTLE_CAVE8)
+        goto L_AlreadyDone;
+    if (Rossy_Quest < 15)
+        goto L_Block;
+    goto L_StartFight;
+
+L_StartFight:
+    $@battlecave8 = 1;
+    warp "025-4", 105, 214;
+    $@cave8fighter$ = strcharinfo(0);
+    $@cave8fighterdeaths = PC_DIE_COUNTER;
+    $@cave8start = gettimetick(2);
+    message strcharinfo(0), "As you enter, you feel an evil force filling up the cave.";
+    // Cave 8 Configuration.
+    setarray $@cave8_monsters_IDS[1], 1087, 1088, 1083, 1084;
+    setarray $@cave8_monsters_QTY[1], 2, 2, 3, 3;
+    $@cave8_waves = 3;
+    $@cave8_time = 570;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave8fighter$ + " is already inside. The cave seems to be blocked.";
+    end;
+
+L_AlreadyDone:
+    message strcharinfo(0), "I already eliminated this source of energy.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than dead monster corpses in this cave.";
+    end;
+
+L_Block:
+    message strcharinfo(0), "Maybe I should learn a bit more about this place before I go inside.";
+    end;
+
+OnTimer5000:
+    if ($@battlecave8 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave8fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 90, 193, 119, 216) < 1)
+        goto OnNoRid;
+    if (PC_DIE_COUNTER > $@cave8fighterdeaths)
+        goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE8)
+        goto L_Win;
+    if (gettimetick(2) - $@cave8start >= $@cave8_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave8start) < 60)
+        $@cave8start = $@cave8start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave8_timer = $@cave8_timer + 5;
+    if ($@cave8_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave8 = 0;
+    $@cave8_kills = 0;
+    $@cave8start = 0;
+    $@cave8_timer = 0;
+    $@cave8fighter$ = "";
+    $@cave8fighterdeaths$ = 0;
+    $@battlecave8 = 0;
+    cleararray $@cave8_monsters_IDS[0], 0, 4;
+    cleararray $@cave8_monsters_QTY[0], 0, 4;
+    $@cave8_waves = 0;
+    $@cave8_time = 0;
+    killmonster "025-4", "#StartCaveFight8::OnMonsterDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-3", 138, 94;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 138, 94;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 138, 94;
+    message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave8fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 138, 94;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+}
+
+
+025-3,138,160,0	script	#WarpBattleCave9	45,1,1,{
+    if (Rossy_Quest >= 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        goto L_AlreadyHelped;
+    if (getareausers("025-4", 144, 192, 173, 226) >= 1 || $@battlecave9 > 0)
+        goto L_SomeoneInside;
+    if (cavefights & BATTLE_CAVE9)
+        goto L_AlreadyDone;
+    if (Rossy_Quest < 15)
+        goto L_Block;
+    goto L_StartFight;
+
+L_StartFight:
+    $@battlecave9 = 1;
+    warp "025-4", 157, 222;
+    $@cave9fighter$ = strcharinfo(0);
+    $@cave9fighterdeaths = PC_DIE_COUNTER;
+    $@cave9start = gettimetick(2);
+    message strcharinfo(0), "As you enter, you feel an evil force filling up the cave.";
+    // Cave 9 Configuration.
+    setarray $@cave9_monsters_IDS[1], 1087, 1088, 1083, 1084;
+    setarray $@cave9_monsters_QTY[1], 3, 3, 3, 3;
+    $@cave9_waves = 3;
+    $@cave9_time = 630;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave9fighter$ + " is already inside. The cave seems to be blocked.";
+    end;
+
+L_AlreadyDone:
+    message strcharinfo(0), "I already eliminated this source of energy.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than dead monster corpses in this cave.";
+    end;
+
+L_Block:
+    message strcharinfo(0), "Maybe I should learn a bit more about this place before I go inside.";
+    end;
+
+OnTimer5000:
+    if ($@battlecave9 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave9fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 144, 192, 173, 226) < 1)
+        goto OnNoRid;
+    if (PC_DIE_COUNTER > $@cave9fighterdeaths)
+        goto L_CleaningDead;
+    if (cavefights & BATTLE_CAVE9)
+        goto L_Win;
+    if (gettimetick(2) - $@cave9start >= $@cave9_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave9start) < 60)
+        $@cave9start = $@cave9start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave9_timer = $@cave9_timer + 5;
+    if ($@cave9_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave9 = 0;
+    $@cave9_kills = 0;
+    $@cave9start = 0;
+    $@cave9_timer = 0;
+    $@cave9fighter$ = "";
+    $@cave9fighterdeaths$ = 0;
+    $@battlecave9 = 0;
+    cleararray $@cave9_monsters_IDS[0], 0, 4;
+    cleararray $@cave9_monsters_QTY[0], 0, 4;
+    $@cave9_waves = 0;
+    $@cave9_time = 0;
+    killmonster "025-4", "#StartCaveFight9::OnMonsterDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-3", 138, 158;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run away!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 138, 158;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 138, 158;
+    message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave9fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 138, 158;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+}
+
+
+025-3,77,170,0	script	#WarpBossCave	45,1,1,{
+    if (Rossy_Quest > 16 || FLAGS & FLAG_ROSSI_COMPLETED)
+        end;
+    if (Rossy_Quest == 16)
+        goto L_AlreadyHelped;
+    @barrier_force = -9;
+    if (cavefights & BATTLE_CAVE1)
+        @barrier_force = @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE2)
+        @barrier_force = @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE3)
+        @barrier_force = @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE4)
+        @barrier_force = @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE5)
+        @barrier_force = @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE6)
+        @barrier_force = @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE7)
+        @barrier_force = @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE8)
+        @barrier_force = @barrier_force + 1;
+    if (cavefights & BATTLE_CAVE9)
+        @barrier_force = @barrier_force + 1;
+    if (@barrier_force != 0)
+        goto L_Hurt;
+    if (getareausers("025-4", 142, 24, 172, 48) >= 1 || $@battlecave10 > 0)
+        goto L_SomeoneInside;
+    if (@barrier_force == 0)
+        goto L_StartFight;
+    end;
+
+L_Hurt:
+    message strcharinfo(0), "As you try to enter, you bump into a magic barrier. Its force pushes you back, hurting you badly.";
+    percentheal @barrier_force * 10, 0;
+    warp "025-3", 77, 164;
+    end;
+
+L_StartFight:
+    message strcharinfo(0), "You go through the magic barrier without problems... you can hear screams that seem to be very close.";
+    $@battlecave10 = 1;
+    warp "025-4", 157, 44;
+    $@cave10fighter$ = strcharinfo(0);
+    $@cave10fighterdeaths = PC_DIE_COUNTER;
+    $@cave10start = gettimetick(2);
+    // Cave 10 Configuration.
+    setarray $@cave10_monsters_IDS[1], 1087, 1088, 1083, 1084;
+    setarray $@cave10_monsters_QTY[1], 3, 3, 3, 3;
+    $@cave10_boss_ID = 1086;
+    $@cave10_waves = 4;
+    $@cave10_time = 1080;
+    startnpctimer;
+    end;
+
+L_SomeoneInside:
+    message strcharinfo(0), $@cave10fighter$ + " is already inside.";
+    end;
+
+L_AlreadyHelped:
+    message strcharinfo(0), "There is nothing more than corpses in this cave. You close your eyes and go straight to the place where Julia is hidden.";
+    warp "025-4", 93, 33;
+    end;
+
+OnTimer5000:
+    if ($@battlecave10 == 0)
+        goto L_AlreadyClean;
+    if (attachrid(getcharid(3,$@cave10fighter$))==0)
+        goto OnNoRid;
+    if (getareausers("025-4", 142, 24, 172, 48) < 1)
+        goto OnNoRid;
+    if (PC_DIE_COUNTER > $@cave10fighterdeaths)
+        goto L_CleaningDead;
+    if (Rossy_Quest == 16)
+        goto L_Win;
+    if (gettimetick(2) - $@cave10start >= $@cave10_time)
+        goto L_Cleaning;
+    setnpctimer 0;
+    end;
+
+L_Win:
+    message strcharinfo(0), "It is getting harder to breathe inside this cave... You feel like you are almost passing out.";
+    if ((gettimetick(2) - $@cave10start) < 60)
+        $@cave10start = $@cave10start + 60;
+    if (Hp - (MaxHp*5)/100 <= 0)
+        goto L_BadAir;
+    percentheal -5, 0;
+    $@cave10_timer = $@cave10_timer + 5;
+    if ($@cave10_timer >= 60)
+        goto L_BadAir;
+    setnpctimer 0;
+    end;
+
+S_Cleaning:
+    $@wave_cave10 = 0;
+    $@cave10_kills = 0;
+    $@cave10start = 0;
+    $@cave10_timer = 0;
+    $@cave10fighter$ = "";
+    $@cave10fighterdeaths$ = 0;
+    $@battlecave10 = 0;
+    cleararray $@cave10_monsters_IDS[0], 0, 4;
+    cleararray $@cave10_monsters_QTY[0], 0, 4;
+    $@cave10_boss_ID = 0;
+    $@cave10_waves = 0;
+    $@cave10_time = 0;
+    killmonster "025-4", "#StartBossCaveFight::OnMonsterDeath";
+    killmonster "025-4", "#StartBossCaveFight::OnBossDeath";
+    stopnpctimer;
+    setnpctimer 0;
+    return;
+
+L_BadAir:
+    warp "025-4", 93, 33;
+    message strcharinfo(0), "You can't stand the foul air inside the cave and run as fast as you can to save Julia!";
+    callsub S_Cleaning;
+    end;
+
+L_Cleaning:
+    warp "025-3", 77, 168;
+    message strcharinfo(0), "You took too much time to eliminate this source of energy... If you stay one more second in this cave you won't be able to breathe....";
+    callsub S_Cleaning;
+    end;
+
+L_CleaningDead:
+    warp "025-3", 77, 168;
+    if ($@wave_cave10 < 5)
+        message strcharinfo(0), "You were not strong enough to eliminate this power source.";
+    if ($@wave_cave10 == 5)
+        message strcharinfo(0), "This horrible monster is probably too powerful for you right now.";
+    callsub S_Cleaning;
+    end;
+
+OnNoRid:
+    callsub S_Cleaning;
+    end;
+
+OnGetout:
+    if (attachrid(getcharid(3,$@cave10fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-3", 77, 168;
+    callsub S_Cleaning;
+    end;
+
+OnWin:
+    if (attachrid(getcharid(3,$@cave10fighter$)) == 0)
+        goto OnNoRid;
+    warp "025-4", 93, 33;
+    callsub S_Cleaning;
+    end;
+
+L_AlreadyClean:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+}
+

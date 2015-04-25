@@ -1,0 +1,126 @@
+010-2,33,25,0	script	Chef#dimond	148,{
+    mes "[Chef]";
+    mes "";
+    mes "\"I'm too busy right now to talk.\"";
+
+    callfunc "KadiyaSubquestConsts";
+    if ((@Q_kadiya_status == @Q_STATUS_WANTS_CHOCOCAKE) && (countitem ("MopoxCurePotion") > 0))
+        goto L_lace_chococake;
+    if ((@Q_kadiya_status == @Q_STATUS_WANTS_ORANGECUPCAKE) && (countitem ("MopoxCurePotion") > 0))
+        goto L_lace_cupcake;
+    close;
+
+L_lace_chococake:
+    next;
+    menu
+        "Sorry.", L_End,
+        "I need your help with a sick young girl!", L_Next;
+
+L_Next:
+    mes "[Chef]";
+    mes "";
+    mes "You explain Kadiya's situation to him.";
+    mes "\"Hmrmf. I can't help you; I'm a chef, not a baker!\"";
+    close;
+
+L_lace_cupcake:
+    next;
+    menu
+        "Sorry.", L_End,
+        "I need your help with a sick young girl!", L_Next1;
+
+L_Next1:
+    mes "[Chef]";
+    mes "";
+    mes "You explain Kadiya's situation to him.";
+    mes "\"Hmrmf. I was about to make another batch of orange cupcakes. Do you have that potion with you?\"";
+    next;
+    menu
+        "No, sorry.", L_bringit,
+        "Yes, here you are.", L_Next2;
+
+L_Next2:
+    if (countitem ("MopoxCurePotion") < 1)
+        goto L_bringit;
+    mes "[Chef]";
+    mes "";
+    mes "He shudders as he smells the bottle.";
+    mes "\"That is disgusting!  How do you expect me to mask this?\"";
+    mes "He ponders his own question for a moment.";
+    next;
+    mes "[Chef]";
+    mes "";
+    mes "\"Ah yes. We need to bind the smell in gingerbread. Bring me three pieces of gingerbread, one orange, and 500 GP for the other ingredients, and I will make you your cupcake.\"";
+    next;
+    menu
+        "I'll go and get it.", L_End,
+        "Here you are!", L_Next3,
+        "Not now.", L_End;
+
+L_Next3:
+    if (countitem ("GingerBreadMan") < 3)
+        goto L_no_gingerbread;
+    if (countitem ("Orange") < 1)
+        goto L_no_orange;
+    if (countitem ("MopoxCurePotion") < 1)
+        goto L_No_Potion;
+    if (Zeny < 500)
+        goto L_no_Zeny;
+
+    Zeny = Zeny - 500;
+    delitem "GingerBreadMan", 3;
+    delitem "Orange", 1;
+    delitem "MopoxCurePotion", 1;
+
+    getitem "LacedOrangeCupcake", 1;
+
+    mes "[Chef]";
+    mes "";
+    mes "\"Good, good. This should work.\"";
+    mes "He crumbles the gingerbread, mixes it with the potion and some spices, and finally adds some cupcake batter and the orange pieces.";
+    next;
+    mes "[Chef]";
+    mes "";
+    mes "\"Take a seat.\"";
+    mes "He fills the mixture into a cupcake form and puts it into the oven. You watch the cupcake grow for a while.";
+    mes "Finally, he removes the form and carefully extracts the cupcake.";
+    next;
+    mes "[Chef]";
+    mes "";
+    mes "\"Here you are. It's a bit bigger than a regular cupcake and will taste a bit like ginger, I think, but otherwise it should be fine.\"";
+    close;
+
+L_no_gingerbread:
+    mes "[Chef]";
+    mes "";
+    mes "\"I will need three pieces of gingerbread.\"";
+    close;
+
+L_no_orange:
+    mes "[Chef]";
+    mes "";
+    mes "\"Please bring me an orange for these cupcakes.\"";
+    close;
+
+L_no_Zeny:
+    mes "[Chef]";
+    mes "";
+    mes "\"No. I need extra ingredients worth 500 GP, and I expect you to pay for those.\"";
+    close;
+
+L_No_Potion:
+    mes "[Chef]";
+    mes "";
+    mes "\"Where did your Mopox potion go?\"";
+    close;
+
+L_bringit:
+    mes "[Chef]";
+    mes "";
+    mes "\"Bring it here when you do.\"";
+    next;
+    goto L_End;
+
+L_End:
+    close;
+}

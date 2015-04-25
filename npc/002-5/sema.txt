@@ -1,0 +1,76 @@
+
+002-5,43,91,6	script	Sema	340,{
+    // This NPC previously used the variable TMW_Quest
+    callfunc "ClearVarTMW_Quest";
+
+    @state = ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
+
+    if (@state >= 28) goto L_Sema_Done;
+    if (@state == 27) goto L_Sema_Happy;
+    if (@state == 26) goto L_Sema_GCM;
+
+    mes "[Sema the Miner]";
+    mes "\"Hello adventurer. I do not know exactly where, but somewhere in this cave there is a supply chest. And wouldn't you know it!  The archants have eaten all the spare keys for the chest. Go and do what you must do.\"";
+    goto L_Close;
+
+L_Sema_GCM:
+    mes "[Sema the Miner]";
+    mes "\"I saw a giant cave maggot eat one of the other miners and it might eat me!  Can you kill it?\"";
+    menu
+        "Yes.", L_Sema_Yes,
+        "No.", L_Sema_No;
+
+L_Sema_No:
+    mes "[Sema the Miner]";
+    mes "\"Ahh!  I am very scared now!\"";
+    goto L_Close;
+
+L_Sema_Yes:
+    @state = 27;
+    callsub S_Update_Var;
+    monster "002-5", 70, 90, "", 1059, 1;
+    mes "[Sema the Miner]";
+    mes "\"Good luck. To prove you killed it, please bring the Iten it swallowed when it ate the miner. Be careful, there could be more than one.\"";
+    goto L_Close;
+
+L_Sema_Happy:
+    if (countitemcolor("Iten") < 1)
+        goto L_Sema_Not_Happy;
+    getinventorylist;
+    if (@inventorylist_count - (countitemcolor("Iten") == 1) > 99)
+        goto L_Sema_TooMany;
+    delitem "Iten", 1;
+    getitem "DesertShirt", 1;
+    @state = 28;
+    callsub S_Update_Var;
+    BOSS_POINTS = BOSS_POINTS + 10;
+    message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS + ".";
+    mes "[Sema the Miner]";
+    mes "\"You killed it!  What a relief!  I wish I had more to give, but please accept this Desert Shirt as reward.\"";
+    goto L_Close;
+
+L_Sema_TooMany:
+    mes "[Sema the Miner]";
+    mes "\"You have too many items for me to give you a reward. Please drop or sell something so I can give it to you. Oh and yes, you can also store items at the nearest bank.\"";
+    goto L_Close;
+
+L_Sema_Not_Happy:
+    @state = 26;
+    callsub S_Update_Var;
+    itemheal -Hp, 0;
+    mes "A stone falls on your head.";
+    goto L_Close;
+
+L_Sema_Done:
+    mes "[Sema the Miner]";
+    mes "\"You made this cave safer, you are kind beyond belief. Others may need you. Happy adventuring.\"";
+    goto L_Close;
+
+L_Close:
+    @state = 0;
+    close;
+
+S_Update_Var:
+    QUEST_SouthTulimshar = (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
+    return;
+}

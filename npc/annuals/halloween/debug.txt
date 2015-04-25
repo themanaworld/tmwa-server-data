@@ -1,0 +1,138 @@
+
+function	script	HalloweenDebug	{
+    if(debug)
+        goto L_Debug;
+    goto L_Live;
+
+L_Live:
+    menu
+        "Debug Time", L_DebugTime,
+        "Set Old Event Flag.", L_LastReset,
+        "Halloween Time Key Change.", L_HalloweenTimeKey,
+        "Reset NPC's mask memory", L_ResetMask,
+        "Nothing.", L_Close;
+
+L_Debug:
+    menu
+        "Debug Time", L_DebugTime,
+        "Set Old Event Flag.", L_LastReset,
+        "Halloween Time Key Change.", L_HalloweenTimeKey,
+        "Quest State", L_QuestState,
+        "Set NPC trick or treat flag", L_SetTrickOrTreats,
+        "Reset my quest state", L_ResetMe,
+        "Reset NPC's mask memory", L_ResetMask,
+        "Nothing.", L_Close;
+
+L_DebugTime:
+    mes "--Sever--";
+    mes "Event State: " + $@halloween_time;
+    mes "Event Start" + $HALLOWEEN_TIME_KEY[0] + "/1";
+    mes "Reward Start: " + $HALLOWEEN_TIME_KEY[1] + "/" + $HALLOWEEN_TIME_KEY[3];
+    mes "Event End: " + $HALLOWEEN_TIME_KEY[2] + "/" + $HALLOWEEN_TIME_KEY[4];
+    mes "Event Time Key (year (CCYY)): " + $HALLOWEEN_TIME_KEY[5];
+    next;
+    goto L_Debug;
+
+L_LastReset:
+    HALLOWEENTIME = 255;
+    HALLOWEENYEAR = 2012;
+    goto L_Debug;
+
+L_HalloweenTimeKey:
+    if (getgmlevel() < 20) goto L_Close;
+    mes "Halloween Time Key Change.";
+    mes "Start Month?";
+    input @halloween_time_key_smonth;
+    if((@halloween_time_key_smonth == 0) || (@halloween_time_key_smonth > 12))
+        goto L_HalloweenError;
+    mes "Reward Start Month?";
+    input @halloween_time_key_srmonth;
+    if((@halloween_time_key_srmonth == 0) || (@halloween_time_key_srmonth > 12))
+        goto L_HalloweenError;
+    mes "End Month?";
+    input @halloween_time_key_emonth;
+    if((@halloween_time_key_emonth == 0) || (@halloween_time_key_emonth > 12))
+        goto L_HalloweenError;
+    mes "Reward Start Day?";
+    input @halloween_time_key_rsday;
+    if((@halloween_time_key_rsday == 0) || (@halloween_time_key_rsday > 31))
+        goto L_HalloweenError;
+    mes "Reward End Day?";
+    input @halloween_time_key_reday;
+    if((@halloween_time_key_reday == 0) || (@halloween_time_key_reday > 31))
+        goto L_HalloweenError;
+    mes "Time Key (CCYY) ";
+    input @halloween_time_key_year;
+    goto L_SetNewKey;
+
+L_HalloweenError:
+    mes "Incorrect Entry. Try again.";
+    next;
+    goto L_Debug;
+
+L_SetNewKey:
+    setarray $HALLOWEEN_TIME_KEY, @halloween_time_key_smonth, @halloween_time_key_srmonth, @halloween_time_key_emonth, @halloween_time_key_rsday, @halloween_time_key_reday, @halloween_time_key_year;
+    donpcevent "#HalloweenConfig::OnCommandRestartQuest";
+    goto L_Debug;
+
+L_QuestState:
+    mes "Karma: " + (HALLOWEENTIME & 65535);
+    @big_reward_status$ = " No.";
+    if (HALLOWEENTIME & $@halloween_got_big_reward)
+        @big_reward_status$ = " Yes.";
+    mes "Big Reward: " + @big_reward_status$;
+    @charm_reward_status$ = " No.";
+    if (HALLOWEENTIME & $@halloween_got_charm_reward)
+        @charm_reward_status$ = " Yes.";
+    mes "Charm Reward:" + @charm_reward_status$;
+    @npc_check_loop = 0;
+    goto L_NpcCheckLoop;
+
+L_NpcCheckLoop:
+    @display_mes$ = "NPC ID " + @npc_check_loop + ":" + $@halloween_npc_names$[@npc_check_loop];
+    @npc_status$ = " Needed";
+    if (HALLOWEENTIME & (1 << (31 - @npc_check_loop)))
+        @npc_status$ = " Complete";
+    @display_mes$ = @display_mes$ + @npc_status$;
+    mes @display_mes$;
+    @display_mes$ = "";
+    goto L_NpcCheckInc;
+
+L_NpcCheckInc:
+    @npc_check_loop = (@npc_check_loop + 1);
+    if (@npc_check_loop >= getarraysize($@halloween_npc_names$))
+        goto L_TrickOrTreatCount;
+    goto L_NpcCheckLoop;
+
+L_TrickOrTreatCount:
+    callfunc "TrickOrTreatTally";
+    mes @npc_tally + " out of 14";
+    next;
+    goto L_Debug;
+
+L_SetTrickOrTreats:
+    mes "Enter NPC to set";
+    input @halloween_npc_id;
+    HALLOWEENTIME = HALLOWEENTIME | (1 << (31 - @halloween_npc_id));
+    goto L_Debug;
+
+L_ResetMe:
+    HALLOWEENTIME = 0;
+    HALLOWEENYEAR = $HALLOWEEN_TIME_KEY[5];
+    goto L_Debug;
+
+L_ResetMask:
+    mes "Enter NPC to reset:";
+    input @halloween_npc_id;
+    $@halloween_maskmemory[8 * @halloween_npc_id] = 0;
+    goto L_Debug;
+
+L_Close:
+    @tmp = 0;
+    @Mask = 0;
+    @karma = 0;
+    @loop = 0;
+    @menu = 0;
+    @halloween_npc_id = 0;
+    close;
+}

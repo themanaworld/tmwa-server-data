@@ -1,0 +1,40 @@
+
+009-1,85,51,0	script	Old Man	159,{
+    callfunc "ClearVariables";
+
+    @inspector = ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+
+    mes "[Old Man]";
+    mes "\"Don't let those monsters get to you.\"";
+    next;
+    if (@inspector == 1) goto L_Ask;
+    if (@inspector == 6) goto L_Accuse;
+    goto L_Close;
+
+L_Ask:
+    menu
+        "Have you seen anything strange lately?", L_Ask_Nothing,
+        "Do you know anything about the recent robberies?", L_Ask_Nothing,
+        "I won't, thank you.", L_Close;
+
+L_Ask_Nothing:
+    mes "[Old Man]";
+    mes "\"I'm sorry, but I didn't see anything. You should ask my old woman.\"";
+    goto L_Close;
+
+L_Accuse:
+    menu
+        "The leader of the troupe said you hung around them a lot while they were in town.", L_Accuse_Respond,
+        "I won't, thank you.", L_Close;
+
+L_Accuse_Respond:
+    mes "[Old Man]";
+    mes "\"Yes, I hung around the theater a lot. I was an actor when I was younger. But I wasn't there that night. Me and the wife were at home all night.\"";
+    @inspector = 7;
+    QUEST_Hurnscald = (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (@inspector << NIBBLE_3_SHIFT);
+    goto L_Close;
+
+L_Close:
+    @inspector = 0;
+    close;
+}

@@ -1,0 +1,1071 @@
+
+009-2,67,57,0	script	Kfahr	125,{
+    @halloween_npc_id = $@halloween_npc_kfahr;
+    callfunc "TrickOrTreat";
+
+    @QS_NEWBIE = 0;
+    @QS_MET_KFAHR = 1;
+    @QS_KNOWS_KFAHR = 2;
+    @QS_KNIFE_QUEST = 3;
+    @QS_KNIFE_QUEST_DONE = 4;
+    @QS_LOST_WRESTLING = 5;
+    @QS_STINGER_QUEST = 6;
+    @QS_STINGER_QUEST_DONE = 7;
+
+    @BLACK_STINGERS_NR = 10;
+    @MUSHROOMS_NR = 10;
+    @SNAKE_SKINS_NR = 10;
+
+    @KNIFE_QUEST_XP = 50000;
+    @STINGER_QUEST_XP = 80000;
+
+    @Q_MASK = NIBBLE_2_MASK;
+    @Q_SHIFT = NIBBLE_2_SHIFT;
+
+    @Q_status = (QUEST_Forestbow_state & @Q_MASK) >> @Q_SHIFT;
+
+    @Q_needs_stinger = ((QUEST_Forestbow_state & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT) > 1;
+
+    if (@Q_status == @QS_KNIFE_QUEST) goto L_Check;
+
+    if (@Q_status == @QS_STINGER_QUEST) goto L_stinger_check;
+
+    if (@Q_status > @QS_NEWBIE) goto L_meet_again;
+
+    mes "[Warrior]";
+    mes "You stand before a battle-scarred, darkly tanned warrior, brimming with muscles.";
+    mes "Just looking at him you smell danger, adventure, excitement...";
+    next;
+    mes "[Warrior]";
+    mes "On second thought, he really could use a bath.";
+    mes "";
+    mes "The warrior turns towards you, grinning broadly.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Why, hello there!  Come to visit Kfahr the Warrior to hear of my exploits, have you?\"";
+    mes "He laughs heartily and gives you a slap on the back.";
+    mes "\"Can't blame you, can't blame you at all!  Here, take a seat!\"";
+    next;
+    @has_beer = 0;
+    @beer_count = 0;
+    @last_story = 0;
+    @Q_status = @QS_MET_KFAHR;
+    callsub L_Update_Var;
+    goto L_Main_menu;
+
+L_meet_again:
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr nods and grins as you greet him.";
+    mes "\"Came back for more stories?  Have a seat!\"";
+    next;
+    goto L_Main_menu;
+
+L_Main_menu:
+    if (@Q_status >= @QS_KNOWS_KFAHR)
+        goto L_real_main_menu;
+    menu
+        "Who are you?", L_Next,
+        "Goodbye.", L_End;
+
+L_Next:
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr laughs again.";
+    mes "\"Surely you jest!  You must have heard of Kfahr, Slayer of Toby Rick the Desert Worm, Raider of the Lost Temple, Hero of Tulimshar?\"";
+    next;
+    menu
+        "Uhm...", L_Next1,
+        "Well...", L_Next1,
+        "To be quite honest...", L_Next1,
+        "Excuse me, someone is, er, whispering me...", L_End;
+
+L_Next1:
+    mes "[Kfahr the Warrior]";
+    mes "\"Ah, I knew it!  So you have come to hear some tales about the dangers of the desert?  You've come to the right man!\"";
+    next;
+    @Q_status = @QS_KNOWS_KFAHR;
+    callsub L_Update_Var;
+    goto L_real_main_menu;
+
+L_tale_sub:
+    if (@current_story == @last_story)
+        goto L_same_story_abort;
+    if (@has_beer == 0)
+        goto L_out_of_beer_abort;
+    @last_story = @current_story;
+    @has_beer = 0;
+    @story_abort = 0;
+    return;
+
+L_same_story_abort:
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr frowns.";
+    mes "\"I only just told you that story. Trust me, the others are worth hearing, too!\"";
+    next;
+    @story_abort = 1;
+    return;
+
+L_out_of_beer_abort:
+    mes "[Kfahr the Warrior]";
+    if (@beer_count > 4)
+        mes "\"I think I've talked 'nuff for now... but thanks for lis'ning!\"";
+    if (@beer_count <= 4)
+        mes "\"Now that's one of my favorite tales, but my throat is just a little too dry to talk about something like that... could you help me out a little here?\"";
+    next;
+    @story_abort = 1;
+    return;
+
+L_real_main_menu:
+    if (@Q_needs_stinger)
+        goto L_long_main_menu;
+
+    menu
+        "What's a Desert Worm?", L_tale_desert_worm,
+        "Desert Temple?", L_tale_desert_temple,
+        "Hero of Tulimshar?", L_tale_hero_tulimshar,
+        "Tell me about the desert!", L_tale_desert,
+        "I want to become as powerful as you!", L_gain_power,
+        "Here, have a beer!", L_Give_beer,
+        "Goodbye!", L_End;
+
+L_long_main_menu:
+    menu
+        "What's a Desert Worm?", L_tale_desert_worm,
+        "Desert Temple?", L_tale_desert_temple,
+        "Hero of Tulimshar?", L_tale_hero_tulimshar,
+        "Tell me about the desert!", L_tale_desert,
+        "I want to become as powerful as you!", L_gain_power,
+        "Have you fought any Golden Scorpions?", L_golden_scorpion,
+        "Here, have a beer!", L_Give_beer,
+        "Goodbye!", L_End;
+
+L_tale_desert_worm:
+    @current_story = 1;
+    callsub L_tale_sub;
+    if (@story_abort) goto L_Main_menu;
+
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr smiles and leans back.";
+    mes "\"A desert worm is probably the largest creature you will ever see, larger even than most dragons. It spans a good twenty chains (or six box tosses if you're used to the Imperial system) in length, has a thick, rubbery skin, and teeth as long as my legs.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Most are a darkish gray, except for the young ones; those are more purplish, I've been told. Well, anyway, you hardly ever see one of them in their entirety, you only see the head, if they decide to come out and fight – they tend to burrow under the ground.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"They are terrifying beasts, but lack any intelligent thought whatsoever. They just eat whatever gets in their way. There's nothing out there that can kill one, I think, and they can grow hundreds of years old.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Fortunately, they're kind of rare these days, and mostly roam in the empty deserts far, far south of Tulimshar. They don't like the area too close to the mountains, I think; probably too rocky underground.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr takes a sip from his beer.";
+    mes "\"Anyway. Desert worms are dangerous, as I said, but there was one particularly terrifying one, called Toby Rick. You must've heard of it – the greatest and most dangerous worm, scourge of the trade routes. It could smell humans from miles away.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Most desert worms don't smell or see or feel much, you see. They just notice when something's walking nearby, then jump up and swallow it. But Toby Rick was different. He was a terrifying beast, three times as long as a regular worm.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"So to feed itself, it had learned to smell. That's right, the beast had grown nostrils and learned how to use 'em!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"One day I was hired to protect a caravan going north to Tulimshar, with a friend of mine, old Arvek. He only came along for the fun, of course; it's not as if I really need much help defending a caravan... or at least normally it isn't.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Arvek's fun to have about. His manners are as bad as his breath, but he knows how to make a laugh out of everything. One thing you musnt't ever do with him, though, and that is to try his `homebrew'-- some kind of ale he makes out of maggot slime...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr takes another sip of beer, momentarily irritated as if surprised by the taste.";
+    mes "\"Anyway, This time was different. We were barely three days out in the desert, when we spotted him – `the Black Worm!', the Caravan Master cried, `Over there; it will kill us all!'\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"I had barely enough time to draw out my sword, and the beast was upon us!  The caravan people were fleeing for their lives, so it was up to me and Arvek to stop it.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"That was madness, of course; no-one takes on a desert worm, if they have a choice. But we didn't; you see, with most desert worms you can just stand still and it won't notice you and pass by. But not with this one!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr leans forward.";
+    mes "\"So this humongous beast came roaring towards us, a big back hole where the mouth is, spikey fins sticking out to the side, all ready to swallow us all!  My sword felt like a toothpick against that monster!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "He pauses, then leans back a little to take another long sip from his beer.";
+    mes "\"So it seemed that our last hour was at hand, that we'd be swallowed and never heard from again!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Aha, but Kfahr doesn't die quite so easily. What happened was this:  Me and Arvek charged towards that thing, slashing and stabbing, but our blows would just glance off. The beast roared and just slid by us, slapping us to the side with its fins like maggots, knocking us to the ground.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"It bolted up into the air, and tore down on the caravan, swallowing each and everyone in there in a single big gulp!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Then it turned around towards us. Those fins had hit us pretty badly; I had lost my shield and Arvek his backpack. Better for him, I suppose, but I had been rather fond of that shield – not that it would have helped me much here...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr leans foward again, nearly knocking over his beer.";
+    mes "\"So the beast charges at the two of us again and we dodge – Arvek left, me right. The beast is smarter than the average desert worm, though, and had expected that – so it bends to the side and swallows poor Arvek, hair and hide and all.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr's eyes sparkle with excitement.";
+    mes "\"It turns around, trying to get me too. I dodge it – left,   then the same again, I dodge it right. But it can't go on like that, the beast isn't tiring, but I am...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"So for one instant I think that this might be it, that I might die out here!  A worthy death, I suppose, against the king of desert worms!  And just as I think that, I bump against something\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr slaps on the table.";
+    mes "\"Arvek's backpack!  Doesn't sound terribly exciting, of course – what am I going to do, toss it at the beast and hope that it chokes on it?\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "He grins.";
+    mes "\"But I remember something better. That beast had grown nostrils, right?  So it can smell and taste!  So I tear open his backpack and pull out that big snakeskin of that disgusting maggot ale of his. It's still filled to the brim.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"I quickly put on my gloves again, because I don't want to touch that stuff with my bare skin. The beast is almost upon me, but I have only that one chance – so I squeeze the skin while sticking my thumb into the opening, until I can see the black of its nostrils...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"...and when I think it's almost too late already, I shoot out that revolting brew at the beast's smelling holes, and I hit!  Two at once, and up and sideways it rolls, away from me, and roaring and bellowing in pain!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"It roared for a good five minutes, then convulsed... and first it spat out old Arvek, who was a bit irritated at all that because, as he told me, he had `almost pierced the pancreas', whatever that means...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Next it spat out the caravan, and then some other caravan it had plucked off from elswehere. Somehow, everyone from there was still alive, too.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Then it slid away from us, away to the north, but we could see it getting slower and slower.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Two days later we caught up with it, but it was already dead then and had started to smell. We looked around and inside of it, found treasures and remnants of some less fortunate caravans and split them up appropriately.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"(I never told Arvek that it was his brew that killed it; he'd never have forgiven me.)\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"One of the nomads that had been travelling with the other caravan then told me that you could make special kinds of knives and swords and armor out of desert worm bones.\"";
+    next;
+    menu
+        "Hang on... bones in a... worm?", L_worm_bones,
+        "That's neat!  Do you have any that I could see?", L_worm_see_bones,
+        "And then?", L_worm_final,
+        "Zzzzzzzz.......", L_End;
+
+L_worm_final:
+    mes "[Kfahr the Warrior]";
+    mes "\"Nothing much else happened on that trip. When we arrived in Tulimshar, people at first didn't believe the story, of course, until we showed them the treasures and the bones. Ah, those were wonderful days...\"";
+    mes "He sighs and leans back, a nostalgic look on his face.";
+    next;
+    goto L_Main_menu;
+
+L_worm_bones:
+    mes "[Kfahr the Warrior]";
+    mes "\"Weren't you listening?  A desert worm is not a regular worm; a worm couldn't survive in the desert.\"";
+    next;
+    menu
+        "Do you have any bones that I could see?", L_worm_see_bones,
+        "Never mind that, what happened then?", L_worm_final,
+        "Zzzzzzzz.......", L_End;
+
+L_worm_see_bones:
+    if (@Q_status == @QS_KNIFE_QUEST)
+        goto L_bone_ip;
+    if (@Q_status > @QS_KNIFE_QUEST)
+        goto L_worm_continue2;
+    if (BaseLevel >= 40)
+        goto L_bone_quest;
+
+    mes "[Kfahr the Warrior]";
+    mes "\"Of course!\"";
+    mes "He pulls out a strangely curved knife with a yellow-whiteish blade that is almost transparent at the edge.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"When hardened properly, this bone knife can last a lifetime!  One of the best knives you will find, too.\"";
+    mes "He puts the knife back into his pocket.";
+    next;
+    goto L_Main_menu;
+
+L_worm_continue2:
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr laughs.";
+    mes "\"Just have a look at the knife I gave you if you don't believe me!\"";
+    next;
+    goto L_Main_menu;
+
+L_tale_desert_temple:
+    @current_story = 2;
+    callsub L_tale_sub;
+    if (@story_abort) goto L_Main_menu;
+
+    mes "[Kfahr the Warrior]";
+    mes "\"Ah, that...\"";
+    mes "Kfahr leans back and takes a sip from his beer.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"That was many years ago, when George and I were just kids. George later became a pirate, you see; he always loved hunting for treasure. But back in those days it was all on level ground.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"George had found a treasure map somewhere... and when I say `found', I mean that in a fairly liberal sense; he always loved those maps, almost as much as the excitement of hunting for treasure.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Anyway, that map pointed to a spot in the desert a good day's walk south of Tulimshar. So we grabbed our satchels and coats and packed food and water, and headed there in the evening.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"We walked all night. As you know, it's best not to travel during the day if you can avoid it, and we were young and energetic in those days, so that was easily avoided.\"";
+    mes "He sighs and takes another sip.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Anyway, when the sun rose in the morning, we still hadn't found the place. So we climbed up on the nearest dune and looked all around to find it.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"But there was nothing, nothing at all. We looked and looked – and suddenly George screamed:  While we weren't paying attention to nearby things, scorpions had crept up on us!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"The scorpions had smelled the food we had brought and cut open our satchels, tearing our waterskins and making a mess of our food – and now that they were done with that, they were coming for us!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"We didn't have any suitable weapons, and not much of a choice either, so we made a break for it. We ran into the desert, fast as our legs would carry us, and the scorpions after us.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"We very nearly didn't make it. There was nothing around but sand, and we had no water, no food – at least we'd had our breakfast already – and the sun kept burning, and burning, and trying to cook us alive.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"We had long lost the scorpions, but we were dry like parchment, and exhausted from all the sun and running. So we sat down in the shades of a dune and contemplated our options.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Without water we couldn't last during the day. So our only hope was to find shelter somewhere – except that the only thing around was sand, and the mid-day sun would rob that of all shelter.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"So we resigned to continuing to search for something, anything – it was either that, or die of thirst for sure. The only problem was that we were already so thirsty and it was so bright that we couldn't see nor walk straight anymore.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"So we had barely made it to the top of the next dune when George slipped and rolled down the other side. I wanted to catch him, but I was too dizzy myself, and so I rolled after him.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"We seemed to roll down for hours, and I kept feeling dizzier and dizzier; I didn't have the strength to stop. When we arrived at the bottom, I just wanted to lie down and let the sun dry me up.\"";
+    mes "Kfahr takes a deep sip of beer. \"Aaah.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"I was being foolish, of course. You should never give up, no matter how hopeless the situation may seem. Anyway, I finally did decide to get up on my knees and look around again...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"...and what I saw right before me, believe it or not, was a giant face of a man, carved into rock – there, in the middle of the desert, half-sunk, a shattered visage!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"I pulled George up – I didn't have the strength to speak, but walking seemed to work – and we slowly made our way over to it. We weren't thinking much, just trying to find some shade, so we climbed into that thing's ear.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Inside it felt moist, as if it was a real ear – not that I've climbed inside a real ear, mind you!  But that feeling of cool and dampness and water was like a magical healing potion; we suddenly felt strength in our legs again.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"When we looked around, we noticed that there was a passage leading further underground, and long-spent torches on the wall. Fortunately I still had my tinderbox, so I wrapped my shirt around a torch and lighted it.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"We climbed down, and soon we heard the dripping of water – we had found an underground water-hole!  More than that, we had found a gigantic underground cave, and, at the end of it, a huge portal.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"We first drenched ourselves in water – somehow managing not to douse the torch – and drank until we were ready to burst. When we had rested, we went to the portal to have a closer look.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"The portal was made out of bronze, or some similar metal, with images of snakes engraved all over. Curious as we were, we pulled the door open – it wasn't locked or barred in any way – and had a look inside.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"The passages in there were cool and dark, with a ceiling high enough to swallow the light of my torch. There were snakes, quite a few of them, but we were both quick-footed and managed to avoid them.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"There were chambers and inscriptions and more torches, but not a living being besides us and the snakes. Hmm. Though I could have sworn that some of the statues there were following us with their eyes...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"All went well, until George stepped into a trap. A piece of ground just caved in, and if I hadn't grabbed his hand at the last second, he would have ended up on some rusty and probably poisoned spikes on the bottom...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"But I moved too fast, and slipped, and let go of the torch to catch myself with the other hand – and the torch ended up in the bottom of the pit!  Well, better the torch than George, I suppose...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Still, we no longer had any light. Being careless, I had gotten my tinderbox wet while we were at the water-hole, so we couldn't make another torch either.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"We had the choice between staying by our torch and watching it die, and then follow suit at the hands, or, well, fangs of the snakes, or wandering off in the dark, to be eaten by snakes someplace else.\"";
+    mes "Kfahr empties his beer, looking a bit disappointed.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Anyway, we took the latter option. We wandered through the dark, somehow barely avoiding the snakes and the traps, running into walls and hitting our heads on archways, until, suddenly, we saw something shining up ahead.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"That thing was on some kind of pedestal, and it looked like a golden tablet of sorts. We clambered towards it – the only source of light in here, the only thing that could save us – and hesitated.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Should we just take it?  This was clearly some kind of temple, so it might be something sacred. George and I argued about it for a while, until I decided to end the discussion – so I simply grabbed it: we needed light.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"At that point, a terrible grinding noise started all around us, as the pedestal began to sink into the ground. We had triggered some ancient trap!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Holes on the walls were opening up, and snakes began to gush out – only now did we realise that we were in a huge, opulent chamber, with gold and gems and images all around!  But now it was too late for any looting; we had to run for our lives!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"So we ran from that slithering mass, faster than we ever had!  We had no idea where we were going of course, but at least we had light again...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Somehow we got lucky, somehow we escaped. It was evening again when we climbed out of that ear into the desert again, with only our lives and that golden tablet. We only barely made it back to Tulimshar in the morning.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"But we did have the tablet as a proof of what happened.\"";
+    mes "He grins.";
+    mes "\"That was my first real adventure, I think. Ah, those were exciting days.\"";
+    next;
+    menu
+        "Wow.", L_Main_menu,
+        "What happened to the tablet?", L_tale_tablet,
+        "Did you go there again?", L_tale_temple_again,
+        "Zzzzzzz.....", L_End;
+
+L_tale_tablet:
+    mes "[Kfahr the Warrior]";
+    mes "\"Well, we couldn't read it. We later sold it for a good price, to a young travelling archeologist; Doctor Nohlidge or something like that. She said that the engravings described sacrifical practices of an ancient snake cult...\"";
+    mes "He shrugs.";
+    next;
+    goto L_Main_menu;
+
+L_tale_temple_again:
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr laughs.";
+    mes "\"Of course we tried to go there again. After seeing all that treasure, George wouldn't give up on it. We tried many times – as did others, from what I've heard – but we never found it again.\"";
+    next;
+    goto L_Main_menu;
+
+L_tale_hero_tulimshar:
+    @current_story = 3;
+    callsub L_tale_sub;
+    if (@story_abort) goto L_Main_menu;
+
+    mes "[Kfahr the Warrior]";
+    mes "\"Yes, Hero of Tulimshar. That was many years";
+    mes "ago, but I did save the city of Tulimshar from a deadly drought.\"";
+    mes "He grins broadly.";
+    mes "\"And quite a feat that was, let me tell you!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Back in those days, there wasn't much trade with Hurnscald, and Tulimshar was dependent on its own water supply – critically dependent, even.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Now, one day the water people drew from the wells started smelling. The smell was nauseating, and people who drank from it became violently sick.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"So the entire town was without water, except for the water reserves in the cistern. Someone had to act quickly – and of course that someone was me.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"With nothing more than a torch, some light armor and a sword, I climbed down one of the wells. It was a long climb; the wells go down fairly deep.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"I noticed that there were some holes in the walls of the wells, with hollow spaces on the sides... Hmm, that reminds me that I still have to check whether the rumors of a labyrinth underneath Tulimshar are true.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Anyway, it took me a long time to get down, and every minute the stench was getting worse – something really bad was down there. I had to stop and tie a wet piece of cloth over my mouth so that I wouldn't inhale all of that nasty stuff.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"My torch was in an even poorer shape – whatever was making that smell had killed the flame, so I soon had to rely on the light from above to see anything.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Finally I arrived at the water level. All Tulimshar wells dip into the same underground lake, which is on the side of a huge underground cavern. And in the midst of that cavern lay – hardly visible through the greenish mist coming from it – a Stinkewyrm!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Stinkewyrms are smaller cousins of dragons, but just as dangerous. They have a green, sticky skin, and, well, they stink. A lot. This one was particularly bad – it had filled up the entire cave with stinkiness!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"I climbed down and swam to the shore. The stench was terrible; I had to hold my breath to get closer to the monster. There it was, lying on the ground, snoring, poisoning all our water!  So I tried to wake it up to scare it away.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"I kicked it. I yelled at it. (Bad mistake, I got some of that stinky stuff in my lungs.)  I poked at it with my sword. I even tried to poke it in the eyes, but I couldn't get that close to its mouth – that was where most of the smell was coming from.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"After a few attempts I couldn't take it anymore, so I had myself be pulled up again. It took me a while to recover and to tell the tale. We talked about what could be done, but no-one had an idea.\"";
+    mes "Kfahr takes a deep sip from his beer.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Finally, I came up with something. Stinkewyrms love that terrible stench of theirs, so what should be their natural enemy?  Why, soap, of course!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"We couldn't just dump all the soap into the underground lake, of course; the water would be undrinkable again. So we collected some of the soap, and I climbed down again with it.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Having arrived at the bottom, I cut off the biggest of the water buckets and filled it with water – and that was a really big one, I could hardly carry it when it was full. Then I dissolved most the soap, and poured that onto the Stinkewyrm's head.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr laughs.";
+    mes "\"Ah, that caught its attention!  You should have seen that dragon roar, as it jumped to its feet and tried to find out who had soaped it!  I rushed back to the water and made another bucket of soap water.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"But it had noticed me!  And as soon as it had realized where I was, it came after me. Then it stopped, towering right before me, its stench nearly killing me, and grinned that broad, crooked-teeth dragon smile of its kind.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Then it took a deep breath – and I realised that that was probably 'it' for me;  Stinkewyrms can breathe fire like real dragons, and I didn't have the time to run back to the water.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"But when it breathed out, only a tiny little flame came out – and a lot of terrible smell that nearly knocked me off my feet.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"For you see, it had generated so much of the deadly smell around itself that even its own fire breath couldn't survive!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"So it stared at me, mouth wide agape – the perfect opening!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"I stormed at it and before it could even blink, it had a huge load of bubbly soap water down its throat.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"You should have heard the coughing and shaking!  I swear, I thought the roof would collapse as it was jumping and choking...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Bubbles were coming out of its mouth, its nostrils, even its ears!  The poor wyrm must have never felt so clean in its life!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"I was out of soap, but the beast didn't know that – so I quickly grabbed another bucket and charged it again.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"And it worked!  Seeing me like this again, it ran, squealing, back into the underground caves from where it must have come.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr roars with laughter and slaps his hands on the table.";
+    mes "\"So we defeated it with hygiene!  Ah, that was wonderful. After a day, the stench had worn off enough that we could drink the water again, and a week later it was almost completely gone. And of course I was the hero of the day.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr downs the rest of his beer.";
+    mes "\"And from that day on they called me the `Hero of Tulimshar'.\"";
+    next;
+    goto L_Main_menu;
+
+L_tale_desert:
+    @current_story = 4;
+    callsub L_tale_sub;
+    if (@story_abort) goto L_Main_menu;
+
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr leans back, trying to find the right words to describe the desert.";
+    mes "\"The desert... a cold and lonely place at night, and a hot and lonely place during the day.\"";
+    mes "For someone who apparently spent most of his life in the desert, his insights sometimes seem less than profound.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"The desert is a living hell during some times of the year. Filled with black scorpions and snakes, except for the shadier areas, and mountain snakes if you go further east.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"South of Tulimshar is a fairly protected region; the nomads keep the snakes out of there and you'll find only relatively harmless monsters. But go west from there, to the beach, and it's scorpions and snakes...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"...and east of there you find the old Hatmaker cave, now filled to the brim with snakes!  Rumors have it that this was once an oasis, in centuries long gone by, but as far as I'm concerned that pit is just a dump that you best avoid.\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Go further to the east and you'll find ol' Pachua up on the mountain. He seems to have some kind of power over the mountain snakes there; they never attack him. I think he's a bit creepy, personally...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"...but if he offers you some of his tobacco, then by all means give it a try!  That stuff is amazing.\"";
+    mes "He laughs, then begins to cough.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Not terribly healthy, though, I s'pose...\"";
+    next;
+    goto L_Main_menu;
+
+L_gain_power:
+    if ((@beer_count - @has_beer) < 1)
+        goto L_story_first;
+    if (@Q_status < @QS_KNIFE_QUEST)
+        goto L_bone_quest;
+
+    mes "[Kfahr the Warrior]";
+    mes "\"Yeees, yes... doesn't everyone?\"";
+    mes "He laughs briefly.";
+    mes "\"Don't worry – you can't become as powerful as I, of course, but if you keep practicing, you can get pretty damn close!  Just make sure to pick your opponents carefully, and know when to run to live another day!\"";
+    next;
+    goto L_Main_menu;
+
+L_story_first:
+    mes "[Kfahr the Warrior]";
+    mes "\"That's the spirit!  Perhaps you better listen to one of my tales, then!\"";
+    next;
+    goto L_Main_menu;
+
+L_bone_quest:
+    if (@Q_status == @QS_KNIFE_QUEST)
+        goto L_bone_ip;
+    if (@Q_status > @QS_KNIFE_QUEST)
+        goto L_bone_completed;
+    if (BaseLevel < 40)
+        goto L_bone_tooweak;
+
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr stares at you for a moment, then nods.";
+    mes "\"You seem reasonably skilled. I think I may have something that I no longer need, but I don't want to give it to just anyone...\"";
+    mes "He hesitates, obviously trying to make up his mind about something, then continues.";
+    @Q_status = @QS_KNIFE_QUEST;
+    callsub L_Update_Var;
+    next;
+    goto L_bone_ip;
+
+L_bone_ip:
+    mes "[Kfahr the Warrior]";
+    mes "\"Bring me " + @BLACK_STINGERS_NR + " black scorpion stingers and " + @MUSHROOMS_NR + " small mushrooms to prove that you are a competent warrior, and I'll see if I have something for you.\"";
+    mes "He grins.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"But while you are here... perhaps you would like to listen to another story?\"";
+    next;
+    goto L_Main_menu;
+
+L_bone_completed:
+    mes "[Kfahr the Warrior]";
+    mes "\"I really don't have anything else I'd want to give away to make you stronger. Look around a bit yourself!  You won't become a hero if you keep begging for help!\"";
+    next;
+    goto L_Main_menu;
+
+L_bone_tooweak:
+    mes "[Kfahr the Warrior]";
+    mes "\"You know, little one, if you keep practicing a little and come back once you're a bit stronger, I might have something for you...\"";
+    mes "He winks.";
+    next;
+    goto L_Main_menu;
+
+L_Check:
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr eyes you with unconcealed amusement.";
+    mes "\"Welcome back!  Did you bring me the things I asked for?\"";
+    next;
+    menu
+        "Yes, here they are!", L_completecheck,
+        "Er, what were those things again?", L_bone_ip,
+        "No, sorry, I didn't have the time.", L_Main_menu,
+        "I forgot!  Let me get them right now.", L_End;
+
+L_completecheck:
+    if (countitemcolor("BlackScorpionStinger") < @BLACK_STINGERS_NR)
+        goto L_missing_stingers;
+    if (countitemcolor("SmallMushroom") < @MUSHROOMS_NR)
+        goto L_missing_mushrooms;
+
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr is delighted.";
+    mes "\"Well done, well done!  Now that's what I call Warrior spirit!\"";
+    mes "He laughs, then suddenly stops, turning to you with suspicion in his eyes.";
+    mes "\"You DID get those yourself, didn't you?  Not buy them or somesuch...?\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Before you can answer, he laughs and slaps you on the back again.";
+    mes "\"Ah, what am I thinking!  Too many years in the desert make you a little suspicious of everyone and everything!  Naah, I believe you.\"";
+    mes "He pulls a strangely curved knife out of a side pocket and holds it up to the light. The blade is partly transparent, and looks quite sharp.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"It's a bone knife, carved out of the umplex bone of a desert worm... you can probably guess which one.\"";
+    mes "He grins broadly again, weighing the weapon.";
+    mes "\"It's a little heavy, but one of the best knives you can get. Certainly beats a short sword any time of day.\"";
+    mes "I had the nomads make me a few of them, and I hardly use them nowadays, so I think I can part with this one.";
+    next;
+    if (countitemcolor("BlackScorpionStinger") < @BLACK_STINGERS_NR)
+        goto L_missing_stingers_2;
+    if (countitemcolor("SmallMushroom") < @MUSHROOMS_NR)
+        goto L_missing_mushrooms_2;
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Knife_TooMany;
+    mes "[Kfahr the Warrior]";
+    mes "He hands you the knife.";
+    mes "\"Oh, and I think I'll keep those in return; I know someone who will trade them for antidote potions.\"";
+    mes "He pockets the stingers and mushrooms.";
+    mes "[" + @KNIFE_QUEST_XP + " experience points]";
+    @Q_status = @QS_KNIFE_QUEST_DONE;
+    callsub L_Update_Var;
+    delitem "BlackScorpionStinger", @BLACK_STINGERS_NR;
+    delitem "SmallMushroom", @MUSHROOMS_NR;
+    getexp @KNIFE_QUEST_XP, 0;
+    getitem "BoneKnife", 1;
+    next;
+    goto L_Main_menu;
+
+L_Knife_TooMany:
+    mes "[Kfahr the Warrior]";
+    mes "\"You don't have room for this. Come back when you do.\"";
+    close;
+
+L_missing_stingers:
+    mes "[Kfahr the Warrior]";
+    mes "\"No, no... I said " + @BLACK_STINGERS_NR + " black scorpion stingers.";
+    if (countitemcolor("BlackScorpionStinger"))
+        mes "You will need " + (@BLACK_STINGERS_NR - (countitem ("BlackScorpionStinger"))) + " more of those.\"";
+    if (countitemcolor("BlackScorpionStinger") == 0)
+        mes "You didn't bring even a single one!\"";
+    close;
+
+L_missing_stingers_2:
+    mes "[Kfahr the Warrior]";
+    mes "\"You just had " + @BLACK_STINGERS_NR + " black scorpion stingers. What happened to them?";
+    if (countitemcolor("BlackScorpionStinger"))
+        mes "You will need " + (@BLACK_STINGERS_NR - (countitem ("BlackScorpionStinger"))) + " more of those.\"";
+    if (countitemcolor("BlackScorpionStinger") == 0)
+        mes "You didn't bring even a single one!\"";
+    close;
+
+L_missing_mushrooms:
+    mes "[Kfahr the Warrior]";
+    mes "\"No, no... I said " + @MUSHROOMS_NR + " small mushrooms.";
+    if (countitemcolor("SmallMushroom"))
+        mes "You will need " + (@MUSHROOMS_NR - (countitem ("SmallMushroom"))) + " more of those.\"";
+    if (countitemcolor("SmallMushroom") == 0)
+        mes "You didn't bring me even a single little mushroom!\"";
+    close;
+
+L_missing_mushrooms_2:
+    mes "[Kfahr the Warrior]";
+    mes "\"You just had " + @MUSHROOMS_NR + " small mushrooms. What happened to them?";
+    if (countitemcolor("SmallMushroom"))
+        mes "You will need " + (@MUSHROOMS_NR - (countitem ("SmallMushroom"))) + " more of those.\"";
+    if (countitemcolor("SmallMushroom") == 0)
+        mes "You didn't bring me even a single little mushroom!\"";
+    close;
+
+L_stinger_check:
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr grins at you.";
+    mes "\"Welcome, welcome!  Did you bring me my snake skins?\"";
+    next;
+    menu
+        "Yes, here they are!", L_ss_cc,
+        "No, sorry, I didn't have the time.", L_Main_menu,
+        "I forgot!  Let me get them right now.", L_End;
+
+L_ss_cc:
+    if (countitemcolor("SnakeSkin") < @SNAKE_SKINS_NR)
+        goto L_snakeskins_missing;
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_SnakeSkins_TooMany;
+    delitem "SnakeSkin", @SNAKE_SKINS_NR;
+    getitem "GoldenScorpionStinger", 1;
+    @Q_status = @QS_STINGER_QUEST_DONE;
+    callsub L_Update_Var;
+    getexp @STINGER_QUEST_XP, 0;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr takes the skins and pulls a golden scorpion stinger out of his pocket.";
+    mes "\"Well, you've earned it. But be careful – the poison in there is still lethal, after all those years.\"";
+    mes "He hands you the scorpion stinger.";
+    mes "[" + @STINGER_QUEST_XP + " experience points]";
+    next;
+    goto L_Main_menu;
+
+L_snakeskins_missing:
+    mes "[Kfahr the Warrior]";
+    mes "\"No, no... I said " + @SNAKE_SKINS_NR + " snake skins.";
+    if (countitemcolor("SnakeSkin"))
+        mes "You will need " + (@SNAKE_SKINS_NR - (countitem ("SnakeSkin"))) + " more of those.\"";
+    if (countitemcolor("SnakeSkin") == 0)
+        mes "You didn't bring even a single skin!\"";
+    close;
+
+L_SnakeSkins_TooMany:
+    mes "[Kfahr the Warrior]";
+    mes "\"You don't have room for this. Come back when you do.\"";
+    close;
+
+L_Give_beer:
+    if (countitemcolor("Beer") < 1)
+        goto L_player_out_of_beer;
+    if (@has_beer)
+        goto L_enough_beer_for_now;
+    if (@beer_count > 4)
+        goto L_too_much_beer;
+
+    setarray @beermessages$,
+        "Ah yes... a warrior's drink!",
+        "Generous, generous!  I like that!",
+        "Hahah!  That's just what I needed!",
+        "I love this town!  Hurnscaldian hospitality!  Mrahahahah!",
+        "A'ight, one more can't hurt, eh?";
+
+    @mesg$ = @beermessages$[@beer_count];
+
+    delitem "Beer", 1;
+    @has_beer = 1;
+    @beer_count = @beer_count + 1;
+
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr is visibly delighted.";
+    mes "\"" + @mesg$ + "\"";
+    mes "He takes a deep sip.";
+    mes "\"Aaah, magnificent!\"";
+
+    if (@beer_count > 4)
+        mes "Kfahr seems quite relaxed now.";
+    next;
+    goto L_Main_menu;
+
+L_enough_beer_for_now:
+    mes "[Kfahr the Warrior]";
+    mes "\"Generous, generous!  But I still have plenty in here!\"";
+    mes "He laughs and takes a sip from the beer you gave him earlier.";
+    next;
+    goto L_Main_menu;
+
+L_too_much_beer:
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr leans back and sighs heavily.";
+    mes "\"Very, very generous... bu' I think I'm fine for now.\"";
+    mes "He suppresses a burp.";
+    next;
+    goto L_Main_menu;
+
+L_player_out_of_beer:
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr stares at you, then begins to laugh.";
+    mes "\"Mrahahahahaha!  Here's the beer!  Right, right!  Naah, I get it!  Save your gold for whatever you need it for!  But if you have some spare and want to share a beer, you know where to find me!\"";
+    next;
+    goto L_Main_menu;
+
+L_golden_scorpion:
+    if (@Q_status > @QS_STINGER_QUEST)
+        goto L_gs_over_ask;
+    if (@Q_status == @QS_STINGER_QUEST)
+        goto L_gs_ask_again;
+    if (@Q_status == @QS_LOST_WRESTLING)
+        goto L_gs_wrestle_again;
+
+    mes "[Kfahr the Warrior]";
+    mes "He grins.";
+    mes "\"Fought any?  I single-handedly raided a nest of those beasts!  Ah, but golden scorpions are almost unheard of in these parts. Why do you ask?\"";
+    next;
+    menu
+        "Never mind, I was just curious.", L_Main_menu,
+        "I need a golden scorpion stinger.", L_Next2;
+
+L_Next2:
+    mes "[Kfahr the Warrior]";
+    mes "\"A golden scorpion stinger?  Those are rare and valuable, I hope that you know that!\"";
+    if (BaseLevel < 60)
+        goto L_lowlvl_for_stinger;
+    if (@Q_status < @QS_KNIFE_QUEST)
+        goto L_golden_requires_quest;
+    if (@Q_status < @QS_KNIFE_QUEST_DONE)
+        goto L_golden_requires_done;
+
+    mes "\"Still, you are a warrior of repute. I'll consider giving it to you...\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "A mischievous sparkle lightens up in his eyes.";
+    mes "\"...if you arm-wrestle me for it!\"";
+    next;
+    goto L_gs_wrestle_intro;
+
+L_gs_wrestle_intro:
+    menu
+        "Never!", L_Main_menu,
+        "Wait... what?", L_wrestle_explain,
+        "Bring it on!", L_gs_wrestle;
+
+L_golden_requires_done:
+    mes "He hesitates.";
+    mes "\"But no, this is too valuable. Perhaps if you finish that other quest I gave you...?\".";
+    next;
+    goto L_Main_menu;
+
+L_golden_requires_quest:
+    mes "He hesitates.";
+    mes "\"But no, this is too valuable. I think I should have you prove your worthiness with another quest first...\"";
+    next;
+    goto L_bone_quest;
+
+L_wrestle_explain:
+    mes "[Kfahr the Warrior]";
+    mes "\"Arm wrestling!  Arm against arm!  And whoever is stronger wins!  If you manage to defeat me, I'll give you a little quest for the stinger. How about it?\"";
+    next;
+    goto L_gs_wrestle_intro;
+
+L_lowlvl_for_stinger:
+    mes "\"Well, I have one, but I can't just give it to anyone. Maybe if you train a little and become a worthy warrior I will consider giving it away...\"";
+    next;
+    goto L_Main_menu;
+
+L_gs_over_ask:
+    mes "[Kfahr the Warrior]";
+    mes "\"Is this about the stingers again? I already gave you a golden stinger, I'm not going to part with any more.\"";
+    next;
+    goto L_Main_menu;
+
+L_gs_ask_again:
+    mes "[Kfahr the Warrior]";
+    mes "\"This is about the stinger again, right?  Well, just bring me " + @SNAKE_SKINS_NR + " snake skins, and you can have one.\"";
+    next;
+    goto L_Main_menu;
+
+L_gs_wrestle_again:
+    mes "[Kfahr the Warrior]";
+    mes "\"This is about the stinger again, eh?  So you want to give it another try?\"";
+    mes "He grins broadly.";
+    next;
+    goto L_gs_wrestle;
+
+L_gs_wrestle:
+    mes "[Kfahr the Warrior]";
+    mes "You sit down. Both of you place your arms on the table, on opposing sides, and grab each other's hands.";
+    next;
+
+    @KFAHR_STR = 70 + @beer_count * 6;
+    @KFAHR_AGI = 60 - @beer_count * 5;
+    @kfahr_stamina = 120;
+
+    @PC_STR = readparam(bStr);
+    @PC_AGI = readparam(bAgi);
+    @PC_MAX_STAMINA = readparam(bVit) + 20;
+    @pc_stamina = @PC_MAX_STAMINA;
+
+    setarray @positions$,
+        "Kfahr's hand is almost on the table.",
+        "Kfahr's hand is pushed back.",
+        "Kfahr and your hands are centered.",
+        "Your hand is pushed back.",
+        "Your hand is almost on the table.";
+
+    @position = 2;
+    @first_round = 1;
+    goto L_wrestle_loop;
+
+L_wrestle_loop:
+    mes "[Arm-wrestling with Kfahr]";
+    mes @positions$[@position];
+    if ((@pc_stamina * 2 <= @PC_MAX_STAMINA) && (@pc_stamina * 4 > @PC_MAX_STAMINA))
+        mes "You feel a little exhausted.";
+    if (@pc_stamina * 4 <= @PC_MAX_STAMINA)
+        mes "You feel very exhausted.";
+    next;
+    menu
+        "Push!", L_wrestle_push,
+        "Hold!", L_wrestle_hold,
+        "Slam!", L_wrestle_slam,
+        "Consider your options", L_wrestle_info;
+
+L_wrestle_info:
+    mes "[Arm-wrestling with Kfahr]";
+    mes "Kfahr is a strong arm-wrestling opponent. Winning against him won't be easy.";
+    mes "Each round you have to choose an action; what you choose determines both your chances of moving each other's arms and how much weaker you get.";
+    next;
+    mes "[Arm-wrestling with Kfahr]";
+    mes "If you PUSH, you may be able to push him back, but if you fail, you will lose more stamina than if you had succeeded.";
+    next;
+    mes "[Arm-wrestling with Kfahr]";
+    mes "If you HOLD, you lose little stamina and may be able to hold him and drain his stength, but you cannot win just by holding.";
+    next;
+    mes "[Arm-wrestling with Kfahr]";
+    mes "If you SLAM, you try to move against him quickly – if you are successful, you may push him back quite a bit, but losing this will drain you badly.";
+    next;
+    goto L_wrestle_loop;
+
+L_wrestle_push:
+    @kfahr_def = @KFAHR_STR;
+    @attack = @PC_STR;
+    @Cost_factor = 2;
+    callsub L_wrestle_attack;
+    if (@result < -1) set @result, -1; // can't push back further than one
+    goto L_wrestle_next;
+
+L_wrestle_hold:
+    @kfahr_def = @KFAHR_STR;
+    @attack = @PC_STR;
+    @Cost_factor = 1;
+    callsub L_wrestle_attack;
+    if (@result < 0) set @result, 0; // hold only
+    goto L_wrestle_next;
+
+L_wrestle_slam:
+    if (@beer_count == 5 && @first_round)
+        goto L_quick_slam;
+    @kfahr_def = @KFAHR_AGI;
+    @attack = @PC_AGI;
+    @Cost_factor = 4;
+    callsub L_wrestle_attack;
+    goto L_wrestle_next;
+
+L_wrestle_attack:
+    @kfahr_stamina_bonus = @kfahr_stamina;
+    @pc_stamina_bonus = @kfahr_stamina;
+
+    if (@kfahr_stamina_bonus > 40)
+        @kfahr_stamina_bonus = 40;
+    if (@pc_stamina_bonus > 40)
+        @pc_stamina_bonus = 40;
+
+    @score = @kfahr_def + @kfahr_stamina_bonus - @attack - @pc_stamina_bonus + rand(20) - rand(20);
+    @result = @score / 10;
+
+    if (@result > 1)
+        @result = 1;
+    if (@result > 0)
+        @kfahr_stamina = @kfahr_stamina - 12;
+    if (@result == 0)
+        @kfahr_stamina = @kfahr_stamina - 16;
+    if (@result < 0)
+        @kfahr_stamina = @kfahr_stamina - 8;
+    if (@result < 0)
+        @pc_stamina = @pc_stamina - (6 * @Cost_factor);
+    if (@result == 0)
+        @pc_stamina = @pc_stamina - (8 * @Cost_factor);
+    if (@result > 0)
+        @pc_stamina = @pc_stamina - (4 * @Cost_factor);
+    if (@kfahr_stamina < 0)
+        @kfahr_stamina = 0;
+    if (@kfahr_stamina < 0)
+        @pc_stamina = 0;
+    return;
+
+L_wrestle_next:
+    @first_round = 0;
+
+    mes "[Arm-wrestling with Kfahr]";
+    if (@result < 0)
+        mes "You manage to push him back!";
+    if (@result == 0)
+        mes "You hold your position!";
+    if (@result > 0)
+        mes "Kfahr pushes you back!";
+    next;
+    @position = @position + @result;
+    if (@position < 0)
+        goto L_wrestle_win;
+    if (@position > 4)
+        goto L_wrestle_lose;
+    goto L_wrestle_loop;
+
+L_wrestle_lose:
+    mes "[Arm-wrestling with Kfahr]";
+    mes "Kfahr slams your hand on the table.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "\"Don't worry!  It was a good attempt – but beating Kfahr is not quite so easy!\"";
+    mes "He laughs and slaps you on the shoulder.";
+    mes "\"But come back any time you want to try again!\"";
+    next;
+    @Q_status = @QS_LOST_WRESTLING;
+    callsub L_Update_Var;
+    goto L_Main_menu;
+
+L_quick_slam:
+    mes "[Arm-wrestling with Kfahr]";
+    mes "Your hands have barely touched as you push against him with all your might. His reactions slowed by the beer, Kfahr doesn't stand a chance.";
+    next;
+    goto L_wrestle_win;
+
+L_wrestle_win:
+    mes "[Arm-wrestling with Kfahr]";
+    mes "You slam Kfahr's hand on the table.";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "Kfahr stares first at the hand, then at you, incredulously.";
+    mes "Then he begins to roar with laughter, slapping you on the shoulder.";
+    mes "\"Excellent, excellent!  Caught me in a weak moment there, did ya!\"";
+    next;
+    mes "[Kfahr the Warrior]";
+    mes "After calming down, Kfahr outlines your quest.";
+    mes "\"As I promised, I will give you the stinger if you do something for me. Get me " + @SNAKE_SKINS_NR + " snake skins, and I'll let you have it.\"";
+    next;
+    @Q_status = @QS_STINGER_QUEST;
+    callsub L_Update_Var;
+    goto L_Main_menu;
+
+L_End:
+    close;
+
+L_Update_Var:
+    QUEST_Forestbow_state = (QUEST_Forestbow_state & ~(@Q_MASK) | (@Q_status << @Q_SHIFT));
+    return;
+}
