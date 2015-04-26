@@ -75,6 +75,7 @@ function|script|HumanTime
     if(@seconds) set @ms, @ms + (@seconds * 1000);
     if(@minutes) set @ms, @ms + (@minutes * 60000);
     if(@days)    set @ms, @ms + (@days    * 1440000);
+    if(@ms < 0) goto L_TooShort;
     if(@ms < 1000) goto L_Millis; // under 1 second we have nothing to count
     set @seconds, @ms / 1000;
     set @ms, @ms % 1000;
@@ -89,6 +90,10 @@ function|script|HumanTime
     set @hours, @hours % 24;
     if(@days) goto L_Days;
     goto L_Clean;
+
+L_TooShort:
+    debugmes "HumanTime: negative value: "+@ms;
+    mapexit;
 
 L_Millis:
     set @time$, @ms + "ms";
