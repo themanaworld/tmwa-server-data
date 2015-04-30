@@ -1,44 +1,34 @@
-017-9,0,0,0|script|#GlobalHandler|-1
+// This is the global event dispatcher
+// Do not add code to this file. Please only add callfuncs
+//
+// Author: meko
+
+-|script|#GlobalHandler|-1
 {
     end;
 
-OnPCLoginEvent: // this does not work yet but as soon as it is implemented it will start working
-    callfunc "ClearVariables";
+OnPCLoginEvent:
+    set @login_event, 1;
+    callfunc "getHeadStyles"; // converts class, color and hair
+    callfunc "ClearVariables"; // removes / converts old variables
+    // add more here
+    set @login_event, 2;
     end;
 
 OnPCKillEvent:
-    set Death_Kill, Death_Kill + 1; // this counts the number of players you have killed
+    callfunc "elanore_decrease_exp"; // decrease heal exp for doing bad things
     end;
 
 OnPCKilledEvent:
-    goto L_Fightclub_Killed; // this is used by the 1v1 arena
+    callfunc "fightclub_event_killed"; // this is used by the 1v1 arena
+    end;
 
 OnPCDieEvent:
     callfunc "fightclub_GoBack"; // this used by the battle master
-    goto L_Fightclub_Die; // this is used by the 1v1 arena
+    callfunc "fightclub_event_die"; // this is used by the 1v1 arena
+    end;
 
-// custom handlers below
-
-L_Fightclub_Killed:
-    set @duel_killer, 0;
-    if(@Duel_Fighter != 1) goto L_End;
-    if(getmap() != "009-7") goto L_End;
-    set $@duel_loser, getcharid(3); // grab the rid of the victim
-    set $@duel_winner, @killerrid; // grab the rid of the killer
-    set @killerrid, 0; // reset killerid
-    callfunc "fightclub_death";
-    goto L_End;
-
-L_Fightclub_Die:
-    set @duel_killer, 0;
-    if(@Duel_Fighter != 1) goto L_End;
-    if(getmap() != "009-7") goto L_End;
-    set @killerrid, 0; // since the player was not murdered, the killerrid is 0
-    set $@duel_loser, getcharid(3); // grab the rid of the victim
-    callfunc "fightclub_death";
-    goto L_End;
-
-L_End:
-    if(getpvpflag(0) == $@Duel_Channel) setpvpflag @previous_channel;
+OnInit: //fixme: change to OnInterIfInit
+    callfunc "ClearGlobalVars";
     end;
 }

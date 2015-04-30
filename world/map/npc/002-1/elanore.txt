@@ -17,6 +17,24 @@ function|script|ElanoreFix
     return;
 }
 
+function|script|elanore_decrease_exp
+{
+    if (attachrid(@killerrid) == 0)
+        end;
+    set @Q_heal_exp, MAGIC_EXPERIENCE >> 24;
+    if (@Q_heal_exp < 8) goto L_OnPcKillWipe;
+    set @Q_heal_exp, @Q_heal_exp - 8;
+    goto L_OnPcKillFinish;
+
+L_OnPcKillWipe:
+    set @Q_heal_exp, 0;
+    goto L_OnPcKillFinish;
+
+L_OnPcKillFinish:
+    set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE & ~(255 << 24)) | (@Q_heal_exp << 24);
+    return;
+}
+
 002-1,75,62,0|script|Elanore#_M|108
 {
     set @has_magic, getskilllv(SKILL_MAGIC);
@@ -153,22 +171,6 @@ L_Main:
             "Can you heal me?", L_NoHealMessage,
             "What do you know about...", L_Question,
             "Goodbye!", L_bye;
-    goto L_Close;
-
-OnPCKillEvent:
-    if (attachrid(@killerrid) == 0)
-        end;
-    set @Q_heal_exp, MAGIC_EXPERIENCE >> 24;
-    if (@Q_heal_exp < 8) goto L_OnPcKillWipe;
-    set @Q_heal_exp, @Q_heal_exp - 8;
-    goto L_OnPcKillFinish;
-
-L_OnPcKillWipe:
-    set @Q_heal_exp, 0;
-    goto L_OnPcKillFinish;
-
-L_OnPcKillFinish:
-    set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE & ~(255 << 24)) | (@Q_heal_exp << 24);
     goto L_Close;
 
 L_Lifestones:

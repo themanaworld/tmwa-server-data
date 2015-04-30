@@ -460,3 +460,36 @@ function|script|fightclub_exit
     if(@Duel_HasPendingRequest) message strcharinfo(0), "You have received a new duel request.";
     return;
 }
+
+
+
+// ** called on OnPCKilledEvent
+function|script|fightclub_event_killed
+{
+    set @duel_killer, 0;
+    if(@Duel_Fighter != 1) goto L_End;
+    if(getmap() != "009-7") goto L_End;
+    set $@duel_loser, getcharid(3); // grab the rid of the victim
+    set $@duel_winner, @killerrid; // grab the rid of the killer
+    set @killerrid, 0; // reset killerid
+    callfunc "fightclub_death";
+    goto L_End;
+L_End:
+    if(getpvpflag(0) == $@Duel_Channel) setpvpflag @previous_channel;
+    return;
+}
+
+// ** called on OnPCDieEvent
+function|script|fightclub_event_die
+{
+    set @duel_killer, 0;
+    if(@Duel_Fighter != 1) goto L_End;
+    if(getmap() != "009-7") goto L_End;
+    set @killerrid, 0; // since the player was not murdered, the killerrid is 0
+    set $@duel_loser, getcharid(3); // grab the rid of the victim
+    callfunc "fightclub_death";
+    goto L_End;
+L_End:
+    if(getpvpflag(0) == $@Duel_Channel) setpvpflag @previous_channel;
+    return;
+}
