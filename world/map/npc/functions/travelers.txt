@@ -46,7 +46,8 @@ OnInit:
 function|script|TravelerTut
 {
     //Explain Travelers
-    mes "["+@NpcName$+"]";
+    if(@npcname$ == "") set @npcname$, strnpcinfo(1);
+    mes "["+@npcname$+"]";
     mes "\"We travelers are found all over the world. Once you have found another traveler, we can create a link and send you between us.\"";
     next;
     if (TravelFound & $@tut_bit)
@@ -58,13 +59,15 @@ L_SetBit:
     goto L_Return;
 
 L_Return:
+    set @npcname$, "";
     return;
 }
 
 function|script|Traveler
 {
-    mes "["+@NpcName$+"]";
-    mes "\"Greetings. I am "+@NpcName$+" the Traveler.\"";
+    if(@npcname$ == "") set @npcname$, strnpcinfo(1);
+    mes "["+@npcname$+"]";
+    mes "\"Greetings. I am "+@npcname$+" the Traveler.\"";
     next;
 
     if (TravelFound & $@tut_bit)
@@ -87,7 +90,7 @@ L_TravelTut:
     goto L_Main;
 
 L_SetTravelBit:
-    mes "["+@NpcName$+"]";
+    mes "["+@npcname$+"]";
     mes "\"Uplink Set. You can now return to this spot for a fee.\"";
     next;
     set TravelFound, TravelFound | @NpcTravelBit;
@@ -120,7 +123,7 @@ L_TravelChecks:
     goto L_TravelPlayer;
 
 L_TravelPlayer:
-    mes "["+@NpcName$+"]";
+    mes "["+@npcname$+"]";
     mes "\"Be fearless!\"";
     close2;
     set Zeny, Zeny - @NextLocationCost;
@@ -223,30 +226,31 @@ L_TravelCandor:
     goto L_TravelChecks;
 
 L_TravelNo:
-    mes "["+@NpcName$+"]";
+    mes "["+@npcname$+"]";
     mes "\"Perhaps some day you will have the courage to help us.\"";
     close2;
     goto L_Clearvars;
 
 L_NoMoney:
-    mes "["+@NpcName$+"]";
+    mes "["+@npcname$+"]";
     mes "\"Sorry, but you don't have enough money. Maybe next time.\"";
     close2;
     goto L_Clearvars;
 
 L_NoFound:
-    mes "["+@NpcName$+"]";
+    mes "["+@npcname$+"]";
     mes "\"Sorry, but you haven't visited a traveler yet at that location. You should talk to a traveler there so you can quickly travel there in the future.\"";
     close2;
     goto L_Clearvars;
 
 L_AlreadyThere:
-    mes "["+@NpcName$+"]";
+    mes "["+@npcname$+"]";
     mes "\"Umm, you are already here. Are you sure you know where you are going?\"";
     close2;
     goto L_Clearvars;
 
 L_Clearvars:
+    set @npcname$, "";
     set @Cost, 0;
     set @NextLocationBit, 0;
     set @NextLocationCost, 0;
