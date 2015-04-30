@@ -1,176 +1,179 @@
 "--------------------------------------------------------------------------------"
-"Level 2 spells"
+" Level 3 spells                                                                 "
 "--------------------------------------------------------------------------------"
-(SPELL () cure-poison "#anju" (PC target)
-    (LET level 2)
-    (LET school LIFE)
-    (=>
-        (GUARD
-            (MANA 15)
-            (CASTTIME 1000)
-            (REQUIRE
-                (>
-                    (skill caster MAGIC)
-                    level))
-            (REQUIRE
-                (>
-                    (skill caster school)
-                    level))
-            (REQUIRE
-                (<
-                    (rdistance
-                        (location caster)
-                        (location
-                            (pc target)))
+(DISABLED
+    (SPELL () cure-poison "#anju" (PC target)
+        (LET level 3)
+        (LET school LIFE)
+        (=>
+            (GUARD
+                (MANA 15)
+                (CASTTIME 1000)
+                (REQUIRE
+                    (>=
+                        (skill caster MAGIC)
+                        level))
+                (REQUIRE
+                    (>=
+                        (skill caster school)
+                        level))
+                (REQUIRE
+                    (<
+                        (rdistance
+                            (location caster)
+                            (location
+                                (pc target)))
+                        (+ 1
+                            (/ spellpower 60))))
+                (COMPONENTS "GambogeHerb"))
+            (EFFECT
+                (CALL adjust_spellpower school)
+                (CALL default_effect)
+                (IF (running_status_update target SC_POISON)
+                    (BLOCK
+                        (CALL gain_heal_xp 40 1 2 2)
+                        (stop_status_change target SC_POISON)
+                        (CALL gain_xp 2 30)
+                        (IF (!= caster target)
+                            (sfx target SFX_HEAL 0))))))))
+
+(DISABLED
+    (SPELL () fire-ball "#flarfol" ()
+        (LET level 3)
+        (LET school WAR)
+        (=>
+            (GUARD
+                (MANA 30)
+                (CASTTIME 1000)
+                (REQUIRE
+                    (>=
+                        (skill caster MAGIC)
+                        level))
+                (REQUIRE
+                    (>=
+                        (skill caster school)
+                        level))
+                (COMPONENTS "PileOfAsh"))
+            (EFFECT
+                (CALL adjust_spellpower school)
+                (SET damage
+                    (min
+                        (+ 50
+                            (*
+                                (skill caster school)
+                                40))
+                        (+ 30
+                            (/
+                                (* spellpower 3)
+                                2))))
+                (SET damage_bonus
+                    (+
+                        (level caster)
+                        (* spellpower 2)))
+                (SET radius
+                    (+ 2
+                        (/ spellpower 50)))
+                (CALL install_attack_spell
                     (+ 1
-                        (/ spellpower 60))))
-            (COMPONENTS "GambogeHerb"))
-        (EFFECT
-            (CALL adjust_spellpower school)
-            (CALL default_effect)
-            (IF (running_status_update target SC_POISON)
-                (BLOCK
-                    (CALL gain_heal_xp 40 1 2 2)
-                    (stop_status_change target SC_POISON)
-                    (CALL gain_xp 2 30)
-                    (IF (!= caster target)
-                        (sfx target SFX_HEAL 0)))))))
-
-(SPELL () fire-ball "#flarfol" ()
-    (LET level 2)
-    (LET school WAR)
-    (=>
-        (GUARD
-            (MANA 30)
-            (CASTTIME 1000)
-            (REQUIRE
-                (>
-                    (skill caster MAGIC)
-                    level))
-            (REQUIRE
-                (>
-                    (skill caster school)
-                    level))
-            (COMPONENTS "PileOfAsh"))
-        (EFFECT
-            (CALL adjust_spellpower school)
-            (SET damage
-                (min
-                    (+ 50
-                        (*
-                            (skill caster school)
-                            40))
-                    (+ 30
-                        (/
-                            (* spellpower 3)
-                            2))))
-            (SET damage_bonus
-                (+
-                    (level caster)
-                    (* spellpower 2)))
-            (SET radius
-                (+ 2
-                    (/ spellpower 50)))
-            (CALL install_attack_spell
-                (+ 1
-                    (/ spellpower 60))
-                5000
-                10
-                31)
-            (ATTRIGGER
-                (CALL attack_check target)
-                (SET loc
-                    (location target))
-                (DISABLED (WAIT 500))
-                (sfx loc 16 0)
-                (FOREACH TARGET target
-                    (rbox loc radius)
-                    (IF (line_of_sight loc
-                            (location target))
-                        (BLOCK
-                            (SET divisor
-                                (+ 3
-                                    (rdistance loc
-                                        (location target))))
-                            (CALL elt_damage target
-                                (/
-                                    (* damage 3)
-                                    divisor)
-                                (/
-                                    (* damage_bonus 3)
-                                    divisor)
-                                ELT_WATER
-                                ELT_FIRE
-                                15))))))))
-
-(SPELL () summon-partner "#kalzumin" ()
-    (LET level 2)
-    (LET school ASTRAL)
-    (=>
-        (GUARD
-            (MANA 30)
-            (CASTTIME 2000)
-            (REQUIRE
-                (>
-                    (skill caster MAGIC)
-                    level))
-            (REQUIRE
-                (>
-                    (skill caster school)
-                    level))
-            (REQUIRE
-                (is_married caster))
-            (REQUIRE
-                (is_equipped caster "WeddingRing")))
-        (EFFECT
-            (CALL adjust_spellpower school)
-            (CALL default_effect)
-            (IF (failed
-                    (partner caster))
-                (message caster "You call out for your partner, but there is no response.")
-                (BLOCK
-                    (message caster
-                        (+
-                            (+ "You call out for "
-                                (name_of
-                                    (partner caster)))
-                            "."))
-                    (message
-                        (partner caster)
-                        (+
-                            (name_of caster)
-                            " is calling for your aid!"))
-                    (sfx
-                        (partner caster)
-                        2
-                        0)
-                    (WAIT
-                        (max 5000
-                            (- 30000
-                                (* spellpower 60))))
-                    (IF (failed
-                            (partner caster))
-                        (message caster "Your partner has abandoned you.")
-                        (IF (is_dead
-                                (partner caster))
-                            (message caster
-                                (+
-                                    (+ "Something seems to have happened to "
-                                        (name_of
-                                            (partner caster)))
-                                    "."))
+                        (/ spellpower 60))
+                    5000
+                    10
+                    31)
+                (ATTRIGGER
+                    (CALL attack_check target)
+                    (SET loc
+                        (location target))
+                    (DISABLED (WAIT 500))
+                    (sfx loc 16 0)
+                    (FOREACH TARGET target
+                        (rbox loc radius)
+                        (IF (line_of_sight loc
+                                (location target))
                             (BLOCK
-                                (sfx
-                                    (location
-                                        (partner caster))
-                                    SFX_TELEPORT
-                                    0)
-                                (SET dest
-                                    (awayfrom
-                                        (location caster)
-                                        (random_dir 1)
-                                        1))
-                                (warp
-                                    (partner caster)
-                                    dest)
-                                (sfx dest SFX_TELEPORT 0)))))))))
+                                (SET divisor
+                                    (+ 3
+                                        (rdistance loc
+                                            (location target))))
+                                (CALL elt_damage target
+                                    (/
+                                        (* damage 3)
+                                        divisor)
+                                    (/
+                                        (* damage_bonus 3)
+                                        divisor)
+                                    ELT_WATER
+                                    ELT_FIRE
+                                    15)))))))))
+
+(DISABLED
+    (SPELL () summon-partner "#kalzumin" ()
+        (LET level 3)
+        (LET school ASTRAL)
+        (=>
+            (GUARD
+                (MANA 30)
+                (CASTTIME 2000)
+                (REQUIRE
+                    (>=
+                        (skill caster MAGIC)
+                        level))
+                (REQUIRE
+                    (>=
+                        (skill caster school)
+                        level))
+                (REQUIRE
+                    (is_married caster))
+                (REQUIRE
+                    (is_equipped caster "WeddingRing")))
+            (EFFECT
+                (CALL adjust_spellpower school)
+                (CALL default_effect)
+                (IF (failed
+                        (partner caster))
+                    (message caster "You call out for your partner, but there is no response.")
+                    (BLOCK
+                        (message caster
+                            (+
+                                (+ "You call out for "
+                                    (name_of
+                                        (partner caster)))
+                                "."))
+                        (message
+                            (partner caster)
+                            (+
+                                (name_of caster)
+                                " is calling for your aid!"))
+                        (sfx
+                            (partner caster)
+                            2
+                            0)
+                        (WAIT
+                            (max 5000
+                                (- 30000
+                                    (* spellpower 60))))
+                        (IF (failed
+                                (partner caster))
+                            (message caster "Your partner has abandoned you.")
+                            (IF (is_dead
+                                    (partner caster))
+                                (message caster
+                                    (+
+                                        (+ "Something seems to have happened to "
+                                            (name_of
+                                                (partner caster)))
+                                        "."))
+                                (BLOCK
+                                    (sfx
+                                        (location
+                                            (partner caster))
+                                        SFX_TELEPORT
+                                        0)
+                                    (SET dest
+                                        (awayfrom
+                                            (location caster)
+                                            (random_dir 1)
+                                            1))
+                                    (warp
+                                        (partner caster)
+                                        dest)
+                                    (sfx dest SFX_TELEPORT 0))))))))))
