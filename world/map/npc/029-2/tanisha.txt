@@ -12,11 +12,10 @@
     if (isin("029-2", 98, 84, 106, 89))
         goto L_Fighting;
 
-    callfunc "TutorialState";
-    if (@tutorial >= 8) goto L_Tut_Done;
-    if (@tutorial == 7) goto L_Stats;
-    if (@tutorial == 6) goto L_Fail;
-    if (@tutorial == 5) goto L_Maggots;
+    if (QL_BEGIN >= 8) goto L_Tut_Done;
+    if (QL_BEGIN == 7) goto L_Stats;
+    if (QL_BEGIN == 6) goto L_Fail;
+    if (QL_BEGIN == 5) goto L_Maggots;
 
     mes "[Tanisha]";
     mes "\"Hey! You're up again!\"";
@@ -30,8 +29,7 @@ L_Next:
     mes "[Tanisha]";
     mes "\"I'm glad you're feeling better. It was really bad luck what happened to you.";
     mes "Hey, I have an idea.\"";
-    set @tutorial_tmp, 5;
-    callfunc "SetTutorialMask";
+    set QL_BEGIN, 5;
     goto L_Maggots;
 
 L_Maggots:
@@ -67,24 +65,21 @@ L_Fight_Again:
     next;
     mes "\"Sometimes dead monsters leave some useful things. You can pick them up by pressing [###keyPickup;] or clicking on the items with your mouse.\"";
     close2;
-    // The getitem must be in the same place as set @tutorial, 2;
+    // The getitem must be in the same place as set QL_BEGIN, 2;
     // since it was moved to after L_Fight_Again, add it conditionally
-    callfunc "TutorialState";
-    if (@tutorial == 5)
+    if (QL_BEGIN == 5)
         goto L_GetFightItems;
     goto L_ContinueFight;
 
 L_GetFightItems:
-    set @tutorial_tmp, 6;
-    callfunc "SetTutorialMask";
+    set QL_BEGIN, 6;
     getitem "Knife", 1;
     getitem "SlingShot", 1;
     getitem "SlingBullet", 500;
     goto L_ContinueFight;
 
 L_ContinueFight:
-    set @tutorial_tmp, 6;
-    callfunc "SetTutorialMask";
+    set QL_BEGIN, 6;
     set @Maggot_Kills, 0;
     set @time, 0;
     if (getareausers("029-2", 98, 84, 106, 89) == 0)
@@ -118,8 +113,7 @@ L_StatsRe:
     mes "\"My Uncle sitting at the counter knows a spell to help the younglings reset their stats.\"";
     mes "\"He also knows of mages with even more powerful reset spells.\"";
     next;
-    callfunc "TutorialState";
-    if (@tutorial == 7)
+    if (QL_BEGIN == 7)
         goto L_Money;
     goto L_Advice;
 
@@ -128,8 +122,7 @@ L_Money:
     mes "[Tanisha]";
     mes "\"Hey, you are so smart taking out all that yucky maggots for me.";
     mes "You can have my pocket money. Here.\"";
-    set @tutorial_tmp, 8;
-    callfunc "SetTutorialMask";
+    set QL_BEGIN, 8;
     set Zeny, Zeny + 5;
     next;
     goto L_Advice;
@@ -263,8 +256,7 @@ OnMaggotDeath:
         goto L_Summon;
     // else, complete
     warp "029-2", 110, 88;
-    set @tutorial_tmp, 7;
-    callfunc "SetTutorialMask";
+    set QL_BEGIN, 7;
     set @Maggot_Kills, 0;
     set @time, 0;
     if (getareausers("029-2", 98, 84, 106, 89) == 0)
@@ -284,8 +276,7 @@ OnInit:
     end;
 
 OnTouch:
-    callfunc "TutorialState";
-    if (@tutorial >= 8)
+    if (QL_BEGIN >= 8)
         goto L_Warp;
     goto L_Block;
 

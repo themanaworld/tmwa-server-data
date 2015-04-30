@@ -1,5 +1,5 @@
 // Children playing Hide and Seek
-// QUEST_NorthTulimshar
+// QL_HIDENSEEK
 // BYTE 0
 // Bit 0: started quest at Ayasha
 // Bit 1 - 5: found one of the kids each
@@ -24,15 +24,15 @@ OnInit:
 function|script|CountHideNSeek
 {
     set @hidden_kid_cnt, 0;
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found1)
+    if (QL_HIDENSEEK & $@hideandseekNT_found1)
         set @hidden_kid_cnt, (@hidden_kid_cnt + 1);
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found2)
+    if (QL_HIDENSEEK & $@hideandseekNT_found2)
         set @hidden_kid_cnt, (@hidden_kid_cnt + 1);
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found3)
+    if (QL_HIDENSEEK & $@hideandseekNT_found3)
         set @hidden_kid_cnt, (@hidden_kid_cnt + 1);
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found4)
+    if (QL_HIDENSEEK & $@hideandseekNT_found4)
         set @hidden_kid_cnt, (@hidden_kid_cnt + 1);
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found5)
+    if (QL_HIDENSEEK & $@hideandseekNT_found5)
         set @hidden_kid_cnt, (@hidden_kid_cnt + 1);
     return;
 }
@@ -45,26 +45,25 @@ function|script|CountHideNSeek
         "Close.", L_Close;
 
 L_Show:
-    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
-    mes "State: " + @state;
-    if (QUEST_NorthTulimshar & $@hideandseekNT_started)
+    mes "State: " + QL_HIDENSEEK;
+    if (QL_HIDENSEEK & $@hideandseekNT_started)
         mes "Start set";
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found1)
+    if (QL_HIDENSEEK & $@hideandseekNT_found1)
         mes "Found 1 set";
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found2)
+    if (QL_HIDENSEEK & $@hideandseekNT_found2)
         mes "Found 2 set";
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found3)
+    if (QL_HIDENSEEK & $@hideandseekNT_found3)
         mes "Found 3 set";
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found4)
+    if (QL_HIDENSEEK & $@hideandseekNT_found4)
         mes "Found 4 set";
-    if (QUEST_NorthTulimshar & $@hideandseekNT_found5)
+    if (QL_HIDENSEEK & $@hideandseekNT_found5)
         mes "Found 5 set";
-    if (QUEST_NorthTulimshar & $@hideandseekNT_ended)
+    if (QL_HIDENSEEK & $@hideandseekNT_ended)
         mes "Complete set";
     goto L_Close;
 
 L_Reset:
-    set QUEST_NorthTulimshar, 0;
+    set QL_HIDENSEEK, 0;
     goto L_Close;
 
 L_Close:
@@ -80,13 +79,11 @@ OnInit:
     set @child_number, 0;
     callfunc "XmasList";
 
-    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
-
     set @EXP, 75;
 
-    if (@state > 63) goto L_Done;
-    if (@state == 63) goto L_Reward;
-    if (@state > 0) goto L_Doing;
+    if (QL_HIDENSEEK > 63) goto L_Done;
+    if (QL_HIDENSEEK == 63) goto L_Reward;
+    if (QL_HIDENSEEK > 0) goto L_Doing;
 
     mes "You see a girl who is holding her hands in front of her face.";
     mes "[Ayasha]";
@@ -109,7 +106,7 @@ L_Next1:
     mes "\"Great! You can take my turn with searching. You need to find all five of my friends.";
     mes "They're hiding somewhere on the island, you will have to explore to find them. They could be hiding anywhere.\"";
 
-    set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@hideandseekNT_started;
+    set QL_HIDENSEEK, QL_HIDENSEEK | $@hideandseekNT_started;
     goto L_Close;
 
 L_Doing:
@@ -123,7 +120,7 @@ L_Reward:
     mes "[Ayasha]";
     mes "\"Oh, you found them all! Good job! Now it's my turn with searching again. Go and hide!\"";
     getexp @EXP, 0;
-    set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@hideandseekNT_ended;
+    set QL_HIDENSEEK, QL_HIDENSEEK | $@hideandseekNT_ended;
     menu
         "I think I need to do other things now.",L_Next2;
 
@@ -140,7 +137,6 @@ L_Done:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     set @EXP, 0;
     close;
 }
@@ -149,13 +145,11 @@ L_Close:
 {
     set @child_number, 1;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
-
     set @EXP, 15;
 
-    if (@state > 63) goto L_Done;
-    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found1)) goto L_Find;
-    if (@state > 0) goto L_Doing;
+    if (QL_HIDENSEEK > 63) goto L_Done;
+    if ((QL_HIDENSEEK > 0) && !(QL_HIDENSEEK & $@hideandseekNT_found1)) goto L_Find;
+    if (QL_HIDENSEEK > 0) goto L_Doing;
 
     mes "You see a kid hiding behind a box.";
     menu
@@ -185,7 +179,7 @@ L_Find:
     mes "[Latif]";
     mes "\"Hey! Ah, you found me. Well done. But my hiding place wasn't that difficult this time.\"";
     getexp @EXP, 0;
-    set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@hideandseekNT_found1;
+    set QL_HIDENSEEK, QL_HIDENSEEK | $@hideandseekNT_found1;
     mes "\"Here, do you want a candy?\"";
     getitem "Candy", 1;
     goto L_Close;
@@ -203,7 +197,6 @@ L_Done:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     set @EXP, 0;
     close;
 }
@@ -212,13 +205,11 @@ L_Close:
 {
     set @child_number, 2;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
-
     set @EXP, 15;
 
-    if (@state > 63) goto L_Done;
-    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found2)) goto L_Find;
-    if (@state > 0) goto L_Doing;
+    if (QL_HIDENSEEK > 63) goto L_Done;
+    if ((QL_HIDENSEEK > 0) && !(QL_HIDENSEEK & $@hideandseekNT_found2)) goto L_Find;
+    if (QL_HIDENSEEK > 0) goto L_Doing;
 
     mes "[Charda]";
     mes "\"Hello. Psht, be careful. I'm playing hide and seek with Ayasha. You'll draw attention to my hiding place.\"";
@@ -229,7 +220,7 @@ L_Find:
     mes "[Charda]";
     mes "\"Oh! Got me! You're good at this.\"";
     getexp @EXP, 0;
-    set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@hideandseekNT_found2;
+    set QL_HIDENSEEK, QL_HIDENSEEK | $@hideandseekNT_found2;
     mes "She takes something out of her pocket.";
     mes "\"I'm hungry now. Do you want chocolate too?\"";
     getitem "ChocolateBar", 1;
@@ -254,7 +245,6 @@ L_Done:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     set @EXP, 0;
     close;
 }
@@ -263,13 +253,11 @@ L_Close:
 {
     set @child_number, 3;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
-
     set @EXP, 25;
 
-    if (@state > 63) goto L_Done;
-    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found3)) goto L_Find;
-    if (@state > 0) goto L_Doing;
+    if (QL_HIDENSEEK > 63) goto L_Done;
+    if ((QL_HIDENSEEK > 0) && !(QL_HIDENSEEK & $@hideandseekNT_found3)) goto L_Find;
+    if (QL_HIDENSEEK > 0) goto L_Doing;
 
     mes "[Faris]";
     mes "\"Oh, hi there. What are you doing here on the beach?\"";
@@ -287,7 +275,7 @@ L_Find:
     mes "\"You found me! Well done. You look a bit thirsty, here.\"";
     getexp @EXP, 0;
     getitem "CactusDrink", 1;
-    set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@hideandseekNT_found3;
+    set QL_HIDENSEEK, QL_HIDENSEEK | $@hideandseekNT_found3;
     mes "\"It's really cool you're playing with us. I'm sure you have a lot of other things to do.";
     mes "You're an adventurer, right? I want to become an adventurer too when I'm grown up. I'll talk to Aidan then.\"";
     mes "\"Aidan is outside Sorfina's place and you can register there for monster points. That's something the Wizard's Council made up. They reward you for slaying monsters. It's so cool.\"";
@@ -306,7 +294,6 @@ L_Done:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     set @EXP, 0;
     close;
 }
@@ -315,13 +302,12 @@ L_Close:
 {
     set @child_number, 4;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     set @EXP, 15;
 
-    if (@state > 63) goto L_Done;
-    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found4)) goto L_Find;
-    if (@state > 0) goto L_Doing;
+    if (QL_HIDENSEEK > 63) goto L_Done;
+    if ((QL_HIDENSEEK > 0) && !(QL_HIDENSEEK & $@hideandseekNT_found4)) goto L_Find;
+    if (QL_HIDENSEEK > 0) goto L_Doing;
 
     mes "[Rasin]";
     mes "\"The harbor is to the south from here. There you can take a ferry to other places.";
@@ -332,7 +318,7 @@ L_Find:
     mes "[Rasin]";
     mes "\"Ah, you found me. I need to find a better place to hide next time.\"";
     getexp @EXP, 0;
-    set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@hideandseekNT_found4;
+    set QL_HIDENSEEK, QL_HIDENSEEK | $@hideandseekNT_found4;
     goto L_Close;
 
 L_Doing:
@@ -349,7 +335,6 @@ L_Done:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     set @EXP, 0;
     close;
 }
@@ -358,13 +343,12 @@ L_Close:
 {
     set @child_number, 5;
     callfunc "XmasList";
-    set @state, ((QUEST_NorthTulimshar & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     set @EXP, 15;
 
-    if (@state > 63) goto L_Done;
-    if ((@state > 0) && !(QUEST_NorthTulimshar & $@hideandseekNT_found5)) goto L_Find;
-    if (@state > 0) goto L_Doing;
+    if (QL_HIDENSEEK > 63) goto L_Done;
+    if ((QL_HIDENSEEK > 0) && !(QL_HIDENSEEK & $@hideandseekNT_found5)) goto L_Find;
+    if (QL_HIDENSEEK > 0) goto L_Doing;
 
     mes "You see a girl standing behind the wheat. She has a look of intense concentration on her face.";
     menu
@@ -381,7 +365,7 @@ L_Find:
     mes "\"Oh no! You found me! You must be very clever.";
     mes "My friend Sandra is clever too, but she said it's a waste of time to play hide and seek.\"";
     getexp @EXP, 0;
-    set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@hideandseekNT_found5;
+    set QL_HIDENSEEK, QL_HIDENSEEK | $@hideandseekNT_found5;
     goto L_Close;
 
 L_Doing:
@@ -397,7 +381,6 @@ L_Done:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     set @EXP, 0;
     close;
 }
