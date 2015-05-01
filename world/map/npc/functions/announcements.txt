@@ -1,3 +1,176 @@
+//############################################################################
+//#                                                                          #
+//#                             GM scheduled broadcasts                      #
+//#                                                                          #
+//############################################################################
+
+// $@GMSA_STATUS values:
+//      0: Broadcasts not running
+//      1: Broadcasts running
+// $@GMSA_NAME$: the GM/Admin who created the broadcast, if any
+// $@GMSA_MSG$: the message to be broadcasted
+// $@GMSA_MAX: the number of times the broadcast will be performed, if > 0
+// $@GMSA_TICK: broadcast the message every $@GMSA_TICK hours
+// $@GMSA_CURRENT_TICK: internal counter incremented every hour
+
+function|script|SBConfig
+{
+    if ($@GMSA_STATUS)
+        goto L_InfoBroadcast;
+    goto L_PrepareBroadcast;
+
+L_InfoBroadcast:
+    set @ms, (3600000*($@GMSA_TICK - $@GMSA_CURRENT_TICK) - getnpctimer(0, "Stone Board"));
+    callfunc "HumanTime";
+
+    mes "[GM Scheduled Broadcasts Board]";
+    mes $@GMSA_NAME$ + " scheduled the current message, every " + $@GMSA_TICK + " hour(s):";
+    mes $@GMSA_MSG$;
+    next;
+    mes "The next broadcast will happen in " + @time$ + ".";
+    next;
+
+    set @next_broadcast_ts, 0;
+    set @next_broadcast_h, 0;
+    set @next_broadcast_m, 0;
+
+    mes "What do you want to do?";
+    menu
+        "Nothing.", L_Close,
+        "Nothing but... what is this?", L_Help,
+        "Stop broadcasting.", L_StopBroadcast,
+        "Trigger manually the current broadcast.", L_ManualBroadcast;
+
+L_PrepareBroadcast:
+    callsub S_Help;
+    next;
+    mes "There is no broadcast scheduled.";
+    mes "Do you want to create one?";
+    menu
+        "No.", L_Close,
+        "Yes.", L_CreateBroadcast;
+
+L_CreateBroadcast:
+    mes "[GM Scheduled Broadcasts Board]";
+    mes "Enter the message to broadcast:";
+    input $@GMSA_MSG$;
+    if ($@GMSA_MSG$ == "")
+        goto L_InvalidBMsg;
+
+    next;
+    mes "[GM Scheduled Broadcasts Board]";
+    mes "The message will be broadcasted every X hour(s). Enter X:";
+    input $@GMSA_TICK;
+    if ($@GMSA_TICK < 1 || $@GMSA_TICK > 24)
+        goto L_InvalidBroadcastTick;
+
+    next;
+    mes "[GM Scheduled Broadcasts Board]";
+    mes "If you want the message to be broadcasted a limited number of times, enter its value. Keep 0 otherwise:";
+    input $@GMSA_MAX;
+
+    next;
+    mes "[GM Scheduled Broadcasts Board]";
+    if ($@GMSA_MAX == 0)
+        mes "The current message will be broadcasted every " + $@GMSA_TICK + " hour(s):";
+    if ($@GMSA_MAX > 0)
+        mes "The current message will be broadcasted every " + $@GMSA_TICK + " hour(s), up to " + $@GMSA_MAX + " times:";
+    mes $@GMSA_MSG$;
+    next;
+    mes "Is this correct?";
+    menu
+        "No. I'll retry.", L_CreateBroadcast,
+        "No", L_Close,
+        "Yes. Broadcast this. (the first broadcast will happen in " + $@GMSA_TICK + " hour(s).)", L_StartBroadcast,
+        "Yes. Broadcast this, and make an extra broadcast right now.", L_StartBroadcast2;
+
+L_InvalidBMsg:
+    mes "[GM Scheduled Broadcasts Board]";
+    mes "The message can't be empty. Please retry.";
+    goto L_CreateBroadcast;
+
+L_InvalidBroadcastTick:
+    mes "[GM Scheduled Broadcasts Board]";
+    mes "You obviously can't repeat a message every 0 hours. Please retry.";
+    goto L_CreateBroadcast;
+
+L_Help:
+    callsub S_Help;
+    goto L_Close;
+
+S_Help:
+    mes "[GM Scheduled Broadcasts Board]";
+    mes "This board allows a GM to schedule a message to be broadcast every X hours.";
+    mes "Only one broadcast can be scheduled at a time.";
+    return;
+
+L_ManualBroadcast:
+    announce $@GMSA_MSG$, 0;
+    mes "Done.";
+    goto L_Close;
+
+L_StopBroadcast:
+    donpcevent "Stone Board::OnStopBroadcast";
+    mes "Done.";
+    goto L_Close;
+
+L_StartBroadcast2:
+    if ($@GMSA_STATUS == 1)
+        goto L_Abort;
+    announce $@GMSA_MSG$, 0;
+    goto L_StartBroadcast;
+
+L_StartBroadcast:
+    if ($@GMSA_STATUS == 1)
+        goto L_Abort;
+    set $@GMSA_STATUS, 1;
+    set $@GMSA_NAME$, strcharinfo(0);
+    set $@GMSA_CURRENT_TICK, 0;
+    initnpctimer "Stone Board";
+    mes "Done.";
+    goto L_Close;
+
+L_Abort:
+    mes "[GM Scheduled Broadcasts Board]";
+    mes $@GMSA_NAME$ + " has created a scheduled broadcast just before you, hence yours will abort.";
+    goto L_Close;
+
+L_Close:
+    return;
+}
+
+
+017-9,26,28,0|script|Stone Board|32767
+{
+    end;
+
+OnStopBroadcast:
+    goto L_Stop;
+
+L_Stop:
+    stopnpctimer "Stone Board";
+    setnpctimer 0, "Stone Board";
+    set $@GMSA_STATUS, 0;
+    set $@GMSA_NAME$, "";
+    set $@GMSA_MSG$, "";
+    set $@GMSA_TICK, 0;
+    set $@GMSA_MAX, 0;
+    set $@GMSA_CURRENT_TICK, 0;
+    end;
+
+OnTimer3600000:
+    set $@GMSA_CURRENT_TICK, $@GMSA_CURRENT_TICK + 1;
+    setnpctimer 0, "Stone Board";
+    if ($@GMSA_CURRENT_TICK != $@GMSA_TICK)
+        end;
+    announce $@GMSA_MSG$, 0;
+    set $@GMSA_CURRENT_TICK, 0;
+    set $@GMSA_MAX, $@GMSA_MAX - 1;
+    if ($@GMSA_MAX != 0)
+        end;
+    goto L_Stop;
+}
+
 function|script|DisplayMOTD
 {
     if($@MOTD_Disabled || $@MOTD$[0] == "") goto L_Return;
@@ -8,6 +181,26 @@ L_MOTD:
     set @motd_index, @motd_index + 1;
     if($@MOTD$[@motd_index] == "") goto L_Return;
     goto L_MOTD;
+
+L_Return:
+    return;
+}
+
+function|script|getBroadcast
+{
+    if (getmap() == "029-2" && getx() == 22 && gety() == 24) goto L_NewPlayer;
+    goto L_ReturningPlayer;
+
+L_NewPlayer:
+    // todo: show game rules on login (in another PR)
+    //       ... does not look like it work.. the `menu`
+    //           builtin behaves weirdly when on login
+    goto L_Return;
+
+L_ReturningPlayer:
+    if ($@GMSA_STATUS < 1) goto L_Return;
+    announce $@GMSA_MSG$, 3;
+    goto L_Return;
 
 L_Return:
     return;
