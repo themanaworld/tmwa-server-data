@@ -43,26 +43,6 @@ OnInit:
     end;
 }
 
-function|script|TravelerTut
-{
-    //Explain Travelers
-    if(@npcname$ == "") set @npcname$, strnpcinfo(1);
-    mes "["+@npcname$+"]";
-    mes "\"We travelers are found all over the world. Once you have found another traveler, we can create a link and send you between us.\"";
-    next;
-    if (TravelFound & $@tut_bit)
-        goto L_Return;
-    goto L_SetBit;
-
-L_SetBit:
-    set TravelFound, TravelFound | $@tut_bit;
-    goto L_Return;
-
-L_Return:
-    set @npcname$, "";
-    return;
-}
-
 function|script|Traveler
 {
     if(@npcname$ == "") set @npcname$, strnpcinfo(1);
@@ -86,12 +66,20 @@ L_BitTravelSet:
     goto L_Start;
 
 L_TravelTut:
-    callfunc "TravelerTut";
+    mes "["+@npcname$+"]";
+    mes "\"We travelers are found all over the world. Once you have found a traveler at a certain location, you can be sent back there instantly by another traveler.\"";
+    next;
+    if (TravelFound & $@tut_bit)
+        goto L_Main;
+    goto L_SetBit;
+
+L_SetBit:
+    set TravelFound, TravelFound | $@tut_bit;
     goto L_Main;
 
 L_SetTravelBit:
     mes "["+@npcname$+"]";
-    mes "\"Uplink Set. You can now return to this spot for a fee.\"";
+    mes "\"Uplink set. You can now return to this spot for a fee.\"";
     next;
     set TravelFound, TravelFound | @NpcTravelBit;
     goto L_BitTravelSet;
@@ -227,25 +215,25 @@ L_TravelCandor:
 
 L_TravelNo:
     mes "["+@npcname$+"]";
-    mes "\"Perhaps some day you will have the courage to help us.\"";
+    mes "\"Perhaps you will have the courage to help us some day.\"";
     close2;
     goto L_Clearvars;
 
 L_NoMoney:
     mes "["+@npcname$+"]";
-    mes "\"Sorry, but you don't have enough money. Maybe next time.\"";
+    mes "\"I'm sorry, but you don't have enough money. Maybe next time.\"";
     close2;
     goto L_Clearvars;
 
 L_NoFound:
     mes "["+@npcname$+"]";
-    mes "\"Sorry, but you haven't visited a traveler yet at that location. You should talk to a traveler there so you can quickly travel there in the future.\"";
+    mes "\"Sorry, but you haven't visited a traveler yet at that location. You should find and talk to a traveler there so you can quickly return to that location in the future.\"";
     close2;
     goto L_Clearvars;
 
 L_AlreadyThere:
     mes "["+@npcname$+"]";
-    mes "\"Umm, you are already here. Are you sure you know where you are going?\"";
+    mes "\"Uh... You're already here. Are you sure you know where you are going?\"";
     close2;
     goto L_Clearvars;
 
