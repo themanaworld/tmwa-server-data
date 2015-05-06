@@ -8,7 +8,7 @@
     set @FIGHT_CAVE_ANNOUNCE_COST, 3000;
     set @FIGHT_CAVE_ANNOUNCE_COST$, "3,000";
     if ($@FIGHT_CAVE_STATUS == 1) goto L_Enjoy;
-    if ($@FIGHT_CAVE_STATUS >= 2) goto L_Wait;
+    if ($@FIGHT_CAVE_STATUS >= 2 && $@ANNOUNCE_TIME > gettimetick(2)) goto L_Wait;
     mes "[Parua]";
     mes "\"Hello.\"";
     next;
@@ -105,7 +105,7 @@ L_Enjoy:
     goto L_Exit;
 
 L_Wait:
-    set @ms, ($@ANNOUNCE_TIME - gettimetick(2)) * 1000;
+    set @seconds, $@ANNOUNCE_TIME - gettimetick(2);
     callfunc "HumanTime";
     mes "[Parua]";
     mes "\"Be Patient... The fight will start in " + @time$ + ".\"";
@@ -362,6 +362,7 @@ L_CleanUp:
     donpcevent "#CandorAnnouncer::OnCommandTalk";
     areatimer "029-3", 20, 20, 70, 60, 10, "Parua::OnReward";
     set $@FIGHT_CAVE_STATUS, 0;
+    set $@ANNOUNCE_TIME, 0;
     set $@FIGHT_CAVE_PAID, 0;
     set $@FIGHT_CAVE_PLAYER_COUNT, 0;
     set $@FIGHT_CAVE_LEVEL, 1;
