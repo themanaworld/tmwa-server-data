@@ -8,7 +8,6 @@
     set @halloween_npc_id, $@halloween_npc_nikolai;
     callfunc "TrickOrTreat";
 
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
     set @bookpages, ((QUEST_BlueSage & $@Q_BlueSageBookPages_MASK) >> $@Q_BlueSageBookPages_SHIFT);
     set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
     set @material, ((QUEST_BlueSage & $@Q_BlueSageMaterial_MASK) >> $@Q_BlueSageMaterial_SHIFT);
@@ -112,7 +111,7 @@ L_NoStartSlimes:
     goto L_NoSlimes;
 
 L_NoSlimes:
-    if (@investigate > 0)
+    if (QL_BSAGE_INVESTIGATE > 0 && QL_BSAGE_INVESTIGATE < 13)
         goto L_NoStartInvestigate;
     set @choice_idx[@choices_nr], @C_startInvestigate;
     set @choice$[@choices_nr], "How did this all happen?";
@@ -120,7 +119,7 @@ L_NoSlimes:
     goto L_NoStartInvestigate;
 
 L_NoStartInvestigate:
-    if ((@investigate < 2) || (@investigate > 11))
+    if ((QL_BSAGE_INVESTIGATE < 2) || (QL_BSAGE_INVESTIGATE > 11 && QL_BSAGE_INVESTIGATE < 13))
         goto L_NoInvestigate;
     set @choice_idx[@choices_nr], @C_investigate;
     set @choice$[@choices_nr], "I'm trying to find out how that accident could've happened.";
@@ -128,7 +127,7 @@ L_NoStartInvestigate:
     goto L_NoInvestigate;
 
 L_NoInvestigate:
-    if (@investigate != 11)
+    if (QL_BSAGE_INVESTIGATE != 11)
         goto L_NoInvestigate2;
     set @choice_idx[@choices_nr], @C_investigate2;
     set @choice$[@choices_nr], "I told Chief Oskari what I found out about the accident.";
@@ -281,28 +280,7 @@ L_Done:
 
 L_Close:
     set @inventorylist_count, 0;
-    set @investigate, 0;
     set @bookpages, 0;
     set @slimes, 0;
     close;
 }
-
-//048-2,100,106,0|script|Debug|160
-//{
-//    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
-//    set @bookpages, ((QUEST_BlueSage & $@Q_BlueSageBookPages_MASK) >> $@Q_BlueSageBookPages_SHIFT);
-//    set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
-//    set @material, ((QUEST_BlueSage & $@Q_BlueSageMaterial_MASK) >> $@Q_BlueSageMaterial_SHIFT);
-//
-//    mes "QUEST_BlueSage: " + QUEST_BlueSage;
-//    mes "investigate: " + @investigate;
-//    mes "slimes: " + @slimes;
-//    mes "bookpages: " + @bookpages;
-//    mes "material: " + @material;
-//    menu
-//        "reset quest",-,
-//        "close",L_Close;
-//    set QUEST_BlueSage, 0;
-//L_Close:
-//    close;
-//}

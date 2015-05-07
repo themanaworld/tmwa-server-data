@@ -6,7 +6,6 @@
 
 048-2,104,78,0|script|Kullervo|366
 {
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
     set @reed_amount, 20;
     set @reed_exp, 10000;
 
@@ -47,9 +46,9 @@ L_NoItem:
     goto L_Close;
 
 L_Investigate:
-    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
-    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
-    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    if ((QL_BSAGE_INVESTIGATE == 3) || (QL_BSAGE_INVESTIGATE == 4)) goto L_Ask_Visitor;
+    if ((QL_BSAGE_INVESTIGATE == 5) || (QL_BSAGE_INVESTIGATE == 8)) goto L_Ask_Helper;
+    if ((QL_BSAGE_INVESTIGATE == 6) || (QL_BSAGE_INVESTIGATE == 7) || (QL_BSAGE_INVESTIGATE == 9) || (QL_BSAGE_INVESTIGATE == 10)) goto L_Ask_Both;
     goto L_Close;
 
 L_Ask_Visitor:
@@ -73,10 +72,9 @@ L_Visitor:
     mes "\"Oh, yes. There was such a guy, shortly before the accident I think. He sneaked into the workshop several times, sticking his nose into stuff that shouldn't be his business. We had to send him back to the library area at least three times.\"";
     next;
     mes "\"Maybe he was confused, not sure. He talked very strangely.\"";
-    if ((@investigate != 3) && (@investigate != 6) && (@investigate != 9))
+    if ((QL_BSAGE_INVESTIGATE != 3) && (QL_BSAGE_INVESTIGATE != 6) && (QL_BSAGE_INVESTIGATE != 9))
         goto L_Close;
-    set @investigate, @investigate + 1;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, QL_BSAGE_INVESTIGATE + 1;
     goto L_Close;
 
 L_Helper:
@@ -85,14 +83,12 @@ L_Helper:
     mes "And in all these years, I've never seen him messing up anything important. He's a perfectionist. He isn't satisfied with anything less than the best possible result when doing his work.\"";
     next;
     mes "\"I don't understand what went wrong with that spell, but it just has to have another cause than Peetu. I'm worried about him. He must feel very miserable. But I can't leave my duty here.\"";
-    if ((@investigate != 5) && (@investigate != 6) && (@investigate != 7))
+    if ((QL_BSAGE_INVESTIGATE != 5) && (QL_BSAGE_INVESTIGATE != 6) && (QL_BSAGE_INVESTIGATE != 7))
         goto L_Close;
-    set @investigate, @investigate + 3;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, QL_BSAGE_INVESTIGATE + 3;
     goto L_Close;
 
 L_Close:
-    set @investigate, 0;
     set @reed_amount, 0;
     set @reed_exp, 0;
     close;
