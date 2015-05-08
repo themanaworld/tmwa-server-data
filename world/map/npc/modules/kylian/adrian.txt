@@ -1,0 +1,55 @@
+// part of quest given by 021-2/kylian.txt
+// Author: Jenalya
+
+// state 1: player has the task to get the luggage from the harbor
+// state 2: Adrian gave the luggage to the player
+// state 3: player gave luggage to Kylian and Kylian asks who to talk to for the shop license
+
+function|script|Adrian
+{
+    set @state, ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
+
+    mes "[Adrian]";
+    mes "\"Hello. Are you here to pick up some luggage?\"";
+    if (@state == 1)
+        menu
+            "Yes. Kylian sent me to get his luggage.",L_Get,
+            "No.",L_No;
+    menu
+        "No.",L_No;
+L_No:
+    next;
+    mes "[Adrian]";
+    mes "\"Too bad. I'd like to go get a beer, but I have to wait here until all the luggage is picked up.\"";
+    mes "He sighs.";
+    goto L_Close;
+
+L_Get:
+    next;
+    mes "[Adrian]";
+    mes "\"Wonderful! Please show me your ticket.\"";
+    mes "He checks the paper Kylian gave you and then gives you a critical look.";
+    next;
+    getinventorylist;
+    if ((checkweight("LeatherSuitcase", 1) == 0) || (@inventorylist_count == 100))
+        goto L_Inventory;
+    mes "[Adrian]";
+    mes "\"Alright. Here it is. Good luck carrying that thing.\"";
+    mes "Adrain hands you a very heavy suitcase.";
+    getitem "LeatherSuitcase", 1;
+    set @state, 2;
+    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(NIBBLE_5_MASK)) | (@state << NIBBLE_5_SHIFT);
+    goto L_Close;
+
+L_Inventory:
+    mes "[Adrian]";
+    mes "\"The suitcase is rather heavy. No offense, but you don't look like you can carry it.\"";
+    mes "Maybe you should get rid of some of the other stuff you're carrying.\"";
+    goto L_Close;
+
+L_Close:
+    set @state, 0;
+    set @inventorylist_count, 0;
+    close2;
+    return;
+}
