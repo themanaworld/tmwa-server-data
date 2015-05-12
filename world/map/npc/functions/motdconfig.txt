@@ -1,0 +1,39 @@
+function|script|MOTDConfig
+{
+    mes "[MOTD]";
+    mes "lines:";
+    mes "---";
+    set @line, 0;
+    callsub S_Lines;
+    mes "---";
+    mes "Enabled: " + !($@MOTD_Disabled);
+    next;
+    menu
+        "toggle|Toggle MOTD", L_Toggle;
+
+L_Toggle:
+    set $@MOTD_Disabled, !$@MOTD_Disabled;
+    close2;
+    return;
+
+S_Lines:
+    mes @line + ": "+ $@MOTD$[@line];
+    set @line, @line + 1;
+    if(@line != getarraysize($@MOTD$)) goto S_Lines;
+    return;
+}
+
+function|script|DisplayMOTD
+{
+    if($@MOTD_Disabled || $@MOTD$[0] == "") goto L_Return;
+    goto L_MOTD;
+
+L_MOTD:
+    message strcharinfo(0), "##7Server : " + $@MOTD$[@motd_index];
+    set @motd_index, @motd_index + 1;
+    if($@MOTD$[@motd_index] == "") goto L_Return;
+    goto L_MOTD;
+
+L_Return:
+    return;
+}
