@@ -1,0 +1,61 @@
+// all-in-one debug
+// author: meko
+
+function|script|SuperDebug
+{
+    goto L_Main;
+
+L_Main:
+    mes "[Numa]";
+    mes "How may I help you?";
+    next;
+    menu
+        "Announcements", L_StoneBoard,
+        "MOTD", L_MOTD,
+        "Holiday debug", L_Holiday,
+        "Event debug", L_Event;
+        // todo: generic npcs (in a future PR)
+        // todo: map list (in a future PR)
+        // todo: quest log debug (in a future PR)
+
+L_Holiday:
+    if(getgmlevel() < 40) goto L_GM;
+    mes "[Numa]";
+    mes "What holiday do you want to debug?";
+    next;
+    menu
+        "Xmas.", L_XmasDebug,
+        "Halloween.", L_HalloweenDebug;
+
+L_XmasDebug:
+    gmlog strcharinfo(0) + " accessed the Xmas debug.";
+    callfunc "XmasDebug";
+    end;
+
+L_HalloweenDebug:
+    gmlog strcharinfo(0) + " accessed the Halloween debug.";
+    callfunc "HalloweenDebug";
+    end;
+
+L_Event:
+    if(getgmlevel() < 60) goto L_GM;
+    gmlog strcharinfo(0) + " accessed the GM event debug.";
+    callfunc "GmDebug";
+    close;
+
+L_StoneBoard:
+    if (getgmlevel() < 30) goto L_GM;
+    callfunc "SBConfig";
+    close;
+
+L_MOTD:
+    if (getgmlevel() < 40) goto L_GM;
+    callfunc "MOTDConfig";
+    close;
+
+L_GM:
+    mes "[Numa]";
+    mes "I'm awfully sorry.";
+    mes "You do not have the required GM level to perform this action.";
+    close;
+}
