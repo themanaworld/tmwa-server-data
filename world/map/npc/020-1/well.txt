@@ -16,11 +16,7 @@
 
 020-1,99,83,0|script|#Well|400
 {
-    set @Q_MASK, NIBBLE_4_MASK;
-    set @Q_SHIFT, NIBBLE_4_SHIFT;
-    set @Q_status, ((QUEST_Nivalis_state) & @Q_MASK) >> @Q_SHIFT;
-
-    if(@Q_status == 2) goto L_Finished;
+    if(QL_WELL == 2) goto L_Finished;
     set @item_ID, 0;
     setarray @quote_item$, "Yuck! Who has thrown that on me?","Ouch! Who hurts me?","White powder!? What's going on up there?","Ahw! It's raining ","","","";
 
@@ -76,8 +72,7 @@ L_MenuItems1:
             set @quote$, "";
     mes "[Mysterious voice inside the well]";
     mes "\" "+ @quote$ +". So if you can call help for me... please do so!\"";
-    set @Q_status, 1;
-    callsub S_Update_Var;
+    set QL_WELL, 1;
     close;
 
 L_NO_ITEM:
@@ -90,24 +85,14 @@ L_Finished:
 
 L_Close:
     close;
-
-S_Update_Var:
-    set QUEST_Nivalis_state,
-          (QUEST_Nivalis_state & ~(@Q_MASK)
-        | (@Q_status << @Q_SHIFT));
-    return;
 }
 
 020-2,100,28,0|script|Miler|100
 {
-    set @Q_MASK, NIBBLE_4_MASK;
-    set @Q_SHIFT, NIBBLE_4_SHIFT;
-    set @Q_status, ((QUEST_Nivalis_state) & @Q_MASK) >> @Q_SHIFT;
-
     mes "[Miler]";
     mes "\"Hello!\"";
-    if(@Q_status == 2) close;
-    if(@Q_status == 1)
+    if(QL_WELL == 2) close;
+    if(QL_WELL == 1)
         menu
             "Hello.", L_Close,
             "Hello, Can you help me?", L_HELP;
@@ -122,16 +107,9 @@ L_Next:
     mes "[Miler]";
     mes "\"Ho! I'll help him!\"";
     getexp (BaseLevel * 111), 0;
-    set @Q_status, 2;
-    callsub S_Update_Var;
+    set QL_WELL, 2;
     close;
 
 L_Close:
     close;
-
-S_Update_Var:
-    set QUEST_Nivalis_state,
-        (QUEST_Nivalis_state & ~(@Q_MASK)
-      | (@Q_status << @Q_SHIFT));
-    return;
 }

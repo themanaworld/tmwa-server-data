@@ -5,13 +5,8 @@
 
 031-2,29,28,0|script|Angela#house|196
 {
-    set @Q_Nivalis_state_MASK, NIBBLE_5_MASK;
-    set @Q_Nivalis_state_SHIFT, NIBBLE_5_SHIFT;
-
-    set @rescue_Cindy, ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
-
-    if (@rescue_Cindy == 4) goto L_Hello_Again;
-    if (@rescue_Cindy == 3) goto L_Reward;
+    if (QL_CINDY == 4) goto L_Hello_Again;
+    if (QL_CINDY == 3) goto L_Reward;
 
     mes "...";
     goto L_Close;
@@ -30,8 +25,7 @@ L_Reward:
     if (@inventorylist_count == 100)
         goto L_Full_Inv;
     getitem "RockKnife", 1;
-    set @rescue_Cindy, 4;
-    callsub S_Update_Mask;
+    set QL_CINDY, 4;
 
     next;
     mes "\"I hope this will be useful for you.\"";
@@ -87,10 +81,6 @@ L_White:
     goto L_Close;
 
 L_Close:
-    set @Q_Nivalis_state_MASK, 0;
-    set @Q_Nivalis_state_SHIFT, 0;
-    set @rescue_Cindy, 0;
-
     set @dq_level, 0;
     set @dq_cost, 0;
     set @dq_count, 0;
@@ -100,10 +90,4 @@ L_Close:
     set @dq_exp, 0;
     set @dq_return, 0;
     close;
-
-S_Update_Mask:
-    set QUEST_Nivalis_state,
-        (QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
-            | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
-    return;
 }

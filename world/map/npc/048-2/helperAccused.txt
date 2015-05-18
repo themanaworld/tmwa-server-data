@@ -4,17 +4,15 @@
 // Peetu is the person who caused the accident
 // involved investigation subquest
 
-048-2,25,135,0|script|Peetu|366
+048-2,25,135,0|script|Peetu|130
 {
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
-
-    if (@investigate >= 12) goto L_Thank;
-    if (@investigate > 4) goto L_Investigate;
-    if (@investigate > 1) goto L_Query;
-    if (@investigate == 1) goto L_Help;
+    if (QL_BSAGE_INVESTIGATE >= 12 && QL_BSAGE_INVESTIGATE < 13) goto L_Thank;
+    if (QL_BSAGE_INVESTIGATE > 4 && QL_BSAGE_INVESTIGATE < 13) goto L_Investigate;
+    if (QL_BSAGE_INVESTIGATE > 1 && QL_BSAGE_INVESTIGATE < 13) goto L_Query;
+    if (QL_BSAGE_INVESTIGATE == 1) goto L_Help;
 
     mes "You see a rather stressed helper, mumbling to himself.";
-    if (BaseLevel < $@Q_BlueSageMinimumLevel)
+    if (BaseLevel < $@Q_BlueSageMinimumLevel || !QL_BSAGE_INVESTIGATE)
         goto L_Close;
     mes "[Peetu]";
     mes "\"How could this have happened? I don't understand it... I'm sure I did the sealing correctly. Maybe the ingredients... but that doesn't make sense. They're checked regularly and...\"";
@@ -54,8 +52,7 @@ L_Less:
     mes "[Peetu]";
     mes "\"Well... but... I mean... I don't know... ";
     mes "I have an idea! Would you... ahm, would you talk to Chief Oskari for me? And ask him what he plans to do about me? I... I just don't feel capable of doing that myself right now. I'll try to pull myself together in the meanwhile.\"";
-    set @investigate, 1;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, 1;
     goto L_Close;
 
 L_Help:
@@ -106,14 +103,13 @@ L_TextWall:
     next;
     mes "\"I never tried it, because it makes no sense to do that, but theoretically adding some Silk Cocoons could have such an effect. That's pretty basic nature magic.";
     mes "But... how would that have gotten into the ingredients?\"";
-    set @investigate, @investigate + 3;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, QL_BSAGE_INVESTIGATE + 3;
     goto L_Close;
 
 L_Investigate:
     mes "[Peetu]";
     mes "\"Hello. Did you find out anything else yet?\"";
-    if (@investigate != 11)
+    if (QL_BSAGE_INVESTIGATE != 11)
         menu
             "I'm still collecting information.",L_Close;
     if (@inventorylist_count == 100)
@@ -130,8 +126,6 @@ L_ReallyMore:
     next;
     mes "\"It isn't much, but please take these Silk Gloves. We use those when we have to protect our hands, but still need to perform magic.\"";
     getitem "SilkGloves", 1;
-    set @investigate, 12;
-    callfunc "updateBlueSageInvestigate";
     goto L_Close;
 
 L_Thank:
@@ -145,7 +139,6 @@ L_TooMany:
     goto L_Close;
 
 L_Close:
-    set @investigate, 0;
     set @inventorylist_count, 0;
     close;
 }

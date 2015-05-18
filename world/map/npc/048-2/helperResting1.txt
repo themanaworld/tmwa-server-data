@@ -6,7 +6,6 @@
 
 048-2,36,26,0|script|Lenita|363
 {
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
     set @bookpages, ((QUEST_BlueSage & $@Q_BlueSageBookPages_MASK) >> $@Q_BlueSageBookPages_SHIFT);
 
     if (@bookpages == 254) goto L_Thank;
@@ -30,9 +29,9 @@ L_Thank:
     goto L_Investigate;
 
 L_Investigate:
-    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
-    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
-    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    if ((QL_BSAGE_INVESTIGATE == 3) || (QL_BSAGE_INVESTIGATE == 4)) goto L_Ask_Visitor;
+    if ((QL_BSAGE_INVESTIGATE == 5) || (QL_BSAGE_INVESTIGATE == 8)) goto L_Ask_Helper;
+    if ((QL_BSAGE_INVESTIGATE == 6) || (QL_BSAGE_INVESTIGATE == 7) || (QL_BSAGE_INVESTIGATE == 9) || (QL_BSAGE_INVESTIGATE == 10)) goto L_Ask_Both;
     goto L_Close;
 
 L_Ask_Visitor:
@@ -54,10 +53,9 @@ L_Ask_Both:
 L_Visitor:
     mes "[Lenita]";
     mes "\"With a mask? Yeah, I remember. That was a strange guy. He came to visit the library, but he lurked around at the workshop area and they had to send him back to the books.\"";
-    if ((@investigate != 3) && (@investigate != 6) && (@investigate != 9))
+    if ((QL_BSAGE_INVESTIGATE != 3) && (QL_BSAGE_INVESTIGATE != 6) && (QL_BSAGE_INVESTIGATE != 9))
         goto L_Close;
-    set @investigate, @investigate + 1;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, QL_BSAGE_INVESTIGATE + 1;
     goto L_Close;
 
 L_Helper:
@@ -66,7 +64,6 @@ L_Helper:
     goto L_Close;
 
 L_Close:
-    set @investigate, 0;
     set @bookpages, 0;
     close;
 }

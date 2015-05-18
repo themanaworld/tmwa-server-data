@@ -7,7 +7,6 @@
 048-2,131,119,0|script|Kristian|366
 {
     set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
 
     if (@slimes == 255) goto L_Thank;
     if (@slimes > 0) goto L_Progress;
@@ -27,9 +26,9 @@ L_Thank:
     goto L_Investigate;
 
 L_Investigate:
-    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
-    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
-    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    if ((QL_BSAGE_INVESTIGATE == 3) || (QL_BSAGE_INVESTIGATE == 4)) goto L_Ask_Visitor;
+    if ((QL_BSAGE_INVESTIGATE == 5) || (QL_BSAGE_INVESTIGATE == 8)) goto L_Ask_Helper;
+    if ((QL_BSAGE_INVESTIGATE == 6) || (QL_BSAGE_INVESTIGATE == 7) || (QL_BSAGE_INVESTIGATE == 9) || (QL_BSAGE_INVESTIGATE == 10)) goto L_Ask_Both;
     goto L_Close;
 
 L_Ask_Visitor:
@@ -53,10 +52,9 @@ L_Visitor:
     mes "\"Oh, there was such a visitor, yes. Strange guy, and didn't really know how to behave. He sneaked into the workshop area all the time, I think he was rather curious about the things going on there.\"";
     next;
     mes "\"But still, he can't just walk in there, fiddle with the experiments and disturb the helpers doing their work.\"";
-    if ((@investigate != 3) && (@investigate != 6) && (@investigate != 9))
+    if ((QL_BSAGE_INVESTIGATE != 3) && (QL_BSAGE_INVESTIGATE != 6) && (QL_BSAGE_INVESTIGATE != 9))
         goto L_Close;
-    set @investigate, @investigate + 1;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, QL_BSAGE_INVESTIGATE + 1;
     goto L_Close;
 
 L_Helper:
@@ -65,7 +63,6 @@ L_Helper:
     goto L_Close;
 
 L_Close:
-    set @investigate, 0;
     set @slimes, 0;
     close;
 }

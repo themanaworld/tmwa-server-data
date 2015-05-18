@@ -6,7 +6,6 @@
 
 048-2,35,27,0|script|Miro|366
 {
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
     set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
 
     if (@slimes == 255) goto L_Thank;
@@ -29,9 +28,9 @@ L_Thank:
     goto L_Investigate;
 
 L_Investigate:
-    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
-    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
-    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    if ((QL_BSAGE_INVESTIGATE == 3) || (QL_BSAGE_INVESTIGATE == 4)) goto L_Ask_Visitor;
+    if ((QL_BSAGE_INVESTIGATE == 5) || (QL_BSAGE_INVESTIGATE == 8)) goto L_Ask_Helper;
+    if ((QL_BSAGE_INVESTIGATE == 6) || (QL_BSAGE_INVESTIGATE == 7) || (QL_BSAGE_INVESTIGATE == 9) || (QL_BSAGE_INVESTIGATE == 10)) goto L_Ask_Both;
     goto L_Close;
 
 L_Ask_Visitor:
@@ -60,14 +59,12 @@ L_Helper:
     mes "\"Peetu? It was his job to seal away the slimes before the night, right? I have to say I'm really surprised about what happened, because he's a very cautious person. I'd have never guessed that he'd mess up something as important as this.\"";
     next;
     mes "\"If Nikolai's helpers weren't so carefully chosen, I'd think this was some kind of a bad joke from someone.\"";
-    if ((@investigate != 5) && (@investigate != 6) && (@investigate != 7))
+    if ((QL_BSAGE_INVESTIGATE != 5) && (QL_BSAGE_INVESTIGATE != 6) && (QL_BSAGE_INVESTIGATE != 7))
         goto L_Close;
-    set @investigate, @investigate + 3;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, QL_BSAGE_INVESTIGATE + 3;
     goto L_Close;
 
 L_Close:
-    set @investigate, 0;
     set @slimes, 0;
     close;
 }

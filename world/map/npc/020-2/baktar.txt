@@ -2,15 +2,11 @@
 //#== NPC Baktar
 //# Authors: Lien, PjotrOrial
 //# Review: BigCrunch, Mistakes, Jenalya
-//# This NPC has two stages:
+//# This NPC has one stage:
 //#
-//# In the first stage you need to bring 7 different items, but only one of each kind.
+//# you need to bring 7 different items, but only one of each kind.
 //#
-//# In the second stage he tells you what hard life he is living. He will be very aggressive telling you some stuff.
-//# He will send you to kill Scroticular. That npc will be located in the labyrinth caves.
-//# (its a mob actually, to be spawned only, if the players knows his name and his location)
-//#
-//# variables used:
+//# variable used:
 //# @QUEST_Nivalis_state: NIBBLE0, NIBBLE1, NIBBLE2, NIBBLE3:
 //# BYTE0 ( == NIBBLE0 | NIBBLE1)        stores in each bit information if that item was already brought.
 //# bits:
@@ -22,30 +18,10 @@
 //# bit 5        eggs_Item
 //# bit 6        skin_Item
 //# bit 7        bugleg
-//# NIBBLE2      store the progress after the item collecting stage:
-//# =0 he will thank you for bringing all stuff.
-//# =1 talking about his youth
-//# =2 talking, you get the mission to hunt down Scroticular
-//# =3 you get information where Scroticular can be found.
-//# NIBBLE3     a bitmasking nibble for stage 2 again
-//# bit 0  knows the name/location of the opponent
-//# bit 1  killed the ugly opponent
 //#=========================
 020-2,70,61,0|script|Baktar|191
 {
     set @npcname$, "[Baktar]";
-
-    set @Q_MASK, BYTE_0_MASK;
-    set @Q_SHIFT, BYTE_0_SHIFT;
-    set @Q_status, ((QUEST_Nivalis_state) & @Q_MASK) >> @Q_SHIFT;
-
-    set @Q_MASK2, NIBBLE_2_MASK;
-    set @Q_SHIFT2, NIBBLE_2_SHIFT;
-    set @Q_status2, ((QUEST_Nivalis_state) & @Q_MASK2) >> @Q_SHIFT2;
-
-    set @Q_MASK2_BITS, NIBBLE_3_MASK;
-    set @Q_SHIFT2_BITS, NIBBLE_3_SHIFT;
-    set @Q_status2_bits, ((QUEST_Nivalis_state) & @Q_MASK2_BITS) >> @Q_SHIFT2_BITS;
 
     set @BIT_KNOWHIM, 0;
 
@@ -100,7 +76,7 @@ L_Start:
     if(!Sex)
         set @type$, "woman";
 
-    if(@Q_status & (1<<@BIT_KNOWHIM)) goto L_KnowAlready;
+    if(QL_BAKTAR & (1<<@BIT_KNOWHIM)) goto L_KnowAlready;
         mes @npcname$;
         mes "\"Hello, " +  @type$ + ", did you come from Tulimshar? Because you have a nice tan. \"";
     menu
@@ -124,51 +100,50 @@ L_exotic:
 L_startitem:
     setarray @exotic_item$, "", "", "", "", "", "", "";
     set @c, 0;
-    set @Q_status, @Q_status | (1<<@BIT_KNOWHIM);
-    callsub S_Update_Var;
-    if (countitem("DesertHat") < 1 || @Q_status & (1<<@BIT_DESERTHAT) ) goto L_DesertShirt;
+    set QL_BAKTAR, QL_BAKTAR | (1<<@BIT_KNOWHIM);
+    if (countitem("DesertHat") < 1 || QL_BAKTAR & (1<<@BIT_DESERTHAT) ) goto L_DesertShirt;
     set @exotic_item$[@c], "a Desert Hat ?";
     set @menuid[@c], 0;
     set @c, @c + 1;
     goto L_DesertShirt;
 
 L_DesertShirt:
-    if (countitem("DesertShirt") < 1 || @Q_status & (1<<@BIT_DESERTSHIRT) ) goto L_SerfHat;
+    if (countitem("DesertShirt") < 1 || QL_BAKTAR & (1<<@BIT_DESERTSHIRT) ) goto L_SerfHat;
     set @exotic_item$[@c], "a Desert Shirt ?";
     set @menuid[@c], 1;
     set @c, @c + 1;
     goto L_SerfHat;
 
 L_SerfHat:
-    if (countitem("SerfHat") < 1 || @Q_status & (1<<@BIT_SERFHAT) ) goto L_tongue;
+    if (countitem("SerfHat") < 1 || QL_BAKTAR & (1<<@BIT_SERFHAT) ) goto L_tongue;
     set @exotic_item$[@c], "a Serf Hat ?";
     set @menuid[@c], 2;
     set @c, @c + 1;
     goto L_tongue;
 
 L_tongue:
-    if (countitem("MountainSnakeTongue") < 1 || @Q_status & (1<<@BIT_MS_TONGUE)) goto L_egg;
+    if (countitem("MountainSnakeTongue") < 1 || QL_BAKTAR & (1<<@BIT_MS_TONGUE)) goto L_egg;
     set @exotic_item$[@c], "a Mountain Snake Tongue ?";
     set @menuid[@c], 3;
     set @c, @c + 1;
     goto L_egg;
 
 L_egg:
-    if (countitem("MountainSnakeEgg") < 1 || @Q_status & (1<<@BIT_MS_EGG)) goto L_Skin;
+    if (countitem("MountainSnakeEgg") < 1 || QL_BAKTAR & (1<<@BIT_MS_EGG)) goto L_Skin;
     set @exotic_item$[@c], "a Mountain Snake Egg?";
     set @menuid[@c], 4;
     set @c, @c + 1;
     goto L_Skin;
 
 L_Skin:
-    if (countitem("SnakeSkin") < 1 || @Q_status & (1<<@BIT_SNAKESKIN)) goto L_bugleg;
+    if (countitem("SnakeSkin") < 1 || QL_BAKTAR & (1<<@BIT_SNAKESKIN)) goto L_bugleg;
     set @exotic_item$[@c], "a Snake Skin?";
     set @menuid[@c], 5;
     set @c, @c + 1;
     goto L_bugleg;
 
 L_bugleg:
-    if (countitem("BugLeg") < 1 || @Q_status & (1<<@BIT_BUGLEG)) goto L_NeverMind;
+    if (countitem("BugLeg") < 1 || QL_BAKTAR & (1<<@BIT_BUGLEG)) goto L_NeverMind;
     set @exotic_item$[@c], "a Bug Leg?";
     set @menuid[@c], 6;
     set @c, @c + 1;
@@ -203,73 +178,66 @@ L_MenuItems:
     close;
 
 L_DesertHat_Item:
-    if(@Q_status & (1<<@BIT_DESERTHAT)) goto L_havealready;
+    if(QL_BAKTAR & (1<<@BIT_DESERTHAT)) goto L_havealready;
     if (countitem("DesertHat") < 1) goto L_Noitem;
     delitem "DesertHat", 1;
     set Zeny, Zeny + @MONEY_DESERTHAT;
     getexp @XP_DESERTHAT,0;
-    set @Q_status, @Q_status | (1<<@BIT_DESERTHAT);
-    callsub S_Update_Var;
+    set QL_BAKTAR, QL_BAKTAR | (1<<@BIT_DESERTHAT);
     close;
 
 L_DesertShirt_Item:
-    if(@Q_status & (1<<@BIT_DESERTSHIRT)) goto L_havealready;
+    if(QL_BAKTAR & (1<<@BIT_DESERTSHIRT)) goto L_havealready;
     if (countitem("DesertShirt") < 1) goto L_Noitem;
     delitem "DesertShirt", 1;
     set Zeny, Zeny + @MONEY_DESERTSHIRT;
     getexp @XP_DESERTSHIRT,0;
-    set @Q_status, @Q_status | (1<<@BIT_DESERTSHIRT);
-    callsub S_Update_Var;
+    set QL_BAKTAR, QL_BAKTAR | (1<<@BIT_DESERTSHIRT);
     close;
 
 L_SerfHat_Item:
-    if(@Q_status & (1<<@BIT_SERFHAT)) goto L_havealready;
+    if(QL_BAKTAR & (1<<@BIT_SERFHAT)) goto L_havealready;
     if (countitem("SerfHat") < 1) goto L_Noitem;
     delitem "SerfHat", 1;
     set Zeny, Zeny + @MONEY_SERFHAT;
     getexp @XP_SERFHAT,0;
-    set @Q_status, @Q_status | (1<<@BIT_SERFHAT);
-    callsub S_Update_Var;
+    set QL_BAKTAR, QL_BAKTAR | (1<<@BIT_SERFHAT);
     close;
 
 L_tongue_Item:
-    if(@Q_status & (1<<@BIT_MS_TONGUE)) goto L_havealready;
+    if(QL_BAKTAR & (1<<@BIT_MS_TONGUE)) goto L_havealready;
     if (countitem("MountainSnakeTongue") < 1) goto L_Noitem;
     delitem "MountainSnakeTongue", 1;
     set Zeny, Zeny + @MONEY_MS_TONGUE;
     getexp @XP_MS_TONGUE,0;
-    set @Q_status, @Q_status | (1<<@BIT_MS_TONGUE);
-    callsub S_Update_Var;
+    set QL_BAKTAR, QL_BAKTAR | (1<<@BIT_MS_TONGUE);
     close;
 
 L_egg_Item:
-    if(@Q_status & (1<<@BIT_MS_EGG)) goto L_havealready;
+    if(QL_BAKTAR & (1<<@BIT_MS_EGG)) goto L_havealready;
     if (countitem("MountainSnakeEgg") < 1) goto L_Noitem;
     delitem "MountainSnakeEgg", 1;
     set Zeny, Zeny + @MONEY_MS_EGG;
     getexp @XP_MS_EGG,0;
-    set @Q_status, @Q_status | (1<<@BIT_MS_EGG);
-    callsub S_Update_Var;
+    set QL_BAKTAR, QL_BAKTAR | (1<<@BIT_MS_EGG);
     close;
 
 L_skin_Item:
-    if(@Q_status & (1<<@BIT_SNAKESKIN)) goto L_havealready;
+    if(QL_BAKTAR & (1<<@BIT_SNAKESKIN)) goto L_havealready;
     if (countitem("SnakeSkin") < 1) goto L_Noitem;
     delitem "SnakeSkin", 1;
     set Zeny, Zeny + @MONEY_SNAKESKIN;
     getexp @XP_SNAKESKIN,0;
-    set @Q_status, @Q_status | (1<<@BIT_SNAKESKIN);
-    callsub S_Update_Var;
+    set QL_BAKTAR, QL_BAKTAR | (1<<@BIT_SNAKESKIN);
     close;
 
 L_BugLegItem:
-    if(@Q_status & (1<<@BIT_BUGLEG)) goto L_havealready;
+    if(QL_BAKTAR & (1<<@BIT_BUGLEG)) goto L_havealready;
     if (countitem("BugLeg") < 1) goto L_Noitem;
     delitem "BugLeg", 1;
     set Zeny, Zeny + @MONEY_BUGLEG;
     getexp @XP_BUGLEG,0;
-    set @Q_status, @Q_status | (1<<@BIT_BUGLEG);
-    callsub S_Update_Var;
+    set QL_BAKTAR, QL_BAKTAR | (1<<@BIT_BUGLEG);
     close;
 
 L_Noitem:
@@ -284,10 +252,4 @@ L_havealready:
 
 L_Close:
     close;
-
-S_Update_Var:
-    set QUEST_Nivalis_state,
-        (QUEST_Nivalis_state & ~(@Q_MASK)
-        | (@Q_status << @Q_SHIFT));
-    return;
 }

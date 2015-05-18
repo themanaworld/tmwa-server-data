@@ -4,30 +4,60 @@
 // state2 and state3: Cindy is saved Angela invites you to visit them for giving a reward
 // state greater than 3: Angela invites and asks you to bring present boxes
 
-031-1,79,24,0|script|Angela|195
+031-1,81,24,0|script|Debug#Angela|195
 {
-    set @Q_Nivalis_state_MASK, NIBBLE_5_MASK;
-    set @Q_Nivalis_state_SHIFT, NIBBLE_5_SHIFT;
+    mes "Current state: " + QL_CINDY;
+    mes "---";
+    mes "Available states:";
+    mes "0 - can not do the quest.";
+    mes "5 - does not have the quest.";
+    mes "6 - got the quest.";
+    mes "1 - can go rescue cindy.";
+    mes "2 - rescued cindy.";
+    mes "3 - got reward from cindy.";
+    mes "4 - got reward from angela.";
+    menu
+        "set state", L_Set,
+        "close", L_Close;
 
-    set @rescue_Cindy, ((QUEST_Nivalis_state & @Q_Nivalis_state_MASK) >> @Q_Nivalis_state_SHIFT);
+L_Set:
+    input @state;
+    if(@state < 0 || @state > 6) set @state, 0;
+    set QL_CINDY, @state;
+    goto L_Close;
 
+L_Close:
+    close;
+
+OnInit:
+    if (!debug) disablenpc strnpcinfo(0);
+    end;
+}
+
+031-1,79,24,0|script|Angela|195,15,15
+{
     set @minlevel, 70;
 
-    if (@rescue_Cindy > 3) goto L_Please_Visit_Again;
-    if (@rescue_Cindy > 1) goto L_Please_Visit;
-    if (@rescue_Cindy == 1) goto L_Please_Help;
+    if (QL_CINDY == 3) goto L_Please_Visit_Again;
+    if (QL_CINDY > 1 && QL_CINDY < 5) goto L_Please_Visit;
+    if (QL_CINDY == 1) goto L_Please_Help;
 
     mes "[Angela]";
     mes "\"Please, I need help! My little daughter!\"";
     next;
     mes "\"It's terrible, oh my dear child!\"";
     next;
-    if (countitem("ConcentrationPotion") > 0 && BaseLevel >= @minlevel)
+    if (countitem("ConcentrationPotion") > 0 && BaseLevel >= @minlevel && QL_CINDY == 6)
         goto L_Menu_Potion;
 
     menu
         "\"Please calm down and tell me what happened.\"", L_Whining,
         "Leave", L_Close;
+
+OnTouch:
+    if(BaseLevel >= @minlevel && !QL_CINDY)
+        set QL_CINDY, 5;
+    end;
 
 L_Whining:
     mes "[Angela]";
@@ -50,6 +80,13 @@ L_Whining:
     mes "She is crying and sobbing.";
     next;
     mes "It seems she is too upset to tell you anything helpful. If she would just calm down and concentrate a bit...";
+    if(BaseLevel >= @minlevel) goto L_GetQuest;
+    goto L_Close;
+
+L_GetQuest:
+    next;
+    set QL_CINDY, 6;
+    mes "Perhaps you could give her something to help concentrate ?";
     goto L_Close;
 
 L_Menu_Potion:
@@ -75,8 +112,7 @@ L_Calm_Down:
     mes "\"Oh my poor little girl. I'm so worried - what might they do with her? Oh no!\"";
     next;
     mes "\"You look like an adventurer! Please, can you go in that cave and rescue my little Cindy? I beg you for help!\"";
-    set @rescue_Cindy, 1;
-    callsub S_Update_Mask;
+    set QL_CINDY, 1;
     goto L_Close;
 
 L_No_Potion:
@@ -103,15 +139,6 @@ L_Please_Visit_Again:
     goto L_Close;
 
 L_Close:
-    set @Q_Nivalis_state_MASK, 0;
-    set @Q_Nivalis_state_SHIFT, 0;
-    set @rescue_Cindy, 0;
     set @minlevel, 0;
     close;
-
-S_Update_Mask:
-    set QUEST_Nivalis_state,
-        (QUEST_Nivalis_state & ~(@Q_Nivalis_state_MASK))
-            | (@rescue_Cindy << @Q_Nivalis_state_SHIFT);
-    return;
 }

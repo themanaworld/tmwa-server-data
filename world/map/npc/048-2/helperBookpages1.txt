@@ -6,7 +6,6 @@
 
 048-2,104,86,0|script|Ensio|365
 {
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
     set @bookpages, ((QUEST_BlueSage & $@Q_BlueSageBookPages_MASK) >> $@Q_BlueSageBookPages_SHIFT);
 
     set @old_bookpage_exp, 1000;
@@ -98,9 +97,9 @@ L_NoItem:
     goto L_Investigate;
 
 L_Investigate:
-    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
-    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
-    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    if ((QL_BSAGE_INVESTIGATE == 3) || (QL_BSAGE_INVESTIGATE == 4)) goto L_Ask_Visitor;
+    if ((QL_BSAGE_INVESTIGATE == 5) || (QL_BSAGE_INVESTIGATE == 8)) goto L_Ask_Helper;
+    if ((QL_BSAGE_INVESTIGATE == 6) || (QL_BSAGE_INVESTIGATE == 7) || (QL_BSAGE_INVESTIGATE == 9) || (QL_BSAGE_INVESTIGATE == 10)) goto L_Ask_Both;
     goto L_Close;
 
 L_Ask_Visitor:
@@ -125,10 +124,9 @@ L_Visitor:
     next;
     mes "\"He was looking around in the library a while, and then came to ask about our research. He seemed to be particularly interested in our experiments with the slimes.";
     mes "Heh, I wonder what he would've said if he'd have visited us a little bit later. Mh, now that I think about it, the accident with the slimes happened just the night after he was here.\"";
-    if ((@investigate != 3) && (@investigate != 6) && (@investigate != 9))
+    if ((QL_BSAGE_INVESTIGATE != 3) && (QL_BSAGE_INVESTIGATE != 6) && (QL_BSAGE_INVESTIGATE != 9))
         goto L_Close;
-    set @investigate, @investigate + 1;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, QL_BSAGE_INVESTIGATE + 1;
     goto L_Close;
 
 L_Helper:
@@ -137,7 +135,6 @@ L_Helper:
     goto L_Close;
 
 L_Close:
-    set @investigate, 0;
     set @bookpages, 0;
     set @old_bookpage_exp, 0;
     set @new_bookpage_exp, 0;

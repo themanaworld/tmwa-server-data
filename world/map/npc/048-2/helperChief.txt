@@ -4,17 +4,15 @@
 // Chief of the Blue Sage helpers
 // involved in investigation subquest
 
-048-2,146,26,0|script|Oskari|365
+048-2,146,26,0|script|Oskari|134
 {
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
-
-    if (@investigate >= 11) goto L_Goodjob;
-    if (@investigate > 1) goto L_Investigate;
+    if (QL_BSAGE_INVESTIGATE >= 11 && QL_BSAGE_INVESTIGATE < 13) goto L_Goodjob;
+    if (QL_BSAGE_INVESTIGATE > 1 && QL_BSAGE_INVESTIGATE < 13) goto L_Investigate;
 
     mes "[Oskari]";
     mes "\"Hello. Welcome to the residence of the Great Nikolai.";
     mes "You have to excuse me, as you might have heard we're having some trouble at the moment and I, as Chief of Nikolai's helpers, have a lot to do.\"";
-    if (@investigate == 0)
+    if (QL_BSAGE_INVESTIGATE == 0)
         goto L_Close;
     menu
         "Peetu asked me to talk to you about his mishap.",L_Next,
@@ -37,14 +35,13 @@ L_Next:
     mes "Oh, and please tell him that I'm not considering firing him in the current situation. You might need that to calm him down and get meaningful information.\"";
     next;
     mes "\"You should find out if someone observed anything unusual during the time before the accident happened.\"";
-    set @investigate, 2;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, 2;
     goto L_Close;
 
 L_Investigate:
     mes "[Oskari]";
     mes "\"Ah, hello. Did you get an overview over the happenings yet?\"";
-    if (@investigate != 10)
+    if (QL_BSAGE_INVESTIGATE != 10)
         menu
             "I'm still collecting information.",L_Close;
     next;
@@ -78,8 +75,7 @@ L_Continue:
     mes "\"You were a great help! I'll inform Nikolai about your involvement in clarifying this matter.\"";
     next;
     mes "\"And you should also talk with Peetu, I'm sure he'll be relieved to hear about the clarification of this matter too.\"";
-    set @investigate, 11;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, 11;
     goto L_Close;
 
 L_Goodjob:
@@ -123,6 +119,5 @@ L_Conflict:
     goto L_Close;
 
 L_Close:
-    set @investigate, 0;
     close;
 }

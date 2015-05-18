@@ -7,7 +7,6 @@
 048-2,139,99,0|script|Arvo|366
 {
     set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
 
     if (@slimes == 255) goto L_Thank;
     if (@slimes > 0) goto L_Progress;
@@ -34,9 +33,9 @@ L_Thank:
     goto L_Investigate;
 
 L_Investigate:
-    if ((@investigate == 3) || (@investigate == 4)) goto L_Ask_Visitor;
-    if ((@investigate == 5) || (@investigate == 8)) goto L_Ask_Helper;
-    if ((@investigate == 6) || (@investigate == 7) || (@investigate == 9) || (@investigate == 10)) goto L_Ask_Both;
+    if ((QL_BSAGE_INVESTIGATE == 3) || (QL_BSAGE_INVESTIGATE == 4)) goto L_Ask_Visitor;
+    if ((QL_BSAGE_INVESTIGATE == 5) || (QL_BSAGE_INVESTIGATE == 8)) goto L_Ask_Helper;
+    if ((QL_BSAGE_INVESTIGATE == 6) || (QL_BSAGE_INVESTIGATE == 7) || (QL_BSAGE_INVESTIGATE == 9) || (QL_BSAGE_INVESTIGATE == 10)) goto L_Ask_Both;
     goto L_Close;
 
 L_Ask_Visitor:
@@ -62,10 +61,9 @@ L_Visitor:
     mes "\"But when I left him to look at the books on his own, he sneaked over to the workshop area. Visitors are allowed to have a look there, but only if they don't interfere with any research and experiments. But it seems he was being rather disturbing, since they sent them back to the library part.\"";
     next;
     mes "\"I tried to keep an eye on him after that, but when I got distracted by some newly arriving visitor he went over to the workshop again! Usually I enjoy my job, because I like talking to people, but this guy... was a pain, really.\"";
-    if ((@investigate != 3) && (@investigate != 6) && (@investigate != 9))
+    if ((QL_BSAGE_INVESTIGATE != 3) && (QL_BSAGE_INVESTIGATE != 6) && (QL_BSAGE_INVESTIGATE != 9))
         goto L_Close;
-    set @investigate, @investigate + 1;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, QL_BSAGE_INVESTIGATE + 1;
     goto L_Close;
 
 L_Helper:
@@ -74,7 +72,6 @@ L_Helper:
     goto L_Close;
 
 L_Close:
-    set @investigate, 0;
     set @slimes, 0;
     close;
 }

@@ -4,14 +4,27 @@
 // Elias is the janitor of the mansion
 // part of investigation subquest, gives initial hint on the visitor with the mask
 
-048-2,40,41,0|script|Elias|365
+048-2,36,44,0|script|Debug#BlueSage|110
 {
-    set @investigate, ((QUEST_BlueSage & $@Q_BlueSageInvestigate_MASK) >> $@Q_BlueSageInvestigate_SHIFT);
+    mes "QUEST_BlueSage: "+ QUEST_BlueSage;
+    mes "QL_BSAGE_INVESTIGATE: "+ QL_BSAGE_INVESTIGATE;
+    next;
+    menu
+        "set QL_BSAGE_INVESTIGATE", L_Investigate;
 
-    if (@investigate == 11) goto L_Thank;
-    if ((@investigate == 4) || (@investigate == 7) || (@investigate == 10)) goto L_Confirmed;
-    if ((@investigate == 3) || (@investigate == 6) || (@investigate == 9)) goto L_Worry;
-    if (QUEST_BlueSage > 0) goto L_ShortHello;
+L_Investigate:
+    input @state;
+    if(@state < 0 || @state > 14) set @state, 0;
+    set QL_BSAGE_INVESTIGATE, @state;
+    close;
+}
+
+048-2,40,41,0|script|Elias|110,7,6
+{
+    if (QL_BSAGE_INVESTIGATE == 11) goto L_Thank;
+    if ((QL_BSAGE_INVESTIGATE == 4) || (QL_BSAGE_INVESTIGATE == 7) || (QL_BSAGE_INVESTIGATE == 10)) goto L_Confirmed;
+    if ((QL_BSAGE_INVESTIGATE == 3) || (QL_BSAGE_INVESTIGATE == 6) || (QL_BSAGE_INVESTIGATE == 9)) goto L_Worry;
+    if (QUEST_BlueSage > 0 && QL_BSAGE_INVESTIGATE < 13) goto L_ShortHello;
 
     mes "[Elias]";
     mes "\"Welcome to the residence of Nikolai, member of the Sages of Kaizei.\"";
@@ -25,15 +38,22 @@
     mes "[Elias]";
     mes "\"So, if you came because of the library, I'll have to disappoint you, because there isn't much left.";
     mes "Though you look like a skilled adventurer. If you'd like to offer your help that'd be greatly appreciated.\"";
+    if(QL_BSAGE_INVESTIGATE == 13)
+        set QL_BSAGE_INVESTIGATE, 14;
     next;
     mes "\"The library is on the third floor.\"";
     goto L_Close;
+
+OnTouch:
+    if (BaseLevel >= $@Q_BlueSageMinimumLevel && !QL_BSAGE_INVESTIGATE)
+        set QL_BSAGE_INVESTIGATE, 13;
+    end;
 
 L_ShortHello:
     mes "[Elias]";
     mes "\"Welcome back. I heard you're helping with the cleanup efforts in the library.";
     mes "Thank you very much.\"";
-    if ((@investigate != 2) && (@investigate != 5) && (@investigate != 8))
+    if ((QL_BSAGE_INVESTIGATE != 2) && (QL_BSAGE_INVESTIGATE != 5) && (QL_BSAGE_INVESTIGATE != 8))
         goto L_Close;
     menu
         "Can you tell me if there were any unusual visitors before the accident?",L_Next;
@@ -48,8 +68,7 @@ L_Next:
     mes "[Elias]";
     mes "\"Do you think he may have had something to do with the accident? We're a very hospitable house, so I didn't see a reason to deny him the entrance. I mean, his mask might have been a bit unusual, but hey, there could've been many reasons why someone would wear a mask, don't you think?\"";
 
-    set @investigate, @investigate + 1;
-    callfunc "updateBlueSageInvestigate";
+    set QL_BSAGE_INVESTIGATE, QL_BSAGE_INVESTIGATE + 1;
 
     menu
         "Sure, but it's interesting that he was here shortly before the accident.",L_Close,
@@ -76,6 +95,5 @@ L_Thank:
     goto L_Close;
 
 L_Close:
-    set @investigate, 0;
     close;
 }
