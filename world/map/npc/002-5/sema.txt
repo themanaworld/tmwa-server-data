@@ -1,12 +1,8 @@
-// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
-
 002-5,43,91,6|script|Sema|340
 {
-    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
-
-    if (@state >= 28) goto L_Sema_Done;
-    if (@state == 27) goto L_Sema_Happy;
-    if (@state == 26) goto L_Sema_GCM;
+    if (QL_MINEALL >= 28) goto L_Sema_Done;
+    if (QL_MINEALL == 27) goto L_Sema_Happy;
+    if (QL_MINEALL == 26) goto L_Sema_GCM;
 
     mes "[Sema the Miner]";
     mes "\"Hello adventurer. I do not know exactly where, but somewhere in this cave there is a supply chest. And wouldn't you know it!  The archants have eaten all the spare keys for the chest. Go and do what you must do.\"";
@@ -25,8 +21,7 @@ L_Sema_No:
     goto L_Close;
 
 L_Sema_Yes:
-    set @state, 27;
-    callsub S_Update_Var;
+    set QL_MINEALL, 27;
     monster "002-5", 70, 90, "", 1059, 1;
     mes "[Sema the Miner]";
     mes "\"Good luck. To prove you killed it, please bring the Iten it swallowed when it ate the miner. Be careful, there could be more than one.\"";
@@ -40,8 +35,7 @@ L_Sema_Happy:
         goto L_Sema_TooMany;
     delitem "Iten", 1;
     getitem "DesertShirt", 1;
-    set @state, 28;
-    callsub S_Update_Var;
+    set QL_MINEALL, 28;
     set BOSS_POINTS, BOSS_POINTS + 10;
     message strcharinfo(0), "You gain 10 Boss Points giving you a total of " + BOSS_POINTS + ".";
     mes "[Sema the Miner]";
@@ -54,8 +48,7 @@ L_Sema_TooMany:
     goto L_Close;
 
 L_Sema_Not_Happy:
-    set @state, 26;
-    callsub S_Update_Var;
+    set QL_MINEALL, 26;
     heal -Hp, 0;
     mes "A stone falls on your head.";
     goto L_Close;
@@ -66,10 +59,5 @@ L_Sema_Done:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
-    return;
 }

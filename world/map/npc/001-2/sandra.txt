@@ -1,11 +1,7 @@
-// Variables used: nibble 3 of QUEST_SouthTulimshar
-
 001-2,98,88,0|script|Sandra|114
 {
-    set @state, ((QUEST_SouthTulimshar & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-
-    if (@state >= 2) goto L_Done;
-    if (@state == 1) goto L_Progress;
+    if (QL_SANDRA >= 2) goto L_Done;
+    if (QL_SANDRA == 1) goto L_Progress;
 
     mes "[Sandra]";
     mes "\"Hunting monsters for potion ingredients can sometimes be a difficult task.\"";
@@ -67,8 +63,7 @@ L_Req2:
     goto L_Set;
 
 L_Set:
-    set @state, 1;
-    callsub S_Update_Var;
+    set QL_SANDRA, 1;
     mes "\"Please get them for me!\"";
     goto L_Close;
 
@@ -84,8 +79,7 @@ L_Progress:
     delitem "ScorpionStinger", 5;
     getitem "Bow", 1;
     getitem "Arrow", 100;
-    set @state, 2;
-    callsub S_Update_Var;
+    set QL_SANDRA, 2;
     goto L_Close;
 
 L_NotEnough:
@@ -100,7 +94,6 @@ L_Done:
 
 L_Close:
     set @TEMP, 0;
-    set @state, 0;
     close;
 
 L_TooMany:
@@ -108,8 +101,4 @@ L_TooMany:
     mes "[Sandra]";
     mes "\"You don't have room for my reward. I'll wait until you do.\"";
     goto L_Close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_3_MASK) | (@state << NIBBLE_3_SHIFT));
-    return;
 }

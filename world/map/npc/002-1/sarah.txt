@@ -1,11 +1,7 @@
-// Variables used: nibble 1 of QUEST_SouthTulimshar
-
 002-1,93,43,0|script|Sarah|106
 {
-    set @state, ((QUEST_SouthTulimshar & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
-
-    if (@state >= 2) goto L_Done;
-    if (@state == 1) goto L_Progress;
+    if (QL_SARAH >= 2) goto L_Done;
+    if (QL_SARAH == 1) goto L_Progress;
 
     mes "[Sarah]";
     mes "\"Boy, am I hungry or what!\"";
@@ -35,8 +31,7 @@ L_Req0:
     mes "[Sarah]";
     mes "\"Yippee!  Bring me a piece of Cherry Cake, and I'll give you a nice hat!\"";
     next;
-    set @state, 1;
-    callsub S_Update_Var;
+    set QL_SARAH, 1;
     mes "[Sarah]";
     mes "\"Please bring it to me!\"";
     goto L_Close;
@@ -52,8 +47,7 @@ L_Progress:
     if ((@inventorylist_count - (countitem("CherryCake") == 1)) > 99) goto L_TooMany;
     delitem "CherryCake", 1;
     getitem "SerfHat", 1;
-    set @state, 2;
-    callsub S_Update_Var;
+    set QL_SARAH, 2;
     close2;
     emotion EMOTE_TONGUE, strcharinfo(0);
     end;
@@ -72,7 +66,6 @@ L_Done:
 
 L_Close:
     set @TEMP, 0;
-    set @state, 0;
     close;
 
 L_TooMany:
@@ -80,8 +73,4 @@ L_TooMany:
     mes "[Sarah]";
     mes "\"You don't have room for my reward. I'll wait until you do.\"";
     goto L_Close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_1_MASK) | (@state << NIBBLE_1_SHIFT));
-    return;
 }

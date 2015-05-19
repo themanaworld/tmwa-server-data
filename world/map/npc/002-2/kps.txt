@@ -1,25 +1,18 @@
-// KPS (Killian Parcel Service)
-// Author: Wushin
-// Kylian_Timer denotes current quest time & holds last completed.
-// reuse the 4 bits
-// To Mark 4 Different NPCs.
-// setarray $@kps_npc_bits, $@knowYanisNT, $@knowLatoyNT, $@knowWeellosNT, $@knowCasinoNT;
 002-2,120,89,0|script|KPS Manager|191
 {
-    set @state, ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
     set @run, ((QUEST_NorthTulimshar & TWOBIT_8_MASK) >> TWOBIT_8_SHIFT);
     set @run_cnt, ((QUEST_NorthTulimshar & TWOBIT_9_MASK) >> TWOBIT_9_SHIFT);
-    if (@state == 15)
+    if (QL_KYLIAN == 15)
         goto L_SeeKylian;
-    if (@state == 14)
+    if (QL_KYLIAN == 14)
         goto L_RunComplete;
-    if (@state == 13)
+    if (QL_KYLIAN == 13)
         goto L_RunStarted;
-    if (@state == 12) 
+    if (QL_KYLIAN == 12) 
         goto L_JobSelect;
-    if (@state == 11)
+    if (QL_KYLIAN == 11)
         goto L_AcceptJob;
-    if (@state == 10)
+    if (QL_KYLIAN == 10)
         goto L_OfferJob;
     goto L_Default;
 
@@ -41,8 +34,7 @@ L_OfferJob:
         "Nothing.", L_Close;
 
 L_MyName:
-    set @state, 11;
-    callfunc "SetKylianQuest";
+    set QL_KYLIAN, 11;
     mes "\"Ah. Kylian said you would be dropping by.\"";
     next;
     mes "\"I assume you are looking for some work?\"";
@@ -62,15 +54,13 @@ L_StartJob:
     callfunc "SetKylianRun";
     set @run_cnt, 0;
     callfunc "SetKylianRunCnt";
-    set @state, 12;
-    callfunc "SetKylianQuest";
+    set QL_KYLIAN, 12;
     goto L_JobSelect;
 
 L_StartJobAgain:
     set @run, 0;
     callfunc "SetKylianRun";
-    set @state, 12;
-    callfunc "SetKylianQuest";
+    set QL_KYLIAN, 12;
     goto L_JobSelect;
 
 L_JobSelect:
@@ -93,8 +83,7 @@ L_JobInfo:
         "I need a break.", L_Close;
 
 L_StartRun:
-    set @state, 13;
-    callfunc "SetKylianQuest";
+    set QL_KYLIAN, 13;
     set @run, @rand_quest;
     callfunc "SetKylianRun";
     set Kylian_Timer, gettimetick(2);
@@ -128,8 +117,7 @@ L_KylianReward:
     set Zeny, Zeny + $@delivery_money;
     getexp ($@delivery_exp_mod * BaseLevel), 0;
     callfunc "SetKylianRun";
-    set @state, 15;
-    callfunc "SetKylianQuest";
+    set QL_KYLIAN, 15;
     mes "[" + $@delivery_money + " money]";
     mes "[" + ($@delivery_exp_mod * BaseLevel) + " experience points]";
     next;

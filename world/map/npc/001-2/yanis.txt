@@ -4,8 +4,6 @@
 001-2,31,21,0|script|Yanis|107
 {
     set QUEST_NorthTulimshar, QUEST_NorthTulimshar | $@knowYanisNT;
-    set @kylian, ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
-    set @imec, ((QUEST_NorthTulimshar & TWOBIT_4_MASK) >> TWOBIT_4_SHIFT);
     set @halloween_npc_id, $@halloween_npc_yanis;
     callfunc "TrickOrTreat";
 
@@ -15,7 +13,7 @@ L_Base_Menu:
 
     mes "[Yanis]";
     mes "\"Welcome. I'm handling issues with trading licenses for the shop owners in Tulimshar. Can I help you?\"";
-    if (@imec != 1)
+    if (QL_IMEC != 1)
         menu
             "Nothing right now.",L_BeforeClose;
     menu
@@ -29,19 +27,16 @@ L_Next:
     next;
     mes "[Yanis]";
     mes "\"Here you have a letter of acknowledgement. You can bring that back to Imec. We will have a look at his case.\"";
-    set @imec, 2;
-    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(TWOBIT_4_MASK)) | (@imec << TWOBIT_4_SHIFT);
+    set QL_IMEC, 2;
     goto L_BeforeClose;
 
 L_BeforeClose:
-    if (@kylian != 3)
+    if (QL_KYLIAN != 3)
         goto L_Close;
     next;
     mes "You think that this is the person Kylian needs to talk to. You should tell him.";
     goto L_Close;
 
 L_Close:
-    set @imec, 0;
-    set @kylian, 0;
     close;
 }

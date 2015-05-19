@@ -1,13 +1,8 @@
-//Sandstorm mine trigger 3 Trigger 002-4 98,42 (127)
-// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
-
 002-4,91,99,0|script|Button#mine-3|400,0,0
 {
-    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
-
-    if (@state == 24) goto L_Trigger_Wrong_3;
-    if (@state == 23) goto L_Trigger_3;
-    if (@state == 22) goto L_Trigger_Wrong_3;
+    if (QL_MINEALL == 24) goto L_Trigger_Wrong_3;
+    if (QL_MINEALL == 23) goto L_Trigger_3;
+    if (QL_MINEALL == 22) goto L_Trigger_Wrong_3;
 
     mes "There is a large button on the ground. A key hole appears on the button.";
     goto L_Close;
@@ -20,14 +15,12 @@ L_Trigger_Wrong_3:
         "Do nothing.", L_Nothing_3;
 
 L_Right_Wrong_3:
-    set @state, 22;
-    callsub S_Update_Var;
+    set QL_MINEALL, 22;
     mes "You turn the key right.";
     goto L_Close;
 
 L_Left_Wrong_3:
-    set @state, 22;
-    callsub S_Update_Var;
+    set QL_MINEALL, 22;
     mes "You turn the key left.";
     goto L_Close;
 
@@ -39,14 +32,12 @@ L_Trigger_3:
         "Do nothing.", L_Nothing_3;
 
 L_Right_3:
-    set @state, 22;
-    callsub S_Update_Var;
+    set QL_MINEALL, 22;
     mes "You turn the key right.";
     goto L_Close;
 
 L_Left_3:
-    set @state, 24;
-    callsub S_Update_Var;
+    set QL_MINEALL, 24;
     mes "You turn the key left. A clicking sound echoes throughout the mine.";
     goto L_Close;
 
@@ -55,10 +46,5 @@ L_Nothing_3:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
-    return;
 }

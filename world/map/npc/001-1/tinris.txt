@@ -1,26 +1,5 @@
-// Anwar needs a magic fertilizer for his field
-// Quest uses Nibble 3 of QUEST_NorthTulimshar
-// Author: Jenalya
-// state 1: Anwar sent to Tinris for help to get a magic fertilizer
-// state 2: Tinris asked for chocolate cake as present for his girlfriend
-// state 3: Tinris asked for ingredients for the fertilizer
-// state 4: Tinris gave you the fertilizer
-// state 5: Anwar tried it out and it doesn't work well, sent you back to Tinris
-// state 6: Tinris asked for more ingredients for a new try
-// state 7: Tinris says it's really hard, gives you the fertilizer and tells you to ask Eomie to cast a spell on it
-// state 8: Eomie sends you to get some stuff so she can interrupt her spell on the spot of grass
-// state 9: Eomie casted a spell on the fertilizer
-// state 10: Anwar used it and it worked. he asks you to help him preparing a thank-you-gift for each Tinris and Eomis
-// state 11: Anwar asked to bring present to Tinris
-// state 12: gave present to Tinris
-// state 13: Anwar asked to bring present to Eomie
-// state 14: gave present to Eomie
-// state 15: reported back to Anwar and done
-
 001-1,69,29,0|script|Tinris|160
 {
-    set @state, ((QUEST_NorthTulimshar & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-
     set @cake_exp, 50;
     set @sweater_exp, 400;
 
@@ -34,19 +13,19 @@
     set @ash_amount2, 2;
     set @cactusp_amount, 1;
 
-    if (@state >= 12) goto L_Done;
-    if (@state == 11) goto L_GiveGift;
-    if (@state == 9) goto L_FertilizerDone;
-    if (@state >= 7) goto L_Eomie;
-    if (@state == 6) goto L_SecondTry;
-    if (@state >= 4) goto L_FirstTryDone;
-    if (@state == 3) goto L_FirstTry;
-    if (@state == 2) goto L_Annual;
+    if (QL_ANWAR >= 12) goto L_Done;
+    if (QL_ANWAR == 11) goto L_GiveGift;
+    if (QL_ANWAR == 9) goto L_FertilizerDone;
+    if (QL_ANWAR >= 7) goto L_Eomie;
+    if (QL_ANWAR == 6) goto L_SecondTry;
+    if (QL_ANWAR >= 4) goto L_FirstTryDone;
+    if (QL_ANWAR == 3) goto L_FirstTry;
+    if (QL_ANWAR == 2) goto L_Annual;
 
     mes "[Tinris]";
     mes "\"This is a magic school. I'm a student here and focus on ways to magically enhance growth of plants.";
     mes "That topic is very important in a desert area.\"";
-    if (@state != 1)
+    if (QL_ANWAR != 1)
         goto L_Close;
     menu
         "The farmer Anwar sent me to ask for exactly that! Can you give me something for his field?",L_Next;
@@ -59,11 +38,10 @@ L_Next:
     mes "Please go to the bakery and buy a Chocolate Cake for me. She loves Chocolate Cakes.\"";
     next;
     mes "\"When I have a present for her I can focus on creating some magic fertilizer.\"";
-    set @state, 2;
-    callsub S_Update_Mask;
+    set QL_ANWAR, 2;
     goto L_Close;
 
-L_Annual: // @state == 2
+L_Annual: // QL_ANWAR == 2
     mes "[Tinris]";
     mes "\"Hello, did you get the Chocolate Cake for my girlfriend? After that I can focus on creating some magic fertilizer for you.\"";
     menu
@@ -75,8 +53,7 @@ L_FreshFrom:
         goto L_NoItem;
     delitem "ChocolateCake", 1;
     getexp @cake_exp, 0;
-    set @state, 3;
-    callsub S_Update_Mask;
+    set QL_ANWAR, 3;
     mes "[Tinris]";
     mes "\"Oh, thank you! You saved me!";
     mes "All right, now we can start with the magic fertilizer.\"";
@@ -84,7 +61,7 @@ L_FreshFrom:
     goto L_FirstTry;
 
 L_FirstTry:
-    // @state == 3
+    // QL_ANWAR == 3
     mes "[Tinris]";
     mes "\"You need to bring me some ingredients.";
     mes "The ingredients are " + @slime_amount1 + " Maggot Slimes, " + @bugleg_amount1 + " Bug Legs, " + @stinger_amount1 + " Scorpion Stingers and " + @ash_amount1 + " Piles of Ash.\"";
@@ -99,8 +76,7 @@ L_Continue:
     delitem "BugLeg", @bugleg_amount1;
     delitem "ScorpionStinger", @stinger_amount1;
     delitem "PileOfAsh", @ash_amount1;
-    set @state, 4;
-    callsub S_Update_Mask;
+    set QL_ANWAR, 4;
     mes "Tinris takes the things and starts to mix them together while mumbling some invocations.";
     misceffect sfx_magic_nature;
     next;
@@ -110,21 +86,20 @@ L_Continue:
     mes "He gives you a bottle with the magic fertilizer. You put it away in a separate pocket, so it doesn't get mixed with your inventory.";
     goto L_Close;
 
-L_FirstTryDone: // @state >= 4 but below 6
+L_FirstTryDone: // QL_ANWAR >= 4 but below 6
     mes "[Tinris]";
     mes "\"Bring the fertilizer to Anwar and let me know if it worked.\"";
-    if (@state != 5)
+    if (QL_ANWAR != 5)
         goto L_Close;
     menu
         "I did, the plants went brown and shriveled.",L_More;
 
 L_More:
-    set @state, 6;
-    callsub S_Update_Mask;
+    set QL_ANWAR, 6;
     goto L_SecondTry;
 
 L_SecondTry:
-    // @state == 6
+    // QL_ANWAR == 6
     mes "[Tinris]";
     mes "\"Oh no! All right, we need to do another try.";
     mes "Bring me " + @slime_amount2 + " Maggot Slimes, " + @bugleg_amount2 + " Bug Legs, " + @stinger_amount2 + " Scorpion Stingers, " + @ash_amount2 + " Piles of Ash and " + @cactusp_amount + " Cactus Potion.\"";
@@ -140,8 +115,7 @@ L_HereItIs:
     delitem "ScorpionStinger", @stinger_amount2;
     delitem "PileOfAsh", @ash_amount2;
     delitem "CactusPotion", @cactusp_amount;
-    set @state, 7;
-    callsub S_Update_Mask;
+    set QL_ANWAR, 7;
     mes "Tinris takes the things and starts to mix and mumble again.";
     misceffect sfx_magic_nature;
     next;
@@ -156,19 +130,19 @@ L_HereItIs:
     goto L_Close;
 
 L_Eomie:
-    // @state >= 7 but below 9
+    // QL_ANWAR >= 7 but below 9
     mes "[Tinris]";
     mes "\"I did the best I could, but it seems I'm not experienced enough to cast the spells correctly. Better ask Professor Eomie for help.\"";
     goto L_Close;
 
 L_FertilizerDone:
-    // @state == 9
+    // QL_ANWAR == 9
     mes "[Tinris]";
     mes "\"I heard Eomie cast the spell? I really hope it'll work this time. Bring the magic fertilizer to Anwar now.\"";
     goto L_Close;
 
 L_GiveGift:
-    // @state == 11
+    // QL_ANWAR == 11
     mes "[Tinris]";
     mes "\"Ah, did Anwar try the new fertilizer?\"";
     menu
@@ -180,14 +154,13 @@ L_ItWorksGreat:
         goto L_NoItem;
     delitem "GreenVNeckSweater", 1;
     getexp @sweater_exp, 0;
-    set @state, 12;
-    callsub S_Update_Mask;
+    set QL_ANWAR, 12;
     mes "[Tinris]";
     mes "\"Hey, that's really nice. Tell him my thanks.\"";
     goto L_Close;
 
 L_Done:
-    // @state >= 12
+    // QL_ANWAR >= 12
     mes "[Tinris]";
     mes "\"My girlfriend was delighted with the Chocolate Cake and Professor Eomie was happy with my work on the magic fertilizer.\"";
     mes "He twinkles.";
@@ -201,7 +174,6 @@ L_NoItem:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     set @slime_amount1, 0;
     set @slime_amount2, 0;
     set @bugleg_amount1, 0;
@@ -212,8 +184,4 @@ L_Close:
     set @ash_amount2, 0;
     set @cactusp_amount, 0;
     close;
-
-S_Update_Mask:
-    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(NIBBLE_3_MASK)) | (@state << NIBBLE_3_SHIFT);
-    return;
 }

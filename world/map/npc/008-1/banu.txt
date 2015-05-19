@@ -1,18 +1,12 @@
-// Old woman working on a field, asks the player to get her some water
-// after that she asks for a knife
-// Using bit 10 and 11 of QUEST_NorthTulimshar (second half of nibble 2)
-// author: Jenalya
-
 008-1,70,42,0|script|Banu|154
 {
-    set @state, ((QUEST_NorthTulimshar & TWOBIT_5_MASK) >> TWOBIT_5_SHIFT);
     set @EXP, 100;
     set @money_water, 250;
     set @money_knife, 100;
 
-    if (@state >= 3) goto L_Done;
-    if (@state == 2) goto L_Knife;
-    if (@state == 1) goto L_Water;
+    if (QL_BANU >= 3) goto L_Done;
+    if (QL_BANU == 2) goto L_Knife;
+    if (QL_BANU == 1) goto L_Water;
 
     mes "[Banu]";
     mes "\"Ah, hello. You've come at just the right moment. The field work is hard and the sun is burning.";
@@ -30,8 +24,7 @@ L_Next:
     mes "[Banu]";
     mes "\"Here is my Empty Bottle. There is a well right over there at Hurnscald.\"";
     getitem "EmptyBottle", 1;
-    set @state, 1;
-    callsub S_Update_Mask;
+    set QL_BANU, 1;
     goto L_Close;
 
 L_Water:
@@ -44,8 +37,7 @@ L_Water:
     mes "She grabs the Bottle of Water and drinks.";
     getexp @EXP, 0;
     set Zeny, Zeny + @money_water;
-    set @state, 2;
-    callsub S_Update_Mask;
+    set QL_BANU, 2;
     mes "[Banu]";
     mes "\"Ah, that's refreshing. Thank you. You're a good kid. Have this for your expenses.";
     mes "Maybe you can do me another favor?\"";
@@ -67,8 +59,7 @@ L_Next1:
     delitem "Knife", 1;
     getexp @EXP, 0;
     set Zeny, Zeny + @money_knife;
-    set @state, 3;
-    callsub S_Update_Mask;
+    set QL_BANU, 3;
     mes "[Banu]";
     mes "\"Thank you! You're a darling. Please take this for your effort.\"";
     goto L_Close;
@@ -102,11 +93,6 @@ L_FullInv:
 L_Close:
     set @inventorylist_count, 0;
     set @EXP, 0;
-    set @state, 0;
     set @rand, 0;
     close;
-
-S_Update_Mask:
-    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(TWOBIT_5_MASK)) | (@state << TWOBIT_5_SHIFT);
-    return;
 }

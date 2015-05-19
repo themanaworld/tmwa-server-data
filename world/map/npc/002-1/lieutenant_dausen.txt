@@ -1,28 +1,22 @@
-// Lieutenant in charge of monitoring the monster threat surrounding the city.
-// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
-
 002-1,63,67,0|script|Lieutenant Dausen|122
 {
-    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
-
-    if (@state == 21) goto L_LD_Key;
-    if (@state == 7) goto L_LD_Miners;
-    if (@state == 6) goto L_LD_Orders;
-    if (@state == 5) goto L_LD_Nickos_Waits;
-    if (@state == 4) goto L_LD_Nickos;
-    if (@state == 3) goto L_LD_Waits;
-    if (@state == 2) goto L_LD_Woe_Is_Me;
-    if (@state == 1) goto L_LD_Drinks;
+    if (QL_MINEALL == 21) goto L_LD_Key;
+    if (QL_MINEALL == 7) goto L_LD_Miners;
+    if (QL_MINEALL == 6) goto L_LD_Orders;
+    if (QL_MINEALL == 5) goto L_LD_Nickos_Waits;
+    if (QL_MINEALL == 4) goto L_LD_Nickos;
+    if (QL_MINEALL == 3) goto L_LD_Waits;
+    if (QL_MINEALL == 2) goto L_LD_Woe_Is_Me;
+    if (QL_MINEALL == 1) goto L_LD_Drinks;
 
     mes "[Lieutenant Dausen]";
     mes "\"Hello. I am Lieutenant Dausen. I monitor the monster threat around the city to ensure the safety of its citizens.\"";
-    if (@state)
+    if (QL_MINEALL)
         goto L_Close;
     goto L_LD_Start;
 
 L_LD_Start:
-    set @state, 1;
-    callsub S_Update_Var;
+    set QL_MINEALL, 1;
     next;
     mes "\"Out here in the desert, it sure does get hot!  My men and I get thirsty rather quickly. Cactus Drinks are our favourite; if you can get some for us, we'd surely appreciate your effort. About 10 would do.\"";
     goto L_Close;
@@ -33,8 +27,7 @@ L_LD_Drinks:
     getinventorylist;
     if (@inventorylist_count - (countitem("CactusDrink") == 10) > 99)
         goto L_LD_TooMany;
-    set @state, 2;
-    callsub S_Update_Var;
+    set QL_MINEALL, 2;
     delitem "CactusDrink", 10;
     getitem "Boots", 1;
     mes "[Lieutenant Dausen]";
@@ -65,8 +58,7 @@ L_LD_Woe_Is_Me:
         "Bye-bye.", L_LD_NoHelp;
 
 L_LD_Help:
-    set @state, 3;
-    callsub S_Update_Var;
+    set QL_MINEALL, 3;
     mes "[Lieutenant Dausen]";
     mes "\"Oh!  Would you?  You are ever most helpful!  Could you let Stewen know first?  I'm the most worried about the monsters from the eastern desert and he should know first to hold his post. Come back to me after you see him. Hope to hear from you soon!\"";
     goto L_Close;
@@ -82,8 +74,7 @@ L_LD_Waits:
      goto L_Close;
 
 L_LD_Nickos:
-    set @state, 5;
-    callsub S_Update_Var;
+    set QL_MINEALL, 5;
     mes "[Lieutenant Dausen]";
     mes "\"Thanks for letting Stewen know. Can you now tell Nickos to hold his post too?  He guards the mine to the south, monitoring the monster threat and protecting the miners when he can.\"";
     goto L_Close;
@@ -94,8 +85,7 @@ L_LD_Nickos_Waits:
     goto L_Close;
 
 L_LD_Orders:
-    set @state, 7;
-    callsub S_Update_Var;
+    set QL_MINEALL, 7;
     set Zeny, Zeny + 500;
     mes "[Lieutenant Dausen]";
     mes "\"Thank you for clearing up the orders to my men!  Here's some gold for your efforts.\"";
@@ -111,17 +101,11 @@ L_LD_Miners:
     goto L_Close;
 
 L_LD_Key:
-    set @state, 22;
-    callsub S_Update_Var;
+    set QL_MINEALL, 22;
     mes "[Lieutenant Dausen]";
     mes "\"Oh, Naem lost his key?  Here, take this spare. It should help you get into the underground palace.\"";
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
-    return;
 }

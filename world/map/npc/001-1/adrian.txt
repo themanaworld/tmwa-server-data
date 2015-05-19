@@ -1,17 +1,8 @@
-// part of quest given by 021-2/kylian.txt
-// Author: Jenalya
-
-// state 1: player has the task to get the luggage from the harbor
-// state 2: Adrian gave the luggage to the player
-// state 3: player gave luggage to Kylian and Kylian asks who to talk to for the shop license
-
 001-1,113,64,0|script|Adrian|213
 {
-    set @state, ((QUEST_NorthTulimshar & NIBBLE_5_MASK) >> NIBBLE_5_SHIFT);
-
     mes "[Adrian]";
     mes "\"Hello. Are you here to pick up some luggage?\"";
-    if (@state == 1)
+    if (QL_KYLIAN == 1)
         menu
             "Yes. Kylian sent me to get his luggage.",L_Get,
             "No.",L_No;
@@ -37,8 +28,7 @@ L_Get:
     mes "\"Alright. Here it is. Good luck carrying that thing.\"";
     mes "Adrain hands you a very heavy suitcase.";
     getitem "LeatherSuitcase", 1;
-    set @state, 2;
-    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(NIBBLE_5_MASK)) | (@state << NIBBLE_5_SHIFT);
+    set QL_KYLIAN, 2;
     goto L_Close;
 
 L_Inventory:
@@ -48,7 +38,6 @@ L_Inventory:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     set @inventorylist_count, 0;
     close;
 }
