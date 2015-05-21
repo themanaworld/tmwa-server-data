@@ -55,6 +55,11 @@ L_Tut:
 L_Carpet:
     mes "[Sorfina]";
     mes "\"Try to take a few steps and walk to that carpet over there.";
+    next;
+    npcaction 2, "#Carpet";
+    mapmask getmask() | 4;
+    next;
+    npcaction 3;
     mes "Press [###keyMoveUp;] to move up, press [###keyMoveDown;] to move down, ";
     mes "press [###keyMoveLeft;] to move left, press [###keyMoveRight;] to move right ";
     mes " or click on the place you want to go to.\"";
@@ -63,8 +68,14 @@ L_Carpet:
 
 L_Dresser:
     mes "[Sorfina]";
+    mes "\"You should get dressed now.\"";
+    next;
+    npcaction 2, "Dresser#tutorial";
+    mapmask getmask() | 32;
     mes "\"In that dresser there are some clothes you can wear.\"";
     mes "\"To interact with things in your environment or talk to NPCs you can either click on it or press [###keyTargetNPC;] to focus and [###keyTalk;] to talk/activate.\"";
+    next;
+    npcaction 3;
     mes "\"Now get the clothes out of the dresser.\"";
     goto L_Close;
 
@@ -94,6 +105,7 @@ L_Clothes:
     mes "She digs in her pocket for a moment.";
     mes "\"And here is some money for you. Don't spend it all in one place.";
     mes "Now go help Tanisha downstairs.\"";
+    mapmask getmask() | 8;
     set Zeny, Zeny + 30;
     set QL_BEGIN, 4;
     goto L_Close;
@@ -253,15 +265,20 @@ OnTouch:
     goto L_Start;
 }
 
-029-2,33,27,0|script|#Carpet|32767,1,1
+029-2,33,27,0|script|#Carpet|127,1,1
 {
     if (QL_BEGIN != 1)
         end;
+    mapmask getmask();
     mes "[Sorfina]";
     mes "\"You should get dressed now.\"";
+    next;
+    npcaction 2, "Dresser#tutorial";
+    mapmask getmask() | 16;
     mes "\"In that dresser there are some clothes you can wear.\"";
     mes "\"To interact with things in your environment or talk to NPCs you can either click on it or press N to focus and T to talk/activate.\"";
     next;
+    npcaction 3;
     mes "\"Now get the clothes out of the dresser.\"";
     set QL_BEGIN, 2;
     close;
@@ -284,6 +301,7 @@ L_Walk:
     close;
 
 L_Shirt:
+    mapmask getmask();
     mes "You take a simple Cotton Shirt and some very worn-out Ragged Shorts out of the dresser.";
     getitem "CottonShirt", 1;
     getitem "RaggedShorts", 1;
@@ -308,6 +326,7 @@ L_CloseDis:
 {
     if (QL_BEGIN < 4)
         goto L_Block;
+    mapmask getmask();
     warp "029-2", 112, 85;
     end;
 
