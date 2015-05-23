@@ -26,7 +26,7 @@
 
     if ($@BRODOMIR_PVP_STATUS == 2)
         goto L_Alreadystarted;
-    if ($@BRODOMIR_PVP_STATUS == 1)
+    if ($@BRODOMIR_PVP_STATUS == 1 && $@BRODOMIR_START_TIME > gettimetick(2))
         goto L_Wait;
     mes "[Brodomir]";
     mes "\"Hi Warrior.\"";
@@ -132,6 +132,7 @@ L_Go:
     set $@BRODOMIR_ITEM_AMOUNT, @brodomir_item_amount;
     set $@BRODOMIR_MONEY, @brodomir_money;
     set $@brodomir_delay_seconds, 600;
+    set $@BRODOMIR_START_TIME, gettimetick(2) + $@brodomir_delay_seconds;
     set $@BRODOMIR_PVP_STATUS, 1;
     announce "Brodomir : In "+$@brodomir_delay_seconds/60+" minutes, I will start a PvP tournament, if at least 3 fighters are present. Make your way in Hurnscald Underground Caves!", 0;
     if ($@BRODOMIR_ITEM_AMOUNT > 0)
@@ -140,13 +141,12 @@ L_Go:
         announce "Brodomir : The winner will receive " + $@BRODOMIR_MONEY + "GP and additionally 150GP per fighter.", 0;
     mes "[Brodomir]";
     mes "\"In "+$@brodomir_delay_seconds/60+" minutes I will bring you all to the PvP cave. If there are less than 3 players here the event will not start and your money will be lost.\"";
-    set $@BRODOMIR_START_TIME, gettimetick(2) + $@brodomir_delay_seconds;
     set $@brodomir_delay_seconds, 0;
     initnpctimer;
     goto L_Close;
 
 L_Wait:
-    set @ms, ($@BRODOMIR_START_TIME - gettimetick(2)) * 1000;
+    set @seconds, $@BRODOMIR_START_TIME - gettimetick(2);
     callfunc "HumanTime";
     mes "[Brodomir]";
     mes "\"Just a little longer. I will bring you there in " + @time$ + ".\"";
