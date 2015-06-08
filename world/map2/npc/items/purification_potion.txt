@@ -1,0 +1,28 @@
+// This is the function to use the PurificationPotion
+
+function|script|usePurificationPotion
+{
+    if (isat("011-1", 88,67))
+        goto L_Wyara_Pond;
+    goto L_NoUse;
+
+L_NoUse:
+    message strcharinfo(0), "You don't know what to do with this.";
+    getitem "PurificationPotion", 1;
+    return;
+
+L_Wyara_Pond:
+    set @Q_MASK, NIBBLE_2_MASK;
+    set @Q_SHIFT, NIBBLE_2_SHIFT;
+    set @Q_status, (QUEST_MAGIC2 & @Q_MASK) >> @Q_SHIFT;
+
+    if (@Q_status < 1)
+        goto L_NoUse;
+    if (@Q_status <= 2)
+        set @Q_status, @Q_status + 1;
+
+    message strcharinfo(0), "You pour the potion into the pond.";
+
+    set QUEST_MAGIC2, (QUEST_MAGIC2 & ~(@Q_MASK) | (@Q_status << @Q_SHIFT));
+    return;
+}

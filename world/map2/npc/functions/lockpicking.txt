@@ -1,0 +1,93 @@
+//-----------------------------------------------------------------------------
+// Lock picking.
+// 3 pins per lock.
+// The player has to find the good number of times to hit a pin
+//-----------------------------------------------------------------------------
+
+function|script|LockPicking
+{
+    set @lock_picking_success, 0;
+    setarray @pins, rand(1,3), rand(1,3), rand(1,3);
+    goto L_StartLockPicking;
+
+L_NeedLockPickSet:
+    menu
+        "Unfortunately, I don't have these tools... Let's look around.", L_Return;
+
+L_StartLockPicking:
+    mes "You inspect the lock and notice it isn't sophisticated.";
+    mes "With regular stuff, you should be able to lock pick it.";
+    next;
+    if (countitem ("LockPicks") < 1)
+        goto L_NeedLockPickSet;
+    menu
+        "I can try with these lock picks I just found.", L_Next,
+        "Maybe later.", L_Return;
+
+L_Next:
+    delitem "LockPicks", 1;
+    mes "You insert the hook pick inside the lock, and, without applying any tension, you discover there are only 3 pins to set.";
+    next;
+    mes "You will need to set the 3 pins to align them and turn the lock's cylinder.";
+    mes "A wrong move will make you start over. Remember how you had set the pins!";
+    next;
+    set @pin, 0;
+    goto L_HandlePin;
+
+L_NextPinOrEnd:
+    if (@pin >= 2)
+        goto L_OpenDoor;
+    set @pin, @pin + 1;
+    mes "Click! This pin is set!";
+    next;
+    goto L_HandlePin;
+
+L_HandlePin:
+    if (@pin == 0)
+        mes "What to do with the first pin?";
+    if (@pin == 1)
+        mes "What to do with the second pin?";
+    if (@pin == 2)
+        mes "What to do with the last pin?";
+    menu
+        "Apply a soft pressure.", L_PinSoft,
+        "Apply a normal pressure.", L_PinNormal,
+        "Apply a strong pressure.", L_PinHard,
+        "Give up. I'm in a rush!", L_GiveUp;
+
+L_GiveUp:
+    set @lock_picking_success, 0;
+    set @pin, 0;
+    cleararray @pins, 0, 3;
+    set @pin_pressure, 0;
+    return;
+
+L_PinSoft:
+    set @pin_pressure, 1;
+    goto L_TestPin;
+
+L_PinNormal:
+    set @pin_pressure, 2;
+    goto L_TestPin;
+
+L_PinHard:
+    set @pin_pressure, 3;
+    goto L_TestPin;
+
+L_TestPin:
+    if (@pin_pressure == @pins[@pin])
+        goto L_NextPinOrEnd;
+    mes "Nope, that did not work. And the pins are unset now...";
+    next;
+    set @pin, 0;
+    goto L_HandlePin;
+
+L_Return:
+    return;
+
+L_OpenDoor:
+    set @lock_picking_success, 1;
+    mes "The two sets of pins separate. You can now turn the cylinder to open the door!";
+    return;
+
+}

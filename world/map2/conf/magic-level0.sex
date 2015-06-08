@@ -1,0 +1,39 @@
+"--------------------------------------------------------------------------------"
+" Level 0 spells                                                                 "
+"--------------------------------------------------------------------------------"
+(SPELL () wand "#confringo" ()
+    (LET school MAGIC)
+    (=>
+        (GUARD
+            (CASTTIME 500))
+        (EFFECT
+            (SCRIPT "{callfunc \"CheckWand\";}")
+            (IF (==
+                    (script_int caster "@Wand")
+                    0)
+                (ABORT))
+            (CALL adjust_spellpower school)
+            (CALL default_effect)
+            (CALL install_attack_spell
+                (+ (script_int caster "@Wand")
+                    (/ spellpower 10))
+                1200
+                3
+                (script_int caster "@WandID"))
+            (CALL gain_xp 1 3)
+            (ATTRIGGER
+                (CALL attack_check target)
+                (SCRIPT "{callfunc \"WandMana\";}")
+                (IF (==
+                        (script_int caster "@WandAttack")
+                        0)
+                (ABORT))
+                (SET damage
+                    (* (script_int caster "@Wand")
+                        (/ spellpower
+                            3)))
+                (SET damage_bonus
+                    (* (script_int caster "@Wand")
+                        (/ spellpower
+                            3)))
+                (CALL elt_damage target damage damage_bonus ELT_NEUTRAL ELT_NEUTRAL 5)))))

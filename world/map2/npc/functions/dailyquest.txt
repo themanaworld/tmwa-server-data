@@ -1,0 +1,159 @@
+// The daily quests
+
+// Variables returned:
+// @dq_return - Code of what happend
+//    0 = Low level
+//    1 = Ignored NPC
+//    2 = Not enough points
+//    3 = Not enough items
+//    4 = Success
+
+// Variables to set:
+// @dq_level - Minimal level needed to use the quest
+// @dq_cost - The number of points this quest uses
+// @dq_count - The number of given item needed
+// @dq_name$ - String name of the item as seen by server
+// @dq_friendly_name$ - String name of the item as seen by user
+// @dq_money - The money reward for doing the quest
+// @dq_exp - Experince gained by doing the quest
+
+// Optional:
+// @dq_handle_return - When set to anything other then 0 the function will not print exiting text
+
+// Variables used inside:
+// DailyQuestPoints - The number of points the player currently has
+// DailyQuestTime - Time since DailyQuestPoints was lasted renewed
+// DailyQuestBonus - Additional points added in addition to player BaseLevel
+
+// (DailyQuestBonus makes a good reward from non-daily quests)
+
+function|script|DailyQuestPoints
+{
+    set @dq_earliest, gettimetick(2) - 86400;
+    if (DailyQuestTime < @dq_earliest)
+        set DailyQuestTime, @dq_earliest;
+
+    // how many whole daily quest points the player has earned
+    // we increment DailyQuestTime by the number of seconds in that many increments
+    set @dq_increments, (gettimetick(2) - DailyQuestTime)*BaseLevel / 86400;
+    set DailyQuestTime, DailyQuestTime + @dq_increments*86400/BaseLevel;
+
+    // player can't regenerate any quest points, but might have a bonus
+    if (DailyQuestPoints >= BaseLevel)
+        goto L_Bonus;
+
+    // normal recharging case - increment, but don't let it recharge more than a day's worth
+    set DailyQuestPoints, DailyQuestPoints + @dq_increments;
+    if (DailyQuestPoints > BaseLevel)
+        set DailyQuestPoints, BaseLevel;
+    // fallthrough to bonus, which *is* allowed to push DailyQuestPoints above BaseLevel
+    goto L_Bonus;
+
+L_Bonus:
+    set DailyQuestPoints, DailyQuestPoints + DailyQuestBonus;
+    set DailyQuestBonus, 0;
+
+    return;
+}
+
+function|script|DailyQuest
+{
+    callfunc "DailyQuestPoints";
+
+    if (BaseLevel < @dq_level)
+        goto L_Low_Level;
+    if (DailyQuestPoints < @dq_cost)
+        goto L_Not_Enough_Points;
+
+    mes "\"If you bring me " + @dq_count + " " + @dq_friendly_name$ + ", I will give you a reward.\"";
+    menu
+        "I have what you want.", L_Trade,
+        "Ok, I'll get to work.", L_Next,
+        "Nah, I'm not going to help you.", L_Next;
+
+L_Next:
+    set @dq_return, 1;
+    goto L_Exit;
+
+L_Trade:
+    if (countitem(@dq_name$) < @dq_count)
+        goto L_Not_Enough;
+    delitem @dq_name$, @dq_count;
+
+    set Zeny, Zeny + @dq_money;
+    getexp @dq_exp, 0;
+
+    set DailyQuestPoints, DailyQuestPoints - @dq_cost;
+
+    if (@dq_handle_return)
+        goto L_Exit_Good;
+
+    mes "\"Thank you!\"";
+    callsub S_SayPhrase;
+    mes "";
+    mes "[" + @dq_money + " money]";
+    mes "[" + @dq_exp + " experience points]";
+    goto L_Exit_Good;
+
+L_Exit_Good:
+    set @dq_return, 4;
+    goto L_Exit;
+
+L_Not_Enough:
+    if (!@dq_handle_return)
+        mes "\"I said " + @dq_count + " " + @dq_friendly_name$ + "; you should learn to count.\"";
+    set @dq_return, 3;
+    goto L_Exit;
+
+L_Low_Level:
+    if (!@dq_handle_return)
+        mes "\"Hey, you should go kill some things to get stronger first.\"";
+    set @dq_return, 0;
+    goto L_Exit;
+
+L_Not_Enough_Points:
+    mes "\"You look exhausted, maybe you should rest a bit.\"";
+    set @dq_return, 2;
+    goto L_Exit;
+
+L_Exit:
+    set @dq_handle_return, 0;  // Incase they forget
+    return;
+
+S_SayPhrase:
+    if (@dq_handle_return)
+        goto L_Return;
+    if (DailyQuestPoints < @dq_cost)
+        goto L_Exhausted;
+    if (DailyQuestPoints > BaseLevel)
+        goto L_Over;
+    if (DailyQuestPoints > (BaseLevel*9)/10)
+        goto L_P90;
+    if (DailyQuestPoints > (BaseLevel*7)/10)
+        goto L_P70;
+    if (DailyQuestPoints > (BaseLevel*5)/10)
+        goto L_P50;
+    goto L_Low;
+
+L_Over:
+    mes "\"Woah, you're bursting with power.\"";
+    return;
+L_P90:
+    mes "\"You're in a very good shape.\"";
+    return;
+L_P70:
+    mes "\"You don't seem very exhausted by my tasks.\"";
+    return;
+L_P50:
+    mes "\"Aren't you getting weary yet?\"";
+    return;
+L_Low:
+    mes "\"You look a little tired.\"";
+    return;
+L_Exhausted:
+    mes "\"You look exhausted, maybe you should rest a bit.\"";
+    return;
+
+L_Return:
+    return;
+}

@@ -1,0 +1,58 @@
+// This file is part of the Tutorial
+// Author: Jenalya
+// if you enter the tutorial area from outside, it is set to be already done
+-|script|#TutorialConfig|32767
+{
+    end;
+
+OnInit:
+    set $@ScorpionFighter, 0;
+    set $@ScorpionTimer, 0;
+    set $@ScorpDeath, 0; 
+    set $@SpokeToKaan, (1 << 31);
+    end;
+}
+029-2,21,26,0|script|TutDebug|154
+{
+    mes "[TutDebug]";
+    mes "Reset?";
+    menu
+        "Reset Kaan/Hasan",L_Kaan,
+        "Yes.",L_Reset,
+        "No.",L_Close;
+
+L_Kaan:
+    set QL_BEGIN, 8;
+    set STARTAREA, STARTAREA &~ $@SpokeToKaan;
+    mes "Reset!";
+    goto L_Close;
+
+L_Reset:
+    set TUT_var, 0;
+    set QL_BEGIN, 0;
+    set STARTAREA, STARTAREA &~ $@SpokeToKaan;
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if(!debug)
+        disablenpc "TutDebug";
+    end;
+}
+029-1,32,99,0|script|#tutorialoutside|45,0,0
+{
+    if (QL_BEGIN >= 8)
+        goto L_Warp;
+    goto L_ResetTutorial;
+
+L_ResetTutorial:
+    set QL_BEGIN, 8;
+    goto L_Warp;
+
+L_Warp:
+    warp "029-2", 114, 92;
+    end;
+}

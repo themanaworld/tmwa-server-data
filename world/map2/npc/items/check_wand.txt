@@ -1,0 +1,67 @@
+// Wands
+// Author: Wushin
+function|script|WandMana
+{
+    if(isin("009-7", $@fightclub_x1, $@fightclub_y1, $@fightclub_x2, $@fightclub_y2) && ((@Duel_Fighter != 1) || ($@Duel_NoMagic == 1)))
+        goto L_Return;
+    callfunc "CheckWand";
+    set @WandCost, (@Wand * (BaseLevel / 15) + 2);
+    set @WandAttack, 0;
+    if (!(@Wand))
+        goto L_NoWand;
+    if (Sp >= @WandCost)
+        goto L_Attack;
+    goto L_LowSp;
+
+L_Attack:
+    set Sp, (Sp - @WandCost);
+    set @WandAttack, 1;
+    goto L_Return;
+
+L_NoWand:
+    message strcharinfo(0), "You need a wand Equipped!";
+    set @WandAttack, 0;
+    goto L_Return;
+
+L_LowSp:
+    message strcharinfo(0), "Out of Mana";
+    set @WandAttack, 0;
+    goto L_Return;
+
+L_Return:
+    return;
+}
+function|script|CheckWand
+{
+    setarray $@Wands, 758, 1171;
+    setarray $@WandsPwr, 2, 1;
+    setarray $@WandsAnim, 35, 33;
+    set @Wand, 0;
+    set @wand_loop, 0;
+    goto L_Loop;
+
+L_Loop:
+    if ((getequipid(equip_hand1) == $@Wands[@wand_loop]) || (getequipid(equip_hand2) == $@Wands[@wand_loop]))
+        goto L_SetWand;
+    goto L_LoopAgain;
+
+L_SetWand:
+    set @Wand, $@WandsPwr[@wand_loop];
+    set @WandID, $@WandsAnim[@wand_loop];
+    if (QL_MORGAN == 2)
+        goto L_SetCastOnce;
+    goto L_Return;
+
+L_LoopAgain:
+    set @wand_loop, (@wand_loop + 1);
+    if (@wand_loop >= getarraysize($@Wands))
+        goto L_Return;
+    goto L_Loop;
+
+L_SetCastOnce:
+    set QL_MORGAN, 3;
+    goto L_Return;
+
+L_Return:
+    return;
+}

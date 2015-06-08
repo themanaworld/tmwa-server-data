@@ -1,0 +1,45 @@
+// Fills empty bottles with water
+
+function|script|WaterBottle
+{
+    set @COST_PER_BOTTLE, 150;
+
+    mes "How many empty bottles do you want to fill with water? It costs " + @COST_PER_BOTTLE + "gp per bottle.";
+    input @count;
+
+    if (@count == 0)
+        goto L_Close;
+    set @cost, @count * @COST_PER_BOTTLE;
+    set @empty, countitem("EmptyBottle");
+
+    if (@empty < @count)
+        goto L_NotEnoughBottles;
+    if (Zeny < @cost)
+        goto L_NotEnoughMoney;
+    getinventorylist;
+    if (@inventorylist_count == 100
+        && countitem("BottleOfWater") == 0
+        && @empty > @count)
+            goto L_NotEnoughSlots;
+
+    set Zeny, Zeny - @cost;
+    delitem "EmptyBottle", @count;
+    getitem "BottleOfWater", @count;
+    goto L_Close;
+
+L_NotEnoughBottles:
+    mes "You don't have that many empty bottles!";
+    goto L_Close;
+
+L_NotEnoughMoney:
+    mes "You don't have enough gp! You need " + @cost + "gp.";
+    goto L_Close;
+
+L_NotEnoughSlots:
+    mes "You don't have room for these bottles!";
+    goto L_Close;
+
+L_Close:
+    close2;
+    return;
+}

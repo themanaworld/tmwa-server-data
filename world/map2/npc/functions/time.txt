@@ -1,0 +1,180 @@
+// A replacement for gettimestr()
+// At some point this should be a builtin in the server
+// Should I allow formatting of times other than the current time?
+
+// Variables:
+// output @ts_date$ "yyyy-mm-dd"
+// output @ts_time$ "hh:mm:ss"
+
+function|script|time_stamp
+{
+    // local variables
+    // if there is reasonable demand, these might be exported
+    // (that is what the builtin is likely to do)
+    set @ts_year,       gettime(7);
+    set @ts_month,      gettime(6);
+    set @ts_mday,       gettime(5);
+    //set @ts_wday,       gettime(4);
+    set @ts_hour,       gettime(3);
+    set @ts_minute,     gettime(2);
+    set @ts_second,     gettime(1);
+
+    // locals used to generate leading zeroes
+    set @ts_month_pad$, "";
+    set @ts_mday_pad$,  "";
+    set @ts_hour_pad$,  "";
+    set @ts_minute_pad$, "";
+    set @ts_second_pad$, "";
+
+    if (@ts_month < 10)
+        set @ts_month_pad$, "0";
+    if (@ts_mday < 10)
+        set @ts_mday_pad$, "0";
+    if (@ts_hour < 10)
+        set @ts_hour_pad$, "0";
+    if (@ts_minute < 10)
+        set @ts_minute_pad$, "0";
+    if (@ts_second < 10)
+        set @ts_second_pad$, "0";
+
+    set @ts_date$, @ts_year + "-" + @ts_month_pad$ + @ts_month + "-" + @ts_mday_pad$ + @ts_mday;
+    set @ts_time$, @ts_hour_pad$ + @ts_hour + ":" + @ts_minute_pad$ + @ts_minute + ":" +@ts_second_pad$ + @ts_second;
+
+    // cleanup
+    set @ts_year,       0;
+    set @ts_month,      0;
+    set @ts_mday,       0;
+    set @ts_hour,       0;
+    set @ts_minute,     0;
+    set @ts_second,     0;
+    set @ts_month_pad$, "";
+    set @ts_mday_pad$,  "";
+    set @ts_hour_pad$,  "";
+    set @ts_minute_pad$, "";
+    set @ts_second_pad$, "";
+
+    return;
+}
+
+
+
+// HumanTime - returns a human-readable time
+// author: meko
+
+// Internal variables:
+// @separator$, @unit$, @unit2$, @unit3$, @unit4$, @unit5$
+// @seconds, @minutes, @hours, @days
+
+// Public Variables:
+// input @ms integer
+// output @time$ string
+
+function|script|HumanTime
+{
+    set @time$, "now";
+    if(@seconds) set @ms, @ms + (@seconds * 1000);
+    if(@minutes) set @ms, @ms + (@minutes * 60000);
+    if(@days)    set @ms, @ms + (@days    * 1440000);
+    if(@ms < 0) goto L_TooShort;
+    if(@ms < 1000) goto L_Millis; // under 1 second we have nothing to count
+    set @seconds, @ms / 1000;
+    set @ms, @ms % 1000;
+    if(@seconds < 60) goto L_Seconds;
+    set @minutes, @seconds / 60;
+    set @seconds, @seconds % 60;
+    if(@minutes < 60) goto L_Minutes;
+    set @hours, @minutes / 60;
+    set @minutes, @minutes % 60;
+    if(@hours < 24) goto L_Hours;
+    set @days, @hours / 24;
+    set @hours, @hours % 24;
+    if(@days) goto L_Days;
+    goto L_Clean;
+
+L_TooShort:
+    debugmes "HumanTime: negative value: "+@ms+" @ "+ strnpcinfo(0);
+    mapexit;
+
+L_Millis:
+    set @time$, @ms + "ms";
+    return;
+
+L_Seconds:
+    set @unit$, "second";
+    if(@seconds > 1) set @unit$, "seconds";
+    set @unit2$, "millisecond";
+    if(@ms > 1) set @unit2$, "milliseconds";
+    set @time$, @seconds + " " + @unit$;
+    if(@ms) set @time$, @time$ + " and " + @ms + " " + @unit2$;
+    goto L_Clean;
+
+L_Minutes:
+    set @unit$, "minute";
+    if(@minutes > 1) set @unit$, "minutes";
+    set @unit2$, "second";
+    if(@seconds > 1) set @unit2$, "seconds";
+    set @unit3$, "millisecond";
+    if(@ms > 1) set @unit3$, "milliseconds";
+    set @time$, @minutes + " " + @unit$;
+    set @separator$, " and ";
+    if(@ms) set @separator$, ", ";
+    if(@seconds) set @time$, @time$ + @separator$ + @seconds + " " + @unit2$;
+    if(@ms) set @time$, @time$ + " and " + @ms + " " + @unit3$;
+    goto L_Clean;
+
+L_Hours:
+    set @unit$, "hour";
+    if(@hours > 1) set @unit$, "hours";
+    set @unit2$, "minute";
+    if(@minutes > 1) set @unit2$, "minutes";
+    set @unit3$, "second";
+    if(@seconds > 1) set @unit3$, "seconds";
+    set @unit4$, "millisecond";
+    if(@ms > 1) set @unit4$, "milliseconds";
+    set @time$, @hours + " " + @unit$;
+    set @separator$, " and ";
+    if(@seconds || @ms) set @separator$, ", ";
+    if(@minutes) set @time$, @time$ + @separator$ + @minutes + " " + @unit2$;
+    set @separator$, " and ";
+    if(@ms) set @separator$, ", ";
+    if(@seconds) set @time$, @time$ + @separator$ + @seconds + " " + @unit3$;
+    if(@ms) set @time$, @time$ + " and " + @ms + " " + @unit4$;
+    goto L_Clean;
+
+L_Days:
+    set @unit$, "day";
+    if(@hours > 1) set @unit$, "days";
+    set @unit2$, "hour";
+    if(@hours > 1) set @unit2$, "hours";
+    set @unit3$, "minute";
+    if(@minutes > 1) set @unit3$, "minutes";
+    set @unit4$, "second";
+    if(@seconds > 1) set @unit4$, "seconds";
+    set @unit5$, "millisecond";
+    if(@ms > 1) set @unit5$, "milliseconds";
+    set @time$, @days + " " + @unit$;
+    set @separator$, " and ";
+    if(@minutes || @seconds || @ms) set @separator$, ", ";
+    if(@hours) set @time$, @time$ + @separator$ + @hours + " " + @unit2$;
+    set @separator$, " and ";
+    if(@seconds || @ms) set @separator$, ", ";
+    if(@minutes) set @time$, @time$ + @separator$ + @minutes + " " + @unit3$;
+    set @separator$, " and ";
+    if(@ms) set @separator$, ", ";
+    if(@seconds) set @time$, @time$ + @separator$ + @seconds + " " + @unit3$;
+    if(@ms) set @time$, @time$ + " and " + @ms + " " + @unit4$;
+    goto L_Clean;
+
+L_Clean:
+    set @unit$,      "";
+    set @unit2$,     "";
+    set @unit3$,     "";
+    set @unit4$,     "";
+    set @unit5$,     "";
+    set @seconds,    0;
+    set @minutes,    0;
+    set @hours,      0;
+    set @days,       0;
+    set @separator$, "";
+    return;
+}

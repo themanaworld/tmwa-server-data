@@ -1,0 +1,43 @@
+//
+
+function|script|SlotMachine
+{
+    mes "Pull the lever...";
+    next;
+    menu
+        "Pull", L_Play,
+        "Maybe later", L_Close;
+
+L_Play:
+    if(countitem("CasinoCoins") < 1)
+        goto L_NoCoin;
+    delitem "CasinoCoins", 1;
+    set @Temp1,rand(7);
+    set @Temp2,rand(7);
+    set @Temp3,rand(7);
+    mes "Numbers: " + @Temp1 + "/" + @Temp2 + "/" + @Temp3 + ".";
+    next;
+
+    if(@Temp1 != @Temp2)
+        goto L_Lost;
+    if(@Temp2 != @Temp3)
+        goto L_Lost;
+    if(@Temp1 != @Temp3)
+        goto L_Lost;
+    mes "Congratulations! You won!";
+    mes "You get 10 casino coins";
+    getitem "CasinoCoins", 10;
+    goto L_Close;
+
+L_Lost:
+    mes "You lost!";
+    goto L_Close;
+
+L_NoCoin:
+    mes "Insert coin";
+    goto L_Close;
+
+L_Close:
+    close2;
+    return;
+}

@@ -1,0 +1,99 @@
+// Barrels
+// Author: Wushin
+// Npc
+029-1,45,85,0|script|Zegas|165
+{
+    set @npc_distance, 2;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    if (QL_ZEGAS == 1)
+        goto L_Find;
+    if (QL_ZEGAS == 2)
+        goto L_Looking;
+    if (QL_ZEGAS == 3)
+        goto L_QuestEnd;
+    if (QL_ZEGAS == 4)
+        goto L_Thanks;
+    goto L_Meet;
+
+L_Meet:
+    mes "[Zegas]";
+    mes "\"Hey do you have a second?\"";
+    next;
+    mes "\"The storehouse here is over run with house maggots.\"";
+    next;
+    mes "\"Wouldn't you know it, the bug bomb Eomie gave us is in one of the store room barrels.\"";
+    next;
+    mes "\"Can you search the barrels for the bug bomb and set it off when you find it?\"";
+    set QL_ZEGAS, 1;
+    menu
+        "Sure.",L_Start,
+        "Maybe some other time.",L_Close;
+
+L_Find:
+    mes "[Zegas]";
+    mes "\"The storehouse is still over run with house maggots.\"";
+    next;
+    mes "\"Please help me find the bug bomb Eomie gave us is in one of the store room barrels?\"";
+    menu
+        "Sure.",L_Start,
+        "Maybe some other time.",L_Close;
+
+L_Start:
+    mes "[Zegas]";
+    set QL_ZEGAS, 2;
+    mes "\"Thanks, come back and see me once you found the bug bomb and set it off.\"";
+    goto L_Close;
+
+L_Looking:
+    mes "[Zegas]";
+    mes "\"Still haven't found it? Well keep looking I know it's in there some where.\"";
+    goto L_Close;
+
+L_QuestEnd:
+    mes "[Zegas]";
+    mes "\"From the smell I can see you found the bug bomb!\"";
+    mes "\"Thanks once again, I know it's not much but here is 50 GP for your troubles.\"";
+    getexp 50, 0;
+    set Zeny, (Zeny + 50);
+    set QL_ZEGAS, 4;
+    goto L_Close;
+
+L_Thanks:
+    mes "[Zegas]";
+    mes "\"Thanks for Helping with clear out the store room!\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}
+029-1,47,86,0|script|ZegasDebug|165
+{
+    mes "[Zegas Debug]";
+    mes "Reset ?";
+    menu
+        "Yes.", L_Reset,
+        "No.", L_Close;
+
+L_Reset:
+    set QL_ZEGAS, 0;
+    set STARTAREA, STARTAREA &~ (1 << 20);
+    set STARTAREA, STARTAREA &~ (1 << 21);
+    set STARTAREA, STARTAREA &~ (1 << 22);
+    set STARTAREA, STARTAREA &~ (1 << 23);
+    set STARTAREA, STARTAREA &~ (1 << 24);
+    set STARTAREA, STARTAREA &~ (1 << 25);
+    set STARTAREA, STARTAREA &~ (1 << 26);
+    set STARTAREA, STARTAREA &~ (1 << 27);
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "ZegasDebug";
+    end;
+}

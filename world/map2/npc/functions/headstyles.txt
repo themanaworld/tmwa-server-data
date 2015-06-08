@@ -1,0 +1,46 @@
+// headstyles config file
+// author: meko
+
+function|script|getHeadStyles
+{
+    set @HairStyles$, 0;
+    set @HairColors$, 0;
+    set @BaseClass, 1; // this is the default class
+    cleararray @HairStyles$, "", getarraysize(@HairStyles$);
+    cleararray @HairColors$, "", getarraysize(@HairColors$);
+    cleararray @ValidClasses, "", getarraysize(@ValidClasses);
+    setarray @ValidClasses, 1; // add new classes here
+    set @loop, 0;
+    goto L_LoopValid;
+
+L_Janitor:
+    set @BaldStyle, getarraysize(@HairStyles$); // we set it as a variable because we use it with the barber
+    if(getlook(LOOK_HAIR_STYLE) < 1) setlook LOOK_HAIR_STYLE, @BaldStyle; // the last head of any race has no hair/fins/whatever
+    return;
+
+L_LoopValid: // here we fix non-existant classes
+    if(@ValidClasses[@loop] == Class) goto L_ValidClass;
+    set @loop, (@loop + 1);
+    if(@loop >= getarraysize(@ValidClasses)) goto L_FixClass;
+    goto L_LoopValid;
+
+L_FixClass:
+    set Class, @BaseClass;
+    goto L_ValidClass;
+
+L_ValidClass:
+    if(Class == 1)
+        setarray @HairStyles$, // TALPONIAN (human)
+            "Flat ponytail", "Bowl cut", "Combed back", "Emo", "Mohawk",
+            "Pompadour", "Center parting/Short and slick", "Long and slick",
+            "Short and curly", "Pigtails", "Long and curly", "Parted",
+            "Perky ponytail", "Wave", "Mane", "Bun", "Shoulder Length Flick",
+            "Fizzy", "Long and Clipped", "Bald";
+    if(Class == 1)
+        setarray @HairColors$, // TALPONIAN (human)
+            "Brunette", "Green", "Dark red", "Light purple", "Gray", "Blonde",
+            "Teal", "Light red", "Blue", "Dark purple", "Black", "Pink",
+            "Brown";//, "(free slot)", "(free slot)";
+    // adding a new species is as simple as adding another if(Class == X) and adding the class to @ValidClasses
+    goto L_Janitor;
+}
