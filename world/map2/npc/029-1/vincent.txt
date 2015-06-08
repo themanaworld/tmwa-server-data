@@ -1,0 +1,138 @@
+// Variables used: nibble 2 of QUEST_SouthTulimshar
+
+029-1,108,108,0|script|Vincent Debug|113
+{
+    mes "[Vincent Debug]";
+    mes "Reset?";
+    menu
+        "Yes.", L_Reset,
+        "No.", L_Close;
+
+L_Reset:
+    set QL_VINCENT, 0;
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "Vincent Debug";
+    end;
+}
+029-1,107,110,0|script|Vincent|113
+{
+    set @halloween_npc_id, $@halloween_npc_vincent;
+    callfunc "TrickOrTreat";
+
+    if (QL_VINCENT >= 2) goto L_Done;
+    if (QL_VINCENT == 1) goto L_Progress;
+    goto L_Con_Vin_First;
+
+L_Con_Vin_First:
+    mes "[Vincent]";
+    mes "\"I'm making an action figure. I'm almost done with it.\"";
+    next;
+
+    set @TEMP, rand(4);
+    if(@TEMP == 1) goto L_Opening2;
+    if(@TEMP == 2) goto L_Opening3;
+    if(@TEMP == 3) goto L_Opening4;
+    goto L_Opening1;
+
+L_Opening1:
+    mes "\"I just need 5 more Bug Legs to finish my action figure!\"";
+    next;
+    goto L_Ask;
+
+L_Opening2:
+    mes "\"This maggot action figure is awesome! I just need to attach 5 Bug Legs.\"";
+    next;
+    goto L_Ask;
+
+L_Opening3:
+    mes "\"This is a great action figure! A must have! All I need is a few parts...\"";
+    next;
+    goto L_Ask;
+
+L_Opening4:
+    mes "\"Can you get me 5 Bug Legs? I need them to replace the action figure parts.\"";
+    next;
+    goto L_Ask;
+
+L_Ask:
+    mes "\"Will you help me find 5 Bug Legs?\"";
+    next;
+    menu
+        "Yes.", L_Sure,
+        "No.", L_Close;
+
+L_Sure:
+    set QL_VINCENT, 1;
+    set @TEMP, rand(4);
+    if(@TEMP == 1) goto L_Req2;
+    if(@TEMP == 2) goto L_Req3;
+    if(@TEMP == 3) goto L_Req4;
+    goto L_Req1;
+
+L_Req1:
+    mes "[Vincent]";
+    mes "\"Thank you!\"";
+    next;
+    goto L_Wait;
+
+L_Req2:
+    mes "[Vincent]";
+    mes "\"I don't know how to thank you enough!\"";
+    next;
+    goto L_Wait;
+
+L_Req3:
+    mes "[Vincent]";
+    mes "\"I will thank you when I get them!\"";
+    next;
+    goto L_Wait;
+
+L_Req4:
+    mes "[Vincent]";
+    mes "\"I'm sure I will give a small reward.\"";
+    next;
+    goto L_Wait;
+
+L_Wait:
+    mes "\"Now please go get me 5 Bug Legs.\"";
+    goto L_Close;
+
+L_Progress:
+    if(countitem("BugLeg") >= 5)
+        goto L_Have;
+    mes "[Vincent]";
+    mes "\"Please help me collect 5 Bug Legs! I need them to complete my action figure.\"";
+    goto L_Close;
+
+L_Have:
+    mes "[Vincent]";
+    mes "\"Excellent! Finally I can complete the model!!\"";
+    next;
+    if(countitem("BugLeg") < 5)
+        goto L_Progress;
+    delitem "BugLeg", 5;
+    getexp 50, 0;
+    set Zeny, Zeny + 1000;
+    set QL_VINCENT, 2;
+
+    mes "[Vincent]";
+    mes "\"Here you go, a little of my appreciation!\"";
+    mes "";
+    mes "[1000 gold]";
+    goto L_Close;
+
+L_Done:
+    mes "[Vincent]";
+    mes "\"Thanks for your help!\"";
+    goto L_Close;
+
+L_Close:
+    close;
+}

@@ -1,0 +1,249 @@
+// Travelers
+// Authors: Wombat, Wushin
+
+// Multiple Travelers
+// Cannot access until found (Player Bitmask)
+// Costs Zeny
+
+// Contains all warp points to find
+017-9,27,28,0|script|#TravelConfig|32767
+{
+    end;
+
+OnInit:
+    // TravelFound
+    set $@tut_bit, (1 << 2);
+    //set $@druid_tree_bit, (1 << 3);
+    set $@graveyard_bit, (1 << 4);
+    set $@magic_house_bit, (1 << 5);
+    set $@terranite_cave_bit, (1 << 6);
+    set $@tulimshar_bit, (1 << 7);
+    set $@blue_sage_bit, (1 << 8);
+    set $@hurnscald_bit, (1 << 9);
+    set $@nivalis_bit, (1 << 10);
+    //set $@tul_mine_bit, (1 << 11);
+    set $@pachua_bit, (1 << 12);
+    set $@barbarians_bit, (1 << 14);
+    set $@hurns_farms_bit, (1 << 15);
+    set $@candor_bit, (1 << 16);
+    // Travel Base Cost
+    set $@tulimshar_cost, 100;
+    set $@hurnscald_cost, 100;
+    set $@nivalis_cost, 100;
+    //set $@druid_tree_cost, 150;
+    //set $@tul_mine_cost, 150;
+    set $@pachua_cost, 200;
+    set $@graveyard_cost, 200;
+    set $@magic_house_cost, 150;
+    set $@terranite_cave_cost, 200;
+    set $@blue_sage_cost, 200;
+    set $@barbarians_cost, 150;
+    set $@hurns_farms_cost, 150;
+    set $@candor_cost, 200;
+    end;
+}
+
+function|script|Traveler
+{
+    if(@npcname$ == "") set @npcname$, strnpcinfo(1);
+    mes "["+@npcname$+"]";
+    mes "\"Greetings. I am "+@npcname$+" the Traveler.\"";
+    next;
+
+    if (TravelFound & $@tut_bit)
+        goto L_Main;
+    goto L_TravelTut;
+
+L_Main:
+    if (TravelFound & @NpcTravelBit)
+        goto L_BitTravelSet;
+    goto L_SetTravelBit;
+
+L_BitTravelSet:
+    set @Cost, 10;
+    if (BaseLevel < 45)
+        set @Cost, 5;
+    goto L_Start;
+
+L_TravelTut:
+    mes "["+@npcname$+"]";
+    mes "\"We travelers are found all over the world. Once you have found a traveler at a certain location, you can be sent back there instantly by another traveler.\"";
+    next;
+    if (TravelFound & $@tut_bit)
+        goto L_Main;
+    goto L_SetBit;
+
+L_SetBit:
+    set TravelFound, TravelFound | $@tut_bit;
+    goto L_Main;
+
+L_SetTravelBit:
+    mes "["+@npcname$+"]";
+    mes "\"Uplink set. You can now return to this spot for a fee.\"";
+    next;
+    set TravelFound, TravelFound | @NpcTravelBit;
+    goto L_BitTravelSet;
+
+L_Start:
+    mes "\"Where would you like to go?\"";
+    menu
+        "Tonori - Tulimshar (" + (@Cost * $@tulimshar_cost) + " GP)", L_TravelTulimshar,
+        "Argeas - Hurnscald (" + (@Cost * $@hurnscald_cost) + " GP)", L_TravelHurnscald,
+        "Kaizei - Nivalis (" + (@Cost * $@nivalis_cost) + " GP)", L_TravelNivalis,
+        "Tonori - Pachua's Village (" + (@Cost * $@pachua_cost) + " GP)", L_TravelPachua,
+        "Argeas - Candor (" + (@Cost * $@candor_cost) + " GP)", L_TravelCandor,
+        "Argeas - Magic House (" + (@Cost * $@magic_house_cost) + " GP)", L_TravelMagicHouse,
+        "Argeas - Farmsteads (" + (@Cost * $@hurns_farms_cost) + " GP)", L_TravelHurnsFarms,
+        "Argeas - Graveyard (" + (@Cost * $@graveyard_cost) + " GP)", L_TravelGraveyard,
+        "Argeas - Terranite Cave (" + (@Cost * $@terranite_cave_cost) + " GP)", L_TravelTerranite,
+        "Kaizei - Barbarian Village (" + (@Cost * $@barbarians_cost) + " GP)", L_TravelBarbarians,
+        "Kaizei - Sage Nikolai's Mansion (" + (@Cost * $@blue_sage_cost) + " GP)", L_TravelBlueSage,
+        "Who are the Travelers?", L_TravelTut,
+        "I'm not interested.", L_TravelNo;
+
+L_TravelChecks:
+    if (@NpcTravelBit == @NextLocationBit)
+        goto L_AlreadyThere;
+    if (!(TravelFound & @NextLocationBit))
+        goto L_NoFound;
+    if (Zeny < @NextLocationCost)
+        goto L_NoMoney;
+    goto L_TravelPlayer;
+
+L_TravelPlayer:
+    mes "["+@npcname$+"]";
+    mes "\"Be fearless!\"";
+    close2;
+    set Zeny, Zeny - @NextLocationCost;
+    warp @NextLocationMap$,@NextLocationX,@NextLocationY;
+    goto L_Clearvars;
+
+L_TravelGraveyard:
+    set @NextLocationBit, $@graveyard_bit;
+    set @NextLocationCost, (@Cost * $@graveyard_cost);
+    set @NextLocationMap$, "027-1";
+    set @NextLocationX, 84;
+    set @NextLocationY, 86;
+    goto L_TravelChecks;
+
+L_TravelMagicHouse:
+    set @NextLocationBit, $@magic_house_bit;
+    set @NextLocationCost, (@Cost * $@magic_house_cost);
+    set @NextLocationMap$, "013-1";
+    set @NextLocationX, 120;
+    set @NextLocationY, 93;
+    goto L_TravelChecks;
+
+L_TravelTerranite:
+    set @NextLocationBit, $@terranite_cave_bit;
+    set @NextLocationCost, (@Cost * $@terranite_cave_cost);
+    set @NextLocationMap$, "012-3";
+    set @NextLocationX, 445;
+    set @NextLocationY, 65;
+    goto L_TravelChecks;
+
+L_TravelTulimshar:
+    set @NextLocationBit, $@tulimshar_bit;
+    set @NextLocationCost, (@Cost * $@tulimshar_cost);
+    set @NextLocationMap$, "002-1";
+    set @NextLocationX, 60;
+    set @NextLocationY, 42;
+    goto L_TravelChecks;
+
+L_TravelBlueSage:
+    set @NextLocationBit, $@blue_sage_bit;
+    set @NextLocationCost, (@Cost  * $@blue_sage_cost);
+    set @NextLocationMap$, "048-2";
+    set @NextLocationX, 26;
+    set @NextLocationY, 47;
+    goto L_TravelChecks;
+
+L_TravelHurnscald:
+    set @NextLocationBit, $@hurnscald_bit;
+    set @NextLocationCost, (@Cost * $@hurnscald_cost);
+    set @NextLocationMap$, "008-1";
+    set @NextLocationX, 79;
+    set @NextLocationY, 84;
+    goto L_TravelChecks;
+
+L_TravelNivalis:
+    set @NextLocationBit, $@nivalis_bit;
+    set @NextLocationCost, (@Cost * $@nivalis_cost);
+    set @NextLocationMap$, "020-1";
+    set @NextLocationX, 53;
+    set @NextLocationY, 122;
+    goto L_TravelChecks;
+
+L_TravelPachua:
+    set @NextLocationBit, $@pachua_bit;
+    set @NextLocationCost, (@Cost * $@pachua_cost);
+    set @NextLocationMap$, "006-1";
+    set @NextLocationX, 28;
+    set @NextLocationY, 97;
+    if(QUEST_MIRIAM_start != 0) goto L_Cheat;
+    goto L_TravelChecks;
+
+L_Cheat:
+    set QUEST_MIRIAM_cheat, 1;
+    set QUEST_MIRIAM_run, gettimetick(2) - QUEST_MIRIAM_start;
+    set QUEST_MIRIAM_start, 0;
+    goto L_TravelChecks;
+
+L_TravelBarbarians:
+    set @NextLocationBit, $@barbarians_bit;
+    set @NextLocationCost, (@Cost * $@barbarians_cost);
+    set @NextLocationMap$, "033-1";
+    set @NextLocationX, 66;
+    set @NextLocationY, 33;
+    goto L_TravelChecks;
+
+L_TravelHurnsFarms:
+    set @NextLocationBit, $@hurns_farms_bit;
+    set @NextLocationCost, (@Cost * $@hurns_farms_cost);
+    set @NextLocationMap$, "055-1";
+    set @NextLocationX, 135;
+    set @NextLocationY, 60;
+    goto L_TravelChecks;
+
+L_TravelCandor:
+    set @NextLocationBit, $@candor_bit;
+    set @NextLocationCost, (@Cost * $@candor_cost);
+    set @NextLocationMap$, "029-1";
+    set @NextLocationX, 69;
+    set @NextLocationY, 69;
+    goto L_TravelChecks;
+
+L_TravelNo:
+    mes "["+@npcname$+"]";
+    mes "\"Perhaps you will have the courage to help us some day.\"";
+    close2;
+    goto L_Clearvars;
+
+L_NoMoney:
+    mes "["+@npcname$+"]";
+    mes "\"I'm sorry, but you don't have enough money. Maybe next time.\"";
+    close2;
+    goto L_Clearvars;
+
+L_NoFound:
+    mes "["+@npcname$+"]";
+    mes "\"Sorry, but you haven't visited a traveler yet at that location. You should find and talk to a traveler there so you can quickly return to that location in the future.\"";
+    close2;
+    goto L_Clearvars;
+
+L_AlreadyThere:
+    mes "["+@npcname$+"]";
+    mes "\"Uh... You're already here. Are you sure you know where you are going?\"";
+    close2;
+    goto L_Clearvars;
+
+L_Clearvars:
+    set @npcname$, "";
+    set @Cost, 0;
+    set @NextLocationBit, 0;
+    set @NextLocationCost, 0;
+    set @NextLocationMap$, "";
+    set @NextLocationX, 0;
+    set @NextLocationY, 0;
+    return;
+}
