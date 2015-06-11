@@ -1,0 +1,74 @@
+-|script|spell-wand|32767
+{
+    callfunc "magic_checks"; if(@failed) goto L_Failed; // << I wish we had functions that could return >>
+    callsub S_CheckWand;
+    if(@WandAttack != 1) goto L_Failed;
+
+    // here we install
+    set MAGIC_CAST_TICK, gettimetick(2) + 5; // set the new debuff
+    callfunc "adjust_spellpower";
+    misceffect FX_MAGIC_GENERIC, strcharinfo(0);
+    overrideattack (@Wand + (@spellpower / 10)), 1200, 3, ATTACK_ICON_GENERIC, @WandID, strnpcinfo(0)+"::OnAttack";
+    callfunc "magic_exp";
+    end;
+
+OnAttack:
+    callsub S_CheckWand;
+    if(@WandAttack != 1) goto L_Failed;
+    if(target(BL_ID, @target_id, 22) != 22) goto L_Failed; // 0x02 | 0x04 | 0x10
+    set Sp, (Sp - @WandCost);
+    set @damage, (@Wand * (@spellpower / 3));
+    setarray @edmg,@damage,@damage,ELT_NEUTRAL,ELT_NEUTRAL,FX_MAGIC_RED; callfunc "elt_damage";
+    end;
+
+S_CheckWand:
+    set @Wand, 0;
+    set @wand_loop, 0;
+    goto S_Loop;
+
+S_Loop:
+    if ((getequipid(equip_hand1) == .Wands[@wand_loop]) || (getequipid(equip_hand2) == .Wands[@wand_loop]))
+        goto S_SetWand;
+    set @wand_loop, (@wand_loop + 1);
+    if (@wand_loop >= getarraysize(.Wands))
+        goto S_NoWand;
+    goto S_Loop;
+
+S_SetWand:
+    set @Wand, .WandsPwr[@wand_loop];
+    set @WandID, .WandsAnim[@wand_loop];
+    if (QL_MORGAN == 2)
+        set QL_MORGAN, 3;
+    set @WandCost, (@Wand * (BaseLevel / 15) + 2);
+    set @WandAttack, 0;
+    if (Sp < @WandCost)
+        goto S_LowSp;
+    set @WandAttack, 1; // everything is fine
+    return;
+
+S_NoWand:
+    message strcharinfo(0), "Wand : ##3##BYou need a wand Equipped!";
+    set @WandAttack, 0;
+    return;
+
+S_LowSp:
+    message strcharinfo(0), "Wand : ##3##BOut of Mana";
+    set @WandAttack, 0;
+    return;
+
+L_Failed:
+    //misceffect FX_ELECTRICITY_RED, strcharinfo(0); // XXX: do we show an effect on fail?
+    debugmes "cast or attack failed";
+    end;
+
+OnInit:
+    setarray .Wands[0], 758, 1171;
+    setarray .WandsPwr[0], 2, 1;
+    setarray .WandsAnim[0], 35, 33;
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "confringo"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 0;
+    set .exp_gain, 1;
+    end;
+}

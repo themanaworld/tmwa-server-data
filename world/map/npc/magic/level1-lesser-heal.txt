@@ -1,0 +1,41 @@
+-|script|lesser-heal|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 6) end;
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    if (getskilllv(.school) < .level) end;
+    set @target_id, getcharid(3, @args$);
+    if (@target_id < 1 || !(isloggedin(@target_id))) set @target_id, BL_ID; // fallback to self
+    if (@args$ == "Mouboo" || @args$ == "mouboo") set @target_id, getnpcid("Mouboo");
+    set .@range, (((MATK1 + getskilllv(SKILL_MAGIC) + getskilllv(.school) + 10) / 100) + 2);
+    if (distance(BL_ID, @target_id) >= .@range) end;
+    if (PVP_CHANNEL != get(PVP_CHANNEL, @target_id) && get(PVP_CHANNEL, @target_id) != 0) end;
+    if (countitem("Lifestone") < 1) end;
+    delitem "Lifestone", 1;
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 6;
+    misceffect FX_MAGIC_WHITE, strcharinfo(0);
+    if (@target_id != BL_ID) misceffect FX_MAGIC_WHITE, @target_id;
+    // TODO gain_heal_exp
+    // TODO magic_exp
+    if (@args$ == "Mouboo" || @args$ == "mouboo") goto L_Mouboo;
+
+    if (getskilllv(SKILL_MAGIC_DARK) >= 1) sc_start SC_HALT_REGENERATE, 2000, 0;
+
+    set @heal_amount, 200, @target_id;
+    if (attachrid(@target_id) != 1) end; // XXX: to avoid the ugly attachrid method we would need some kind of `run_as` builtin
+    if (!(isdead())) heal @heal_amount, 0, 1;
+    end;
+
+L_Mouboo:
+    mes "Mouboo : ##3##BYour spell seems to have no effect on the mouboo.";
+    close;
+
+OnInit:
+    set .school, SKILL_MAGIC_LIFE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "lum"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 1;
+    set .exp_gain, 1;
+    end;
+}

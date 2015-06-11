@@ -1,0 +1,135 @@
+function|script|magic_register
+{
+    debugmes ">> Register " + .invocation$ + " @ " + strnpcinfo(0);
+    registercmd .invocation$, strnpcinfo(0); // register the spell
+    set .index, $@magic_index;
+    set $@magic_index, $@magic_index + 1;
+    return;
+}
+
+function|script|magic_register2
+{
+    debugmes ">> Register " + .invocation$ + " @ " + strnpcinfo(0);
+    registercmd .invocation$, strnpcinfo(0) + "::OnCast"; // register the spell <= this spell has a puppet
+    set .index, $@magic_index;
+    set $@magic_index, $@magic_index + 1;
+    return;
+}
+
+function|script|magic_checks
+{
+    set @failed, 0;
+    if(getpvpflag(1)) set @failed, 1; // can not cast with @hide enabled
+    if((gettimetick(2) - MAGIC_CAST_TICK) < 0) set @failed, 1; // check if last debuff ended
+    if(isdead()) set @failed, 1; // can not cast when dead
+    return;
+}
+
+function|script|elt_damage
+{
+    // @edmg is damage, dmgplus(mutation), bonus_elt, malus_elt, effect
+    set @edmg[5], @edmg[0] + rand(@edmg[1]);
+    if(elttype(@target_id) == @edmg[3]) // malus
+        set @edmg[5], @edmg[5] / 3;
+    if(elttype(@target_id) == @edmg[2]) // bonus
+        set @edmg[5], ((eltlvl(@target_id) + 4) * @edmg[5]) / 4;
+    set .@source, .caster;
+    if (!.@source) set .@source, getcharid(3);
+
+    injure .@source, @target_id, @edmg[5];
+    misceffect @edmg[4], @target_id;
+    cleararray @edmg, 0, getarraysize(@edmg);
+    return;
+}
+
+function|script|melee_damage
+{
+    if ((@spellpower - rand(100)) < (get(BaseLevel, @target_id) + get(MDEF1, @target_id)))
+        injure BL_ID, @target_id, 0;
+    else injure BL_ID, @target_id, @melee_dmg[0] + rand(@melee_dmg[1]);
+    return;
+}
+
+function|script|magic_create_item
+{
+    set .@exp, (MAGIC_EXPERIENCE & (BYTE_0_MASK | BYTE_1_MASK)) >> BYTE_0_SHIFT;
+    set .@score, (.@exp + rand(min(@spellpower, ((.@exp / 3) + 1))));
+    set @create_params[2], 1; // success flag
+    if (.@score >= @create_params[1]) goto L_Perfect;
+    set @create_params[2], 0; // success flag
+    set .@score, .@score + rand(Luk) + rand(Luk);
+    if (.@score < (@create_params[1] / 3)) goto L_Backfire;
+    if (.@score < ((@create_params[1] * 2) / 3)) goto L_Iten;
+    message strcharinfo(0), "Magic : ##3##BYour spell takes on a mind of its own!";
+    if (rand(3) == 1) getitem @create_items$[1], 1; // bad item
+    return;
+
+L_Iten:
+    if (rand(5) != 2) goto L_Escape;
+    message strcharinfo(0), "Magic : ##3##BYour spell solidifies into the shape of a mysterious object!";
+    getitem "Iten", 1;
+    return;
+
+L_Escape:
+    message strcharinfo(0), "Magic : ##3##BYour spell escapes!";
+    return;
+
+L_Backfire:
+    message strcharinfo(0), "Magic : ##3##BYour spell backfires!";
+    if (rand(110) < Luk) heal 0 - ((BaseLevel+1)*(BaseLevel+2)*(rand(28)+3)), 0;
+    else                 heal 0 - (BaseLevel + 1), 0;
+    return;
+
+L_Perfect:
+    getitem @create_items$[0], @create_params[0]; // good item
+    return;
+}
+
+function|script|magic_exp
+{
+    set @last_index, (MAGIC_EXPERIENCE & BYTE_2_MASK) >> BYTE_2_SHIFT;
+    set @last_exp, (MAGIC_EXPERIENCE & (BYTE_0_MASK | BYTE_1_MASK)) >> BYTE_0_SHIFT;
+
+    debugmes "old spell index: " + @last_index;
+    debugmes "new spell index: " + .index;
+
+    if(getskilllv(SKILL_MAGIC) < (.level + 3) && .index != @last_index)
+        goto L_Gain;
+    debugmes "same as last spell => don't proceed";
+    goto L_Return;
+
+L_Gain:
+    if(.exp_gain < 1) goto L_Return; // only the spells that have exp register here. If you
+    //                                 remove this line then players can cast a spell with
+    //                                 no cost, then a spell with a reagents, then another
+    //                                 spell with no costs and still get the exp
+    set @new_exp, @last_exp + .exp_gain;
+    if(@new_exp > (BYTE_0_MASK | BYTE_1_MASK)) set @new_exp, (BYTE_0_MASK | BYTE_1_MASK);
+    debugmes "old magic exp: "+ @last_exp;
+    debugmes "new magic exp: "+ @new_exp;
+    set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE &~ (BYTE_0_MASK | BYTE_1_MASK)) | (@new_exp << BYTE_0_SHIFT);
+    set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE &~ BYTE_2_MASK) | (.index << BYTE_2_SHIFT);
+    goto L_Return;
+
+L_Return:
+    return;
+}
+
+function|script|adjust_spellpower
+{
+    set @spellpower, MATK1 + getskilllv(SKILL_MAGIC) + getskilllv(.school) + 10;
+    if((.school != SKILL_MAGIC_NATURE) && (.school != SKILL_MAGIC_LIFE)) goto L_Return;
+    if(@args$ == "" || !@args$ || getpartnerid2() == 0) goto L_Return;
+    if(getcharid(3, @args$) < 1 || getpartnerid2() != getcharid(3, @args$) || !(isloggedin(getcharid(3, @args$))))
+        goto L_Return;
+    debugmes "You targeted your spouse!";
+    // XXX: I need a builtin to check if the target is in range of the caster
+    // XXX: the spell power increases when the target is the spouse so one could
+    //      just do #modrilax (spouse) right?
+    //
+    // ... let's just forget about spouse for now
+    goto L_Return;
+
+L_Return:
+    return;
+}

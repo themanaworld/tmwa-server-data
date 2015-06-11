@@ -1,0 +1,39 @@
+-|script|flying-backpack|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 12) end;
+    set .@level, getskilllv(.school);
+    if (.@level < .level) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (.@level <= 3 && countitem("SilkCocoon") >= 1) delitem "SilkCocoon", 1;
+    elif (.@level <= 3) end;
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 12;
+    misceffect FX_MAGIC_GREEN, strcharinfo(0);
+    callfunc "magic_exp";
+    set @target_id, getcharid(3, @args$);
+    if (@target_id < 1 || !(isloggedin(@target_id))) set @target_id, BL_ID; // fallback to self
+    if (distance(BL_ID, @target_id) >= (@spellpower/30)+2) set @target_id, BL_ID;
+    if (BL_ID != @target_id) misceffect FX_MAGIC_GENERIC, @args$;
+    if (BL_ID == @target_id) set @args$, strcharinfo(0);
+    set @plugh_time, (@spellpower*500)+5000, @target_id;
+    sc_start SC_FLYING_BACKPACK, @plugh_time, 0, @target_id;
+    message @args$, "Backpack : Your backpack is lifted by a mystical force; you no longer feel it pressing on your back.";
+    if (attachrid(@target_id) != 1) end;
+    addtimer @plugh_time, strnpcinfo(0)+"::OnEnd";
+    end;
+
+OnEnd:
+    message strcharinfo(0), "Backpack : Your backpack is no longer levitating.";
+    misceffect FX_MAGIC_GENERIC, strcharinfo(0);
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_NATURE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "plugh"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 1;
+    end;
+}

@@ -1,0 +1,53 @@
+// ARGV Splitter
+// takes @args$ and splits it properly so that '@cmd "foo bar" baz' is ['foo bar','baz'] instead of ['foo','bar','baz']
+// input: @args$ (string)
+// output: @argv$ (array) and @argv (array)
+function|script|argv_splitter
+{
+    explode .@fragments$, @args$, " ";
+    set .@e, 0;
+    set .@total, getarraysize(.@fragments$);
+    set .@NULL$, chr(3); // HACK: we use .@NULL$ as a workaround because we can't do "\0"
+    goto L_Check;
+
+L_Check:
+    setarray .@check$[0], "", .@NULL$, .@NULL$;
+    explode .@check$, .@fragments$[.@e], "\""; // check if the fragment contains a quote
+    if   (.@check$[0] == "" && .@check$[1] != .@NULL$ && .@check$[1] != "" && .@check$[2] == .@NULL$)
+        set .@string$, .@check$[1]; // begin substring
+    elif (.@check$[0] != "" && .@check$[1] == "" && .@check$[2] == .@NULL$)
+        goto L_EndSubString; // end substring
+    elif (.@string$ != "" && .@check$[0] != "" && .@check$[1] == .@NULL$ && .@check$[2] == .@NULL$)
+        set .@string$, .@string$ +" "+ .@check$[0]; // part of the substring
+    elif (.@check$[2] != .@NULL$) goto L_Set2; // the the argument is quoted but there is no space
+    else goto L_Set;
+    goto L_CheckAfter;
+
+L_Set:
+    setarray @argv$[.@t], .@check$[0]; // not in a substring so push right away
+    setarray @argv[.@t], .@check$[0]; // not in a substring so push right away
+    set .@t, .@t + 1;
+    goto L_CheckAfter;
+
+L_Set2:
+    setarray @argv$[.@t], .@check$[1]; // not in a substring so push right away
+    setarray @argv[.@t], .@check$[1]; // not in a substring so push right away
+    set .@t, .@t + 1;
+    goto L_CheckAfter;
+
+L_EndSubString:
+    set .@string$, .@string$ + " " + .@check$[0];
+    setarray @argv$[.@t], .@string$; // push in the array
+    setarray @argv[.@t], .@string$; // push in the array
+    set .@t, .@t + 1;
+    set .@string$, ""; // clean
+    goto L_CheckAfter;
+
+L_CheckAfter:
+    set .@e, .@e + 1;
+    if (.@e > .@total) goto L_Done; // the @argv$ array is built
+    goto L_Check; // not done yet
+
+L_Done:
+    return;
+}

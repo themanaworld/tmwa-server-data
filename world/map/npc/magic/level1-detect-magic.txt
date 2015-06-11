@@ -1,0 +1,29 @@
+-|script|detect-magic|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 3) end;
+    if (getskilllv(.school) < .level) end;
+    set MAGIC_CAST_TICK, gettimetick(2) + 6; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 3;
+    misceffect FX_MAGIC_GENERIC, strcharinfo(0);
+    set .@range, (@spellpower/50)+1;
+    foreach 1, getmap(), POS_X - .@range, POS_Y - .@range, POS_X + .@range, POS_Y + .@range,
+            strnpcinfo(0) + "::OnNearbyNpc";
+    callfunc "magic_exp";
+    end;
+
+OnNearbyNpc:
+    set .@e$, strnpcinfo(2,@target_id);
+    if(.@e$ == "#_M" || .@e$ == "#MAGIC")
+        misceffect FX_MAGIC_DEFAULT, @target_id;
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "miteyo"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 1;
+    set .exp_gain, 0;
+    end;
+}

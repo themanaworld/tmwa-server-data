@@ -1,0 +1,69 @@
+-|script|special-marry|32767
+{
+    set .@target_id, getcharid(3, @args$);
+    if (.@target_id < 1 || !(isloggedin(.@target_id)) || .@target_id == BL_ID) goto L_NotFound;
+    if (PARTNER || get(PARTNER, .@target_id)) goto L_AlreadyMarried;
+    if (isin("014-1",29,36,34,39) == 0 && isin("001-1",20,27,22,27) == 0) goto L_NotInArea;
+    if (distance(BL_ID, .@target_id) != 1) goto L_AwayFromPartner;
+    if (BaseLevel < WEDDING_MIN_LEVEL || get(BaseLevel, .@target_id) < WEDDING_MIN_LEVEL) goto L_TooYoung;
+    if (getequipid(equip_shield) != 702 || getequipid(equip_shield, @args$) != 702) goto L_NoRing;
+
+    if (get(@marriage[0], .@target_id) == BL_ID) goto L_Proceed;
+
+    setarray @marriage[0], .@target_id, gettimetick(2);
+    addtimer (.timeout * 1000), strnpcinfo(0) + "::OnTimeout";
+    announce strcharinfo(0) + " is asking " + strcharinfo(0, .@target_id) + " for marriage.", 2;
+    message strcharinfo(0, .@target_id), "Marriage : ##3##B" + strcharinfo(0) + " wishes to marry you. To accept, write `##1#marry "+strcharinfo(0)+"##3` within the next "+.timeout+" seconds.";
+    end;
+
+L_NotFound:
+    message strcharinfo(0), "Marriage : ##3##BThe target player is either not found or yourself.";
+    end;
+
+L_TooYoung:
+    message strcharinfo(0), "Marriage : ##3##BYou and your partner need to be at least level "+ WEDDING_MIN_LEVEL +".";
+    end;
+
+L_NoRing:
+    message strcharinfo(0), "Marriage : ##3##BYou and your partner need to have ["+ getitemlink("WeddingRing") +"] equipped.";
+    end;
+
+L_AwayFromPartner:
+    message strcharinfo(0), "Marriage : ##3##BYou and your partner need to be standing next to each other.";
+    end;
+
+L_NotInArea:
+    message strcharinfo(0), "Marriage : ##3##BYou are not standing in a designated marriage area.";
+    end;
+
+L_Proceed:
+    if ((gettimetick(2) - .timeout) > get(@marriage[1], .@target_id)) goto L_TooLate;
+    set PARTNER, CHAR_ID, .@target_id;
+    if (PARTNER == get(CHAR_ID, .@target_id)) goto L_Success;
+    set PARTNER, 0, .@target_id;
+    set PARTNER, 0;
+    end;
+
+L_Success:
+    announce strcharinfo(0) + " and " + strcharinfo(0, .@target_id) + " are now married.", 2;
+    end;
+
+OnTimeout:
+    goto L_TooLate;
+
+L_TooLate:
+    message strcharinfo(0), "Marriage : ##3##BThe proposal expired. Please try again.";
+    message strcharinfo(0, @marriage[0]), "Marriage : ##3##BThe proposal expired. Please try again.";
+    set @marriage[0], 0, @marriage[0];
+    set @marriage[0], 0;
+    end;
+
+L_AlreadyMarried:
+    message strcharinfo(0), "Marriage : ##3##BYou"+ if_then_else(PARTNER, " are", "r partner is") +" already married.";
+    end;
+
+OnInit:
+    set .timeout, 30; // timeout for proposal
+    registercmd "#marry", strnpcinfo(0); // we NEED to use a # before `marry` because otherwise manaplus does not strip colors
+    end;
+}

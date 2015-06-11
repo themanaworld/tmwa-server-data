@@ -6,7 +6,7 @@
     mes "[Estard]";
     mes "\"Hello. What can I do for you?\"";
     next;
-    if (getpartnerid2())
+    if (PARTNER)
         goto L_main_married;
 
     menu
@@ -35,7 +35,7 @@ L_marry_do:
     callsub S_give_rings;
     mes "";
     mes "[Estard]";
-    mes "\"Here are your rings. In order to marry each other, you both must stand within one of the designated areas (like that small rug over there in the corner), wear your rings, and say 'marry (your partner's name).'\"";
+    mes "\"Here are your rings. In order to marry each other, you both must stand within one of the designated areas (like that small rug over there in the corner), wear your rings, and say '#marry (your partner's name).'\"";
     close;
 
 L_marry_too_young:
@@ -93,8 +93,8 @@ L_do_divorce:
     if (Zeny < @divorce_cost)
         goto L_not_enough_money;
 
-    if (divorce())
-        goto L_divorce_done;
+    set PARTNER, 0, PARTNER; // divorce the partner first, which will also divorce the rid if succesful
+    if (PARTNER < 1) goto L_divorce_done;
 
     mes "";
     mes "[Estard]";

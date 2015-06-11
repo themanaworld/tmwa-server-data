@@ -1,0 +1,67 @@
+-|script|lightning-strike|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 20) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    set .@level, getskilllv(.school);
+    if (.@level < .level) end;
+    if (.@level <= 3 && countitem("IronPowder") >= 1) delitem "IronPowder", 1;
+    elif (.@level <= 3) end;
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 20;
+    misceffect FX_MAGIC_BLACK, strcharinfo(0);
+    set @ingrav_sp, @spellpower;
+    set @ingrav_luk, Luk;
+    overrideattack (@spellpower/90)+1, 3000, 8, ATTACK_ICON_GENERIC, 31, strnpcinfo(0)+"::OnAttack";
+    callfunc "magic_exp";
+    end;
+
+OnAttack:
+    if (target(BL_ID, @target_id, 22) != 22) end; // 0x10 | 0x02 | 0x04
+
+    set @ingrav_rain, 0;
+    set .@p, get(.max_radius, "rain") + 1;
+    set @ingrav_target, @target_id; // store it because foreach overwrites it
+    foreach 1, getmap(), POS_X-.@p, POS_Y-.@p, POS_X+.@p, POS_Y+.@p, strnpcinfo(0)+"::OnNpc";
+    set @target_id, @ingrav_target; // now restore it
+
+    if (@ingrav_rain & 1) goto L_InRain;
+    setarray @edmg[0], @ingrav_sp, (@ingrav_sp/2)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3);
+    callfunc "elt_damage";
+    end;
+
+OnNpc:
+    set .@name$, strnpcinfo(0,@target_id);
+    explode .@nearby$[0], .@name$, "#";
+    if (.@nearby$[0] != "rain" && .@nearby$[1] != "rain") end;
+    setarray .@l[0], getnpcx(.@name$), getnpcy(.@name$), get(.radius, @target_id); // kaflosh x, y, radius
+    setarray @ar[0], .@l[0]-.@l[2], .@l[1]-.@l[2], .@l[0]+.@l[2], .@l[1]+.@l[2]; // kaflosh x1, y1, x2, y2 <= this is "area"
+    if (POS_X >= @ar[0] && POS_Y >= @ar[1] && POS_X <= @ar[2] && POS_Y <= @ar[3])
+        set @ingrav_rain, @ingrav_rain | 1;
+    end;
+
+L_InRain:
+    set @used, 0;
+    foreach 3, getmap(), @ar[0], @ar[1], @ar[2], @ar[3], strnpcinfo(0)+"::OnEntityInRain";
+    if (@used >= 1 && (@ingrav_luk + rand(200)) >= 150) end;
+    misceffect FX_LIGHTNING1 + rand(3), strcharinfo(0);
+    heal 0 - @ingrav_sp, 0;
+    end;
+
+OnEntityInRain:
+    if (target(BL_ID, @target_id, 16) != 16) end; // 0x10
+    if (@ingrav_luk + rand(200) <= 175) end;
+    set @used, @used + 1;
+    setarray @edmg[0], @ingrav_sp/6, (((@ingrav_sp/2)+1)/3)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3);
+    callfunc "elt_damage";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_WAR;
+    set .invocation$, chr(MAGIC_SYMBOL) + "ingrav"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 2;
+    end;
+}

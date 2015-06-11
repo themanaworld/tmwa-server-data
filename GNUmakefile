@@ -11,7 +11,7 @@ conf: world/map/conf/magic-secrets.sex \
 login/conf/login_local.conf login/conf/ladmin_local.conf login/save/gm_account.txt login/save/account.txt \
 world/conf/char_local.conf \
 world/map/conf/map_local.conf world/map/conf/battle_local.conf world/map/conf/atcommand_local.conf world/map/db/const-debugflag.txt \
-world/map/npc/functions/motd.txt
+world/map/npc/functions/motd.txt world/map/npc/commands/_atcommand_local.txt
 
 world/map/conf/magic-secrets.sex: world/map/conf/magic-secrets.sex.template world/map/conf/secrets-build
 	cd world/map/conf && ./build-magic.sh

@@ -1,0 +1,32 @@
+-|script|detect-players|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 7) end;
+    if (getskilllv(.school) < .level) end;
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // XXX the casttime is 300 so should this be 0 ?
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 7;
+    misceffect FX_MAGIC_DARKRED, strcharinfo(0);
+    callfunc "magic_exp";
+    set @inwilt$, "";
+    set .@d, @spellpower/2;
+    foreach 0, getmap(), POS_X - .@d, POS_Y - .@d, POS_X + .@d, POS_Y + .@d, strnpcinfo(0)+"::OnPC";
+    message strcharinfo(0), if_then_else(@inwilt$=="", "You sense no-one else nearby.", "You sense the following: "+@inwilt$);
+    end;
+
+OnPC:
+    if (@target_id == BL_ID) end; // do not count the caster
+    if (sc_check(SC_HIDE, @target_id)) end; // do not count players with anwiltyp
+    if (getpvpflag(1, @target_id)) end; // do not count invisible players
+    if (@inwilt$ != "") set @inwilt$, @inwilt$ + ", ";
+    set @inwilt$, @inwilt$ + strcharinfo(0, @target_id) + if_then_else(@spellpower > 99, "("+get(BaseLevel, @target_id)+")", "");
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "inwilt"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 0;
+    end;
+}

@@ -1,0 +1,57 @@
+-|script|lay-on-hands|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 10) end;
+    if (getskilllv(.school) < .level) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (@args$ == "Mouboo" || @args$ == "mouboo") goto L_Mouboo;
+    set @target_id, getcharid(3, @args$);
+    if (@target_id < 1 || !(isloggedin(@target_id))) end;
+    if (Hp <= get(MaxHp, @target_id) / 20) end; // hp needs to be > 1/20 * target hp
+    callfunc "adjust_spellpower";
+    if (distance(BL_ID, @target_id) >= (((sqrt(@spellpower)*12)+@spellpower)/100)+2) end;
+    if (sc_check(SC_HALT_REGENERATE,@target_id)) end;
+    if (getequipid(equip_head, @args$) == 888) end; // magic gm top hat
+    set .@needed, get(MaxHp, @target_id) - get(Hp, @target_id);
+    goto L_Pay;
+
+L_Pay:
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // XXX should this be 0 ?
+    set Sp, Sp - 10;
+    misceffect FX_MAGIC_WHITE, strcharinfo(0); // on caster
+    misceffect FX_MAGIC_WHITE, @args$; // on target
+
+    set .@fraction, max(80, 200 - (Vit + (@spellpower/10))); // pay at least 40%
+    set .@payment, (.@needed * .@fraction) / 200;
+    set .@available, Hp - (MaxHp / 20);
+    set .@power, if_then_else(.@payment < .@available, .@needed+1-1, (.@available * 200) / .@fraction); // FIXME / XXX why the f do I need to do +1-1 ?
+    if (.@payment > .@available) set .@payment, .@available;
+
+    set @inma_power, .@power, @target_id;
+
+    set @mexp, min(.exp_gain, .@payment/100); // TODO pass this to gain_heal_exp so it can be passed to gain_exp
+    // TODO gain_heal_exp(.@power, 1, 1, 3) => gain_exp
+
+    set .@dark, getskilllv(SKILL_MAGIC_DARK) >= 2; // true if dark magic user
+    set .@bad, (MaxHp/20)*(0-1);
+    if (.@dark) heal .@bad, 0;
+    sc_start SC_HALT_REGENERATE, if_then_else(.@dark, 5000, 10000), 0;
+
+    if (attachrid(@target_id) != 1) end;
+    if (!(isdead())) heal @inma_power, 0;
+    end;
+
+L_Mouboo:
+    set @spell, 1;
+    callfunc "QuestMoubooHeal";
+    set .@needed, 1000;
+    goto L_Pay;
+
+OnInit:
+    set .school, SKILL_MAGIC_LIFE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "inma"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 4; // this is MAX possible exp
+    end;
+}

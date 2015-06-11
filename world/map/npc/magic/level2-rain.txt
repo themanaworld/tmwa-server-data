@@ -1,0 +1,103 @@
+-|script|rain|32767
+{
+    // we can not start here because for the puppets this is OnClick
+    end;
+
+OnCast:
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (getskilllv(.school) < .level) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (Sp < 17) end;
+    explode .@map_ext[0], getmap(), "-";
+    if (.@map_ext[1] != 1) end; // XXX this is fugly, in the future let's use MF_OUTSIDE to detect if a map is "outside" or "inside"
+    if (getmapflag(getmap(), MF_TOWN)) end;
+    if   (getskilllv(.school) < 4 && countitem("BottleOfWater") >= 1) delitem "BottleOfWater", 1;
+    elif (getskilllv(.school) < 4) end;
+    set Sp, Sp - 17;
+    set MAGIC_CAST_TICK, gettimetick(2) + 3; // set the new debuff
+
+    callfunc "adjust_spellpower";
+    set @krad, min(.max_radius,(min(@spellpower,200)/30)+3); // kaflosh radius
+
+    set @nearby, 0;
+    foreach 1, getmap(), POS_X - .max_radius, POS_Y - .max_radius, POS_X + .max_radius, POS_Y + .max_radius,
+            strnpcinfo(0) + "::OnNearbyNpc";
+    if (@nearby) goto L_Absorb;
+
+    set @new_npc_name$, "#" + strnpcinfo(0) + "#" + getcharid(3); // make a unique puppet name for every player
+    callfunc "magic_exp";
+    misceffect FX_MAGIC_GREEN, strcharinfo(0);
+    set @spell_npc, puppet(getmap(), POS_X, POS_Y, @new_npc_name$, 127); // clone npc => get puppet id
+    set .caster, getcharid(3), @spell_npc; // tell the puppet who controls it
+    set .radius, @krad, @spell_npc; // this is also used by ingrav, don't rename
+    set .initial_x, POS_X, @spell_npc;
+    set .initial_y, POS_Y, @spell_npc;
+    set .max, @spellpower/3, @spell_npc;
+    set .max_launch, min(200,@spellpower/2)/100, @spell_npc;
+    donpcevent @new_npc_name$+"::OnLaunch"; // start
+    addnpctimer 30000, @new_npc_name$+"::OnDestroy"; // this is just a failsafe in case the npc is not properly destroyed
+    if(isin("011-1", 85, 31, 103, 45)) goto L_Pumpkins;
+    end;
+
+L_Absorb:
+    message strcharinfo(0), "##3Rain : ##BA nearby raincloud absorbs your magic.";
+    end;
+
+OnNearbyNpc:
+    explode .@nearby$[0], strnpcinfo(0,@target_id), "#";
+    if(.@nearby$[1] == "DruidTree0" || .@nearby$[1] == "DruidTree0") goto L_Tree;
+    if(.@nearby$[0] == "rain" || .@nearby$[1] == "rain")
+        set @nearby, @nearby + 1;
+    end;
+
+L_Pumpkins:
+    callfunc "HalloweenQuestWaterPumpkins";
+    end;
+
+L_Tree:
+    set .@x, get(POS_X, @target_id); set .@y, get(POS_Y, @target_id);
+    if (.@x < POS_X-@krad || .@y < POS_Y-@krad || .@x > POS_X+@krad || .@y > POS_Y+@krad) end; // in max radius but not in puppet area
+    set @flag, 1;
+    callfunc "QuestTreeTrigger";
+    close;
+
+OnLaunch:
+    if(attachrid(.caster) != 1) destroy; // destroy if caster is missing
+    if(getmap() != strnpcinfo(3)) destroy; // destroy if caster left the map
+    set .count, .count + 1;
+    if(.count > .max) destroy;
+    set .launch, 0;
+    callsub S_Launch;
+    addnpctimer 400 + rand(100), strnpcinfo(0)+"::OnLaunch"; // loop until max
+    end;
+
+S_Launch:
+    npcareawarp .initial_x - .radius, .initial_y - .radius, .initial_x + .radius, .initial_y + .radius, 0, strnpcinfo(0);
+    misceffect FX_RAIN;
+    foreach 3, strnpcinfo(3), getnpcx()-1, getnpcy()-1, getnpcx()+1, getnpcy()+1, strnpcinfo(0) + "::OnHit";
+    set .launch, .launch + 1;
+    if(.launch < .max_launch) goto S_Launch;
+    return;
+
+OnHit:
+    if(attachrid(.caster) != 1) destroy; // destroy if caster is missing
+    if(getmap() != strnpcinfo(3)) destroy; // destroy if caster left the map
+    if(target(.caster, @target_id, 16) != 16 && .caster != @target_id) end;
+    if((get(BL_TYPE, @target_id) & 1) == 0) end; // either mob or pc
+    if(elttype(@target_id) == ELT_FIRE)
+        injure .caster, @target_id, rand((@spellpower/15)+5)+2;
+    end;
+
+OnDestroy:
+    debugmes "kaflosh timeout! [this shouldn't happen]";
+    destroy;
+
+OnInit:
+    set .school, SKILL_MAGIC_NATURE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "kaflosh"; // used in npcs that refer to this spell
+    callfunc "magic_register2";
+    set .level, 2;
+    set .exp_gain, 1;
+    set .max_radius, 15;
+    end;
+}

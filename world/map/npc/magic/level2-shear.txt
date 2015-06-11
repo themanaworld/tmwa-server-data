@@ -1,0 +1,49 @@
+-|script|shear|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 23) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (getskilllv(.school) < .level) end;
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 23;
+    misceffect FX_MAGIC_GREEN, strcharinfo(0);
+    overrideattack 1, 2000, 1, ATTACK_ICON_SHEARING, 30, strnpcinfo(0)+"::OnAttack";
+    callfunc "magic_exp";
+    set @chipchip_sp, @spellpower;
+    end;
+
+OnAttack:
+    if (isloggedin(@target_id)) end; // can not shear a player
+    if (sc_check(SC_SHEARED, @target_id)) end; // mob already sheared
+    if (target(BL_ID, @target_id, 22) != 22) end; // 0x10 | 0x02 | 0x04
+    sc_start SC_SHEARED, 600000, 0, @target_id;
+    set .@score, rand(1000 - rand(@chipchip_sp));
+    set .@id, get(Class, @target_id); // get the mob ID
+
+    if   (.@id == 1020 && .@score < 300) set .@item$, "WhiteFur"; // Fluffy
+    elif (.@id == 1027 && .@score < 300) set .@item$, "WhiteFur"; // EasterFluffy
+    elif (.@id == 1019 && .@score < 250) set .@item$, "HardSpike"; // SpikyMushroom
+    elif (.@id == 1028 && .@score < 175) set .@item$, "CottonCloth"; // Mouboo
+    elif (.@id == 1029 && .@score < 700) set .@item$, "MauveHerb"; // MauvePlant
+    elif (.@id == 1030 && .@score < 700) set .@item$, "CobaltHerb"; // CobaltPlant
+    elif (.@id == 1031 && .@score < 700) set .@item$, "GambogeHerb"; // GambogePlant
+    elif (.@id == 1032 && .@score < 700) set .@item$, "AlizarinHerb"; // AlizarinPlant
+    elif (.@id == 1035 && .@score < 300) set .@item$, "SilkCocoon"; // SilkWorm
+    elif (.@id == 1018 && .@score < 180) set .@item$, "PinkAntenna"; // Pinkie
+    else end;
+    makeitem .@item$, 1, getmap(), rand(POS_X - 1, POS_X + 1), rand(POS_Y - 1, POS_Y + 1);
+
+    if (.@id != 1020 && .@id != 1028 && .@id != 1018 && rand(2) != 1) end;
+    set @value, 1;
+    callfunc "QuestSagathaHappy";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_NATURE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "chipchip"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 0;
+    end;
+}

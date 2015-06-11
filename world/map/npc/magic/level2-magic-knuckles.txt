@@ -1,0 +1,32 @@
+-|script|magic-knuckles|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 20) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    set .@level, getskilllv(.school);
+    if (.@level < .level) end;
+    if (.@level <= 3 && countitem("Beer") >= 1) delitem "Beer", 1;
+    elif (.@level <= 3) end;
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 20;
+    misceffect FX_MAGIC_BLACK, strcharinfo(0);
+    overrideattack (@spellpower/10)+10, 1300, 1, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
+    callfunc "magic_exp";
+    set @upmaru_str, Str; // do not allow to equip light armor, cast, and then switch to heavy armor to get bonus str
+    end;
+
+OnAttack:
+    if (target(BL_ID, @target_id, 22) != 22) end; // 0x10 | 0x02 | 0x04
+    setarray @melee_dmg[0], 30, ((@upmaru_str*2) + 5);
+    callfunc "melee_damage";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_WAR;
+    set .invocation$, chr(MAGIC_SYMBOL) + "upmaru"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 1;
+    end;
+}

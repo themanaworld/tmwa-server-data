@@ -1,0 +1,34 @@
+-|script|magic-blade|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 9) end;
+    set .@level, getskilllv(.school);
+    if (.@level < .level) end;
+    set @chiza_component$, "";
+    if   (.@level <= 2 && countitem("SharpKnife") >= 1) set @chiza_component$, "SharpKnife";
+    elif (.@level <= 2 && countitem("Knife") >= 1)      set @chiza_component$, "Knife";
+    elif (.@level <= 2) end;
+    if (@chiza_component$ != "") delitem @chiza_component$, 1;
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 9;
+    misceffect FX_MAGIC_BLACK, strcharinfo(0);
+    overrideattack (@spellpower/15)+10, 1200, 1, ATTACK_ICON_GENERIC, 30, strnpcinfo(0)+"::OnAttack";
+    callfunc "magic_exp";
+    set @chiza_str, Str; // do not allow to equip light armor, cast, and then switch to heavy armor to get bonus str
+    end;
+
+OnAttack:
+    if (target(BL_ID, @target_id, 22) != 22) end; // 0x10 | 0x02 | 0x04
+    setarray @melee_dmg[0], if_then_else(@chiza_component$ == "Knife", 40, 60), (@chiza_str + 5);
+    callfunc "melee_damage";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_WAR;
+    set .invocation$, chr(MAGIC_SYMBOL) + "chiza"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 1;
+    set .exp_gain, 1;
+    end;
+}

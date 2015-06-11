@@ -1,0 +1,43 @@
+-|script|spell-hide|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 11) end;
+    set .@level, getskilllv(.school);
+    if (.@level < .level) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (.@level <= 3 && countitem("CottonCloth") >= 1) delitem "CottonCloth", 1;
+    elif (.@level <= 3) end;
+    set @target_id, getcharid(3, @args$);
+    if (@target_id < 1 || !(isloggedin(@target_id))) set @target_id, BL_ID; // fallback to self
+
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 11;
+    misceffect FX_MAGIC_BLUE, strcharinfo(0);
+    callfunc "magic_exp";
+
+    if (distance(BL_ID, @target_id) >= (@spellpower/30)+2) set @target_id, BL_ID;
+    if (BL_ID == @target_id) set @args$, strcharinfo(0);
+    if (BL_ID != @target_id) misceffect FX_MAGIC_DEFAULT, @args$;
+    set .@time, (@spellpower*2500)+5000;
+    set @anwiltyp_time, .@time, @target_id;
+    sc_start SC_HIDE, .@time, 0, @target_id;
+    message @args$, "Magic : You are hidden!";
+    if (BL_ID != @target_id) message strcharinfo(0), "Magic : You hid someone!";
+    if (attachrid(@target_id) != 1) end;
+    addtimer @anwiltyp_time, strnpcinfo(0)+"::OnEnd";
+    end;
+
+OnEnd:
+    message strcharinfo(0), "Magic : You are no longer hidden.";
+    misceffect FX_MAGIC_GENERIC, strcharinfo(0);
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_ASTRAL;
+    set .invocation$, chr(MAGIC_SYMBOL) + "anwiltyp"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 2;
+    end;
+}

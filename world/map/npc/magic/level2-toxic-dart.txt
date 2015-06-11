@@ -1,0 +1,36 @@
+-|script|toxic-dart|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 15) end;
+    set .@level, getskilllv(.school);
+    if (.@level < .level) end;
+    if (OrumQuest <= 37) end;
+    if (.@level <= 2 && countitem("Root") >= 2) delitem "Root", 2;
+    elif (.@level <= 2) end;
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 15;
+    misceffect FX_MAGIC_DARKRED, strcharinfo(0);
+    set @damage, sqrt(@spellpower) * 5;
+    set @dmg_bonus, (BaseLevel/3) + 5;
+    overrideattack (@spellpower/75)+3, 1200, 4, ATTACK_ICON_GENERIC, 31, strnpcinfo(0)+"::OnAttack";
+    callfunc "magic_exp";
+    end;
+
+OnAttack:
+    misceffect FX_MAGIC_DARKRED, strcharinfo(0);
+    if (target(BL_ID, @target_id, 50) != 50) end; // 0x20 | 0x02 | 0x10
+    setarray @edmg[0], @damage, @dmg_bonus, ELT_NEUTRAL, ELT_POISON, FX_FIRE_BURST;
+    callfunc "elt_damage";
+    if(@target_id != BL_ID && isloggedin(@target_id)) // this is a dirty trick to check if the target is a player
+        sc_start sc_poison, 5000+(@spellpower*1200), max(15,@spellpower/15)+5, @target_id;
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_DARK;
+    set .invocation$, chr(MAGIC_SYMBOL) + "phlex"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 3;
+    end;
+}

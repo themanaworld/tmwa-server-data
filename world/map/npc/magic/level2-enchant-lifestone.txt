@@ -1,0 +1,35 @@
+-|script|enchant-lifestone|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 15) end;
+    if (getskilllv(.school) < .level) end;
+    if   (countitem("BugLeg") >= 1) delitem "BugLeg", 1;
+    elif (countitem("MaggotSlime") >= 1) delitem "MaggotSlime", 1;
+    elif (countitem("MauveHerb") >= 1 && countitem("AlizarinHerb") >= 1 && countitem("CobaltHerb") >= 1 && countitem("GambogeHerb") >= 1) goto L_Herbs;
+    else end;
+    goto L_Proceed;
+
+L_Herbs:
+    delitem "MauveHerb", 1;
+    delitem "AlizarinHerb", 1;
+    delitem "CobaltHerb", 1;
+    delitem "GambogeHerb", 1;
+    goto L_Proceed;
+
+L_Proceed:
+    set MAGIC_CAST_TICK, gettimetick(2) + 4; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 15;
+    misceffect FX_MAGIC_GENERIC, strcharinfo(0);
+    getitem "Lifestone", 1;
+    callfunc "magic_exp";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "manpahil"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 1;
+    end;
+}

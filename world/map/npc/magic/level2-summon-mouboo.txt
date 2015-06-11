@@ -1,0 +1,53 @@
+-|script|mouboos|32767
+{
+    end;
+
+OnCast:
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 35) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (getskilllv(.school) < .level) end;
+    if (countitem("MoubooFigurine") < 1 || countitem("Root") < 1) end;
+    delitem "MoubooFigurine", 1;
+    delitem "Root", 1;
+    set MAGIC_CAST_TICK, gettimetick(2) + 20; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 35;
+    misceffect FX_MAGIC_BLUE, strcharinfo(0);
+    misceffect FX_PENTAGRAM_BUILDUP, strcharinfo(0);
+    callfunc "magic_exp";
+    set .@puppet$, "#"+strnpcinfo(0)+"#"+BL_ID;
+    set .@puppet, puppet(getmap(), POS_X, POS_Y, .@puppet$, 127);
+    set .count, (@spellpower/270)+1, .@puppet;
+    set .master, BL_ID, .@puppet;
+    set .lifetime, @spellpower*100, .@puppet;
+    addnpctimer 4000-(@spellpower*9), .@puppet$+"::OnSummon";
+    addnpctimer 6000, .@puppet$+"::OnDestroy";
+    end;
+
+OnSummon:
+    specialeffect FX_PENTAGRAM_BURST;
+    set .@i, 0;
+    set .@x, getnpcx();
+    set .@y, getnpcy();
+    set .@map$, strnpcinfo(3);
+    callsub S_SummonAll;
+    end;
+
+OnDestroy:
+    destroy;
+
+S_SummonAll:
+    summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, 1028, 2, .lifetime;
+    set .@i, .@i + 1;
+    if (.@i < .count) goto S_SummonAll;
+    return;
+
+OnInit:
+    set .school, SKILL_MAGIC_ASTRAL;
+    set .invocation$, chr(MAGIC_SYMBOL) + "kalboo"; // used in npcs that refer to this spell
+    callfunc "magic_register2";
+    set .level, 2;
+    set .exp_gain, 2;
+    end;
+}

@@ -1,0 +1,48 @@
+-|script|protect|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 14) end;
+    set .@level, getskilllv(.school);
+    if (.@level < .level) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (.@level <= 3 && countitem("HardSpike") >= 1) delitem "HardSpike", 1;
+    elif (.@level <= 3) end;
+    set @target_id, getcharid(3, @args$);
+    if (@target_id < 1 || !(isloggedin(@target_id))) set @target_id, BL_ID; // fallback to self
+
+    set @betsanc_caster, BL_ID, @target_id;
+    if (attachrid(@target_id) != 1) end;
+    set @target_hat, getequipid(equip_head), @betsanc_caster;
+    if (attachrid(@betsanc_caster) != 1) end;
+    if (@target_hat == 888) end; // FIXME: this whole 5 line block could be done with only one line if we modify getequipid
+
+    set MAGIC_CAST_TICK, gettimetick(2) + 2; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 14;
+    misceffect FX_MAGIC_GREEN, strcharinfo(0);
+    callfunc "magic_exp";
+
+    if (distance(BL_ID, @target_id) >= (@spellpower/30)+2) set @target_id, BL_ID;
+    if (BL_ID == @target_id) set @args$, strcharinfo(0);
+    misceffect FX_MAGIC_SHIELD, @args$;
+    set .@time, (@spellpower*1000)+5000;
+    set @betsanc_time, .@time, @target_id;
+    sc_start SC_PHYS_SHIELD, .@time, max(15,(@spellpower/20))+5, @target_id;
+    message @args$, "Shield : You feel more protected.";
+    if (attachrid(@target_id) != 1) end;
+    addtimer @betsanc_time, strnpcinfo(0)+"::OnEnd";
+    end;
+
+OnEnd:
+    message strcharinfo(0), "Shield : You feel less protected.";
+    misceffect FX_MAGIC_SHIELD_ENDS, strcharinfo(0);
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_NATURE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "betsanc"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 2;
+    set .exp_gain, 2;
+    end;
+}

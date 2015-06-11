@@ -1,0 +1,22 @@
+-|script|spell-aggravate|32767
+{
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (Sp < 3) end;
+    if (getskilllv(.school) < .level) end;
+    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    set @args$, ""; callfunc "adjust_spellpower"; // we reset @args$ because this spell should not have a target
+    set @distance, (2 + (@spellpower / 50));
+    set Sp, Sp - 3;
+    misceffect FX_MAGIC_GREEN, strcharinfo(0);
+    callfunc "magic_exp";
+    aggravate getmap(), (POS_X - @distance), (POS_Y - @distance), (POS_X + @distance), (POS_Y + @distance), SFX_DEFAULT;
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_NATURE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "itenplz"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 1;
+    set .exp_gain, 0;
+    end;
+}

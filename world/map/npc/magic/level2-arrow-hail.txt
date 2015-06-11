@@ -1,0 +1,112 @@
+-|script|arrow-hail|32767
+{
+    // we can not start here because for the puppets this is OnClick
+    end;
+
+OnCast:
+    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if (getskilllv(.school) < .level) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (Sp < 25) end;
+    explode .@map_ext[0], getmap(), "-";
+    if (.@map_ext[1] != 1) end; // XXX this is fugly, in the future let's use MF_OUTSIDE to detect if a map is "outside" or "inside"
+    if (getmapflag(getmap(), MF_TOWN)) end;
+    if   (countitem("Arrow")     >= 20 && countitem("SulphurPowder") >= 1) delitem "Arrow",     20;
+    elif (countitem("IronArrow") >= 20 && countitem("SulphurPowder") >= 1) delitem "IronArrow", 20;
+    else end;
+    delitem "SulphurPowder", 1;
+    set Sp, Sp - 25;
+    set MAGIC_CAST_TICK, gettimetick(2) + 5; // set the new debuff
+
+    setarray @away[0], POS_X, POS_Y, getdir(), (.range + 1), 0;
+    callsub S_AwayFrom;
+
+    set @nearby, 0;
+    foreach 1, getmap(), @away[0] - 14, @away[1] - 14, @away[0] + 14, @away[1] + 14,
+            strnpcinfo(0) + "::OnNearbyNpc";
+    if (@nearby) goto L_Absorb;
+
+    callfunc "adjust_spellpower";
+    set @new_npc_name$, "#" + strnpcinfo(0) + "#" + getcharid(3); // make a unique puppet name for every player
+    callfunc "magic_exp";
+    misceffect FX_MAGIC_BLACK, strcharinfo(0);
+    set @spell_npc, puppet(getmap(), POS_X, POS_Y, @new_npc_name$, 127); // clone npc => get puppet id
+    set .max_hit, (@spellpower / 8), @spell_npc; // set .max_hit in the puppet
+    set .caster, getcharid(3), @spell_npc; // tell the puppet who controls it
+    set .damage, 125, @spell_npc;
+    set .damage_bonus, (@spellpower / 5), @spell_npc;
+    set .area_x, @away[0], @spell_npc; set .area_y, @away[1], @spell_npc;
+    donpcevent @new_npc_name$+"::OnLaunch"; // start the puppet timer and strike
+    initnpctimer @new_npc_name$; // start the destroy timer
+    end;
+
+S_AwayFrom:
+    if(@away[2] == 6 && !(iscollision(getmap(), (@away[0] + 1), @away[1]))) // right
+        set @away[0], @away[0] + 1;
+    if(@away[2] == 4 && !(iscollision(getmap(), @away[0], (@away[1] - 1)))) // up
+        set @away[1], @away[1] - 1;
+    if(@away[2] == 2 && !(iscollision(getmap(), (@away[0] - 1), @away[1]))) // left
+        set @away[0], @away[0] - 1;
+    if(@away[2] == 0 && !(iscollision(getmap(), @away[0], (@away[1] + 1)))) // down
+        set @away[1], @away[1] + 1;
+    set @away[4], @away[4] + 1;
+    if(@away[4] < @away[3]) goto S_AwayFrom;
+    return;
+
+L_Absorb:
+    message strcharinfo(0), "##3Arrow Hail : ##BA nearby arrow hail absorbs your magic!";
+    end;
+
+OnNearbyNpc:
+    explode .@nearby$[0], strnpcinfo(0,@target_id), "#";
+    if(.@nearby$[0] == "arrow-hail" || .@nearby$[1] == "arrow-hail")
+        set @nearby, @nearby + 1;
+    end;
+
+OnLaunch:
+    if(attachrid(.caster) != 1) destroy; // destroy if caster is missing
+    if(getmap() != strnpcinfo(3)) destroy; // destroy if caster left the map
+    set .hit, .hit + 1;
+    if(.hit > .max_hit) destroy;
+    set .launch, 0;
+    callsub S_Launch;
+    addnpctimer 250 + rand(50) + rand(50), strnpcinfo(0)+"::OnLaunch"; // loop until max
+    end;
+
+S_Launch:
+    npcareawarp .area_x - 6, .area_y - 6, .area_x + 6, .area_y + 6, 0, strnpcinfo(0);
+    misceffect FX_ARROW_HAIL;
+    set .done, 0;
+    foreach 3, strnpcinfo(3), getnpcx(), getnpcy(), getnpcx(), getnpcy(), strnpcinfo(0) + "::OnHit";
+    if(!.done && getx() == getnpcx() && gety() == getnpcy())
+        heal 0 - (.damage + rand(.damage_bonus) + rand(.damage_bonus)), 0; // injure caster
+    set .launch, .launch + 1;
+    if(.launch < 3) goto S_Launch;
+    return;
+
+OnTimer30000:
+    debugmes "frillyar timeout! [this shouldn't happen]";
+    destroy;
+
+OnHit:
+    if(attachrid(.caster) != 1) destroy; // destroy if caster is missing
+    if(getmap() != strnpcinfo(3)) destroy; // destroy if caster left the map
+
+    if(target(.caster, @target_id, 16) != 16 && .caster != @target_id) end;
+    if((get(BL_TYPE, @target_id) & 1) == 0) end; // either mob or pc
+    set .@damage, .damage + rand(.damage_bonus) + rand(.damage_bonus);
+    if(.caster != @target_id)
+        set .@damage, (.@damage * (100 - get(MDEF1, @target_id))) / 100;
+    injure .caster, @target_id, .@damage;
+    set .done, 1;
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_WAR;
+    set .range, 7;
+    set .invocation$, chr(MAGIC_SYMBOL) + "frillyar"; // used in npcs that refer to this spell
+    callfunc "magic_register2";
+    set .level, 2;
+    set .exp_gain, 2;
+    end;
+}

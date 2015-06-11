@@ -1,0 +1,54 @@
+// see https://tmworld.uservoice.com/forums/255809-general/suggestions/6051818-sacrifice
+// author: gumi
+-|script|necromancy|32767
+{
+    callfunc "magic_checks"; if(@failed) end;
+    if (Sp < 50) end;
+    if (getskilllv(.school) < .level) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    set @target_id, getcharid(3, @args$);
+    if (@target_id < 1 || !(isloggedin(@target_id))) end;
+    if (get(Hp, @target_id) > 0) end;
+    if (Hp < (get(MaxHp, @target_id) / 3)) end; // hp must be at least a third of the max hp of the target
+    callfunc "adjust_spellpower";
+    if (distance(BL_ID, @target_id) >= (((sqrt(@spellpower)*12)+@spellpower)/100)+2) end;
+    if (get(@necromancer, @target_id) > 0) end; // someone else is already trying to resurrect this player
+    if (getmapflag(getmap(), MF_NOSAVE)) end; // do not allow for maps like illia or candor
+    if (countitem("Soul") >= 1) delitem "Soul", 1; else end;
+
+    set MAGIC_CAST_TICK, gettimetick(2) + 20;
+    set Sp, Sp - 50;
+    misceffect FX_MAGIC_DARKRED, strcharinfo(0); // on caster
+    misceffect FX_PENTAGRAM_BUILDUP, @args$; // on target
+
+    set @necromancer, CHAR_ID, @target_id; // tell the target who is reviving them
+
+    if (attachrid(@target_id) != 1) end;
+    addtimer 6000, strnpcinfo(0)+"::OnRevive"; // TODO: make it take more or less time depending on the spell power
+    end;
+
+OnRevive:
+    set .@necro, get(BL_ID, @necromancer);
+    if (.@necro < 1) goto L_Clean;
+    if (get(Hp, .@necro) < 1) end;
+    misceffect FX_PENTAGRAM_BURST, strcharinfo(0);
+    misceffect FX_CRITICAL, strcharinfo(0, .@necro);
+    heal 1, 0; // revive
+    set Hp, 1;
+    set Sp, 0;
+    set Hp, 1, .@necro;
+    set Sp, 0, .@necro;
+    goto L_Clean;
+
+L_Clean:
+    set @necromancer, 0;
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_DARK;
+    set .invocation$, chr(MAGIC_SYMBOL) + "nevela"; // used in npcs that refer to this spell
+    callfunc "magic_register";
+    set .level, 3;
+    set .exp_gain, 1;
+    end;
+}
