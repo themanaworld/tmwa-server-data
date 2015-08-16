@@ -17,71 +17,77 @@
 020-1,99,83,0|script|#Well|400
 {
     if(QL_WELL == 2) goto L_Finished;
-    set @item_ID, 0;
-    setarray @quote_item$, "Yuck! Who has thrown that on me?","Ouch! Who hurts me?","White powder!? What's going on up there?","Ahw! It's raining ","","","";
-
+    
     mes "...";
     menu
-        "Throw something in the well.", L_trew,
+        "Throw something in the well.", L_Throw,
         "Leave it alone.", L_Close;
 
-L_trew:
+L_Throw:
     mes "What do you want to throw?";
+    
+    setarray @response_list$, "Yuck! Who threw that on me?", "Ouch! Who's hurting me?", "White powder!? What's going on up there?", "It's raining in Nivalis?!";
+    setarray @item_list$, "MaggotSlime", "RawLog", "PileOfAsh", "BottleOfWater";
     menu
-        "Maggot slime", L_MenuItems,
-        "A raw log", L_MenuItems,
-        "Pile of ash", L_MenuItems,
-        "Bottle of water", L_MenuItems,
+        "Maggot slime", L_CheckItem,
+        "A raw log", L_CheckItem,
+        "Pile of ash", L_CheckItem,
+        "Bottle of water", L_CheckItem,
         "Leave it alone", L_Close;
 
-L_MenuItems:
-    set @menu, @menu - 1;
-
-    // little IF to do @quote$ & @Item_ID
-    set @quote$, @quote_item$[@menu];
-    if(@menu == 0)
-        set @item_ID, 505;
-    if(@menu == 1)
-        set @item_ID, 569;
-    if(@menu == 2)
-        set @item_ID, 701;
-    if(@menu == 3)
-        set @item_ID, 541;
-
-    if(countitem(@item_ID) < 1)
-        goto L_NO_ITEM;
-    if(@menu == 3)
+L_CheckItem:
+    set @index, @menu - 1;
+    set @response$, @response_list$[@index];
+    set @item$, @item_list$[@index];
+    
+    mes @item$;
+    
+    if(countitem(@item$) == 0)
+        goto L_MissingItem;
+    delitem @item$, 1;
+    
+    if(@item$ == "BottleOfWater")
         getitem "EmptyBottle", 1;
-    delitem @item_ID, 1;
-
+    
     mes "[Mysterious voice inside the well]";
-    mes "\" "+ @quote$ +"\"";
+    mes "\"" + @response$ + "\"";
     next;
     menu
-        "Who are you?", L_MenuItems1,
-        "How did you get there?", L_MenuItems1,
-        "Do you need help?", L_MenuItems1;
+        "Who are you?", L_Who,
+        "How did you get down there?", L_How,
+        "Do you need help?", L_Help;
 
-L_MenuItems1:
-    set @menu, @menu - 1;
-        if (@menu == 0)
-            set @quote$, "I'll talk about who I am after leaving the well.";
-        if (@menu == 1)
-            set @quote$, "Well, someone has pushed me in the well, I don't know who did that.";
-        if (@menu == 2)
-            set @quote$, "";
+L_Who:
+    set @response$, "I'll talk about who I am after leaving the well. ";
+    goto L_GetHelp;
+
+L_How:
+    set @response$, "Well, someone pushed me into the well, I'm not sure who. ";
+    goto L_GetHelp;
+
+L_Help:
+    set @response$, "I certainly can't get out on my own. ";
+    goto L_GetHelp;
+
+L_GetHelp:
     mes "[Mysterious voice inside the well]";
-    mes "\" "+ @quote$ +". So if you can call help for me... please do so!\"";
-    set QL_WELL, 1;
-    close;
+    mes "\"" + @response$ + "So if you can get some help for me... please do so!\"";
+    set @QL_WELL, 1;
+    
+    cleararray @response_list$, "", 4;
+    cleararray @item_list$, "", 4;
+    set @index, 0;
+    set @response$, "";
+    
+    goto L_Close;
 
-L_NO_ITEM:
-    mes "You don't have such an item... Come back when you have it.";
-    close;
+L_MissingItem:
+    mes "You can't throw something you don't have.";
+    goto L_Close;
 
 L_Finished:
     mes "This is a well.";
-    close;
+    goto L_Close;
 
 L_Close:
     close;
@@ -91,24 +97,23 @@ L_Close:
 {
     mes "[Miler]";
     mes "\"Hello!\"";
-    if(QL_WELL == 2) close;
-    if(QL_WELL == 1)
-        menu
-            "Hello.", L_Close,
-            "Hello, Can you help me?", L_HELP;
-    goto L_Close;
+    
+    if(QL_WELL != 1) goto L_Close;
+    menu
+        "Hello.", L_Close,
+        "Hello, Can you help me?", L_Help;
 
-L_HELP:
+L_Help:
     mes "[Miler]";
     mes "\"What's the problem?\"";
-    menu "Someone has fallen in the well.", L_Next;
+    menu "Someone fell into the well.", L_Next;
 
 L_Next:
     mes "[Miler]";
     mes "\"Ho! I'll help him!\"";
     getexp (BaseLevel * 111), 0;
     set QL_WELL, 2;
-    close;
+    goto L_Close;
 
 L_Close:
     close;
