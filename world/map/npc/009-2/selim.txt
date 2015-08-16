@@ -1,20 +1,6 @@
 009-2,32,104,0|script|Selim|326
 {
-    cleararray @items$, "", getarraysize(@items$);
-    cleararray @item_names$, "", getarraysize(@item_names$);
-    set @r, 0;
-    set @j, getarraysize($@DYE_items$);
-    goto L_CloneArray; // clone the array from DyeConfig
-
-L_CloneArray:
-    set @items$[@r],      $@DYE_items$[@r];
-    set @item_names$[@r], $@DYE_item_names$[@r];
-    set @r, @r + 1;
-    if(@r < @j) goto L_CloneArray;
-    set @r, 0;
-    set @j, 0;
     goto L_Main;
-
 
 L_Main:
     mes "[Selim]";
@@ -54,6 +40,22 @@ L_ask_dye:
         "Good bye.", L_Close;
 
 L_clothes_choice:
+    cleararray @items$, "", getarraysize(@items$);
+    cleararray @item_names$, "", getarraysize(@item_names$);
+    set @r, 0;
+    set @j, getarraysize($@DYE_items$);
+    goto L_CloneArray; // clone the array from DyeConfig
+
+L_CloneArray:
+    set @items$[@r],      $@DYE_items$[@r];
+    set @item_names$[@r], $@DYE_item_names$[@r];
+    set @r, @r + 1;
+    if(@r < @j) goto L_CloneArray;
+    set @r, 0;
+    set @j, 0;
+    goto L_clothes_choice2;
+
+L_clothes_choice2:
     mes "[Selim]";
     mes "\"What can I dye for you today?\"";
     next;
@@ -101,6 +103,8 @@ L_colour:
     next;
     set @r, 0;
     set @j, getarraysize($@DYE_colors$);
+    cleararray @items$, "", getarraysize(@items$);
+    cleararray @item_names$, "", getarraysize(@item_names$);
     callsub S_CloneColors;
     set @default_choice$, "I have no dye.";
     callfunc "DynamicItemMenu$";
