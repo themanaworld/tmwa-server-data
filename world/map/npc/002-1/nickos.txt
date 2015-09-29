@@ -1,20 +1,15 @@
-// Sandstorm mine guard
-// Variables used: nibble 4 and 5 of QUEST_SouthTulimshar
-
 002-1,46,108,0|script|Nickos|123
 {
-    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
-
-    if (@state == 20) goto L_UGQ;
-    if (@state == 19) goto L_AS_Done;
-    if (@state == 18) goto L_AS_Start;
-    if (@state >= 11) && (@state < 18) goto L_Guards;
-    if (@state == 10) goto L_Check_Happy;
-    if (@state > 7) && (@state < 10) goto L_Waits;
-    if (@state == 7) goto L_Mine;
-    if (@state == 6) goto L_Orders_Received;
-    if (@state == 5) goto L_Orders;
-    if (@state < 5) goto L_See_Dausen_First;
+    if (QL_MINEALL == 20) goto L_UGQ;
+    if (QL_MINEALL == 19) goto L_AS_Done;
+    if (QL_MINEALL == 18) goto L_AS_Start;
+    if (QL_MINEALL >= 11) && (QL_MINEALL < 18) goto L_Guards;
+    if (QL_MINEALL == 10) goto L_Check_Happy;
+    if (QL_MINEALL > 7) && (QL_MINEALL < 10) goto L_Waits;
+    if (QL_MINEALL == 7) goto L_Mine;
+    if (QL_MINEALL == 6) goto L_Orders_Received;
+    if (QL_MINEALL == 5) goto L_Orders;
+    if (QL_MINEALL < 5) goto L_See_Dausen_First;
 
     mes "[Nickos]";
     mes "\"I'm watching this mine to make sure the monsters don't harm the miners.\"";
@@ -29,8 +24,7 @@ L_See_Dausen_First:
     goto L_Close;
 
 L_Orders:
-    set @state, 6;
-    callsub S_Update_Var;
+    set QL_MINEALL, 6;
     mes "[Nickos]";
     mes "\"I have to hold my post longer?  Argh!  I was looking forward to my break. Oh well, thanks for letting me know.\"";
     goto L_Close;
@@ -55,8 +49,7 @@ L_Disappoint:
     goto L_Close;
 
 L_Mine_Open:
-    set @state, 8;
-    callsub S_Update_Var;
+    set QL_MINEALL, 8;
     mes "[Nickos]";
     mes "\"Excellent!  You now have my permission to enter the mine. Your assistance helps ease my worries.\"";
     goto L_Close;
@@ -67,8 +60,7 @@ L_Waits:
     goto L_Close;
 
 L_Check_Happy:
-    set @state, 11;
-    callsub S_Update_Var;
+    set QL_MINEALL, 11;
     set Zeny, Zeny + 500;
     mes "[Nickos]";
     mes "\"Oh, everything is okay?  That's great!  I think they are pretty busy and could use some help. Feel free to give them a hand. Here's some gold for your troubles.\"";
@@ -82,8 +74,7 @@ L_Guards:
     goto L_Close;
 
 L_AS_Start:
-    set @state, 19;
-    callsub S_Update_Var;
+    set QL_MINEALL, 19;
     mes "[Nickos]";
     mes "\"Oh, the angry scorpions are becoming a problem?  We could thin down their numbers a bit. I can make it worth your time, but of course, I'll need something to show your work. Bring me 10 Angry Scorpion Stingers to demonstrate your effectiveness, and you will be rewarded for your efforts.\"";
     goto L_Close;
@@ -94,8 +85,7 @@ L_AS_Done:
     getinventorylist;
     if (@inventorylist_count - (countitem("AngryScorpionStinger") == 10) > 99)
         goto L_TooMany;
-    set @state, 20;
-    callsub S_Update_Var;
+    set QL_MINEALL, 20;
     delitem "AngryScorpionStinger", 10;
     getitem "LeatherShield", 1;
     mes "[Nickos]";
@@ -120,10 +110,5 @@ L_UGQ:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
-    return;
 }

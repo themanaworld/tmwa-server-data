@@ -1,17 +1,12 @@
-// Merchant got his shop shot down due to selling poison and asks the player for some errand
-// after finishing this, daily quest with scorpion stingers
-// Using bit 8 and 9 of QUEST_NorthTulimshar (first half of nibble 2)
-// author: Jenalya
 002-2,36,75,0|script|Imec|162
 {
-    set @state, ((QUEST_NorthTulimshar & TWOBIT_4_MASK) >> TWOBIT_4_SHIFT);
     set @EXP, 90;
     set @money, 500;
     set @lvl, 10;
 
-    if (@state >= 3) goto L_Stingers;
-    if (@state == 2) goto L_Return;
-    if (@state == 1) goto L_Bring;
+    if (QL_IMEC >= 3) goto L_Stingers;
+    if (QL_IMEC == 2) goto L_Return;
+    if (QL_IMEC == 1) goto L_Bring;
 
     mes "[Imec]";
     mes "%%9";
@@ -40,8 +35,7 @@ L_Next:
     mes "[Imec]";
     mes "\"Great! Here's the appeal.\"";
     mes "Imec gives you a sealed letter, which you store in a safe pocket outside of your inventory.";
-    set @state, 1;
-    callsub S_Update_Mask;
+    set QL_IMEC, 1;
     goto L_Close;
 
 L_Explain:
@@ -53,7 +47,7 @@ L_Explain:
     if (BaseLevel < WEDDING_MIN_LEVEL) mes "\"Once you're older, you can even get married there.\"";
     next;
     mes "\"So... will you submit my appeal for me?\"";
-    if (@state == 0)
+    if (QL_IMEC == 0)
         goto L_Offer;
     goto L_Close;
 
@@ -82,8 +76,7 @@ L_Next1:
     mes "\"What? Oh, right. Here, have this.\"";
     getexp @EXP, 0;
     set Zeny, Zeny + @money;
-    set @state, 3;
-    callsub S_Update_Mask;
+    set QL_IMEC, 3;
     next;
     if (BaseLevel >= @lvl)
         goto L_Transition_Stingers;
@@ -111,8 +104,6 @@ L_Stingers:
 
 L_Close:
     set @money, 0;
-    set @state, 0;
-
     set @dq_level, 0;
     set @dq_cost, 0;
     set @dq_count, 0;
@@ -122,8 +113,4 @@ L_Close:
     set @dq_exp, 0;
     set @dq_return, 0;
     close;
-
-S_Update_Mask:
-    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(TWOBIT_4_MASK)) | (@state << TWOBIT_4_SHIFT);
-    return;
 }

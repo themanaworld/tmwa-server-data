@@ -1,14 +1,10 @@
-// Variables used: nibble 0 of QUEST_SouthTulimshar
-
 009-2,67,79,0|script|Bernard|117
 {
-    set @state, ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
-
-    if (@state >= 6) goto L_Done3;
-    if (@state >= 4) goto L_Done2;
-    if (@state == 3) goto L_Progress2;
-    if (@state == 2) goto L_Done1;
-    if (@state == 1) goto L_Progress;
+    if (QL_SOUP >= 6) goto L_Done3;
+    if (QL_SOUP >= 4) goto L_Done2;
+    if (QL_SOUP == 3) goto L_Progress2;
+    if (QL_SOUP == 2) goto L_Done1;
+    if (QL_SOUP == 1) goto L_Progress;
 
     set @TEMP, rand(2);
     if(@TEMP == 1) goto L_Opening1;
@@ -51,8 +47,7 @@ L_Req1:
     goto L_Set;
 
 L_Set:
-    set @state, 1;
-    callsub S_Update_Var;
+    set QL_SOUP, 1;
     mes "[Bernard]";
     mes "\"Please bring it to me!\"";
     goto L_Close;
@@ -67,8 +62,7 @@ L_Progress:
     delitem "RoastedMaggot", 1;
     getexp 100, 0;
     getitem "CherryCake", 5;
-    set @state, 2;
-    callsub S_Update_Var;
+    set QL_SOUP, 2;
     next;
     mes "\"Now let's see...\"";
     goto L_Close;
@@ -83,8 +77,7 @@ L_Progress2:
     delitem "MaggotSlime", 3;
     getexp 100, 0;
     getitem "Beer", 3;
-    set @state, 4;
-    callsub S_Update_Var;
+    set QL_SOUP, 4;
     goto L_Close;
 
 L_NotEnough:
@@ -104,8 +97,7 @@ L_Done1:
     next;
     mes "\"I need 3 Maggot Slimes for that.\"";
     mes "\"Bring them to me, and I'll give you something nice.\"";
-    set @state, 3;
-    callsub S_Update_Var;
+    set QL_SOUP, 3;
     goto L_Close;
 
 L_Done2:
@@ -123,7 +115,6 @@ L_Done3:
 
 L_Close:
     set @TEMP, 0;
-    set @state, 0;
     close;
 
 L_TooMany:
@@ -131,8 +122,4 @@ L_TooMany:
     mes "[Bernard]";
     mes "\"You don't have room for my reward. I'll wait until you do.\"";
     goto L_Close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
-    return;
 }

@@ -1,34 +1,27 @@
-// Variables used:
-// - nibble 4 and 5 of QUEST_SouthTulimshar
-// - in FLAGS, bits FLAG_GOT_NAEM_GLOVES and FLAG_OPENED_UNDERGROUND
-
 002-4,91,96,6|script|Naem|109
 {
-    set @state, ((QUEST_SouthTulimshar & BYTE_2_MASK) >> BYTE_2_SHIFT);
-
     if (FLAGS & FLAG_GOT_NAEM_GLOVES) goto L_Naem_Complete;
     if (FLAGS & FLAG_OPENED_UNDERGROUND) goto L_Naem_Gloves;
-    if (@state == 22) goto L_Naem_Code;
-    if (@state == 21) goto L_Naem_Lt;
-    if (@state == 20) goto L_Naem_Memory;
-    if ((@state > 17) && (@state < 19))
+    if (QL_MINEALL == 22) goto L_Naem_Code;
+    if (QL_MINEALL == 21) goto L_Naem_Lt;
+    if (QL_MINEALL == 20) goto L_Naem_Memory;
+    if ((QL_MINEALL > 17) && (QL_MINEALL < 19))
         goto L_Naem_Great;
-    if (@state == 17) goto L_Naem_Waits_3;
-    if (@state == 16) goto L_Naem_Help_3;
-    if (@state == 15) goto L_Naem_Waits_2;
-    if (@state == 14) goto L_Naem_Help_2;
-    if (@state == 13) goto L_Naem_Waits_1;
-    if (@state == 12) goto L_Naem_Help_1;
-    if (@state == 10) goto L_Naem_Cool;
-    if (@state == 9) goto L_Naem_Okay;
+    if (QL_MINEALL == 17) goto L_Naem_Waits_3;
+    if (QL_MINEALL == 16) goto L_Naem_Help_3;
+    if (QL_MINEALL == 15) goto L_Naem_Waits_2;
+    if (QL_MINEALL == 14) goto L_Naem_Help_2;
+    if (QL_MINEALL == 13) goto L_Naem_Waits_1;
+    if (QL_MINEALL == 12) goto L_Naem_Help_1;
+    if (QL_MINEALL == 10) goto L_Naem_Cool;
+    if (QL_MINEALL == 9) goto L_Naem_Okay;
 
     mes "[Naem]";
     mes "\"I'm just mining away here. Lots of work to do.\"";
     goto L_Close;
 
 L_Naem_Okay:
-    set @state, 10;
-    callsub S_Update_Var;
+    set QL_MINEALL, 10;
     mes "[Naem]";
     mes "\"Oh, hello there. Nickos wanted you to check on me? Yeah, you can tell him I'm okay.\"";
     goto L_Close;
@@ -39,8 +32,7 @@ L_Naem_Cool:
     goto L_Close;
 
 L_Naem_Help_1:
-    set @state, 13;
-    callsub S_Update_Var;
+    set QL_MINEALL, 13;
     mes "[Naem]";
     mes "\"Oh, you are here to help move my bags?  Cool, I've got a few ready to go. Go ahead and take this one!\"";
     next;
@@ -56,8 +48,7 @@ L_Naem_Waits_1:
     goto L_Close;
 
 L_Naem_Help_2:
-    set @state, 15;
-    callsub S_Update_Var;
+    set QL_MINEALL, 15;
     mes "Naem gives you a bag of ore.";
     next;
     mes "[Naem]";
@@ -70,8 +61,7 @@ L_Naem_Waits_2:
     goto L_Close;
 
 L_Naem_Help_3:
-    set @state, 17;
-    callsub S_Update_Var;
+    set QL_MINEALL, 17;
     mes "[Naem]";
     mes "Hands a bag of ore to you.";
     next;
@@ -103,8 +93,7 @@ L_Naem_Duh:
     goto L_Close;
 
 L_Naem_Palace_No:
-    set @state, 21;
-    callsub S_Update_Var;
+    set QL_MINEALL, 21;
     mes "[Naem]";
     mes "\"Oh no!  I lost the key!  Don't worry though, talk to Lieutenant Dausen about getting the spare key.\"";
     goto L_Close;
@@ -140,10 +129,5 @@ L_Naem_TooMany:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(BYTE_2_MASK) | (@state << BYTE_2_SHIFT));
-    return;
 }

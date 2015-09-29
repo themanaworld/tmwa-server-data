@@ -1,12 +1,8 @@
-// Variables used: nibble 0 of QUEST_SouthTulimshar
-
 008-1,135,25,0|script|Mikhail|120
 {
-    set @state, ((QUEST_SouthTulimshar & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
-
-    if (@state >= 6) goto L_Done;
-    if (@state == 5) goto L_Progress;
-    if (@state == 4) goto L_Start;
+    if (QL_SOUP >= 6) goto L_Done;
+    if (QL_SOUP == 5) goto L_Progress;
+    if (QL_SOUP == 4) goto L_Start;
     goto L_Con_Mik_First;
 
 L_Con_Mik_First:
@@ -30,8 +26,7 @@ L_Start:
 L_accept:
     mes "[Mikhail]";
     mes "\"Thank you so much!  I'll wait for you here.\"";
-    set @state, 5;
-    callsub S_Update_Var;
+    set QL_SOUP, 5;
     close;
 
 L_Progress:
@@ -52,8 +47,7 @@ L_try:
 L_get:
     delitem "MaggotSlime", 5;
     getexp 100, 0;
-    set @state, 6;
-    callsub S_Update_Var;
+    set QL_SOUP, 6;
     mes "[Mikhail]";
     mes "\"Ooh!  Thank you so much!  I can get back to Bernard now!\"";
     goto L_Close;
@@ -64,10 +58,5 @@ L_Done:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     close;
-
-S_Update_Var:
-    set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
-    return;
 }

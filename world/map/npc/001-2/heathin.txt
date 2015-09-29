@@ -1,5 +1,3 @@
-//Items for NPC are incomplete. Makes "simple ring" which can be crafted into a useful ring by Inya and terranite armor.
-
 001-2,23,55,0|script|Heathin|147
 {
     set @TARROW_REQ_TERRA_ORE, 1;
@@ -7,23 +5,21 @@
     set @TARROW_REQ_GP, 3000;
     set @heathin_xp_bonus, (100 * BaseLevel);
 
-    set @state, ((QUEST_NorthTulimshar & NIBBLE_6_MASK) >> NIBBLE_6_SHIFT);
-
-    if (@state == 14) && (BaseLevel >= 80) goto L_Arrows_Trade;
-    if (@state == 13) && (BaseLevel >= 80) goto L_Arrows_Ready;
-    if (@state == 12) && (BaseLevel >= 80) goto L_Arrows_Forge;
-    if (@state == 11) && (BaseLevel >= 80) goto L_Arrows;
-    if (@state == 10) && (BaseLevel >= 80) goto L_Chest_Armor_Ready;
-    if (@state == 9) && (BaseLevel >= 80) goto L_Chest_Armor_Forge;
-    if (@state == 8) && (BaseLevel >= 80) goto L_Chest_Armor;
-    if (@state == 7) && (BaseLevel >= 80) goto L_Legs_Ready;
-    if (@state == 6) && (BaseLevel >= 80) goto L_Legs_Forge;
-    if (@state == 5) && (BaseLevel >= 80) goto L_Legs;
-    if (@state == 4) && (BaseLevel >= 80) goto L_Hood_Ready;
-    if (@state == 3) && (BaseLevel >= 80) goto L_Hood_Forge;
-    if (@state == 2) && (BaseLevel >= 80) goto L_Hood;
-    if (@state == 2) && (BaseLevel >= 60) goto L_Forge_Thanks;
-    if (@state == 1) && (BaseLevel >= 60) goto L_Forge_Award;
+    if (QL_TERRANITE_ARMOR == 14) && (BaseLevel >= 80) goto L_Arrows_Trade;
+    if (QL_TERRANITE_ARMOR == 13) && (BaseLevel >= 80) goto L_Arrows_Ready;
+    if (QL_TERRANITE_ARMOR == 12) && (BaseLevel >= 80) goto L_Arrows_Forge;
+    if (QL_TERRANITE_ARMOR == 11) && (BaseLevel >= 80) goto L_Arrows;
+    if (QL_TERRANITE_ARMOR == 10) && (BaseLevel >= 80) goto L_Chest_Armor_Ready;
+    if (QL_TERRANITE_ARMOR == 9) && (BaseLevel >= 80) goto L_Chest_Armor_Forge;
+    if (QL_TERRANITE_ARMOR == 8) && (BaseLevel >= 80) goto L_Chest_Armor;
+    if (QL_TERRANITE_ARMOR == 7) && (BaseLevel >= 80) goto L_Legs_Ready;
+    if (QL_TERRANITE_ARMOR == 6) && (BaseLevel >= 80) goto L_Legs_Forge;
+    if (QL_TERRANITE_ARMOR == 5) && (BaseLevel >= 80) goto L_Legs;
+    if (QL_TERRANITE_ARMOR == 4) && (BaseLevel >= 80) goto L_Hood_Ready;
+    if (QL_TERRANITE_ARMOR == 3) && (BaseLevel >= 80) goto L_Hood_Forge;
+    if (QL_TERRANITE_ARMOR == 2) && (BaseLevel >= 80) goto L_Hood;
+    if (QL_TERRANITE_ARMOR == 2) && (BaseLevel >= 60) goto L_Forge_Thanks;
+    if (QL_TERRANITE_ARMOR == 1) && (BaseLevel >= 60) goto L_Forge_Award;
     if (BaseLevel >= 60) goto L_Start;
 
     mes "[Heathin]";
@@ -43,8 +39,7 @@ L_Start:
         "Wait, what kind of award are we talking about?", L_Interested;
 
 L_Help:
-    set @state, 1;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 1;
     mes "[Heathin]";
     mes "\"Excellent!  I am always glad when someone can be of service not just to me, but to all of Tulimshar. Please get me 50 Coal and you will be compensated for your efforts.\"";
     close;
@@ -64,8 +59,7 @@ L_Interested:
 L_Forge_Award:
     if (countitem ("Coal") < 50) goto L_Forge_Wait;
     getinventorylist;
-    set @state, 2;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 2;
     delitem "Coal", 50;
     getexp @heathin_xp_bonus, 0;
     set Zeny, Zeny + 20000;
@@ -112,8 +106,7 @@ L_No:
     close;
 
 L_Yes:
-    set @state, 3;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 3;
     mes "[Heathin]";
     mes "\"Great, this is going to be fun!  As I have not had much practice with this armor, I'd like to get started soon.\"";
     next;
@@ -129,8 +122,7 @@ L_Hood_Forge:
         || (countitem("Coal") < 100)
         || (countitem("TerraniteOre") < 10) )
             goto L_Hood_Wait;
-    set @state, 4;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 4;
     delitem "Coal", 100;
     delitem "TerraniteOre", 10;
     getexp @heathin_xp_bonus, 0;
@@ -148,16 +140,14 @@ L_Hood_Ready:
     getinventorylist;
     if ((checkweight("TerraniteHelmet", 1) == 0) || (@inventorylist_count == 100))
         goto L_InventoryNoSpace;
-    set @state, 5;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 5;
     getitem "TerraniteHelmet", 1;
     mes "[Heathin]";
     mes "\"I am all done with your terranite hood. I hope you enjoy it!  I have some work to wrap up for the Council, but come back later and I might be able to assist you again.\"";
     close;
 
 L_Legs:
-    set @state, 6;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 6;
     mes "[Heathin]";
     mes "\"I am glad you are back!  I've just finished up some more of my commission. Now I can get back to making terranite armor for you. This time I will make some pants, but they need more ore, more Coal to heat my forge and of course, more gold for my efforts.\"";
     next;
@@ -169,8 +159,7 @@ L_Legs_Forge:
         || (countitem("Coal") < 200)
         || (countitem("TerraniteOre") < 30) )
             goto L_Legs_Wait;
-    set @state, 7;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 7;
     delitem "Coal", 200;
     delitem "TerraniteOre", 30;
     getexp @heathin_xp_bonus, 0;
@@ -188,16 +177,14 @@ L_Legs_Ready:
     getinventorylist;
     if ((checkweight("TerraniteLegs", 1) == 0) || (@inventorylist_count == 100))
         goto L_InventoryNoSpace;
-    set @state, 8;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 8;
     getitem "TerraniteLegs", 1;
     mes "[Heathin]";
     mes "\"I am all done with your terranite pants. Hope you enjoy them!  I have some more work to complete for the Council. Come back later and I might be able to assist you again.\"";
     close;
 
 L_Chest_Armor:
-    set @state, 9;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 9;
     mes "[Heathin]";
     mes "\"Good to see you again. I have just finished up some more of my commission. Now I can get back to making terranite armor for you. This time, I will make some terranite chest armor, but it needs more ore, more Coal for my forge and of course, more gold to compensate for my efforts.\"";
     next;
@@ -209,8 +196,7 @@ L_Chest_Armor_Forge:
         || (countitem("Coal") < 250)
         || (countitem("TerraniteOre") < 40) )
             goto L_Chest_Armor_Wait;
-    set @state, 10;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 10;
     delitem "Coal", 250;
     delitem "TerraniteOre", 40;
     getexp @heathin_xp_bonus, 0;
@@ -228,8 +214,7 @@ L_Chest_Armor_Ready:
     getinventorylist;
     if ((checkweight("TerraniteChestArmor", 1) == 0) || (@inventorylist_count == 100))
         goto L_InventoryNoSpace;
-    set @state, 11;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 11;
     getitem "TerraniteChestArmor", 1;
     mes "[Heathin]";
     mes "\"I have completed your terranite chest armor. I hope you enjoy it!  I have some work to wrap up for the Council again, but come back later and I might be able to assist you once more.\"";
@@ -250,8 +235,7 @@ L_Arrows_No:
     close;
 
 L_Arrows_Yes:
-    set @state, 12;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 12;
     mes "[Heathin]";
     mes "\"Good, good. I shall begin crafting these arrows as soon as you come back. However, I cannot just make small handfuls as it would not be worth my time and effort to have my concentration interrupted for small tasks. I will make 1,000 Terranite Arrows per request, for which I will need "+@TARROW_REQ_TERRA_ORE+" Terranite Ore, "+@TARROW_REQ_COAL+" Coal and "+@TARROW_REQ_GP+" gold pieces.\"";
     next;
@@ -263,8 +247,7 @@ L_Arrows_Forge:
         || (countitem("Coal") < @TARROW_REQ_COAL)
         || (countitem("TerraniteOre") < @TARROW_REQ_TERRA_ORE) )
             goto L_Arrows_Wait;
-    set @state, 13;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 13;
     delitem "Coal", @TARROW_REQ_COAL;
     delitem "TerraniteOre", @TARROW_REQ_TERRA_ORE;
     getexp @heathin_xp_bonus, 0;
@@ -282,8 +265,7 @@ L_Arrows_Ready:
     getinventorylist;
     if ((checkweight("TerraniteArrow", 1000) == 0) || (@inventorylist_count == 100))
         goto L_InventoryNoSpace;
-    set @state, 14;
-    callsub S_Update_Mask;
+    set QL_TERRANITE_ARMOR, 14;
     getitem "TerraniteArrow", 1000;
     mes "[Heathin]";
     mes "\"All done, here you go!  I hope you like them. I am still working on my commission, but if you ever need any more Terranite Arrows, just come on by with "+@TARROW_REQ_COAL+" Coal, "+@TARROW_REQ_TERRA_ORE+" Terranite Ore and "+@TARROW_REQ_GP+" gold pieces and I will make another 1,000 arrows for you. By now I have enough Terranite Ore in reserve that you can just trade me my requirements to keep my resources up. Thank you for all your efforts!\"";
@@ -331,9 +313,6 @@ L_InventoryNoSpace:
     mes "\"Hm no. You can't carry this right now. Make some room and come back.\"";
     close;
 
-S_Update_Mask:
-    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(NIBBLE_6_MASK)) | (@state << NIBBLE_6_SHIFT);
-    return;
 }
 001-2,25,55,0|script|HeathinDebug|147
 {
@@ -344,7 +323,7 @@ S_Update_Mask:
         "Exit", L_End;
 
 L_Reset:
-    set QUEST_NorthTulimshar, (QUEST_NorthTulimshar & ~(NIBBLE_6_MASK) | (0 << NIBBLE_6_SHIFT));
+    set QL_TERRANITE_ARMOR, 0;
     mes "Reset!";
     goto L_End;
 
