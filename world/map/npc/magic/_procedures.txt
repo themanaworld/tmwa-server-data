@@ -1,52 +1,45 @@
 function|script|magic_register
 {
     debugmes ">> Register " + .invocation$ + " @ " + strnpcinfo(0);
-    registercmd .invocation$, strnpcinfo(0); // register the spell
+    set .@ext$, if_then_else(getarg(0,"") != "", "::"+getarg(0), "");
+    registercmd .invocation$, strnpcinfo(0) + .@ext$; // register the spell
     set .index, $@magic_index;
     set $@magic_index, $@magic_index + 1;
     return;
 }
 
-function|script|magic_register2
-{
-    debugmes ">> Register " + .invocation$ + " @ " + strnpcinfo(0);
-    registercmd .invocation$, strnpcinfo(0) + "::OnCast"; // register the spell <= this spell has a puppet
-    set .index, $@magic_index;
-    set $@magic_index, $@magic_index + 1;
-    return;
-}
-
+// this function is call()-only
 function|script|magic_checks
 {
-    set @failed, 0;
-    if(getpvpflag(1)) set @failed, 1; // can not cast with @hide enabled
-    if((gettimetick(2) - MAGIC_CAST_TICK) < 0) set @failed, 1; // check if last debuff ended
-    if(isdead()) set @failed, 1; // can not cast when dead
-    return;
+    set .@r, 0;
+    if(getpvpflag(1)) set .@r, 1;
+    if((gettimetick(2) - MAGIC_CAST_TICK) < 0) set .@r, 2; // check if last debuff ended
+    if(Hp < 1) set .@r, 3; // can not cast when dead
+    return .@r;
 }
 
 function|script|elt_damage
 {
-    // @edmg is damage, dmgplus(mutation), bonus_elt, malus_elt, effect
-    set @edmg[5], @edmg[0] + rand(@edmg[1]);
-    if(elttype(@target_id) == @edmg[3]) // malus
-        set @edmg[5], @edmg[5] / 3;
-    if(elttype(@target_id) == @edmg[2]) // bonus
-        set @edmg[5], ((eltlvl(@target_id) + 4) * @edmg[5]) / 4;
+    // args are damage, dmgplus(mutation), bonus_elt, malus_elt, effect
+    set .@dmg, getarg(0) + rand(getarg(1));
+    if(elttype(@target_id) == getarg(3)) // malus
+        set .@dmg, .@dmg / 3;
+    if(elttype(@target_id) == getarg(2)) // bonus
+        set .@dmg, ((eltlvl(@target_id) + 4) * .@dmg) / 4;
     set .@source, .caster;
     if (!.@source) set .@source, getcharid(3);
 
-    injure .@source, @target_id, @edmg[5];
-    misceffect @edmg[4], @target_id;
-    cleararray @edmg, 0, getarraysize(@edmg);
+    injure .@source, @target_id, .@dmg;
+    misceffect getarg(4), @target_id;
     return;
 }
 
 function|script|melee_damage
 {
-    if ((@spellpower - rand(100)) < (get(BaseLevel, @target_id) + get(MDEF1, @target_id)))
-        injure BL_ID, @target_id, 0;
-    else injure BL_ID, @target_id, @melee_dmg[0] + rand(@melee_dmg[1]);
+    // args are spell power, target id, dmg
+    if ((getarg(0) - rand(100)) < (get(BaseLevel, getarg(1)) + get(MDEF1, getarg(1))))
+        injure BL_ID, getarg(1), 0;
+    else injure BL_ID, getarg(1), getarg(2);
     return;
 }
 

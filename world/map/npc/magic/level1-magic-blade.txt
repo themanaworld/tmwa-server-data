@@ -1,6 +1,6 @@
 -|script|magic-blade|32767
 {
-    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end; // << I wish we had functions that could return >>
     if (Sp < 9) end;
     set .@level, getskilllv(.school);
     if (.@level < .level) end;
@@ -20,14 +20,14 @@
 
 OnAttack:
     if (target(BL_ID, @target_id, 22) != 22) end; // 0x10 | 0x02 | 0x04
-    setarray @melee_dmg[0], if_then_else(@chiza_component$ == "Knife", 40, 60), (@chiza_str + 5);
-    callfunc "melee_damage";
+    set .@dmg, if_then_else(@chiza_component$ == "Knife", 40, 60);
+    void call("melee_damage", @spellpower, @target_id, (.@dmg + rand(@chiza_str + 5)));
     end;
 
 OnInit:
     set .school, SKILL_MAGIC_WAR;
     set .invocation$, chr(MAGIC_SYMBOL) + "chiza"; // used in npcs that refer to this spell
-    callfunc "magic_register";
+    void call("magic_register");
     set .level, 1;
     set .exp_gain, 1;
     end;

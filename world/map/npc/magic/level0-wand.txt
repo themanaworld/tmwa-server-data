@@ -1,6 +1,6 @@
 -|script|spell-wand|32767
 {
-    callfunc "magic_checks"; if(@failed) goto L_Failed; // << I wish we had functions that could return >>
+    if(call("magic_checks")) goto L_Failed;
     callsub S_CheckWand;
     if(@WandAttack != 1) goto L_Failed;
 
@@ -18,7 +18,7 @@ OnAttack:
     if(target(BL_ID, @target_id, 22) != 22) goto L_Failed; // 0x02 | 0x04 | 0x10
     set Sp, (Sp - @WandCost);
     set @damage, (@Wand * (@spellpower / 3));
-    setarray @edmg,@damage,@damage,ELT_NEUTRAL,ELT_NEUTRAL,FX_MAGIC_RED; callfunc "elt_damage";
+    void call("elt_damage", @damage,@damage,ELT_NEUTRAL,ELT_NEUTRAL,FX_MAGIC_RED);
     end;
 
 S_CheckWand:
@@ -67,7 +67,7 @@ OnInit:
     setarray .WandsAnim[0], 35, 33;
     set .school, SKILL_MAGIC;
     set .invocation$, chr(MAGIC_SYMBOL) + "confringo"; // used in npcs that refer to this spell
-    callfunc "magic_register";
+    void call("magic_register");
     set .level, 0;
     set .exp_gain, 1;
     end;

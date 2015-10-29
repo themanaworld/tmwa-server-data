@@ -1,6 +1,6 @@
 -|script|lightning-strike|32767
 {
-    callfunc "magic_checks"; if(@failed) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end; // << I wish we had functions that could return >>
     if (Sp < 20) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
     set .@level, getskilllv(.school);
@@ -27,8 +27,7 @@ OnAttack:
     set @target_id, @ingrav_target; // now restore it
 
     if (@ingrav_rain & 1) goto L_InRain;
-    setarray @edmg[0], @ingrav_sp, (@ingrav_sp/2)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3);
-    callfunc "elt_damage";
+    void call("elt_damage", @ingrav_sp, (@ingrav_sp/2)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3));
     end;
 
 OnNpc:
@@ -53,14 +52,13 @@ OnEntityInRain:
     if (target(BL_ID, @target_id, 16) != 16) end; // 0x10
     if (@ingrav_luk + rand(200) <= 175) end;
     set @used, @used + 1;
-    setarray @edmg[0], @ingrav_sp/6, (((@ingrav_sp/2)+1)/3)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3);
-    callfunc "elt_damage";
+    void call("elt_damage", @ingrav_sp/6, (((@ingrav_sp/2)+1)/3)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3));
     end;
 
 OnInit:
     set .school, SKILL_MAGIC_WAR;
     set .invocation$, chr(MAGIC_SYMBOL) + "ingrav"; // used in npcs that refer to this spell
-    callfunc "magic_register";
+    void call("magic_register");
     set .level, 2;
     set .exp_gain, 2;
     end;
