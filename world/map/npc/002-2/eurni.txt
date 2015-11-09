@@ -18,14 +18,39 @@
     next;
 
     menu
-        "Please do.", L_Change,
+        "Please do.", L_Change_Menu,
         "Leave my family treasures alone!", L_Close;
 
+L_Change_Menu:
+    menu
+        "Female.", L_Female,
+        "Male.", L_Male,
+        "Non-binary.", L_NonBinary;
+
+L_Female:
+    set @sex, 0;
+    goto L_Change;
+
+L_Male:
+    set @sex, 1;
+    goto L_Change;
+
+L_NonBinary:
+    set @sex, 3;
+    goto L_Change;
+
 L_Change:
+    if (Sex == @sex)
+        goto L_Already_Change;
     if (Zeny < @SERVICES_ZENY)
         goto L_NoMoney;
     set Zeny, Zeny - @SERVICES_ZENY;
-    set Sex, !Sex;
+    set Sex, @sex;
+    close;
+
+L_Already_Change:
+    mes "[Eurni the Surgeon]";
+    mes "\"Umm, you are that gender already.\"";
     close;
 
 L_TooYoung:
