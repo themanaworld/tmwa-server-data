@@ -1,0 +1,270 @@
+//#############################################
+// Author: Deimos
+// Date:   November 2015
+// Title:  Assassin Equipment Quest
+// Requesites: Lvls 75-78 and Speed Skill
+//#############################################
+
+005-3,87,74,0|script|Nysaa|199
+{
+    if ((QL_ASSASSIN == 1) && (BaseLevel >= 75)) goto L_AssaGloves;
+    if ((QL_ASSASSIN == 2) && (BaseLevel >= 75)) goto L_AssaGlovesFinished;
+
+    if ((QL_ASSASSIN == 3) && (BaseLevel >= 76)) goto L_AssaBoots;
+    if ((QL_ASSASSIN == 4) && (BaseLevel >= 76)) goto L_AssaBootsStart;
+    if ((QL_ASSASSIN == 5) && (BaseLevel >= 76)) goto L_AssaBootsFinished;
+
+    if ((QL_ASSASSIN == 6) && (BaseLevel >= 77)) goto L_AssaPants;
+    if ((QL_ASSASSIN == 7) && (BaseLevel >= 77)) goto L_AssaPantsFinished;
+
+    if ((QL_ASSASSIN == 8) && (BaseLevel >= 78)) goto L_AssaShirt;
+    if ((QL_ASSASSIN == 9) && (BaseLevel >= 78)) goto L_AssaShirtFinished;
+    if ((QL_ASSASSIN == 10) && (BaseLevel >= 78)) goto L_Finished;
+
+    if ((BaseLevel >= 75) && ((getskilllv(SKILL_SPEED) == 9)) && (QL_ASSASSIN == 0))  goto L_Start;
+
+    mes "Nysaa";
+    mes "\"Nysaa ignores you.\"";
+    close;
+
+L_Start:
+    mes "[Nysaa]";
+    mes "\"Hello mortal, I am Nysaa Ghul, daughter of Ghul the Demon and a member of the League of Assassins.\"";
+    next;
+    mes "\"I sense that you are strong.\"";
+    next;
+    mes "\"Lately the number of members of the League has been increasing, this caused a lack materials.\"";
+    next;
+    mes "\"Would you like to help us get more materials, I will reward you.\"";
+    menu
+        "Yes, I'm not busy.", L_Help,
+        "I'm sorry I cant.", L_No,
+        "What am I getting if I help you?", L_Interested;
+
+L_Help:
+    mes "[Nysaa]";
+    mes "\"We have had to make a lot of new equipment for the young members of the League.\"";
+    next;
+    mes "\"The tailors will need lots fo reptile skins, colored dyes, and the best silk in Kaizei.\"";
+    set QL_ASSASSIN, 1;
+    close;
+
+L_Interested:
+    mes "[Nysaa]";
+    mes "\"You see, I'm a member of the League, if you help us with the needed materials I'll make sure you get a nice reward.\"";
+    next;
+    mes "\"Okay so first of all the tailors will be crafting some gloves.\"";
+    next;
+    mes "\"Are you interested?\"";
+    menu
+        "Yes I'm.", L_Help,
+        "No", L_No,
+        "Who are you saying you are...?", L_Interested;
+
+L_AssaGloves:
+    if ( (countitem ("BlackCottonGloves") < 1)
+        ||(countitem ("SnakeSkin") < 50)
+        ||(countitem ("RedDye") < 15)
+        ||(countitem ("SilkCocoon") < 150) )
+           goto L_GlovesReq;
+    set QL_ASSASSIN, 2;
+
+    getinventorylist;
+    delitem "BlackCottonGloves", 1;
+    delitem "SnakeSkin", 50;
+    delitem "RedDye", 15;
+    delitem "SilkCocoon", 150;
+    mes "\"Whoa you have exactly every thing I asked you to bring\"";
+    close;
+
+
+L_AssaGlovesFinished:
+    getinventorylist;
+    if ((checkweight("AssassinBoots", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    mes "[Nysaa]";
+    getitem "AssassinGloves", 1;
+    set QL_ASSASSIN, 3;
+    mes "[Nysaa]";
+    mes "\"I see that you brought the items we needed.\"";
+    next;
+    mes "\"Here take this gloves, I managed to get for you, don't tell anyone!\"";
+    close;
+
+L_GlovesReq:
+    mes "[Nysaa]";
+    mes "\"Bring me 1 Black Cotton Gloves, 15 Red Dyes, 50 Snake Skins, and 150 Silk Cocoons to make more gloves for the League!.\"";
+    next;
+    mes "\"If you bring me those items ... I will give you a reward.\"";
+    next;
+    mes "\"See you later.\"";
+    close;
+
+L_AssaBoots:
+    mes "[Nysaa]";
+    mes "\"Human! I sensed you when you were getting here.\"";
+    next;
+    mes "\"You got stronger. Last time we met you were weaker than a Tonori Cave Maggot!\"";
+    next;
+    mes "\"We need more help. All the material that you brought last time has been used.\"";
+    next;
+    mes "\"Are you up for some material collecting?\"";
+    menu
+        "Yes!", L_Yes,
+        "No.", L_No;
+
+L_No:
+    mes "[Nysaa]";
+    mes "\"Ah, that is too bad. Come back anytime.\"";
+    close;
+
+L_Yes:
+    set QL_ASSASSIN, 4;
+    mes "[Nysaa]";
+    mes "\"Ok, this time the tailors will be making more boots.\"";
+    next;
+    mes "\"Let me bring the list of the needed materials.\"";
+    next;
+    mes "\"The list says that we need 50 Snake Skins, 1 Black Dye, and 150 Silk Cocoons. And don't forget to bring me a pair of Black Boots.\"";
+    close;
+
+L_AssaBootsStart:
+    if ( (countitem("BlackCottonBoots") < 1)
+        || (countitem("BlackDye") < 1)
+        || (countitem("SnakeSkin") < 50)
+        || (countitem("SilkCocoon") < 150) )
+            goto L_BootsReq;
+    set QL_ASSASSIN, 5;
+    delitem "BlackCottonBoots", 1;
+    delitem "BlackDye", 1;
+    delitem "SnakeSkin", 50;
+    delitem "SilkCocoon", 150;
+
+    mes "[Nysaa]";
+    mes "\"Nice you have everything.\"";
+    next;
+    mes "\"Let me take this things, wait a second right there.\"";
+    close;
+
+L_BootsReq:
+    mes "[Nysaa]";
+    mes "\"Bring me 50 Snake Skins, 1 Black Dye, and 150 Silk Cocoons and dont forget the Black Boots.\"";
+    close;
+
+L_AssaBootsFinished:
+    getinventorylist;
+    if ((checkweight("AssassinBoots", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    set QL_ASSASSIN, 6;
+    getitem "AssassinBoots", 1;
+    mes "[Nysaa]";
+    mes "\"Here you go, a fresh pair of Assassin Boots for you.\"";
+    close;
+
+L_AssaPants:
+    mes "[Nysaa]";
+    mes "\"Hi, nice to see you again.\"";
+    next;
+    mes "\"This time the tailors are working on a new styled pants for the League, but they have already used all the materials.\"";
+    next;
+    mes "\"We need 100 Snake Skins, 30 Red Dyes, 300 Silk Cocoons as soon as possible.\"";
+    next;
+    mes "\"If you bring me some Black Cotton Trousers I will give you my old Assassin Pants, since I'm getting new ones this ones might be usefull for you.\"";
+    menu
+        "Yes!", L_Okay,
+        "No.", L_No;
+
+L_Okay:
+    if ( (countitem("BlackCottonTrousers") < 1)
+        || (countitem("RedDye") < 30)
+        || (countitem("SnakeSkin") < 100)
+        || (countitem("SilkCocoon") < 300) )
+            goto L_PantsReq;
+
+    set QL_ASSASSIN, 7;
+    delitem "BlackCottonTrousers", 1;
+    delitem "RedDye", 30;
+    delitem "SnakeSkin", 100;
+    delitem "SilkCocoon", 300;
+
+    mes "[Nysaa]";
+    mes "\"Nice you have everything.\"";
+    next;
+    mes "\"If you wait a little bit I will reward you.\"";
+    close;
+
+L_PantsReq:
+    mes "[Nysaa]";
+    mes "\"If you don't bring me a Black Cotton Trousers, 100 Snake Skins, 30 Red Dyes and 300 Silk Cocoons you won't get this cool but old fashioned Assassin Pants.\"";
+    close;
+
+L_AssaPantsFinished:
+    getinventorylist;
+    if ((checkweight("AssassinPants", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    set QL_ASSASSIN, 8;
+    getitem "AssassinPants", 1;
+    mes "[Nysaa]";
+    mes "\"Hi, you are here. Nice, let me bring you your new Assassin Pants.\"";
+    close;
+
+L_AssaShirt:
+    mes "[Nysaa]";
+    mes "\"Hello!.\"";
+    next;
+    mes "\"This time we will need more items to make some Assassin Shirts for the League.\"";
+    next;
+    mes "\"If you are interested I'll give you one. Just make sure to bring me 1 Black Cotton Shirt, 200 Snake Skins, 50 Red Dyes and 500 Silk Cocoons.\"";
+    menu
+        "Yes!", L_Yeah,
+        "No.", L_No;
+
+L_Yeah:
+    if ( (countitem("BlackCottonShirt") < 1)
+        || (countitem("RedDye") < 50)
+        || (countitem("SnakeSkin") < 200)
+        || (countitem("SilkCocoon") < 500) )
+            goto L_ShirtsReq;
+
+    set QL_ASSASSIN, 9;
+    delitem "BlackCottonShirt", 1;
+    delitem "RedDye", 50;
+    delitem "SnakeSkin", 200;
+    delitem "SilkCocoon", 500;
+
+    mes "[Nysaa]";
+    mes "\"Hmm, so you brought everything, again.\"";
+    next;
+    mes "\"You must really want this shirt haha.\"";
+    close;
+
+L_ShirtsReq:
+    mes "[Nysaa]";
+    mes "\"I have already told you, if you bring me  1 Black Cotton Shirt, 200 Snake Skins, 50 Red Dyes and 500 Silk Cocoons, I will give you an Assassin Shirt.\"";
+    close;
+
+L_AssaShirtFinished:
+    getinventorylist;
+    if ((checkweight("AssassinShirt", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    set QL_ASSASSIN, 10;
+    getitem "AssassinShirt", 1;
+    mes "[Nysaa]";
+    mes "\"Thanks for all the help, now the tailors will be able to make more equipment for the League.\"";
+    next;
+    mes "\"As promised, here's your Assassin Shirt\"";
+    close;
+
+L_Finished:
+    mes "[Nysaa]";
+    mes "\"Hi there little assassin, nice to see you around.\"";
+    next;
+    mes "\"Thanks again for all the help. Maybe I'll need your again in the future, make sure to visit us frequently.\"";
+    close;
+
+L_InventoryNoSpace:
+    mes "[Nysaa]";
+    mes "\"Make sure to have enough space on you, otherwise I won't give you anything.\"";
+    close;
+
+}
