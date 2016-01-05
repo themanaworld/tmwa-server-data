@@ -1,46 +1,94 @@
 // headstyles config file
 // author: meko
 
+function|script|fixHeadStyles
+{
+    if (Class < 1 || Class > 5) // usable classes
+        set Class, 1; // it is impossible to use custom styling for class 0 in m+ so default is 1
+
+    callfunc "getHeadStyles";
+    set @style, getlook(LOOK_HAIR_STYLE); // FIXME: this needs to be a param in the future
+    set @color, getlook(LOOK_HAIR_COLOR); // FIXME: this needs to be a param in the future
+    if (@style < 1 || @style > getarraysize(@HairStyles$)) // leftover from previous attempt at classes
+        setlook LOOK_HAIR_STYLE, 1; // FIXME: this needs to be a param in the future
+    if (@color == HC_WHITE && Class > 1) // convert shock white
+        set @color, (HC_WHITE - Class) + 1;
+    if (@color < 105 && ((@color - (15 * (Class - 1))) < 0 || @color > ((15 * (Class - 1)) + (getarraysize(@HairColors$) - 1))))
+        set @color, 15 * (Class - 1); // it is possible to style color 0 but not style 0 since style is treated as an item
+    setlook LOOK_HAIR_COLOR, @color; // FIXME: this needs to be a param in the future
+    return;
+}
+
 function|script|getHeadStyles
 {
-    set @HairStyles$, 0;
-    set @HairColors$, 0;
-    set @BaseClass, 1; // this is the default class
     cleararray @HairStyles$, "", getarraysize(@HairStyles$);
     cleararray @HairColors$, "", getarraysize(@HairColors$);
-    cleararray @ValidClasses, "", getarraysize(@ValidClasses);
-    setarray @ValidClasses, 1; // add new classes here
-    set @loop, 0;
-    goto L_LoopValid;
 
-L_Janitor:
-    set @BaldStyle, getarraysize(@HairStyles$); // we set it as a variable because we use it with the barber
-    if(getlook(LOOK_HAIR_STYLE) < 1) setlook LOOK_HAIR_STYLE, @BaldStyle; // the last head of any race has no hair/fins/whatever
+    if   (Class == 2) goto L_Tritan;
+    elif (Class == 3) goto L_Ifriton;
+    elif (Class == 4) goto L_Gispaan;
+    elif (Class == 5) goto L_Sparron;
+    else set Class, 1; // we can not style custom classes, so reset when using the barber
+    goto L_Talpan;
+
+L_Talpan:
+    setarray @HairStyles$[0],
+        "Bald", "Flat ponytail", "Bowl cut", "Combed back", "Emo", "Mohawk",
+        "Pompadour", "Center parting/Short and slick", "Long and slick",
+        "Short and curly", "Pigtails", "Long and curly", "Parted",
+        "Perky ponytail", "Wave", "Mane", "Bun", "Shoulder Length Flick",
+        "Fizzy", "Long and Clipped";
+    setarray @HairColors$[0],
+        "Brunette", "Green", "Dark red", "Light purple", "Gray", "Blonde",
+        "Teal", "Light red", "Blue", "Dark purple", "Black", "Pink",
+        "Brown";//, "(free slot)", "(free slot)";
     return;
 
-L_LoopValid: // here we fix non-existant classes
-    if(@ValidClasses[@loop] == Class) goto L_ValidClass;
-    set @loop, (@loop + 1);
-    if(@loop >= getarraysize(@ValidClasses)) goto L_FixClass;
-    goto L_LoopValid;
+L_Tritan:
+    setarray @HairStyles$[0],
+        "1",  "2",  "3",  "4",  "5",
+        "6",  "7",  "8",  "9",  "10",
+        "11", "12", "13", "14", "15",
+        "16", "17", "18", "19", "20";
+    setarray @HairColors$[0],
+        "1",  "2",  "3",  "4",  "5",
+        "6",  "7",  "8",  "9",  "10",
+        "11", "12", "13", "14", "15";
+    return;
 
-L_FixClass:
-    set Class, @BaseClass;
-    goto L_ValidClass;
+L_Gispaan:
+    setarray @HairStyles$[0],
+        "1",  "2",  "3",  "4",  "5",
+        "6",  "7",  "8",  "9",  "10",
+        "11", "12", "13", "14", "15",
+        "16", "17", "18", "19", "20";
+    setarray @HairColors$[0],
+        "1",  "2",  "3",  "4",  "5",
+        "6",  "7",  "8",  "9",  "10",
+        "11", "12", "13", "14", "15";
+    return;
 
-L_ValidClass:
-    if(Class == 1)
-        setarray @HairStyles$, // TALPONIAN (human)
-            "Flat ponytail", "Bowl cut", "Combed back", "Emo", "Mohawk",
-            "Pompadour", "Center parting/Short and slick", "Long and slick",
-            "Short and curly", "Pigtails", "Long and curly", "Parted",
-            "Perky ponytail", "Wave", "Mane", "Bun", "Shoulder Length Flick",
-            "Fizzy", "Long and Clipped", "Bald";
-    if(Class == 1)
-        setarray @HairColors$, // TALPONIAN (human)
-            "Brunette", "Green", "Dark red", "Light purple", "Gray", "Blonde",
-            "Teal", "Light red", "Blue", "Dark purple", "Black", "Pink",
-            "Brown";//, "(free slot)", "(free slot)";
-    // adding a new species is as simple as adding another if(Class == X) and adding the class to @ValidClasses
-    goto L_Janitor;
+L_Sparron:
+    setarray @HairStyles$[0],
+        "1",  "2",  "3",  "4",  "5",
+        "6",  "7",  "8",  "9",  "10",
+        "11", "12", "13", "14", "15",
+        "16", "17", "18", "19", "20";
+    setarray @HairColors$[0],
+        "1",  "2",  "3",  "4",  "5",
+        "6",  "7",  "8",  "9",  "10",
+        "11", "12", "13", "14", "15";
+    return;
+
+L_Ifriton:
+    setarray @HairStyles$[0],
+        "1",  "2",  "3",  "4",  "5",
+        "6",  "7",  "8",  "9",  "10",
+        "11", "12", "13", "14", "15",
+        "16", "17", "18", "19", "20";
+    setarray @HairColors$[0],
+        "1",  "2",  "3",  "4",  "5",
+        "6",  "7",  "8",  "9",  "10",
+        "11", "12", "13", "14", "15";
+    return;
 }
