@@ -8,15 +8,16 @@
 {
     if ($@FIGHT_YETI_STATUS != 0) goto L_Yeti;
 
-    set @KEYS_AMOUNT, 10;
+    set @KEYS_AMOUNT, 10; // the number of keys required to do the quest
+    set @KEYS_REDO,    0; // the number of keys it takes to re-do the quest once completed (added to base @KEYS_AMOUNT)
     set @minlevel, 70;
 
     if (Sex == 0) set @title$, "Misses";
     if (Sex == 1) set @title$, "Mister";
 
-    if (QL_CINDY == 4) goto L_Please_Visit;
+    if (QL_CINDY == 3) goto L_Please_Visit;
     if (QL_CINDY == 2) goto L_Reward;
-    if (QL_CINDY == 1) goto L_Please_Help;
+    if (QL_CINDY == 1 || QL_CINDY == 4 || QL_CINDY >= 7) goto L_Please_Help;
 
     mes "There is a little girl in a cage. As you come near, she starts to shiver and back off from you as far as she can in that small cage.";
     next;
@@ -43,6 +44,18 @@ L_Next:
         "Leave", L_Close;
 
 L_Try_Cage:
+    if (QL_CINDY >= 7) goto L_Failed;
+    if (QL_CINDY == 4) set @KEYS_AMOUNT, @KEYS_AMOUNT + @KEYS_REDO;
+    goto L_Try_Cage2;
+
+L_Failed:
+    mes "The yetis noticed you attempted to rescue their prisoner and reinforced the locks!";
+    set @KEYS_AMOUNT, @KEYS_AMOUNT * (QL_CINDY - 5);
+    mes "You will need " + @KEYS_AMOUNT + " keys to open the cage.";
+    next;
+    goto L_Try_Cage2;
+
+L_Try_Cage2:
     if (BaseLevel < @minlevel)
         goto L_To_Weak;
     if (countitem("TreasureKey") < @KEYS_AMOUNT)
@@ -51,6 +64,8 @@ L_Try_Cage:
     mes "As you try to open the door of the cage, there is a loud squeaking noise.";
     next;
     mes "You get an uncomfortable feeling and Cindy starts to shiver.";
+    if (QL_CINDY >= 7 && QL_CINDY < 16) set QL_CINDY, QL_CINDY + 1;
+    if (QL_CINDY == 1) set QL_CINDY, 7;
     if ($@FIGHT_YETI_STATUS != 0)
         goto L_Yeti;
     npctalk strnpcinfo(0), "Oh no, the Yetis...";
@@ -206,7 +221,7 @@ OnReward:
     set @bonus, (BaseLevel/2);
     set DailyQuestBonus, DailyQuestBonus + @bonus;
     message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained." ;
-    if (QL_CINDY != 1 )
+    if (QL_CINDY < 7)
         goto L_End;
     set QL_CINDY, 2;
     message strcharinfo(0), "Cindy looks relieved and as if she wants to talk with you.";
