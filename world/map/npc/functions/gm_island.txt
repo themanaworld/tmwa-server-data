@@ -16,11 +16,12 @@ function|script|GmWarp
 }
 function|script|GmDebug
 {
-    mes "[Gm Debug]";
+    mes "[GM Debug]";
     mes "What do you want to do?";
     menu
-        "Start Event.", L_GmStart,
-        "Stop Event.", L_GmStop;
+        "Open Event Portals.", L_GmStart,
+        "Close Event Portals.", L_GmStop,
+        "Disguise.", L_Disguise;
 
 L_GmStart:
     enablenpc "Gm Event#1";
@@ -32,6 +33,32 @@ L_GmStop:
     disablenpc "Gm Event#1";
     disablenpc "Gm Event#2";
     disablenpc "Gm Event#3";
+    return;
+
+L_Disguise:
+    npcaction 9;
+    mes "[GM Debug - Disguise]";
+    mes "The Disguise function allows GMs to disguise themselves as mobs or npcs.";
+    mes "---";
+    mes "Mob IDs: [@@https://www.themanaworld.org/index.php/Monster_Reference|Monster Reference@@]";
+    mes "You can either logout or use id ##B0##b to reset.";
+    mes "---";
+    mes "Please input the mob ID:";
+    input @disguise_id;
+    if (@disguise_id < 1000 || @disguise_id > 32767)
+        goto L_ResetClass;
+    mes "Your disguise has been changed.";
+    if (Class <= 5)
+        set @old_class, Class;
+    set Class, @disguise_id;
+    mes "";
+    mes "For technical reasons, you are not able to see your own disguise, but other players will see it.";
+    return;
+
+L_ResetClass:
+    mes "Your appearance has been reset.";
+    set Class, if_then_else(@old_class, @old_class, 1);
+    callfunc "fixHeadStyles";
     return;
 }
 001-1,49,68,0|script|Gm Event#1|368,0,0
