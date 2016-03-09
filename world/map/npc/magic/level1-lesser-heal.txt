@@ -15,10 +15,10 @@
     callfunc "adjust_spellpower";
     set Sp, Sp - 6;
     misceffect FX_MAGIC_WHITE, strcharinfo(0);
-    set .@heal_value, (get(MaxHp, @target_id) - get(Hp, @target_id));
+    set .@heal_value, get(HEALXP, @target_id);
     set @mexp, .exp_gain;
     callfunc "magic_exp";
-    if (.@heal_value < 200)
+    if (.@heal_value > 200)
         set .@heal_value, 200;
     if (@args$ == "Mouboo" || @args$ == "mouboo") goto L_Mouboo;
     if (@target_id != BL_ID) goto L_NotMe;
@@ -32,7 +32,7 @@ L_NotMe:
 L_Continue:
     if (getskilllv(SKILL_MAGIC_DARK) >= 1) sc_start SC_HALT_REGENERATE, 2000, 0;
     if (attachrid(@target_id) != 1) end; // XXX: to avoid the ugly attachrid method we would need some kind of `run_as` builtin
-    if (!(isdead())) heal .@heal_value, 1, 1;
+    if (!(isdead())) heal 200, 1, 1;
     end;
 
 L_Mouboo:
