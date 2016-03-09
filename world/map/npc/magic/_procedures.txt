@@ -126,3 +126,31 @@ function|script|adjust_spellpower
 L_Return:
     return;
 }
+
+function|script|gain_heal_xp
+{
+    set @last_heal_xp, ((SCRIPT_XP & SCRIPT_HEALSPELL_MASK) >>  SCRIPT_HEALSPELL_SHIFT);
+    if ((@target_id != BL_ID) && ((.@heal_value / .heal_xp_value_divisor) > (((10 + @last_heal_xp) + rand(@last_heal_xp + 1)) + rand(@last_heal_xp + 1))))
+        goto L_Block;
+    goto L_Return;
+
+L_Block:
+    set @heal_xp, (@last_heal_xp + @mexp);
+    if (@heal_xp > SCRIPT_HEALSPELL_MASK)
+        set @heal_xp, SCRIPT_HEALSPELL_MASK;
+    set XMASTIME, (XMASTIME & ~(NIBBLE_0_MASK) | (@xmas_state << NIBBLE_0_SHIFT));
+    set SCRIPT_XP, (SCRIPT_XP & ~(SCRIPT_HEALSPELL_MASK) | (@heal_xp << SCRIPT_HEALSPELL_SHIFT));
+    goto L_Gain_Xp;
+
+L_Gain_Xp:
+    set @target_heal_xp, (get(MaxHp, @target_id) - get(HEALXP, @target_id));
+    set @heal_exp, .@heal_value; 
+    if (@target_heal_xp < .@heal_value)
+        set @heal_exp, @target_heal_xp; 
+    getexp (.base_exp_factor * @heal_exp), 0;
+    set HEALXP, (get(HEALXP, @target_id) + @heal_exp), @target_id;
+    goto L_Return;
+
+L_Return:
+    return;
+}
