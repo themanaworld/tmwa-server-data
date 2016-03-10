@@ -1,5 +1,15 @@
 # To-do
-- [ ] finish the missing spells and push them so they can be tested
+- [X] finish the missing spells and push them so they can be tested
+- [ ] Deal with the removal of the following spells from magic to NPCs or Commands
+ - Ched
+  - [ ] merge-concentration-potions
+ - [ ] Auldsbel
+  - [ ] make-short-tanktop
+  - [ ] make-tanktop
+  - [ ] make-shirt
+  - [ ] make-concentration-potion
+ - Wyara
+  - [ ] sense-spouse
 
 ---
 ---
@@ -8,7 +18,6 @@ To see a list of things that needs further thoughts do a grep for `XXX`.
 
 ---
 ---
-
 - [ ] check the new builtins and make sure they work as intended
  - [ ] `puppet`
     - [ ] check what happens when making a puppet whose name already exist (maybe it replaces?)
