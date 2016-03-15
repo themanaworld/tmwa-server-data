@@ -1,15 +1,15 @@
 # To-do
 - [X] finish the missing spells and push them so they can be tested
 - [ ] Deal with the removal of the following spells from magic to NPCs or Commands
- - Ched
-  - [ ] merge-concentration-potions
- - [ ] Auldsbel
-  - [ ] make-short-tanktop
-  - [ ] make-tanktop
-  - [ ] make-shirt
-  - [ ] make-concentration-potion
- - Wyara
-  - [ ] sense-spouse
+   - [X] Ched
+      - [ ] merge-concentration-potions
+   - [ ] Auldsbel
+      - [ ] make-short-tanktop
+      - [ ] make-tanktop
+      - [ ] make-shirt
+      - [ ] make-concentration-potion
+   - [X] Wyara
+   - [ ] sense-spouse
 
 ---
 ---
