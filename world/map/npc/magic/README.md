@@ -2,7 +2,7 @@
 - [X] finish the missing spells and push them so they can be tested
 - [ ] Deal with the removal of the following spells from magic to NPCs or Commands
    - [X] Ched
-      - [ ] merge-concentration-potions
+      - [X] merge-concentration-potions
    - [ ] Auldsbel
       - [ ] make-short-tanktop
       - [ ] make-tanktop
