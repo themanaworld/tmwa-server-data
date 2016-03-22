@@ -18,9 +18,10 @@ OnInit:
     setarray $@CandorDocks$, "Candor", "Hurnscald South";
     donpcevent "#"+$@MainDocks$[$@MainCurrentDock]+"Dock::OnCommandArrive";
     donpcevent "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock::OnCommandArrive";
+    set .warp_delay, 430;
     if (debug >= 2) end;
     initnpctimer;
-    end;
+    goto L_k1city2;
 
 L_NextDock:
     set $@MainLastDock, $@MainCurrentDock;
@@ -99,64 +100,39 @@ function|script|FerryHelp
     mes "\"We also have some slot machines in case you get bored.\"";
     return;
 }
-function|script|FerryManifest
-{
-    if (@DockNumber == 1) goto L_CandorFerry;
-    if (@DockNumber == 2) goto L_WorldFerry;
-    mes "Which Ferry do you want to check the schedule for?";
-    menu
-        "World Ferry.", L_WorldFerry,
-        "Candor Ferry.", L_CandorFerry;
-
-L_CandorFerry:
-    mes "The ferry is currently at "+$@CandorDocks$[$@CandorCurrentDock];
-    set @NextDock, ($@CandorCurrentDock + 1);
-    if(@NextDock == getarraysize($@CandorDocks$))
-        set @NextDock, 0;
-    mes "The ferry will be arriving at "+$@CandorDocks$[@NextDock]+" next";
-    next;
-    goto L_Close;
-
-L_WorldFerry:
-    mes "The ferry is currently at "+$@MainDocks$[$@MainCurrentDock];
-    set @NextDock, ($@MainCurrentDock + 1);
-    if(@NextDock == getarraysize($@MainDocks$))
-        set @NextDock, 0;
-    mes "The ferry will be arriving at "+$@MainDocks$[@NextDock]+" next";
-    next;
-    goto L_Close;
-
-L_Close:
-    close2;
-    return;
-}
 
 function|script|BoardFerry
 {
-    mes "Board the ferry?";
-    menu
-        "Yes.", L_Board,
-        "No.", L_Return;
+    if   ($@MainCurrentDock == 0 && getmap() == "008-1") goto L_Board;
+    elif ($@MainCurrentDock == 1 && getmap() == "031-1") goto L_Board;
+    elif ($@MainCurrentDock == 2 && getmap() == "001-1") goto L_Board;
+
+    set @NextDock, $@MainCurrentDock + 1;
+    if(@NextDock == getarraysize($@MainDocks$)) set @NextDock, 0;
+    message strcharinfo(0),
+            "Ferry : ##3The ferry is currently at ##B"+$@MainDocks$[$@MainCurrentDock]+"##b. "
+            +"It will be arriving at ##B"+$@MainDocks$[@NextDock]+"##b next.";
+    return;
 
 L_Board:
-    close2;
-    warp "035-2",39,29;
-    goto L_Return;
-
-L_Return:
+    warp "035-2",32,29;
     return;
 }
 
 function|script|BoardCandorFerry
 {
-    mes "Board the ferry?";
-    menu
-        "Yes.", L_Board,
-        "No.", L_Return;
+    if   ($@CandorCurrentDock == 0 && getmap() == "029-1") goto L_Board;
+    elif ($@CandorCurrentDock == 1 && getmap() == "008-1") goto L_Board;
+
+    set @NextDock, $@CandorCurrentDock + 1;
+    if(@NextDock == getarraysize($@CandorDocks$)) set @NextDock, 0;
+    message strcharinfo(0),
+            "Ferry : ##3The ferry is currently at ##B"+$@CandorDocks$[$@CandorCurrentDock]+"##b. "
+            +"It will be arriving at ##B"+$@CandorDocks$[@NextDock]+"##b next.";
+    return;
 
 L_Board:
-    close2;
-    warp "036-2",39,29;
+    warp "036-2",32,29;
     goto L_Return;
 
 L_Return:
