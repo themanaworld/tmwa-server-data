@@ -1,102 +1,11 @@
 // The ferry system
 
-017-9,27,28,0|script|#FerryConfig|32767
-{
-    end;
-
-OnInit:
-    disablenpc "Hurnscald South Koga";
-    disablenpc "Candor Koga";
-    disablenpc "Nivalis Koga";
-    disablenpc "Hurnscald North Koga";
-    disablenpc "Tulimshar Koga";
-    set $@MainCurrentDock, 0;
-    set $@CandorCurrentDock, 0;
-    set $@DockTickCount, 0;
-    set $@DockLeaveCount, 1;
-    setarray $@MainDocks$, "Hurnscald North", "Nivalis", "Tulimshar";
-    setarray $@CandorDocks$, "Candor", "Hurnscald South";
-    donpcevent "#"+$@MainDocks$[$@MainCurrentDock]+"Dock::OnCommandArrive";
-    donpcevent "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock::OnCommandArrive";
-    if (debug >= 2) end;
-    initnpctimer;
-    end;
-
-L_NextDock:
-    set $@MainLastDock, $@MainCurrentDock;
-    set $@CandorLastDock, $@CandorCurrentDock;
-    set $@MainCurrentDock, $@MainCurrentDock + 1;
-    set $@CandorCurrentDock, $@CandorCurrentDock + 1;
-    if($@MainCurrentDock == getarraysize($@MainDocks$))
-        set $@MainCurrentDock, 0;
-    if($@CandorCurrentDock == getarraysize($@CandorDocks$))
-        set $@CandorCurrentDock, 0;
-    set $@DockTickCount, 0;
-    donpcevent "#"+$@MainDocks$[$@MainLastDock]+"Dock::OnCommandWarp";
-    donpcevent "#"+$@MainDocks$[$@MainCurrentDock]+"Dock::OnCommandArrive";
-    donpcevent "#"+$@CandorDocks$[$@CandorLastDock]+"Dock::OnCommandWarp";
-    donpcevent "#"+$@CandorDocks$[$@CandorCurrentDock]+"Dock::OnCommandArrive";
-
-    donpcevent "#k1sound::OnCommandDing";
-    donpcevent "#k2sound::OnCommandDing";
-
-    initnpctimer;
-
-    if($@MainCurrentDock == 2) goto L_k1city1;
-    if($@MainCurrentDock == 0) goto L_k1city2;
-    if($@MainCurrentDock == 1) goto L_k1city3;
-    end;
-
-OnTimer8000:
-    if ($@DockTickCount > $@DockLeaveCount)
-        goto L_NextDock;
-    set $@DockTickCount, $@DockTickCount + 1;
-    initnpctimer;
-    end;
-
-
-L_k1city1:
-  enablenpc "#k1city1e"; disablenpc "#k1city2e"; disablenpc "#k1city3e";
-  disablenpc "#k1city1d"; enablenpc "#k1city2d"; enablenpc "#k1city3d";
-  if($@CandorCurrentDock == 1) goto L_k2city1;
-  if($@CandorCurrentDock == 0) goto L_k2city2;
-end;
-
-L_k1city2:
-  disablenpc "#k1city1e"; enablenpc "#k1city2e"; disablenpc "#k1city3e";
-  enablenpc "#k1city1d"; disablenpc "#k1city2d"; enablenpc "#k1city3d";
-  if($@CandorCurrentDock == 1) goto L_k2city1;
-  if($@CandorCurrentDock == 0) goto L_k2city2;
-end;
-
-L_k1city3:
-  disablenpc "#k1city1e"; disablenpc "#k1city2e"; enablenpc "#k1city3e";
-  enablenpc "#k1city1d"; enablenpc "#k1city2d"; disablenpc "#k1city3d";
-  if($@CandorCurrentDock == 1) goto L_k2city1;
-  if($@CandorCurrentDock == 0) goto L_k2city2;
-end;
-
-L_k2city1:
-  enablenpc "#k2city1e"; disablenpc "#k2city2e";
-  disablenpc "#k2city1d"; enablenpc "#k2city2d";
-end;
-
-L_k2city2:
-  disablenpc "#k2city1e"; enablenpc "#k2city2e";
-  enablenpc "#k2city1d"; disablenpc "#k2city2d";
-end;
-}
-
 function|script|FerryHelp
 {
-    mes "\"You wait on the dock for the ship to come in. You'll be given a chance to board the boat when it comes into port.\"";
-    mes "\"It lingers in port to allow you some time to board in case you are running behind.\"";
-    mes "\"Once on the ship, it will sail to different ports and annouce where it is docking.\"";
+    mes "\"Walk on the dock. You'll be given a chance to board the boat.\"";
     mes "\"There are 2 Ferrys, both ferrys are free to ride.\"";
     mes "\"The Main ferry travels from Argeas, Kaizei and Tonori. It docks in the major ports Hurnscald North, Nivalis and the Tulimshar Dock.\"";
     mes "\"The Candor Ferry only travels betwen Candor and the Hurnscald South Dock.\"";
-    mes "\"Refreshments and supplies are offered aboard both ships during the voyage.\"";
-    mes "\"We also have some slot machines in case you get bored.\"";
     return;
 }
 function|script|FerryManifest
@@ -107,19 +16,11 @@ function|script|FerryManifest
         "Candor Ferry.", L_CandorFerry;
 
 L_CandorFerry:
-    mes "The ferry is currently at "+$@CandorDocks$[$@CandorCurrentDock];
-    set @NextDock, ($@CandorCurrentDock + 1);
-    if(@NextDock == getarraysize($@CandorDocks$))
-        set @NextDock, 0;
-    mes "The ferry will be arriving at "+$@CandorDocks$[@NextDock]+" next";
+    mes "This ferry goes between Candor and Hurnscald.";
     goto L_Close;
 
 L_WorldFerry:
-    mes "The ferry is currently at "+$@MainDocks$[$@MainCurrentDock];
-    set @NextDock, ($@MainCurrentDock + 1);
-    if(@NextDock == getarraysize($@MainDocks$))
-        set @NextDock, 0;
-    mes "The ferry will be arriving at "+$@MainDocks$[@NextDock]+" next";
+    mes "This ferry can take you to Nivalis (Kaizei), Tulimshar (Tonori), or Hurnscald (Argeas)";
     goto L_Close;
 
 L_Close:
@@ -131,12 +32,24 @@ function|script|BoardFerry
 {
     mes "Board the ferry?";
     menu
-        "Yes.", L_Board,
+        "Tulimshar (Tonori)", L_Tulimshar,
+        "Hurnscald (Argeas)", L_Hurnscald,
+        "Nivalis (Kaizei)", L_Nivalis,
         "No.", L_Return;
 
-L_Board:
+L_Tulimshar:
     close2;
-    warp "035-2",39,29;
+    warp "001-1", 63, 73;
+    goto L_Return;
+
+L_Hurnscald:
+    close2;
+    warp "008-1", 137, 64;
+    goto L_Return;
+
+L_Nivalis:
+    close2;
+    warp "031-1", 95, 109;
     goto L_Return;
 
 L_Return:
@@ -151,8 +64,17 @@ function|script|BoardCandorFerry
         "No.", L_Return;
 
 L_Board:
+    if (getmap() == "008-1") goto L_Candor;
+    goto L_Hurnscald;
+
+L_Hurnscald:
     close2;
-    warp "036-2",39,29;
+    warp "008-1", 137, 75;
+    goto L_Return;
+
+L_Candor:
+    close2;
+    warp "029-1", 46, 109;
     goto L_Return;
 
 L_Return:
