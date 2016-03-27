@@ -14,11 +14,14 @@ function|script|AnnualEasterEvent
     if ((gettimetick(2)-TUT_var < 5*7*86400) || (BaseLevel < 40)) //player must be created at least 5 weeks ago
         goto L_EndTooYoung;
 
+    callsub S_Read_Annual_Quest;
     if (#EASTERTIMEPENALTY == 0)
         goto L_WarmUp;
     // prevent clicking multiple times:
     if (gettimetick(2) < #EASTERTIMEPENALTY + $@EASTER_FOUND_WAIT_TIME)
         goto L_End2;
+    if (@easter_year > gettime(7) - 2000)
+        goto L_End3;
     set #EASTERTIMEPENALTY, gettimetick(2);
 
     // global counter to determine reshuffle times of the eggs.
@@ -95,6 +98,10 @@ L_WarmUp:
     getitem "MoubooFigurine", 1;
     misceffect FX_GETITEM, strcharinfo(0);
     message strcharinfo(0), "Hmmm eggs! Maybe you can find something nice there!";
+    goto L_End1;
+
+L_End3:
+    message strcharinfo(0), "Don't be greedy! You already found something nice.";
     goto L_End1;
 
 L_End2:
