@@ -14,12 +14,15 @@ function|script|AnnualEasterEvent
     if ((gettimetick(2)-TUT_var < 5*7*86400) || (BaseLevel < 40)) //player must be created at least 5 weeks ago
         goto L_EndTooYoung;
 
-    if (@eastertimepenalty == 0)
+    callsub S_Read_Annual_Quest;
+    if (#EASTERTIMEPENALTY == 0)
         goto L_WarmUp;
     // prevent clicking multiple times:
-    if (gettimetick(2) < @eastertimepenalty + $@EASTER_FOUND_WAIT_TIME)
+    if (gettimetick(2) < #EASTERTIMEPENALTY + $@EASTER_FOUND_WAIT_TIME)
         goto L_End2;
-    set @eastertimepenalty, gettimetick(2);
+    if (@easter_year > gettime(7) - 2000)
+        goto L_End3;
+    set #EASTERTIMEPENALTY, gettimetick(2);
 
     // global counter to determine reshuffle times of the eggs.
     set $@peopleFoundEggs[@EasterEggID], $@peopleFoundEggs[@EasterEggID]+1;
@@ -91,17 +94,21 @@ L_EndTooYoung:
     goto L_End1;
 
 L_WarmUp:
-    set @eastertimepenalty, gettimetick(2);
-    getitem "GreenApple", 1;
+    set #EASTERTIMEPENALTY, gettimetick(2);
+    getitem "MoubooFigurine", 1;
     misceffect FX_GETITEM, strcharinfo(0);
     message strcharinfo(0), "Hmmm eggs! Maybe you can find something nice there!";
     goto L_End1;
 
+L_End3:
+    message strcharinfo(0), "Don't be greedy! You already found something nice.";
+    goto L_End1;
+
 L_End2:
     message strcharinfo(0), "Don't be greedy! You just found something a moment ago.";
-    set @eastertimepenalty, @eastertimepenalty + 5;
-    if (@eastertimepenalty > gettimetick(2))
-        set @eastertimepenalty, gettimetick(2);
+    set #EASTERTIMEPENALTY, #EASTERTIMEPENALTY + 5;
+    if (#EASTERTIMEPENALTY > gettimetick(2))
+        set #EASTERTIMEPENALTY, gettimetick(2);
     goto L_End1;
 
 L_End1:
@@ -115,6 +122,10 @@ L_End1:
 
 008-1,65,40,0|script|#TestEgg0|375
 {
+    set @npc_distance, 1;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
     set @EasterEggID, 0;
     callfunc("AnnualEasterEvent");
     end;
@@ -122,6 +133,10 @@ L_End1:
 
 008-1,65,40,0|script|#TestEgg1|375
 {
+    set @npc_distance, 1;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
     set @EasterEggID, 1;
     callfunc("AnnualEasterEvent");
     end;
@@ -129,6 +144,10 @@ L_End1:
 
 008-1,65,40,0|script|#TestEgg2|375
 {
+    set @npc_distance, 1;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
     set @EasterEggID, 2;
     callfunc("AnnualEasterEvent");
     end;
