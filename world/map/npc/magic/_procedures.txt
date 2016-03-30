@@ -1,6 +1,6 @@
 function|script|magic_register
 {
-    debugmes ">> Register " + .invocation$ + " @ " + strnpcinfo(0);
+    //debugmes ">> Register " + .invocation$ + " @ " + strnpcinfo(0);
     set .@ext$, if_then_else(getarg(0,"") != "", "::"+getarg(0), "");
     registercmd .invocation$, strnpcinfo(0) + .@ext$; // register the spell
     set .index, $@magic_index;
@@ -8,12 +8,21 @@ function|script|magic_register
     return;
 }
 
+// this can only be done with a npc so...
+-|script|Magic Timer|32767
+{
+    end;
+OnClear:
+    set @_M_BLOCK, 0;
+    end;
+}
+
 // this function is call()-only
 function|script|magic_checks
 {
     set .@r, 0;
     if(getpvpflag(1)) set .@r, 1; // FIXME: make HIDDEN into a param
-    if((gettimetick(2) - MAGIC_CAST_TICK) < 0) set .@r, 2; // check if last debuff ended
+    if(@_M_BLOCK) set .@r, 2; // check if last debuff ended
     if(Hp < 1) set .@r, 3; // can not cast when dead
     return .@r;
 }
@@ -22,10 +31,10 @@ function|script|elt_damage
 {
     // args are damage, dmgplus(mutation), bonus_elt, malus_elt, effect
     set .@dmg, getarg(0) + rand(getarg(1));
-    if(elttype(@target_id) == getarg(3)) // malus
+    if(get(ELTTYPE, @target_id) == getarg(3)) // malus
         set .@dmg, .@dmg / 3;
-    if(elttype(@target_id) == getarg(2)) // bonus
-        set .@dmg, ((eltlvl(@target_id) + 4) * .@dmg) / 4;
+    if(get(ELTTYPE, @target_id) == getarg(2)) // bonus
+        set .@dmg, ((get(ELTLVL, @target_id) + 4) * .@dmg) / 4;
     set .@source, .caster;
     if (!.@source) set .@source, getcharid(3);
 

@@ -1,6 +1,6 @@
 -|script|protect|32767
 {
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end;
     if (Sp < 14) end;
     set .@level, getskilllv(.school);
     if (.@level < .level) end;
@@ -16,7 +16,8 @@
     if (attachrid(@betsanc_caster) != 1) end;
     if (@target_hat == 888) end; // FIXME: this whole 5 line block could be done with only one line if we modify getequipid
 
-    set MAGIC_CAST_TICK, gettimetick(2) + 2; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 1500, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 14;
     misceffect FX_MAGIC_GREEN, strcharinfo(0);
@@ -34,6 +35,7 @@
     end;
 
 OnEnd:
+    if (sc_check(SC_PHYS_SHIELD) != 1) end;
     message strcharinfo(0), "Shield : You feel less protected.";
     misceffect FX_MAGIC_SHIELD_ENDS, strcharinfo(0);
     end;

@@ -1,6 +1,6 @@
 -|script|happy-curse|32767
 {
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end; 
     if (Sp < 13) end;
     set .@level, getskilllv(.school);
     if (.@level < .level) end;
@@ -10,7 +10,8 @@
     set @target_id, getcharid(3, @args$);
     if (@target_id < 1 || !(isloggedin(@target_id))) set @target_id, BL_ID; // fallback to self
 
-    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 13;
     misceffect FX_MAGIC_GREEN, strcharinfo(0);

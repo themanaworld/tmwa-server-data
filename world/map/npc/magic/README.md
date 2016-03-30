@@ -1,23 +1,3 @@
-# To-do
-- [X] finish the missing spells and push them so they can be tested
-- [ ] Deal with the removal of the following spells from magic to NPCs or Commands
-   - [X] Ched
-      - [X] merge-concentration-potions
-   - [ ] Auldsbel
-      - [ ] make-short-tanktop
-      - [ ] make-tanktop
-      - [ ] make-shirt
-      - [ ] make-concentration-potion
-   - [X] Wyara
-   - [ ] sense-spouse
-
----
----
-to see other things that needs to be done do a grep for `TODO`, `FIXME` in this folder.
-To see a list of things that needs further thoughts do a grep for `XXX`.
-
----
----
 - [ ] check the new builtins and make sure they work as intended
  - [ ] `puppet`
     - [ ] check what happens when making a puppet whose name already exist (maybe it replaces?)
@@ -48,6 +28,8 @@ To see a list of things that needs further thoughts do a grep for `XXX`.
  - [ ] `getdir`
  - [ ] `distance`
  - [ ] `if_then_else`
+
+ - I do not like `void`, feels like an ugly workaround; we should make `puppet` and `call` work in both function context and statement context
 
 ---
 - [ ] test the spells

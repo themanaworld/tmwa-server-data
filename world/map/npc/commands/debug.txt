@@ -3,9 +3,9 @@
 function|script|Debug
 {
     if(!@debug_npc) goto L_Begin;
-    mes "The debug NPCs have been deprecated. Please use this magic spell instead:";
+    mes "The debug NPCs have been deprecated. Please use this command instead:";
     mes "";
-    mes "%%E        ##a#debug##0";
+    mes "%%E        ##a@debug##0";
     set @debug_npc, 0;
     goto L_Close;
 
@@ -924,11 +924,15 @@ L_Close:
 
 -|script|Debug Spell|32767
 {
-    if(!debug && getgmlevel() < 99) end;
+    if(!debug && getgmlevel() < get(.debug, "GM")) end;
     callfunc "Debug";
+    end;
+OnDeprecated:
+    message strcharinfo(0), "Debug : ##3The #debug spell has been superseded by the ##B@debug##b command.";
     end;
 OnInit:
     registercmd "@debug", "Debug Spell";
+    registercmd "#debug", "Debug Spell::OnDeprecated";
     end;
 }
 

@@ -1,25 +1,27 @@
 -|script|flare-dart|32767
 {
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end;
     if (Sp < 10) end;
     set @level, getskilllv(.school);
     if (@level < .level) end;
     if (@level <= 2 && countitem("SulphurPowder") >= 1) delitem "SulphurPowder", 1;
     elif (@level <= 2) end;
-    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 500, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 10;
     misceffect FX_MAGIC_BLACK, strcharinfo(0);
-    set @damage, sqrt(@spellpower) * 5;
-    set @dmg_bonus, (BaseLevel/3) + 5;
-    overrideattack (@spellpower/50)+3, 1200, 4, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
+    set @flar_damage, sqrt(@spellpower) * 5;
+    set @flar_dmg_bonus, (BaseLevel/3) + 5;
+    set .@delay, (((200 - Agi) * 1200) / 200);
+    overrideattack (@spellpower/50)+3, .@delay, 4, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
     callfunc "magic_exp";
     end;
 
 OnAttack:
     misceffect FX_MAGIC_BLACK, strcharinfo(0);
     if (target(BL_ID, @target_id, 50) != 50) end; // 0x20 | 0x02 | 0x10
-    void call("elt_damage", @damage, @dmg_bonus, ELT_WATER, ELT_FIRE, FX_MAGIC_BLACK);
+    void call("elt_damage", @flar_damage, @flar_dmg_bonus, ELT_WATER, ELT_FIRE, FX_MAGIC_BLACK);
     end;
 
 OnInit:

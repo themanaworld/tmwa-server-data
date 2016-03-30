@@ -1,0 +1,132 @@
+// all-in-one debug
+// author: meko
+
+-|script|SuperDebug|32767
+{
+    if (GM < get(.lounge, "GM") && GM < G_SYSOP && !debug) goto L_GM2; // make sure you can enter the gm lounge
+    if (target(BL_ID,getnpcid("Numa"),1)) goto L_Main;
+    npcaction 6, 12;
+    title "Numa";
+    goto L_Main;
+
+L_GM2:
+    message strcharinfo(0), "numa : GM command is level "+ get(.lounge, "GM") +", but you are level " + GM;
+    end;
+
+L_Main:
+    mes "How may I help you?";
+    next;
+    menu
+        "Announcements", L_StoneBoard,
+        "MOTD", L_MOTD,
+        "Holiday debug", L_Holiday,
+        "Event debug", L_Event,
+        "Quest debug", L_Quest,
+        "Who are you?", L_WhoAmI,
+        "Close", L_Close;
+        // todo: generic npcs
+        // todo: map list
+
+L_WhoAmI:
+    mes "I am Numa, also known as `SuperDebug`.";
+    mes "My sole purpose is to assist TMW staff from behind-the-scene.";
+    mes "Using me, you can access several debug menus.";
+    mes "You can call me from anywhere using the ##B@numa##b spell, or you can come see me in person.";
+    next;
+    goto L_Main;
+
+L_Holiday:
+    if (GM < get(.holiday, "GM") && GM < G_SYSOP) goto L_GM;
+    mes "What holiday do you want to debug?";
+    next;
+    menu
+        "Xmas.", L_XmasDebug,
+        "Halloween.", L_HalloweenDebug,
+        "Easter.", L_EasterDebug;
+
+L_XmasDebug:
+    gmlog strcharinfo(0) + " accessed the Xmas debug.";
+    callfunc "XmasDebug";
+    goto L_Close;
+
+L_HalloweenDebug:
+    gmlog strcharinfo(0) + " accessed the Halloween debug.";
+    callfunc "HalloweenDebug";
+    goto L_Close;
+
+L_EasterDebug:
+    gmlog strcharinfo(0) + " accessed the Easter debug.";
+    callfunc "Easter Debug";
+    goto L_Close;
+
+L_Event:
+    if (GM < get(.event, "GM") && GM < G_EVENT) goto L_GM;
+    gmlog strcharinfo(0) + " accessed the GM event debug.";
+    callfunc "GmDebug";
+    goto L_Close;
+
+L_StoneBoard:
+    if (GM < get(.scheduled, "GM") && GM < G_SYSOP) goto L_GM;
+    callfunc "SBConfig";
+    goto L_Close;
+
+L_MOTD:
+    if (GM < get(.motd, "GM") && GM < G_SYSOP) goto L_GM;
+    callfunc "MOTDConfig";
+    goto L_Close;
+
+L_GM:
+    mes "I'm awfully sorry.";
+    mes "You do not have the required GM level to perform this action.";
+    goto L_Close;
+
+L_Quest:
+    callfunc "QuestDebug";
+    goto L_Close;
+
+L_Close:
+    close;
+
+OnInit:
+    registercmd chr(ATCMD_SYMBOL) + "numa", strnpcinfo(0);
+    registercmd chr(ATCMD_SYMBOL) + "superdebug", strnpcinfo(0);
+    void puppet("017-9", 30, 28, "Numa", 393);
+    end;
+}
+
+function|script|QuestDebug
+{
+    goto L_ChooseContinent;
+
+L_ChooseContinent:
+    mes "Choose a continent.";
+    next;
+    menu
+        "Argeas", L_Argeas,
+        "Close", L_Return;
+
+L_Argeas:
+    mes "Choose an area.";
+    next;
+    menu
+        "Woodland", L_Woodland,
+        "Choose a continent", L_ChooseContinent,
+        "Close", L_Return;
+
+L_Woodland:
+    mes "Choose a quest.";
+    next;
+    menu
+        "Illia Sisters", L_Valia,
+        "Choose an area", L_Argeas,
+        "Close", L_Return;
+
+L_Return:
+    return;
+
+//////////////////////////////
+
+L_Valia:
+    callfunc "IlliaDebug";
+    goto L_Return;
+}

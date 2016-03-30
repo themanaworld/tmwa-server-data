@@ -1,19 +1,21 @@
 -|script|lightning-strike|32767
 {
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end;
     if (Sp < 20) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
     set .@level, getskilllv(.school);
     if (.@level < .level) end;
     if (.@level <= 3 && countitem("IronPowder") >= 1) delitem "IronPowder", 1;
     elif (.@level <= 3) end;
-    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 20;
     misceffect FX_MAGIC_BLACK, strcharinfo(0);
     set @ingrav_sp, @spellpower;
     set @ingrav_luk, Luk;
-    overrideattack (@spellpower/90)+1, 3000, 8, ATTACK_ICON_GENERIC, 31, strnpcinfo(0)+"::OnAttack";
+    set .@delay, (((200 - Agi) * 3000) / 200);
+    overrideattack (@spellpower/90)+1, .@delay, 8, ATTACK_ICON_GENERIC, 31, strnpcinfo(0)+"::OnAttack";
     callfunc "magic_exp";
     end;
 
@@ -42,7 +44,7 @@ OnNpc:
 
 L_InRain:
     set @used, 0;
-    foreach 3, getmap(), @ar[0], @ar[1], @ar[2], @ar[3], strnpcinfo(0)+"::OnEntityInRain";
+    foreach 0, getmap(), @ar[0], @ar[1], @ar[2], @ar[3], strnpcinfo(0)+"::OnEntityInRain";
     if (@used >= 1 && (@ingrav_luk + rand(200)) >= 150) end;
     misceffect FX_LIGHTNING1 + rand(3), strcharinfo(0);
     heal 0 - @ingrav_sp, 0;

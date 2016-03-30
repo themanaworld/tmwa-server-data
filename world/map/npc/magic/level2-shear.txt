@@ -1,14 +1,16 @@
 -|script|shear|32767
 {
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end;
     if (Sp < 23) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
     if (getskilllv(.school) < .level) end;
-    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 23;
     misceffect FX_MAGIC_GREEN, strcharinfo(0);
-    overrideattack 1, 2000, 1, ATTACK_ICON_SHEARING, 30, strnpcinfo(0)+"::OnAttack";
+    set .@delay, (((200 - Agi) * 2000) / 200);
+    overrideattack 1, .@delay, 1, ATTACK_ICON_SHEARING, 30, strnpcinfo(0)+"::OnAttack";
     callfunc "magic_exp";
     set @chipchip_sp, @spellpower;
     end;

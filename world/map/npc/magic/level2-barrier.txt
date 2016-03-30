@@ -1,6 +1,6 @@
 -|script|magic barrier|32767
 {
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end;
     if (Sp < 15) end;
     set .@level, getskilllv(.school);
     if (.@level < .level) end;
@@ -16,7 +16,8 @@
     if (attachrid(@asorm_caster) != 1) end;
     if (@target_hat == 888) end; // FIXME: this whole 5 line block could be done with only one line if we modify getequipid OR make equip_ into params
 
-    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 15;
     misceffect FX_MAGIC_BLUE, strcharinfo(0);
@@ -34,6 +35,7 @@
     end;
 
 OnEnd:
+    if (sc_check(SC_MBARRIER) != 1) end;
     message strcharinfo(0), "Barrier : Your magical barrier dissipates.";
     misceffect FX_MAGIC_DEFAULT, strcharinfo(0);
     end;

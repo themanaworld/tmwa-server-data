@@ -1,11 +1,16 @@
-029-2,113,57,0|script|#alchemylab|400
+-|script|_N-Alchemy|32767
 {
+    set @npc_distance, 1;
+    callfunc "PCtoNPCRange";
+    if (@npc_check) end;
+
     title "Alchemy Lab";
     mes "This is an alchemy lab.";
     mes "With it, you can combine reagents together to create powerful potions.";
     next;
     clear;
     mes "##BDrag & drop 2 items from your inventory. All items used will be lost.##b";
+    cleararray @alchlab_items$[0], "", 2; // since we're not using a scoped (.@) array, we need to clean it
     requestitem @alchlab_items$[0], 2; // TODO: add a craft builtin (npc action 12)
     clear;
     if (@alchlab_items$[0] == "" || @alchlab_items$[1] == "")
@@ -35,13 +40,13 @@ L_Proceed:
 
 L_CheckRecipes:
     set .@n, .@n+3;
-    if (.@n == get(.rsize, "#alchemylab"))
+    if (.@n == get(.rsize, "_N-Alchemy"))
         goto L_Failed;
-    if (!(get(.recipes$[.@n], "#alchemylab") == @alchlab_items$[0] && get(.recipes$[.@n+1], "#alchemylab") == @alchlab_items$[1]) &&
-        !(get(.recipes$[.@n], "#alchemylab") == @alchlab_items$[1] && get(.recipes$[.@n+1], "#alchemylab") == @alchlab_items$[0]))
+    if (!(get(.recipes$[.@n], "_N-Alchemy") == @alchlab_items$[0] && get(.recipes$[.@n+1], "_N-Alchemy") == @alchlab_items$[1]) &&
+        !(get(.recipes$[.@n], "_N-Alchemy") == @alchlab_items$[1] && get(.recipes$[.@n+1], "_N-Alchemy") == @alchlab_items$[0]))
         goto L_CheckRecipes;
 
-    getitem get(.recipes$[.@n+2], "#alchemylab"), 1; // XXX: here we could also make it fail sometimes depending on your expertise
+    getitem get(.recipes$[.@n+2], "_N-Alchemy"), 1; // XXX: here we could also make it fail sometimes depending on your expertise
 
     // XXX: here we could make it give profession/crafting exp
     clear;
@@ -50,7 +55,7 @@ L_CheckRecipes:
     mes "     ["+ getitemlink(@alchlab_items$[1]) +"]";
     mes;
     mes "You obtained:";
-    mes "     ["+ getitemlink(get(.recipes$[.@n+2], "#alchemylab")) +"]";
+    mes "     ["+ getitemlink(get(.recipes$[.@n+2], "_N-Alchemy")) +"]";
     close;
 
 L_NoItems:
@@ -64,15 +69,30 @@ L_Failed:
 L_Abort:
     close;
 
-OnInit:
-    void // the first alchemy lab doesn't need a puppet, it's already on a map
-        puppet("027-2", 51, 100, strnpcinfo(0)+0, 400), // TODO: make a npc like npc 400 but with hoverCursor="action" => looks better for things like crafting
-        puppet("001-2", 92,  76, strnpcinfo(0)+1, 400),
-        puppet("001-2", 98,  76, strnpcinfo(0)+2, 400),
-        puppet("001-2", 92,  89, strnpcinfo(0)+3, 400),
-        puppet("001-2", 98,  89, strnpcinfo(0)+4, 400);
+S_Spawn:
+    set .@s, getarraysize(.x1);
+    if (.spawned == 0)
+        set .spawned, 1; // FIXME: in tmwa (getarraysize2, setarray) allow to set array index 0 when setting in another npc
+    if (.spawned >= .@s)
+        goto S_Return;
+    set .@n$, "#_Al-lab"+chr(3)+.spawned;
+    void puppet(.m$[.spawned], .x1[.spawned], .y1[.spawned], .@n$, 400); // TODO: make a npc like npc 400 but with hoverCursor="action" => looks better for things like crafting
+    set .spawned, .spawned + 1;
+    if (.spawned < .@s)
+        goto S_Spawn;
+    return;
 
-    setarray .recipes$[0],
+S_Return:
+    return;
+
+OnMaybeStart:
+    callsub S_Spawn;
+    if (.started == 0)
+        goto L_InitVars;
+    end;
+
+L_InitVars:
+    setarray .recipes$[0], 0,
         "DilutedConcentrationPot", "DarkConcentrationPotion", "ConcentrationPotion",
         "CactusDrink", "CactusDrink", "CactusPotion",
         "PinkPetal", "BottleOfWater", "ConcentrationPotion";

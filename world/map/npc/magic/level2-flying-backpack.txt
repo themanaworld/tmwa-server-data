@@ -1,13 +1,14 @@
 -|script|flying-backpack|32767
 {
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end;
     if (Sp < 12) end;
     set .@level, getskilllv(.school);
     if (.@level < .level) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
     if (.@level <= 3 && countitem("SilkCocoon") >= 1) delitem "SilkCocoon", 1;
     elif (.@level <= 3) end;
-    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 12;
     misceffect FX_MAGIC_GREEN, strcharinfo(0);
@@ -25,6 +26,7 @@
     end;
 
 OnEnd:
+    if (sc_check(SC_FLYING_BACKPACK) != 1) end;
     message strcharinfo(0), "Backpack : Your backpack is no longer levitating.";
     misceffect FX_MAGIC_GENERIC, strcharinfo(0);
     end;

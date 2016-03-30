@@ -4,7 +4,7 @@
     end;
 
 OnCast:
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end; 
     if (getskilllv(.school) < .level) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
     if (Sp < 25) end;
@@ -16,7 +16,8 @@ OnCast:
     else end;
     delitem "SulphurPowder", 1;
     set Sp, Sp - 25;
-    set MAGIC_CAST_TICK, gettimetick(2) + 5; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 5000, "Magic Timer::OnClear"; // set the new debuff
 
     setarray @away[0], POS_X, POS_Y, getdir(), (.range + 1), 0;
     callsub S_AwayFrom;
@@ -77,7 +78,9 @@ S_Launch:
     npcareawarp .area_x - 6, .area_y - 6, .area_x + 6, .area_y + 6, 0, strnpcinfo(0);
     misceffect FX_ARROW_HAIL;
     set .done, 0;
-    foreach 3, strnpcinfo(3), getnpcx(), getnpcy(), getnpcx(), getnpcy(), strnpcinfo(0) + "::OnHit";
+    foreach 2, strnpcinfo(3), getnpcx(), getnpcy(), getnpcx(), getnpcy(), strnpcinfo(0) + "::OnHit";
+    if (PVP_CHANNEL || getmapflag(getmap(), MF_PVP))
+        foreach 0, strnpcinfo(3), getnpcx(), getnpcy(), getnpcx(), getnpcy(), strnpcinfo(0) + "::OnHit";
     if(!.done && getx() == getnpcx() && gety() == getnpcy())
         heal 0 - (.damage + rand(.damage_bonus) + rand(.damage_bonus)), 0; // injure caster
     set .launch, .launch + 1;

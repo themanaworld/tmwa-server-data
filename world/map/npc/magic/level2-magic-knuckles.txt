@@ -1,17 +1,19 @@
 -|script|magic-knuckles|32767
 {
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end;
     if (Sp < 20) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
     set .@level, getskilllv(.school);
     if (.@level < .level) end;
     if (.@level <= 3 && countitem("Beer") >= 1) delitem "Beer", 1;
     elif (.@level <= 3) end;
-    set MAGIC_CAST_TICK, gettimetick(2) + 1; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 500, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 20;
     misceffect FX_MAGIC_BLACK, strcharinfo(0);
-    overrideattack (@spellpower/10)+10, 1300, 1, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
+    set .@delay, (((200 - Agi) * 1300) / 200);
+    overrideattack (@spellpower/10)+10, .@delay, 1, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
     callfunc "magic_exp";
     set @upmaru_str, Str; // do not allow to equip light armor, cast, and then switch to heavy armor to get bonus str
     end;
@@ -22,7 +24,7 @@ OnAttack:
 
 OnInit:
     set .school, SKILL_MAGIC_WAR;
-    set .invocation$, chr(MAGIC_SYMBOL) + "upmaru"; // used in npcs that refer to this spell
+    set .invocation$, chr(MAGIC_SYMBOL) + "upmarmu"; // used in npcs that refer to this spell
     void call("magic_register");
     set .level, 2;
     set .exp_gain, 1;

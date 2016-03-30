@@ -1,9 +1,10 @@
 -|script|detect-magic|32767
 {
-    if(call("magic_checks")) end; // << I wish we had functions that could return >>
+    if(call("magic_checks")) end; 
     if (Sp < 3) end;
     if (getskilllv(.school) < .level) end;
-    set MAGIC_CAST_TICK, gettimetick(2) + 6; // set the new debuff
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 6000, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 3;
     misceffect FX_MAGIC_GENERIC, strcharinfo(0);
@@ -15,7 +16,7 @@
 
 OnNearbyNpc:
     set .@e$, strnpcinfo(2,@target_id);
-    if(.@e$ == "#_M" || .@e$ == "#MAGIC")
+    if(.@e$ == "#_M" || .@e$ == "#MAGIC" || get(.IS_MAGIC, @target_id))
         misceffect FX_MAGIC_DEFAULT, @target_id;
     end;
 
