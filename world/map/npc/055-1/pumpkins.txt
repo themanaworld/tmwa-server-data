@@ -1,14 +1,57 @@
-// Pumpkin mobs for the seasonal halloween event with Oscar
-055-1,48,25,16,8|monster|Pumpkin|1063,12,10000ms,5000ms,PumpkinMob055-1::On1063
-055-1,139,29,5,7|monster|Pumpkin|1063,7,10000ms,5000ms,PumpkinMob055-1::On1063
-055-1,132,24,6,4|monster|Pumpkin|1063,4,10000ms,5000ms,PumpkinMob055-1::On1063
-
-
-055-1,0,0,0|script|PumpkinMob055-1|32767
+055-1,0,0,0|script|Pumpkin#0|1063
 {
+    callfunc "KillPumpkin";
     end;
+OnTimer10000:
+    callfunc "RepositionPumpkin";
+    end;
+OnInit:
+    callfunc "RepositionPumpkin";
+    end;
+}
 
-On1063:
+055-1,0,0,0|script|Pumpkin#1|1063
+{
+    callfunc "KillPumpkin";
+    end;
+OnTimer10000:
+    callfunc "RepositionPumpkin";
+    end;
+OnInit:
+    callfunc "RepositionPumpkin";
+    end;
+}
+
+055-1,0,0,0|script|Pumpkin#2|1063
+{
+    callfunc "KillPumpkin";
+    end;
+OnTimer10000:
+    callfunc "RepositionPumpkin";
+    end;
+OnInit:
+    callfunc "RepositionPumpkin";
+    end;
+}
+
+// add as many pumpkins as you want
+
+
+function|script|RepositionPumpkin
+{
+    npcareawarp 46, 31, 137, 73, 1, strnpcinfo(0); // ==> set the rectangle area here
+    fakenpcname strnpcinfo(0), strnpcinfo(0), 1063; // become visible once again
+    stopnpctimer strnpcinfo(0);
+    return;
+}
+
+function|script|KillPumpkin
+{
+    callfunc "PCtoNPCRange";
+    getexp 17, 1;
+    fakenpcname strnpcinfo(0), strnpcinfo(0), 32767; // disappear
+    initnpctimer strnpcinfo(0); // start the respawn timer
+
     if (Quest_Halloween != 1 || !(gettime(6) == 11 && (gettime(5) >= 4 && gettime(5) <= 30)))
         goto L_HeavyPoison;
     if (@discover_poisonous_pumpkin == 0)
@@ -25,14 +68,14 @@ On1063:
 
     set @mobID, 1063;
     callfunc "MobPoints";
-    end;
+    return;
 
 L_EnoughSeeds:
     message strcharinfo(0), $@halloween_num_seeds + " should be enough seeds for Oscar. And this pumpkin gas gets too bad to stand it any longer...";
     set Quest_Halloween, 2;
     // Reset this to get the message for the "heavy" poison
     set @discover_poisonous_pumpkin, 0;
-    end;
+    return;
 
 L_HeavyPoison:
     if (@discover_poisonous_pumpkin == 0)
@@ -41,7 +84,7 @@ L_HeavyPoison:
         goto L_HeavyPoison1;
     if (@discover_poisonous_pumpkin > 1)
         goto L_HeavyPoison2;
-    end;
+    return;
 
 L_HeavyPoison0:
     set @discover_poisonous_pumpkin, @discover_poisonous_pumpkin + 1;
@@ -49,7 +92,7 @@ L_HeavyPoison0:
     misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
     heal -150,0;
     sc_start sc_poison, 1, 60;
-    end;
+    return;
 
 L_HeavyPoison1:
     set @discover_poisonous_pumpkin, @discover_poisonous_pumpkin + 1;
@@ -57,12 +100,11 @@ L_HeavyPoison1:
     misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
     heal -350,0;
     sc_start sc_poison, 1, 120;
-    end;
+    return;
 
 L_HeavyPoison2:
     set @discover_poisonous_pumpkin, @discover_poisonous_pumpkin + 1;
     misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
     heal -Hp, 0;
-    end;
-
+    return;
 }
