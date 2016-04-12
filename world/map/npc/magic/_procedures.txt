@@ -54,6 +54,7 @@ function|script|melee_damage
 
 function|script|magic_create_item
 {
+    // FIXME / XXX: IMO, using Luk for this is very bad and unfair
     set .@exp, (MAGIC_EXPERIENCE & (BYTE_0_MASK | BYTE_1_MASK)) >> BYTE_0_SHIFT;
     set .@score, (.@exp + rand(min(@spellpower, ((.@exp / 3) + 1))));
     set @create_params[2], 1; // success flag
@@ -92,12 +93,12 @@ function|script|magic_exp
     set @last_index, (MAGIC_EXPERIENCE & BYTE_2_MASK) >> BYTE_2_SHIFT;
     set @last_exp, (MAGIC_EXPERIENCE & (BYTE_0_MASK | BYTE_1_MASK)) >> BYTE_0_SHIFT;
 
-    debugmes "old spell index: " + @last_index;
-    debugmes "new spell index: " + .index;
+    //debugmes "old spell index: " + @last_index;
+    //debugmes "new spell index: " + .index;
 
     if(getskilllv(SKILL_MAGIC) < (.level + 3) && .index != @last_index)
         goto L_Gain;
-    debugmes "same as last spell => don't proceed";
+    //debugmes "same as last spell => don't proceed";
     goto L_Return;
 
 L_Gain:
@@ -107,8 +108,8 @@ L_Gain:
     //                                 spell with no costs and still get the exp
     set @new_exp, @last_exp + .exp_gain;
     if(@new_exp > (BYTE_0_MASK | BYTE_1_MASK)) set @new_exp, (BYTE_0_MASK | BYTE_1_MASK);
-    debugmes "old magic exp: "+ @last_exp;
-    debugmes "new magic exp: "+ @new_exp;
+    //debugmes "old magic exp: "+ @last_exp;
+    //debugmes "new magic exp: "+ @new_exp;
     set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE &~ (BYTE_0_MASK | BYTE_1_MASK)) | (@new_exp << BYTE_0_SHIFT);
     set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE &~ BYTE_2_MASK) | (.index << BYTE_2_SHIFT);
     goto L_Return;
@@ -124,8 +125,7 @@ function|script|adjust_spellpower
     if(@args$ == "" || !@args$ || getpartnerid2() == 0) goto L_Return;
     if(getcharid(3, @args$) < 1 || getpartnerid2() != getcharid(3, @args$) || !(isloggedin(getcharid(3, @args$))))
         goto L_Return;
-    debugmes "You targeted your spouse!";
-    // XXX: I need a builtin to check if the target is in range of the caster
+    //debugmes "You targeted your spouse!";
     // XXX: the spell power increases when the target is the spouse so one could
     //      just do #modrilax (spouse) right?
     //
