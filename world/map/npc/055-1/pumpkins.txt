@@ -64,10 +64,15 @@ L_HeavyPoison2:
     goto L_Destroy;
 
 OnAppear:
-    fakenpcname strnpcinfo(0), strnpcinfo(0), 1063; // switch npc id to 1063
+    fakenpcname strnpcinfo(0), strnpcinfo(0), 1063; // set the sprite (implies enablenpc)
     end;
 
 L_Destroy:
+    disablenpc strnpcinfo(0); // makes the npc invisible, unclickable
+    addnpctimer .death_t, strnpcinfo(0) + "::OnReallyDestroy"; // schedule a respawn
+    end;
+
+OnReallyDestroy:
     set .nodes[.i], get(.nodes[.i], "_N-Pumpkin") - 1, "_N-Pumpkin"; // tell the puppeteer we lost an egg
     destroy;
 
@@ -88,9 +93,11 @@ S_FindXY:
     goto S_ReallySpawn;
 
 S_ReallySpawn:
-    set .@p, puppet(.m$[.i], .@x, .@y, .@name$, 32767); // spawn the node
+    set .@p, puppet(.m$[.i], .@x, .@y, .@name$, 32767); // spawn the node (but not on map, because 32767)
+    disablenpc .@name$; // make sure it can't be clicked by guessing the being id
     set .i, .i, .@p; // tell the puppet what object contains it
-    set .@timer, if_then_else(.done_initial[.i], rand(.death_t/2, .death_t), 0); // timer depends on if first spawn or if respawned after death
+    set .death_t, rand(.death_t/2, .death_t), .@p; // tell the puppet when to die
+    set .@timer, if_then_else(.done_initial[.i], rand(.appear_t/2, .appear_t), 0); // timer depends on if first spawn or if respawned after death
     addnpctimer .@timer, .@name$+"::OnAppear"; // we spawn the node instantly but it only appears after the timer
     if (.nID == 2147483647)
         set .nID, 0; // start over if id = 0x7FFFFFFF
@@ -137,7 +144,8 @@ OnMaybeStart:
     set .divisor, 32; // see .min & .max ^
     set .count, getarraysize(.x1); // number of nodes objects in TSX
     set .spawn_t, 18000; // heartbeat rate
-    set .death_t, 40000; // rand(timer/2, timer) before a node appears
+    set .death_t, 1000; // rand(timer/2, timer) before a node triggers respawn after death
+    set .appear_t, 40000; // rand(timer/2, timer) before a node becomes visible after spawn
     if (.started)
         end;
     set .started, 1;
