@@ -1,0 +1,62 @@
+-|script|@remotecmd|32767
+{
+    callfunc "argv_splitter";
+    if (GM < CMD_REMOTECMD && GM < G_SYSOP) goto L_GM; // check if you can use it on self
+    set .@target_id, BL_ID;
+    set .@t$, @argv$[1];
+    setarray @remotecmd[0], 0, 1, 1; // nr, to_self, multi_target
+    if (.@t$ == "map") goto L_Map;
+    if (.@t$ == "map!") goto L_AllMap;
+    if (.@t$ == "area") goto L_Area;
+    if (.@t$ == "area!") goto L_AllArea;
+    if (.@t$ != "") set .@target_id, getcharid(3, @argv$[1]);
+    if (.@t$ != "" && !(isloggedin(.@target_id))) goto L_Failed; // do NOT fallback to self
+
+    set @target_id, .@target_id;
+    set @remotecmd[2], 0; // only one target
+    addtimer 0, strnpcinfo(0) + "::OnPC";
+    end;
+
+L_Map:
+    set @remotecmd[1], 0; // do not include self
+    goto L_AllMap;
+
+L_AllMap:
+    foreach 0, getmap(), 0, 0, 32767, 32767, strnpcinfo(0)+"::OnPC";
+    goto L_Success;
+
+L_Area:
+    set @remotecmd[1], 0; // do not include self
+    goto L_AllMap;
+
+L_AllArea:
+    foreach 0, getmap(), (POS_X - .range), (POS_Y - .range), (POS_X + .range), (POS_Y + .range), strnpcinfo(0)+"::OnPC";
+    goto L_Success;
+
+OnPC:
+    if (@target_id == BL_ID && @remotecmd[1] < 1)
+        end;
+    remotecmd @argv$[0], strcharinfo(0, @target_id);
+    set @remotecmd[0], @remotecmd[0] + 1;
+    if (@remotecmd[2] < 1)
+        goto L_Success;
+    end;
+
+L_Success:
+    gmlog "@remotecmd " + @args$;
+    message strcharinfo(0), "remotecmd : The operation succeeded. ["+ @remotecmd[0] + "]";
+    end;
+
+L_Failed:
+    message strcharinfo(0), "remotecmd : Impossible to attach to the target player. Did you try putting the name in \"quotation marks\"?";
+    end;
+
+L_GM:
+    message strcharinfo(0), "remotecmd : GM command is level "+ CMD_REMOTECMD +", but you are level " + GM;
+    end;
+
+OnInit:
+    set .range, 14; // visible range
+    registercmd chr(ATCMD_SYMBOL) + "remotecmd", strnpcinfo(0);
+    end;
+}
