@@ -12,24 +12,37 @@
     callfunc "adjust_spellpower";
     set Sp, Sp - 20;
     misceffect FX_MAGIC_BLACK, strcharinfo(0);
-    set @ingrav_sp, @spellpower;
-    set @ingrav_luk, Luk;
-    set .@delay, (((200 - Agi) * 3000) / 200);
-    overrideattack (@spellpower/90)+1, .@delay, 8, ATTACK_ICON_GENERIC, 31, strnpcinfo(0)+"::OnAttack";
+    setarray @ingravspell[0],
+        @spellpower,
+        Luk,
+        ((@spellpower/90)+1), // charges
+        (((200 - Agi) * 3000) / 200), // delay
+        0, // in_rain
+        0; // target id (tmp)
+
     callfunc "magic_exp";
-    end;
+    goto L_FreeRecast;
 
 OnAttack:
-    if (target(BL_ID, @target_id, 22) != 22) end; // 0x10 | 0x02 | 0x04
+    if (target(BL_ID, @target_id, 22) != 22) L_FreeRecast; // 0x10 | 0x02 | 0x04
 
-    set @ingrav_rain, 0;
     set .@p, get(.max_radius, "rain") + 1;
-    set @ingrav_target, @target_id; // store it because foreach overwrites it
+    set @ingravspell[5], @target_id; // store it because foreach overwrites it
     foreach 1, getmap(), POS_X-.@p, POS_Y-.@p, POS_X+.@p, POS_Y+.@p, strnpcinfo(0)+"::OnNpc";
-    set @target_id, @ingrav_target; // now restore it
+    set @target_id, @ingravspell[5]; // now restore it
 
-    if (@ingrav_rain & 1) goto L_InRain;
-    void call("elt_damage", @ingrav_sp, (@ingrav_sp/2)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3));
+    set @ingravspell[2], @ingravspell[2] - 1;
+    if (@ingravspell[4] & 1) goto L_InRain;
+    void call("elt_damage", @ingravspell[0], (@ingravspell[0]/2)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3));
+    goto L_FreeRecast;
+
+L_FreeRecast:
+    if (@ingravspell[2] > 0)
+        addtimer 0, strnpcinfo(0) + "::OnSetRecast";
+    end;
+
+OnSetRecast:
+    overrideattack 1, @ingravspell[3], 8, ATTACK_ICON_GENERIC, 31, strnpcinfo(0)+"::OnAttack";
     end;
 
 OnNpc:
@@ -37,24 +50,24 @@ OnNpc:
     explode .@nearby$[0], .@name$, "#";
     if (.@nearby$[0] != "rain" && .@nearby$[1] != "rain") end;
     setarray .@l[0], getnpcx(.@name$), getnpcy(.@name$), get(.radius, @target_id); // kaflosh x, y, radius
-    setarray @ar[0], .@l[0]-.@l[2], .@l[1]-.@l[2], .@l[0]+.@l[2], .@l[1]+.@l[2]; // kaflosh x1, y1, x2, y2 <= this is "area"
-    if (POS_X >= @ar[0] && POS_Y >= @ar[1] && POS_X <= @ar[2] && POS_Y <= @ar[3])
-        set @ingrav_rain, @ingrav_rain | 1;
+    setarray @ingravspell[6], .@l[0]-.@l[2], .@l[1]-.@l[2], .@l[0]+.@l[2], .@l[1]+.@l[2]; // kaflosh x1, y1, x2, y2 <= this is "area"
+    if (POS_X >= @ingravspell[6] && POS_Y >= @ingravspell[7] && POS_X <= @ingravspell[8] && POS_Y <= @ingravspell[9])
+        set @ingravspell[4], @ingravspell[4] | 1;
     end;
 
 L_InRain:
-    set @used, 0;
-    foreach 0, getmap(), @ar[0], @ar[1], @ar[2], @ar[3], strnpcinfo(0)+"::OnEntityInRain";
-    if (@used >= 1 && (@ingrav_luk + rand(200)) >= 150) end;
+    set @ingravspell[10], 0;
+    foreach 0, getmap(), @ingravspell[6], @ingravspell[7], @ingravspell[8], @ingravspell[9], strnpcinfo(0)+"::OnEntityInRain";
+    if (@ingravspell[10] >= 1 && (@ingravspell[1] + rand(200)) >= 150) goto L_FreeRecast;
     misceffect FX_LIGHTNING1 + rand(3), strcharinfo(0);
-    heal 0 - @ingrav_sp, 0;
-    end;
+    heal 0 - @ingravspell[0], 0;
+    goto L_FreeRecast;
 
 OnEntityInRain:
     if (target(BL_ID, @target_id, 16) != 16) end; // 0x10
-    if (@ingrav_luk + rand(200) <= 175) end;
-    set @used, @used + 1;
-    void call("elt_damage", @ingrav_sp/6, (((@ingrav_sp/2)+1)/3)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3));
+    if (@ingravspell[1] + rand(200) <= 175) end;
+    set @ingravspell[10], @ingravspell[10] + 1;
+    void call("elt_damage", @ingravspell[0]/6, (((@ingravspell[0]/2)+1)/3)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3));
     end;
 
 OnInit:

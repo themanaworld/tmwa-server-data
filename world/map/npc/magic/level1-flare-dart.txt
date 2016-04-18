@@ -11,17 +11,28 @@
     callfunc "adjust_spellpower";
     set Sp, Sp - 10;
     misceffect FX_MAGIC_BLACK, strcharinfo(0);
-    set @flar_damage, sqrt(@spellpower) * 5;
-    set @flar_dmg_bonus, (BaseLevel/3) + 5;
-    set .@delay, (((200 - Agi) * 1200) / 200);
-    overrideattack (@spellpower/50)+3, .@delay, 4, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
+    setarray @flarspell[0],
+        sqrt(@spellpower) * 5, //dmg
+        (BaseLevel/3) + 5, // dmg bonus
+        (@spellpower/50) + 3, // charges
+        (((200 - Agi) * 1200) / 200); // delay
     callfunc "magic_exp";
-    end;
+    goto L_FreeRecast;
 
 OnAttack:
+    if (target(BL_ID, @target_id, 50) != 50) goto L_FreeRecast; // 0x20 | 0x02 | 0x10
     misceffect FX_MAGIC_BLACK, strcharinfo(0);
-    if (target(BL_ID, @target_id, 50) != 50) end; // 0x20 | 0x02 | 0x10
-    void call("elt_damage", @flar_damage, @flar_dmg_bonus, ELT_WATER, ELT_FIRE, FX_MAGIC_BLACK);
+    void call("elt_damage", @flarspell[0], @flarspell[1], ELT_WATER, ELT_FIRE, FX_MAGIC_BLACK);
+    set @flarspell[2], @flarspell[2] - 1;
+    goto L_FreeRecast;
+
+L_FreeRecast:
+    if (@flarspell[2] > 0)
+        addtimer 0, strnpcinfo(0) + "::OnSetRecast";
+    end;
+
+OnSetRecast:
+    overrideattack 1, @flarspell[3], 4, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
     end;
 
 OnInit:

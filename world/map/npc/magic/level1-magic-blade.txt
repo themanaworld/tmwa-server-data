@@ -4,26 +4,38 @@
     if (Sp < 9) end;
     set .@level, getskilllv(.school);
     if (getskilllv(SKILL_MAGIC) < .level) end;
-    set @chiza_component$, "";
-    if   (.@level <= 2 && countitem("SharpKnife") >= 1) set @chiza_component$, "SharpKnife";
-    elif (.@level <= 2 && countitem("Knife") >= 1)      set @chiza_component$, "Knife";
+    if   (.@level <= 2 && countitem("SharpKnife") >= 1) set .@component$, "SharpKnife";
+    elif (.@level <= 2 && countitem("Knife") >= 1)      set .@component$, "Knife";
     elif (.@level <= 2) end;
-    if (@chiza_component$ != "") delitem @chiza_component$, 1;
+    if (.@component$ != "") delitem .@component$, 1;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 500, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 9;
     misceffect FX_MAGIC_BLACK, strcharinfo(0);
-    set .@delay, (((200 - Agi) * 1200) / 200);
-    overrideattack (@spellpower/15)+10, .@delay, 1, ATTACK_ICON_GENERIC, 30, strnpcinfo(0)+"::OnAttack";
+    setarray @chizaspell[0],
+        if_then_else(.@component$ == "Knife", 40, 60), // dmg
+        Str, // do not allow to equip light armor, cast, and then switch to heavy armor to get bonus str
+        (@spellpower/15) + 10, // charges
+        (((200 - Agi) * 1200) / 200), // delay
+        @spellpower;
+
     callfunc "magic_exp";
-    set @chiza_str, Str; // do not allow to equip light armor, cast, and then switch to heavy armor to get bonus str
-    end;
+    goto L_FreeRecast;
 
 OnAttack:
-    if (target(BL_ID, @target_id, 22) != 22) end; // 0x10 | 0x02 | 0x04
-    set .@dmg, if_then_else(@chiza_component$ == "Knife", 40, 60);
-    void call("melee_damage", @spellpower, @target_id, (.@dmg + rand(@chiza_str + 5)));
+    if (target(BL_ID, @target_id, 22) != 22) goto L_FreeRecast; // 0x10 | 0x02 | 0x04
+    void call("melee_damage", @chizaspell[4], @target_id, (@chizaspell[0] + rand(@chizaspell[1] + 5)));
+    set @chizaspell[2], @chizaspell[2] - 1;
+    goto L_FreeRecast;
+
+L_FreeRecast:
+    if (@chizaspell[2] > 0)
+        addtimer 0, strnpcinfo(0) + "::OnSetRecast";
+    end;
+
+OnSetRecast:
+    overrideattack 1, @chizaspell[3], 1, ATTACK_ICON_GENERIC, 30, strnpcinfo(0)+"::OnAttack";
     end;
 
 OnInit:

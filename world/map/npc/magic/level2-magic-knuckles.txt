@@ -12,14 +12,27 @@
     callfunc "adjust_spellpower";
     set Sp, Sp - 20;
     misceffect FX_MAGIC_BLACK, strcharinfo(0);
-    set .@delay, (((200 - Agi) * 1300) / 200);
-    overrideattack (@spellpower/10)+10, .@delay, 1, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
+    setarray @upmarmuspell[0],
+        @spellpower,
+        ((@spellpower/10) + 10), // charges
+        (((200 - Agi) * 1300) / 200), // delay
+        Str; // do not allow to equip light armor, cast, and then switch to heavy armor to get bonus str
     callfunc "magic_exp";
-    set @upmaru_str, Str; // do not allow to equip light armor, cast, and then switch to heavy armor to get bonus str
-    end;
+    goto L_FreeRecast;
 
 OnAttack:
-    void call("melee_damage", @spellpower, @target_id, (30 + rand((@upmaru_str*2) + 5)));
+    if (target(BL_ID, @target_id, 22) != 22) goto L_FreeRecast; // 0x10 | 0x02 | 0x04
+    void call("melee_damage", @upmarmuspell[0], @target_id, (30 + rand((@upmarmuspell[3]*2) + 5)));
+    set @upmarmuspell[1], @upmarmuspell[1] - 1;
+    goto L_FreeRecast;
+
+L_FreeRecast:
+    if (@upmarmuspell[1] > 0)
+        addtimer 0, strnpcinfo(0) + "::OnSetRecast";
+    end;
+
+OnSetRecast:
+    overrideattack 1, @upmarmuspell[2], 1, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
     end;
 
 OnInit:

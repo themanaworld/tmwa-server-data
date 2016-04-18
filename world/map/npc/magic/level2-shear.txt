@@ -9,18 +9,19 @@
     callfunc "adjust_spellpower";
     set Sp, Sp - 23;
     misceffect FX_MAGIC_GREEN, strcharinfo(0);
-    set .@delay, (((200 - Agi) * 2000) / 200);
-    overrideattack 1, .@delay, 1, ATTACK_ICON_SHEARING, 30, strnpcinfo(0)+"::OnAttack";
+    setarray @chipchipspell[0],
+        @spellpower,
+        (((200 - Agi) * 2000) / 200); //delay
+    overrideattack 1, @chipchipspell[1], 1, ATTACK_ICON_SHEARING, 30, strnpcinfo(0)+"::OnAttack";
     callfunc "magic_exp";
-    set @chipchip_sp, @spellpower;
     end;
 
 OnAttack:
-    if (isloggedin(@target_id)) end; // can not shear a player
-    if (sc_check(SC_SHEARED, @target_id)) end; // mob already sheared
-    if (target(BL_ID, @target_id, 22) != 22) end; // 0x10 | 0x02 | 0x04
+    if (isloggedin(@target_id)) goto L_FreeRecast; // can not shear a player
+    if (sc_check(SC_SHEARED, @target_id)) goto L_FreeRecast; // mob already sheared
+    if (target(BL_ID, @target_id, 22) != 22) goto L_FreeRecast; // 0x10 | 0x02 | 0x04
     sc_start SC_SHEARED, 600000, 0, @target_id;
-    set .@score, rand(1000 - rand(@chipchip_sp));
+    set .@score, rand(1000 - rand(@chipchipspell[0]));
     set .@id, get(Class, @target_id); // get the mob ID
 
     if   (.@id == 1020 && .@score < 300) set .@item$, "WhiteFur"; // Fluffy
@@ -39,6 +40,14 @@ OnAttack:
     if (.@id != 1020 && .@id != 1028 && .@id != 1018 && rand(2) != 1) end;
     set @value, 1;
     callfunc "QuestSagathaHappy";
+    end;
+
+L_FreeRecast:
+    addtimer 0, strnpcinfo(0) + "::OnSetRecast"; // we can't do it while already overridden, until it reaches a script terminator
+    end;
+
+OnSetRecast:
+    overrideattack 1, @chipchipspell[1], 1, ATTACK_ICON_SHEARING, 30, strnpcinfo(0)+"::OnAttack";
     end;
 
 OnInit:

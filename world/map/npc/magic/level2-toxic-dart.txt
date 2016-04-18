@@ -12,18 +12,33 @@
     callfunc "adjust_spellpower";
     set Sp, Sp - 15;
     misceffect FX_MAGIC_DARKRED, strcharinfo(0);
-    setarray @phlex_damage[0], (sqrt(@spellpower) * 5), ((BaseLevel/3) + 5);
-    set .@delay, (((200 - Agi) * 1200) / 200);
-    overrideattack (@spellpower/75)+3, .@delay, 4, ATTACK_ICON_GENERIC, 31, strnpcinfo(0)+"::OnAttack";
+    setarray @phlexspell[0],
+        (sqrt(@spellpower) * 5), // elt damage
+        ((BaseLevel/3) + 5), // elt damage bonus
+        (((200 - Agi) * 1200) / 200), // delay
+        ((@spellpower/75) + 3), // charges
+        (5000+(@spellpower*1200)), // poison duration
+        (max(15,@spellpower/15)+5); // poison strength
+
     callfunc "magic_exp";
-    end;
+    goto L_FreeRecast;
 
 OnAttack:
+    if (target(BL_ID, @target_id, 50) != 50) goto L_FreeRecast; // 0x20 | 0x02 | 0x10
     misceffect FX_MAGIC_DARKRED, strcharinfo(0);
-    if (target(BL_ID, @target_id, 50) != 50) end; // 0x20 | 0x02 | 0x10
-    void call("elt_damage", @phlex_damage[0], @phlex_damage[1], ELT_NEUTRAL, ELT_POISON, FX_FIRE_BURST);
+    void call("elt_damage", @phlexspell[0], @phlexspell[1], ELT_NEUTRAL, ELT_POISON, FX_FIRE_BURST);
     if(@target_id != BL_ID && isloggedin(@target_id)) // this is a dirty trick to check if the target is a player
-        sc_start sc_poison, 5000+(@spellpower*1200), max(15,@spellpower/15)+5, @target_id;
+        sc_start sc_poison, @phlexspell[4], @phlexspell[5], @target_id;
+    set @phlexspell[3], @phlexspell[3] - 1;
+    goto L_FreeRecast;
+
+L_FreeRecast:
+    if (@phlexspell[3] > 0)
+        addtimer 0, strnpcinfo(0) + "::OnSetRecast";
+    end;
+
+OnSetRecast:
+    overrideattack 1, @phlexspell[2], 4, ATTACK_ICON_GENERIC, 31, strnpcinfo(0)+"::OnAttack";
     end;
 
 OnInit:
