@@ -1,0 +1,306 @@
+// celestia quest
+// allocation: 8 bit (byte) => QL_CELESTIA (id 22)
+// uses 3rd byte of QUEST_Hurnscald (16th bit to 23th bit)
+// (0000 0000) (0000 0000) (XXXX XXXX) (0000 000-)
+// could stretch to use 7 more bits to the right if need be
+//
+// QL_CELESTIA states:
+// 000  can not do the easy quest
+// 001  can do the easy quest (show quest marker)
+// 002  got the easy quest (show in quest log)
+// 003  completed the easy quest, can not do the adv quest
+// 004  can do the adv quest, scared celestia (show quest marker)
+// 005  got the adv quest (show in quest log)
+// 006  killed 1 yeti
+//  [...]
+// 205  killed 200 yetis
+// 206  got reward
+
+009-8,31,23,0|script|Celestia|144
+{
+    callfunc "CelestiaState";
+    if (getequipid(equip_head) == 4027) // check if yeti mask (4027) is equipped
+        goto L_YetiMask;
+    if (getequipid(equip_head) == 647) // check if Developer's Cap (647) is equipped
+        goto L_Debug;
+    if (QL_CELESTIA == 2) // check if the player has the easy quest
+        goto L_ExplainEasy;
+    if (QL_CELESTIA >= 5 && QL_CELESTIA < 206) // check if the player has the adv quest
+        goto L_ExplainAdv;
+    if (QL_CELESTIA > 1) // the player finished a quest or both
+        goto L_ThankYou;
+    goto L_Intro; // if all checks fail go to L_Intro (first meeting)
+
+L_YetiMask:
+    mes "Celestia is clearly alarmed upon seeing you."; // send message to dialog window
+    next; // require the player to press the "next" button in the dialog window
+    mes "Before you have a chance to speak, she screams,"; // every use of "mes" creates a new line
+    mes "##B\"YETI IN MY HOUSE!\"##b"; // here we created a new line to add emphasis (and ##B to make bold)
+    mes "as she jumps back a few feet.";
+    next;
+    mes "You catch a glimpse of a black bow while some kind of dark mist quickly overcomes you.";
+    next;
+    mes "You feel a sharp pain in your heart and everything fades into darkness.";
+    heal -Hp, 0; // set the current hp to 0 (kill the player)
+    set @scared_celestia, 1; // set a temporary variable (resets on log out) in the player scope (variable is stored in the player, not in the npc)
+    close; // terminate the script and require the player to press the "close" button
+
+L_Intro:
+    mes "\"Hi, my name is Celestia.\"";
+    next;
+    mes "\"I used to be a great adventurer who's hunted thousands of yeti single-handedly, though, since I moved to Hurnscald I've been hosting tea parties instead.\"";
+    next;
+    goto L_MainMenu;
+
+L_MainMenu:
+    mes "\"Are you here for this afternoon's tea party?\"";
+    if (QL_CELESTIA == 1) // check if the player can do the easy quest
+        goto L_EasyQuestMenu; // go to a special menu that has one more option to start the easy quest
+    if (QL_CELESTIA == 4) // check if the player can do the quest
+        goto L_AdvQuestMenu; // go to a special menu that has one more option to start the adv quest
+    menu // else we just show a boring menu
+        "Party! Of course I came out for the party!", L_CameForParty,
+        "I'm sorry, life is much too serious for tea.", L_SrsBsns,
+        "(Walk away)", L_InstaClose;
+
+L_EasyQuestMenu:
+    menu // here we display a special menu
+        "Party! Of course I came out for the party!", L_CameForParty,
+        "I'm sorry, life is much too serious for tea.", L_SrsBsns,
+        "Is there anything that I can do to help?", L_OfferHelp, // <= this will start the first quest
+        "(Walk away)", L_InstaClose;
+
+L_AdvQuestMenu:
+    menu // here we display a special menu
+        "Party! Of course I came out for the party!", L_CameForParty,
+        "I'm sorry, life is much too serious for tea.", L_SrsBsns,
+        "I heard you were looking for help from experienced adventurers...", L_Scared, // <= this will start the adv quest
+        "(Walk away)", L_InstaClose;
+
+L_CameForParty:
+    mes "\"Wonderful, I am happy to have you over.";
+    mes "Lets get things started with some puerh tea.\"";
+    next;
+    mes "Celestia hands you a cup filled with some type of tea that is unlike anything you have seen before.";
+    mes "It has a very dark color and an unusual aroma reminiscent of a moist forest.";
+    next;
+    mes "For a moment you wonder if Celestia might have gotten confused and tossed in a handful of forest dirt into the teapot.";
+    mes "You ponder whether or not it would be wise to drink it.";
+    menu
+        "(Drink the tea, hoping for the best)", L_DrinkTea,
+        "Uh are you sure this is fit to drink?", L_QuestionTea;
+
+L_DrinkTea:
+    mes "To your pleasant surprise the tea is actually quite good.";
+    next;
+    mes "Despite its initial dubious fragrance, the tea comes off as very smooth and mellow with a bit of natural sweetness and a touch of an earthy forest like flavour, but in a very good way.";
+    next;
+    mes "Clearly an exotic tea, with a refined flavor fit for a refined woman such as Celestia.";
+    close;
+
+L_QuestionTea:
+    mes "\"Yes, did you really think I was some kind of monster that would try to poison you in my own house?\"";
+    mes "##a(it would be way too messy anyway)##0";
+    next;
+    mes "Celestia then picks up the cup of tea and drinks it in front of you to demonstrate that it is not only harmless but also quite delectable.";
+    close;
+
+L_SrsBsns:
+    mes "\"Have it your way.\"";
+    close;
+
+L_OfferHelp:
+    mes "\"Yes there is.\"";
+    next;
+    mes "\"I am a bit frustrated by the lack of a decent grocery store in Hurnscald, and there is only so much that I can get from Hinnak and Oscar.\"";
+    next;
+    mes "\"This poses a problem as the few items that I am not able to pick up locally are required for the tea parties that I host.\"";
+    next;
+    set QL_CELESTIA, 2; // set state to "got the easy quest"
+    goto L_ExplainEasy;
+
+L_ExplainEasy:
+    npcaction 9; // clear npc dialog to make room for the item list
+    mes "\"Please go out and find these items and I will make it more than worth your time and effort.\"";
+    mes; // send a blank line (line break)
+    mes "  %%E  100 ["+ getitemlink("ChocolateBar") +"]"; // use getitemlink to display a click-able item link in the dialog
+    mes "  %%E  50 ["+ getitemlink("GingerBreadMan") +"]";
+    next;
+    mes "\"I really hope you can find a reliable provider for these items before it forces me to put an end to my tea parties.\"";
+    if (countitem("ChocolateBar") >= 100 && countitem("GingerBreadMan") >= 50) // check if the player has the items
+        menu // if yes then allow the player to give them
+            "I have the grocery order of Chocolate Bars and Ginger Bread Men for you.", L_GiveGroceries,
+            "I will come back later.", L_InstaClose;
+    close;
+
+L_GiveGroceries:
+    mes "Celestia smiles.";
+    next;
+    mes "\"Wonderful, I am so glad you were able to track them down.";
+    mes "That will be enough to keep me in supply for some time.\"";
+    next;
+    mes "\"Here, take this Beret.";
+    mes "I hope it looks better on you than it does on me, as it does not go well with my fine dresses.\"";
+    next;
+    mes "Celestia also hands you a heavy pouch filled with gold pieces.";
+    mes;
+    mes "["+getitemlink("Beret")+"]";
+    mes "[20,000 GP]";
+    mes "[20,000 EXP]";
+    delitem "ChocolateBar", 100; // remove chocolate bars
+    delitem "GingerBreadMan", 50; // remove ginger bread men
+    getitem "Beret", 1; // give beret
+    getexp 20000, 0; // XXX is this amount reasonable?
+    set Zeny, Zeny + 10000; // XXX is this amount reasonable?
+    set QL_CELESTIA, 3; // set the state to "completed easy quest"
+    close;
+
+L_ThankYou:
+    mes "\"Welcome back %%1\"";
+    next;
+    goto L_MainMenu;
+
+L_Scared:
+    mes "Celestia takes a close look at you and seems to be satisfied.";
+    next;
+    mes "\"Wonderful, I am glad you came out.";
+    mes "I am really concerned about the growing yeti threat.";
+    mes "There simply does not seem to be enough yeti hunters out there to keep their population from growing.\"";
+    next;
+    mes "\"To the point that a few days ago a yeti somehow managed to get inside my house, and I have never heard of one moving this far south before.\"";
+    next;
+    menu
+        "A Yeti in your house, did you kill it?", L_YetiHouse,
+        "A Yeti in your house, are you alright?", L_YetiHouse;
+
+L_YetiHouse:
+    mes "Seemingly out of nowhere Celestia pulls a black bow and a fistful of arrows from her dress.";
+    mes "\"Don't worry about me, I am able to protect myself.";
+    mes "The real concern is the safety of the children of Hurnscald, as yeti tend to prefer children.\"";
+    next;
+    mes "\"It is scary to think about how many children that yeti could have run into before stumbling into my house to meet its doom.";
+    mes "If one yeti has already made it this far south it is only a matter of time before more will follow.\"";
+    next;
+    mes "\"What disturbs me the most is that Hurnscald is a favorite trading post for adventurers, yet none of them did anything when the yeti entered town.\"";
+    next;
+    mes "\"Since they are not concerned about keeping Hurnscald safe I am taking matters into my own hands and recruiting more yeti hunters.\"";
+    next;
+    set QL_CELESTIA, 5; // set state to "got advanced quest";
+    goto L_ExplainAdv;
+
+L_ExplainAdv:
+    mes "\"Please, for the sake of the children of Hurnscald go out and ##Bslay at least 200 yetis##b to help knock down their growing numbers.\"";
+    if (QL_CELESTIA == 205) // check if the player killed 200 yetis
+        menu
+            "I have returned from the great yeti hunt.", L_YetiComplete;
+    if (QL_CELESTIA > 5) // check if at least 1 yeti killed
+        menu
+            "About those yetis...", L_Encourage;
+    close;
+
+L_YetiComplete:
+    mes "\"You are my hero!\"";
+    next;
+    mes "\"Here, take it. This [@@677|family heirloom@@] has been passed from mother to daughter for countless generations now.\"";
+    next;
+    mes "\"It pains me to let it go, as it is the only remaining trinket of my late mother, but you have proven yourself worthy of it.\"";
+    next;
+    menu
+        "Thank you, I will cherish it dearly.", L_AcceptTrinket,
+        "This token is too important, you should keep it.", L_RefuseTrinket;
+
+L_AcceptTrinket:
+    mes "\"May our path cross again.\"";
+    mes;
+    mes "["+getitemlink("HeartNecklace")+"]";
+    getitem "HeartNecklace", 1;
+    set QL_CELESTIA, 206;
+    close;
+
+L_RefuseTrinket:
+    mes "\"Really?\"";
+    next;
+    mes "\"Please at least accept this humble payment for your trouble.\"";
+    next;
+    mes "\"May out path cross again.\"";
+    mes;
+    mes "[150,000 GP]";
+    set Zeny, Zeny + 150000;
+    set QL_CELESTIA, 206;
+    close;
+
+L_Encourage:
+    mes "\"You are doing great so far.";
+    mes "Keep it up and I know you will be able to make a difference in the growing Yeti threat.\"";
+    close;
+
+L_InstaClose:
+    close;
+
+
+
+////////////// BORING DEBUG STUFF BELOW ////////////////
+L_Debug:
+    npcaction 9;
+    mes "state: " + QL_CELESTIA;
+    mes "scared: " + @scared_celestia;
+    mes "---";
+    mes "000 can not do easy quest";
+    mes "001 can do easy quest";
+    mes "002 has gotten easy quest";
+    mes "003 completed easy quest";
+    mes "004 can do adv quest";
+    mes "005 got adv quest";
+    mes "006 killed 1 yeti";
+    mes "[...]";
+    mes "205 killed 200 yeti";
+    mes "206 got adv quest reward";
+    mes "---";
+    if (debug)
+        menu
+            "restart|reset quest", L_ResetState,
+            "toggle|toggle scared", L_ToggleScared,
+            // TODO set state to [...]
+            "edit|set state manually", L_SetState,
+            "close", L_InstaClose;
+    close;
+
+L_ToggleScared:
+    set @scared_celestia, !(@scared_celestia);
+    goto L_Debug;
+
+L_ResetState:
+    set QL_CELESTIA, 0;
+    set @scared_celestia, 0;
+    npcaction 5; // force close dialog
+    warp "009-1", 72, 48;
+    end;
+
+L_SetState:
+    input @cel_state;
+    if (@cel_state >= 0 && @cel_state < 256)
+        set QL_CELESTIA, @cel_state;
+    goto L_Debug;
+}
+
+function|script|CelestiaState
+{
+    if (BaseLevel >= 40 && QL_CELESTIA == 0) // if the player is at least level 40
+        set QL_CELESTIA, 1; // show the quest marker
+    if (BaseLevel >= 90 && QL_CELESTIA == 3 && @scared_celestia) // check if level >= 90, if scared celestia and if easy quest done
+        set QL_CELESTIA, 4; // show the quest marker for the secret advanced quest
+    return;
+}
+
+009-1,74,50,0|script|Celestia Door|32767,0,0
+{
+    warp "009-8", 26, 23;
+    callfunc "CelestiaState";
+    end;
+}
+009-1,72,54,0|script|Celestia BackDoor|32767,0,0
+{
+    warp "009-8", 23, 34;
+    callfunc "CelestiaState";
+    end;
+}
