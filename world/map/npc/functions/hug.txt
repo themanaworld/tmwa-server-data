@@ -1,13 +1,15 @@
 -|script|nonmagic-hug|32767
 {
     explode .@name$[0], @args$, "*"; // strip the trailing *
-    set @target_id, if_then_else(.@name$[0], getcharid(3, .@name$[0]), BL_ID);
+    set @target_id, if_then_else(.@name$[0] != "", getcharid(3, .@name$[0]), BL_ID);
     if (@target_id < 1 || !(isloggedin(@target_id))) set @target_id, BL_ID; // fallback to self
     if (.@name$[0] == "Tree" || .@name$[0] == "tree") set @target_id, .tree_id;
-    set .@range, 3;
+    set .@range, if_then_else(@target_id == .tree_id, 3, 6);
     if (distance(BL_ID, @target_id) >= .@range) end;
+
     misceffect FX_HUG, strcharinfo(0);
     if (@target_id != BL_ID) misceffect FX_HUG, @target_id;
+
     if (@target_id != .tree_id) end;
     callfunc "QuestTreeTouch";
     close;
