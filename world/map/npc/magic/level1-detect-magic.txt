@@ -1,0 +1,30 @@
+-|script|detect-magic|32767
+{
+    if(call("magic_checks")) end;
+    if (Sp < 3) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 6000, "Magic Timer::OnClear"; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 3;
+    misceffect FX_MAGIC_GENERIC, strcharinfo(0);
+    set .@range, (@spellpower/50)+1;
+    foreach 1, getmap(), POS_X - .@range, POS_Y - .@range, POS_X + .@range, POS_Y + .@range,
+            strnpcinfo(0) + "::OnNearbyNpc";
+    callfunc "magic_exp";
+    end;
+
+OnNearbyNpc:
+    set .@e$, strnpcinfo(2,@target_id);
+    if(.@e$ == "#_M" || .@e$ == "#MAGIC" || get(.IS_MAGIC, @target_id))
+        misceffect FX_MAGIC_DEFAULT, @target_id;
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "miteyo"; // used in npcs that refer to this spell
+    void call("magic_register");
+    set .level, 1;
+    set .exp_gain, 0;
+    end;
+}

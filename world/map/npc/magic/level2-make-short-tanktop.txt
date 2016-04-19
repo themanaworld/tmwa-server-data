@@ -1,0 +1,25 @@
+-|script|make-short-tanktop|32767
+{
+    if(call("magic_checks")) end; 
+    if (Sp < 25) end;
+    if (getskilllv(.school) < .level) end;
+    if (countitem("CottonCloth") >= 3) delitem "CottonCloth", 3; else end;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 5000, "Magic Timer::OnClear"; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 25;
+    misceffect FX_MAGIC_RED, strcharinfo(0);
+    setarray @create_params[0], 1, 250;
+    setarray @create_items$[0], "ShortTankTop", "CottonCloth";
+    callfunc "magic_create_item";
+    callfunc "magic_exp";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_TRANSMUTE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "patviloree"; // used in npcs that refer to this spell
+    void call("magic_register");
+    set .level, 2;
+    set .exp_gain, 2;
+    end;
+}

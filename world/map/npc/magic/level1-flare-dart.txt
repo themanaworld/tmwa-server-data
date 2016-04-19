@@ -1,0 +1,45 @@
+-|script|flare-dart|32767
+{
+    if(call("magic_checks")) end;
+    if (Sp < 10) end;
+    set @level, getskilllv(.school);
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (@level <= 2 && countitem("SulphurPowder") >= 1) delitem "SulphurPowder", 1;
+    elif (@level <= 2) end;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 500, "Magic Timer::OnClear"; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 10;
+    misceffect FX_MAGIC_BLACK, strcharinfo(0);
+    setarray @flarspell[0],
+        sqrt(@spellpower) * 5, //dmg
+        (BaseLevel/3) + 5, // dmg bonus
+        (@spellpower/50) + 3, // charges
+        (((200 - Agi) * 1200) / 200); // delay
+    callfunc "magic_exp";
+    goto L_FreeRecast;
+
+OnAttack:
+    if (target(BL_ID, @target_id, 50) != 50) goto L_FreeRecast; // 0x20 | 0x02 | 0x10
+    misceffect FX_MAGIC_BLACK, strcharinfo(0);
+    void call("elt_damage", @flarspell[0], @flarspell[1], ELT_WATER, ELT_FIRE, FX_MAGIC_BLACK);
+    set @flarspell[2], @flarspell[2] - 1;
+    goto L_FreeRecast;
+
+L_FreeRecast:
+    if (@flarspell[2] > 0)
+        addtimer 0, strnpcinfo(0) + "::OnSetRecast";
+    end;
+
+OnSetRecast:
+    overrideattack 1, @flarspell[3], 4, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_WAR;
+    set .invocation$, chr(MAGIC_SYMBOL) + "flar"; // used in npcs that refer to this spell
+    void call("magic_register");
+    set .level, 1;
+    set .exp_gain, 1;
+    end;
+}

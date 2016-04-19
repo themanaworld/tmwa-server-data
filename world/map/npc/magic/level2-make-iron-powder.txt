@@ -1,0 +1,27 @@
+-|script|make-iron-powder|32767
+{
+    if(call("magic_checks")) end; 
+    if (Sp < 8) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (getskilllv(.school) < .level) end;
+    if (countitem("IronOre") < 1) end;
+    delitem "IronOre", 1;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 5000, "Magic Timer::OnClear"; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 8;
+    misceffect FX_MAGIC_RED, strcharinfo(0);
+    setarray @create_params[0], (@spellpower/140)+1+(rand(max(1,(900-@spellpower)))/220), 700;
+    setarray @create_items$[0], "IronPowder", "IronOre";
+    callfunc "magic_create_item";
+    callfunc "magic_exp";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_TRANSMUTE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "zukminbirf"; // used in npcs that refer to this spell
+    void call("magic_register");
+    set .level, 2;
+    set .exp_gain, 3;
+    end;
+}

@@ -1,0 +1,79 @@
+-|script|@zeny|32767
+{
+    callfunc "argv_splitter";
+    set .@n$, if_then_else(@argv$[1] != "", "char", "") + "zeny";
+    if (GM < CMD_ZENY && GM < G_SYSOP) goto L_GM; // check if you can use it on self
+    set .@target_id, BL_ID;
+    if (@argv$[1] != "") set .@target_id, getcharid(3, @argv$[1]);
+    if (@argv$[1] != "" && !(isloggedin(.@target_id))) goto L_Failed; // do NOT fallback to self
+    if (@argv$[1] != "" && GM < CMD_CHARZENY && GM < G_SYSOP) goto L_GM; // when target is not self, use charzeny permission
+    if (@argv$[0] == "--")  goto L_Remove;
+    if (@argv$[0] == "---") goto L_RemoveAll;
+    if (@argv$[0] == "++")  goto L_Max;
+    if (@argv$[0] == "+++") goto L_MaxAll;
+    set .@delta, @argv[0]; // ± zeny
+    set .@zeny, get(Zeny, .@target_id); // get the number of zeny in char
+    set .@bank, get(#BankAccount, .@target_id); // get number of zeny in (world) account
+    set .@new_zeny, .@zeny + .@delta; // new balance in char
+    if (.@new_zeny < 0) goto L_MaybeRemoveBank; // zeny would be below 0 so check if we can take from bank
+    if (.@new_zeny > .max_zeny) goto L_MaybeAddBank; // zeny would be over the limit so check if we can store in bank
+    set Zeny, (.@zeny + .@delta), .@target_id;
+    goto L_Success;
+
+L_Remove:
+    set Zeny, 0, .@target_id;
+    goto L_Success;
+
+L_RemoveAll:
+    set Zeny, 0, .@target_id;
+    set #BankAccount, 0, .@target_id;
+    goto L_Success;
+
+L_Max:
+    set Zeny, .max_zeny, .@target_id;
+    goto L_Success;
+
+L_MaxAll:
+    set Zeny, .max_zeny, .@target_id;
+    set #BankAccount, .max_int, .@target_id;
+    goto L_Success;
+
+L_MaybeAddBank:
+    set .@new_bank, (.@bank + (.@new_zeny - .max_zeny));
+    if (.@new_bank > .max_int || .@new_bank < 0) goto L_OutOfBounds;
+    set Zeny, .max_zeny, .@target_id;
+    set #BankAccount, .@new_bank, .@target_id;
+    goto L_Success;
+
+L_MaybeRemoveBank:
+    if ((.@bank + .@new_zeny) < 0) goto L_OutOfBounds;
+    set Zeny, 0, .@target_id;
+    set #BankAccount, (.@bank + .@new_zeny), .@target_id;
+    goto L_Success;
+
+L_OutOfBounds:
+    // XXX: maybe we could also take from other chars from the same accout?
+    message strcharinfo(0), .@n$+" : Impossible to proceed! This would cause the player to have less than 0 zeny or more than " + .max_int + ".";
+    end;
+
+L_Failed:
+    // XXX: should we allow GMs to change zeny of users that are not logged in?
+    message strcharinfo(0), .@n$+" : Impossible to attach to the target player. Did you try putting the name in \"quotation marks\"?";
+    end;
+
+L_Success:
+    gmlog "@zeny " + @args$;
+    message strcharinfo(0), .@n$+" : The operation succeeded.";
+    end;
+
+L_GM:
+    message strcharinfo(0), .@n$+" : GM command is level "+ if_then_else(@argv$[1] != "", CMD_CHARZENY, CMD_ZENY) +", but you are level " + GM;
+    end;
+
+OnInit:
+    set .max_zeny, 1000000000; // hardcoded in tmwa
+    set .max_int,  2147483647; // max int32 value
+    registercmd chr(ATCMD_SYMBOL) + "zeny", strnpcinfo(0);
+    registercmd chr(ATCMD_SYMBOL) + "charzeny", strnpcinfo(0);
+    end;
+}

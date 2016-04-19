@@ -1,0 +1,99 @@
+-|script|_N-Alchemy|32767
+{
+    set @npc_distance, 1;
+    callfunc "PCtoNPCRange";
+    if (@npc_check) end;
+
+    title "Alchemy Lab";
+    mes "This is an alchemy lab.";
+    mes "With it, you can combine reagents together to create powerful potions.";
+    next;
+    clear;
+    mes "##BDrag & drop 2 items from your inventory. All items used will be lost.##b";
+    cleararray @alchlab_items$[0], "", 2; // since we're not using a scoped (.@) array, we need to clean it
+    requestitem @alchlab_items$[0], 2; // TODO: add a craft builtin (npc action 12)
+    clear;
+    if (@alchlab_items$[0] == "" || @alchlab_items$[1] == "")
+        goto L_NoItems;
+
+    mes "You are about to combine the following:";
+    mes "     ["+ getitemlink(@alchlab_items$[0]) +"]";
+    mes "     ["+ getitemlink(@alchlab_items$[1]) +"]";
+    mes;
+    mes "##BWarning! This will permanently destroy the selected items.##b";
+    // can not use a scope variable to store item names because menu is a script terminator (destroys the scope)
+    menu
+        "Abort Mission.", L_Abort,
+        "Proceed.", L_Proceed;
+
+L_Proceed:
+    // XXX: here we could make it wait a little, while the potion is boiling (and show an animation/particles/sound)
+    if (countitem(@alchlab_items$[0]) < 1 || countitem(@alchlab_items$[1]) < 1) // this shouldn't happen, but just to be safe..
+        goto L_NoItems;
+    delitem @alchlab_items$[0], 1;
+    delitem @alchlab_items$[1], 1;
+    if (@alchlab_items$[0] == "BottleOfWater" || @alchlab_items$[1] == "BottleOfWater") // give back used bottles
+        getitem "EmptyBottle", if_then_else(@alchlab_items$[0] == "BottleOfWater" && @alchlab_items$[1] == "BottleOfWater",2,1);
+
+    set .@n, -3;
+    goto L_CheckRecipes;
+
+L_CheckRecipes:
+    set .@n, .@n+3;
+    if (.@n == get(.rsize, "_N-Alchemy"))
+        goto L_Failed;
+    if (!(get(.recipes$[.@n], "_N-Alchemy") == @alchlab_items$[0] && get(.recipes$[.@n+1], "_N-Alchemy") == @alchlab_items$[1]) &&
+        !(get(.recipes$[.@n], "_N-Alchemy") == @alchlab_items$[1] && get(.recipes$[.@n+1], "_N-Alchemy") == @alchlab_items$[0]))
+        goto L_CheckRecipes;
+
+    getitem get(.recipes$[.@n+2], "_N-Alchemy"), 1; // XXX: here we could also make it fail sometimes depending on your expertise
+
+    // XXX: here we could make it give profession/crafting exp
+    clear;
+    mes "You combined the following:";
+    mes "     ["+ getitemlink(@alchlab_items$[0]) +"]";
+    mes "     ["+ getitemlink(@alchlab_items$[1]) +"]";
+    mes;
+    mes "You obtained:";
+    mes "     ["+ getitemlink(get(.recipes$[.@n+2], "_N-Alchemy")) +"]";
+    close;
+
+L_NoItems:
+    mes "You must put exactly 2 items.";
+    close;
+
+L_Failed:
+    mes "The potion bubbles violently and evaporates."; // XXX: here we could have random failure messages
+    close;
+
+L_Abort:
+    close;
+
+S_Spawn:
+    set .@s, getarraysize(.x1);
+    if (.spawned >= .@s)
+        goto S_Return;
+    set .@n$, "#_Al-lab"+chr(3)+.spawned;
+    void puppet(.m$[.spawned], .x1[.spawned], .y1[.spawned], .@n$, 400); // TODO: make a npc like npc 400 but with hoverCursor="action" => looks better for things like crafting
+    set .spawned, .spawned + 1;
+    if (.spawned < .@s)
+        goto S_Spawn;
+    return;
+
+S_Return:
+    return;
+
+OnMaybeStart:
+    callsub S_Spawn;
+    if (.started == 0)
+        goto L_InitVars;
+    end;
+
+L_InitVars:
+    setarray .recipes$[0], 0,
+        "DilutedConcentrationPot", "DarkConcentrationPotion", "ConcentrationPotion",
+        "CactusDrink", "CactusDrink", "CactusPotion",
+        "PinkPetal", "BottleOfWater", "ConcentrationPotion";
+    set .rsize, getarraysize(.recipes$);
+    end;
+}

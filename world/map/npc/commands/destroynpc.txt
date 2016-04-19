@@ -1,0 +1,35 @@
+-|script|@destroynpc|32767
+{
+    callfunc "argv_splitter";
+    if (GM < CMD_DESTROYNPC && GM < G_SYSOP)
+        goto L_GM;
+
+    set .@id, getnpcid(@argv$[0]);
+    if (@argv$[0] == "" || .@id < 1)
+        goto L_Failed;
+    if (gettimetick(2) - @destroynpc[0] > 300 || @destroynpc[1] != .@id)
+        goto L_Confirm;
+
+    gmlog "@destroynpc " + @args$;
+    message strcharinfo(0), "destroynpc : The operation succeeded.";
+    debugmes "!!! => npc destroyed: `"+@argv$[0]+"` ("+.@id+")";
+    if (1==1) destroy .@id; // FIXME: allow destroy to work as a non-terminator when arg0 is given (TMWA)
+    end;
+
+L_Confirm:
+    message strcharinfo(0), "destroynpc : ##BDANGER ZONE!##b This command permanently destroys a npc and its puppets (if any). Use the command again to confirm.";
+    setarray @destroynpc[0], gettimetick(2), .@id;
+    end;
+
+L_Failed:
+    message strcharinfo(0), "destroynpc : Impossible to find the target npc. Did you try putting the name in \"quotation marks\"? Some npcs also have an invisible postfix in their name, ie `#_M`.";
+    end;
+
+L_GM:
+    message strcharinfo(0), "destroynpc : GM command is level "+ CMD_DESTROYNPC +", but you are level " + GM;
+    end;
+
+OnInit:
+    registercmd chr(ATCMD_SYMBOL) + "destroynpc", strnpcinfo(0);
+    end;
+}

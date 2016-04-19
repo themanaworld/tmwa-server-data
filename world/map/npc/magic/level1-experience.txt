@@ -1,0 +1,41 @@
+-|script|spell-experience|32767
+{
+    if(call("magic_checks")) end;
+    if (Sp < 1) end;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
+    set @level, getskilllv(.school);
+    if (@level < .level) end;
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 1;
+    misceffect FX_MAGIC_GENERIC, strcharinfo(0);
+    callfunc "magic_exp";
+    set @ratio, ((@last_exp*10) - rand(.MAX_MAGIC_EXP[@level]/30))/.MAX_MAGIC_EXP[@level];
+
+                     set @mes$, "You feel completely overwhelmed by your magic.";
+    if(@ratio == 1)  set @mes$, "You feel quite overwhelmed by your magic, but are beginning to see patterns.";
+    if(@ratio == 2)  set @mes$, "You feel that you have only the bare minimum of control over your magic.";
+    if(@ratio == 3)  set @mes$, "Trying to control your magic is still rather troublesome.";
+    if(@ratio == 4)  set @mes$, "You feel you still have a few difficulties in controlling your magic.";
+    if(@ratio == 5)  set @mes$, "You feel somewhat in control of your magic.";
+    if(@ratio == 6)  set @mes$, "You feel mostly in control of your magic.";
+    if(@ratio == 7)  set @mes$, "You feel quite in control of your magic.";
+    if(@ratio == 8)  set @mes$, "You feel that you have very good control of your magic.";
+    if(@ratio == 9)  set @mes$, "You feel in almost perfect control of your magic.";
+    if(@ratio >= 10) set @mes$, "You feel in perfect control of your magic" + if_then_else(@level >= MAX_MAGIC_LEVEL, ".", ", and seem on the verge of something more... perhaps you should see the Mana Seed to ask for more magic?");
+    if(@ratio >= 20) set @mes$, "You have perfect control of what you understand now, but there is now a distinct sensation of something more, something indescribable. If only the Mana Seed would give more magic to you...";
+    if(@ratio >= 45) set @mes$, "Magic flows naturally from you, readily and with ease. Your understanding of what you can currently control at present is flawless, far beyond your requirements to cast magic at this level.";
+    if(@ratio >= 45 && @level < MAX_MAGIC_LEVEL) set @mes$, @mes$ + " Surely the Mana Seed will more than readily offer more magic for such a proficient user.";
+    if(@level >= 5) set @mes$, "You are as proficient at magic as you can possibly be."; // this is the maximum magic level
+    message strcharinfo(0), "Magic : ##3##B"+@mes$;
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "abizit"; // used in npcs that refer to this spell
+    set .level, 1;
+    set .exp_gain, 0;
+    void call("magic_register");
+    setarray .MAX_MAGIC_EXP[0], 0, 0, 100, 1200, 8000, 40000, 65535;
+    end;
+}

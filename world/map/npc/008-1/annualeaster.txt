@@ -8,250 +8,213 @@
 // Easter cannot be before march 22 or after april 25, so activate
 // the event in these days.
 
-
-function|script|AnnualEasterEvent
+008-1,0,0,0|script|Easter Eggs|32767
 {
+
+//////////////////////////////////
+// puppet logic below
+
+    if (strnpcinfo(2) == "") end;
+    if (get(.disabled, "Easter Eggs") || $@isEaster < 1) goto L_Destroy;
+    set @npc_distance, 1;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
     if ((gettimetick(2)-TUT_var < 5*7*86400) || (BaseLevel < 40)) //player must be created at least 5 weeks ago
         goto L_EndTooYoung;
 
-    callsub S_Read_Annual_Quest;
+    set @easter_year, (Annual_Quest & BYTE_1_MASK) >> BYTE_1_SHIFT;
+
     if (#EASTERTIMEPENALTY == 0)
         goto L_WarmUp;
     // prevent clicking multiple times:
-    if (gettimetick(2) < #EASTERTIMEPENALTY + $@EASTER_FOUND_WAIT_TIME)
+    if (gettimetick(2) < #EASTERTIMEPENALTY + get(.wait_time, "Easter Eggs"))
         goto L_End2;
     if (@easter_year > gettime(7) - 2000)
         goto L_End3;
     set #EASTERTIMEPENALTY, gettimetick(2);
 
-    // global counter to determine reshuffle times of the eggs.
-    set $@peopleFoundEggs[@EasterEggID], $@peopleFoundEggs[@EasterEggID]+1;
+    set .found, .found + 1; // this egg has been found X times
+    set @AnnualEasterTries, @AnnualEasterTries + 1; // you tried X times since login
 
-    set @AnnualEasterTries, @AnnualEasterTries + 1;
+    message strcharinfo(0), "Eggs : You found something!";
+    set .@size, get(.small_rewards, "Easter Eggs");
+    set .@random, rand(.@size+2);
+    if (.@random < .@size)
+        getitem get(.small_rewards$[.@random], "Easter Eggs"), rand(1, 2);
+    elif (.@random == .@size)
+        getexp rand(200), 0;
+    else
+        set Zeny, Zeny + rand(50);
 
-    // give a small reward:
-    message strcharinfo(0), "You found something!";
-    set @tmp, getarraysize($@SmallAnnualEasterItems$);
-    set @random, rand(@tmp + 2);
-    if (@random  < @tmp)     getitem $@SmallAnnualEasterItems$[@random], rand(1, 2);
-    if (@random == @tmp)     getexp rand(200), 0;
-    if (@random == @tmp + 1) set Zeny, Zeny + rand(50);
-    misceffect FX_GETITEM, strcharinfo(0);
-
-    // give out a better reward occasionally:
-    // standard case is branch taken, so only if rand yields 0, medium rewarding.
-    if (rand($@EASTER_EGG_INV_CHANCE))
+    if (rand(get(.chance, "Easter Eggs")))
         goto L_NoEasterEgg;
 
-    set @random, rand(getarraysize($@MediumAnnualEasterRewards$));
-    getitem $@MediumAnnualEasterRewards$[@random], 1;
+
+    set .@random, rand(get(.medium_rewards$, "Easter Eggs"));
+    getitem get(.medium_rewards$[.@random], "Easter Eggs"), 1;
     misceffect FX_GETITEM, strcharinfo(0);
     goto L_NoEasterEgg;
 
 L_NoEasterEgg:
-
-    // If you're lucky you get a bigger unique reward per year:
-    // so only pass on a small chance iff you don't have the item yet.
-    // Usually the journey ends here because @random != 0 -> end
-    callsub S_Read_Annual_Quest;
-
-    if (@AnnualEasterTries > $@EASTER_FINAL_REW_INV_CHANCE)
-        set @AnnualEasterTries, $@EASTER_FINAL_REW_INV_CHANCE;
-    set @random, rand($@EASTER_FINAL_REW_INV_CHANCE - @AnnualEasterTries + 1);
-    if (@random || @easter_year > gettime(7) - 2000)
-        goto L_End1;
+    set .@fchance, get(.final_rew_chance, "Easter Eggs");
+    if (@AnnualEasterTries > .@fchance)
+        set @AnnualEasterTries, .@fchance;
+    set .@random, rand(.@fchance - @AnnualEasterTries + 1);
+    if (.@random || @easter_year > gettime(7) - 2000)
+        goto L_Reward_End;
 
     // block for further items this year:
     set @easter_year, gettime(7) - 2000 + 1;
-    callsub S_Update_Annual_Quest;
+    set Annual_Quest, (Annual_Quest & ~(BYTE_1_MASK) | (@easter_year << BYTE_1_SHIFT));
 
     // Hand out pretty unique rewards depending on the current year:
     // We'll be handing out 2 different items each year, whereas one of them
     // will be very common (95 %) and the other rare (5 %) for the players.
     // The rare item will become the common item next year.
-    set @rewardindex, gettime(7) - 2012;
+    set .@rewardindex, gettime(7) - 2012;
     if (rand(100) < 5)
-        set @rewardindex, @rewardindex + 1;
-
+        set .@rewardindex, .@rewardindex + 1;
 
     // now hand out the specific item:
-    set @rewardindex, @rewardindex % getarraysize($@FinalAnnualEasterReward$);
-    getitem $@FinalAnnualEasterReward$[@rewardindex], 1;
+    set .@rewardindex, .@rewardindex % get(.big_rewards, "Easter Eggs");
+    getitem get(.big_rewards$[.@rewardindex], "Easter Eggs"), 1;
     misceffect FX_GETITEM, strcharinfo(0);
-    message strcharinfo(0), "This is really special. You won't find anything like this again.";
-    goto L_End1;
+    message strcharinfo(0), "Eggs : This is really special. You won't find anything like this again.";
+    goto L_Reward_End;
 
-S_Read_Annual_Quest:
-    set @easter_year, (Annual_Quest & BYTE_1_MASK) >> BYTE_1_SHIFT;
-    return;
+L_Reward_End:
+    if (.found >= get(.mapcount, "Easter Eggs"))
+        goto L_Destroy;
+    end;
 
-S_Update_Annual_Quest:
-    set Annual_Quest, (Annual_Quest & ~(BYTE_1_MASK) | (@easter_year << BYTE_1_SHIFT));
-    return;
+L_Destroy:
+    set .eggs, get(.eggs, "Easter Eggs") - 1, "Easter Eggs"; // tell the puppeteer we lost an egg
+    destroy;
 
 L_EndTooYoung:
-    message strcharinfo(0), "The nest is empty.";
-    goto L_End1;
+    message strcharinfo(0), "Eggs : The nest is empty.";
+    end;
 
 L_WarmUp:
     set #EASTERTIMEPENALTY, gettimetick(2);
     getitem "MoubooFigurine", 1;
     misceffect FX_GETITEM, strcharinfo(0);
-    message strcharinfo(0), "Hmmm eggs! Maybe you can find something nice there!";
-    goto L_End1;
+    message strcharinfo(0), "Eggs : Hmmm eggs! Maybe you can find something nice there!";
+    end;
 
 L_End3:
-    message strcharinfo(0), "Don't be greedy! You already found something nice.";
-    goto L_End1;
+    message strcharinfo(0), "Eggs : Don't be greedy! You already found something nice.";
+    end;
 
 L_End2:
-    message strcharinfo(0), "Don't be greedy! You just found something a moment ago.";
+    message strcharinfo(0), "Eggs : Don't be greedy! You just found something a moment ago.";
     set #EASTERTIMEPENALTY, #EASTERTIMEPENALTY + 5;
     if (#EASTERTIMEPENALTY > gettimetick(2))
         set #EASTERTIMEPENALTY, gettimetick(2);
-    goto L_End1;
-
-L_End1:
-    set @rewardindex, 0;
-    set @easter_year, 0;
-    set @random, 0;
-    set @tmp, 0;
-    set @EasterEggID, 0;
-    return;
-}
-
-008-1,65,40,0|script|#TestEgg0|375
-{
-    set @npc_distance, 1;
-    callfunc "PCtoNPCRange";
-    if(@npc_check) end;
-
-    set @EasterEggID, 0;
-    callfunc("AnnualEasterEvent");
-    end;
-}
-
-008-1,65,40,0|script|#TestEgg1|375
-{
-    set @npc_distance, 1;
-    callfunc "PCtoNPCRange";
-    if(@npc_check) end;
-
-    set @EasterEggID, 1;
-    callfunc("AnnualEasterEvent");
-    end;
-}
-
-008-1,65,40,0|script|#TestEgg2|375
-{
-    set @npc_distance, 1;
-    callfunc "PCtoNPCRange";
-    if(@npc_check) end;
-
-    set @EasterEggID, 2;
-    callfunc("AnnualEasterEvent");
-    end;
-}
-
-
-008-1,59,38,0|script|#AnnualEaster|32767
-{
     end;
 
-OnInit:
-    set $@EASTER_FOUND_WAIT_TIME, 15;
-    set $@EASTER_FINAL_REW_INV_CHANCE, 70;
-    set $@EASTER_EGG_INV_CHANCE, 750;
-
-    setarray $@easteregg_posx, 41, 45, 50, 57, 60, 64, 67, 65, 59, 72, 70, 82, 81, 93, 97, 101, 88, 108, 115, 122, 122, 129, 129, 130, 135, 123, 132, 132, 127, 124, 121, 107, 100, 101, 109, 104, 88, 84, 92, 59, 71, 65, 53, 55, 74, 59, 53, 46, 44, 44, 38, 43, 40, 43, 37;
-    setarray $@easteregg_posy, 87, 89, 88, 93, 98, 90, 96, 82, 81, 82, 96, 98, 92, 89, 89, 81, 82, 94, 96, 96, 90, 86, 72, 65, 60, 46, 25, 21, 20, 22, 20, 34, 24, 41, 43, 42, 48, 28, 27, 17, 23, 29, 25, 20, 39, 41, 34, 36, 18, 25, 31, 39, 64, 69, 73;
-
-    if (getarraysize($@easteregg_posy) != getarraysize($@easteregg_posx))
-        goto L_FAULTY_SETUP;
-
-    setarray $@SmallAnnualEasterItems$, "AppleCake", "CactusDrink", "CactusPotion", "Cake", "Candy", "CherryCake", "ChocolateBar", "ChocolateCake", "GreenApple", "Orange", "OrangeCake", "OrangeCupcake", "RedApple", "WhiteCake";
-
-    setarray $@MediumAnnualEasterRewards$, "RedEasterEgg", "GreenEasterEgg",  "BlueEasterEgg", "YellowEasterEgg",  "PinkEasterEgg", "TealEasterEgg";
-
-    // DO NOT CHANGE SIZE AFTER EASTER 2013!
-    setarray $@FinalAnnualEasterReward$, "RedEggshellHat", "BlueEggshellHat", "YellowEggshellHat", "GreenEggshellHat", "OrangeEggshellHat", "DarkEggshellHat";
-
-    callsub S_disableEggs;
-    if (debug >= 2) end;
+OnTimer5000:
+    if (get(.disabled, "Easter Eggs") || $@isEaster < 1)
+        goto L_Destroy;
     initnpctimer;
     end;
 
-L_FAULTY_SETUP:
-    mapexit;
 
-OnTimer1000:
-    setnpctimer 0;
+//////////////////////////////////
+// puppeteer logic below
 
-    // an egg can be 'found' multiple times, make this number of possible findings
-    // depend on the number of players currently on the map.
-    set $@AEASTER_mapcount, 1 + getmapusers("008-1") / 3;
-
-    set $@isEaster, 0;
-    if ((gettime(6) == 3 && gettime(5) >= 22) || (gettime(6) == 4 && gettime(5) <= 25))
-        set $@isEaster, 1;
-
-    if (!$@wasEaster && $@isEaster)
-        goto L_do_update_enable;
-    if ($@wasEaster && !$@isEaster)
-        goto L_do_update_disable;
-    goto L_done_update;
-
-L_do_update_enable:
-    callsub S_enableEggs;
-    goto L_done_update;
-
-L_do_update_disable:
-    callsub S_disableEggs;
-    goto L_done_update;
-
-L_done_update:
-    set $@wasEaster, $@isEaster;
-
-    if (!$@isEaster)
-        goto L_End;
-
-    set $@EggID, 0;
-    callsub S_relocateEasterEgg;
-    set $@EggID, 1;
-    callsub S_relocateEasterEgg;
-    set $@EggID, 2;
-    callsub S_relocateEasterEgg;
-    // intentional fallthrough to L_End
-    goto L_End;
-
-L_End:
-    set $@AEASTER_mapcount, 0;
-    set $@EggID, 0;
-    set $@isEaster, 0;
+OnSpawn:
+    set .@e, rand(2,.loc[1]);
+    set .@x, .loc[.@e];
+    set .@y, .loc[(.@e-1)+.loc[1]];
+    set .eID, .eID + 1; // give the egg an id
+    set .@name$, "#--Ee"+chr(3)+.eID;
+    void puppet(strnpcinfo(3), .@x, .@y, .@name$, 375); // spawn the egg
+    initnpctimer .@name$; // init puppeteer check timer
+    if (.eID == 2147483647)
+        set .eID, 0; // start over if id = 0x7FFFFFFF
     end;
 
-S_enableEggs:
-    enablenpc "#TestEgg0";
-    enablenpc "#TestEgg1";
-    enablenpc "#TestEgg2";
-    return;
-
-S_disableEggs:
-    disablenpc "#TestEgg0";
-    disablenpc "#TestEgg1";
-    disablenpc "#TestEgg2";
-    return;
-
-S_relocateEasterEgg:
-    if ($@peopleFoundEggs[$@EggID] < $@AEASTER_mapcount)
+S_Spawn:
+    if (.eggs >= .max_eggs)
         goto S_Return;
-
-    set $@peopleFoundEggs[$@EggID], 0;
-
-    set $@eastereggPos, rand(getarraysize($@easteregg_posx));
-    npcwarp $@easteregg_posx[$@eastereggPos], $@easteregg_posy[$@eastereggPos], "#TestEgg" + $@EggID;
-    goto S_Return;
+    set .eggs, .eggs + 1;
+    addnpctimer 125 + rand(250), strnpcinfo(0) + "::OnSpawn"; // schedule a spawn
+    if (.eggs < .min_eggs)
+        goto S_Spawn;
+    return;
 
 S_Return:
+    return;
+
+OnHeartbeat:
+    if (.max_eggs < 1 || .disabled || $@isEaster < 1) end;
+    set .mapcount, 1 + getmapusers(strnpcinfo(3)) / 3;
+    callsub S_Spawn;
+    addnpctimer 1000, strnpcinfo(0) + "::OnHeartbeat"; // heartbeat
+    end;
+
+OnCheckEaster:
+    if ((gettime(6) == 3 && gettime(5) >= 22) || (gettime(6) == 4 && gettime(5) <= 25))
+        set $@isEaster, 1;
+    else
+        set $@isEaster, 0;
+    if ($@isEaster && .eggs < 1)
+        donpcevent "Easter Eggs::OnStart";
+    end;
+
+OnStart:
+    if (.disabled || $@isEaster < 1) end;
+    set .min_eggs, 1; // min number of eggs
+    set .max_eggs, 3; // max number of eggs
+    set .eggs, 0; // virtual amount of eggs
+    set .eID, 0; // last egg id
+    set .wait_time, 15;
+    set .final_rew_chance, 70;
+    set .chance, 750;
+    setarray .loc[0], 0, 1,1, // first row: x, second row: y
+        41, 45, 50, 57, 60, 64, 67, 65, 59, 72, 70, 82, 81, 93, 97, 101, 88, 108, 115, 122, 122, 129, 129, 130, 135, 123, 132, 132, 127, 124, 121, 107, 100, 101, 109, 104, 88, 84, 92, 59, 71, 65, 53, 55, 74, 59, 53, 46, 44, 44, 38, 43, 40, 43, 37,
+        87, 89, 88, 93, 98, 90, 96, 82, 81, 82, 96, 98, 92, 89, 89,  81, 82,  94,  96,  96,  90,  86,  72,  65,  60,  46,  25,  21,  20,  22,  20,  34,  24,  41,  43,  42, 48, 28, 27, 17, 23, 29, 25, 20, 39, 41, 34, 36, 18, 25, 31, 39, 64, 69, 73;
+    set .loc[0], (getarraysize(.loc) - 1); // loc 0 and 1 are special (stores array size, and half index)
+    set .loc[1], ((.loc[0]+1)/2);
+    setarray .small_rewards$[0], 0, "AppleCake", "CactusDrink", "CactusPotion", "Cake", "Candy", "CherryCake", "ChocolateBar", "ChocolateCake", "GreenApple", "Orange", "OrangeCake", "OrangeCupcake", "RedApple", "WhiteCake";
+    set .small_rewards, getarraysize(.small_rewards$);
+    setarray .medium_rewards$[0], 0, "RedEasterEgg", "GreenEasterEgg",  "BlueEasterEgg", "YellowEasterEgg",  "PinkEasterEgg", "TealEasterEgg";
+    setarray .big_rewards$[0], 0, "RedEggshellHat", "BlueEggshellHat", "YellowEggshellHat", "GreenEggshellHat", "OrangeEggshellHat", "DarkEggshellHat";
+    set .big_rewards, getarraysize(.big_rewards$);
+    donpcevent strnpcinfo(0) + "::OnHeartbeat"; // first heartbeat
+    end;
+}
+
+function|script|Easter Debug
+{
+    goto L_Menu;
+
+L_Menu:
+    clear;
+    mes "Please choose an option.";
+    if (get(.disabled, "Easter Eggs"))
+        menu
+            "Do Nothing.", L_Return,
+            "Enable eggs.", L_Enable;
+    menu
+        "Do Nothing.", L_Return,
+        "Disable eggs.", L_Disable;
+
+L_Enable:
+    set .disabled, 0, "Easter Eggs";
+    clear;
+    mes "Easter Eggs enabled.";
+    next;
+    goto L_Menu;
+
+L_Disable:
+    set .disabled, 1, "Easter Eggs"; // TODO: (tmwa) automatically destroy puppets when using @disablenpc & also discard timers
+    clear;
+    mes "Easter Eggs disabled.";
+    next;
+    goto L_Menu;
+
+L_Return:
     return;
 }

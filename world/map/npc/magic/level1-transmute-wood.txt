@@ -1,0 +1,37 @@
+-|script|spell-transmute-wood|32767
+{
+    if(call("magic_checks")) end;
+    if (Sp < 5) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (countitem("RawLog") >= 1) delitem "RawLog", 1; else end;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 4000, "Magic Timer::OnClear"; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 5;
+    misceffect FX_MAGIC_RED, strcharinfo(0);
+    if   (@args$ == "boo")  goto L_Mouboo;
+    elif (@args$ == "lurk") goto L_Skytlurk;
+    else message strcharinfo(0), "Magic : ##3##BYou do not know how to transmute wood into this kind of animal."; // FIXME: write a better sentence
+    end;
+
+L_Mouboo:
+    setarray @create_params[0], 1, 40;
+    setarray @create_items$[0], "MoubooFigurine", "WarpedLog";
+    callfunc "magic_create_item";
+    callfunc "magic_exp";
+    end;
+
+L_Skytlurk:
+    if (rand(2) == 1) getitem "Iten", 1;
+    else              getitem "WarpedLog", 1;
+    message strcharinfo(0), "Magic : ##3##BYou have no idea what a Skrytlurk looks like.";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_TRANSMUTE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "parum"; // used in npcs that refer to this spell
+    void call("magic_register");
+    set .level, 1;
+    set .exp_gain, 1;
+    end;
+}

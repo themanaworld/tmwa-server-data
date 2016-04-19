@@ -9,7 +9,7 @@
     goto L_main;
 
 L_main:
-    if (getpartnerid2())
+    if (PARTNER)
         goto L_main_married;
 
     menu
@@ -35,10 +35,10 @@ L_explain_marriage:
     mes "\"Both you and your partner must be at least " + WEDDING_MIN_LEVEL + " levels of age, though; the law is very firm on that. But if all of that works out, I will give you two wedding rings for the ceremony.\"";
     next;
     mes "[Wedding Officiator]";
-    mes "\"To complete the marriage, each of you has to put on one of these rings, and you have to stand next to each other in the southern part of this park. Then one of you says `marry' and then the other person's name.\"";
+    mes "\"To complete the marriage, each of you has to put on one of these rings, and you have to stand next to each other in the southern part of this park. Then one of you says `#marry' and then the other person's name.\"";
     next;
     mes "[Wedding Officiator]";
-    mes "\"So if you would want to marry me, for example, you would say `marry Wendy'. Just like that. Your partner then has to decide whether he or she wants that. And if you both agree, then you're married!\"";
+    mes "\"So if you would want to marry me, for example, you would say `#marry Wendy'. Just like that. Your partner then has to decide whether he or she wants that. And if you both agree, then you're married!\"";
     mes "She again smiles that broad smile of hers.";
     next;
     goto L_main;
@@ -135,7 +135,7 @@ L_too_poor:
 
 L_main_married:
     mes "[Wedding Officiator]";
-    mes "\"I hope that you and your partner are doing well?\"";
+    mes "\"I hope that you and "+ strcharinfo(0, get(BL_ID, PARTNER)) +" are doing well?\"";
     next;
     menu
         "We are very happy, thanks for asking!", L_farewell,
@@ -219,8 +219,8 @@ L_divorce_nomoney:
 L_do_divorce:
     if (Zeny < @divorce_cost)
         goto L_divorce_nomoney;
-    if (divorce())
-        goto L_DidDivorce;
+    set PARTNER, 0, PARTNER; // divorce the partner first, which will also divorce the rid if succesful
+    if (PARTNER < 1) goto L_DidDivorce;
 
     mes "[Wedding Officiator]";
     mes "The officiator searches through her records for your partner.";

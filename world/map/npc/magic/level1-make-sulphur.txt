@@ -1,0 +1,25 @@
+-|script|make-sulphur|32767
+{
+    if(call("magic_checks")) end;
+    if (Sp < 4) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (countitem("PileOfAsh") >= 1) delitem "PileOfAsh", 1; else end;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 4000, "Magic Timer::OnClear"; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 4;
+    misceffect FX_MAGIC_RED, strcharinfo(0);
+    setarray @create_params[0], (@spellpower/100)+1+(rand(max(1,(800-@spellpower)))/180), 50;
+    setarray @create_items$[0], "SulphurPowder", "PileOfAsh";
+    callfunc "magic_create_item";
+    callfunc "magic_exp";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_TRANSMUTE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "gole"; // used in npcs that refer to this spell
+    void call("magic_register");
+    set .level, 1;
+    set .exp_gain, 1;
+    end;
+}

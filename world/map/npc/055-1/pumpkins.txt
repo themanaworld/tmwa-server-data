@@ -1,18 +1,18 @@
-// Pumpkin mobs for the seasonal halloween event with Oscar
-055-1,48,25,16,8|monster|Pumpkin|1063,12,10000ms,5000ms,PumpkinMob055-1::On1063
-055-1,139,29,5,7|monster|Pumpkin|1063,7,10000ms,5000ms,PumpkinMob055-1::On1063
-055-1,132,24,6,4|monster|Pumpkin|1063,4,10000ms,5000ms,PumpkinMob055-1::On1063
-
-
-055-1,0,0,0|script|PumpkinMob055-1|32767
+055-1,0,0,0|script|_N-Pumpkin|32767
 {
-    end;
 
-On1063:
+//////////////////////////////////
+// puppet logic below
+
+    set @distance_handler, 1; // silent
+    set @npc_distance, (1-2); // -1 means attack range
+    callfunc "PCtoNPCRange";
+    if (@npc_check) end;
+
     if (Quest_Halloween != 1 || !(gettime(6) == 11 && (gettime(5) >= 4 && gettime(5) <= 30)))
         goto L_HeavyPoison;
     if (@discover_poisonous_pumpkin == 0)
-        message strcharinfo(0), "Yuke, this pumpkin released some ugly poison gas!";
+        message strcharinfo(0), "Pumpkin : Yuke, this pumpkin released some ugly poison gas!";
     set @discover_poisonous_pumpkin, 1;
     misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
     heal -15, 0;
@@ -25,44 +25,130 @@ On1063:
 
     set @mobID, 1063;
     callfunc "MobPoints";
-    end;
+    goto L_Destroy;
 
 L_EnoughSeeds:
-    message strcharinfo(0), $@halloween_num_seeds + " should be enough seeds for Oscar. And this pumpkin gas gets too bad to stand it any longer...";
+    message strcharinfo(0), "Pumpkin : " + $@halloween_num_seeds + " should be enough seeds for Oscar. And this pumpkin gas gets too bad to stand it any longer...";
     set Quest_Halloween, 2;
     // Reset this to get the message for the "heavy" poison
     set @discover_poisonous_pumpkin, 0;
-    end;
+    goto L_Destroy;
 
 L_HeavyPoison:
     if (@discover_poisonous_pumpkin == 0)
         goto L_HeavyPoison0;
     if (@discover_poisonous_pumpkin == 1)
         goto L_HeavyPoison1;
-    if (@discover_poisonous_pumpkin > 1)
-        goto L_HeavyPoison2;
-    end;
+    goto L_HeavyPoison2;
 
 L_HeavyPoison0:
     set @discover_poisonous_pumpkin, @discover_poisonous_pumpkin + 1;
-    message strcharinfo(0), "Ouch, this pumpkin is totally poisonous! Let's get away from them!";
+    message strcharinfo(0), "Pumpkin : Ouch, this pumpkin is totally poisonous! Let's get away from them!";
     misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
     heal -150,0;
     sc_start sc_poison, 1, 60;
-    end;
+    goto L_Destroy;
 
 L_HeavyPoison1:
     set @discover_poisonous_pumpkin, @discover_poisonous_pumpkin + 1;
-    message strcharinfo(0), "This is really awful! I should not touch them!";
+    message strcharinfo(0), "Pumpkin : This is really awful! I should not touch them!";
     misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
     heal -350,0;
     sc_start sc_poison, 1, 120;
-    end;
+    goto L_Destroy;
 
 L_HeavyPoison2:
     set @discover_poisonous_pumpkin, @discover_poisonous_pumpkin + 1;
     misceffect FX_PUMPKIN_EXPLOSION, strcharinfo(0);
     heal -Hp, 0;
+    goto L_Destroy;
+
+OnAppear:
+    fakenpcname strnpcinfo(0), strnpcinfo(0), 1063; // set the sprite (implies enablenpc)
     end;
 
+L_Destroy:
+    disablenpc strnpcinfo(0); // makes the npc invisible, unclickable
+    addnpctimer .death_t, strnpcinfo(0) + "::OnReallyDestroy"; // schedule a respawn
+    end;
+
+OnReallyDestroy:
+    set .nodes[.i], get(.nodes[.i], "_N-Pumpkin") - 1, "_N-Pumpkin"; // tell the puppeteer we lost an egg
+    destroy;
+
+
+//////////////////////////////////
+// puppeteer logic below
+
+S_MakeNode:
+    set .nID, .nID + 1; // give the node an id
+    set .@name$, "#_Pkin" + chr(3) + .nID;
+    goto S_FindXY;
+
+S_FindXY:
+    set .@x, rand(.x1[.i], .x2[.i]);
+    set .@y, rand(.y1[.i], .y2[.i]);
+    if (iscollision(.m$[.i], .@x, .@y) == 1)
+        goto S_FindXY;
+    goto S_ReallySpawn;
+
+S_ReallySpawn:
+    set .@p, puppet(.m$[.i], .@x, .@y, .@name$, 32767); // spawn the node (but not on map, because 32767)
+    disablenpc .@name$; // make sure it can't be clicked by guessing the being id
+    set .i, .i, .@p; // tell the puppet what object contains it
+    set .death_t, rand(.death_t/2, .death_t), .@p; // tell the puppet when to die
+    set .@timer, if_then_else(.done_initial[.i], rand(.appear_t/2, .appear_t), 0); // timer depends on if first spawn or if respawned after death
+    addnpctimer .@timer, .@name$+"::OnAppear"; // we spawn the node instantly but it only appears after the timer
+    if (.nID == 2147483647)
+        set .nID, 0; // start over if id = 0x7FFFFFFF
+    return;
+
+S_IterateObjects:
+    if (.min_nodes[.i] == 0)
+        set .min_nodes[.i], (.min * min(1, ((.x2[.i] - .x1[.i]) * (.y2[.i] - .y1[.i])) / .divisor));
+    if (.max_nodes[.i] == 0)
+        set .max_nodes[.i], (.max * max(1, ((.x2[.i] - .x1[.i]) * (.y2[.i] - .y1[.i])) / .divisor));
+
+    if (.nodes[.i] >= .max_nodes[.i])
+        goto S_NextObject;
+
+    set .nodes[.i], .nodes[.i] + 1;
+    callsub S_MakeNode;
+    if (.nodes[.i] < if_then_else(.done_initial[.i], .min_nodes[.i], .max_nodes[.i]))
+        goto S_IterateObjects;
+    goto S_NextObject;
+
+S_NextObject:
+    set .done_initial[.i], 1;
+    if (.i >= (.count - 1))
+        goto S_Return;
+    set .i, .i + 1; // object iterator++
+    goto S_IterateObjects;
+
+S_Return:
+    return;
+
+OnHeartbeat:
+    set .i, 0; // object iterator
+    freeloop 1;
+    callsub S_IterateObjects;
+    freeloop 0;
+    addnpctimer .spawn_t, strnpcinfo(0) + "::OnHeartbeat"; // heartbeat
+    end;
+
+OnMaybeStart:
+    if (.x1[1] == 0)
+        end;
+    set .min, 0; // relative min number of nodes per object => (min * (((x2 - x1) * (y2 - y1)) / divisor))
+    set .max, 5; // relative max number of nodes per object => (max * (((x2 - x1) * (y2 - y1)) / divisor))
+    set .divisor, 32; // see .min & .max ^
+    set .count, getarraysize(.x1); // number of nodes objects in TSX
+    set .spawn_t, 18000; // heartbeat rate
+    set .death_t, 1000; // rand(timer/2, timer) before a node triggers respawn after death
+    set .appear_t, 40000; // rand(timer/2, timer) before a node becomes visible after spawn
+    if (.started)
+        end;
+    set .started, 1;
+    addnpctimer 10000, strnpcinfo(0)+"::OnHeartbeat"; // first heartbeat
+    end;
 }

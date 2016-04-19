@@ -1,0 +1,23 @@
+-|script|spell-aggravate|32767
+{
+    if(call("magic_checks")) end;
+    if (Sp < 3) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
+    set @args$, ""; callfunc "adjust_spellpower"; // we reset @args$ because this spell should not have a target
+    set @distance, (2 + (@spellpower / 50));
+    set Sp, Sp - 3;
+    misceffect FX_MAGIC_GREEN, strcharinfo(0);
+    callfunc "magic_exp";
+    aggravate getmap(), (POS_X - @distance), (POS_Y - @distance), (POS_X + @distance), (POS_Y + @distance), SFX_DEFAULT;
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_NATURE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "itenplz"; // used in npcs that refer to this spell
+    void call("magic_register");
+    set .level, 1;
+    set .exp_gain, 0;
+    end;
+}

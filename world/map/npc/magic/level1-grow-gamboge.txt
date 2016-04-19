@@ -1,0 +1,38 @@
+-|script|grow-gamboge|32767
+{
+    if(call("magic_checks")) end;
+    if (Sp < 4) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (countitem("GambogeHerb") < 1 || countitem("Root") < 1) end;
+    delitem "GambogeHerb", 1;
+    delitem "Root", 1;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 2000, "Magic Timer::OnClear"; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 4;
+    misceffect FX_MAGIC_GREEN, strcharinfo(0);
+    misceffect FX_PENTAGRAM_BUILDUP, strcharinfo(0);
+    setarray @summon[0], 0, (getskilllv(.school)/2)+1;
+    callfunc "magic_exp";
+    addtimer 4000-(@spellpower-9), strnpcinfo(0)+"::OnSummon";
+    end;
+
+OnSummon:
+    misceffect FX_PENTAGRAM_BURST, strcharinfo(0);
+    callsub S_SummonAll;
+    end;
+
+S_SummonAll:
+    summon getmap(), rand(POS_X-2,POS_X+2), rand(POS_Y-2,POS_Y+2), BL_ID, 1031, 1, (@spellpower*50)+10000;
+    set @summon[0], @summon[0] + 1;
+    if (@summon[0] < @summon[1]) goto S_SummonAll;
+    return;
+
+OnInit:
+    set .school, SKILL_MAGIC_NATURE;
+    set .invocation$, chr(MAGIC_SYMBOL) + "modriyikam"; // used in npcs that refer to this spell
+    void call("magic_register");
+    set .level, 1;
+    set .exp_gain, 1;
+    end;
+}
