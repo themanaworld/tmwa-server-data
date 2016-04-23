@@ -12,6 +12,12 @@ function|script|magic_register
 -|script|Magic Timer|32767
 {
     end;
+
+OnLogin:
+    set @_M_BLOCK, 1;
+    addtimer 10000, "Magic Timer::OnClear";
+    end;
+
 OnClear:
     set @_M_BLOCK, 0;
     end;
@@ -24,6 +30,8 @@ function|script|magic_checks
     if(getpvpflag(1)) set .@r, 1; // FIXME: make HIDDEN into a param
     if(@_M_BLOCK) set .@r, 2; // check if last debuff ended
     if(Hp < 1) set .@r, 3; // can not cast when dead
+    if (.@r)
+        smsg SMSG_FAILURE, "Magic: Impossible to cast right now.";
     return .@r;
 }
 
