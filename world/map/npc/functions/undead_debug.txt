@@ -38,6 +38,295 @@ L_InventoryNoSpace:
     mes "\"Drop some weight then come back.\"";
     goto L_Close;
 
+// Debug Underworld/Alacrius CRYPT_Quest
+// CRYPT_Quest
+// NIBBLE_0 - Mainline
+// Alacrius, Crypts Entrance 027-2
+// 1 - Knows about items and where to get them
+// Styx, Last Chance Island 070-1
+// (Unfinsihed)
+// 2 - Invested Town
+// 3 - Invested Wife
+// 4 - Invested Reaper
+// 5 - Beat Reaper Once
+// NIBBLE_1 -
+// Cerhan, GY Inn, 027-2
+// 1 - Knows Materials
+// 2 - Got Underworld Key
+// --- Bound to UnderWorld ---
+// X
+// 3 - X talked to
+// NIBBLE_2 -
+// Markie Desod, Blue Sage Mansion, 048-2
+// 1 - Knows Reagents
+// 2 - Got Quill of Binding
+// --- Bound to UnderWorld ---
+// Y
+// 3 - Y talked to
+// NIBBLE_3 -
+// Rygial, Tulimshar School of Magic, 024-2
+// 1 - Knows Ingredients
+// 2 - Got Blood Ink
+// --- Bound to UnderWorld ---
+// Z
+// 3 - Z talked to
+// NIBBLE 4
+// Gate
+// 1 - Bound to Underworld
+// NIBBLE 5
+// Empty
+// NIBBLE 6
+// Empty
+// NIBBLE 7
+// Empty
+
+    set @state, ((CRYPT_Quest & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    set @craftkey, ((CRYPT_Quest & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    set @craftquill, ((CRYPT_Quest & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    set @craftink, ((CRYPT_Quest & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
+    set ebind, ((CRYPT_Quest & NIBBLE_4_MASK) >> NIBBLE_4_SHIFT);
+    goto L_Main;
+
+L_Main:
+    mes "Reset your self to the various states.";
+    mes "Options Limited to Time and Place.";
+    menu
+        "Audit Quest", L_AuditQuest,
+        "Warp to Alacrius", L_Warp,
+        "Alacrius Unknown", L_Reset,
+        "Alacrius Known", L_QuestStart,
+        "Underworld Key known", L_KnowKey,
+        "Underworld Key Mats", L_MatsKey,
+        "Warp to Underworld Key Maker", L_MakeKey,
+        "Underworld Key made", L_CraftKey,
+        "Quill of Binding known", L_KnowQuill,
+        "Quill of Binding Mats", L_MatsQuill,
+        "Warp to Quill of Binding Maker", L_MakeQuill,
+        "Quill of Binding made", L_CraftQuill,
+        "Blood Ink known", L_KnowInk,
+        "Blood Ink mats", L_MatsInk,
+        "Warp to Blood Ink maker", L_MakeInk,
+        "Blood Ink made", L_CraftInk,
+        "All Items Made", L_CraftAll,
+        "Book of Dead Mats", L_BookOfDead,
+        "Warp to Book of Dead", L_BookOfDeadWarp,
+        "Die!", L_Die,
+        "Souls", L_GetSouls,
+        "Set Boss Points", L_AddBossPoints,
+        "Get Krukan Items.", L_KrukanItems,
+        "Get Razha Items.", L_RazhaItems,
+        "Get Terrogan Items.", L_TeroganItems,
+        "Nevermind.", L_Close;
+
+L_AuditQuest:
+    mes "Boss Points:         " + BOSS_POINTS;
+    mes "NIBBLE_0 Mainline:   " + @state;
+    mes "NIBBLE_1 Key/Talk:   " + @craftkey;
+    mes "NIBBLE_2 Quill/Talk: " + @craftquill;
+    mes "NIBBLE_3 Ink/Talk:   " + @craftink;
+    mes "NIBBLE_4 Gate:       " + ebind;
+    goto L_Main;
+
+L_Reset:
+    set @state, 0;
+    set @craftkey, 0;
+    set @craftquill, 0;
+    set @craftink, 0;
+    set ebind, 0;
+    delitem "UnderworldKey", 1;
+    delitem "QuillOfBinding", 1;
+    delitem "BloodInk", 1;
+    callsub S_Update_Var;
+    goto L_Main;
+
+L_QuestStart:
+    set @state, 1;
+    set @craftkey, 0;
+    set @craftquill, 0;
+    set @craftink, 0;
+    set ebind, 0;
+    delitem "UnderworldKey", 1;
+    delitem "QuillOfBinding", 1;
+    delitem "BloodInk", 1;
+    callsub S_Update_Var;
+    goto L_Warp;
+
+L_KnowKey:
+    set @state, 1;
+    set @craftkey, 1;
+    set ebind, 0;
+    callsub S_Update_Var;
+    goto L_Main;
+
+L_MatsKey:
+    if ((checkweight("CryptKey", 10) == 0)
+        || (checkweight("Bone", 25) == 0)
+        || (checkweight("Skull", 25) == 0)
+        || (checkweight("Soul", 5) == 0)
+        || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "CryptKey", 10;
+    getitem "Bone", 25;
+    getitem "Skull", 25;
+    getitem "Soul", 5;
+    set Zeny, Zeny + 20000;
+    goto L_Main;
+
+L_MakeKey:
+    warp "026-2", 38, 118;
+    goto L_Main;
+
+L_CraftKey:
+    set @state, 1;
+    set @craftkey, 2;
+    set ebind, 0;
+    getinventorylist;
+    if ((checkweight("UnderworldKey", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "UnderworldKey", 1;
+    callsub S_Update_Var;
+    goto L_Main;
+
+L_KnowQuill:
+    set @state, 1;
+    set @craftquill, 1;
+    set ebind, 0;
+    callsub S_Update_Var;
+    goto L_Main;
+
+L_MatsQuill:
+    if ((checkweight("RedDye", 10) == 0)
+        || (checkweight("YellowDye", 10) == 0)
+        || (checkweight("WhiteFur", 20) == 0)
+        || (checkweight("YetiClaw", 20) == 0)
+        || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "RedDye", 10;
+    getitem "YellowDye", 10;
+    getitem "WhiteFur", 20;
+    getitem "YetiClaw", 20;
+    set Zeny, Zeny + 20000;
+    goto L_Main;
+
+L_MakeQuill:
+    warp "048-2", 114, 74;
+    goto L_Main;
+
+L_CraftQuill:
+    set @state, 1;
+    set @craftquill, 2;
+    set ebind, 0;
+    getinventorylist;
+    if ((checkweight("QuillOfBinding", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "QuillOfBinding", 1;
+    callsub S_Update_Var;
+    goto L_Main;
+
+L_KnowInk:
+    set @state, 1;
+    set @craftink, 1;
+    set ebind, 0;
+    callsub S_Update_Var;
+    goto L_Main;
+
+L_MatsInk:
+    if ((checkweight("BlackScorpionStinger", 20) == 0)
+        || (checkweight("MountainSnakeEgg", 10) == 0)
+        || (checkweight("MaggotSlime", 20) == 0)
+        || (checkweight("JarofOwnBlood", 5) == 0)
+        || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "BlackScorpionStinger", 20;
+    getitem "MountainSnakeEgg", 10;
+    getitem "MaggotSlime", 20;
+    getitem "JarofOwnBlood", 5;
+    set Zeny, Zeny + 20000;
+    goto L_Main;
+
+L_MakeInk:
+    warp "001-2", 65, 88;
+    goto L_Main;
+
+L_CraftInk:
+    set @state, 1;
+    set @craftink, 2;
+    set ebind, 0;
+    getinventorylist;
+    if ((checkweight("BloodInk", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "BloodInk", 1;
+    callsub S_Update_Var;
+    goto L_Main;
+
+L_CraftAll:
+    set @state, 1;
+    set ebind, 0;
+    getinventorylist;
+    if ((checkweight("QuillOfBinding", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "QuillOfBinding", 1;
+    set @craftquill, 2;
+    callsub S_Update_Var;
+    getinventorylist;
+    if ((checkweight("BloodInk", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "BloodInk", 1;
+    set @craftink, 2;
+    callsub S_Update_Var;
+    getinventorylist;
+    if ((checkweight("UnderworldKey", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "UnderworldKey", 1;
+    set @craftkey, 2;
+    callsub S_Update_Var;
+    goto L_Main;
+
+L_InventoryNoSpace:
+    mes "\"Drop some weight then come back.\"";
+    goto L_Main;
+
+L_AddBossPoints:
+    mes "Set Boss Points.";
+    input @bosspoints;
+    set BOSS_POINTS, @bosspoints;
+    set @bosspoints, 0;
+    goto L_Main;
+
+L_BookOfDead:
+    set @state, 1;
+    set ebind, 0;
+    getinventorylist;
+    if ((checkweight("QuillOfBinding", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "QuillOfBinding", 1;
+    set @craftquill, 2;
+    callsub S_Update_Var;
+    getinventorylist;
+    if ((checkweight("BloodInk", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "BloodInk", 1;
+    set @craftink, 2;
+    callsub S_Update_Var;
+    getinventorylist;
+    if ((checkweight("UnderworldKey", 1) == 0) || (@inventorylist_count == 100))
+        goto L_InventoryNoSpace;
+    getitem "UnderworldKey", 1;
+    set @craftkey, 2;
+    goto L_Main;
+
+L_BookOfDeadWarp:
+    warp "027-4", 108, 96;
+    goto L_Main;
+
+L_Die:
+    heal -Hp, 0;
+    goto L_Close;
+
+L_Warp:
+    warp "027-2", 45, 103;
+    goto L_Main;
+
 L_KrukanItems:
     if ((checkweight("Soul", 1) == 0)
         || (checkweight("Skull", 5) == 0)
@@ -66,13 +355,13 @@ L_RazhaItems:
 
 L_TeroganItems:
     if ((checkweight("Soul", 5) == 0)
-        || (checkweight("RottenRags", 5) == 0)
+        || (checkweight("DiseasedHeart", 5) == 0)
         || (checkweight("UndeadEye", 5) == 0)
         || (checkweight("UndeadEar", 5) == 0)
         || (@inventorylist_count == 100))
         goto L_InventoryNoSpace;
     getitem "Soul", 5;
-    getitem "RottenRags", 5;
+    getitem "DiseasedHeart", 5;
     getitem "UndeadEye", 5;
     getitem "UndeadEar", 5;
     goto L_Main;
@@ -116,4 +405,33 @@ OnInit:
     if (!debug)
         disablenpc "UndeadDebug5";
     end;
+L_GetSouls:
+    if (checkweight("Soul", 5) == 0)
+        goto L_InventoryNoSpace;
+    getitem "Soul", 5;
+    goto L_Main;
+
+L_Close:
+    set @map$, "";
+    cleararray @Xs[0], 0, 7;
+    cleararray @Ys[0], 0, 7;
+    set @x, 0;
+    set @y, 0;
+    set @warpmap$, 0;
+    set @warpx, 0;
+    set @warpy, 0;
+    set @state, 0;
+    set @craftkey, 0;
+    set @craftquill, 0;
+    set @craftink, 0;
+    set ebind, 0;
+    return;
+
+S_Update_Var:
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_1_MASK) | (@craftkey << NIBBLE_1_SHIFT));
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_2_MASK) | (@craftquill << NIBBLE_2_SHIFT));
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_3_MASK) | (@craftink << NIBBLE_3_SHIFT));
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_4_MASK) | (ebind << NIBBLE_4_SHIFT));
+    return;
 }

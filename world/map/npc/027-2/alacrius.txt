@@ -1,13 +1,60 @@
-// Author: wushin
+// Author: ????, wushin
 //Starts Crypt Quest
 
 027-2,45,105,0|script|Alacrius|313
 {
+
+    set @state, ((CRYPT_Quest & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+
+    if(@state > 0)
+        goto L_Progress;
+
     mes "[Alacrius]";
     mes "\"Hello, I'm Alacrius. \"";
     next;
+    mes "[Alacrius]";
     mes "\"A very long time ago, I figured a way to cheat death and the limits of time and space. You may think it is evil, but I did it because of true love... \"";
     next;
-    mes "\"The reaper kidnapped my beloved wife, and took her to the underworld. I had to find a way to stop him, and as time went by, I became what you can see now... But if you dare to cheat death, time and space you'll have to pay a high price... \"";
+    mes "[Alacrius]";
+    mes "\"The reaper kidnapped my beloved wife, and took her to the underworld.  I had to find a way to stop him, and as time went by, I became what you can see now... But if you dare to cheat death, time and space you'll have to pay a high price... \"";
+    next;
+    mes "[Alacrius]";
+    mes "\"Being away from time and space doesn't allow me to try to save my beloved wife... I need your help. Do you think you have what it takes to handle the powerful monsters in the Underworld? \"";
+    next;
+    menu
+       "I will save her.",L_Hero,
+       "Sorry, I'm no hero..",L_Close;
+
+L_Hero:
+    mes "[Alacrius]";
+    mes "\"Thank you so much!\"";
+    mes "\"To enter the Crypts you'll need 3 items.\"";
+    next;
+    mes "\"The Underworld Key to unlock the chamber to the Book of the Dead.\"";
+    mes "\"Last I heard Cerhan knew of a Key to the Crypts.\"";
+    next;
+    mes "\"The next item will require the help of the Blue Sage Markie.";
+    mes "\"They can make a Quill of Binding, used to write on etheral paper.\"";
+    next;
+    mes "\"Finally, you'll need to use alchemy to create Blood Ink. Ask around the Magic School in Tulimshar for a recipe.\"";
+    mes "\"Writing your name in the Book of Dead with the The Quill and Blood Ink will bind your soul into the Underworld.\"";
+    next;
+    mes "\"Once in the Underworld, Find a way to free my wife from the Reaper.\"";
+    set @state, 1;
+    callsub S_Update_Var;
+    goto L_Close;
+
+L_Progress:
+    mes "[Alacrius]";
+    mes "\"Please keep searching.\"";
+    goto L_Close;
+
+S_Update_Var:
+    set CRYPT_Quest, (CRYPT_Quest & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
+    return;
+
+L_Close:
+    set @state, 0;
     close;
+
 }
