@@ -1,16 +1,26 @@
 // The ferry dock
 
-// Ferry Sign
-031-1,95,107,0|script|Ferry Schedule#6|398
+031-1,110,108,0|script|Nivalis Koga|395,12,2
 {
-    callfunc "FerryManifest";
+    callfunc "BoardFerry";
+    end;
+
+OnTouch:
+    addtimer get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnBoard";
+    end;
+
+OnBoard:
+    callfunc "BoardFerry";
     end;
 }
 
-031-1,110,108,0|script|Nivalis Koga|395,6,2
+031-1,99,109,0|script|Nivalis Dock|400,2,1
 {
+    set @npc_distance, 3;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
     callfunc "BoardFerry";
-    close;
+    end;
 }
 
 031-1,100,100,0|script|#NivalisDock|32767
@@ -18,10 +28,17 @@
     end;
 
 OnCommandArrive:
+    disablenpc "Nivalis Dock";
     enablenpc "Nivalis Koga";
+    areatimer 0, "031-1", 97, 108, 108, 110, get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnAreaWarp"; // warp players on dock
+    end;
+
+OnAreaWarp:
+    callfunc "BoardFerry";
     end;
 
 OnCommandWarp:
     disablenpc "Nivalis Koga";
+    enablenpc "Nivalis Dock";
     end;
 }

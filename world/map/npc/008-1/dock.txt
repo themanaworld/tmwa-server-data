@@ -1,43 +1,91 @@
 // The ferry dock
 
-008-1,134,69,0|script|Ferry Schedule#5|397
+008-1,147,64,0|script|Hurnscald North Koga|395,10,3
 {
-    callfunc "FerryManifest";
+    set @npc_distance, 11;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    callfunc "BoardFerry";
+    end;
+
+OnTouch:
+    addtimer get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnBoard";
+    end;
+
+OnBoard:
+    callfunc "BoardFerry";
     end;
 }
 
-008-1,147,64,0|script|Hurnscald North Koga|395,8,3
+008-1,139,65,0|script|Hurnscald North Dock|400,2,1
 {
+    set @npc_distance, 3;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
     callfunc "BoardFerry";
-    close;
+    end;
 }
 
 008-1,120,44,0|script|#Hurnscald NorthDock|32767
 {
     end;
 OnCommandArrive:
+    disablenpc "Hurnscald North Dock";
     enablenpc "Hurnscald North Koga";
+    areatimer 0, "008-1", 137, 64, 141, 65, get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnAreaWarp"; // warp players on dock
+    end;
+
+OnAreaWarp:
+    callfunc "BoardFerry";
     end;
 
 OnCommandWarp:
     disablenpc "Hurnscald North Koga";
+    enablenpc "Hurnscald North Dock";
     end;
 }
 
-008-1,147,75,0|script|Hurnscald South Koga|395,8,3
+008-1,147,75,0|script|Hurnscald South Koga|395,10,3
 {
+    set @npc_distance, 10;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
     callfunc "BoardCandorFerry";
-    close;
+    end;
+
+OnTouch:
+    addtimer get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnBoard";
+    end;
+
+OnBoard:
+    callfunc "BoardCandorFerry";
+    end;
+}
+
+008-1,139,76,0|script|Hurnscald South Dock|400,2,1
+{
+    set @npc_distance, 3;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    callfunc "BoardCandorFerry";
+    end;
 }
 
 008-1,65,25,0|script|#Hurnscald SouthDock|32767
 {
     end;
 OnCommandArrive:
+    disablenpc "Hurnscald South Dock";
     enablenpc "Hurnscald South Koga";
+    areatimer 0, "008-1", 137, 75, 141, 76, get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnAreaWarp"; // warp players on dock
+    end;
+
+OnAreaWarp:
+    callfunc "BoardCandorFerry";
     end;
 
 OnCommandWarp:
     disablenpc "Hurnscald South Koga";
+    enablenpc "Hurnscald South Dock";
     end;
 }

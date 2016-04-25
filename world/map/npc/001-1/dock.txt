@@ -1,27 +1,47 @@
 // The ferry dock
 // Author: Wushin
 
-// Ferry Sign
-001-1,61,71,0|script|Ferry Schedule#2|396
+001-1,75,70,0|script|Tulimshar Koga|395,9,4
 {
-    callfunc "FerryManifest";
+    set @npc_distance, 10;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    callfunc "BoardFerry";
+    end;
+
+OnTouch:
+    addtimer get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnBoard";
+    end;
+
+OnBoard:
+    callfunc "BoardFerry";
     end;
 }
 
-001-1,75,70,0|script|Tulimshar Koga|395,8,3
+001-1,68,72,0|script|Tulimshar Dock|400,2,2
 {
+    set @npc_distance, 3;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
     callfunc "BoardFerry";
-    close;
+    end;
 }
 
 001-1,70,70,0|script|#TulimsharDock|32767
 {
     end;
 OnCommandArrive:
+    disablenpc "Tulimshar Dock";
     enablenpc "Tulimshar Koga";
+    areatimer 0, "001-1", 66, 71, 77, 73, get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnAreaWarp"; // warp players on dock
+    end;
+
+OnAreaWarp:
+    callfunc "BoardFerry";
     end;
 
 OnCommandWarp:
     disablenpc "Tulimshar Koga";
+    enablenpc "Tulimshar Dock";
     end;
 }

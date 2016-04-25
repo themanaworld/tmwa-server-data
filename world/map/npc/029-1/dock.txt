@@ -1,26 +1,46 @@
 // The ferry dock
 
-// Ferry Sign
-029-1,43,104,0|script|Ferry Schedule#8|397
+029-1,46,111,0|script|Candor Dock|400,1,0
 {
-    callfunc "FerryManifest";
+    set @npc_distance, 1;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    callfunc "BoardCandorFerry";
+    end;
+
+OnTouch:
+    addtimer get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnBoard";
+    end;
+
+OnBoard:
+    callfunc "BoardCandorFerry";
     end;
 }
 
-029-1,51,118,0|script|Candor Koga|395,8,8
+029-1,51,118,0|script|Candor Koga|395,8,7
 {
+    set @npc_distance, 8;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
     callfunc "BoardCandorFerry";
-    close;
+    end;
 }
 
 029-1,55,110,0|script|#CandorDock|32767
 {
     end;
 OnCommandArrive:
+    disablenpc "Candor Dock";
     enablenpc "Candor Koga";
+    areatimer 0, "029-1", 39, 111, 53, 113, get(.warp_delay, "#FerryConfig"), strnpcinfo(0)+"::OnAreaWarp"; // warp players on dock
+    end;
+
+OnAreaWarp:
+    callfunc "BoardCandorFerry";
     end;
 
 OnCommandWarp:
     disablenpc "Candor Koga";
+    enablenpc "Candor Dock";
     end;
 }
