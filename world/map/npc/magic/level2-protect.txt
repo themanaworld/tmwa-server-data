@@ -29,10 +29,12 @@
     set @betsanc_time, .@time, @target_id;
     sc_start SC_PHYS_SHIELD, .@time, max(15,(@spellpower/20))+5, @target_id;
     message @args$, "Shield : You feel more protected.";
-    addtimer @betsanc_time, strnpcinfo(0)+"::OnEnd", @target_id;
+    set @betsanc_future, gettimetick(0) + @betsanc_time - 100, @target_id;
+    addtimer @betsanc_time - 100, strnpcinfo(0)+"::OnEnd", @target_id;
     end;
 
 OnEnd:
+    if (gettimetick(0) - @betsanc_future < 0) end;
     if (sc_check(SC_PHYS_SHIELD) != 1) end;
     message strcharinfo(0), "Shield : You feel less protected.";
     misceffect FX_MAGIC_SHIELD_ENDS, strcharinfo(0);
