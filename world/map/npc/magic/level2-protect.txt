@@ -5,7 +5,7 @@
     set .@level, getskilllv(.school);
     if (.@level < .level) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
-    if (.@level <= 3 && countitem("HardSpike") >= 1) delitem "HardSpike", 1;
+    if (.@level <= 3 && countitem("HardSpike") < 1) end;
     elif (.@level <= 3) end;
     set @target_id, getcharid(3, @args$);
     if (@target_id < 1 || !(isloggedin(@target_id)) || get(INVISIBLE, @target_id))
@@ -17,6 +17,9 @@
     if (attachrid(@betsanc_caster) != 1) end;
     if (@target_hat == 888) end; // FIXME: this whole 5 line block could be done with only one line if we modify getequipid
 
+    if (distance(BL_ID, @target_id) >= (@spellpower/30)+2) set @target_id, BL_ID;
+    if (get(@antiprotect, @target_id) > 0) end;
+    delitem "HardSpike", 1;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 1500, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
@@ -24,7 +27,6 @@
     misceffect FX_MAGIC_GREEN, strcharinfo(0);
     callfunc "magic_exp";
 
-    if (distance(BL_ID, @target_id) >= (@spellpower/30)+2) set @target_id, BL_ID;
     if (BL_ID == @target_id) set @args$, strcharinfo(0);
     misceffect FX_MAGIC_SHIELD, @args$;
     set .@time, (@spellpower*1000)+5000;
