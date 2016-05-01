@@ -12,9 +12,8 @@
     setarray @chipchipspell[0],
         @spellpower,
         (((200 - Agi) * 2000) / 200); //delay
-    overrideattack @chipchipspell[1], 1, ATTACK_ICON_SHEARING, 30, strnpcinfo(0)+"::OnAttack";
     callfunc "magic_exp";
-    end;
+    goto L_FreeRecast;
 
 OnAttack:
     if (isloggedin(@target_id)) goto L_FreeRecast; // can not shear a player
@@ -23,6 +22,7 @@ OnAttack:
     sc_start SC_SHEARED, 600000, 0, @target_id;
     set .@score, rand(1000 - rand(@chipchipspell[0]));
     set .@id, get(Class, @target_id); // get the mob ID
+    set @chipchipspell[2], 0;
 
     if   (.@id == 1020 && .@score < 300) set .@item$, "WhiteFur"; // Fluffy
     elif (.@id == 1027 && .@score < 300) set .@item$, "WhiteFur"; // EasterFluffy
@@ -43,6 +43,7 @@ OnAttack:
     end;
 
 L_FreeRecast:
+    set @chipchipspell[2], 1;
     addtimer 0, strnpcinfo(0) + "::OnSetRecast"; // we can't do it while already overridden, until it reaches a script terminator
     end;
 
