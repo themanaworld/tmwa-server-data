@@ -27,10 +27,12 @@
     set @asorm_time, .@time, @target_id;
     sc_start SC_MBARRIER, .@time, max(30,(@spellpower/8))+20, @target_id;
     message @args$, "Barrier : You are surrounded by a magical barrier.";
-    addtimer @asorm_time, strnpcinfo(0)+"::OnEnd", @target_id;
+    set @asorm_future, gettimetick(0) + @asorm_time - 100, @target_id;
+    addtimer @asorm_time - 100, strnpcinfo(0)+"::OnEnd", @target_id;
     end;
 
 OnEnd:
+    if (gettimetick(0) - @asorm_future < 0) end;
     if (sc_check(SC_MBARRIER) != 1) end;
     message strcharinfo(0), "Barrier : Your magical barrier dissipates.";
     misceffect FX_MAGIC_DEFAULT, strcharinfo(0);
