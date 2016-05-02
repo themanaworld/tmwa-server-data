@@ -1,62 +1,70 @@
 -|script|spell-wand|32767
 {
     if(call("magic_checks")) goto L_Failed;
-    callsub S_CheckWand;
-    if(@WandAttack != 1) goto L_Failed;
+    set @wandspell[0], 0; // reset state
+    callfunc "adjust_spellpower";
+    callsub S_Loop; // set up wand
+    if(@wandspell[0] < 1) goto L_Failed;
 
     // here we install
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 500, "Magic Timer::OnClear"; // set the new debuff
-    callfunc "adjust_spellpower";
     misceffect FX_MAGIC_GENERIC, strcharinfo(0);
-    set .@delay, (((200 - Agi) * 1200) / 200);
-    overrideattack (@Wand + (@spellpower / 10)), .@delay, 3, ATTACK_ICON_GENERIC, @WandID, strnpcinfo(0)+"::OnAttack";
+
     callfunc "magic_exp";
+    goto L_FreeRecast;
+
+L_FreeRecast:
+    if (@wandspell[4] > 0)
+        addtimer 0, strnpcinfo(0) + "::OnSetRecast";
+    end;
+
+OnDischarge:
+    if (@wandspell[4] < 1) end;
+    set @wandspell[4], 0;
+    misceffect FX_FIRE_BURST, strcharinfo(0);
+    overrideattack;
+    end;
+
+OnSetRecast:
+    overrideattack @wandspell[3], 3, ATTACK_ICON_GENERIC, @wandspell[0], strnpcinfo(0)+"::OnAttack";
     end;
 
 OnAttack:
-    callsub S_CheckWand;
-    if(@WandAttack != 1) goto L_Failed;
-    if(target(BL_ID, @target_id, 22) != 22) goto L_Failed; // 0x02 | 0x04 | 0x10
-    set Sp, (Sp - @WandCost);
-    set @damage, (@Wand * (@spellpower / 3));
-    void call("elt_damage", @damage,@damage,ELT_NEUTRAL,ELT_NEUTRAL,FX_MAGIC_RED);
-    end;
-
-S_CheckWand:
-    set @Wand, 0;
-    set @wand_loop, 0;
-    goto S_Loop;
+    if(target(BL_ID, @target_id, 22) != 22) goto L_FreeRecast; // 0x02 | 0x04 | 0x10
+    if (Sp < @wandspell[1]) goto L_LowSp;
+    set Sp, (Sp - @wandspell[1]);
+    void call("elt_damage", @wandspell[2],@wandspell[2],ELT_NEUTRAL,ELT_NEUTRAL,FX_MAGIC_RED);
+    set @wandspell[4], @wandspell[4] - 1;
+    goto L_FreeRecast;
 
 S_Loop:
-    if ((getequipid(equip_hand1) == .Wands[@wand_loop]) || (getequipid(equip_hand2) == .Wands[@wand_loop]))
+    if ((getequipid(equip_hand1) == .Wands[.@wand_loop]) || (getequipid(equip_hand2) == .Wands[.@wand_loop]))
         goto S_SetWand;
-    set @wand_loop, (@wand_loop + 1);
-    if (@wand_loop >= getarraysize(.Wands))
+    set .@wand_loop, (.@wand_loop + 1);
+    if (.@wand_loop >= getarraysize(.Wands))
         goto S_NoWand;
     goto S_Loop;
 
 S_SetWand:
-    set @Wand, .WandsPwr[@wand_loop];
-    set @WandID, .WandsAnim[@wand_loop];
+    set .@pwr, .WandsPwr[.@wand_loop];
     if (QL_MORGAN == 2)
         set QL_MORGAN, 3;
-    set @WandCost, (@Wand * (BaseLevel / 15) + 2);
-    set @WandAttack, 0;
-    if (Sp < @WandCost)
-        goto S_LowSp;
-    set @WandAttack, 1; // everything is fine
+    setarray @wandspell[0],
+        .WandsAnim[.@wand_loop], // wand anim/id
+        (.@pwr * (BaseLevel / 15) + 2), // wand cost
+        (.@pwr * (@spellpower / 3)), // wand dmg
+        (((200 - Agi) * 1200) / 200), //delay
+        (.@pwr + (@spellpower / 10)); // charges
     return;
 
 S_NoWand:
     message strcharinfo(0), "Wand : ##3##BYou need a wand Equipped!";
-    set @WandAttack, 0;
     return;
 
-S_LowSp:
+L_LowSp:
     message strcharinfo(0), "Wand : ##3##BOut of Mana";
-    set @WandAttack, 0;
-    return;
+    end;
 
 L_Failed:
     //misceffect FX_ELECTRICITY_RED, strcharinfo(0); // XXX: do we show an effect on fail?
