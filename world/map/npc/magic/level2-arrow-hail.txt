@@ -4,7 +4,7 @@
     end;
 
 OnCast:
-    if(call("magic_checks")) end; 
+    if(call("magic_checks")) end;
     if (getskilllv(.school) < .level) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
     if (Sp < 25) end;
@@ -65,8 +65,8 @@ OnNearbyNpc:
     end;
 
 OnLaunch:
-    if(attachrid(.caster) != 1) destroy; // destroy if caster is missing
-    if(getmap() != strnpcinfo(3)) destroy; // destroy if caster left the map
+    if(get(BL_ID, .caster) != .caster) destroy; // destroy if caster is missing
+    if(getmap(.caster) != strnpcinfo(3)) destroy; // destroy if caster left the map
     set .hit, .hit + 1;
     if(.hit > .max_hit) destroy;
     set .launch, 0;
@@ -78,11 +78,11 @@ S_Launch:
     npcareawarp .area_x - 6, .area_y - 6, .area_x + 6, .area_y + 6, 0, strnpcinfo(0);
     misceffect FX_ARROW_HAIL;
     set .done, 0;
-    foreach 2, strnpcinfo(3), getnpcx(), getnpcy(), getnpcx(), getnpcy(), strnpcinfo(0) + "::OnHit";
-    if (PVP_CHANNEL || getmapflag(getmap(), MF_PVP))
-        foreach 0, strnpcinfo(3), getnpcx(), getnpcy(), getnpcx(), getnpcy(), strnpcinfo(0) + "::OnHit";
-    if(!.done && getx() == getnpcx() && gety() == getnpcy())
-        heal 0 - (.damage + rand(.damage_bonus) + rand(.damage_bonus)), 0; // injure caster
+    foreach 2, strnpcinfo(3), getnpcx(), getnpcy(), getnpcx(), getnpcy(), strnpcinfo(0) + "::OnHit", .caster;
+    if (get(PVP_CHANNEL, .caster) || getmapflag(getmap(.caster), MF_PVP))
+        foreach 0, strnpcinfo(3), getnpcx(), getnpcy(), getnpcx(), getnpcy(), strnpcinfo(0) + "::OnHit", .caster;
+    if(!.done && get(POS_X, .caster) == getnpcx() && get(POS_Y, .caster) == getnpcy())
+        set Hp, get(Hp, .caster) - (.damage + rand(.damage_bonus) + rand(.damage_bonus)), .caster; // injure caster
     set .launch, .launch + 1;
     if(.launch < 3) goto S_Launch;
     return;
@@ -92,8 +92,8 @@ OnTimer30000:
     destroy;
 
 OnHit:
-    if(attachrid(.caster) != 1) destroy; // destroy if caster is missing
-    if(getmap() != strnpcinfo(3)) destroy; // destroy if caster left the map
+    if(get(BL_ID, .caster) != .caster) destroy; // destroy if caster is missing
+    if(getmap(.caster) != strnpcinfo(3)) destroy; // destroy if caster left the map
 
     if(target(.caster, @target_id, 16) != 16 && .caster != @target_id) end;
     if((get(BL_TYPE, @target_id) & 1) == 0) end; // either mob or pc
