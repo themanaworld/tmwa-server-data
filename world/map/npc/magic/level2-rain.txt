@@ -63,8 +63,8 @@ L_Tree:
     close;
 
 OnLaunch:
-    if(attachrid(.caster) != 1) destroy; // destroy if caster is missing
-    if(getmap() != strnpcinfo(3)) destroy; // destroy if caster left the map
+    if(get(BL_ID, .caster) != .caster) destroy; // destroy if caster is missing
+    if(getmap(.caster) != strnpcinfo(3)) destroy; // destroy if caster left the map
     set .count, .count + 1;
     if(.count > .max) destroy;
     set .launch, 0;
@@ -75,14 +75,14 @@ OnLaunch:
 S_Launch:
     npcareawarp .initial_x - .radius, .initial_y - .radius, .initial_x + .radius, .initial_y + .radius, 0, strnpcinfo(0);
     misceffect FX_RAIN;
-    foreach 2, strnpcinfo(3), getnpcx()-1, getnpcy()-1, getnpcx()+1, getnpcy()+1, strnpcinfo(0) + "::OnHit";
+    foreach 2, strnpcinfo(3), getnpcx()-1, getnpcy()-1, getnpcx()+1, getnpcy()+1, strnpcinfo(0) + "::OnHit", .caster;
     set .launch, .launch + 1;
     if(.launch < .max_launch) goto S_Launch;
     return;
 
 OnHit:
-    if(attachrid(.caster) != 1) destroy; // destroy if caster is missing
-    if(getmap() != strnpcinfo(3)) destroy; // destroy if caster left the map
+    if(get(BL_ID, .caster) != .caster) destroy; // destroy if caster is missing
+    if(getmap(.caster) != strnpcinfo(3)) destroy; // destroy if caster left the map
     if(target(.caster, @target_id, 16) != 16 && .caster != @target_id) end;
     if((get(BL_TYPE, @target_id) & 1) == 0) end; // either mob or pc
     if(get(ELTTYPE, @target_id) == ELT_FIRE)
@@ -90,7 +90,7 @@ OnHit:
     end;
 
 OnDestroy:
-    debugmes "kaflosh timeout! [this shouldn't happen]";
+    debugmes "kaflosh timeout! [this shouldn't happen]"; // XXX: looks like this CAN happen with higher levels of magic, so we might want to cap max charges
     destroy;
 
 OnInit:
