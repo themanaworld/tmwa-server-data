@@ -1,0 +1,65 @@
+-|script|@spawn|32767
+{
+    callfunc "argv_splitter";
+    if (GM < CMD_SPAWN && GM < G_SYSOP) goto L_GM;
+    set .@t, getmapflag(getmap(), MF_TOWN); // restricted map
+
+    // XXX: it would theorically be possible to set a `.spawner` variable in the
+    //      mobs so that they can notify the gm "I was killed by player X"
+    if (@argv[1] < 1) set @argv[1], 1;
+    if (@argv[1] > 100) set @argv[1], 100;
+    if (@argv[0] >= 1002) goto L_Numeric;
+    goto L_Alpha;
+
+L_Numeric:
+    if (.@t && array_search(@argv[0], .bad) >= 0 && @argv$[2] != "!") goto L_PunishGM;
+    areamonster getmap(), POS_X - 3, POS_Y - 3, POS_X + 3, POS_Y + 3, "@spawn", @argv[0], @argv[1];
+    smsg SMSG_WARNING, "spawn: Using monster ID for spawns is discouraged because it is easy to get the wrong ID. Consider using MonsterNamesWithoutSpaces instead. They are also easier to remember than numbers.";
+    goto L_Success;
+
+L_Alpha:
+    // mob packages:
+    if (!(.@t) && @argv$[0] == "pack") goto L_Package;
+    // normal spawn:
+    if (.@t && array_search(@argv$[0], .bad$) >= 0 && @argv$[2] != "!") goto L_PunishGM;
+    areamonster getmap(), POS_X - 3, POS_Y - 3, POS_X + 3, POS_Y + 3, "", @argv$[0], @argv[1];
+    goto L_Success;
+
+L_Package:
+    if (@argv$[1] == "slimes") goto L_Slimes;
+    end;
+
+L_Slimes:
+    monster getmap(), 0, 0, "", "YellowSlime", @argv[1] * 6;
+    monster getmap(), 0, 0, "", "RedSlime", @argv[1] * 8;
+    monster getmap(), 0, 0, "", "WhiteSlime", @argv[1] * 4;
+    monster getmap(), 0, 0, "", "AzulSlime", @argv[1] * 2;
+    monster getmap(), 0, 0, "", "SeaSlime", @argv[1] * 4;
+    monster getmap(), 0, 0, "", "GreenSlime", @argv[1] * 2;
+    monster getmap(), 0, 0, "", "AngryGreenSlime", @argv[1];
+    monster getmap(), 0, 0, "", "BlueSlime", @argv[1];
+    monster getmap(), 0, 0, "", "LavaSlime", @argv[1];
+    goto L_Success;
+
+L_PunishGM:
+    message strcharinfo(0), "spawn : Don't spawn harmful monsters in town! You have dedicated maps for that.";
+    if (INVISIBLE) end;
+    misceffect FX_LARGE_EXPLOSION, BL_ID;
+    set Hp, 0;
+    end;
+
+L_Success:
+    gmlog "@spawn " + @args$;
+    message strcharinfo(0), "spawn : The operation succeeded.";
+    end;
+
+L_GM:
+    message strcharinfo(0), "spawn : GM command is level "+ CMD_SPAWN +", but you are level " + GM;
+    end;
+
+OnInit:
+    setarray .bad[0], 0,  1050, 1056, 1092, 1070, 1057, 1105, 1107, 1089, 1058, 1060, 1108, 1064, 1008, 1111, 1106, 1130, 1104, 1009, 1090, 1012, 1109, 1010, 1005, 1026, 1065, 1034, 1110, 1059, 1084, 1088, 1083, 1101, 1117, 1116, 1123, 1086, 1044, 1023, 1024, 1071, 1073, 1132, 1120, 1069, 1121, 1119, 1115, 1118, 1114, 1043, 1124, 1062, 1097, 1085, 1074, 1103, 1072, 1122, 1022, 1045, 1126, 1036, 1075, 1068, 1127, 1128, 1129, 1102;
+    setarray .bad$[0], "oid", "HouseMaggot", "CaveMaggot", "SlimeBlast", "BallLightning", "AngryScorpion", "ViciousSquirrel", "Bluepar", "HungryFluffy", "IceGoblin", "Archant", "AngryFireGoblin", "Bandit", "RedSlime", "CandiedSlime", "WickedMushroom", "Moonshroom", "DemonicMouboo", "BlackScorpion", "Wolvern", "Spider", "AngrySeaSlime", "Snake", "GreenSlime", "MountainSnake", "BanditLord", "GrassSnake", "AngryGreenSlime", "GCMaggot", "CrotcherScorpion", "Hyvern", "HuntsmanSpider", "DemonicSpirit", "UndeadTroll", "UndeadWitch", "DreadPirateMarleyClone", "FeyElement", "LadySkeleton", "FireSkull", "PoisonSkull", "IceElement", "TheLost", "LavaSlime", "Swashbuckler", "Scythe", "Grenadier", "Thug", "SeaSlimeMother", "GreenSlimeMother", "Nutcracker", "Skeleton", "Wight", "Terranite", "SoulEater", "IceSkull", "RedBone", "WitchGuard", "Yeti", "DreadPirateMarley", "JackO", "Fallen", "PsiBrain", "Zombie", "Stalker", "Reaper", "GeneralKrukan", "GeneralRazha", "GeneralTerogan", "Luvia";
+    registercmd chr(ATCMD_SYMBOL) + "spawn", strnpcinfo(0);
+    end;
+}
