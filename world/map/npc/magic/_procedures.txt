@@ -14,7 +14,7 @@ function|script|magic_register
     end;
 
 OnLogin:
-    set @_M_BLOCK, 1;
+    set @_M_BLOCK, 2;
     addtimer 10000, "Magic Timer::OnClear";
     end;
 
@@ -26,14 +26,32 @@ OnClear:
 // this function is call()-only
 function|script|magic_checks
 {
-    set .@r, 0;
-    if(HIDDEN) set .@r, 1; // can not cast with @hide
-    if(@_M_BLOCK) set .@r, 2; // check if last debuff ended
-    if(Hp < 1) set .@r, 3; // can not cast when dead
-    if (MATK1 < 1) set .@r, 4; // can not cast with a grey mana bar
-    if (.@r)
-        smsg SMSG_FAILURE, "Magic: Impossible to cast right now.";
-    return .@r;
+    if(HIDDEN) goto L_Hidden; // can not cast with @hide
+    if(@_M_BLOCK == 2) goto L_Login; // login warmup
+    if(@_M_BLOCK) goto L_Blocked; // check if last debuff ended
+    if(Hp < 1) goto L_Dead; // can not cast when dead
+    if (MATK1 < 1) goto L_Greybar; // can not cast with a grey mana bar
+    return 0;
+
+L_Hidden:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast while hidden!";
+    return 1;
+
+L_Blocked:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast while a cooldown is in effect. Please wait.";
+    return 2;
+
+L_Dead:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast while dead!";
+    return 3;
+
+L_Greybar:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast with 0 m.atk. This might happen if your mana bar is grey. Some equipment can reduce your m.atk.";
+    return 4;
+
+L_Login:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast for 10s after logging in.";
+    return 5;
 }
 
 function|script|elt_damage
