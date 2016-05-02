@@ -11,11 +11,7 @@
     if (@target_id < 1 || !(isloggedin(@target_id)) || get(INVISIBLE, @target_id) == 1)
         set @target_id, BL_ID; // fallback to self
 
-    set @asorm_caster, BL_ID, @target_id;
-    if (attachrid(@target_id) != 1) end;
-    set @target_hat, getequipid(equip_head), @asorm_caster;
-    if (attachrid(@asorm_caster) != 1) end;
-    if (@target_hat == 888) end; // FIXME: this whole 5 line block could be done with only one line if we modify getequipid OR make equip_ into params
+    if (getequipid(equip_head, strcharinfo(0, @target_id)) == 888) end;
 
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
@@ -31,8 +27,7 @@
     set @asorm_time, .@time, @target_id;
     sc_start SC_MBARRIER, .@time, max(30,(@spellpower/8))+20, @target_id;
     message @args$, "Barrier : You are surrounded by a magical barrier.";
-    if (attachrid(@target_id) != 1) end;
-    addtimer @asorm_time, strnpcinfo(0)+"::OnEnd";
+    addtimer @asorm_time, strnpcinfo(0)+"::OnEnd", @target_id;
     end;
 
 OnEnd:
