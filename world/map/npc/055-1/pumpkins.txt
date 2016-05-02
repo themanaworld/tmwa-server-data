@@ -83,6 +83,8 @@ OnReallyDestroy:
 S_MakeNode:
     set .nID, .nID + 1; // give the node an id
     set .@name$, "#_Pkin" + chr(3) + .nID;
+    if (.nID == 2147483647)
+        set .nID, 0; // start over if id = 0x7FFFFFFF
     goto S_FindXY;
 
 S_FindXY:
@@ -94,13 +96,13 @@ S_FindXY:
 
 S_ReallySpawn:
     set .@p, puppet(.m$[.i], .@x, .@y, .@name$, 32767); // spawn the node (but not on map, because 32767)
+    if (.@p < 1) goto S_MakeNode; // silently retry
     disablenpc .@name$; // make sure it can't be clicked by guessing the being id
     set .i, .i, .@p; // tell the puppet what object contains it
     set .death_t, rand(.death_t/2, .death_t), .@p; // tell the puppet when to die
     set .@timer, if_then_else(.done_initial[.i], rand(.appear_t/2, .appear_t), 0); // timer depends on if first spawn or if respawned after death
     addnpctimer .@timer, .@name$+"::OnAppear"; // we spawn the node instantly but it only appears after the timer
-    if (.nID == 2147483647)
-        set .nID, 0; // start over if id = 0x7FFFFFFF
+    set .nodes[.i], .nodes[.i] + 1;
     return;
 
 S_IterateObjects:
@@ -112,7 +114,6 @@ S_IterateObjects:
     if (.nodes[.i] >= .max_nodes[.i])
         goto S_NextObject;
 
-    set .nodes[.i], .nodes[.i] + 1;
     callsub S_MakeNode;
     if (.nodes[.i] < if_then_else(.done_initial[.i], .min_nodes[.i], .max_nodes[.i]))
         goto S_IterateObjects;

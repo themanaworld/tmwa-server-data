@@ -129,10 +129,14 @@ OnSpawn:
     set .@y, .loc[(.@e-1)+.loc[1]];
     set .eID, .eID + 1; // give the egg an id
     set .@name$, "#--Ee"+chr(3)+.eID;
-    void puppet(strnpcinfo(3), .@x, .@y, .@name$, 375); // spawn the egg
-    initnpctimer .@name$; // init puppeteer check timer
     if (.eID == 2147483647)
         set .eID, 0; // start over if id = 0x7FFFFFFF
+    if (puppet(strnpcinfo(3), .@x, .@y, .@name$, 375) < 1) goto L_RetrySpawn; // spawn the egg
+    initnpctimer .@name$; // init puppeteer check timer
+    end;
+
+L_RetrySpawn:
+    addnpctimer 0, strnpcinfo(0) + "::OnSpawn"; // schedule a spawn
     end;
 
 S_Spawn:
