@@ -6,7 +6,6 @@
     if (.@level < .level) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
     if (.@level <= 3 && countitem("HardSpike") < 1) end;
-    elif (.@level <= 3) end;
     set @target_id, getcharid(3, @args$);
     if (@target_id < 1 || !(isloggedin(@target_id)) || get(INVISIBLE, @target_id))
         set @target_id, BL_ID; // fallback to self
@@ -15,7 +14,7 @@
 
     if (distance(BL_ID, @target_id) >= (@spellpower/30)+2) set @target_id, BL_ID;
     if (get(@antiprotect, @target_id) > 0) end;
-    delitem "HardSpike", 1;
+    if (.@level <= 3) delitem "HardSpike", 1;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 1500, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
