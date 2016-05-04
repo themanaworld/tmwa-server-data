@@ -8,6 +8,8 @@ function|script|argv_splitter
     set .@e, 0;
     set .@total, getarraysize(.@fragments$);
     set .@NULL$, chr(3); // HACK: we use .@NULL$ as a workaround because we can't do "\0"
+    cleararray @argv$[0], "", 20; // I don't think any atcommand will EVER need more than 20 args, and 20 is already generous
+    cleararray @argv[0], 0, 20;
     goto L_Check;
 
 L_Check:
@@ -49,5 +51,101 @@ L_CheckAfter:
     goto L_Check; // not done yet
 
 L_Done:
+    return;
+}
+
+// Map2Anchor
+// translates map aliases to actual maps
+function|script|map2anchor
+{
+    if (@map_anchor$[0] == "" && @argv$[0] != "")
+        set @map_anchor$[0], @argv$[0];
+
+    if (@map_anchor$[2] == "" && @argv[1] > 1 && @argv[2] > 1)
+        set @map_anchor$[1], @argv[1], @argv[2];
+
+    set .@a$, @map_anchor$[0]; // anchor name  // FIXME: I really want a str2lower() builtin
+
+    if (.@a$ == "hurnscald" || .@a$ == "hurn" || .@a$ == "hurns")
+        setarray @map_anchor$[0], "009-1", 55, 37;
+
+    elif (.@a$ == "nivalis" || .@a$ == "niv")
+        setarray @map_anchor$[0], "020-1", 74, 83;
+
+    elif (.@a$ == "tulimshar" || .@a$ == "tulim" || .@a$ == "tul")
+        setarray @map_anchor$[0], "001-1", 64, 101;
+
+    elif (.@a$ == "candor" || .@a$ == "newbington" || .@a$ == "noob")
+        setarray @map_anchor$[0], "029-1", 52, 93;
+
+    elif (.@a$ == "oldwizard" || .@a$ == "wizard" || .@a$ == "oldwiz")
+        setarray @map_anchor$[0], "013-1", 41, 92;
+
+    elif (.@a$ == "desert" || .@a$ == "pachua")
+        setarray @map_anchor$[0], "006-1", 34, 99;
+
+    elif (.@a$ == "forest" || .@a$ == "katze")
+        setarray @map_anchor$[0], "015-1", 58, 35;
+
+    elif (.@a$ == "dimond" || .@a$ == "dimondscove")
+        setarray @map_anchor$[0], "010-2", 31, 39;
+
+    elif (.@a$ == "asphodel" || .@a$ == "swamp" || .@a$ == "swampvillage" || .@a$ == "undeadtown")
+        setarray @map_anchor$[0], "026-1", 32, 33;
+
+    elif (.@a$ == "gy" || .@a$ == "graveyard")
+        setarray @map_anchor$[0], "027-1", 71, 87;
+
+    elif (.@a$ == "krukan" || .@a$ == "generalkrukan")
+        setarray @map_anchor$[0], "027-6", 39, 47;
+
+    elif (.@a$ == "razha" || .@a$ == "generalrazha")
+        setarray @map_anchor$[0], "027-7", 39, 35;
+
+    elif (.@a$ == "terogan" || .@a$ == "generalterogan")
+        setarray @map_anchor$[0], "027-8", 39, 52;
+
+    elif (.@a$ == "gmisland" || .@a$ == "eventisland" || .@a$ == "easterisland" || .@a$ == "island")
+        setarray @map_anchor$[0], "028-1", 99, 40;
+
+    elif (.@a$ == "auditorium" || .@a$ == "scene")
+        setarray @map_anchor$[0], "028-1", 119, 69;
+
+    elif (.@a$ == "theater")
+        setarray @map_anchor$[0], "017-2", 26, 23;
+
+    elif (.@a$ == "lounge" || .@a$ == "gmlounge" || .@a$ == "gm" || .@a$ == "backstage")
+        setarray @map_anchor$[0], "017-9", 26, 23;
+
+    elif (.@a$ == "cindy" || .@a$ == "cindycave")
+        setarray @map_anchor$[0], "031-3", 47, 26;
+
+    elif (.@a$ == "terranite" || .@a$ == "terra" || .@a$ == "terracave")
+        setarray @map_anchor$[0], "012-3", 448, 65;
+
+    elif (.@a$ == "terranitesafe" || .@a$ == "terrasafe" || .@a$ == "safeterra")
+        setarray @map_anchor$[0], "012-4", 473, 184;
+
+    elif (.@a$ == "bluesage" || .@a$ == "blue")
+        setarray @map_anchor$[0], "048-2", 40, 46;
+
+    elif (.@a$ == "xmasinn" || .@a$ == "xmas")
+        setarray @map_anchor$[0], "030-2", 85, 46;
+
+    elif (.@a$ == "barbarians" || .@a$ == "barbarian" || .@a$ == "fluffy")
+        setarray @map_anchor$[0], "033-1", 71, 33;
+
+    elif (.@a$ == "park" || .@a$ == "porttown" || .@a$ == "farms")
+        setarray @map_anchor$[0], "057-1", 100, 77;
+
+    elif (.@a$ == "hills" || .@a$ == "orum")
+        setarray @map_anchor$[0], "017-1", 112, 49;
+
+    elif (.@a$ == "batcave" || .@a$ == "bat")
+        setarray @map_anchor$[0], "011-3", 30, 26;
+
+    else
+        set @map_anchor$[3], "no"; // did not use an anchor
+
     return;
 }
