@@ -1,0 +1,23 @@
+-|script|@npctalk|32767
+{
+    callfunc "argv_splitter";
+    if (GM < CMD_NPCTALK && GM < G_SYSOP) goto L_GM;
+    if (@argv$[0] == "" || @argv$[1] == "") goto L_Failed;
+    if (getnpcid(@argv$[0]) < 1) goto L_Failed;
+
+    gmlog "@npctalk " + @args$;
+    npctalk @argv$[0], @argv$[1];
+    end;
+
+L_Failed:
+    message strcharinfo(0), "npctalk : Impossible to attach to the target npc. Did you try putting the name in \"quotation marks\"?";
+    end;
+
+L_GM:
+    message strcharinfo(0), "npctalk : GM command is level "+ CMD_NPCTALK +", but you are level " + GM;
+    end;
+
+OnInit:
+    registercmd chr(ATCMD_SYMBOL) + "npctalk", strnpcinfo(0);
+    end;
+}
