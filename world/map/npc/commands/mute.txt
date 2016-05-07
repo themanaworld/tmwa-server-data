@@ -20,6 +20,28 @@
     message strcharinfo(0), "mute : Player `"+strcharinfo(0, .@target_id)+"` has been muted for "+@argv[0]+" minutes.";
     end;
 
+OnSTFU:
+    if (GM < CMD_MUTE && GM < G_SYSOP) goto L_GM;
+    callfunc "argv_splitter";
+    if (@argv[0] < 1) set @argv[0], 1;
+    if (@argv[0] > 10) set @argv[0], 10;
+    gmlog "@stfu " + @argv[0];
+    set @stfu_nr, 0;
+    foreach 0, getmap(), (POS_X - .range), (POS_Y - .range), (POS_X + .range), (POS_Y + .range), strnpcinfo(0)+"::OnSTFUPC";
+    message strcharinfo(0), "mute : Every player within "+.range+" tiles have been muted for "+@argv[0]+" minutes. ["+@stfu_nr+"]";
+    set @stfu_nr, 0;
+    end;
+
+OnSTFUPC:
+    if (@target_id == BL_ID) end;
+    set .@future, (gettimetick(2) + (@argv[0] * 60));
+    if (get(#MUTE_UNTIL, @target_id) > .@future) end; // if player already has a mute, don't reduce it
+    set MUTE_GLOBAL, 1, @target_id;
+    set #MUTE_UNTIL, .@future, @target_id;
+    addtimer (@argv[0] * 60000) + 100, strnpcinfo(0) + "::OnCheckMute", @target_id;
+    set @stfu_nr, @stfu_nr + 1;
+    end;
+
 OnPCLoginEvent:
     if (#MUTE_UNTIL < 1) end;
     set .@s, (#MUTE_UNTIL - gettimetick(2));
@@ -55,6 +77,9 @@ L_GM:
     end;
 
 OnInit:
+    set .range, 14; // FIXME: this should be a const
     registercmd chr(ATCMD_SYMBOL) + "mute", strnpcinfo(0);
+    registercmd chr(ATCMD_SYMBOL) + "stfu", strnpcinfo(0) + "::OnSTFU";
+    registercmd chr(ATCMD_SYMBOL) + "areamute", strnpcinfo(0) + "::OnSTFU"; // alias of STFU
     end;
 }
