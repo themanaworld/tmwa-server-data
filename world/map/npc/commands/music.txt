@@ -1,0 +1,34 @@
+-|script|@music|32767
+{
+    callfunc "argv_splitter";
+    if (GM < CMD_MUSIC && GM < G_SYSOP) goto L_GM;
+    if (@argv$[0] == "") goto L_Failed;
+
+    gmlog "@music " + @args$;
+    set .@find, array_search(@argv$[0], .find$);
+    if (.@find >= 0)
+        set @argv$[0], .replace$[max(.@find, 0)];
+    set .file$, @argv$[0];
+    areatimer 0, getmap(), (POS_X - .range), (POS_Y - .range), (POS_X + .range), (POS_Y + .range), 0, strnpcinfo(0)+"::OnPC";
+    message strcharinfo(0), "music : The music has ben temporarily changed.";
+    end;
+
+OnPC:
+    music .file$ + ".ogg";
+    end;
+
+L_Failed:
+    message strcharinfo(0), "music : You must specify a music file.";
+    end;
+
+L_GM:
+    message strcharinfo(0), "music : GM command is level "+ CMD_MUSIC +", but you are level " + GM;
+    end;
+
+OnInit:
+    setarray .find$, "this", "cave", "chilling", "clouds", "dimond", "explorers", "gy", "reid", "magick", "mystique", "night", "ride", "sail", "snow", "forest", "xmas";
+    setarray .replace$, "this", "cavesong", "chilling-environment", "clouds-calling", "dimonds-cove", "explorers-melody", "graveyard", "inquisitive-inn", "magick-real", "mystique-forest", "night-is-calling", "ride-of-the-valkyries", "sail-away", "snow-village", "the-forest", "white-christmas";
+    set .range, 14; // FIXME: make this a const
+    registercmd chr(ATCMD_SYMBOL) + "music", strnpcinfo(0);
+    end;
+}
