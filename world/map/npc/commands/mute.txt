@@ -45,10 +45,18 @@ OnSTFUPC:
 OnPCLoginEvent:
     if (#MUTE_UNTIL < 1) end;
     set .@s, (#MUTE_UNTIL - gettimetick(2));
+    if (.@s < 5) goto L_ClearMute;
     set .@m, .@s / 60;
     message strcharinfo(0), "Server : ##BYou have been muted for "+ max(1, .@m) +" minutes.";
     set MUTE_GLOBAL, 1;
     addtimer (.@s * 1000) + 100, strnpcinfo(0) + "::OnCheckMute";
+    end;
+
+L_ClearMute:
+    message strcharinfo(0), "Server : ##BYour mute has expired while you were away. You have been automatically unmuted.";
+    if ((#MUTE_UNTIL - gettimetick(2)) >= (0 - 900))
+        wgm "=> Player `"+ strcharinfo(0) +"` has been automatically unmuted."; // only send if unmuted 15 minutes ago or less
+    set #MUTE_UNTIL, 0;
     end;
 
 OnCheckMute:
