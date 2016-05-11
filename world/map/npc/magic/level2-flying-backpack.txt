@@ -22,10 +22,12 @@
     set @plugh_time, (@spellpower*500)+5000, @target_id;
     sc_start SC_FLYING_BACKPACK, @plugh_time, 0, @target_id;
     message @args$, "Backpack : Your backpack is lifted by a mystical force; you no longer feel it pressing on your back.";
-    addtimer @plugh_time, strnpcinfo(0)+"::OnEnd", @target_id;
+    set @plugh_future, gettimetick(0) + @plugh_time - 100, @target_id;
+    addtimer @plugh_time - 100, strnpcinfo(0)+"::OnEnd", @target_id;
     end;
 
 OnEnd:
+    if (gettimetick(0) - @plugh_future < 0) end;
     if (sc_check(SC_FLYING_BACKPACK) != 1) end;
     message strcharinfo(0), "Backpack : Your backpack is no longer levitating.";
     misceffect FX_MAGIC_GENERIC, strcharinfo(0);
