@@ -1,0 +1,57 @@
+-|script|@warp|32767
+{
+    callfunc "argv_splitter";
+    if (@argv$[3] == "" && @argv$[2] == "" && @argv$[1] != "" && @argv[1] < 2)
+        set @argv$[3], @argv$[1];
+
+    set .@n$, if_then_else(@argv$[3] != "", "char", "") + "warp";
+    if (GM < CMD_WARP && GM < G_SYSOP) goto L_GM; // check if you can use it on self
+    set .@target_id, BL_ID;
+    if (@argv$[3] != "") set .@target_id, getcharid(3, @argv$[3]);
+    if (@argv$[3] != "" && !(isloggedin(.@target_id))) goto L_Failed; // do NOT fallback to self
+    if (@argv$[3] != "" && GM < CMD_CHARWARP && GM < G_SYSOP) goto L_GM; // when target is not self, use charwarp permission
+
+    if (@argv$[0] == "")
+        set @argv$[0], getmap();
+
+    setarray @map_anchor$[0], "", "", "", "";
+    callfunc "map2anchor";
+
+    gmlog "@"+.@n$+" " + @args$;
+    if (.@target_id != BL_ID)
+        message strcharinfo(0), .@n$+" : The operation succeeded.";
+
+    set @GMWARP_map$, @map_anchor$[0];
+    set @GMWARP_x, if_then_else(@argv[1] > 1, @argv[1], @map_anchor$[1]);
+    set @GMWARP_y, if_then_else(@argv[2] > 1, @argv[2], @map_anchor$[2]);
+    addtimer 0, strnpcinfo(0) + "::OnWarp", .@target_id;
+
+    if (@map_anchor$[3] == "no" && @knows_anchors < 1)
+        goto L_SuggestAnchors;
+    end;
+
+L_SuggestAnchors:
+    message strcharinfo(0), .@n$+" : The warp command has been improved. You might want to consider using [@@https://www.themanaworld.org/index.php/Dev:GM_Commands/anchors|map anchors@@].";
+    set @knows_anchors, 1;
+    end;
+
+OnWarp:
+    warp @GMWARP_map$, @GMWARP_x, @GMWARP_y;
+    set @GMWARP_map$, "";
+    set @GMWARP_x, 0;
+    set @GMWARP_y, 0;
+    end;
+
+L_Failed:
+    message strcharinfo(0), .@n$+" : Impossible to attach to the target player. Did you try putting the name in \"quotation marks\"?";
+    end;
+
+L_GM:
+    message strcharinfo(0), .@n$+" : GM command is level "+ if_then_else(@argv$[1] != "", CMD_CHARWARP, CMD_WARP) +", but you are level " + GM;
+    end;
+
+OnInit:
+    registercmd chr(ATCMD_SYMBOL) + "warp", strnpcinfo(0);
+    registercmd chr(ATCMD_SYMBOL) + "charwarp", strnpcinfo(0);
+    end;
+}
