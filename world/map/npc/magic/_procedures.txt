@@ -26,11 +26,14 @@ OnClear:
 // this function is call()-only
 function|script|magic_checks
 {
+    set .@flags, getarg(0);
+    set .@nonmagic, .@flags & (1<<0);
+
     if(HIDDEN) goto L_Hidden; // can not cast with @hide
     if(@_M_BLOCK == 2) goto L_Login; // login warmup
     if(@_M_BLOCK) goto L_Blocked; // check if last debuff ended
     if(Hp < 1) goto L_Dead; // can not cast when dead
-    if (MATK1 < 1) goto L_Greybar; // can not cast with a grey mana bar
+    if (MATK1 < 1 && .@nonmagic < 1) goto L_Greybar; // can not cast with a grey mana bar
     return 0;
 
 L_Hidden:
