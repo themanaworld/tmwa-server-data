@@ -2,9 +2,9 @@
 
 018-3,75,123,0|script|#DemonMineBookcase1|400
 {
-    set @state, ((QUEST_Hurnscald & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    set QL_Demon_mask, ((QUEST_Hurnscald & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
 
-    if (@state == 0) goto L_Search;
+    if (QL_Demon_mask == 0) goto L_Search;
 
     mes "You see nothing different about the bookcase.";
     mes "Do you want to search it again anyways?";
@@ -52,17 +52,12 @@ L_Search:
     mes "";
     mes "You begin to wonder if you read that list right.";
     next;
-    if (@state != 0)
+    if (QL_Demon_mask != 0)
         goto L_Close;
-    set @state, 1;
-    callsub S_Update_Mask;
+    set QL_Demon_mask, 1;
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     close;
 
-S_Update_Mask:
-    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_2_MASK)) | (@state << NIBBLE_2_SHIFT);
-    return;
 }

@@ -2,10 +2,10 @@
 
 013-3,71,21,0|script|#DemonMineBarrier1#_M|32767,1,0
 {
-    set @state, ((QUEST_Hurnscald & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    set QL_Demon_mask, ((QUEST_Hurnscald & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
 
-    if (@state >= 2) goto L_End;
-    if (@state == 1 && countitem("Soul") >= 1) goto L_Has_Soul;
+    if (QL_Demon_mask >= 2) goto L_End;
+    if (QL_Demon_mask == 1 && countitem("Soul") >= 1) goto L_Has_Soul;
 
     message strcharinfo(0), "Barrier : ##3A barrier around the opening pushes you back as you approach.";
 
@@ -14,16 +14,11 @@
 
 L_Has_Soul:
     message strcharinfo(0), "Barrier : ##3The barrier around the opening allows you passage.";
-    set @state, 2;
-    callsub S_Update_Mask;
+    set QL_Demon_mask, 2;
     delitem "Soul", 1;
     goto L_End;
 
 L_End:
-    set @state, 0;
     end;
 
-S_Update_Mask:
-    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_2_MASK)) | (@state << NIBBLE_2_SHIFT);
-    return;
 }
