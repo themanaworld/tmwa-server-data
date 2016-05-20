@@ -9,8 +9,15 @@
 {
     set QL_Inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
 
+    if ((GM >= DBG_HINNAK || debug) && getequipid(equip_head) == 647)
+        goto L_DeveloperBoard;
+
     if (QL_Inspector == 10) goto L_NohMask;
     goto L_No_NohMask;
+
+L_DeveloperBoard:
+    callfunc "HinnakDebug";
+    close;
 
 L_No_NohMask:
     set QL_Hinnak, ((QUEST_Hurnscald & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
@@ -247,4 +254,35 @@ L_NohMask_Satchel:
 L_Close:
     close;
 
+}
+
+function|script|HinnakDebug
+{
+    goto L_Menu;
+
+L_Menu:
+    menu
+        "Show Quest State", L_ShowState,
+        "Set Quest State", L_SetState,
+        "Reset", L_Reset,
+        "Nothing, close.", L_Close;
+
+L_ShowState:
+    mes "The value of the quest variable QL_Hinnak is currently " + QL_Hinnak + ".";
+    goto L_Menu;
+
+L_SetState:
+    mes "What state do you want?";
+    input @quest_state;
+    set QL_Hinnak, @quest_state;
+    mes "Set to " + QL_Hinnak;
+    goto L_Menu;
+
+L_Reset:
+    set QL_Hinnak, 0;
+    mes "Reset!";
+    goto L_Menu;
+
+L_Close:
+    close;
 }
