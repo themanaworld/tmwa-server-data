@@ -9,14 +9,12 @@ function|script|ClearVariables
     callsub S_Vincent;
     callsub S_Sandra;
     callsub S_Desert;
-    callsub S_Bandit;
     callsub S_Tutorial;
     callsub S_Heathin;
     callsub S_Remove_Skills;
     callsub S_FixBank;
     callsub S_Angus;
     callsub S_Flags;
-    callsub S_Bitmask;
     callsub S_BlueSage;
 
     callsub S_Easter;
@@ -196,25 +194,6 @@ S_Angus:
     set QUEST_clothdyer_state, 0;
     return;
 
-S_Bitmask:
-    // move Scythe quest into bitmasked variable QUEST_Hurnscald
-    if (QUEST_Scythe_state)
-        set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_1_MASK)) | (QUEST_Scythe_state << NIBBLE_1_SHIFT);
-    set QUEST_Scythe_state, 0;
-
-    // move Demon Mask quest into bitmasked variable QUEST_Hurnscald
-    if (QUEST_demon_mines)
-        set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_2_MASK)) | (QUEST_demon_mines << NIBBLE_2_SHIFT);
-    set QUEST_demon_mines, 0;
-
-    // move Inspector quest into bitmasked variable QUEST_Hurnscald
-    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-    if (Inspector > @inspector)
-        set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (Inspector << NIBBLE_3_SHIFT);
-    set Inspector, 0;
-    set @inspector, 0;
-    return;
-
 S_BlueSage:
     if (QUEST_BlueSage & (1 << 7))
         set QUEST_BlueSage, QUEST_BlueSage & ~((1<<5)|(1<<6)|(1<<7));
@@ -369,14 +348,6 @@ S_Bernard_Mikhail: // move Bernard and Mikhail subquest into Nibble 0 of QUEST_S
     if(!TMW_QUEST || TMW_QUEST > 6) goto S_Return;
     set QUEST_SouthTulimshar, (QUEST_SouthTulimshar & ~(NIBBLE_0_MASK) | (TMW_Quest << NIBBLE_0_SHIFT));
     set TMW_Quest, 0;
-    return;
-
-S_Bandit: // move Bandit subquest into Nibble 0 of QUEST_Hurnscald
-    if(!TMW_QUEST) goto S_Return;
-    set @bandit, TMW_Quest - 40;
-    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@bandit << NIBBLE_0_SHIFT));
-    set TMW_Quest, 40;
-    set @bandit, 0;
     return;
 
 L_Deprecated:

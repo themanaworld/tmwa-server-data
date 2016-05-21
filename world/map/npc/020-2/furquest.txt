@@ -13,20 +13,17 @@
         "Nothing.", L_Close;
 
 L_ShowState:
-    set @wg_state, ((QL_Furquest & BYTE_0_MASK) >> BYTE_0_SHIFT);
-    mes "Current State is " + @wg_state;
+    mes "Current State is " + QL_FURQUEST;
     goto L_Close;
 
 L_SetState:
     mes "What state do you want?";
-    input @wg_state;
-    callfunc "setWGState";
-    mes "Set to " + @wg_state;
+    input QL_FURQUEST;
+    mes "Set to " + QL_FURQUEST;
     goto L_Close;
 
 L_Reset:
-    set @wg_state, 0;
-    callfunc "setWGState";
+    set QL_FURQUEST, 0;
     mes "Reset!";
     goto L_Close;
 
@@ -43,28 +40,27 @@ OnInit:
     set @CUTFUR_EXP, 10;
     set @FINEDRESS_COTTON_CLOTHS, 20;
     set @FINEDRESS_GP, 20000;
-    set @wg_state, ((QL_Furquest & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
 
-    if (@wg_state == 1) goto L_State_0_3;
-    if (@wg_state == 2) goto L_State_1;
-    if (@wg_state == 3) goto L_State_2;
-    if (@wg_state == 4) goto L_State_4;
-    if (@wg_state == 5) goto L_State_4_success;
-    if (@wg_state == 6) goto L_State_6;
-    if (@wg_state == 7) goto L_State_11;
-    if (@wg_state == 8) goto L_State_12;
-    if (@wg_state >= 9 && @wg_state < 11) goto L_State_13;
-    if (@wg_state == 11) goto L_State_14;
-    if (@wg_state == 12) goto L_State_14_AA;
-    if (@wg_state == 13) goto L_State_15;
-    if (@wg_state > 13 && @wg_state < 16) goto L_State_15_Repeat;
-    if (@wg_state == 16) goto L_State_16;
-    if (@wg_state > 16 && @wg_state < 20) goto L_State_16_Repeat;
-    if (@wg_state == 20) goto L_State_17;
-    if (@wg_state == 21) goto L_State_17_AskItems;
-    if (@wg_state == 22) goto L_State_17_PBD;
-    if (@wg_state >= 23) goto L_State_18;
+    if (QL_FURQUEST == 1) goto L_State_0_3;
+    if (QL_FURQUEST == 2) goto L_State_1;
+    if (QL_FURQUEST == 3) goto L_State_2;
+    if (QL_FURQUEST == 4) goto L_State_4;
+    if (QL_FURQUEST == 5) goto L_State_4_success;
+    if (QL_FURQUEST == 6) goto L_State_6;
+    if (QL_FURQUEST == 7) goto L_State_11;
+    if (QL_FURQUEST == 8) goto L_State_12;
+    if (QL_FURQUEST >= 9 && QL_FURQUEST < 11) goto L_State_13;
+    if (QL_FURQUEST == 11) goto L_State_14;
+    if (QL_FURQUEST == 12) goto L_State_14_AA;
+    if (QL_FURQUEST == 13) goto L_State_15;
+    if (QL_FURQUEST > 13 && QL_FURQUEST < 16) goto L_State_15_Repeat;
+    if (QL_FURQUEST == 16) goto L_State_16;
+    if (QL_FURQUEST > 16 && QL_FURQUEST < 20) goto L_State_16_Repeat;
+    if (QL_FURQUEST == 20) goto L_State_17;
+    if (QL_FURQUEST == 21) goto L_State_17_AskItems;
+    if (QL_FURQUEST == 22) goto L_State_17_PBD;
+    if (QL_FURQUEST >= 23) goto L_State_18;
 
     mes "\"This goes up, this goes left...\"";
     next;
@@ -103,8 +99,7 @@ L_State_0_2:
 L_State_Accept:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Thanks so much.\"";
-    set @wg_state, 1;
-    callfunc "setWGState";
+    set QL_FURQUEST, 1;
     goto L_Close;
 
 L_State_0_3:
@@ -169,8 +164,7 @@ L_State_0_9:
     set Zeny, Zeny + 500;
     mes "[Agostine, The Legendary Tailor]";
     mes "\"This is a little reward for your help. Take 500 GP, my friend!\"";
-    set @wg_state, 2;
-    callfunc "setWGState";
+    set QL_FURQUEST, 2;
     goto L_Close;
 
 L_State_neg:
@@ -199,8 +193,7 @@ L_State_2:
     mes "\"Well, Winter Gloves are so fashionable for their lovable fur!";
     mes "Only the best furs can be used for these gloves!";
     mes "But, as you see, I am a tailor, not a hunter! So, why don't you bring me the best fluffy's fur you can find?\"";
-    set @wg_state, 3;
-    callfunc "setWGState";
+    set QL_FURQUEST, 3;
     next;
     menu
         "You are crazy! I won't kill any animal for this!", L_Close,
@@ -209,8 +202,7 @@ L_State_2:
 L_State_3:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Remember, I want the best of fur!\"";
-    set @wg_state, 4;
-    callfunc "setWGState";
+    set QL_FURQUEST, 4;
     goto L_Close;
 
 L_State_4:
@@ -248,8 +240,7 @@ L_State_4_success:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"It's perfect! Perfect! Good job, my friend! I will prepare your gloves right now!\"";
     next;
-    set @wg_state, 5;
-    callfunc "setWGState";
+    set QL_FURQUEST, 5;
     goto L_State_5;
 
 L_State_5:
@@ -266,8 +257,7 @@ L_State_5_pay:
     if (@inventorylist_count == 100) goto L_TooMany;
     set Zeny, Zeny - 15000;
     getitem "WinterGloves", 1;
-    set @wg_state, 6;
-    callfunc "setWGState";
+    set QL_FURQUEST, 6;
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Here they are. You will have the most fashionable hands in the world!\"";
     goto L_Close;
@@ -294,8 +284,7 @@ L_State_10:
     mes "\"Perfect! For satisfying your request I need another perfect White Fur";
     mes "and a pair of Boots, like those you can find in the mines.";
     mes "They will make you lovely, my friend!\"";
-    set @wg_state, 7;
-    callfunc "setWGState";
+    set QL_FURQUEST, 7;
     goto L_Close;
 
 L_State_11:
@@ -333,8 +322,7 @@ L_State_11_success:
     next;
     mes "[Agostine, The Legendary Tailor]";
     mes "\"This one is good enough, my friend. Good job.\"";
-    set @wg_state, 8;
-    callfunc "setWGState";
+    set QL_FURQUEST, 8;
     goto L_State_12;
 
 L_State_12:
@@ -353,8 +341,7 @@ L_State_12_pay:
     set Zeny, Zeny - 15000;
     delitem "Boots", 1;
     getitem "FurBoots", 1;
-    set @wg_state, 9;
-    callfunc "setWGState";
+    set QL_FURQUEST, 9;
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Enjoy your new boots, my friend!\"";
     goto L_Close;
@@ -424,8 +411,7 @@ L_Next2:
         "It will never happen. I won't waste my time.", L_Close;
 
 L_State_14_Accept:
-    set @wg_state, 12;
-    callfunc "setWGState";
+    set QL_FURQUEST, 12;
     goto L_Close;
 
 L_State_14_AA:
@@ -465,8 +451,7 @@ L_Next4:
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Hurry back my friend!\"";
 
-    set @wg_state, 14;
-    callfunc "setWGState";
+    set QL_FURQUEST, 14;
 
     goto L_Close;
 
@@ -508,8 +493,7 @@ L_Next6:
         "... I'll take a nap first.", L_Close;
 
 L_Next7:
-    set @wg_state, 17;
-    callfunc "setWGState";
+    set QL_FURQUEST, 17;
 
     message strcharinfo(0), "Agostine gives you a folio containing his designs, that you put in a hidden compartment in your backpack.";
     mes "Agostine gives you a folio containing his designs, that you put in a hidden compartment in your backpack.";
@@ -550,8 +534,7 @@ L_State_17_AskItems:
         "Here you are!", L_State_17_GiveItems;
 
 L_Next9:
-    set @wg_state, 21;
-    callfunc "setWGState";
+    set QL_FURQUEST, 21;
     goto L_Close;
 
 L_State_17_NoItems:
@@ -564,8 +547,7 @@ L_State_17_GiveItems:
     if (countitem ("CottonCloth") < @FINEDRESS_COTTON_CLOTHS)
         goto L_State_17_NoItems;
     delitem "CottonCloth", @FINEDRESS_COTTON_CLOTHS;
-    set @wg_state, 22;
-    callfunc "setWGState";
+    set QL_FURQUEST, 22;
 
     mes "[Agostine, The Legendary Tailor]";
     mes "\"Great now just a little cloth here........\"";
@@ -622,8 +604,7 @@ L_Next11:
 
     set Zeny, Zeny - @FINEDRESS_GP;
     getitem "FineDress", 1;
-    set @wg_state, 23;
-    callfunc "setWGState";
+    set QL_FURQUEST, 23;
     goto L_Close;
 
 L_State_17_NoMoney:
@@ -645,11 +626,5 @@ L_State_18:
     goto L_Close;
 
 L_Close:
-    set @wg_state, 0;
     close;
-}
-function|script|setWGState
-{
-    set QL_Furquest, (QL_Furquest & ~(BYTE_0_MASK) | (@wg_state << BYTE_0_SHIFT));
-    return;
 }

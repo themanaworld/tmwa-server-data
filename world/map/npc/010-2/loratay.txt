@@ -9,20 +9,17 @@
         "Nothing.", L_Close;
 
 L_ShowState:
-    set @wg_state, ((QUEST_WG_state & BYTE_0_MASK) >> BYTE_0_SHIFT);
-    mes "Current State is " + @wg_state;
+    mes "Current State is " + QL_FURQUEST;
     goto L_Close;
 
 L_SetState:
     mes "What state do you want?";
-    input @wg_state;
-    callfunc "setWGState";
-    mes "Set to " + @wg_state;
+    input QL_FURQUEST;
+    mes "Set to " + QL_FURQUEST;
     goto L_Close;
 
 L_Reset:
-    set @wg_state, 0;
-    callfunc "setWGState";
+    set QL_FURQUEST, 0;
     mes "Reset!";
     goto L_Close;
 
@@ -44,20 +41,19 @@ OnInit:
     set @FINEDRESS_COCOONS, 180;
     set @SORCERER_ROBE_SEW_ZENY, 25000;
     set @SORCERER_ROBE_NUM_COTTON_CLOTH, 2;
-    set @wg_state, ((QUEST_WG_state & BYTE_0_MASK) >> BYTE_0_SHIFT);
 
     if (@loratay_asking_robe == 1) goto L_ExamineSR;
-    if (@wg_state == 10) goto L_agostine_menu;
-    if (@wg_state == 11 || @wg_state == 12) goto L_regular_intro;
-    if (@wg_state == 13) goto L_intro;
-    if (@wg_state == 14) goto L_show_materials;
-    if (@wg_state == 15) goto L_search_items;
-    if (@wg_state == 16) goto L_retrieve_design;
-    if (@wg_state == 17) goto L_bringing_design;
-    if (@wg_state == 18) goto L_wait_dress_finished;
-    if (@wg_state == 19) goto L_dress_finished;
-    if (@wg_state >= 20 && @wg_state < 23) goto L_deliver_dress;
-    if (@wg_state >= 23) goto L_regular_intro;
+    if (QL_FURQUEST == 10) goto L_agostine_menu;
+    if (QL_FURQUEST == 11 || QL_FURQUEST == 12) goto L_regular_intro;
+    if (QL_FURQUEST == 13) goto L_intro;
+    if (QL_FURQUEST == 14) goto L_show_materials;
+    if (QL_FURQUEST == 15) goto L_search_items;
+    if (QL_FURQUEST == 16) goto L_retrieve_design;
+    if (QL_FURQUEST == 17) goto L_bringing_design;
+    if (QL_FURQUEST == 18) goto L_wait_dress_finished;
+    if (QL_FURQUEST == 19) goto L_dress_finished;
+    if (QL_FURQUEST >= 20 && QL_FURQUEST < 23) goto L_deliver_dress;
+    if (QL_FURQUEST >= 23) goto L_regular_intro;
 
     set @t, rand(3);
     if (@t == 0) goto L_intro_0;
@@ -85,9 +81,9 @@ L_intro_over:
     set @agostine_msg0$, "";
     set @agostine_msg1$, "";
 
-    if (@wg_state >= 1)
+    if (QL_FURQUEST >= 1)
         set @agostine_msg0$, "Do you know Agostine?";
-    if ((@wg_state >= 9) && (countitem("FurBoots")))
+    if ((QL_FURQUEST >= 9) && (countitem("FurBoots")))
         set @agostine_msg1$, "Can you make fur boots, like Agostine?";
 
     menu
@@ -117,7 +113,7 @@ L_hello_2:
     goto L_Close;
 
 L_agostine_0:
-    if (@wg_state < 1)
+    if (QL_FURQUEST < 1)
         goto L_Close;
     mes "She shoots an incensed glare at you.";
     mes "\"Ah, Agostine!  The 'legendary tailor'!  Now who has not heard of him, been inspired by him!  Such charisma!  Such popularity!  Such unprecedented lack of talent!\"";
@@ -128,7 +124,7 @@ L_agostine_0:
     goto L_Close;
 
 L_agostine_1:
-    if ((@wg_state < 9) || (countitem (655) == 0))
+    if ((QL_FURQUEST < 9) || (countitem (655) == 0))
         goto L_Close;
     mes "[Lora Tay the Seamstress]";
     mes "She glares at your boots, her lips forming barely more than a thin line.  Deep furrows form above her brows.";
@@ -141,12 +137,11 @@ L_agostine_1:
     mes "[Lora Tay the Seamstress]";
     mes "Angry red spots begin to form on her cheeks.";
     mes "\"Get those... things out of my sight before I forget myself!\"";
-    if (@wg_state == 9) goto L_Next13;
+    if (QL_FURQUEST == 9) goto L_Next13;
     goto L_Close;
 
 L_Next13:
-    set @wg_state, 10;
-    callfunc "setWGState";
+    set QL_FURQUEST, 10;
     goto L_Close;
 
 L_agostine_menu:
@@ -166,7 +161,7 @@ L_agostine_menu:
         "No, none, really.", L_agostine_5;
 
 L_agostine_2:
-    if ((@wg_state < 9) || (countitem("WinterGloves") == 0))
+    if ((QL_FURQUEST < 9) || (countitem("WinterGloves") == 0))
         goto L_Close;
     mes "[Lora Tay the Seamstress]";
     mes "Lora inspects your gloves, shock apparent on her face.";
@@ -241,7 +236,7 @@ L_regular_intro:
     mes "[Lora Tay the Seamstress]";
     mes "\"Ah, you again.  Is there anything in particular you need?\"";
     next;
-    if (@wg_state == 12)
+    if (QL_FURQUEST == 12)
         goto L_main_menu2;
     goto L_main_menu;
 
@@ -249,8 +244,7 @@ L_give_water:
     if (countitem("BottleOfWater") == 0)
         goto L_no_water;
     delitem "BottleOfWater", 1;
-    set @wg_state, 11;
-    callfunc "setWGState";
+    set QL_FURQUEST, 11;
 
     set @xpval, 50000;
 
@@ -268,7 +262,7 @@ L_give_water:
     mes "\"If HE can sew petty every-day items for ordinary peasants, then so can I.  Very well, is there anything in particular that you need made?  I shall show you how a proper seamstress operates!\"";
     next;
 
-    if (@wg_state == 12)
+    if (QL_FURQUEST == 12)
         goto L_main_menu2;
     goto L_main_menu;
 
@@ -336,8 +330,7 @@ L_Next2:
     mes "\"Well it depends what he wants from me.";
     mes "Go see Agostine, ask him what he's planning and I will think about it.\"";
 
-    set @wg_state, 13;
-    callfunc "setWGState";
+    set QL_FURQUEST, 13;
     goto L_Close;
 
 L_intro:
@@ -387,8 +380,7 @@ L_search_items:
         @FINEDRESS_COCOONS+" silk cocoons for a dress? Find somebody else.", L_end;
 
 L_Next5:
-    set @wg_state, 15;
-    callfunc "setWGState";
+    set QL_FURQUEST, 15;
     goto L_Close;
 
 L_not_enough_items:
@@ -400,8 +392,7 @@ L_give_items:
     if (countitem ("SilkCocoon") < @FINEDRESS_COCOONS)
         goto L_not_enough_items;
     delitem "SilkCocoon", @FINEDRESS_COCOONS;
-    set @wg_state, 16;
-    callfunc "setWGState";
+    set QL_FURQUEST, 16;
 
     mes "[Lora Tay the Seamstress]";
     mes "\"Great, now I can spin the silk threading and fix this mess made of these fine materials.";
@@ -430,8 +421,7 @@ L_Next6:
     mes "\"Wonderful, this dress design is magnificent!";
     mes "I am done with the threading but I will now need to sew these materials together into the design.\"";
     next;
-    set @wg_state, 18;
-    callfunc "setWGState";
+    set QL_FURQUEST, 18;
     goto L_wait_dress_finished;
 
 L_wait_dress_finished:
@@ -446,8 +436,7 @@ L_wait_dress_finished:
     goto L_Close;
 
 L_dress_finished:
-    set @wg_state, 19;
-    callfunc "setWGState";
+    set QL_FURQUEST, 19;
     mes "[Lora Tay the Seamstress]";
     mes "\"Well it was difficult seaming with such fragile materials.";
     mes "But I have done it. The design is finished except for one part of it.\"";
@@ -470,8 +459,7 @@ L_Next7:
         "Okay, can't wait to see the finished product! Thanks for your help!", L_Next8;
 
 L_Next8:
-    set @wg_state, 20;
-    callfunc "setWGState";
+    set QL_FURQUEST, 20;
     goto L_Close;
 
 L_deliver_dress:
@@ -1065,6 +1053,5 @@ L_CleanSR:
     goto L_Close;
 
 L_Close:
-    set @wg_state, 0;
     close;
 }

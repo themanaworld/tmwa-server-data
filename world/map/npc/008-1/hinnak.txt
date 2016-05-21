@@ -7,12 +7,11 @@
 
 008-1,101,30,0|script|Hinnak|142
 {
-    set QL_Inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
 
     if ((GM >= DBG_HINNAK || debug) && getequipid(equip_head) == 647)
         goto L_DeveloperBoard;
 
-    if (QL_Inspector == 10) goto L_NohMask;
+    if (QL_INSPECTOR == 10) goto L_NohMask;
     goto L_No_NohMask;
 
 L_DeveloperBoard:
@@ -20,10 +19,9 @@ L_DeveloperBoard:
     close;
 
 L_No_NohMask:
-    set QL_Hinnak, ((QUEST_Hurnscald & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
 
-    if (QL_Hinnak == 1) goto L_Exchange;
-    if (QL_Hinnak == 2) goto L_ThanksAgain;
+    if (QL_HINNAK == 1) goto L_Exchange;
+    if (QL_HINNAK == 2) goto L_ThanksAgain;
     if (getequipid(equip_head) == 751) goto L_Intro_Hat;
 
     mes "[Farmer Hinnak]";
@@ -60,7 +58,7 @@ L_Help:
     mes "[Farmer Hinnak]";
     mes "\"Yes, you look quite fast. Maybe you can catch some of them. That will pay them a lesson.";
     mes "Slay some of them and bring me 10 of their antennae.\"";
-    set QL_Hinnak, 1;
+    set QL_HINNAK, 1;
     next;
     menu
         "Sure, I'm on my way", L_Close,
@@ -94,7 +92,7 @@ L_Exchange_Exchange:
         goto L_Exchange_TooMany;
     delitem "PinkAntenna", 10;
     getitem "Scythe", 1;
-    set QL_Hinnak, 2;
+    set QL_HINNAK, 2;
     mes "[Farmer Hinnak]";
     mes "\"Thank you very much. I've got something for you. My old scythe. Maybe you can use it as a weapon. It is a bit cumbersome but its strikes are deadly.\"";
     goto L_Close;
@@ -258,30 +256,30 @@ L_Close:
 
 function|script|HinnakDebug
 {
-    goto L_Menu;
+    goto L_Debug;
 
-L_Menu:
+L_Debug:
+    mes "The value of the quest variable QL_HINNAK is currently " + QL_HINNAK + ".";
+    mes "If state 0, quest don't start.";
+    mes "If state 1, quest started, you need 10 pink antenna.";
+    mes "if state 2, quest finished, you got the scythe.";
+    if (debug)
     menu
-        "Show Quest State", L_ShowState,
         "Set Quest State", L_SetState,
         "Reset", L_Reset,
         "Nothing, close.", L_Close;
-
-L_ShowState:
-    mes "The value of the quest variable QL_Hinnak is currently " + QL_Hinnak + ".";
-    goto L_Menu;
+    close;
 
 L_SetState:
     mes "What state do you want?";
-    input @quest_state;
-    set QL_Hinnak, @quest_state;
-    mes "Set to " + QL_Hinnak;
-    goto L_Menu;
+    input QL_HINNAK;
+    mes "Set to " + QL_HINNAK;
+    goto L_Debug;
 
 L_Reset:
-    set QL_Hinnak, 0;
+    set QL_HINNAK, 0;
     mes "Reset!";
-    goto L_Menu;
+    goto L_Debug;
 
 L_Close:
     close;
