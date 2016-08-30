@@ -12,7 +12,7 @@
     if (distance(BL_ID, @target_id) >= (((sqrt(@spellpower)*12)+@spellpower)/100)+2) end;
     if (sc_check(SC_HALT_REGENERATE,@target_id)) end;
     if (getequipid(equip_head, @args$) == 888) end; // magic gm top hat
-    set .@needed, get(MaxHp, @target_id) - get(Hp, @target_id);
+    set @needed, get(MaxHp, @target_id) - get(Hp, @target_id);
     goto L_Pay;
 
 L_Pay:
@@ -23,14 +23,14 @@ L_Pay:
     misceffect FX_MAGIC_WHITE, @args$; // on target
 
     set .@fraction, max(80, 200 - (Vit + (@spellpower/10))); // pay at least 40%
-    set .@payment, (.@needed * .@fraction) / 200;
+    set .@payment, (@needed * .@fraction) / 200;
     set .@available, Hp - (MaxHp / 20);
-    set .@heal_value, if_then_else(.@payment < .@available, .@needed+1-1, (.@available * 200) / .@fraction); // FIXME / XXX why the f do I need to do +1-1 ?
+    set @heal_value, if_then_else(.@payment < .@available, @needed+1-1, (.@available * 200) / .@fraction); // FIXME / XXX why the f do I need to do +1-1 ?
     if (.@payment > .@available) set .@payment, .@available;
 
 
     set @mexp, min(.exp_gain, .@payment/100);
-    callfunc "gain_heal_xp";
+    void call("gain_heal_xp", @heal_value, 1, 1, 3);
     callfunc "magic_exp";
 
     set .@dark, getskilllv(SKILL_MAGIC_DARK) >= 2; // true if dark magic user
@@ -40,13 +40,13 @@ L_Pay:
 
     set .@thp, get(Hp, @target_id);
     if (.@thp < 1) end;
-    set Hp, .@thp + .@heal_value, @target_id;
+    set Hp, .@thp + @heal_value, @target_id;
     end;
 
 L_Mouboo:
     set @spell, 1;
     callfunc "QuestMoubooHeal";
-    set .@needed, 1000;
+    set @needed, 1000;
     goto L_Pay;
 
 OnInit:
@@ -55,7 +55,5 @@ OnInit:
     void call("magic_register");
     set .level, 2;
     set .exp_gain, 1; // this is MAX possible exp
-    set .heal_xp_value_divisor, 1;
-    set .base_exp_factor, 3;
     end;
 }
