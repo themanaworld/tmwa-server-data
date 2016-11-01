@@ -369,8 +369,7 @@ L_Sweets_Menu:
                 @menuitems$[1], L_Sweets_Menu_Select,
                 @menuitems$[2], L_Sweets_Menu_Select,
                 @menuitems$[3], L_Sweets_Menu_Select,
-                @menuitems$[4], L_Sweets_Menu_Select,
-                @menuitems$[5], L_Sweets_Menu_Select;
+                @menuitems$[4], L_Sweets_Menu_Select;
 
 L_Sweets_Menu_Select:
         set @menu, @menu -1;
@@ -521,6 +520,8 @@ L_Gaks_Little_Shop:
 
 L_Shop_Inventory:
         menu
+                "The Mask of Blinking Evil (15,000 credits)", L_Buy_BlinkingEvil,
+                "Tell me about the Mask of Blinking Evil ", L_Info_BlinkingEvil,
                 "Opera Mask (9,000 credits)", L_Buy_OperaMask,
                 "Tell me about the Opera Mask.", L_Info_OperaMask,
                 "Jester Mask (7,000 credits)", L_Buy_JesterMask,
@@ -538,6 +539,33 @@ L_Shop_Inventory:
                 "Bone Arrow (1 credit)", L_Buy_BoneArrow,
                 "Tell me about Bone Arrows.", L_Info_BoneArrow,
                 "Nothing today, thanks.", L_Close;
+
+L_Buy_BlinkingEvil:
+        if (hween16_credits < 15000) goto L_Too_Few_Credits;
+        mes "[Gak]";
+        mes "";
+        mes "\"A little expensive, but you will not regret it \"";
+        next;
+        mes "[Gak]";
+        mes "";
+        mes "\"Are you sssure you want to buy the Masssk of Blinking Evil ?\"";
+        next;
+        menu
+                "Yes.", L_Buy_BlinkingEvil_Yes,
+                "No.", L_Gaks_Little_Shop;
+
+L_Buy_BlinkingEvil_Yes:
+        getinventorylist;
+        if (@inventorylist_count == 100) goto L_Full_Inventory;
+        if (hween16_credits < 15000) goto L_Too_Few_Credits;
+        set hween16_credits, hween16_credits - 15000;
+        set hween16_paid, hween16_paid + 15000;
+        getitem "BlinkingEvil", 1;
+        mes "[Gak]";
+        mes "";
+        mes "\"Enjoy it!\"";
+        next;
+        goto L_Gaks_Little_Shop;
 
 L_Buy_OperaMask:
         if (hween16_credits < 9000) goto L_Too_Few_Credits;
@@ -784,6 +812,15 @@ L_Too_Few_Credits:
         mes "\"Are you trying to kid me? You haven't enough creditsss for that!\"";
         next;
         goto L_Gaks_Little_Shop;
+
+L_Info_BlinkingEvil:
+       mes "[Gak]";
+       mes "\" blah blah blah \"";
+       next;
+       mes "{Gak]";
+       mes "\" blah blah blah \"";
+       next;
+       goto L_Gaks_Little_Shop;
 
 L_Info_OperaMask:
         mes "[Gak]";
