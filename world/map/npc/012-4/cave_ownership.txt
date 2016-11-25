@@ -1,0 +1,130 @@
+// Author: Wushin
+// Terranite Cave Ownership
+012-4,478,180,0|script|Barclay|355
+{
+    mes "[Barclay]";
+    mes "\"\"";
+    end;
+}
+// 10x10 area timers that are started by players
+-|script|TCO|32767
+{
+    explode .n, strnpcinfo(0), "#";
+    if (getcharid(1) == 0) goto L_NeedParty;
+    if (get(.TCO[.n[1]], "TCO") == getcharid(1)) goto L_Owned;
+    if (.cancel) goto L_ReCharge;
+    if (.focusing) end; // a party is currently focusing on this totem
+    if (gettimetick(2) - .protected < 4) goto L_Protect; // a party is currently protecting this totem
+    set .focusing, getcharid(1);
+    message strcharinfo(0), "The Fey Anomaly begins to glow";
+    set .cnt, gettimetick(2);
+    set .cancel, 0;
+    addnpctimer 1000, strnpcinfo(0)+"::OnFocus"; // make glow
+    addnpctimer get(.length, "TCO") * 1000, strnpcinfo(0)+"::OnFocusDone";
+    end;
+
+L_Owned:
+    message strcharinfo(0), "The Fey Anomaly glows in your presense";
+    end;
+
+L_ReCharge:
+    message strcharinfo(0), "The Fey Anomaly needs to recharge.";
+    end;
+
+L_NeedParty:
+    message strcharinfo(0), "You need to be in a party.";
+    end;
+
+L_Protect:
+    message strcharinfo(0), "This Fey Anomaly is currently being protected.";
+    end;
+
+OnFocus:
+    if (!.focusing) end;
+    if (.cancel) goto L_CancelEffect;
+    specialeffect 11;
+    areatimer 0, strnpcinfo(3), getnpcx()-10, getnpcy()-10, getnpcx()+10, getnpcy()+10, 1000, strnpcinfo(0)+"::OnPulse";
+    if (gettimetick(2) - .cnt > 3) goto L_Missing;
+    addnpctimer 1000, strnpcinfo(0)+"::OnFocus";
+    end;
+
+L_CancelEffect:
+    specialeffect 26;
+    addnpctimer 1000, strnpcinfo(0)+"::OnFocus";
+    end;
+
+L_Missing:
+    set .cancel, 1;
+    specialeffect 30;
+    end;
+
+OnPulse:
+    if (isdead()) end;
+    if (.focusing != getcharid(1) || .cancel) end; // someone else clicked it
+    if (isin(strnpcinfo(3), getnpcx()-10, getnpcy()-10, getnpcx()+10, getnpcy()+10) < 1) end;
+    misceffect 8, strcharinfo(0);
+    set .cnt, gettimetick(2);
+    end;
+
+OnProtect:
+    if (.focusing || .cancel) end; // another party claimed this totem while it wasn't protected
+    if (gettimetick(2) - .protected < 4) specialeffect 21;
+    areatimer 0, strnpcinfo(3), getnpcx()-10, getnpcy()-10, getnpcx()+10, getnpcy()+10, 1000, strnpcinfo(0)+"::OnProtectCheck";
+    addnpctimer 1000, strnpcinfo(0)+"::OnProtect";
+    end;
+
+OnProtectCheck:
+    if (isdead()) end;
+    if (get(.TCO[.n[1]], "TCO") != getcharid(1)) end;
+    if (isin(strnpcinfo(3), getnpcx()-10, getnpcy()-10, getnpcx()+10, getnpcy()+10) < 1) end;
+    misceffect 8, strcharinfo(0);
+    set .protect, gettimetick(2);
+    end;
+
+OnFocusDone:
+    if (!.focusing) end;
+    if (.cancel) goto L_Cancel;
+    specialeffect 40;
+    set .protected, gettimetick(2); // the totem can not be taken while party members protect it
+    addnpctimer 1000, strnpcinfo(0)+"::OnProtect"; // protection
+    set .TCO[.n[1]], .focusing, "TCO";
+    set .focusing, 0;
+    set .cancel, 0;
+    end;
+
+L_Cancel:
+    specialeffect 33;
+    set .focusing, 0;
+    set .cancel, 0;
+    end;
+
+OnInit:
+    setarray .TCO[0], 0; // init the array => TODO check if necessary
+    set .length, 20;
+    setarray .@mono, 481, 348, 124,  32,  44,
+                     115,  38,  48,  48, 177;
+    set .s, getarraysize(.@mono) / 2;
+    goto L_Loop;
+
+L_Loop:
+    if (puppet("012-4", .@mono[.@x], .@mono[.@x+.s], "Fey Anomaly#"+.@x, 204) < 1) mapexit;
+    set .@x, .@x + 1;
+    if (.@x < .s) goto L_Loop;
+    end;
+}
+function|script|CaveOwnershipBonus
+{
+    setarray .@prizes, 640, 4001, 4002, 4003, 4004, 4005, 4006, 4007;
+    goto L_Loop;
+
+L_Loop:
+    if ($@TCO$[.@loop] == strcharinfo(1))
+        set .@cnt, (.@cnt + 1);
+    set .@loop, (.@loop + 1);
+    if (.@loop < getarraysize($@TCO$))
+        goto L_Loop;
+    if (rand(100) > (91 - .@cnt))
+        getitem .@prizes[rand(getarraysize(.@prizes))], 1;
+    getexp ((BaseLevel / 10) * (.@cnt * (BaseLevel / 10))), 0;
+    return;
+}
