@@ -14,7 +14,10 @@ function|script|magic_register
     end;
 
 OnLogin:
-    set @_M_BLOCK, 1;
+    set @_M_BLOCK, 2;
+    //if (MAGIC_EXPERIENCE < 0)
+    //    set MAGIC_EXPERIENCE, 0; // bug fix
+    // ^ XXX: check if negative MAGIC_EXPERIENCE is desirable
     addtimer 10000, "Magic Timer::OnClear";
     end;
 
@@ -26,14 +29,35 @@ OnClear:
 // this function is call()-only
 function|script|magic_checks
 {
-    set .@r, 0;
-    if(HIDDEN) set .@r, 1; // can not cast with @hide
-    if(@_M_BLOCK) set .@r, 2; // check if last debuff ended
-    if(Hp < 1) set .@r, 3; // can not cast when dead
-    if (MATK1 < 1) set .@r, 4; // can not cast with a grey mana bar
-    if (.@r)
-        smsg SMSG_FAILURE, "Magic: Impossible to cast right now.";
-    return .@r;
+    set .@flags, getarg(0);
+    set .@nonmagic, .@flags & (1<<0);
+
+    if(HIDDEN) goto L_Hidden; // can not cast with @hide
+    if(@_M_BLOCK == 2) goto L_Login; // login warmup
+    if(@_M_BLOCK) goto L_Blocked; // check if last debuff ended
+    if(Hp < 1) goto L_Dead; // can not cast when dead
+    if (MATK1 < 1 && .@nonmagic < 1) goto L_Greybar; // can not cast with a grey mana bar
+    return 0;
+
+L_Hidden:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast while hidden!";
+    return 1;
+
+L_Blocked:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast while a cooldown is in effect. Please wait.";
+    return 2;
+
+L_Dead:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast while dead!";
+    return 3;
+
+L_Greybar:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast with 0 m.atk. This might happen if your mana bar is grey. Some equipment can reduce your m.atk.";
+    return 4;
+
+L_Login:
+    smsg SMSG_FAILURE, "Magic: Impossible to cast for 10s after logging in.";
+    return 5;
 }
 
 function|script|elt_damage
@@ -97,10 +121,20 @@ L_Perfect:
     return;
 }
 
+function|script|bit
+{
+    //0 name
+    //1 mask
+    //2 shift
+    //3 value
+
+    return ((getarg(0) & ~(getarg(1) << getarg(2))) | ((getarg(3) & getarg(1)) << getarg(2)));
+}
+
 function|script|magic_exp
 {
-    set @last_index, (MAGIC_EXPERIENCE & BYTE_2_MASK) >> BYTE_2_SHIFT;
-    set @last_exp, (MAGIC_EXPERIENCE & (BYTE_0_MASK | BYTE_1_MASK)) >> BYTE_0_SHIFT;
+    set @last_index, (MAGIC_EXPERIENCE >> 16) & 0xFF;
+    set @last_exp, MAGIC_EXPERIENCE & 0xFFFF;
 
     //debugmes "old spell index: " + @last_index;
     //debugmes "new spell index: " + .index;
@@ -115,12 +149,11 @@ L_Gain:
     //                                 remove this line then players can cast a spell with
     //                                 no cost, then a spell with a reagents, then another
     //                                 spell with no costs and still get the exp
-    set @new_exp, @last_exp + .exp_gain;
-    if(@new_exp > (BYTE_0_MASK | BYTE_1_MASK)) set @new_exp, (BYTE_0_MASK | BYTE_1_MASK);
+    set @new_exp, min(0xFFFF, @last_exp + .exp_gain);
     //debugmes "old magic exp: "+ @last_exp;
     //debugmes "new magic exp: "+ @new_exp;
-    set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE &~ (BYTE_0_MASK | BYTE_1_MASK)) | (@new_exp << BYTE_0_SHIFT);
-    set MAGIC_EXPERIENCE, (MAGIC_EXPERIENCE &~ BYTE_2_MASK) | (.index << BYTE_2_SHIFT);
+    set MAGIC_EXPERIENCE, call("bit", MAGIC_EXPERIENCE, 0xFFFF, 0, @new_exp);
+    set MAGIC_EXPERIENCE, call("bit", MAGIC_EXPERIENCE, 0xFF, 16, .index);
     goto L_Return;
 
 L_Return:
@@ -147,25 +180,29 @@ L_Return:
 
 function|script|gain_heal_xp
 {
-    set @last_heal_xp, ((SCRIPT_XP & SCRIPT_HEALSPELL_MASK) >>  SCRIPT_HEALSPELL_SHIFT);
-    if ((@target_id != BL_ID) && ((.@heal_value / .heal_xp_value_divisor) > (((10 + @last_heal_xp) + rand(@last_heal_xp + 1)) + rand(@last_heal_xp + 1))))
-        goto L_Block;
-    goto L_Return;
+    set .@value, getarg(0);
+    set .@gain, getarg(1);
+    set .@value_divisor, getarg(2);
+    set .@base_xp_factor, getarg(3);
 
-L_Block:
-    set @heal_xp, (@last_heal_xp + @mexp);
-    if (@heal_xp > SCRIPT_HEALSPELL_MASK)
-        set @heal_xp, SCRIPT_HEALSPELL_MASK;
-    set SCRIPT_XP, (SCRIPT_XP & ~(SCRIPT_HEALSPELL_MASK) | (@heal_xp << SCRIPT_HEALSPELL_SHIFT));
-    goto L_Gain_Xp;
+    set .@last_heal_xp, ((MAGIC_EXPERIENCE >> 24) & 0xFF);
 
-L_Gain_Xp:
-    set @heal_exp, .@heal_value;
-    if (.@heal_value > get(HEALXP, @target_id))
-        set @heal_exp, get(HEALXP, @target_id);
-    getexp (.base_exp_factor * @heal_exp), 0;
-    goto L_Return;
+    if ((.@value / .@value_divisor) <= (10 + .@last_heal_xp + rand(.@last_heal_xp + 1) + rand(.@last_heal_xp + 1)))
+        goto L_Return;
+
+    set .@heal_xp, min(0xFF, .@last_heal_xp + .@gain); // XXX: maybe switch to 7F
+
+    getexp (.@base_xp_factor * .@heal_xp), 0;
+
+    // FIXME: extract_heal_xp
+
+    //debugmes "old heal exp: "+ .@last_heal_xp;
+
+    set MAGIC_EXPERIENCE, call("bit", MAGIC_EXPERIENCE, 0xFF, 24, .@heal_xp);
+
+    //debugmes "new heal exp: "+ ((MAGIC_EXPERIENCE >> 24) & 0xFF);
+    return 1;
 
 L_Return:
-    return;
+    return 0;
 }

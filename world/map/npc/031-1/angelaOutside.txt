@@ -36,8 +36,6 @@ OnInit:
 
 031-1,79,24,0|script|Angela|195,15,15
 {
-    set @minlevel, 70;
-
     if (QL_CINDY == 3) goto L_Please_Visit_Again;
     if (QL_CINDY > 1 && QL_CINDY < 5) goto L_Please_Visit;
     if (QL_CINDY == 1) goto L_Please_Help;
@@ -47,7 +45,7 @@ OnInit:
     next;
     mes "\"It's terrible, oh my dear child!\"";
     next;
-    if (countitem("ConcentrationPotion") > 0 && BaseLevel >= @minlevel && QL_CINDY == 6)
+    if (countitem("ConcentrationPotion") > 0 && BaseLevel >= .minlevel && QL_CINDY == 6)
         goto L_Menu_Potion;
 
     menu
@@ -55,7 +53,7 @@ OnInit:
         "Leave", L_Close;
 
 OnTouch:
-    if(BaseLevel >= @minlevel && !QL_CINDY)
+    if(BaseLevel >= .minlevel && QL_CINDY < 1)
         set QL_CINDY, 5;
     end;
 
@@ -80,7 +78,7 @@ L_Whining:
     mes "She is crying and sobbing.";
     next;
     mes "It seems she is too upset to tell you anything helpful. If she would just calm down and concentrate a bit...";
-    if(BaseLevel >= @minlevel) goto L_GetQuest;
+    if(BaseLevel >= .minlevel) goto L_GetQuest;
     goto L_Close;
 
 L_GetQuest:
@@ -139,6 +137,9 @@ L_Please_Visit_Again:
     goto L_Close;
 
 L_Close:
-    set @minlevel, 0;
     close;
+
+OnInit:
+    set .minlevel, 70;
+    end;
 }
