@@ -42,18 +42,18 @@
 
     if (QUEST_Airlia == @Q_STATUS_INITIAL_FETCH_REWARDED) goto L_Rewarded;
     if (QUEST_Airlia == @Q_STATUS_HELP_AIRLIA) goto L_Fetch;
-    if (QUEST_Graveyard_Caretaker > @Q_STATUS_RECIEVED_FIRST_LETTER) goto L_intro;
+    if (QL_CARETAKER > @Q_STATUS_RECIEVED_FIRST_LETTER) goto L_intro;
     goto L_Caretaker;
 
 L_Caretaker:
     mes "[Airlia]";
     mes "\"Greetings. Do you need a housing permit, or to license your mount?\"";
     next;
-    if (QUEST_Graveyard_Caretaker < @Q_STATUS_RECIEVED_FIRST_LETTER)
+    if (QL_CARETAKER < @Q_STATUS_RECIEVED_FIRST_LETTER)
         menu
             "Sorry, no.", L_Next,
             "My what?", L_mount;
-    if (QUEST_Graveyard_Caretaker == @Q_STATUS_RECIEVED_FIRST_LETTER)
+    if (QL_CARETAKER == @Q_STATUS_RECIEVED_FIRST_LETTER)
         menu
             "Sorry, no.", L_Next,
             "I have a letter from your father.", L_first_reward,
@@ -79,7 +79,7 @@ L_first_reward:
         mes "[" + @LETTER_REWARD_EXP_INITIAL + " experience points]";
     set Zeny, Zeny + @LETTER_REWARD_GOLD_INITIAL;
     getexp @LETTER_REWARD_EXP_INITIAL, 0;
-    set QUEST_Graveyard_Caretaker, @Q_STATUS_DELIVERED_FIRST_LETTER;
+    set QL_CARETAKER, @Q_STATUS_DELIVERED_FIRST_LETTER;
     close;
 
 L_later_rewards:
@@ -91,7 +91,7 @@ L_later_rewards:
         mes "[" + @LETTER_REWARD_EXP + " experience points]";
     set Zeny, Zeny + @LETTER_REWARD_GOLD;
     getexp @LETTER_REWARD_EXP, 0;
-    set QUEST_Graveyard_Caretaker, @Q_STATUS_HAS_NO_NEW_LETTER;
+    set QL_CARETAKER, @Q_STATUS_HAS_NO_NEW_LETTER;
     close;
 
 L_intro:
@@ -101,15 +101,15 @@ L_intro:
 
     // CASE REMOVED:
     // This step is pointless and just forces the player to make a selection that doesn't effect anything.
-    // ALSO it misses the case where QUEST_Graveyard_Caretaker == 3, in this case it proceeds to the message without wasting player clicks
-    // Removing this check will make execution the same for QUEST_Graveyard_Caretaker == 3 and QUEST_Graveyard_Caretaker == 4
+    // ALSO it misses the case where QL_CARETAKER == 3, in this case it proceeds to the message without wasting player clicks
+    // Removing this check will make execution the same for QL_CARETAKER == 3 and QL_CARETAKER == 4
     // If for some reason this is desireable, uncomment it and make sure to catch the extra case mentioned
     //
-    //if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NO_NEW_LETTER)
+    //if (QL_CARETAKER == @Q_STATUS_HAS_NO_NEW_LETTER)
     //    menu
     //        "...", -;
 
-    if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
+    if (QL_CARETAKER == @Q_STATUS_HAS_NEW_LETTER)
         menu
             "...", L_Next3,
             "Oh, I have a letter from him.", L_later_rewards;
@@ -178,11 +178,11 @@ L_Fetch:
     // has a letter but has not completed the initial fetch
     // and is prevented from turing in the letter until the fetch is completed.
 
-    if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
+    if (QL_CARETAKER < @Q_STATUS_HAS_NEW_LETTER)
         menu
             "Yes.", L_Fetch_initial_reward,
             "No.", L_Close;
-    if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
+    if (QL_CARETAKER == @Q_STATUS_HAS_NEW_LETTER)
         menu
             "I have another letter from your father.", L_later_rewards,
             "Yes.", L_Fetch_initial_reward,
@@ -232,11 +232,11 @@ L_Rewarded:
     mes "\"Thank you for your help.\"";
     next;
     mes "\"Have you collected the " + @FETCH_AMOUNT + " " + getitemlink(@FETCH_LABEL$) + "s?\"";
-    if (QUEST_Graveyard_Caretaker < @Q_STATUS_HAS_NEW_LETTER)
+    if (QL_CARETAKER < @Q_STATUS_HAS_NEW_LETTER)
         menu
             "Yes.", L_Fetch_later_rewards,
             "No.", L_Close;
-    if (QUEST_Graveyard_Caretaker == @Q_STATUS_HAS_NEW_LETTER)
+    if (QL_CARETAKER == @Q_STATUS_HAS_NEW_LETTER)
         menu
             "I have another letter from your father.", L_later_rewards,
             "Yes.", L_Fetch_later_rewards,
