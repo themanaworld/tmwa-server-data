@@ -5,10 +5,10 @@
 
 function|script|MultiQuiz
 {
-    if((getarraysize(@quiz_answers$) != getarraysize(@quiz_questions$)) ||
+    if((getarraysize(@quiz_answers$[0]) != getarraysize(@quiz_questions$[0])) ||
         (@quiz_answers$[0] == "") || (@quiz_questions$[0] == "")) goto L_ArrayError;
     set @setindex, 1;
-    set @index, rand(0,(getarraysize(@quiz_answers$) - 1));
+    set @index, rand(0,(getarraysize(@quiz_answers$[0]) - 1));
     set @question$, @quiz_questions$[@index];
     mes "\""+ @question$ + "\"";
     next;
@@ -19,25 +19,24 @@ function|script|MultiQuiz
 L_ArrayError:
     if(@quiz_answers$[0] == "") debugmes "@quiz_answers$ is empty";
     if(@quiz_questions$[0] == "") debugmes "@quiz_questions$ is empty";
-    if(getarraysize(@quiz_answers$) != getarraysize(@quiz_questions$)) debugmes "Size of @quiz_answers$ is not equal to size of @quiz_questions$";
-    mapexit;
+    if(getarraysize(@quiz_answers$[0]) != getarraysize(@quiz_questions$[0])) debugmes "Size of @quiz_answers$ is not equal to size of @quiz_questions$";
+    close;
 }
 
 function|script|Quiz
 {
     if((@choices_nr < 1) || (@choices_nr > 8)) set @choices_nr, 3;
-    if(@choices_nr > getarraysize(@quiz_answers$)) set @choices_nr, getarraysize(@quiz_answers$);
+    if(@choices_nr > getarraysize(@quiz_answers$[0])) set @choices_nr, getarraysize(@quiz_answers$[0]);
     if(@quiz_answers$[0] == "") goto L_ArrayError;
     set @success, 0;
     if(@setindex < 1) set @index, @answer;
     set @good, rand(0,(@choices_nr - 1));
-    setarray @choices$, "";
-    cleararray @choices$, "", getarraysize(@choices$);
+    cleararray @choices$, "", getarraysize(@choices$[0]);
     set @loop, 0;
     goto L_Shuffle;
 
 L_Shuffle:
-    set @nindex, rand(0,(getarraysize(@quiz_answers$) - 1));
+    set @nindex, rand(0,(getarraysize(@quiz_answers$[0]) - 1));
     if(@nindex == @index) goto L_Shuffle; // do not get the good definition
     set @loop2, 0;
     goto L_Search;
