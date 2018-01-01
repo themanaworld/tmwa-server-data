@@ -37,4 +37,4 @@ world/map/news.txt world/map/news.html: tools/news.py tools/_news_colors.py worl
 
 news: world/map/news.txt world/map/news.html
 updates:
-	cd tools/client/ ; ./make-updates ; ./make-music.sh ; echo ">> Done!"
+	cd tools/client/ ; chmod a+rx ./make-updates ; ./make-updates ; ./make-music.sh ; echo ">> Done!"
