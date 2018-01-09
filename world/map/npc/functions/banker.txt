@@ -213,7 +213,24 @@ L_Balance:
     mes "[" + @npcname$ + "]";
     mes "\"Your current bank balance is:";
     mes #BankAccount + " GP\"";
+    if (!(#BankOptions & OPT_BANK_CLOSE) || (#BankAccount >= 10000000 &&
+        !(#BankOptions & OPT_BANK_GOTSHADE))) next;
+    if (#BankAccount >= 10000000 && !(#BankOptions & OPT_BANK_GOTSHADE))
+        goto L_GiveShade;
     if (#BankOptions & OPT_BANK_CLOSE) goto L_Return;
+    goto L_Start;
+
+L_GiveShade:
+    mes "\"Oh\"";
+    next;
+    mes "\"It seems you managed to amass quite a fortune!\"";
+    next;
+    mes "\"Thank you for using our services. Please accept this little gift.\"";
+    set #BankOptions, #BankOptions | OPT_BANK_GOTSHADE;
+    getitem "CashiersShade", 1;
+    if (#BankOptions & OPT_BANK_CLOSE) goto L_Return;
+    next;
+    npcaction 9; // clear npc dialog
     goto L_Start;
 
 L_Nev:
