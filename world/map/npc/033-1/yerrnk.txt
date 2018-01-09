@@ -4,7 +4,7 @@
 
     set @yeti_level, 70;
 
-    if (@state == 9) goto L_Done;
+    if (@state >= 9) goto L_Done;
     if (@state == 8) goto L_Yeti_Success;
     if (@state == 7) goto L_Hunt_Yeti;
     if (@state == 6) goto L_Warrior;
@@ -160,6 +160,7 @@ L_Yeti_Success:
     goto L_Close;
 
 L_Done:
+    if (countitem("Antlers") > 0 && @state < 10) goto L_AntlerHat;
     mes "Yerrnk smiles at you.";
     mes "[Yerrnk]";
     mes "\"Welcome back, great warrior.\"";
@@ -167,6 +168,30 @@ L_Done:
         "What's the reason you came here?",L_Mission,
         "Can you explain the raging ability to me?",L_Skill,
         "(Leave)",L_Close;
+
+L_AntlerHat:
+    mes "Yerrnk grins.";
+    next;
+    mes "[Yerrnk]";
+    mes "\"Welcome back, great warrior.\"";
+    next;
+    mes "\"I could turn your " + getitemlink("Antlers") + " into a " + getitemlink("AntlerHat") + " for the modest price of 5,000,000 GP.\"";
+    if (Zeny >= 5000000)
+        menu
+            "Please do!", L_AntlerHat_Proceed;
+    menu
+        "Sorry, I'm broke", L_Close;
+
+L_AntlerHat_Proceed:
+    mes "[Yerrnk]";
+    mes "\"There you go.\"";
+    set @state, 10;
+    callsub S_Update_Mask;
+    delitem "Antlers", 1;
+    if (Zeny < 5000000) goto L_Close;
+    set Zeny, Zeny - 5000000;
+    getitem "AntlerHat", 1;
+    goto L_Close;
 
 L_Close:
     set @state, 0;
