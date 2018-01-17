@@ -11,7 +11,10 @@ OnInit:
 }
 function|script|GmWarp
 {
-    warp "028-1", 110, 30;
+    if ($@GM_EVENT_WARP == 1) warp "028-1", 110, 30;
+    if ($@GM_EVENT_WARP == 2) warp "028-1", 119, 74;
+    if ($@GM_EVENT_WARP == 3) warp "028-3", 68, 36;
+    if ($@GM_EVENT_WARP == 4) warp "001-3", 0, 0;
     return;
 }
 function|script|GmDebug
@@ -19,11 +22,20 @@ function|script|GmDebug
     mes "[GM Debug]";
     mes "What do you want to do?";
     menu
-        "Open Event Portals.", L_GmStart,
+        "Open Event Portals.", L_GmChoose,
         "Close Event Portals.", L_GmStop,
         "Disguise.", L_Disguise;
 
+L_GmChoose:
+    mes "Choose a destination:";
+    menu
+        "GM Island (entrance)", L_GmStart,
+        "GM Island (auditorium)", L_GmStart,
+        "GM Island (cave)", L_GmStart,
+        "Tulimshar Arena", L_GmStart;
+
 L_GmStart:
+    set $@GM_EVENT_WARP, @menu;
     enablenpc "Gm Event#1";
     enablenpc "Gm Event#2";
     enablenpc "Gm Event#3";
