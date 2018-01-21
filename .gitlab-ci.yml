@@ -1,0 +1,29 @@
+stages:
+- deploy
+
+image: ubuntu:rolling
+before_script:
+  - uname -a
+
+pages:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: clone
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_DEPTH: "1"
+    UPDATE_DIR: "../../../public"
+    UPDATE_HTTP: "none"
+    CC: "clang"
+  script:
+  - apt-get -qq update
+  - apt-get install -qq -y make clang zip zlib1g-dev zlibc python
+  - mkdir public
+  - make updates
+  - make news
+  - cp -v world/map/news.txt public/
+  artifacts:
+    paths:
+    - public
+  only:
+  - web
+  - pushes
