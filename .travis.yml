@@ -1,0 +1,29 @@
+sudo: false
+dist: trusty
+language: c
+compiler: clang
+
+addons:
+  apt:
+    packages:
+    - zlibc
+
+env:
+  - UPDATE_DIR=../../../public UPDATE_HTTP=none
+
+script:
+  - mkdir public
+  - make updates
+  - make news
+  - cp -v world/map/news.txt public/
+  - echo '<title>static update server</title><a href="Legacy.zip">Legacy.zip</a><br><a href="Legacy-music.zip">Legacy-music.zip</a><br><a href="news.txt">news.txt</a><br><a href="resources.xml">resources.xml</a>' > public/index.html
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN  # Set in travis-ci.org dashboard, marked secure
+  keep-history: false
+  local-dir: public
+  target-branch: gh-pages
+  on:
+    branch: stable
