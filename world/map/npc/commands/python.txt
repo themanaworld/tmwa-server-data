@@ -1,0 +1,22 @@
+-|script|python-foot|32767
+{
+    if (GM < 40 && GM < G_SYSOP) end;
+    set @python[0], if_then_else(@args$ != "", getcharid(3, @args$), BL_ID);
+    if (@python[0] < 1 || !(isloggedin(@python[0]))) set @python[0], BL_ID; // fallback to self
+    if (distance(BL_ID, @python[0]) >= 14) end;
+    if (gettimetick(2) - @python[1] < 3) end;
+
+    set @python[1], gettimetick(2);
+    misceffect 69, @python[0];
+    addtimer 380, strnpcinfo(0) + "::OnKill";
+    end;
+
+OnKill:
+    if (!(isloggedin(@python[0]))) end;
+    set Hp, 0, @python[0];
+    end;
+
+OnInit:
+    registercmd "#python", strnpcinfo(0);
+    end;
+}
