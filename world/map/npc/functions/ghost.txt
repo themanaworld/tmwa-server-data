@@ -1,0 +1,26 @@
+function|script|SpawnGhost
+{
+    if (BaseLevel >= 40 &&
+       (getmap() == "026-1" ||
+        getmap() == "027-1"))
+        goto L_Spawn;
+    return;
+
+L_Spawn:
+    set .@x, POS_X;
+    set .@y, POS_Y;
+
+    if   (!(iscollision(getmap(), .@x, .@y - 1))) set .@y, .@y - 1; // up
+    elif (!(iscollision(getmap(), .@x, .@y + 1))) set .@y, .@y + 1; // down
+    elif (!(iscollision(getmap(), .@x - 1, .@y))) set .@x, .@x - 1; // left
+    elif (!(iscollision(getmap(), .@x + 1, .@y))) set .@x, .@x + 1; // right
+    // else on the player
+
+    if (@GHOST_MAP$ != "")
+        killmonster @GHOST_MAP$, "~GH~" + getcharid(0);
+
+    set @GHOST_MAP$, getmap();
+    specialeffect2 39;
+    monster getmap(), .@x, .@y, strcharinfo(0), 1125, 1, "~GH~" + getcharid(0);
+    return;
+}
