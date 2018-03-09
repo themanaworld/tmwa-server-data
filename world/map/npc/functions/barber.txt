@@ -14,6 +14,13 @@ function|script|Barber
     if (getequipid(equip_head) == 647)
         goto L_Debug;
     callfunc "getHeadStyles";
+    set @hairOpts, 0;
+    set @colorOpts, 0;
+    set @menu, 0;
+    goto L_Main;
+
+L_MainClear:
+    clear;
     goto L_Main;
 
 L_Main:
@@ -21,13 +28,22 @@ L_Main:
     set @color, getlook(LOOK_HAIR_COLOR);
     set @style$, "Unknown";
     set @color$, "Unknown";
+
     if (@style >= 1 && @style <= 20)
         set @style$, @HairStyles$[(@style - 1)];
+
     if (@color == ((HC_WHITE - Class) + 1))
         set @color$, "Shocked White";
     set @color, (@color - (15 * (Class - 1)));
     if (@color >= 0 && @color <= 15)
         set @color$, @HairColors$[@color];
+
+    if (Sex == 0) set @gender$, " female";
+    elif (Sex == 1) set @gender$, " male";
+    elif (Class == 3 || Class == 6) set @gender$, "n";
+    else set @gender$, "";
+
+    mes "You are a" + @gender$ + " " + @species$ + ".";
     mes "Your current style is " + @style$ + " and your current color is " + @color$ + ".";
     set @style$, "";
     set @color$, "";
@@ -43,43 +59,44 @@ L_Gender:
         "Female.", L_Female,
         "Male.", L_Male,
         "Non-binary.", L_NonBinary,
-        "Nah, I'm fine", L_Done;
+        "Nah, I'm fine", L_MainClear;
 
 L_Female:
-    set @sex, 0;
-    goto L_Change;
+    set Sex, 0;
+    goto L_MainClear;
 
 L_Male:
-    set @sex, 1;
-    goto L_Change;
+    set Sex, 1;
+    goto L_MainClear;
 
 L_NonBinary:
-    set @sex, 3;
-    goto L_Change;
-
-L_Change:
-    if (Sex == @sex)
-        goto L_Already_Change;
-    set Sex, @sex;
-    return;
-
-L_Already_Change:
-    mes "\"Umm, you are that gender already.\"";
-    return;
+    set Sex, 3;
+    goto L_MainClear;
 
 L_Species:
-    menu
-        "Talpan", L_Species_next,
-        "Tritan", L_Species_next,
-        "Ifriton", L_Species_next,
-        //"Gispaan", L_Species_next,
-        //"Sparron", L_Species_next,
-        "Nah, I'm fine", L_Done;
+    if (countitem("SkeletonCharm") >= 1)
+        menu
+            "Talpan", L_Species_next,
+            "Tritan", L_Species_next,
+            "Ifriton", L_Species_next,
+            //"Gispaan", L_Species_next,
+            //"Sparron", L_Species_next,
+            "Undead", L_Species_next,
+            "Nah, I'm fine", L_MainClear;
+    //else
+        menu
+            "Talpan", L_Species_next,
+            "Tritan", L_Species_next,
+            "Ifriton", L_Species_next,
+            //"Gispaan", L_Species_next,
+            //"Sparron", L_Species_next,
+            "Nah, I'm fine", L_MainClear;
 
 L_Species_next:
+    if (@menu == 4) set @menu, 6;
     set Class, @menu;
     callfunc "fixHeadStyles";
-    return;
+    goto L_MainClear;
 
 L_Style:
     if(!@hairOpts) set @HairStyles$[getarraysize(@HairStyles$)], "Surprise me";
@@ -110,12 +127,10 @@ L_Style:
         @HairStyles$[21], L_MenuItems;
 
 L_MenuItems:
-    if (@menu == @style)
-        goto L_SameStyle;
     if(@menu == (getarraysize(@HairStyles$) - 1)) goto L_RandomStyle;
-    if(@menu >= getarraysize(@HairStyles$)) goto L_Done;
+    if(@menu >= getarraysize(@HairStyles$)) goto L_MainClear;
     setlook LOOK_HAIR_STYLE, @menu;
-    goto L_Main;
+    goto L_MainClear;
 
 L_RandomStyle:
     setarray @randomStyle[0], rand(1, (getarraysize(@HairStyles$) - 2));
@@ -125,12 +140,8 @@ L_RandomStyle:
     setarray @randomStyle[1], 0;
     menu
         "Surprise me once again", L_RandomStyle,
-        "Go back", L_Main,
+        "Go back", L_MainClear,
         "Goodbye", L_Done;
-
-L_SameStyle:
-    mes "Your hair already has that style.";
-    goto L_Main;
 
 L_Color:
     if(!@colorOpts) set @HairColors$[getarraysize(@HairColors$)], "Surprise me";
@@ -156,12 +167,10 @@ L_Color:
         @HairColors$[16], L_MenuItems1;
 
 L_MenuItems1:
-    if (@menu - 1 == @color)
-        goto L_SameColor;
     if(@menu == (getarraysize(@HairColors$) - 1)) goto L_RandomColor;
-    if(@menu >= getarraysize(@HairColors$)) goto L_Done;
+    if(@menu >= getarraysize(@HairColors$)) goto L_MainClear;
     setlook LOOK_HAIR_COLOR, ((@menu - 1) + (15 * (Class - 1)));
-    goto L_Main;
+    goto L_MainClear;
 
 L_RandomColor:
     setarray @randomColor[0], rand((15 * (Class - 1)), ((getarraysize(@HairColors$) - 3) + (15 * (Class - 1))));
@@ -171,12 +180,8 @@ L_RandomColor:
     setarray @randomColor[1], 0;
     menu
         "Surprise me once again", L_RandomColor,
-        "Go back", L_Main,
+        "Go back", L_MainClear,
         "Goodbye", L_Done;
-
-L_SameColor:
-    mes "You already have that color.";
-    goto L_Main;
 
 L_Done:
     // cleanup
