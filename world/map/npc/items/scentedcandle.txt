@@ -1,0 +1,31 @@
+-|script|ScentedCandle|32767
+{
+    end;
+
+OnEquip:
+    if (@scented_candle == 1) end;
+    goto L_Check;
+
+OnCheck:
+    if (getequipid(equip_head) != 5229) goto L_Removed;
+    goto L_Check;
+
+L_Check:
+    set @scented_candle, 1;
+    foreach 2, getmap(), (POS_X - 12), (POS_Y - 12), (POS_X + 12), (POS_Y + 12), strnpcinfo(0) + "::OnMob";
+    addtimer rand(2000), strnpcinfo(0) + "::OnCheck";
+    end;
+
+OnMob:
+    if (target(BL_ID, @target_id, 0x20) != 0x20) end; // line of sight
+    if (get(Class, @target_id) != 1131 && // mana bug
+        get(Class, @target_id) != 1055 && // butterfly
+        get(Class, @target_id) != 1049 && // bee
+        get(Class, @target_id) != 1088) end; // hyvern
+    aggravate @target_id;
+    end;
+
+L_Removed:
+    set @scented_candle, 0;
+    end;
+}
