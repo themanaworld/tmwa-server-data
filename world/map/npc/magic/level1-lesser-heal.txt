@@ -6,7 +6,7 @@
     set @target_id, getcharid(3, @args$);
     if (@target_id < 1 || !(isloggedin(@target_id)) || get(INVISIBLE, @target_id) == 1)
         set @target_id, BL_ID; // fallback to self
-    if (@args$ == "Mouboo" || @args$ == "mouboo") set @target_id, getnpcid("Mouboo");
+    if (@args$ == "Mouboo" || @args$ == "mouboo") goto L_Mouboo;
     set .@range, (((MATK1 + getskilllv(SKILL_MAGIC) + getskilllv(.school) + 10) / 100) + 2);
     if (distance(BL_ID, @target_id) >= .@range) end;
     if (PVP_CHANNEL != get(PVP_CHANNEL, @target_id) && get(PVP_CHANNEL, @target_id) != 0) end;
@@ -18,7 +18,6 @@
     set Sp, Sp - 6;
     misceffect FX_MAGIC_WHITE, strcharinfo(0);
     callfunc "magic_exp";
-    if (@args$ == "Mouboo" || @args$ == "mouboo") goto L_Mouboo;
     if (@target_id != BL_ID) goto L_NotMe;
     goto L_Continue;
 
@@ -39,7 +38,10 @@ OnSlowHeal:
     end;
 
 L_Mouboo:
-    mes "Mouboo : ##3##BYour spell seems to have no effect on the mouboo.";
+    set @target_id, getnpcid("Mouboo");
+    set .@range, (((MATK1 + getskilllv(SKILL_MAGIC) + getskilllv(.school) + 10) / 100) + 2);
+    if (distance(BL_ID, @target_id) >= .@range) end;
+    mes "Magic : ##3##BThis spell has no effect on animals.";
     close;
 
 OnInit:
