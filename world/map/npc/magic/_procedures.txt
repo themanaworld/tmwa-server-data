@@ -32,6 +32,7 @@ function|script|magic_checks
     set .@flags, getarg(0);
     set .@nonmagic, .@flags & (1<<0);
 
+    if (GM >= 50) goto L_Return; // event managers have no restrictions
     if(HIDDEN) goto L_Hidden; // can not cast with @hide
     if(@_M_BLOCK == 2) goto L_Login; // login warmup
     if(@_M_BLOCK) goto L_Blocked; // check if last debuff ended
@@ -58,6 +59,9 @@ L_Greybar:
 L_Login:
     smsg SMSG_FAILURE, "Magic: Impossible to cast for 10s after logging in.";
     return 5;
+
+L_Return:
+    return 0;
 }
 
 function|script|elt_damage
@@ -72,7 +76,7 @@ function|script|elt_damage
     if (!.@source) set .@source, getcharid(3);
 
     injure .@source, @target_id, (.@dmg * (100 - get(MDEF1, @target_id))) / 100;
-    misceffect getarg(4), @target_id;
+    if (getarg(4) != FX_NONE) misceffect getarg(4), @target_id;
     return;
 }
 

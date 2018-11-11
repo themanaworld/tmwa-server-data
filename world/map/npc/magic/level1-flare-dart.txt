@@ -10,7 +10,7 @@
     addtimer 500, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 10;
-    misceffect FX_MAGIC_BLACK, strcharinfo(0);
+    misceffect FX_MAGIC_DART_CAST, strcharinfo(0);
     setarray @flarspell[0],
         sqrt(@spellpower) * 5, //dmg
         (BaseLevel/3) + 5, // dmg bonus
@@ -21,8 +21,7 @@
 
 OnAttack:
     if (target(BL_ID, @target_id, 50) != 50) goto L_FreeRecast; // 0x20 | 0x02 | 0x10
-    misceffect FX_MAGIC_BLACK, strcharinfo(0);
-    void call("elt_damage", @flarspell[0], @flarspell[1], ELT_WATER, ELT_FIRE, FX_MAGIC_BLACK);
+    void call("elt_damage", @flarspell[0], @flarspell[1], ELT_WATER, ELT_FIRE, FX_NONE);
     set @flarspell[2], @flarspell[2] - 1;
     goto L_FreeRecast;
 
@@ -34,12 +33,12 @@ L_FreeRecast:
 OnDischarge:
     if (@flarspell[2] < 1) end;
     set @flarspell[2], 0;
-    misceffect FX_FIRE_BURST, strcharinfo(0);
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
     overrideattack;
     end;
 
 OnSetRecast:
-    overrideattack @flarspell[3], 4, ATTACK_ICON_GENERIC, 34, strnpcinfo(0)+"::OnAttack", @flarspell[2];
+    overrideattack @flarspell[3], 4, ATTACK_ICON_GENERIC, OVERRIDE_DART, strnpcinfo(0)+"::OnAttack", @flarspell[2];
     end;
 
 OnInit:

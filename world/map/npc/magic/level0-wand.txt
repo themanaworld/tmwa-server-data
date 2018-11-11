@@ -9,7 +9,7 @@
     // here we install
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 500, "Magic Timer::OnClear"; // set the new debuff
-    misceffect FX_MAGIC_GENERIC, strcharinfo(0);
+    misceffect FX_MAGIC_WAND_CAST, strcharinfo(0);
 
     callfunc "magic_exp";
     goto L_FreeRecast;
@@ -22,7 +22,7 @@ L_FreeRecast:
 OnDischarge:
     if (@wandspell[4] < 1) end;
     set @wandspell[4], 0;
-    misceffect FX_FIRE_BURST, strcharinfo(0);
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
     overrideattack;
     end;
 
@@ -34,7 +34,7 @@ OnAttack:
     if(target(BL_ID, @target_id, 22) != 22) goto L_FreeRecast; // 0x02 | 0x04 | 0x10
     if (Sp < @wandspell[1]) goto L_LowSp;
     set Sp, (Sp - @wandspell[1]);
-    void call("elt_damage", @wandspell[2],@wandspell[2],ELT_NEUTRAL,ELT_NEUTRAL,FX_MAGIC_RED);
+    void call("elt_damage", @wandspell[2],@wandspell[2],ELT_NEUTRAL,ELT_NEUTRAL,FX_NONE);
     set @wandspell[4], @wandspell[4] - 1;
     goto L_FreeRecast;
 
@@ -74,7 +74,7 @@ L_Failed:
 OnInit:
     setarray .Wands[0], 0, 758, 1171;
     setarray .WandsPwr[0], 0, 2, 1;
-    setarray .WandsAnim[0], 0, 35, 33;
+    setarray .WandsAnim[0], 0, OVERRIDE_WAND_STAFF, OVERRIDE_WAND_WAND;
     set .school, SKILL_MAGIC;
     set .invocation$, chr(MAGIC_SYMBOL) + "confringo"; // used in npcs that refer to this spell
     void call("magic_register");

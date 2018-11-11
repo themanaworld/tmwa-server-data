@@ -11,7 +11,7 @@
     addtimer 500, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 15;
-    misceffect FX_MAGIC_DARKRED, strcharinfo(0);
+    misceffect FX_MAGIC_TDART_CAST, strcharinfo(0);
     setarray @phlexspell[0],
         (sqrt(@spellpower) * 5), // elt damage
         ((BaseLevel/3) + 5), // elt damage bonus
@@ -25,8 +25,7 @@
 
 OnAttack:
     if (target(BL_ID, @target_id, 50) != 50) goto L_FreeRecast; // 0x20 | 0x02 | 0x10
-    misceffect FX_MAGIC_DARKRED, strcharinfo(0);
-    void call("elt_damage", @phlexspell[0], @phlexspell[1], ELT_NEUTRAL, ELT_POISON, FX_FIRE_BURST);
+    void call("elt_damage", @phlexspell[0], @phlexspell[1], ELT_NEUTRAL, ELT_POISON, FX_NONE);
     if(@target_id != BL_ID && isloggedin(@target_id)) // this is a dirty trick to check if the target is a player
         sc_start sc_poison, @phlexspell[4], @phlexspell[5], @target_id;
     set @phlexspell[3], @phlexspell[3] - 1;
@@ -40,12 +39,12 @@ L_FreeRecast:
 OnDischarge:
     if (@phlexspell[3] < 1) end;
     set @phlexspell[3], 0;
-    misceffect FX_FIRE_BURST, strcharinfo(0);
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
     overrideattack;
     end;
 
 OnSetRecast:
-    overrideattack @phlexspell[2], 4, ATTACK_ICON_GENERIC, 31, strnpcinfo(0)+"::OnAttack", @phlexspell[3];
+    overrideattack @phlexspell[2], 4, ATTACK_ICON_GENERIC, OVERRIDE_TDART, strnpcinfo(0)+"::OnAttack", @phlexspell[3];
     end;
 
 OnInit:

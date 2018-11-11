@@ -15,8 +15,7 @@ OnCast:
     addtimer 15000, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
     set Sp, Sp - 35;
-    misceffect FX_MAGIC_DARKRED, strcharinfo(0);
-    misceffect FX_PENTAGRAM_BUILDUP, strcharinfo(0);
+    misceffect FX_MAGIC_WICKED_CAST, strcharinfo(0);
     callfunc "magic_exp";
     set .@puppet$, "#"+strnpcinfo(0)+"#"+BL_ID;
     set .@puppet, puppet(getmap(), POS_X, POS_Y, .@puppet$, 127);
@@ -32,7 +31,7 @@ OnSummon:
     if (!(isloggedin(.master))) destroy;
     if(get(Hp, .master) < 1) destroy; // destroy if master is missing
     if(getmap(.master) != strnpcinfo(3)) destroy; // destroy if master left the map
-    specialeffect FX_PENTAGRAM_BURST;
+    specialeffect FX_MAGIC_WICKED_SPAWN;
     set .@i, 0;
     set .@x, getnpcx();
     set .@y, getnpcy();
@@ -44,7 +43,11 @@ OnDestroy:
     destroy;
 
 S_SummonAll:
-    summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, 1106, 2, .lifetime;
+    set .@rnd, rand(0, 9);
+
+    if   (.@rnd < 6) summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, 1106, 2, .lifetime;
+    elif (.@rnd < 9) summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, 1130, 2, .lifetime;
+    elif (.@rnd == 9) summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, 1013, 2, .lifetime;
     set .@i, .@i + 1;
     if (.@i < .count) goto S_SummonAll;
     destroy;

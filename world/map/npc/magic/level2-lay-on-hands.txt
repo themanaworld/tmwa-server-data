@@ -20,8 +20,8 @@ L_Pay:
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 500, "Magic Timer::OnClear"; // XXX should this be 0 ?
     set Sp, Sp - 10;
-    misceffect FX_MAGIC_WHITE, strcharinfo(0); // on caster
-    misceffect FX_MAGIC_WHITE, @args$; // on target
+    misceffect FX_MAGIC_LAY_CAST, strcharinfo(0); // on caster
+    misceffect FX_MAGIC_LAY_HIT, @args$; // on target
 
     if (get(Hp, @target_id) < 1) end;
 
@@ -38,7 +38,7 @@ L_Pay:
 
     set .@dark, getskilllv(SKILL_MAGIC_DARK) >= 2; // true if dark magic user
     set .@bad, (MaxHp/20)*(0-1);
-    if (.@dark) heal .@bad, 0;
+    if (.@dark && GM < 20) heal .@bad, 0;
     sc_start SC_HALT_REGENERATE, if_then_else(.@dark, 5000, 10000), 0;
 
     set .@thp, get(Hp, @target_id);
@@ -50,8 +50,8 @@ L_Mouboo:
     set @target_id, getnpcid("Mouboo");
     callfunc "adjust_spellpower";
     if (distance(BL_ID, @target_id) >= (((sqrt(@spellpower) * 12) + @spellpower) / 100) + 2) end;
-    misceffect FX_MAGIC_WHITE, strcharinfo(0); // on caster
-    misceffect FX_MAGIC_WHITE, @target_id; // on target
+    misceffect FX_MAGIC_LAY_CAST, strcharinfo(0); // on caster
+    misceffect FX_MAGIC_LAY_HIT, @target_id; // on target
     callfunc "QuestMoubooHeal";
     end;
 
