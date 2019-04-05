@@ -7,6 +7,47 @@
 {
     end;
 
+L_TMW15a:
+    if (gettime(7) == 2019) // It must be April 11st, 2019
+        goto L_TMW15b;
+    goto L_Finish;
+L_TMW15b:
+    if (gettime(6) == 4)
+        goto L_TMW15c;
+    goto L_Finish;
+L_TMW15c:
+    if (gettime(5) == 11)
+        goto L_TMW15d;
+    goto L_Finish;
+L_TMW15d:
+    if (gettimetick(2)-TUT_var > 2*7*86400 ) // player must be created at least 2 weeks ago
+        goto L_TMW15; // get the scheduled broadcast, if any
+    goto L_Finish;
+
+L_TMW15:
+    // We open a dialog
+    mes "This is The Mana World 15th Birthday!";
+    mes "We wanted to thank YOU for being part from our story!";
+    mes "";
+    mes "This gift box is a courtesy of the whole team.";
+    mes "What does it contains? Open it to find out!";
+    mes "";
+    mes "Also: After a developer meeting over IRC, we already have";
+    mes "a scheduled date for rEvolt release. It took a long time,";
+    mes "but the release is finally in sight, and the developers";
+    mes "expect to be able to finish it around ##BOctober 2019##b.";
+    mes "";
+    mes "The date is still a bit vague as there are several things";
+    mes "yet to complete - as we get closer to the date, we will be";
+    mes "able to predict better the exact date for this.";
+    set #TMW15, 1;
+    getitem 5999, 1;
+    goto L_Finish;
+L_Finish:
+    // add more here
+    set @login_event, 2;
+    close;
+
 OnPCLoginEvent:
     set @login_event, 1;
     callfunc "fixHeadStyles"; // convert headstyles
@@ -14,6 +55,13 @@ OnPCLoginEvent:
     callfunc "DisplayMOTD"; // send the motd to the client, if enabled
     callfunc "getBroadcast"; // get the scheduled broadcast, if any
     addtimer 0, "Magic Timer::OnLogin"; // prevent cast rate abuse
+
+    // This is a dirty hack for TMW 15th Anniversary
+    // Adding directly on this file with a close(); should not be done,
+    // but this is a legacy server, so no need to think in long term.
+    if (!#TMW15)
+        goto L_TMW15a;
+
     // add more here
     set @login_event, 2;
     end;
