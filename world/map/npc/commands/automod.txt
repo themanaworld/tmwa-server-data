@@ -1,0 +1,90 @@
+-|script|@automod|32767
+{
+    end;
+
+OnCall:
+    if (GM < CMD_AUTOMOD && GM < G_SYSOP) goto L_GM;
+    set @PREV_AUTOMOD, AUTOMOD;
+    if (@args$ == "") goto L_Info;
+    elif (@args$ == "off") goto L_Off;
+    elif (@args$ == "kill") goto L_Kill;
+    elif (@args$ == "move") goto L_Move;
+    elif (@args$ == "block") goto L_Block;
+    elif (@args$ == "kick") goto L_Kick;
+
+    message strcharinfo(0), "automod : invalid mode.";
+    goto L_Info;
+
+L_Off:
+    set AUTOMOD, 0;
+    set ##AUTOMOD, AUTOMOD;
+    message strcharinfo(0), "automod : mode changed to ##Boff##b";
+    // send a fixpos to remove the current collision, if any
+    if (@PREV_AUTOMOD == 3) set Sex, Sex;
+    end;
+
+L_Kill:
+    set AUTOMOD, 1;
+    set ##AUTOMOD, AUTOMOD;
+    message strcharinfo(0), "automod : mode changed to ##Bkill##b";
+    message strcharinfo(0), "automod : players sitting on you will automatically be killed and then moved.";
+    // send a fixpos to remove the current collision, if any
+    if (@PREV_AUTOMOD == 3) set Sex, Sex;
+    end;
+
+L_Move:
+    set AUTOMOD, 2;
+    set ##AUTOMOD, AUTOMOD;
+    message strcharinfo(0), "automod : mode changed to ##Bmove##b";
+    message strcharinfo(0), "automod : players sitting on you will automatically be moved.";
+    // send a fixpos to remove the current collision, if any
+    if (@PREV_AUTOMOD == 3) set Sex, Sex;
+    end;
+
+L_Block:
+    set AUTOMOD, 3;
+    set ##AUTOMOD, AUTOMOD;
+    message strcharinfo(0), "automod : mode changed to ##Bblock##b";
+    message strcharinfo(0), "automod : players will be unable to sit or walk over you while you are sitting. (experimental)";
+    set Sex, Sex;
+    end;
+
+L_Kick:
+    set AUTOMOD, 4;
+    set ##AUTOMOD, AUTOMOD;
+    message strcharinfo(0), "automod : mode changed to ##Bkick##b";
+    message strcharinfo(0), "automod : players sitting on you will automatically be kicked from the server.";
+    // send a fixpos to remove the current collision, if any
+    if (@PREV_AUTOMOD == 3) set Sex, Sex;
+    end;
+
+L_GM:
+    message strcharinfo(0), "automod : GM command is level "+ CMD_AUTOMOD +", but you are level " + GM;
+    end;
+
+L_Info:
+    if (AUTOMOD == 0)
+        message strcharinfo(0), "automod : current mode: ##Boff##b kill move block kick";
+    elif (AUTOMOD == 1)
+        message strcharinfo(0), "automod : current mode: off ##Bkill##b move block kick";
+    elif (AUTOMOD == 2)
+        message strcharinfo(0), "automod : current mode: off kill ##Bmove##b block kick";
+    elif (AUTOMOD == 3)
+        message strcharinfo(0), "automod : current mode: off kill move ##Bblock##b kick";
+    elif (AUTOMOD == 4)
+        message strcharinfo(0), "automod : current mode: off kill move block ##Bkick##b";
+    message strcharinfo(0), "automod : you can change mode by doing @automod (mode)";
+    end;
+
+OnPCLoginEvent:
+    if (GM >= CMD_AUTOMOD && ##AUTOMOD)
+        set AUTOMOD, ##AUTOMOD;
+    elif (##AUTOMOD)
+        set ##AUTOMOD, 0;
+    end;
+
+OnInit:
+    registercmd chr(ATCMD_SYMBOL) + "automod", strnpcinfo(0) + "::OnCall";
+    registercmd chr(ATCMD_SYMBOL) + "automode", strnpcinfo(0) + "::OnCall";
+    end;
+}
