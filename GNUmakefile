@@ -38,3 +38,6 @@ world/map/news.txt world/map/news.html: tools/news.py tools/_news_colors.py worl
 news: world/map/news.txt world/map/news.html
 updates:
 	cd tools/client/ ; ./make-updates.sh
+
+frob:
+	deno run --allow-read=world --allow-write=world/save tools/server/frob/index.ts $(items)
