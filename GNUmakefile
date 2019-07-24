@@ -31,11 +31,11 @@ indent-items: tools/aligncsv
 indent-mobs: tools/aligncsv
 	tools/aligncsv world/map/db/mob_db.txt
 
-world/map/news.txt world/map/news.html: tools/news.py tools/_news_colors.py world/map/news.d/* world/map/news.d/
+world/map/news.txt world/map/news.html world/map/news.rss world/map/news.json: tools/news.py tools/_news_colors.py world/map/news.d/* world/map/news.d/
 	tools/news.py world/map/ world/map/news.d/
-	chmod a+r world/map/news.txt world/map/news.html world/map/news.rss
+	chmod a+r world/map/news.txt world/map/news.html world/map/news.rss world/map/news.json
 
-news: world/map/news.txt world/map/news.html
+news: world/map/news.txt world/map/news.html world/map/news.rss world/map/news.json
 updates:
 	cd tools/client/ ; ./make-updates.sh
 
