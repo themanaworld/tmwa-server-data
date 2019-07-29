@@ -10,10 +10,9 @@
 //  3  you brought the needed stuff. if you meet other criteria (BaseLevel, agi) you will be taught the skill
 //  4  you have met the criteria of 3, but declined to take the speed test.
 //  5  you tried the quest but you failed
-// QUEST_MIRIAM_start
-//  a time in ticks. This is only !=0 if you started running to pachua.
 // QUEST_MIRIAM_run
-//  when you reach pachua, he stores the difference of start and arrival in here.
+//  positive is the start time
+//  negative is the time difference from start
 //#############################################
 // after you gained the speed skill, all variables are reset to zero.
 //#############################################
@@ -31,8 +30,8 @@
     if (QUEST_MIRIAM == 2) goto L_ask2;
     if (QUEST_MIRIAM == 3) goto L_teach;
     if (QUEST_MIRIAM == 4) goto L_testoffer;
-    if (QUEST_MIRIAM_run != 0) goto L_checktime;
-    if (QUEST_MIRIAM_start != 0) goto L_wasting;
+    if (QUEST_MIRIAM_run < 0) goto L_checktime;
+    if (QUEST_MIRIAM_run > 0) goto L_wasting;
     if (QUEST_MIRIAM == 5) goto L_testoffer;
     goto L_intro;
 
@@ -241,8 +240,7 @@ L_LetsDoThis:
     warp "032-1",55,21;
     npctalk strnpcinfo(0), "Run " +strcharinfo(0)+ ", run!";
     set QUEST_MIRIAM, 5;
-    set QUEST_MIRIAM_start, gettimetick(2);
-    set QUEST_MIRIAM_cheat, 0;
+    set QUEST_MIRIAM_run, gettimetick(2);
     end;
 
 L_naked:
@@ -280,8 +278,8 @@ L_Close:
 L_warning:
     mes "[Miriam]";
     mes "\"I know very well what you tried to do. I will not teach you the speed skill if you keep trying this kind of trick!\"";
-    next;
-    goto L_testoffer;
+    set QUEST_MIRIAM_run, 0;
+    close;
 
 L_stretch:
     mes "[Miriam]";
@@ -294,22 +292,31 @@ L_wasting:
     mes "\"Don't waste your time talking to me! RUN and talk to Pachua!\"";
     close;
 
+L_expired:
+    mes "[Miriam]";
+    mes "\"You could not reach Pachua in time. Try again some other time.\"";
+    set QUEST_MIRIAM_run, 0;
+    close;
+
 L_checktime:
-    if (QUEST_MIRIAM_cheat != 0)
+    set @miriam_run_secs, 0 - (QUEST_MIRIAM_run);
+    if (@miriam_run_secs == 1)
         goto L_warning;
-    if (QUEST_MIRIAM_run <= 210)
+    if (@miriam_run_secs <= 10)
+        goto L_expired;
+    if (@miriam_run_secs <= 210)
         goto L_goodjob;
     goto L_tryagain;
 
 L_tryagain:
     mes "[Miriam]";
-    mes "\"You needed " + QUEST_MIRIAM_run + " seconds to reach Pachua. It is not enough.\"";
+    mes "\"You needed " + @miriam_run_secs + " seconds to reach Pachua. It is not enough.\"";
     set QUEST_MIRIAM_run, 0;
     close;
 
 L_goodjob:
     mes "[Miriam]";
-    mes "\"Great job! You needed " + QUEST_MIRIAM_run + " seconds to reach Pachua. Very impressive for a person like you.\"";
+    mes "\"Great job! You needed " + @miriam_run_secs + " seconds to reach Pachua. Very impressive for a person like you.\"";
     next;
     mes "\"Now I need you to relax. Do NOT move. This teaching process can be painful sometimes.\"";
     next;
@@ -319,20 +326,17 @@ L_goodjob:
     close2;
     warp "032-1",55,22;
     // free all used player variables. This can be done, since there is a conditional on the speedskill at the beginning.
-    set QUEST_MIRIAM_start, 0;
     set QUEST_MIRIAM_run, 0;
     set QUEST_MIRIAM, 0;
     message strcharinfo(0), "[You gain 2500 experience points]";
     message strcharinfo(0), "[You learned Speed Skill]";
     setskill SKILL_SPEED, 1;
     getexp 2500, 0;
-    set QUEST_MIRIAM_cheat, 0; // reset just in case it is still set.
     close;
 
 L_fast:
     mes "[Miriam]";
     mes "\"I hope you make a good use of your new skill... Take care!\"";
-    set QUEST_MIRIAM_cheat, 0; // reset just in case it is still set.
     close;
 
 }
