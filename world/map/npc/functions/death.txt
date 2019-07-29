@@ -1,0 +1,63 @@
+function|script|WarpToHell
+{
+    setarray @death_points[0], 35,63,  36,63,  55,34,  56,34;
+    set @point, rand(4) * 2;
+    warp "070-3", @death_points[@point], @death_points[@point + 1];
+    return;
+}
+
+function|script|CheckDeath
+{
+    if (getmap() != "070-3" && PC_DIE_COUNTER == 0) goto L_Return;
+    message strcharinfo(0), "Server : You are dead. Forever.";
+    if (getmap() == "070-3") goto L_Return;
+    callfunc "WarpToHell";
+    return;
+
+L_Return:
+    return;
+}
+
+function|script|HardKill
+{
+    if (getmap(@victimrid) == "070-3") goto L_Return;
+    announce strcharinfo(0) + " has brutally murdered " + strcharinfo(0, @victimrid) + " %%e", 0;
+    set Zeny, Zeny + get(Zeny, @victimrid); // loot them
+    getexp get(BaseExp, @victimrid), get(JobExp, @victimrid); // steal their exp
+    set @killed, 1, @victimrid;
+    return;
+
+L_Return:
+    return;
+}
+
+function|script|HardDeath
+{
+    if (getmap() == "070-3") goto L_Return;
+    getinventorylist;
+    set @item_it, 0;
+    freeloop 1;
+    goto L_Drop; // drop all items
+
+L_Drop:
+    makeitem @inventorylist_id[@item_it], @inventorylist_amount[@item_it], getmap(), POS_X + rand(-2, 2), POS_Y + rand(-2, 2);
+    set @item_it, @item_it + 1;
+    if (@item_it >= @inventorylist_count) goto L_Getstuff;
+    goto L_Drop;
+
+L_Getstuff:
+    if (@killed) goto L_Warp;
+    announce strcharinfo(0) + " has died %%S", 0;
+    makeitem "CasinoCoins", Zeny / 10, getmap(), POS_X + rand(-2, 2), POS_Y + rand(-2, 2);
+    goto L_Warp;
+
+L_Warp:
+    freeloop 0;
+    set @killed, 0;
+    set @item_it, 0;
+    callfunc "WarpToHell";
+    return;
+
+L_Return:
+    return;
+}
