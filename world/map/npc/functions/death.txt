@@ -18,6 +18,14 @@ L_Return:
     return;
 }
 
+function|script|HardUpdate
+{
+    if (BaseLevel >= 35 && getskilllv(SKILL_POOL) < 1) setskill SKILL_POOL, 1;
+    if (BaseLevel >= 35 && getskilllv(SKILL_SPEED) < 1) setskill SKILL_SPEED, 1;
+    if (BaseLevel >= 35 && getskilllv(SKILL_RAGING) < 1) setskill SKILL_RAGING, 1;
+    return;
+}
+
 function|script|HardKill
 {
     if (getmap(@victimrid) == "070-3") goto L_Return;
@@ -34,10 +42,36 @@ L_Return:
 function|script|HardDeath
 {
     if (getmap() == "070-3") goto L_Return;
+    if (getmapflag(getmap(), MF_NOSAVE)) goto L_Absolve;
+    goto L_Death;
+
+L_Death:
     getinventorylist;
     set @item_it, 0;
     freeloop 1;
     goto L_Drop; // drop all items
+
+L_Absolve:
+    set .@day, (HARDDEATH & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT; // day of week
+    set .@deaths, if_then_else(gettime(4) == .@day, (HARDDEATH & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT, 0); // deaths this day
+    set .@free, max(3, $FREEDEATHS[0]); // allowed deaths per day
+
+    if (.@deaths >= .@free) goto L_NotAbsolved;
+
+    set .@deaths, .@deaths + 1;
+    set HARDDEATH, HARDDEATH & ~(BYTE_0_MASK) | (gettime(4) << NIBBLE_0_SHIFT) | (.@deaths << NIBBLE_1_SHIFT);
+    set PC_DIE_COUNTER, 0;
+
+    message strcharinfo(0), "Server : This is a special map so your death is not counted.";
+    message strcharinfo(0), "Server : ##BYou have " + (.@free - .@deaths) + " non-counting deaths remaining today.";
+
+    if (.@free - .@deaths == 0)
+        message strcharinfo(0), "Server : ##1WARNING: if you die again today in a special map it will be PERMANENT.";
+    return;
+
+L_NotAbsolved:
+    message strcharinfo(0), "Server : This is a special map, however you have no more free deaths today.";
+    goto L_Death;
 
 L_Drop:
     makeitem @inventorylist_id[@item_it], @inventorylist_amount[@item_it], getmap(), POS_X + rand(-2, 2), POS_Y + rand(-2, 2);
