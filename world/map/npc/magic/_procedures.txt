@@ -116,8 +116,13 @@ L_Escape:
 
 L_Backfire:
     message strcharinfo(0), "Magic : ##3##BYour spell backfires!";
-    if (rand(110) < Luk) heal 0 - ((BaseLevel+1)*(BaseLevel+2)*(rand(28)+3)), 0;
-    else                 heal 0 - (BaseLevel + 1), 0;
+    if (rand(110) < Luk) heal max(0 - Hp + 1, 0 - ((BaseLevel+1)*(BaseLevel+2)*(rand(28)+3))), 0;
+    else                 heal max(0 - Hp + 1, 0 - (BaseLevel + 1)), 0;
+    if (Hp <= 2) goto L_Warp;
+    return;
+
+L_Warp:
+    warp getsavepoint(0), getsavepoint(1), getsavepoint(2);
     return;
 
 L_Perfect:
