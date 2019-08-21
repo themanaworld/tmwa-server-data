@@ -1,0 +1,57 @@
+-|script|raise|32767
+{
+    if (GM < 40 && GM < G_SYSOP) end;
+    set .@rid, if_then_else(@args$ != "", getcharid(3, @args$), BL_ID);
+    if (.@rid < 1 || !(isloggedin(.@rid))) end;
+
+    addtimer 0, strnpcinfo(0) + "::OnRaise", .@rid;
+    message strcharinfo(0), "absolve : player absolved.";
+    end;
+
+OnRaise:
+    warp getsavepoint(0), getsavepoint(1), getsavepoint(2);
+    set PC_DIE_COUNTER, 0;
+    set Hp, MaxHp;
+    message strcharinfo(0), "Server : you have been revived.";
+    end;
+
+OnInit:
+    registercmd "@raise", strnpcinfo(0);
+    end;
+}
+
+
+-|script|absolve|32767
+{
+    if (GM < 40 && GM < G_SYSOP) end;
+    set .@rid, if_then_else(@args$ != "", getcharid(3, @args$), BL_ID);
+    if (.@rid < 1 || !(isloggedin(.@rid))) end;
+
+    addtimer 0, strnpcinfo(0) + "::OnRaise", .@rid;
+    message strcharinfo(0), "absolve : player absolved.";
+    end;
+
+OnRaise:
+    set Zeny, 0;
+    getinventorylist;
+    set @item_it, 0;
+    freeloop 1;
+    goto L_Drop; // drop all items
+
+L_Drop:
+    delitem @inventorylist_id[@item_it], @inventorylist_amount[@item_it];
+    set @item_it, @item_it + 1;
+    if (@item_it >= @inventorylist_count) goto L_Raise;
+    goto L_Drop;
+
+L_Raise:
+    warp getsavepoint(0), getsavepoint(1), getsavepoint(2);
+    set PC_DIE_COUNTER, 0;
+    set Hp, 1;
+    message strcharinfo(0), "Server : your sins have been forgiven.";
+    end;
+
+OnInit:
+    registercmd "@absolve", strnpcinfo(0);
+    end;
+}
