@@ -211,7 +211,7 @@ L_NextRound:
         set $@FIGHT_CAVE_TEMP_UP, 100;
 
     set $@FIGHT_CAVE_LEVEL, $@FIGHT_CAVE_LEVEL + $@FIGHT_CAVE_PLAYER_COUNT + $@FIGHT_CAVE_TEMP_UP;
-    if ($@FIGHT_CAVE_LEVEL >= 2200)
+    if ($@FIGHT_CAVE_LEVEL >= $@FIGHT_CAVE_MAX_LEVEL)
         goto L_CleanUp;
     set $@FIGHT_CAVE_POINTS, $@FIGHT_CAVE_LEVEL;
 
@@ -404,4 +404,38 @@ OnReward:
     set BOSS_POINTS, BOSS_POINTS + 100;
     message strcharinfo(0), "You gain 100 Boss Points giving you a total of " + BOSS_POINTS + ".";
     goto L_CleanUp_Player;
+}
+
+function|script|CandorDebug
+{
+    mes "$@FIGHT_CAVE_MAX_LEVEL: "+$@FIGHT_CAVE_MAX_LEVEL;
+    mes "---";
+	next;
+	// NORMAL is listed twice.
+	menu
+		"Set to NORMAL difficulty (2200)", L_Normal,
+		"Set to HARD difficulty (3300, for events)", L_Hard,
+		"Set to EXPERT difficulty (4500, for events)", L_Expert,
+		"Set to EASY difficulty (1800, for events)", L_Easy,
+		"Set to NORMAL difficulty (2200)", L_Normal;
+
+L_Normal:
+	set $@FIGHT_CAVE_MAX_LEVEL, 2200;
+    gmlog strcharinfo(0) + " restored Candor Difficulty to normal.";
+    return;
+
+L_Easy:
+	set $@FIGHT_CAVE_MAX_LEVEL, 1800;
+    gmlog strcharinfo(0) + " has set Candor Difficulty to EASY.";
+    return;
+
+L_Hard:
+	set $@FIGHT_CAVE_MAX_LEVEL, 3300;
+    gmlog strcharinfo(0) + " has set Candor Difficulty to HARD.";
+    return;
+
+L_Expert:
+	set $@FIGHT_CAVE_MAX_LEVEL, 4500;
+    gmlog strcharinfo(0) + " has set Candor Difficulty to EXPERT.";
+    return;
 }
