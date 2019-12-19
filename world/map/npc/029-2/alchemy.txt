@@ -24,7 +24,8 @@
     // can not use a scope variable to store item names because menu is a script terminator (destroys the scope)
     menu
         "Abort Mission.", L_Abort,
-        "Proceed.", L_Proceed;
+        "Proceed.", L_Proceed,
+        "I want to make several.", L_Multi;
 
 L_Proceed:
     // XXX: here we could make it wait a little, while the potion is boiling (and show an animation/particles/sound)
@@ -68,6 +69,44 @@ L_Failed:
 
 L_Abort:
     close;
+
+// Bikeshedding starts here
+L_Multi:
+    mes "How many?";
+    mes "##BWarning! This will permanently destroy the selected items.##b";
+    input @count;
+    if (@count == 0)
+        close;
+
+    if (countitem(@alchlab_items$[0]) < @count || countitem(@alchlab_items$[1]) < @count)
+        goto L_NoItems;
+    delitem @alchlab_items$[0], @count;
+    delitem @alchlab_items$[1], @count;
+    if (@alchlab_items$[0] == "BottleOfWater" || @alchlab_items$[1] == "BottleOfWater")
+        getitem "EmptyBottle", if_then_else(@alchlab_items$[0] == "BottleOfWater" && @alchlab_items$[1] == "BottleOfWater",2*@count,@count);
+
+    set .@n, -3;
+    goto L_CheckRecipesMulti;
+
+L_CheckRecipesMulti:
+    set .@n, .@n+3;
+    if (.@n == get(.rsize, "_N-Alchemy"))
+        goto L_Failed;
+    if (!(get(.recipes$[.@n], "_N-Alchemy") == @alchlab_items$[0] && get(.recipes$[.@n+1], "_N-Alchemy") == @alchlab_items$[1]) &&
+        !(get(.recipes$[.@n], "_N-Alchemy") == @alchlab_items$[1] && get(.recipes$[.@n+1], "_N-Alchemy") == @alchlab_items$[0]))
+        goto L_CheckRecipesMulti;
+
+    getitem get(.recipes$[.@n+2], "_N-Alchemy"), @count;
+
+    clear;
+    mes "You combined the following:";
+    mes "     ["+ getitemlink(@alchlab_items$[0]) +"]";
+    mes "     ["+ getitemlink(@alchlab_items$[1]) +"]";
+    mes;
+    mes "You obtained:";
+    mes "     ["+ getitemlink(get(.recipes$[.@n+2], "_N-Alchemy")) +"]";
+    close;
+// Bikeshedding ends here
 
 S_Spawn:
     set .@s, getarraysize(.x1);
