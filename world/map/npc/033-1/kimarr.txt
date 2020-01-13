@@ -98,6 +98,7 @@ L_Ask:
         "Yeah, let's start!",L_Game,
         "Could you explain again?",L_ExplainGame,
         "Can you tell me who were the most successful Fluffy hunters?",L_ShowRecord,
+        "On the event, who were the most successful Fluffy hunters?",L_CRC_ShowRecord,
         "Maybe later.",L_Close;
 
 L_AlreadyGotReward:
@@ -153,6 +154,7 @@ L_Again:
     menu
         "Yeah!",L_Game,
         "Can you tell me who were the most successful Fluffy hunters?",L_ShowRecord,
+        "On the event, who were the most successful Fluffy hunters?",L_CRC_ShowRecord,
         "Not now.",L_Close;
 
 L_Game:
@@ -357,10 +359,9 @@ S_Clean:
 
 L_MaybeRecordScore:
     warp "033-1", 77, 34;
-    if ($@Fluffy_Kills < $@Fluffy_Min)
-        goto L_NotGoodEnough;
+    set @loop, 0;
     set @rank, 0;
-    goto L_MaybeInsertNext;
+    goto L_CRC_MaybeInsertNext;
 
 L_MaybeInsertNext:
     if ($@Fluffy_Kills > $Record_Fluffy_Kills[@rank])
@@ -429,6 +430,75 @@ L_ShowNextRecord:
 L_NextShowNextRecord:
     next;
     goto L_ShowNextRecord;
+
+L_CRC_MaybeRecordScore:
+    if ($@Fluffy_Kills < $@Fluffy_Min)
+        goto L_NotGoodEnough;
+    set @rank, 0;
+    set @loop, 0;
+    goto L_MaybeInsertNext;
+
+L_CRC_MaybeInsertNext:
+    if ($@Fluffy_Kills > $Record_CRC_Fluffy_Kills[@rank])
+        goto L_CRC_InsertScore;
+    // you already had a better score
+    if (strcharinfo(0) == $Record_CRC_Fluffy_Name$[@rank])
+        goto L_CRC_MaybeRecordScore;
+    set @rank, @rank + 1;
+    if (@rank == MAX_HIGH_SCORES)
+        goto L_CRC_MaybeRecordScore;
+    goto L_CRC_MaybeInsertNext;
+
+L_CRC_InsertScore:
+    set @loop, @rank;
+    goto L_CRC_FindLastScore;
+
+L_CRC_FindLastScore:
+    // comment this out to allow the player to be in the list more than once
+    // though actually, it might be better just to assume the list is full
+    if (strcharinfo(0) == $Record_CRC_Fluffy_Name$[@loop])
+        goto L_CRC_MoveStuff;
+
+    set @loop, @loop + 1;
+    if (@loop == MAX_HIGH_SCORES)
+        goto L_CRC_MoveStuff;
+    goto L_CRC_FindLastScore;
+
+L_CRC_MoveStuff:
+    if (@loop == @rank)
+        goto L_CRC_FinallyInsertMe;
+    set $Record_CRC_Fluffy_Kills[@loop], $Record_CRC_Fluffy_Kills[@loop - 1];
+    set $Record_CRC_Fluffy_Name$[@loop], $Record_CRC_Fluffy_Name$[@loop - 1];
+    set $Record_CRC_Fluffy_Date$[@loop], $Record_CRC_Fluffy_Date$[@loop - 1];
+    set @loop, @loop - 1;
+    goto L_CRC_MoveStuff;
+
+L_CRC_FinallyInsertMe:
+    set $Record_CRC_Fluffy_Kills[@rank], $@Fluffy_Kills;
+    set $Record_CRC_Fluffy_Name$[@rank], strcharinfo(0);
+    callfunc "time_stamp";
+    set $Record_CRC_Fluffy_Date$[@rank], @ts_date$ + " " + @ts_time$;
+    set @ts_date$, "";
+    set @ts_time$, "";
+    goto L_CRC_MaybeRecordScore;
+
+L_CRC_ShowRecord:
+    set @rank, 0;
+    set @loop, 0;
+    goto L_CRC_ShowNextRecord;
+
+L_CRC_ShowNextRecord:
+    if ($Record_CRC_Fluffy_Kills[@loop] == 0)
+        goto L_Close;
+    mes (@loop + 1) + " - " + $Record_CRC_Fluffy_Name$[@loop] + " - " + $Record_CRC_Fluffy_Kills[@loop] + " Fluffies killed at " + $Record_CRC_Fluffy_Date$[@loop];
+    set @loop, @loop + 1;
+    if (MAX_HIGH_SCORES > 4 && (@loop % 5) == 0 && $Record_CRC_Fluffy_Kills[@loop] > 0)
+        goto L_CRC_NextShowNextRecord;
+    goto L_CRC_ShowNextRecord;
+
+L_CRC_NextShowNextRecord:
+    next;
+    goto L_CRC_ShowNextRecord;
 
 L_Close:
     // clear all temporary player variables that are not otherwise cleared
