@@ -1,0 +1,120 @@
+-|script|@givelvlplz|32767
+{
+    end;
+
+OnValentine:
+    if (#VALENTINE20_INDEX > 0)
+        goto L_AlreadyDone;
+    goto L_Register;
+
+L_AlreadyDone:
+    message strcharinfo(0), "You are already registered for Valentine Event.";
+    end;
+
+L_Register:
+    set @ml_login$, "";
+    set @ml_char$, "";
+    mes "##1You can only port one char level per person!##0";
+    mes "##1Are you sure you want to port level "+BaseLevel+" for Valentine?##0";
+    next;
+    mes ".:: MOUBOOTAUR LEGENDS DATA ::.";
+    mes "What is your login name?";
+    mes "(Please leave the field blank to cancel. Case-sensitive.)";
+    input @ml_login$;
+    if (@ml_login$ == "")
+        goto L_Abort;
+    mes "";
+    mes ".:: MOUBOOTAUR LEGENDS DATA ::.";
+    mes "What is your char name?";
+    mes "(The char name must be on the account login you've provided earlier. Case-sensitive.)";
+    input @ml_char$;
+    if (@ml_char$ == "")
+        goto L_Abort;
+    next;
+    if (strcharinfo(0) == @ml_char$)
+        goto L_Warning;
+    goto L_Review;
+
+L_Warning:
+    mes "##1##BWARNING##b##0";
+    mes "Make sure you are inserting your data ##BOn Moubootaur Legends Server##b.";
+    mes "";
+    mes "##BIf you provide invalid data, you will need to contact a GM.##0";
+    next;
+    goto L_Review;
+
+L_Review:
+    mes "";
+    mes ".:: Data Review ::.";
+    mes "ML Login: "+@ml_login$;
+    mes "ML Char: "+@ml_char$;
+    mes "Level: "+BaseLevel;
+    mes "";
+    mes "Is the data correct?";
+    mes "##1##BThis cannot be changed later.##0";
+    next;
+    menu
+        "Actually, can I start over?", L_Register,
+        "Yes, this is how I login on ML and my char name", L_Save,
+        "I'm not sure. Sorry.", L_Abort;
+
+L_Save:
+    set @rank, 0;
+    set @loop, 0;
+    goto L_Search;
+
+L_Search:
+    if ($VALENTINE20_LVL[@loop] == 0)
+        goto L_Finished;
+    set @loop, @loop + 1;
+    goto L_Search;
+
+L_Finished:
+    mes "";
+    set #VALENTINE20_INDEX, @loop+1; // 0 is a valid index
+    set $VALENTINE20_LOGIN$[@loop], @ml_login$;
+    set $VALENTINE20_NAME$[@loop], @ml_char$;
+    set $VALENTINE20_LVL[@loop], BaseLevel;
+    goto L_Abort;
+
+L_Abort:
+    mes "";
+    set @ml_login$, "";
+    set @ml_char$, "";
+    set @loop, 0;
+    set @rank, 0;
+    close;
+
+OnReport:
+    if (GM < 60 && GM < G_SYSOP) end;
+    goto L_Report;
+
+L_Report:
+    set @rank, 0;
+    set @loop, 0;
+    mes "ID - Login / Char - Level";
+    mes "-------------------------";
+    goto L_ShowNextRecord;
+
+L_ShowNextRecord:
+    if ($VALENTINE20_LVL[@loop] == 0)
+        goto L_Close;
+    mes (@loop + 1) + " - " + $VALENTINE20_LOGIN$[@loop] + " / " + $VALENTINE20_NAME$[@loop] + " - Lv. " + $VALENTINE20_LVL[@loop];
+    set @loop, @loop + 1;
+    if ((@loop % 10) == 0 && $VALENTINE20_LVL[@loop] > 0)
+        goto L_NextShowNextRecord;
+    goto L_ShowNextRecord;
+
+L_NextShowNextRecord:
+    next;
+    goto L_ShowNextRecord;
+
+L_Close:
+    close;
+
+OnInit:
+    registercmd chr(ATCMD_SYMBOL) + "givelvlplz", strnpcinfo(0) + "::OnValentine";
+    registercmd chr(ATCMD_SYMBOL) + "valentine2020", strnpcinfo(0) + "::OnValentine";
+    registercmd chr(ATCMD_SYMBOL) + "moubootaurs", strnpcinfo(0) + "::OnReport";
+    end;
+}
