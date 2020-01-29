@@ -40,4 +40,7 @@ updates:
 	cd tools/client/ ; ./make-updates.sh
 
 frob:
-	deno run --allow-read=world --allow-write=world/save tools/server/frob/index.ts $(items)
+	deno run --allow-read=. --allow-write=world/save tools/server/frob/index.ts -- $(items)
+
+sql:
+	deno run --allow-read=. --allow-write --allow-net tools/server/frob/index.ts -- --sql
