@@ -1,0 +1,140 @@
+// Evol script
+// Controls Doomsday Event
+//
+// A really long event (months), controlling and being written by
+// every event which happens since doomsday program officialy started
+// in Halloween 2019 with Tormenta's release.
+//
+// This file history is written by GMs and players as the events happen
+// and therefore it is not possible to predict or add code for things which
+// are too far away from happening.
+//
+// Please keep Doomsday System simple.
+// Revert it to anything to stage once it is over.
+// It can be epic. But it doesn't needs to be.
+// But above all, this should NOT affect the merge.
+// The event purpose is to give players background history.
+
+function|script|DoomsdayDebug
+{
+    mes "$DOOMSDAY: "+$DOOMSDAY; // Event Status
+    mes "$DOOMSDAY_CNT: "+$DOOMSDAY_CNT; // Meaning Varies
+    next;
+    // Only GM 80 and above can modify Doomsday
+    // ...Yes, G_ADMIN is 80 while G_SYSOP is 99.
+    if (GM < G_ADMIN) goto L_Close;
+    mes "Setting $DOOMSDAY event state";
+    menu
+        "[0] Tormenta's Seal",L_Seal,
+        "[1] Jande's Army",L_Army,
+        "[-] Close",L_Close;
+
+L_Close:
+    return;
+
+L_Seal:
+    set $DOOMSDAY, 0;
+    donpcevent "Doomsday::OnJanitor";
+    gmlog strcharinfo(0) + " changed doomsday to Act 1: Tormenta's Seal.";
+    return;
+
+L_Army:
+    set $DOOMSDAY, 1;
+    donpcevent "Doomsday::OnJanitor";
+    gmlog strcharinfo(0) + " changed doomsday to Act 2: Jande's Army.";
+    return;
+}
+
+// Doomsday script controller
+-|script|Doomsday|32767
+{
+    close;
+
+// Destroy any artifact as doomsday mode changes
+OnJanitor:
+    // TODO: Kill monsters?
+    setnpctimer 0;
+    stopnpctimer;
+    goto OnInit;
+
+// Check for our current doomsday state
+OnInit:
+    if ($DOOMSDAY == 1)
+        goto L_Doomsday1;
+    // goto L_Check2;
+    end;
+
+L_Doomsday1:
+    // 1138 - Mana Guardian
+    // Argaes Invasion (1)
+    areamonster "017-1", 169, 49, 198, 77, "", 1138, 1, "Doomsday::OnDeathMapname";
+    // Argaes Invasion (2)
+    areamonster "012-1", 20, 47, 74, 77, "", 1138, 3, "Doomsday::OnDeathMapname";
+    // Argaes Invasion (3)
+    areamonster "057-1", 115, 50, 140, 75, "", 1138, 4, "Doomsday::OnDeathMapname";
+    // Kaizei Invasion (I)
+    areamonster "046-1", 58, 49, 92, 70, "", 1138, 2, "Doomsday::OnDeathMapname";
+    // Kaizei Invasion (II)
+    areamonster "034-1", 83, 51, 121, 98, "", 1138, 6, "Doomsday::OnDeathMapname";
+    // Tonori Invasion
+    areamonster "003-4", 20, 20, 85, 60, "", 1138, 7, "Doomsday::OnDeathMapname";
+    end;
+
+L_Doomsday1Respawn:
+    // Argaes Invasion (1)
+    set $@DoomsdayMc, mobcount("017-1", "Doomsday::OnDeathMapname")+1;
+    if ($@DoomsdayMc < 1)
+        areamonster "017-1", 169, 49, 198, 77, "", 1138, 1-$@DoomsdayMc, "Doomsday::OnDeathMapname";
+
+    // Argaes Invasion (2)
+    set $@DoomsdayMc, mobcount("012-1", "Doomsday::OnDeathMapname")+1;
+    if ($@DoomsdayMc < 3)
+        areamonster "012-1", 20, 47, 74, 77, "", 1138, 3-$@DoomsdayMc, "Doomsday::OnDeathMapname";
+
+    // Argaes Invasion (3)
+    set $@DoomsdayMc, mobcount("012-1", "Doomsday::OnDeathMapname")+1;
+    if ($@DoomsdayMc < 4)
+        areamonster "057-1", 115, 50, 140, 75, "", 1138, 4-$@DoomsdayMc, "Doomsday::OnDeathMapname";
+
+    // Kaizei Invasion (I)
+    set $@DoomsdayMc, mobcount("046-1", "Doomsday::OnDeathMapname")+1;
+    if ($@DoomsdayMc < 2)
+        areamonster "046-1", 58, 49, 92, 70, "", 1138, 2-$@DoomsdayMc, "Doomsday::OnDeathMapname";
+
+    // Kaizei Invasion (II)
+    set $@DoomsdayMc, mobcount("034-1", "Doomsday::OnDeathMapname")+1;
+    if ($@DoomsdayMc < 6)
+        areamonster "034-1", 83, 51, 121, 98, "", 1138, 6-$@DoomsdayMc, "Doomsday::OnDeathMapname";
+
+    // Tonori Invasion
+    set $@DoomsdayMc, mobcount("003-4", "Doomsday::OnDeathMapname")+1;
+    if ($@DoomsdayMc < 7)
+        areamonster "003-4", 20, 20, 85, 60, "", 1138, 7-$@DoomsdayMc, "Doomsday::OnDeathMapname";
+    // goto L_TimerCheck2;
+    goto L_TimerFinish;
+
+// Respawn logic (5 minutes)
+OnTimer300000:
+    if ($DOOMSDAY == 1)
+        goto L_Doomsday1Respawn;
+    // goto L_TimerCheck2;
+    goto L_TimerFinish;
+
+// Once all timer checks are over
+L_TimerFinish:
+    set $@DoomsdayMc, 0;
+    setnpctimer 0;
+    stopnpctimer;
+    end;
+
+// Puppet labels
+OnDeathMapname:
+    if ($DOOMSDAY == 1)
+        set $DOOMSDAY_CNT, $DOOMSDAY_CNT+1;
+    startnpctimer;
+    end;
+
+}
+
+
+
