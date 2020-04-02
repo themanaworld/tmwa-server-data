@@ -71,6 +71,7 @@ function|script|MobPoints
         20, // Bandit Lord
         30, // Vampire Bat
         20, // Reaper
+        20, // Reaper2
         100, // Scythe
         20, // Ball Lightning
         60, // Ice Element
@@ -129,13 +130,13 @@ function|script|MobPoints
         100, // ManaGhost
         100, // PsiBrain
         150, // GeneralKurkan
-        175, // GeneralRazha
-        200 // GeneralTerogan
+        175 // GeneralRazha
         // No more room! script engine is buggy, sorry.
         //   -o11c
         ; // END
 
     setarray @points_extended,
+        200, // 1129 GeneralTerogan
         100, // 1130 Moonshroom
         20, // 1131 ManaBug
         80, // 1132 LavaSlime
@@ -146,13 +147,24 @@ function|script|MobPoints
         500, // 1137 Tormenta
         200 // 1138 ManaGuardian
     ;
-    
-    if ((MPQUEST == 1) && (@mobID < 1130))
-        set Mobpt, Mobpt + @points[@mobID - 1002];
 
-    if ((MPQUEST == 1) && (@mobID > 1129))
-        set Mobpt, Mobpt + @points_extended[@mobID - 1130];
+    if ((MPQUEST == 1) && (@mobID < 1129))
+        goto L_Table1;
 
+    if ((MPQUEST == 1) && (@mobID > 1128))
+        goto L_Table2;
+
+    goto L_PostLoop;
+
+L_Table1:
+    set Mobpt, Mobpt + @points[@mobID - 1002];
+    goto L_PostLoop;
+
+L_Table2:
+    set Mobpt, Mobpt + @points_extended[@mobID - 1130];
+    goto L_PostLoop;
+
+L_PostLoop:
     callfunc "ValonCount";
     if (((QL_VALON >= 2) && (QL_VALON < 6)) && (@mobID == $@ValonMob[@valon_mob]))
         goto L_ValonMobKill;
