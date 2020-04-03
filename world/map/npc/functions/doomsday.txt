@@ -29,7 +29,9 @@ function|script|DoomsdayDebug
     mes "$DOOMSDAY_TOWN[1] (Hurns): "+$DOOMSDAY_TOWN[1];
     mes "$DOOMSDAY_TOWN[2] (Nival): "+$DOOMSDAY_TOWN[2];
     mes "$DOOMSDAY_SCORE: "+$DOOMSDAY_SCORE;
+    mes "";
     mes "Can players summon Mana Guardians? "+if_then_else($DOOMSDAY_SUMMON, "Yes", "No");
+    mes "Is TMW under Jande's control? "+if_then_else($DOOMSDAY_TAKENOVER, "Yes", "No");
     //($DOOMSDAY_SUMMON ? "Yes" : "No");
     next;
     // Only GM 80 and above can modify Doomsday
@@ -41,6 +43,7 @@ function|script|DoomsdayDebug
         "[0][1][0] Tormenta's Seal",L_Seal,
         "[1][2][0] Jande's Army",L_Army,
         "[1][2][1] Toggle Mana Guardian Skill",L_Summon,
+        "[1][2][2] Surrender TMW to Jande",L_Surrender,
         "[1][3][0] The Great War - First Wave",L_War,
         "[2][3][1] The Great War - Additional Wave",L_GreatWar,
         "[2][4][1] Council - Tulimshar's Guild",L_TulimCouncil,
@@ -69,6 +72,11 @@ L_Army:
 L_Summon:
     set $DOOMSDAY_SUMMON, (!$DOOMSDAY_SUMMON);
     gmlog strcharinfo(0) + " changed the availability of #jande spell.";
+    return;
+
+L_Surrender:
+    set $DOOMSDAY_TAKENOVER, 1;
+    gmlog strcharinfo(0) + " surrendered The Mana World to Jande.";
     return;
 
 
@@ -257,6 +265,13 @@ OnDoomsday2Restart:
     disablenpc "Wizard#7";
     disablenpc "Wizard#8";
     disablenpc "Arch-Wizard#9";
+
+    // TODO: Maybe the town was taken over?
+    if (!$DOOMSDAY_TAKENOVER)
+        end;
+
+    fakenpcname "Constable Bob", "Constable Bob#_D", 420;
+    fakenpcname "Constable Perry Graf", "Constable Perry#_D", 420; // Name too long
     end;
 
 /////// Act 3 sieges
