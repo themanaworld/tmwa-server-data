@@ -66,9 +66,8 @@ L_Army:
 
 // Act 3: The Great War
 L_War:
-    mes "//-- TODO --//"; // TODO
     set $@DOOMSDAY_SKIP, 1; // Skip the next scheduled siege
-    donpcevent "Doomsday::OnJanitor";
+    donpcevent "Doomsday::OnDoomsday3First"; // Forces a doomsday to begin now
     gmlog strcharinfo(0) + " changed doomsday to Act 3: The Great War.";
     return;
 
@@ -183,6 +182,7 @@ OnInit:
     // goto L_Check2;
     end;
 
+////////////////////////////////////////////////////////////////////////////////
 L_Doomsday1:
     // 1138 - Mana Guardian
     // Argaes Invasion (1)
@@ -232,6 +232,8 @@ L_Doomsday1Respawn:
     // goto L_TimerCheck2;
     goto L_TimerFinish;
 
+////////////////////////////////////////////////////////////////////////////////
+// Disable Tulimshar Magic Council
 L_Doomsday2:
     disablenpc "Wizard#1";
     disablenpc "Wizard#2";
@@ -244,6 +246,32 @@ L_Doomsday2:
     disablenpc "Arch-Wizard#9";
     end;
 
+/////// Act 3 sieges
+// Variables:
+// $@DoomsdayLoc / 100 = Town Code (0: Tulim, 1: Hurns, 2: Nivalis)
+
+// Fake label for the first Zax's movement
+OnDoomsday3First:
+    set $@DoomsdayLoc, 1;
+    goto L_Doomsday3;
+
+// Setup a siege
+L_Doomsday3Init:
+    set $@DoomsdayLoc, rand(300) / 100;
+    goto L_Doomsday3;
+
+// Operational label, handles sieges
+L_Doomsday3:
+    // TODO
+    startnpctimer;
+    end;
+
+// This siege will be skipped
+L_Doomsday3Skip:
+    set $@DOOMSDAY_SKIP, 0;
+    end;
+
+////////////////////////////////////////////////////////////////////////////////
 // Respawn logic (5 minutes)
 OnTimer300000:
     if ($DOOMSDAY == 1)
@@ -258,6 +286,14 @@ L_TimerFinish:
     stopnpctimer;
     end;
 
+// Act 3 clock handlers
+OnClock1800:
+    if ($@DOOMSDAY_SKIP)
+        goto L_Doomsday3Skip;
+    goto L_Doomsday3;
+    end;
+
+////////////////////////////////////////////////////////////////////////////////
 // Puppet labels
 OnDeathMapname:
     if ($DOOMSDAY == 1)
