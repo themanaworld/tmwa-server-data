@@ -263,12 +263,25 @@ L_Doomsday3Init:
 // Operational label, handles sieges
 L_Doomsday3:
     // TODO
+    // getmapusers() or getusers(0x7)?
+    // Do not begin at once, wait 10 minutes to player move
+    // Note at this point it is no longer possible to skip the event!!
+    // Based on $@DoomsdayLoc go to a town-specific label
+    // One wave every 5 minutes, until 10 waves were called
+    // Then stop the timer, and check for survivors one hour after
+    // If survivors are found, the town will be overrun
     startnpctimer;
     end;
 
 // This siege will be skipped
 L_Doomsday3Skip:
     set $@DOOMSDAY_SKIP, 0;
+    end;
+
+L_Doomsday3Check:
+    set $@DoomsdayMc, mobcount("003-4", "Doomsday::OnDeathMapname")+1;
+    if ($@DoomsdayMc)
+        gmlog "Players failed to defend the city!";
     end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -287,10 +300,16 @@ L_TimerFinish:
     end;
 
 // Act 3 clock handlers
-OnClock1800:
+OnClock1750:
     if ($@DOOMSDAY_SKIP)
         goto L_Doomsday3Skip;
-    goto L_Doomsday3;
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3Init;
+    end;
+
+OnClock1900:
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3Check;
     end;
 
 ////////////////////////////////////////////////////////////////////////////////
