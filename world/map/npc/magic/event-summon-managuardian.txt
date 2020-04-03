@@ -8,6 +8,7 @@ OnCast:
     if (getskilllv(SKILL_MAGIC) < .level) end;
     if (countitem("TinyManaElixir") < 1) end;
     if (!$DOOMSDAY_SUMMON) end;
+    if (@ddcooldown > gettimetick(2)) goto L_Cooldown;
     delitem "TinyManaElixir", 1;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 60000, "Magic Timer::OnClear"; // set the new debuff
@@ -20,6 +21,7 @@ OnCast:
     if (.@puppet < 1) end;
     set .master, BL_ID, .@puppet;
     set .lifetime, (@spellpower*150)+30000, .@puppet;
+    set @ddcooldown, gettimetick(2)+75000;
     addnpctimer 15000, .@puppet$+"::OnSummon";
     addnpctimer 16000, .@puppet$+"::OnDestroy";
     end;
@@ -41,6 +43,10 @@ OnDestroy:
 S_SummonAll:
     summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, 1138, 2, .lifetime;
     destroy;
+
+L_Cooldown:
+    message strcharinfo(0), "This skill is in forced cooldown; Please wait your first summon to expire.";
+    end;
 
 OnInit:
     set .school, SKILL_MAGIC_ASTRAL;
