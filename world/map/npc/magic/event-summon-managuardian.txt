@@ -1,0 +1,52 @@
+-|script|summon-jande|32767
+{
+    end;
+
+OnCast:
+    if(call("magic_checks")) end;
+    if (Sp < 100) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (countitem("TinyManaElixir") < 1) end;
+    if (!$DOOMSDAY_SUMMON) end;
+    delitem "TinyManaElixir", 1;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 20000, "Magic Timer::OnClear"; // set the new debuff
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 100;
+    misceffect FX_MAGIC_MAGGOT_CAST, strcharinfo(0);
+    callfunc "magic_exp";
+    set .@puppet$, "#"+strnpcinfo(0)+"#"+BL_ID;
+    set .@puppet, puppet(getmap(), POS_X, POS_Y, .@puppet$, 127);
+    if (.@puppet < 1) end;
+    set .master, BL_ID, .@puppet;
+    set .lifetime, (@spellpower*150)+30000, .@puppet;
+    addnpctimer 5000, .@puppet$+"::OnSummon";
+    addnpctimer 6000, .@puppet$+"::OnDestroy";
+    end;
+
+OnSummon:
+    if (!(isloggedin(.master))) destroy;
+    if(get(Hp, .master) < 1) destroy; // destroy if master is missing
+    if(getmap(.master) != strnpcinfo(3)) destroy; // destroy if master left the map
+    specialeffect FX_MAGIC_MAGGOT_SPAWN;
+    set .@x, getnpcx();
+    set .@y, getnpcy();
+    set .@map$, strnpcinfo(3);
+    callsub S_SummonAll;
+    end;
+
+OnDestroy:
+    destroy;
+
+S_SummonAll:
+    summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, 1138, 2, .lifetime;
+    destroy;
+
+OnInit:
+    set .school, SKILL_MAGIC_ASTRAL;
+    set .invocation$, chr(MAGIC_SYMBOL) + "jande"; // used in npcs that refer to this spell
+    void call("magic_register", "OnCast");
+    set .level, 1;
+    set .exp_gain, 1;
+    end;
+}

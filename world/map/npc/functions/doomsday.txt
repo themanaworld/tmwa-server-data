@@ -29,7 +29,8 @@ function|script|DoomsdayDebug
     mes "$DOOMSDAY_TOWN[1] (Hurns): "+$DOOMSDAY_TOWN[1];
     mes "$DOOMSDAY_TOWN[2] (Nival): "+$DOOMSDAY_TOWN[2];
     mes "$DOOMSDAY_SCORE: "+$DOOMSDAY_SCORE;
-    mes "Can players summon Mana Guardians? "+"No";
+    mes "Can players summon Mana Guardians? "+if_then_else($DOOMSDAY_SUMMON, "Yes", "No");
+    //($DOOMSDAY_SUMMON ? "Yes" : "No");
     next;
     // Only GM 80 and above can modify Doomsday
     // ...Yes, G_ADMIN is 80 while G_SYSOP is 99.
@@ -39,6 +40,7 @@ function|script|DoomsdayDebug
     menu
         "[0][1][0] Tormenta's Seal",L_Seal,
         "[1][2][0] Jande's Army",L_Army,
+        "[1][2][1] Toggle Mana Guardian Skill",L_Summon,
         "[1][3][0] The Great War - First Wave",L_War,
         "[2][3][1] The Great War - Additional Wave",L_GreatWar,
         "[2][4][1] Council - Tulimshar's Guild",L_TulimCouncil,
@@ -64,6 +66,12 @@ L_Army:
     gmlog strcharinfo(0) + " changed doomsday to Act 2: Jande's Army.";
     return;
 
+L_Summon:
+    set $DOOMSDAY_SUMMON, (!$DOOMSDAY_SUMMON);
+    gmlog strcharinfo(0) + " changed the availability of #jande spell.";
+    return;
+
+
 // Act 3: The Great War
 L_War:
     set $@DOOMSDAY_SKIP, 1; // Skip the next scheduled siege
@@ -83,6 +91,7 @@ L_GreatWar:
     disablenpc "Wizard#8";
     disablenpc "Arch-Wizard#9";
     set $DOOMSDAY, 2;
+    set $@DOOMSDAY_SKIP, 0;
     donpcevent "Doomsday::OnJanitor";
     gmlog strcharinfo(0) + " changed doomsday to Act 4: The Great War Council.";
     return;
@@ -235,6 +244,14 @@ L_Doomsday1Respawn:
 ////////////////////////////////////////////////////////////////////////////////
 // Disable Tulimshar Magic Council
 L_Doomsday2:
+    set $@DOOMSDAY_ONRESTART, 1;
+    initnpctimer;
+    end;
+
+OnTimer1000:
+    if (!$@DOOMSDAY_ONRESTART)
+        end;
+
     disablenpc "Wizard#1";
     disablenpc "Wizard#2";
     disablenpc "Wizard#3";
@@ -270,6 +287,7 @@ L_Doomsday3:
     // One wave every 5 minutes, until 10 waves were called
     // Then stop the timer, and check for survivors one hour after
     // If survivors are found, the town will be overrun
+    // Save siege map in a temporary variable as well? (For Doomsday3Check)
     startnpctimer;
     end;
 
