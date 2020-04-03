@@ -28,6 +28,7 @@ function|script|DoomsdayDebug
     mes "$DOOMSDAY_TOWN[0] (Tulim): "+$DOOMSDAY_TOWN[0];
     mes "$DOOMSDAY_TOWN[1] (Hurns): "+$DOOMSDAY_TOWN[1];
     mes "$DOOMSDAY_TOWN[2] (Nival): "+$DOOMSDAY_TOWN[2];
+    mes "$DOOMSDAY_SCORE: "+$DOOMSDAY_SCORE;
     mes "Can players summon Mana Guardians? "+"No";
     next;
     // Only GM 80 and above can modify Doomsday
@@ -65,8 +66,9 @@ L_Army:
 
 // Act 3: The Great War
 L_War:
-    mes "//-- TODO --//";
-    donpcevent "Doomsday::OnJanitor"; // TODO
+    mes "//-- TODO --//"; // TODO
+    set $@DOOMSDAY_SKIP, 1; // Skip the next scheduled siege
+    donpcevent "Doomsday::OnJanitor";
     gmlog strcharinfo(0) + " changed doomsday to Act 3: The Great War.";
     return;
 
@@ -355,6 +357,7 @@ L_Main:
         "[GM 40] Disable Valia", L_NoValia,
         "[GM 40] Disable Waric", L_NoWaric,
         "[GM 40] Disable Golbenez", L_NoGolbenez,
+        "[GM 60] Cancel Next Siege", L_SkipSiege,
         "[GM 80] Dismiss the council", L_Dismiss;
 
 L_Sagatha:
@@ -416,6 +419,12 @@ L_Dismiss:
     disablenpc "Golbenez#"+@n$[1];
     disablenpc "Arch-Wizard#"+@n$[1];
     gmlog strcharinfo(0) + " dismissed the Council.";
+    close;
+
+L_SkipSiege:
+    set $@DOOMSDAY_SKIP, 1;
+    announce "Jande: I do not believe the enemy army will move this time. We should be safe for now.", 0;
+    gmlog strcharinfo(0) + " cancelled the scheduled doomsday attack.";
     close;
 
 OnInit:
