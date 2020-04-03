@@ -193,6 +193,7 @@ OnJanitor:
 
 // Check for our current doomsday state
 OnInit:
+    setarray $@doomsday_mobs, 1140, 1141, 1143, 1140, 1141, 1143, 1140, 1141, 1143;
     if ($DOOMSDAY == 1)
         goto L_Doomsday1;
     if ($DOOMSDAY == 2)
@@ -339,8 +340,26 @@ L_DDAdvanceWave:
     if ($@DD_NUMWAVES > 10)
         end;
 
+    // Spawns (FIXME - loop and precision coordinates)
+    if ($@DoomsdayLoc == 1)
+        goto L_DD3Hurns;
+
+    goto L_DDAdvanceWavePost;
+
+L_DDAdvanceWavePost:
+    set $@DD_IDX, 0;
     initnpctimer; // Restart from zero
     end;
+
+// Hurnscald Siege points
+L_DD3Hurns:
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 138, 63, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 136, 71, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+
+    goto L_DDAdvanceWavePost;
 
 // Timer controls (5 minutes between waves);
 // It only fires after first wave
