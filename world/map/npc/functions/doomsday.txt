@@ -40,14 +40,14 @@ function|script|DoomsdayDebug
     mes "Setting $DOOMSDAY event state";
     mes "[DOOMSDAY][ACT][STATE]";
     menu
-        "[0][1][0]: Tormenta's Seal",L_Seal,
-        "[1][2][0]: Jande's Army",L_Army,
-        "[1][3][0]: The Great War: First Wave",L_War,
-        "[2][3][1]: The Great War: Additional Wave",L_GreatWar,
-        "[2][4][1]: Council Reunites in Tulimshar's Guild",L_TulimCouncil,
-        "[2][4][2]: Council Reunites in Celestia's Residence",L_HurnsCouncil,
-        "[2][4][3]: Council Reunites in Blue Sage's Residence",L_NivalCouncil,
-        "[3][5][0]: Kage's Final Battle",L_Kage,
+        "[0][1][0] Tormenta's Seal",L_Seal,
+        "[1][2][0] Jande's Army",L_Army,
+        "[1][3][0] The Great War - First Wave",L_War,
+        "[2][3][1] The Great War - Additional Wave",L_GreatWar,
+        "[2][4][1] Council - Tulimshar's Guild",L_TulimCouncil,
+        "[2][4][2] Council - Celestia's Residence",L_HurnsCouncil,
+        "[2][4][3] Council - Blue Sage's Residence",L_NivalCouncil,
+        "[3][5][0] Kage's Final Battle",L_Kage,
         "[-] Close",L_Close;
 
 L_Close:
@@ -122,6 +122,15 @@ L_NivalCouncil:
 // Act 5: The Doomsday
 L_Kage:
     mes "//-- TODO --//";
+    enablenpc "Wizard#1";
+    enablenpc "Wizard#2";
+    enablenpc "Wizard#3";
+    enablenpc "Wizard#4";
+    enablenpc "Wizard#5";
+    enablenpc "Wizard#6";
+    enablenpc "Wizard#7";
+    enablenpc "Wizard#8";
+    enablenpc "Arch-Wizard#9";
     donpcevent "Doomsday::OnJanitor"; // TODO
     gmlog strcharinfo(0) + " changed doomsday to Act 5: The Doomsday.";
     return;
@@ -171,6 +180,8 @@ OnJanitor:
 OnInit:
     if ($DOOMSDAY == 1)
         goto L_Doomsday1;
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday2;
     // goto L_Check2;
     end;
 
@@ -222,6 +233,18 @@ L_Doomsday1Respawn:
         areamonster "003-4", 20, 20, 85, 60, "", 1138, 7-$@DoomsdayMc, "Doomsday::OnDeathMapname";
     // goto L_TimerCheck2;
     goto L_TimerFinish;
+
+L_Doomsday2:
+    disablenpc "Wizard#1";
+    disablenpc "Wizard#2";
+    disablenpc "Wizard#3";
+    disablenpc "Wizard#4";
+    disablenpc "Wizard#5";
+    disablenpc "Wizard#6";
+    disablenpc "Wizard#7";
+    disablenpc "Wizard#8";
+    disablenpc "Arch-Wizard#9";
+    end;
 
 // Respawn logic (5 minutes)
 OnTimer300000:
@@ -318,8 +341,8 @@ OnInit:
     goto L_Main;
 
 L_Main:
-    explode .@n$, strnpcinfo(0), "#";
-    // .@n$[1] = _DT/_DH/_DN for dismissal
+    explode @n$, strnpcinfo(0), "#";
+    // @n$[1] = _DT/_DH/_DN for dismissal
     mes "";
     menu
         "[GM 40] Enable Sagatha", L_Sagatha,
@@ -339,70 +362,71 @@ L_Main:
         "[GM 80] Dismiss the council", L_Dismiss;
 
 L_Sagatha:
-    enablenpc "Sagatha#"+.@n$[1];
+    enablenpc "Sagatha#"+@n$[1];
     goto L_Main;
 L_NoSagatha:
-    disablenpc "Sagatha#"+.@n$[1];
+    disablenpc "Sagatha#"+@n$[1];
     goto L_Main;
 
 L_Elanore:
-    enablenpc "Elanore#"+.@n$[1];
+    enablenpc "Elanore#"+@n$[1];
     goto L_Main;
 L_NoElanore:
-    disablenpc "Elanore#"+.@n$[1];
+    disablenpc "Elanore#"+@n$[1];
     goto L_Main;
 
 L_Nikolai:
-    enablenpc "Nikolai#"+.@n$[1];
+    enablenpc "Nikolai#"+@n$[1];
     goto L_Main;
 L_NoNikolai:
-    disablenpc "Nikolai#"+.@n$[1];
+    disablenpc "Nikolai#"+@n$[1];
     goto L_Main;
 
 L_Morgan:
-    enablenpc "Morgan#"+.@n$[1];
+    enablenpc "Morgan#"+@n$[1];
     goto L_Main;
 L_NoMorgan:
-    disablenpc "Morgan#"+.@n$[1];
+    disablenpc "Morgan#"+@n$[1];
     goto L_Main;
 
 L_Valia:
-    enablenpc "Valia#"+.@n$[1];
+    enablenpc "Valia#"+@n$[1];
     goto L_Main;
 L_NoValia:
-    disablenpc "Valia#"+.@n$[1];
+    disablenpc "Valia#"+@n$[1];
     goto L_Main;
 
 L_Waric:
-    enablenpc "Waric#"+.@n$[1];
+    enablenpc "Waric#"+@n$[1];
     goto L_Main;
 L_NoWaric:
-    disablenpc "Waric#"+.@n$[1];
+    disablenpc "Waric#"+@n$[1];
     goto L_Main;
 
 L_Golbenez:
-    enablenpc "Golbenez#"+.@n$[1];
+    enablenpc "Golbenez#"+@n$[1];
     goto L_Main;
 L_NoGolbenez:
-    disablenpc "Golbenez#"+.@n$[1];
+    disablenpc "Golbenez#"+@n$[1];
     goto L_Main;
 
 L_Dismiss:
-    disablenpc "Sagatha#"+.@n$[1];
-    disablenpc "Elanore#"+.@n$[1];
-    disablenpc "Nikolai#"+.@n$[1];
-    disablenpc "Morgan#"+.@n$[1];
-    disablenpc "Valia#"+.@n$[1];
-    disablenpc "Waric#"+.@n$[1];
-    disablenpc "Golbenez#"+.@n$[1];
-    disablenpc "Arch-Wizard#"+.@n$[1];
+    disablenpc "Sagatha#"+@n$[1];
+    disablenpc "Elanore#"+@n$[1];
+    disablenpc "Nikolai#"+@n$[1];
+    disablenpc "Morgan#"+@n$[1];
+    disablenpc "Valia#"+@n$[1];
+    disablenpc "Waric#"+@n$[1];
+    disablenpc "Golbenez#"+@n$[1];
+    disablenpc "Arch-Wizard#"+@n$[1];
+    gmlog strcharinfo(0) + " dismissed the Council.";
     close;
 
 OnInit:
     // Tulimshar room (Doomsday Tulim: _DT)
-    if (puppet("001-2", 99,  22, "Arch-Wizard#_DT",           354) < 1) mapexit;
-    if (puppet("069-2", 119, 93, "Arch-Wizard#_DH",           354) < 1) mapexit;
-    if (puppet("048-2", 119, 86, "Arch-Wizard#_DN",           354) < 1) mapexit;
+    if (puppet("001-2", 104, 27, "Arch-Wizard#_DT",           354) < 1) mapexit;
+    if (puppet("069-2", 106, 90, "Arch-Wizard#_DH",           354) < 1) mapexit;
+    if (puppet("048-2", 114, 80, "Arch-Wizard#_DN",           354) < 1) mapexit;
 
     // Disable puppets
     disablenpc "Arch-Wizard#_DT";
