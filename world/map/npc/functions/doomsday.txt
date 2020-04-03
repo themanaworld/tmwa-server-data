@@ -273,6 +273,11 @@ L_Doomsday3Init:
     set $@DoomsdayLoc, rand(300) / 100;
     goto L_Doomsday3;
 
+// This siege will be skipped
+L_Doomsday3Skip:
+    set $@DOOMSDAY_SKIP, 0;
+    end;
+
 // Operational label, handles sieges
 L_Doomsday3:
     // TODO
@@ -284,18 +289,37 @@ L_Doomsday3:
     // Then stop the timer, and check for survivors one hour after
     // If survivors are found, the town will be overrun
     // Save siege map in a temporary variable as well? (For Doomsday3Check)
-    startnpctimer;
+    set $@DD_NUMWAVES, 0;
+    if ($@DoomsdayLoc == 1)
+        set $@DD_LOC$, "018-1";
+    goto L_DDAdvanceWave;
+
+// Advance wave (max. 10 waves)
+L_DDAdvanceWave:
+    set $@DD_NUMWAVES, $@DD_NUMWAVES+1;
+    if ($@DD_NUMWAVES > 10)
+        end;
+
+    initnpctimer; // Restart from zero
     end;
 
-// This siege will be skipped
-L_Doomsday3Skip:
-    set $@DOOMSDAY_SKIP, 0;
+// Timer controls (5 minutes between waves);
+// It only fires after first wave
+L_TimerCheck2:
+    if ($@DD_NUMWAVES > 0)
+        goto L_DDAdvanceWave;
     end;
 
+// Siege one hour condition fully elapsed
 L_Doomsday3Check:
-    set $@DoomsdayMc, mobcount("003-4", "Doomsday::OnDeathMapname")+1;
+    set $@DoomsdayMc, mobcount($@DD_LOC$, "Doomsday::OnDeathAct3")+1;
     if ($@DoomsdayMc)
         gmlog "Players failed to defend the city!";
+
+    // Clean up temporary variables (except skip)
+    set $@DD_NUMWAVES, 0;
+    set $@DoomsdayLoc, 0;
+    set $@DoomsdayMc, 0;
     end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -303,7 +327,8 @@ L_Doomsday3Check:
 OnTimer300000:
     if ($DOOMSDAY == 1)
         goto L_Doomsday1Respawn;
-    // goto L_TimerCheck2;
+    if ($DOOMSDAY == 2)
+        goto L_TimerCheck2;
     goto L_TimerFinish;
 
 // Once all timer checks are over
@@ -332,6 +357,9 @@ OnDeathMapname:
     if ($DOOMSDAY == 1)
         set $DOOMSDAY_CNT, $DOOMSDAY_CNT+1;
     startnpctimer;
+    end;
+
+OnDeathAct3:
     end;
 
 }
