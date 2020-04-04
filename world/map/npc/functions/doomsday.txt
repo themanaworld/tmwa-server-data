@@ -420,13 +420,38 @@ L_TimerCheck2:
 // Siege one hour condition fully elapsed
 L_Doomsday3Check:
     set $@DoomsdayMc, mobcount($@DD_LOC$, "Doomsday::OnDeathAct3")+1;
-    if ($@DoomsdayMc)
-        gmlog "Players failed to defend the city!";
+    if ($@DoomsdayMc > 0)
+        goto L_Doomsday3Defeat;
+    goto L_Doomsday3Victory;
 
-    // Clean up temporary variables (except skip)
+// Town was defeated
+L_Doomsday3Defeat:
+    // Warn players that town is in danger
+    mapannounce $@DD_LOC$, "Jande : Oh noes, "+$@DoomsdayMc+" monsters passed the barricate!!", 0;
+
+    // Move the monsters to town
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    if ($@DoomsdayLoc == 1)
+        areamonster "009-1", 25, 25, 96, 53, "", $@doomsday_mobs[$@DD_IDX], $@DoomsdayMc;
+
+    // Update defeat counter and advance
+    set $DOOMSDAY_TOWN[$@DoomsdayLoc], $DOOMSDAY_TOWN[$@DoomsdayLoc]+1;
+    set $@DD_IDX, 0;
+    goto L_Doomsday3Cleanup;
+
+// Siege was cleared up
+L_Doomsday3Victory:
+    mapannounce $@DD_LOC$, "Jande : That was a close call, but we did it! We defended "+$DOOMSDAY_SCORE+" times.", 0;
+    set $DOOMSDAY_SCORE, $DOOMSDAY_SCORE+1;
+    goto L_Doomsday3Cleanup;
+
+// Clean up temporary variables (except skip)
+L_Doomsday3Cleanup:
+    killmonster $@DD_LOC$, "Doomsday::OnDeathAct3";
     set $@DD_NUMWAVES, 0;
     set $@DoomsdayLoc, 0;
     set $@DoomsdayMc, 0;
+    set $@DD_LOC$, "";
     end;
 
 ////////////////////////////////////////////////////////////////////////////////
