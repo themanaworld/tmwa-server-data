@@ -160,6 +160,7 @@ L_Kage:
 OnJanitor:
     // TODO: Act 2: Kill monsters?
     // Act 3: Clean eventually on-going Doomsday
+    set $@DOOMSDAY_SKIP, 0;
     set $@DD_NUMWAVES, 0;
     set $@DoomsdayLoc, 0;
     set $@DoomsdayMc, 0;
@@ -315,7 +316,15 @@ OnDoomsday3First:
 // Setup a siege
 L_Doomsday3Init:
     set $@DoomsdayLoc, rand(300) / 100;
-    goto L_Doomsday3;
+
+    // Announce based on location
+    if ($@DoomsdayLoc == 0)
+        announce "Jande: Zax De'Kagen's army is marching to ##BTULIMSHAR##b in 10 minutes! (Attack by south gate)", 0;
+    if ($@DoomsdayLoc == 1)
+        announce "Jande: Zax De'Kagen's army is marching to ##BHURNSCALD##b in 10 minutes! (Attack by the mines)", 0;
+    if ($@DoomsdayLoc == 2)
+        announce "Jande: Zax De'Kagen's army is marching to ##BNIVALIS##b in 10 minutes! (attack by south gate)", 0;
+    end;
 
 // This siege will be skipped
 L_Doomsday3Skip:
@@ -324,16 +333,14 @@ L_Doomsday3Skip:
 
 // Operational label, handles sieges
 L_Doomsday3:
-    // TODO
-    // getmapusers() or getusers(0x7)?
-    // Do not begin at once, wait 10 minutes to player move
-    // Note at this point it is no longer possible to skip the event!!
+    // At this point it is no longer possible to skip the event.
     // Based on $@DoomsdayLoc go to a town-specific label
-    // One wave every 5 minutes, until 10 waves were called
-    // Then stop the timer, and check for survivors one hour after
+    // One wave every 5 minutes, until 6 waves were called (~30 min)
+    // Then stop the timer, and check for survivor mobs 45 minutes after
     // If survivors are found, the town will be overrun
-    // Save siege map in a temporary variable as well? (For Doomsday3Check)
     set $@DD_NUMWAVES, 0;
+
+    // Set the map for other labels (could use an array but meh)
     if ($@DoomsdayLoc == 1)
         set $@DD_LOC$, "018-1";
     goto L_DDAdvanceWave;
@@ -487,6 +494,13 @@ OnClock1750:
         goto L_Doomsday3Skip;
     if ($DOOMSDAY == 2)
         goto L_Doomsday3Init;
+    end;
+
+OnClock1800:
+    if ($@DOOMSDAY_SKIP)
+        goto L_Doomsday3Skip;
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3;
     end;
 
 // 19h -> 18h45
