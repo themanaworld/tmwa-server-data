@@ -323,7 +323,7 @@ L_Doomsday3Init:
     if ($@DoomsdayLoc == 1)
         announce "Jande: Zax De'Kagen's army is marching to ##BHURNSCALD##b in 10 minutes! (Attack by the mines)", 0;
     if ($@DoomsdayLoc == 2)
-        announce "Jande: Zax De'Kagen's army is marching to ##BNIVALIS##b in 10 minutes! (attack by south gate)", 0;
+        announce "Jande: Zax De'Kagen's army is marching to ##BNIVALIS##b in 10 minutes! (Attack by east entrance)", 0;
     end;
 
 // This siege will be skipped
@@ -341,8 +341,12 @@ L_Doomsday3:
     set $@DD_NUMWAVES, 0;
 
     // Set the map for other labels (could use an array but meh)
+    if ($@DoomsdayLoc == 0)
+        set $@DD_LOC$, "002-1";
     if ($@DoomsdayLoc == 1)
         set $@DD_LOC$, "018-1";
+    if ($@DoomsdayLoc == 2)
+        set $@DD_LOC$, "031-1";
 
 
     // Make an extra announce for those whom missed
@@ -351,7 +355,7 @@ L_Doomsday3:
     if ($@DoomsdayLoc == 1)
         announce "Jande: Zax De'Kagen's army reached ##BHURNSCALD##b! (Attack by the mines)", 0;
     if ($@DoomsdayLoc == 2)
-        announce "Jande: Zax De'Kagen's army reached ##BNIVALIS##b! (attack by south gate)", 0;
+        announce "Jande: Zax De'Kagen's army reached ##BNIVALIS##b! (Attack by east entrance)", 0;
 
     goto L_DDAdvanceWave;
 
@@ -362,6 +366,8 @@ L_DDAdvanceWave:
         end; // TODO?
 
     // Spawns
+    if ($@DoomsdayLoc == 0)
+        goto L_DD3Tulim;
     if ($@DoomsdayLoc == 1)
         goto L_DD3Hurns;
 
@@ -389,6 +395,59 @@ L_DDAdvanceWavePost:
     // Tell users
     mapannounce $@DD_LOC$, "Jande : Watch out, another wave! Only "+(6-$@DD_NUMWAVES)+" waves left!", 0;
     end;
+
+
+
+
+// Tulimshar Siege points
+L_DD3Tulim:
+    set $@DD_INT, 0;
+    set $@DD_UNITS, getmapusers($@DD_LOC$);
+
+    // Compulsory spawns
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 98, 75, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 97, 86, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    // Non-compulsory spawns
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 91, 99, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 75, 104, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 56, 81, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 44, 63, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 76, 76, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 54, 96, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    // No extra spawns possible
+    goto L_DDAdvanceTimers;
+
+
 
 // Hurnscald Siege points
 L_DD3Hurns:
@@ -438,6 +497,9 @@ L_DD3Hurns:
     // No extra spawns possible
     goto L_DDAdvanceTimers;
 
+
+
+
 // Timer controls (5 minutes between waves);
 // It only fires after first wave
 L_TimerCheck2:
@@ -459,8 +521,12 @@ L_Doomsday3Defeat:
 
     // Move the monsters to town
     setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    if ($@DoomsdayLoc == 0)
+        areamonster "001-1", 52, 35, 119, 113, "", $@doomsday_mobs[$@DD_IDX], $@DoomsdayMc; // FIXME x,y spawn area
     if ($@DoomsdayLoc == 1)
         areamonster "009-1", 25, 25, 96, 53, "", $@doomsday_mobs[$@DD_IDX], $@DoomsdayMc;
+    if ($@DoomsdayLoc == 2)
+        areamonster "020-1", 25, 25, 96, 53, "", $@doomsday_mobs[$@DD_IDX], $@DoomsdayMc; // FIXME x,y spawn area
 
     // Update defeat counter and advance
     set $DOOMSDAY_TOWN[$@DoomsdayLoc], $DOOMSDAY_TOWN[$@DoomsdayLoc]+1;
