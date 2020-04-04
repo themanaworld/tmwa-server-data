@@ -338,22 +338,28 @@ L_Doomsday3:
 L_DDAdvanceWave:
     set $@DD_NUMWAVES, $@DD_NUMWAVES+1;
     if ($@DD_NUMWAVES > 6)
-        end;
+        end; // TODO?
 
-    // Spawns (FIXME - loop and precision coordinates)
+    // Spawns
     if ($@DoomsdayLoc == 1)
         goto L_DD3Hurns;
 
+    // Fallback
+    debugmes "DOOMSDAY/ACT3: Unrecognized town: "+$@DoomsdayLoc;
     goto L_DDAdvanceWavePost;
 
+// Restart timers and broadcast
 L_DDAdvanceWavePost:
-    set $@DD_IDX, 0;
-    set $@DD_INT, 0;
-    set $@DD_UNITS, 0;
-    initnpctimer; // Restart timer from zero
+    initnpctimer;
     // If we have more users than possible, waves come faster
     if ($@DD_INT < $@DD_UNITS*2)
         setnpctimer ($@DD_UNITS*2-$@DD_INT)*100;
+    // Clear temporary variables
+    set $@DD_IDX, 0;
+    set $@DD_INT, 0;
+    set $@DD_UNITS, 0;
+    // Tell users
+    mapannounce $@DD_LOC$, "Jande : Watch out, another wave! Only "+6-$@DD_NUMWAVES+" waves left!", 0;
     end;
 
 // Hurnscald Siege points
