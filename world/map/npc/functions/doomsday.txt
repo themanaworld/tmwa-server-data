@@ -348,17 +348,60 @@ L_DDAdvanceWave:
 
 L_DDAdvanceWavePost:
     set $@DD_IDX, 0;
-    initnpctimer; // Restart from zero
+    set $@DD_INT, 0;
+    set $@DD_UNITS, 0;
+    initnpctimer; // Restart timer from zero
+    // If we have more users than possible, waves come faster
+    if ($@DD_INT < $@DD_UNITS*2)
+        setnpctimer ($@DD_UNITS*2-$@DD_INT)*100;
     end;
 
 // Hurnscald Siege points
 L_DD3Hurns:
+    set $@DD_INT, 0;
+    set $@DD_UNITS, getmapusers($@DD_LOC$);
+
+    // Compulsory spawns
     setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 138, 63, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
 
     setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 136, 71, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
 
+    // Non-compulsory spawns
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceWavePost;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 133, 79, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceWavePost;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 111, 74, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceWavePost;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 94, 75, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceWavePost;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 79, 64, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceWavePost;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 67, 82, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceWavePost;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 88, 90, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    // No extra spawns possible
     goto L_DDAdvanceWavePost;
 
 // Timer controls (5 minutes between waves);
