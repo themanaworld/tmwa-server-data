@@ -18,30 +18,136 @@
 function|script|DoomsdayDebug
 {
     mes "$DOOMSDAY: "+$DOOMSDAY; // Event Status
-    mes "$DOOMSDAY_CNT: "+$DOOMSDAY_CNT; // Meaning Varies
+    mes "";
+    mes "Act 2:";
+    mes "Amount of slain Mana Guardians:";
+    mes "$DOOMSDAY_CNT: "+$DOOMSDAY_CNT;
+    mes "";
+    mes "Act 3:";
+    mes "Situation of the towns (0 - standing, n - fallen n times)";
+    mes "$DOOMSDAY_TOWN[0] (Tulim): "+$DOOMSDAY_TOWN[0];
+    mes "$DOOMSDAY_TOWN[1] (Hurns): "+$DOOMSDAY_TOWN[1];
+    mes "$DOOMSDAY_TOWN[2] (Nival): "+$DOOMSDAY_TOWN[2];
+    mes "$DOOMSDAY_SCORE: "+$DOOMSDAY_SCORE;
+    mes "";
+    mes "Can players summon Mana Guardians? "+if_then_else($DOOMSDAY_SUMMON, "Yes", "No");
+    mes "Is TMW under Jande's control? "+if_then_else($DOOMSDAY_TAKENOVER, "Yes", "No");
+    //($DOOMSDAY_SUMMON ? "Yes" : "No");
     next;
     // Only GM 80 and above can modify Doomsday
     // ...Yes, G_ADMIN is 80 while G_SYSOP is 99.
     if (GM < G_ADMIN) goto L_Close;
     mes "Setting $DOOMSDAY event state";
+    mes "[DOOMSDAY][ACT][STATE]";
     menu
-        "[0] Tormenta's Seal",L_Seal,
-        "[1] Jande's Army",L_Army,
+        "[0][1][0] Tormenta's Seal",L_Seal,
+        "[1][2][0] Jande's Army",L_Army,
+        "[1][2][1] Toggle Mana Guardian Skill",L_Summon,
+        "[1][2][2] Surrender TMW to Jande",L_Surrender,
+        "[1][3][0] The Great War - First Wave",L_War,
+        "[2][3][1] The Great War - Additional Wave",L_GreatWar,
+        "[2][4][1] Council - Tulimshar's Guild",L_TulimCouncil,
+        "[2][4][2] Council - Celestia's Residence",L_HurnsCouncil,
+        "[2][4][3] Council - Blue Sage's Residence",L_NivalCouncil,
+        "[3][5][0] Kage's Final Battle",L_Kage,
         "[-] Close",L_Close;
 
 L_Close:
     return;
 
+// Act 1: Tormenta's Seal
 L_Seal:
     set $DOOMSDAY, 0;
     donpcevent "Doomsday::OnJanitor";
     gmlog strcharinfo(0) + " changed doomsday to Act 1: Tormenta's Seal.";
     return;
 
+// Act 2: Jande's Army
 L_Army:
     set $DOOMSDAY, 1;
     donpcevent "Doomsday::OnJanitor";
     gmlog strcharinfo(0) + " changed doomsday to Act 2: Jande's Army.";
+    return;
+
+L_Summon:
+    set $DOOMSDAY_SUMMON, (!$DOOMSDAY_SUMMON);
+    gmlog strcharinfo(0) + " changed the availability of #jande spell.";
+    return;
+
+L_Surrender:
+    set $DOOMSDAY_TAKENOVER, 1;
+    donpcevent "Doomsday::OnDoomsday2Restart";
+    gmlog strcharinfo(0) + " surrendered The Mana World to Jande.";
+    return;
+
+
+// Act 3: The Great War
+L_War:
+    set $@DOOMSDAY_SKIP, 1; // Skip the next scheduled siege
+    donpcevent "Doomsday::OnDoomsday3First"; // Forces a doomsday to begin now
+    gmlog strcharinfo(0) + " changed doomsday to Act 3: The Great War.";
+    return;
+
+// Act 4: The Great War Council
+L_GreatWar:
+    disablenpc "Wizard#1";
+    disablenpc "Wizard#2";
+    disablenpc "Wizard#3";
+    disablenpc "Wizard#4";
+    disablenpc "Wizard#5";
+    disablenpc "Wizard#6";
+    disablenpc "Wizard#7";
+    disablenpc "Wizard#8";
+    disablenpc "Arch-Wizard#9";
+    set $DOOMSDAY, 2;
+    set $@DOOMSDAY_SKIP, 0;
+    donpcevent "Doomsday::OnJanitor";
+    gmlog strcharinfo(0) + " changed doomsday to Act 4: The Great War Council.";
+    return;
+
+L_CouncilRefusal:
+    mes "##1Cowardly refusing to meet in a town destroyed five times.";
+    next;
+    return;
+
+L_TulimCouncil:
+    if ($DOOMSDAY_TOWN[0] >= 5)
+        goto L_CouncilRefusal;
+
+    enablenpc "Arch-Wizard#_DT";
+    gmlog strcharinfo(0) + " called the Council to Tulimshar.";
+    return;
+
+L_HurnsCouncil:
+    if ($DOOMSDAY_TOWN[1] >= 5)
+        goto L_CouncilRefusal;
+
+    enablenpc "Arch-Wizard#_DH";
+    gmlog strcharinfo(0) + " called the Council to Hurnscald.";
+    return;
+
+L_NivalCouncil:
+    if ($DOOMSDAY_TOWN[2] >= 5)
+        goto L_CouncilRefusal;
+
+    enablenpc "Arch-Wizard#_DN";
+    gmlog strcharinfo(0) + " called the Council to Nivalis.";
+    return;
+
+// Act 5: The Doomsday
+L_Kage:
+    mes "//-- TODO --//";
+    enablenpc "Wizard#1";
+    enablenpc "Wizard#2";
+    enablenpc "Wizard#3";
+    enablenpc "Wizard#4";
+    enablenpc "Wizard#5";
+    enablenpc "Wizard#6";
+    enablenpc "Wizard#7";
+    enablenpc "Wizard#8";
+    enablenpc "Arch-Wizard#9";
+    donpcevent "Doomsday::OnJanitor"; // TODO
+    gmlog strcharinfo(0) + " changed doomsday to Act 5: The Doomsday.";
     return;
 }
 
@@ -52,18 +158,55 @@ L_Army:
 
 // Destroy any artifact as doomsday mode changes
 OnJanitor:
-    // TODO: Kill monsters?
+    // TODO: Act 2: Kill monsters?
+    // Act 3: Clean eventually on-going Doomsday
+    set $@DOOMSDAY_SKIP, 0;
+    set $@DD_NUMWAVES, 0;
+    set $@DoomsdayLoc, 0;
+    set $@DoomsdayMc, 0;
+    set $@DD_LOC$, "";
+    // Act 4: Disable council puppets
+    disablenpc "Sagatha#_DT";
+    disablenpc "Elanore#_DT";
+    disablenpc "Nikolai#_DT";
+    disablenpc "Morgan#_DT";
+    disablenpc "Valia#_DT";
+    disablenpc "Waric#_DT";
+    disablenpc "Golbenez#_DT";
+    disablenpc "Sagatha#_DH";
+    disablenpc "Elanore#_DH";
+    disablenpc "Nikolai#_DH";
+    disablenpc "Morgan#_DH";
+    disablenpc "Valia#_DH";
+    disablenpc "Waric#_DH";
+    disablenpc "Golbenez#_DH";
+    disablenpc "Sagatha#_DN";
+    disablenpc "Elanore#_DN";
+    disablenpc "Nikolai#_DN";
+    disablenpc "Morgan#_DN";
+    disablenpc "Valia#_DN";
+    disablenpc "Waric#_DN";
+    disablenpc "Golbenez#_DN";
+    disablenpc "Arch-Wizard#_DT";
+    disablenpc "Arch-Wizard#_DH";
+    disablenpc "Arch-Wizard#_DN";
+    // TODO: Act 5: Not needed?
+    // Clear timers
     setnpctimer 0;
     stopnpctimer;
     goto OnInit;
 
 // Check for our current doomsday state
 OnInit:
+    setarray $@doomsday_mobs, 1140, 1141, 1143, 1140, 1141, 1143, 1140, 1141, 1143;
     if ($DOOMSDAY == 1)
         goto L_Doomsday1;
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday2;
     // goto L_Check2;
     end;
 
+////////////////////////////////////////////////////////////////////////////////
 L_Doomsday1:
     // 1138 - Mana Guardian
     // Argaes Invasion (1)
@@ -113,11 +256,357 @@ L_Doomsday1Respawn:
     // goto L_TimerCheck2;
     goto L_TimerFinish;
 
+////////////////////////////////////////////////////////////////////////////////
+// Disable Tulimshar Magic Council
+L_Doomsday2:
+    addnpctimer 1000, "Doomsday::OnDoomsday2Restart";
+    end;
+
+OnDoomsday2Restart:
+    disablenpc "Wizard#1";
+    disablenpc "Wizard#2";
+    disablenpc "Wizard#3";
+    disablenpc "Wizard#4";
+    disablenpc "Wizard#5";
+    disablenpc "Wizard#6";
+    disablenpc "Wizard#7";
+    disablenpc "Wizard#8";
+    disablenpc "Arch-Wizard#9";
+
+    // TODO: Maybe the town was taken over?
+    if (!$DOOMSDAY_TAKENOVER)
+        end;
+
+    fakenpcname "Constable Bob", "Constable Bob#_D", 421;
+    fakenpcname "Inspector#Hurnscald", "Inspector#Hurnscald_D", 420;
+    //fakenpcname "Richard", "Guardian Richard#_D", 420;
+    fakenpcname "Selim", "Guardian Selim#_D", 420;
+    fakenpcname "General Store#hurnscald", "Guardian Store#hurns_D", 420;
+    fakenpcname "General Store#dimond", "Guardian Store#dimond_D", 420;
+    fakenpcname "Sabine", "Mana Tourist#_D", 420;
+    fakenpcname "Apprentice", "Apprentice#_D", 420;
+    fakenpcname "Entertainer", "Entertainer#_D", 420;
+    fakenpcname "Drinker#2", "Drinker#2_D", 420;
+    fakenpcname "Bartender#Duels", "Bartender#Duels_D", 420;
+    fakenpcname "Jerry", "Mana Singer#_D", 420;
+
+    fakenpcname "Constable Perry Graf", "Constable Perry#_D", 420; // Name too long
+    fakenpcname "Guard#school", "Guard#school_D", 420;
+    fakenpcname "Guard#castle", "Guard#castle_D", 420;
+    fakenpcname "Guard#east3", "Guard#east3_D", 420;
+    fakenpcname "Guard#govt_out", "Guard#govtout_D", 420;
+    fakenpcname "Guard#govt_in", "Guard#govtin_D", 420;
+    fakenpcname "Guard#port1", "Guard#port1_D", 420;
+    fakenpcname "Guard#port2", "Guard#port2_D", 420;
+    fakenpcname "Guard#east1", "Guard#east1_D", 420;
+
+    fakenpcname "Mede", "Mana Shopkeeper#_D", 420;
+    fakenpcname "Bracco", "Mana Shopkeeper#2_D", 420;
+    end;
+
+/////// Act 3 sieges
+// Variables:
+// $@DoomsdayLoc / 100 = Town Code (0: Tulim, 1: Hurns, 2: Nivalis)
+
+// Fake label for the first Zax's movement
+OnDoomsday3First:
+    set $@DoomsdayLoc, 1;
+    goto L_Doomsday3;
+
+// Setup a siege
+L_Doomsday3Init:
+    set $@DoomsdayLoc, rand(300) / 100;
+
+    // Announce based on location
+    if ($@DoomsdayLoc == 0)
+        announce "Jande: Zax De'Kagen's army is marching to ##BTULIMSHAR##b in 10 minutes! (Attack by south gate)", 0;
+    if ($@DoomsdayLoc == 1)
+        announce "Jande: Zax De'Kagen's army is marching to ##BHURNSCALD##b in 10 minutes! (Attack by the mines)", 0;
+    if ($@DoomsdayLoc == 2)
+        announce "Jande: Zax De'Kagen's army is marching to ##BNIVALIS##b in 10 minutes! (Attack by east entrance)", 0;
+    end;
+
+// This siege will be skipped
+L_Doomsday3Skip:
+    set $@DOOMSDAY_SKIP, 0;
+    end;
+
+// Operational label, handles sieges
+L_Doomsday3:
+    // At this point it is no longer possible to skip the event.
+    // Based on $@DoomsdayLoc go to a town-specific label
+    // One wave every 5 minutes, until 6 waves were called (~30 min)
+    // Then stop the timer, and check for survivor mobs 45 minutes after
+    // If survivors are found, the town will be overrun
+    set $@DD_NUMWAVES, 0;
+
+    // Set the map for other labels (could use an array but meh)
+    if ($@DoomsdayLoc == 0)
+        set $@DD_LOC$, "002-1";
+    if ($@DoomsdayLoc == 1)
+        set $@DD_LOC$, "018-1";
+    if ($@DoomsdayLoc == 2)
+        set $@DD_LOC$, "031-1";
+
+
+    // Make an extra announce for those whom missed
+    if ($@DoomsdayLoc == 0)
+        announce "Jande: Zax De'Kagen's army reached ##BTULIMSHAR##b! (Attack by south gate)", 0;
+    if ($@DoomsdayLoc == 1)
+        announce "Jande: Zax De'Kagen's army reached ##BHURNSCALD##b! (Attack by the mines)", 0;
+    if ($@DoomsdayLoc == 2)
+        announce "Jande: Zax De'Kagen's army reached ##BNIVALIS##b! (Attack by east entrance)", 0;
+
+    goto L_DDAdvanceWave;
+
+// Advance wave (max. 10->6 waves)
+L_DDAdvanceWave:
+    set $@DD_NUMWAVES, $@DD_NUMWAVES+1;
+    if ($@DD_NUMWAVES > 6)
+        end; // TODO: Maybe a final wave announcement?
+
+    // Spawns
+    if ($@DoomsdayLoc == 0)
+        goto L_DD3Tulim;
+    if ($@DoomsdayLoc == 1)
+        goto L_DD3Hurns;
+    if ($@DoomsdayLoc == 2)
+        goto L_DD3Nival;
+
+    // Fallback
+    debugmes "DOOMSDAY/ACT3: Unrecognized town: "+$@DoomsdayLoc;
+    goto L_DDAdvanceTimers;
+
+// Restart timers and advance wave
+L_DDAdvanceTimers:
+    initnpctimer;
+    if ($@DD_INT < $@DD_UNITS*2)
+        goto L_DDAdvanceTimers2;
+    goto L_DDAdvanceWavePost;
+
+// If we have more users than possible, waves come faster
+L_DDAdvanceTimers2:
+    setnpctimer (($@DD_UNITS*2-$@DD_INT)*500); // ±1 second per player
+    goto L_DDAdvanceWavePost;
+
+// Clear temporary variables and broadcast
+L_DDAdvanceWavePost:
+    set $@DD_IDX, 0;
+    set $@DD_INT, 0;
+    set $@DD_UNITS, 0;
+    // Tell users
+    mapannounce $@DD_LOC$, "Jande : Watch out, another wave! Only "+(6-$@DD_NUMWAVES)+" waves left!", 0;
+    end;
+
+
+
+
+// Tulimshar Siege points
+L_DD3Tulim:
+    set $@DD_INT, 0;
+    set $@DD_UNITS, getmapusers($@DD_LOC$);
+
+    // Compulsory spawns
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 98, 75, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 97, 86, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    // Non-compulsory spawns
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 91, 99, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 75, 104, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 56, 81, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 44, 63, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 76, 76, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 54, 96, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    // No extra spawns possible
+    goto L_DDAdvanceTimers;
+
+
+
+// Hurnscald Siege points
+L_DD3Hurns:
+    set $@DD_INT, 0;
+    set $@DD_UNITS, getmapusers($@DD_LOC$);
+
+    // Compulsory spawns
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 138, 63, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 136, 71, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    // Non-compulsory spawns
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 133, 79, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 111, 74, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 94, 75, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 79, 64, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 67, 82, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 88, 90, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    // No extra spawns possible
+    goto L_DDAdvanceTimers;
+
+
+
+// Nivalis Siege points
+L_DD3Nival:
+    set $@DD_INT, 0;
+    set $@DD_UNITS, getmapusers($@DD_LOC$);
+
+    // Compulsory spawns
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "031-1", 44, 55, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "031-1", 62, 49, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    // Non-compulsory spawns
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "031-1", 63, 61, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "031-1", 56, 83, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "031-1", 70, 41, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "031-1", 36, 37, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "031-1", 62, 26, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "031-1", 85, 30, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    set $@DD_INT, $@DD_INT+1;
+
+    // No extra spawns possible
+    goto L_DDAdvanceTimers;
+
+
+
+
+// Timer controls (5 minutes between waves);
+// It only fires after first wave
+L_TimerCheck2:
+    if ($@DD_NUMWAVES > 0)
+        goto L_DDAdvanceWave;
+    end;
+
+// Siege one hour condition fully elapsed
+L_Doomsday3Check:
+    set $@DoomsdayMc, mobcount($@DD_LOC$, "Doomsday::OnDeathAct3")+1;
+    if ($@DoomsdayMc > 0)
+        goto L_Doomsday3Defeat;
+    goto L_Doomsday3Victory;
+
+// Town was defeated
+L_Doomsday3Defeat:
+    // Warn players that town is in danger
+    mapannounce $@DD_LOC$, "Jande : Oh noes, "+$@DoomsdayMc+" monsters passed the barricate!!", 0;
+
+    // Move the monsters to town
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    if ($@DoomsdayLoc == 0)
+        areamonster "001-1", 52, 35, 119, 113, "", $@doomsday_mobs[$@DD_IDX], $@DoomsdayMc;
+    if ($@DoomsdayLoc == 1)
+        areamonster "009-1", 25, 25, 96, 53, "", $@doomsday_mobs[$@DD_IDX], $@DoomsdayMc;
+    if ($@DoomsdayLoc == 2)
+        areamonster "020-1", 24, 32, 99, 96, "", $@doomsday_mobs[$@DD_IDX], $@DoomsdayMc;
+
+    // Update defeat counter and advance
+    set $DOOMSDAY_TOWN[$@DoomsdayLoc], $DOOMSDAY_TOWN[$@DoomsdayLoc]+1;
+    set $@DD_IDX, 0;
+    goto L_Doomsday3Cleanup;
+
+// Siege was cleared up
+L_Doomsday3Victory:
+    mapannounce $@DD_LOC$, "Jande : That was a close call, but we did it! We defended "+$DOOMSDAY_SCORE+" times.", 0;
+    set $DOOMSDAY_SCORE, $DOOMSDAY_SCORE+1;
+    goto L_Doomsday3Cleanup;
+
+// Clean up temporary variables (except skip)
+L_Doomsday3Cleanup:
+    killmonster $@DD_LOC$, "Doomsday::OnDeathAct3";
+    set $@DD_NUMWAVES, 0;
+    set $@DoomsdayLoc, 0;
+    set $@DoomsdayMc, 0;
+    set $@DD_LOC$, "";
+    end;
+
+////////////////////////////////////////////////////////////////////////////////
 // Respawn logic (5 minutes)
 OnTimer300000:
     if ($DOOMSDAY == 1)
         goto L_Doomsday1Respawn;
-    // goto L_TimerCheck2;
+    if ($DOOMSDAY == 2)
+        goto L_TimerCheck2;
     goto L_TimerFinish;
 
 // Once all timer checks are over
@@ -127,6 +616,28 @@ L_TimerFinish:
     stopnpctimer;
     end;
 
+// Act 3 clock handlers
+OnClock1750:
+    if ($@DOOMSDAY_SKIP)
+        goto L_Doomsday3Skip;
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3Init;
+    end;
+
+OnClock1800:
+    if ($@DOOMSDAY_SKIP)
+        goto L_Doomsday3Skip;
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3;
+    end;
+
+// 19h -> 18h45
+OnClock1845:
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3Check;
+    end;
+
+////////////////////////////////////////////////////////////////////////////////
 // Puppet labels
 OnDeathMapname:
     if ($DOOMSDAY == 1)
@@ -134,7 +645,192 @@ OnDeathMapname:
     startnpctimer;
     end;
 
+OnDeathAct3:
+    end;
+
 }
 
+// Control puppets for Doomsday Council Meetings
+-|script|Doomsday Council|32767
+{
+    if (GM >= G_DEV)
+        mes "["+strnpcinfo(0)+"]";
+    mes "You probably should try talking to them normally.";
+    if (GM >= G_DEV)
+        mes "##9 Use: @npctalk \""+strnpcinfo(0)+"\" \"your message goes here\"##0";
+    close;
+
+OnInit:
+    // Tulimshar room (Doomsday Tulim: _DT)
+    if (puppet("001-2", 99,  22, "Sagatha#_DT",            167) < 1) mapexit;
+    if (puppet("001-2", 92,  24, "Elanore#_DT",            108) < 1) mapexit;
+    if (puppet("001-2", 92,  30, "Nikolai#_DT",            362) < 1) mapexit;
+    if (puppet("001-2", 99,  32, "Morgan#_DT",             355) < 1) mapexit;
+    if (puppet("001-2", 110, 22, "Valia#_DT",              370) < 1) mapexit;
+    if (puppet("001-2", 117, 24, "Waric#_DT",              153) < 1) mapexit;
+    if (puppet("001-2", 117, 30, "Golbenez#_DT",           307) < 1) mapexit;
+
+    // Hurnscald room (Doomsday Hurns: _DH)
+    if (puppet("069-2", 101, 85, "Sagatha#_DH",            167) < 1) mapexit;
+    if (puppet("069-2", 94,  87, "Elanore#_DH",            108) < 1) mapexit;
+    if (puppet("069-2", 94,  93, "Nikolai#_DH",            362) < 1) mapexit;
+    if (puppet("069-2", 101, 95, "Morgan#_DH",             355) < 1) mapexit;
+    if (puppet("069-2", 112, 85, "Valia#_DH",              370) < 1) mapexit;
+    if (puppet("069-2", 119, 87, "Waric#_DH",              153) < 1) mapexit;
+    if (puppet("069-2", 119, 93, "Golbenez#_DH",           307) < 1) mapexit;
+
+    // Nivalis room (Doomsday Nivalis: _DN)
+    if (puppet("048-2", 113, 86, "Sagatha#_DN",            167) < 1) mapexit;
+    if (puppet("048-2", 112, 87, "Elanore#_DN",            108) < 1) mapexit;
+    if (puppet("048-2", 114, 87, "Nikolai#_DN",            362) < 1) mapexit;
+    if (puppet("048-2", 113, 88, "Morgan#_DN",             355) < 1) mapexit;
+    if (puppet("048-2", 118, 85, "Valia#_DN",              370) < 1) mapexit;
+    if (puppet("048-2", 117, 86, "Waric#_DN",              153) < 1) mapexit;
+    if (puppet("048-2", 119, 86, "Golbenez#_DN",           307) < 1) mapexit;
+
+    // Disable puppets
+    disablenpc "Sagatha#_DT";
+    disablenpc "Elanore#_DT";
+    disablenpc "Nikolai#_DT";
+    disablenpc "Morgan#_DT";
+    disablenpc "Valia#_DT";
+    disablenpc "Waric#_DT";
+    disablenpc "Golbenez#_DT";
+
+    disablenpc "Sagatha#_DH";
+    disablenpc "Elanore#_DH";
+    disablenpc "Nikolai#_DH";
+    disablenpc "Morgan#_DH";
+    disablenpc "Valia#_DH";
+    disablenpc "Waric#_DH";
+    disablenpc "Golbenez#_DH";
+
+    disablenpc "Sagatha#_DN";
+    disablenpc "Elanore#_DN";
+    disablenpc "Nikolai#_DN";
+    disablenpc "Morgan#_DN";
+    disablenpc "Valia#_DN";
+    disablenpc "Waric#_DN";
+    disablenpc "Golbenez#_DN";
+    end;
+}
+
+// 114,80
+-|script|Doomsday Council Master|32767
+{
+    mes "The wizard seems to ignore you.";
+    if (GM < G_DEV)
+        close;
+    goto L_Main;
+
+L_Main:
+    explode @n$, strnpcinfo(0), "#";
+    // @n$[1] = _DT/_DH/_DN for dismissal
+    mes "";
+    menu
+        "[GM 40] Enable Sagatha", L_Sagatha,
+        "[GM 40] Enable Elanore", L_Elanore,
+        "[GM 40] Enable Nikolai", L_Nikolai,
+        "[GM 40] Enable Morgan", L_Morgan,
+        "[GM 40] Enable Valia", L_Valia,
+        "[GM 40] Enable Waric", L_Waric,
+        "[GM 40] Enable Golbenez", L_Golbenez,
+        "[GM 40] Disable Sagatha", L_NoSagatha,
+        "[GM 40] Disable Elanore", L_NoElanore,
+        "[GM 40] Disable Nikolai", L_NoNikolai,
+        "[GM 40] Disable Morgan", L_NoMorgan,
+        "[GM 40] Disable Valia", L_NoValia,
+        "[GM 40] Disable Waric", L_NoWaric,
+        "[GM 40] Disable Golbenez", L_NoGolbenez,
+        "[GM 60] Cancel Next Siege", L_SkipSiege,
+        "[GM 80] Dismiss the council", L_Dismiss;
+
+L_Sagatha:
+    enablenpc "Sagatha#"+@n$[1];
+    goto L_Main;
+L_NoSagatha:
+    disablenpc "Sagatha#"+@n$[1];
+    goto L_Main;
+
+L_Elanore:
+    enablenpc "Elanore#"+@n$[1];
+    goto L_Main;
+L_NoElanore:
+    disablenpc "Elanore#"+@n$[1];
+    goto L_Main;
+
+L_Nikolai:
+    enablenpc "Nikolai#"+@n$[1];
+    goto L_Main;
+L_NoNikolai:
+    disablenpc "Nikolai#"+@n$[1];
+    goto L_Main;
+
+L_Morgan:
+    enablenpc "Morgan#"+@n$[1];
+    goto L_Main;
+L_NoMorgan:
+    disablenpc "Morgan#"+@n$[1];
+    goto L_Main;
+
+L_Valia:
+    enablenpc "Valia#"+@n$[1];
+    goto L_Main;
+L_NoValia:
+    disablenpc "Valia#"+@n$[1];
+    goto L_Main;
+
+L_Waric:
+    enablenpc "Waric#"+@n$[1];
+    goto L_Main;
+L_NoWaric:
+    disablenpc "Waric#"+@n$[1];
+    goto L_Main;
+
+L_Golbenez:
+    enablenpc "Golbenez#"+@n$[1];
+    goto L_Main;
+L_NoGolbenez:
+    disablenpc "Golbenez#"+@n$[1];
+    goto L_Main;
+
+L_Dismiss:
+    if (GM < G_ADMIN)
+        mes "Your GM level does not authorizes you to perform this operation.";
+    if (GM < G_ADMIN)
+        close;
+    disablenpc "Sagatha#"+@n$[1];
+    disablenpc "Elanore#"+@n$[1];
+    disablenpc "Nikolai#"+@n$[1];
+    disablenpc "Morgan#"+@n$[1];
+    disablenpc "Valia#"+@n$[1];
+    disablenpc "Waric#"+@n$[1];
+    disablenpc "Golbenez#"+@n$[1];
+    disablenpc "Arch-Wizard#"+@n$[1];
+    gmlog strcharinfo(0) + " dismissed the Council.";
+    close;
+
+L_SkipSiege:
+    if (GM < G_GM)
+        mes "Your GM level does not authorizes you to perform this operation.";
+    if (GM < G_GM)
+        close;
+    set $@DOOMSDAY_SKIP, 1;
+    announce "Jande: I do not believe the enemy army will move this time. We should be safe for now.", 0;
+    gmlog strcharinfo(0) + " cancelled the scheduled doomsday attack.";
+    close;
+
+OnInit:
+    // Tulimshar room (Doomsday Tulim: _DT)
+    if (puppet("001-2", 104, 27, "Arch-Wizard#_DT",           354) < 1) mapexit;
+    if (puppet("069-2", 106, 90, "Arch-Wizard#_DH",           354) < 1) mapexit;
+    if (puppet("048-2", 114, 80, "Arch-Wizard#_DN",           354) < 1) mapexit;
+
+    // Disable puppets
+    disablenpc "Arch-Wizard#_DT";
+    disablenpc "Arch-Wizard#_DH";
+    disablenpc "Arch-Wizard#_DN";
+    end;
+}
 
 
