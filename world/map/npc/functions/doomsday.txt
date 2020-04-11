@@ -600,6 +600,31 @@ L_Doomsday3Cleanup:
     set $@DD_LOC$, "";
     end;
 
+// Bonus spawn
+L_Doomsday3Bonus:
+    announce "Jande: Stray minions from Zax De'Kagen were sighted all over the world!", 0;
+
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "031-1", 62, 49, "", $@doomsday_mobs[$@DD_IDX], 1;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 136, 71, "", $@doomsday_mobs[$@DD_IDX], 1;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 97, 86, "", $@doomsday_mobs[$@DD_IDX], 1;
+
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "017-1", 169, 49, 198, 77, "", $@doomsday_mobs[$@DD_IDX], 1;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "012-1", 20, 47, 74, 77, "", $@doomsday_mobs[$@DD_IDX], 2;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "057-1", 115, 50, 140, 75, "", $@doomsday_mobs[$@DD_IDX], 2;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "046-1", 58, 49, 92, 70, "", $@doomsday_mobs[$@DD_IDX], 2;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "034-1", 83, 51, 121, 98, "", $@doomsday_mobs[$@DD_IDX], 2;
+    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "003-4", 20, 20, 85, 60, "", $@doomsday_mobs[$@DD_IDX], 2;
+    end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Respawn logic (5 minutes)
 OnTimer300000:
@@ -616,10 +641,10 @@ L_TimerFinish:
     stopnpctimer;
     end;
 
-// Act 3 clock handlers
+// Act 3 clock handlers [1]
 OnClock1750:
     if ($@DOOMSDAY_SKIP)
-        goto L_Doomsday3Skip;
+        end;
     if ($DOOMSDAY == 2)
         goto L_Doomsday3Init;
     end;
@@ -635,6 +660,32 @@ OnClock1800:
 OnClock1845:
     if ($DOOMSDAY == 2)
         goto L_Doomsday3Check;
+    end;
+
+// Act 3 clock handlers [2]
+OnClock2350:
+    if ($@DOOMSDAY_SKIP)
+        end;
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3Init;
+    end;
+
+OnClock0000:
+    if ($@DOOMSDAY_SKIP)
+        goto L_Doomsday3Skip;
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3;
+    end;
+
+OnClock0045:
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3Check;
+    end;
+
+// Act 3 clock handlers [3]
+OnClock0900:
+    if ($DOOMSDAY == 2)
+        goto L_Doomsday3Bonus;
     end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -669,6 +720,7 @@ OnInit:
     if (puppet("001-2", 110, 22, "Valia#_DT",              370) < 1) mapexit;
     if (puppet("001-2", 117, 24, "Waric#_DT",              153) < 1) mapexit;
     if (puppet("001-2", 117, 30, "Golbenez#_DT",           307) < 1) mapexit;
+    if (puppet("001-2", 110, 32, "Numa#_DT",               393) < 1) mapexit;
 
     // Hurnscald room (Doomsday Hurns: _DH)
     if (puppet("069-2", 101, 85, "Sagatha#_DH",            167) < 1) mapexit;
@@ -678,6 +730,7 @@ OnInit:
     if (puppet("069-2", 112, 85, "Valia#_DH",              370) < 1) mapexit;
     if (puppet("069-2", 119, 87, "Waric#_DH",              153) < 1) mapexit;
     if (puppet("069-2", 119, 93, "Golbenez#_DH",           307) < 1) mapexit;
+    if (puppet("069-2", 112, 95, "Numa#_DH",               393) < 1) mapexit;
 
     // Nivalis room (Doomsday Nivalis: _DN)
     if (puppet("048-2", 113, 86, "Sagatha#_DN",            167) < 1) mapexit;
@@ -687,6 +740,7 @@ OnInit:
     if (puppet("048-2", 118, 85, "Valia#_DN",              370) < 1) mapexit;
     if (puppet("048-2", 117, 86, "Waric#_DN",              153) < 1) mapexit;
     if (puppet("048-2", 119, 86, "Golbenez#_DN",           307) < 1) mapexit;
+    if (puppet("048-2", 118, 87, "Numa#_DN",               393) < 1) mapexit;
 
     // Disable puppets
     disablenpc "Sagatha#_DT";
@@ -696,6 +750,7 @@ OnInit:
     disablenpc "Valia#_DT";
     disablenpc "Waric#_DT";
     disablenpc "Golbenez#_DT";
+    disablenpc "Numa#_DT";
 
     disablenpc "Sagatha#_DH";
     disablenpc "Elanore#_DH";
@@ -704,6 +759,7 @@ OnInit:
     disablenpc "Valia#_DH";
     disablenpc "Waric#_DH";
     disablenpc "Golbenez#_DH";
+    disablenpc "Numa#_DH";
 
     disablenpc "Sagatha#_DN";
     disablenpc "Elanore#_DN";
@@ -712,6 +768,7 @@ OnInit:
     disablenpc "Valia#_DN";
     disablenpc "Waric#_DN";
     disablenpc "Golbenez#_DN";
+    disablenpc "Numa#_DN";
     end;
 }
 
@@ -735,6 +792,7 @@ L_Main:
         "[GM 40] Enable Valia", L_Valia,
         "[GM 40] Enable Waric", L_Waric,
         "[GM 40] Enable Golbenez", L_Golbenez,
+        "[GM 98] Enable Numa", L_Numa,
         "[GM 40] Disable Sagatha", L_NoSagatha,
         "[GM 40] Disable Elanore", L_NoElanore,
         "[GM 40] Disable Nikolai", L_NoNikolai,
@@ -742,6 +800,7 @@ L_Main:
         "[GM 40] Disable Valia", L_NoValia,
         "[GM 40] Disable Waric", L_NoWaric,
         "[GM 40] Disable Golbenez", L_NoGolbenez,
+        "[GM 98] Disable Numa", L_NoNuma,
         "[GM 60] Cancel Next Siege", L_SkipSiege,
         "[GM 80] Dismiss the council", L_Dismiss;
 
@@ -792,6 +851,21 @@ L_Golbenez:
     goto L_Main;
 L_NoGolbenez:
     disablenpc "Golbenez#"+@n$[1];
+    goto L_Main;
+
+L_Numa:
+    if (GM < G_SYSOP)
+        mes "Your GM level does not authorizes you to perform this operation.";
+    if (GM < G_SYSOP)
+        close;
+    enablenpc "Numa#"+@n$[1];
+    goto L_Main;
+L_NoNuma:
+    if (GM < G_SYSOP)
+        mes "Your GM level does not authorizes you to perform this operation.";
+    if (GM < G_SYSOP)
+        close;
+    disablenpc "Numa#"+@n$[1];
     goto L_Main;
 
 L_Dismiss:
