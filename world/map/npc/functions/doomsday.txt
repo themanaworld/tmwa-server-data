@@ -390,7 +390,14 @@ L_DDAdvanceTimers:
 
 // If we have more users than possible, waves come faster
 L_DDAdvanceTimers2:
-    setnpctimer (($@DD_UNITS*2-$@DD_INT)*500); // ±1 second per player
+    set $@ADD_TIME, (($@DD_UNITS*2-$@DD_INT)*500); // ±1 second per player/victory
+    // Cap to 90s (to prevent skipping first third)
+    if ($@ADD_TIME > 90000)
+        set $@ADD_TIME, 90000;
+
+    setnpctimer $@ADD_TIME;
+
+    set $@ADD_TIME, 0;
     goto L_DDAdvanceWavePost;
 
 // Clear temporary variables and broadcast
@@ -547,6 +554,69 @@ L_DD3Nival:
 
 
 
+// Extra wave control system [1]
+L_DD3FirstThird:
+    // Roundup
+    set $@DD_UNITS, getmapusers($@DD_LOC$)-mobcount($@DD_LOC$, "Doomsday::OnDeathAct3")+1;
+
+    if ($@DD_UNITS < 0)
+        goto L_DD3EndThird;
+
+    // Tulimshar
+    if ($@DoomsdayLoc == 0)
+        setarray $@DD_XPOS, 98, 97, 91, 75, 56, 44, 76, 54;
+    if ($@DoomsdayLoc == 0)
+        setarray $@DD_YPOS, 75, 86, 99,104, 81, 63, 76, 96;
+
+    // Hurnscald
+    if ($@DoomsdayLoc == 1)
+        setarray $@DD_XPOS,138,136,133,111, 95, 79, 67, 88;
+    if ($@DoomsdayLoc == 1)
+        setarray $@DD_YPOS, 63, 71, 79, 74, 75, 64, 82, 90;
+
+    // Nivalis
+    if ($@DoomsdayLoc == 2)
+        setarray $@DD_XPOS, 44, 62, 63, 56, 70, 36, 62, 85;
+    if ($@DoomsdayLoc == 2)
+        setarray $@DD_YPOS, 55, 49, 61, 83, 41, 37, 26, 30;
+
+    goto L_DD3EndThird;
+
+// Extra wave control system [2]
+L_DD3SecondThird:
+    // Roundup
+    set $@DD_UNITS, getmapusers($@DD_LOC$)-mobcount($@DD_LOC$, "Doomsday::OnDeathAct3")+1;
+
+    if ($@DD_UNITS < 0)
+        goto L_DD3EndThird;
+
+    // Tulimshar
+    if ($@DoomsdayLoc == 0)
+        setarray $@DD_XPOS, 98, 97, 91, 75, 56, 44, 76, 54;
+    if ($@DoomsdayLoc == 0)
+        setarray $@DD_YPOS, 75, 86, 99,104, 81, 63, 76, 96;
+
+    // Hurnscald
+    if ($@DoomsdayLoc == 1)
+        setarray $@DD_XPOS,138,136,133,111, 95, 79, 67, 88;
+    if ($@DoomsdayLoc == 1)
+        setarray $@DD_YPOS, 63, 71, 79, 74, 75, 64, 82, 90;
+
+    // Nivalis
+    if ($@DoomsdayLoc == 2)
+        setarray $@DD_XPOS, 44, 62, 63, 56, 70, 36, 62, 85;
+    if ($@DoomsdayLoc == 2)
+        setarray $@DD_YPOS, 55, 49, 61, 83, 41, 37, 26, 30;
+
+    goto L_DD3EndThird;
+
+// Extra wave control system [3]
+L_DD3EndThird:
+    set $@DD_UNITS, 0;
+    cleararray $@DD_XPOS, 0, 8;
+    cleararray $@DD_YPOS, 0, 8;
+    end;
+
 // Timer controls (5 minutes between waves);
 // It only fires after first wave
 L_TimerCheck2:
@@ -622,6 +692,16 @@ L_Doomsday3Bonus:
 
 ////////////////////////////////////////////////////////////////////////////////
 // Respawn logic (5 minutes)
+OnTimer100000:
+    if ($DOOMSDAY == 2)
+        goto L_DD3FirstThird;
+    end;
+
+OnTimer200000:
+    if ($DOOMSDAY == 2)
+        goto L_DD3SecondThird;
+    end;
+
 OnTimer300000:
     if ($DOOMSDAY == 1)
         goto L_Doomsday1Respawn;
