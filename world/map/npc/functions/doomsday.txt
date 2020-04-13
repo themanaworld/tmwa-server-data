@@ -199,6 +199,7 @@ OnJanitor:
 // Check for our current doomsday state
 OnInit:
     setarray $@doomsday_mobs, 1140, 1141, 1143, 1140, 1141, 1143, 1140, 1141, 1143;
+    setarray $@doomsday_boss, 1146, 1147, 1146, 1147, 1146, 1147, 1146, 1147, 1146, 1147;
     if ($DOOMSDAY == 1)
         goto L_Doomsday1;
     if ($DOOMSDAY == 2)
@@ -365,6 +366,10 @@ L_DDAdvanceWave:
     if ($@DD_NUMWAVES > 6)
         end; // TODO: Maybe a final wave announcement?
 
+    // Variable initialization
+    set $@DD_INT, 0;
+    set $@DD_UNITS, getmapusers($@DD_LOC$)+$DOOMSDAY_SCORE;
+
     // Spawns
     if ($@DoomsdayLoc == 0)
         goto L_DD3Tulim;
@@ -386,7 +391,14 @@ L_DDAdvanceTimers:
 
 // If we have more users than possible, waves come faster
 L_DDAdvanceTimers2:
-    setnpctimer (($@DD_UNITS*2-$@DD_INT)*500); // ±1 second per player
+    set $@ADD_TIME, (($@DD_UNITS*2-$@DD_INT)*500); // ±1 second per player/victory
+    // Cap to 90s (to prevent skipping first third)
+    if ($@ADD_TIME > 90000)
+        set $@ADD_TIME, 90000;
+
+    setnpctimer $@ADD_TIME;
+
+    set $@ADD_TIME, 0;
     goto L_DDAdvanceWavePost;
 
 // Clear temporary variables and broadcast
@@ -403,46 +415,43 @@ L_DDAdvanceWavePost:
 
 // Tulimshar Siege points
 L_DD3Tulim:
-    set $@DD_INT, 0;
-    set $@DD_UNITS, getmapusers($@DD_LOC$);
-
     // Compulsory spawns
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "002-1", 98, 75, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "002-1", 97, 86, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     // Non-compulsory spawns
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "002-1", 91, 99, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "002-1", 75, 104, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "002-1", 56, 81, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "002-1", 44, 63, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "002-1", 76, 76, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "002-1", 54, 96, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
@@ -453,46 +462,43 @@ L_DD3Tulim:
 
 // Hurnscald Siege points
 L_DD3Hurns:
-    set $@DD_INT, 0;
-    set $@DD_UNITS, getmapusers($@DD_LOC$);
-
     // Compulsory spawns
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 138, 63, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 136, 71, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     // Non-compulsory spawns
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 133, 79, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 111, 74, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 94, 75, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 79, 64, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 67, 82, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 88, 90, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
@@ -503,52 +509,160 @@ L_DD3Hurns:
 
 // Nivalis Siege points
 L_DD3Nival:
-    set $@DD_INT, 0;
-    set $@DD_UNITS, getmapusers($@DD_LOC$);
-
     // Compulsory spawns
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "031-1", 44, 55, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "031-1", 62, 49, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     // Non-compulsory spawns
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "031-1", 63, 61, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "031-1", 56, 83, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "031-1", 70, 41, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "031-1", 36, 37, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "031-1", 62, 26, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     if ($@DD_INT >= $@DD_UNITS*2) goto L_DDAdvanceTimers;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "031-1", 85, 30, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     // No extra spawns possible
     goto L_DDAdvanceTimers;
 
+
+
+
+// Extra wave control system [0]
+S_DD3ThirdSpawns:
+    set $@DD_IDX1, rand(getarraysize($@DD_XPOS));
+    set $@DD_IDX2, rand(getarraysize($@doomsday_mobs));
+
+    monster $@DD_LOC$, $@DD_XPOS[$@DD_IDX1], $@DD_YPOS[$@DD_IDX1], "", $@doomsday_mobs[$@DD_IDX2], 1, "Doomsday::OnDeathAct3";
+
+    set $@DD_INT, $@DD_INT+1;
+    if($@DD_INT < $@DD_UNITS) goto S_DD3ThirdSpawns;
+    return;
+
+// Extra wave control system [1]
+L_DD3FirstThird:
+    set $@DD_UNITS, getmapusers($@DD_LOC$)-mobcount($@DD_LOC$, "Doomsday::OnDeathAct3")+1;
+    set $@DD_INT, 0;
+
+    // Difficulty adjustment: Invoke -1 mob per player and +1 mob per 2 score points
+    set $@DD_UNITS, $@DD_UNITS-getmapusers($@DD_LOC$)+($DOOMSDAY_SCORE/2);
+
+    // Monsters already overpower players
+    if ($@DD_UNITS < 0)
+        goto L_DD3EndThird;
+
+    // Tulimshar
+    if ($@DoomsdayLoc == 0)
+        setarray $@DD_XPOS, 98, 97, 91, 75, 56, 44, 76, 54;
+    if ($@DoomsdayLoc == 0)
+        setarray $@DD_YPOS, 75, 86, 99,104, 81, 63, 76, 96;
+
+    // Hurnscald
+    if ($@DoomsdayLoc == 1)
+        setarray $@DD_XPOS,138,136,133,111, 95, 79, 67, 88;
+    if ($@DoomsdayLoc == 1)
+        setarray $@DD_YPOS, 63, 71, 79, 74, 75, 64, 82, 90;
+
+    // Nivalis
+    if ($@DoomsdayLoc == 2)
+        setarray $@DD_XPOS, 44, 62, 63, 56, 70, 36, 62, 85;
+    if ($@DoomsdayLoc == 2)
+        setarray $@DD_YPOS, 55, 49, 61, 83, 41, 37, 26, 30;
+
+    // Prepare optional boss
+    set $@DD_IDX1, rand(getarraysize($@DD_XPOS));
+    set $@DD_IDX2, rand(getarraysize($@doomsday_boss));
+
+    // Spawn optional boss
+    if ($@DD_NUMWAVES == 5 && $DOOMSDAY_SCORE > 6)
+        monster $@DD_LOC$, $@DD_XPOS[$@DD_IDX1], $@DD_YPOS[$@DD_IDX1], "", $@doomsday_boss[$@DD_IDX2], 1, "Doomsday::OnDeathAct3";
+
+    // Spawn first third's wave
+    callsub S_DD3ThirdSpawns;
+    goto L_DD3EndThird;
+
+// Extra wave control system [2]
+L_DD3SecondThird:
+    set $@DD_UNITS, getmapusers($@DD_LOC$)-mobcount($@DD_LOC$, "Doomsday::OnDeathAct3")+1;
+    set $@DD_INT, 0;
+
+    // Intensity control
+    if ($DOOMSDAY_SCORE < 12)
+        goto L_DD3EndThird;
+
+    // Difficulty adjustment: Invoke -1 mob per player and +1 mob per 3 score points
+    set $@DD_UNITS, $@DD_UNITS-getmapusers($@DD_LOC$)+($DOOMSDAY_SCORE/3);
+
+    // Tulimshar
+    if ($@DoomsdayLoc == 0)
+        setarray $@DD_XPOS, 98, 97, 91, 75, 56, 44, 76, 54;
+    if ($@DoomsdayLoc == 0)
+        setarray $@DD_YPOS, 75, 86, 99,104, 81, 63, 76, 96;
+
+    // Hurnscald
+    if ($@DoomsdayLoc == 1)
+        setarray $@DD_XPOS,138,136,133,111, 95, 79, 67, 88;
+    if ($@DoomsdayLoc == 1)
+        setarray $@DD_YPOS, 63, 71, 79, 74, 75, 64, 82, 90;
+
+    // Nivalis
+    if ($@DoomsdayLoc == 2)
+        setarray $@DD_XPOS, 44, 62, 63, 56, 70, 36, 62, 85;
+    if ($@DoomsdayLoc == 2)
+        setarray $@DD_YPOS, 55, 49, 61, 83, 41, 37, 26, 30;
+
+    // Prepare optional boss
+    set $@DD_IDX1, rand(getarraysize($@DD_XPOS));
+    set $@DD_IDX2, rand(getarraysize($@doomsday_boss));
+
+    // Spawn optional boss
+    if ($@DD_NUMWAVES == 5)
+        monster $@DD_LOC$, $@DD_XPOS[$@DD_IDX1], $@DD_YPOS[$@DD_IDX1], "", $@doomsday_boss[$@DD_IDX2], 1, "Doomsday::OnDeathAct3";
+
+    // Monsters already overpower players
+    if ($@DD_UNITS < 0)
+        goto L_DD3EndThird;
+
+    // Spawn second third's wave
+    callsub S_DD3ThirdSpawns;
+    goto L_DD3EndThird;
+
+// Extra wave control system [3]
+L_DD3EndThird:
+    set $@DD_UNITS, 0;
+    set $@DD_IDX1, 0;
+    set $@DD_IDX2, 0;
+    set $@DD_INT, 0;
+    cleararray $@DD_XPOS, 0, 8;
+    cleararray $@DD_YPOS, 0, 8;
+    end;
 
 
 
@@ -572,7 +686,7 @@ L_Doomsday3Defeat:
     mapannounce $@DD_LOC$, "Jande : Oh noes, "+$@DoomsdayMc+" monsters passed the barricate!!", 0;
 
     // Move the monsters to town
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     if ($@DoomsdayLoc == 0)
         areamonster "001-1", 52, 35, 119, 113, "", $@doomsday_mobs[$@DD_IDX], $@DoomsdayMc;
     if ($@DoomsdayLoc == 1)
@@ -587,8 +701,8 @@ L_Doomsday3Defeat:
 
 // Siege was cleared up
 L_Doomsday3Victory:
-    mapannounce $@DD_LOC$, "Jande : That was a close call, but we did it! We defended "+$DOOMSDAY_SCORE+" times.", 0;
     set $DOOMSDAY_SCORE, $DOOMSDAY_SCORE+1;
+    mapannounce $@DD_LOC$, "Jande : That was a close call, but we did it! We defended "+$DOOMSDAY_SCORE+" times.", 0;
     goto L_Doomsday3Cleanup;
 
 // Clean up temporary variables (except skip)
@@ -602,31 +716,49 @@ L_Doomsday3Cleanup:
 
 // Bonus spawn
 L_Doomsday3Bonus:
-    announce "Jande: Stray minions from Zax De'Kagen were sighted all over the world!", 0;
+    announce "Jande: Stray minions from Zax De'Kagen army were sighted all over the world!", 0;
+    set $@DD_UNITS, 2+($DOOMSDAY_SCORE/5);
 
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    // Cap value (to prevent huge spikes)
+    if ($@DD_UNITS > 5)
+        set $@DD_UNITS, 3+($DOOMSDAY_SCORE/10);
+
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "031-1", 62, 49, "", $@doomsday_mobs[$@DD_IDX], 1;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "018-1", 136, 71, "", $@doomsday_mobs[$@DD_IDX], 1;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     monster "002-1", 97, 86, "", $@doomsday_mobs[$@DD_IDX], 1;
 
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     areamonster "017-1", 169, 49, 198, 77, "", $@doomsday_mobs[$@DD_IDX], 1;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    areamonster "012-1", 20, 47, 74, 77, "", $@doomsday_mobs[$@DD_IDX], 2;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    areamonster "057-1", 115, 50, 140, 75, "", $@doomsday_mobs[$@DD_IDX], 2;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    areamonster "046-1", 58, 49, 92, 70, "", $@doomsday_mobs[$@DD_IDX], 2;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    areamonster "034-1", 83, 51, 121, 98, "", $@doomsday_mobs[$@DD_IDX], 2;
-    setarray $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    areamonster "003-4", 20, 20, 85, 60, "", $@doomsday_mobs[$@DD_IDX], 2;
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "012-1", 20, 47, 74, 77, "", $@doomsday_mobs[$@DD_IDX], $@DD_UNITS;
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "057-1", 115, 50, 140, 75, "", $@doomsday_mobs[$@DD_IDX], $@DD_UNITS;
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "046-1", 58, 49, 92, 70, "", $@doomsday_mobs[$@DD_IDX], $@DD_UNITS;
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "034-1", 83, 51, 121, 98, "", $@doomsday_mobs[$@DD_IDX], $@DD_UNITS;
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "003-4", 20, 20, 85, 60, "", $@doomsday_mobs[$@DD_IDX], $@DD_UNITS;
+
+    set $@DD_UNITS, 0;
+    set $@DD_IDX, 0;
     end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Respawn logic (5 minutes)
+OnTimer100000:
+    if ($DOOMSDAY == 2)
+        goto L_DD3FirstThird;
+    end;
+
+OnTimer200000:
+    if ($DOOMSDAY == 2)
+        goto L_DD3SecondThird;
+    end;
+
 OnTimer300000:
     if ($DOOMSDAY == 1)
         goto L_Doomsday1Respawn;
