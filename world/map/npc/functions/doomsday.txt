@@ -29,6 +29,7 @@ function|script|DoomsdayDebug
     mes "$DOOMSDAY_TOWN[1] (Hurns): "+$DOOMSDAY_TOWN[1];
     mes "$DOOMSDAY_TOWN[2] (Nival): "+$DOOMSDAY_TOWN[2];
     mes "$DOOMSDAY_SCORE: "+$DOOMSDAY_SCORE;
+    mes "$DOOMSDAY_CLUES: "+$DOOMSDAY_CLUES;
     mes "";
     mes "Can players summon Mana Guardians? "+if_then_else($DOOMSDAY_SUMMON, "Yes", "No");
     mes "Is TMW under Jande's control? "+if_then_else($DOOMSDAY_TAKENOVER, "Yes", "No");
@@ -406,8 +407,17 @@ L_DDAdvanceWavePost:
     set $@DD_IDX, 0;
     set $@DD_INT, 0;
     set $@DD_UNITS, 0;
+
     // Tell users
     mapannounce $@DD_LOC$, "Jande : Watch out, another wave! Only "+(6-$@DD_NUMWAVES)+" waves left!", 0;
+
+    // Prepare optional boss
+    set $@DD_IDX1, rand(getarraysize($@DD_XPOS));
+    set $@DD_IDX2, rand(getarraysize($@doomsday_boss));
+
+    // Spawn optional boss if req. is met
+    if ($@DD_NUMWAVES > 6-$DOOMSDAY_CLUES)
+        monster $@DD_LOC$, $@DD_XPOS[$@DD_IDX1], $@DD_YPOS[$@DD_IDX1], "", $@doomsday_boss[$@DD_IDX2], 1, "Doomsday::OnDeathAct3";
     end;
 
 
@@ -723,15 +733,18 @@ L_Doomsday3Bonus:
     if ($@DD_UNITS > 5)
         set $@DD_UNITS, 3+($DOOMSDAY_SCORE/10);
 
-    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    monster "031-1", 62, 49, "", $@doomsday_mobs[$@DD_IDX], 1;
-    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    monster "018-1", 136, 71, "", $@doomsday_mobs[$@DD_IDX], 1;
-    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    monster "002-1", 97, 86, "", $@doomsday_mobs[$@DD_IDX], 1;
+    // Sum the permanent clues
+    set $@DD_UNITS, $@DD_UNITS+$DOOMSDAY_CLUES;
 
     set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    areamonster "017-1", 169, 49, 198, 77, "", $@doomsday_mobs[$@DD_IDX], 1;
+    monster "031-1", 62, 49, "", $@doomsday_mobs[$@DD_IDX], 1+$DOOMSDAY_CLUES;
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "018-1", 136, 71, "", $@doomsday_mobs[$@DD_IDX], 1+$DOOMSDAY_CLUES;
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    monster "002-1", 97, 86, "", $@doomsday_mobs[$@DD_IDX], 1+$DOOMSDAY_CLUES;
+
+    set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
+    areamonster "017-1", 169, 49, 198, 77, "", $@doomsday_mobs[$@DD_IDX], 1+$DOOMSDAY_CLUES;
     set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     areamonster "012-1", 20, 47, 74, 77, "", $@doomsday_mobs[$@DD_IDX], $@DD_UNITS;
     set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
