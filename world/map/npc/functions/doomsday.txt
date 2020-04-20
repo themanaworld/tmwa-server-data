@@ -759,7 +759,7 @@ L_DD4WarnSeq:
 
 OnDD4Warning1:
     mapmask 1 | 2;
-    // music "Dramatic.ogg";
+    music "Dramatic.ogg";
     areatimer 0, $@DD_LOC$, 20, 20, 500, 500, 600, "Doomsday::OnDD4Warning2";
     end;
 
@@ -773,14 +773,19 @@ OnDD4Warning3:
     end;
 
 OnDD4Spawn:
-    debugmes "System failure";
+    set $@DD_IDX1, rand(getarraysize($@DD_XPOS));
+    monster $@DD_LOC$, $@DD_XPOS[$@DD_IDX1], $@DD_YPOS[$@DD_IDX1], "", KageGolem, 1, "Doomsday::OnDeathAct4";
     goto OnDD4Smash;
     end;
 
+// Could use a new optional skill: FRAIL NOOBS, ZAX RULES! (causes new wave of 6 monsters)
 OnDD4Smash:
-    // if mobcount
+    // Golem got itself smashed D:
+    if ($@DD_LOC$ == "")
+        end;
+    if (!(mobcount($@DD_LOC$, "Doomsday::OnDeathAct4")+1))
+        end;
     // TODO: Do not keep repeating the announce
-    // TODO: FRAIL NOOBS, ZAX RULES! (causes new wave of 6 monsters)
     mapannounce $@DD_LOC$, "Golem : FRAIL SMALL PEOPLE, ME SMASH!!!", 0;
     areatimer 0, $@DD_LOC$, 20, 20, 500, 500, 100, "Doomsday::OnDD4Smashed";
     addnpctimer rand(12000, 18000), "Doomsday#OnDD4Smash";
@@ -890,6 +895,12 @@ OnDeathMapname:
     end;
 
 OnDeathAct3:
+    end;
+
+OnDeathAct4:
+    set $DOOMSDAY_SCORE, 0;
+    set $DOOMSDAY_CLUES, $DOOMSDAY_CLUES+1;
+    announce "Jande : Golem destroyed, crisis averted. I'll be resetting the number of victories.", 0;
     end;
 
 }
