@@ -47,6 +47,7 @@ function|script|DoomsdayDebug
         "[1][2][2] Surrender TMW to Jande",L_Surrender,
         "[1][3][0] The Great War - First Wave",L_War,
         "[2][3][1] The Great War - Additional Wave",L_GreatWar,
+        "[2][4][0] Wumpus Great Egg Hunt - DEBUG",L_Wumpus,
         "[2][4][1] Council - Tulimshar's Guild",L_TulimCouncil,
         "[2][4][2] Council - Celestia's Residence",L_HurnsCouncil,
         "[2][4][3] Council - Blue Sage's Residence",L_NivalCouncil,
@@ -87,6 +88,12 @@ L_War:
     set $@DOOMSDAY_SKIP, 1; // Skip the next scheduled siege
     donpcevent "Doomsday::OnDoomsday3First"; // Forces a doomsday to begin now
     gmlog strcharinfo(0) + " changed doomsday to Act 3: The Great War.";
+    return;
+
+L_Wumpus:
+    set $@DOOMSDAY_SKIP, 0;
+    donpcevent "Doomsday::OnClock1830"; // Forces a doomsday act 4 check
+    gmlog strcharinfo(0) + " manually triggered debug function. Doomsday Act 4.";
     return;
 
 // Act 4: The Great War Council
@@ -791,7 +798,9 @@ OnDD4Warning3:
 
 OnDD4Spawn:
     set $@DD_IDX1, rand(getarraysize($@DD_XPOS));
-    monster $@DD_LOC$, $@DD_XPOS[$@DD_IDX1], $@DD_YPOS[$@DD_IDX1], "", KageGolem, 1, "Doomsday::OnDeathAct4";
+    monster $@DD_LOC$, $@DD_XPOS[$@DD_IDX1], $@DD_YPOS[$@DD_IDX1], "", 1145, 1, "Doomsday::OnDeathAct4";
+    //debugmes "Success "+$@DD_LOC$+" ("+$@DD_XPOS[$@DD_IDX1]+", "+$@DD_YPOS[$@DD_IDX1]+")";
+    mapannounce $@DD_LOC$, "Golem : FRAIL SMALL PEOPLE, ME SMASH!!!", 0;
     goto OnDD4Smash;
 
 // Could use a new optional skill: FRAIL NOOBS, ZAX RULES! (causes new wave of 6 monsters)
@@ -802,13 +811,19 @@ OnDD4Smash:
     if (!(mobcount($@DD_LOC$, "Doomsday::OnDeathAct4")+1))
         end;
     // TODO: Do not keep repeating the announce
-    mapannounce $@DD_LOC$, "Golem : FRAIL SMALL PEOPLE, ME SMASH!!!", 0;
+    //mapannounce $@DD_LOC$, "Golem : FRAIL SMALL PEOPLE, ME SMASH!!!", 0;
     areatimer 0, $@DD_LOC$, 20, 20, 500, 500, 100, "Doomsday::OnDD4Smashed";
     addnpctimer rand(12000, 18000), "Doomsday::OnDD4Smash";
     end;
 
 OnDD4Smashed:
+    misceffect 52, strcharinfo(0);
     heal -70-BaseLevel, 0;
+    end;
+
+// For surviving
+OnDD4SurvivorReward:
+    getexp 10000, 0;
     end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -917,6 +932,9 @@ OnDeathAct4:
     set $DOOMSDAY_SCORE, 0;
     set $DOOMSDAY_CLUES, $DOOMSDAY_CLUES+1;
     announce "Jande : Golem destroyed, crisis averted. I'll be resetting the number of victories.", 0;
+    if ($@DD_LOC$ == "")
+        end;
+    areatimer 0, $@DD_LOC$, 20, 20, 500, 500, 100, "Doomsday::OnDD4SurvivorReward";
     end;
 
 }
