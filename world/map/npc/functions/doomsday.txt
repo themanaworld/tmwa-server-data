@@ -420,6 +420,20 @@ L_DDAdvanceTimers2:
     setnpctimer $@ADD_TIME;
 
     set $@ADD_TIME, 0;
+    // If we have clues, we will cause a few extra spawns
+    if ($DOOMSDAY_CLUES)
+        goto L_DD3WaveReinforcements;
+    goto L_DDAdvanceWavePost;
+
+// Reinforcements on waves, to ensure Kage never really weaken their attacks
+L_DD3WaveReinforcements:
+    set $@DD_UNITS, $@DD_UNITS-$@DD_INT;
+    set $@DD_UNITS, $@DD_UNITS*$DOOMSDAY_CLUES/6;
+    set $@DD_INT, 0;
+
+    if ($@DD_UNITS > 0)
+        callsub S_DD3ThirdSpawns;
+
     goto L_DDAdvanceWavePost;
 
 // Clear temporary variables and broadcast
