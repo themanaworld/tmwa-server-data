@@ -764,7 +764,41 @@ L_Doomsday3Bonus:
 L_Doomsday4Check:
     // Magic number: 21
     if ($DOOMSDAY_SCORE >= 20-$DOOMSDAY_CLUES)
-        debugmes "The day";
+        goto L_DD4WarnSeq;
+    end;
+
+L_DD4WarnSeq:
+    areatimer $@DD_LOC$, 20, 20, 500, 500, 100, "Doomsday::OnDD4Warning1";
+    announce "Jande : ##1##BWarning: ##bZax's Golem spawning! Defeat it!!", 0;
+    addnpctimer 6000, "Doomsday#OnDD4Spawn";
+    end;
+
+OnDD4Warning1:
+    mapmask 1 | 2;
+    // music "Dramatic.ogg";
+        areatimer $@DD_LOC$, 20, 20, 500, 500, 600, "Doomsday::OnDD4Warning2";
+    end;
+
+OnDD4Warning2:
+    misceffect 51, strcharinfo(0);
+    end;
+
+OnDD4Spawn:
+    debugmes "System failure";
+    addnpctimer 12000, "Doomsday#OnDD4Smash";
+    end;
+
+OnDD4Smash:
+    // if mobcount
+    // TODO: Do not keep repeating the announce
+    // TODO: FRAIL NOOBS, ZAX RULES! (causes new wave of 6 monsters)
+    mapannounce $@DD_LOC$, "Golem : FRAIL SMALL PEOPLE, ME SMASH!!!", 0;
+    areatimer $@DD_LOC$, 20, 20, 500, 500, 100, "Doomsday::OnDD4Smashed";
+    addnpctimer 12000, "Doomsday#OnDD4Smash";
+    end;
+
+OnDD4Smashed:
+    heal -150, 0;
     end;
 
 ////////////////////////////////////////////////////////////////////////////////
