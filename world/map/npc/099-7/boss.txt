@@ -457,3 +457,72 @@ L_Tools:
     close;
 }
 
+
+099-7,18,110,0|script|Chest#keshlam|111
+{
+    if (FLAGS & FLAG_KESHLAM_RAREDROP) goto L_Finished;
+    mes "[Chest]";
+    mes "Would you try to open it?";
+    mes "##1Cost: 1000 Treasure Keys";
+    next;
+    menu
+        "Yes.", L_Yes,
+        "No.", L_Close;
+
+L_Yes:
+    if(countitem("TreasureKey") < 1000)
+        goto L_Not_Enough;
+    getinventorylist;
+    if (@inventorylist_count == 100
+        && countitem("TreasureKey") > 1000)
+            goto L_TooMany;
+    delitem "TreasureKey", 1000;
+    if (FLAGS & FLAG_KESHLAM_FLAWEDLENS) goto L_Rare;
+    goto L_FlawedLens;
+
+L_FlawedLens:
+    getitem "FlawedLens", 1;
+    mes "[Chest]";
+    mes "You opened it and found...! Some flawed lens?! Meh.";
+    set FLAGS, FLAGS | FLAG_KESHLAM_FLAWEDLENS;
+    next;
+    mes "[Chest]";
+    mes "You notice this chest has a hidden section with another lock.";
+    mes "You might want try that again later.";
+    close;
+
+L_Rare:
+    set FLAGS, FLAGS | FLAG_KESHLAM_RAREDROP;
+    if (rand(2) == 1) goto L_Amulet;
+    goto L_Ring;
+
+L_Amulet:
+    getitem "EnchantersAmulet", 1;
+    mes "[Chest]";
+    mes "You opened it and found...! An Enchanter's Amulet! Lucky!";
+    close;
+
+L_Ring:
+    getitem "MageRing", 1;
+    mes "[Chest]";
+    mes "You opened it and found...! A Mage Ring! Lucky!";
+    close;
+
+L_Not_Enough:
+    mes "It seems that this is not the right key...";
+    close;
+
+L_Finished:
+    mes "[Chest]";
+    mes "You already opened this chest.";
+    close;
+
+L_TooMany:
+    mes "[Chest]";
+    mes "You don't have room for what ever is inside. Maybe you should try again later.";
+    close;
+
+L_Close:
+    close;
+}
+
