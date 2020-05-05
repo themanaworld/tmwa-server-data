@@ -458,6 +458,58 @@ L_Tools:
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// Monster Script Control
+-|script|Keshlam|32767
+{
+    close;
+
+OnInit:
+    areamonster "099-7", 20, 20, 120, 120, "", 1148, 15, "Keshlam::OnDeath8";
+    areamonster "099-7", 20, 20, 120, 120, "", 1149, 15, "Keshlam::OnDeath9";
+    monster "099-7", 20, 105, "Grim Reaper", 1068, 1, "Keshlam::OnBoss";
+    end;
+
+OnDeath8:
+    goto OnDeath;
+
+OnDeath9:
+    goto OnDeath;
+
+OnDeath:
+    initnpctimer;
+    end;
+
+OnBoss:
+    initnpctimer;
+    // If a player is attached, give them 20 Treasure Keys
+    getitem TreasureKey, 20;
+    end;
+
+OnTimer300000:
+    // 1148
+    set $@KeshlamMc, mobcount("099-7", "Keshlam::OnDeath8")+1;
+    if ($@KeshlamMc < 15)
+        areamonster "099-7", 20, 20, 120, 120, "", 1148, 15-$@KeshlamMc, "Keshlam::OnDeath8";
+
+    // 1149
+    set $@KeshlamMc, mobcount("099-7", "Keshlam::OnDeath9")+1;
+    if ($@KeshlamMc < 15)
+        areamonster "099-7", 20, 20, 120, 120, "", 1149, 15-$@KeshlamMc, "Keshlam::OnDeath9";
+
+    // Boss (FIXME)
+    set $@KeshlamMc, mobcount("099-7", "Keshlam::OnBoss")+1;
+    if ($@KeshlamMc < 1)
+        monster "099-7", 20, 105, "Grim Reaper", 1068, 1, "Keshlam::OnBoss";
+
+    // Done
+    set $@KeshlamMc, 0;
+    stopnpctimer;
+    end;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Who wants a rare drop?
 099-7,18,110,0|script|Chest#keshlam|111
 {
     if (FLAGS & FLAG_KESHLAM_RAREDROP) goto L_Finished;
@@ -494,8 +546,8 @@ L_FlawedLens:
 
 L_Rare:
     set FLAGS, FLAGS | FLAG_KESHLAM_RAREDROP;
-    if (rand(2) == 1) goto L_Amulet;
-    goto L_Ring;
+    if (rand(3) == 1) goto L_Amulet; // 33% chance
+    goto L_Ring; // 67% chance
 
 L_Amulet:
     getitem "EnchantersAmulet", 1;
