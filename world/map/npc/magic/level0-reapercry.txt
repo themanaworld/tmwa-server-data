@@ -1,0 +1,244 @@
+// #reapercry
+// Spell to warp to Keshlam Outskirts
+// Variable: @reapercry -> Holds summon state
+//
+// If this was Evol2 engine, I would be able to easily use bitmasks,
+// Having a custom password sequence unique per character.
+// But alas, on TMWA, I can't really abuse player variables.
+// So I allow you to cheat. Or not. Lemme think. Account variable...
+
+// Returns true if player inside candle area
+// call("alacriuspos", bitwise)
+function|script|alacriuspos
+{
+    set @alacriusp, 0;
+
+    // Left side
+    if (1 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_25_53_29_56;
+    if (2 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_20_47_22_51;
+    if (4 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_22_40_25_43;
+    if (8 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_29_40_32_43;
+    if (16 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_32_47_35_50;
+    if (32 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_25_53_29_56;
+    // Left not set
+    if (1 == getarg(0))
+        goto L_29_40_32_43;
+    if (2 == getarg(0))
+        goto L_32_47_35_50;
+    if (4 == getarg(0))
+        goto L_25_53_29_56;
+    if (8 == getarg(0))
+        goto L_20_47_22_51;
+    if (16 == getarg(0))
+        goto L_22_40_25_43;
+    if (32 == getarg(0))
+        goto L_29_40_32_43;
+    // Right side
+    if (64 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_49_53_53_56;
+    if (128 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_43_47_46_51;
+    if (256 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_46_40_49_43;
+    if (512 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_53_40_56_43;
+    if (1024 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_56_47_58_50;
+    if (2048 == getarg(0) && #CRYPT_PASSWORD & getarg(0))
+        goto L_49_53_53_56;
+    // Right side not set
+    if (64 == getarg(0))
+        goto L_53_40_56_43;
+    if (128 == getarg(0))
+        goto L_56_47_58_50;
+    if (256 == getarg(0))
+        goto L_49_53_53_56;
+    if (512 == getarg(0))
+        goto L_43_47_46_51;
+    if (1024 == getarg(0))
+        goto L_46_40_49_43;
+    if (2048 == getarg(0))
+        goto L_53_40_56_43;
+
+    // Nope, all wrong
+    set @alacriusp, 0;
+    return;
+
+// Left Side Labels
+L_29_40_32_43:
+    set @alacriusp, isin("027-8", 29, 40, 32, 43);
+    return;
+L_22_40_25_43:
+    set @alacriusp, isin("027-8", 22, 40, 25, 43);
+    return;
+L_20_47_22_51:
+    set @alacriusp, isin("027-8", 20, 47, 22, 51);
+    return;
+L_25_53_29_56:
+    set @alacriusp, isin("027-8", 25, 53, 29, 56);
+    return;
+L_32_47_35_50:
+    set @alacriusp, isin("027-8", 32, 47, 35, 50);
+    return;
+
+// Right Side Labels
+L_53_40_56_43:
+    set @alacriusp, isin("027-8", 53, 40, 56, 43);
+    return;
+L_46_40_49_43:
+    set @alacriusp, isin("027-8", 46, 40, 49, 43);
+    return;
+L_43_47_46_51:
+    set @alacriusp, isin("027-8", 43, 47, 46, 51);
+    return;
+L_49_53_53_56:
+    set @alacriusp, isin("027-8", 49, 53, 53, 56);
+    return;
+L_56_47_58_50:
+    set @alacriusp, isin("027-8", 56, 47, 58, 50);
+    return;
+
+}
+
+-|script|reapercry|32767
+{
+    if(call("magic_checks")) end;
+    callfunc "magic_exp";
+
+    // Not in Terogan's Room
+    if (getmap() != "027-8") end;
+
+    // Terogan is asleep
+    if (!$@CRYPT_FIGHT3) end;
+
+    // No password is set o.o
+    if (!#CRPY_PASSWORD) end;
+
+    // Switch the quest state
+    if (@reapercry == 0)
+        goto L_Check0;
+    if (@reapercry == 1)
+        goto L_Check1;
+    if (@reapercry == 2)
+        goto L_Check2;
+    if (@reapercry == 3)
+        goto L_Check3;
+    if (@reapercry == 4)
+        goto L_Check4;
+    if (@reapercry == 5)
+        goto L_Check5;
+
+    // Something went wrong!!
+    end;
+
+//////////////////////////////////////////////////////
+L_Check0:
+    void call("alacriuspos", 1);
+    if (@alacriusp) goto L_Exec0;
+    void call("alacriuspos", 64);
+    if (@alacriusp) goto L_Exec0;
+
+    set @reapercry, 0;
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
+    end;
+
+L_Exec0:
+    misceffect FX_FIRE_EXPLOSION, strcharinfo(0); // Hmm FIXME
+    set @reapercry, 1;
+    end;
+
+//////////////////////////////////////////////////////
+L_Check1:
+    void call("alacriuspos", 2);
+    if (@alacriusp) goto L_Exec1;
+    void call("alacriuspos", 128);
+    if (@alacriusp) goto L_Exec1;
+
+    set @reapercry, 0;
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
+    end;
+
+L_Exec1:
+    misceffect FX_FIRE_EXPLOSION, strcharinfo(0); // Hmm FIXME
+    set @reapercry, 2;
+    end;
+
+//////////////////////////////////////////////////////
+L_Check2:
+    void call("alacriuspos", 4);
+    if (@alacriusp) goto L_Exec2;
+    void call("alacriuspos", 256);
+    if (@alacriusp) goto L_Exec2;
+
+    set @reapercry, 0;
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
+    end;
+
+L_Exec2:
+    misceffect FX_FIRE_EXPLOSION, strcharinfo(0); // Hmm FIXME
+    set @reapercry, 3;
+    end;
+
+//////////////////////////////////////////////////////
+L_Check3:
+    void call("alacriuspos", 8);
+    if (@alacriusp) goto L_Exec3;
+    void call("alacriuspos", 512);
+    if (@alacriusp) goto L_Exec3;
+
+    set @reapercry, 0;
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
+    end;
+
+L_Exec3:
+    misceffect FX_FIRE_EXPLOSION, strcharinfo(0); // Hmm FIXME
+    set @reapercry, 4;
+    end;
+
+//////////////////////////////////////////////////////
+L_Check4:
+    void call("alacriuspos", 16);
+    if (@alacriusp) goto L_Exec4;
+    void call("alacriuspos", 1024);
+    if (@alacriusp) goto L_Exec4;
+
+    set @reapercry, 0;
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
+    end;
+
+L_Exec4:
+    misceffect FX_FIRE_EXPLOSION, strcharinfo(0); // Hmm FIXME
+    set @reapercry, 5;
+    end;
+
+//////////////////////////////////////////////////////
+L_Check5:
+    void call("alacriuspos", 32);
+    if (@alacriusp) goto L_Exec5;
+    void call("alacriuspos", 2048);
+    if (@alacriusp) goto L_Exec5;
+
+    set @reapercry, 0;
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
+    end;
+
+L_Exec5:
+    // This means cast sequence complete
+    set @reapercry, 0;
+    // Maybe FX_MAGIC_BLUE_TELEPORT? (iilia's effect)
+    misceffect FX_MAGIC_TELEPORT, strcharinfo(0);
+    // FIXME: warp "099-7", 0, 0;
+    end;
+
+//////////////////////////////////////////////////////
+OnInit:
+    set .invocation$, chr(MAGIC_SYMBOL) + "reapercry"; // used in npcs that refer to this spell
+    registercmd .invocation$, strnpcinfo(0);
+    end;
+}
