@@ -637,7 +637,7 @@ OnTimer150000:
     if ($@KeshlamMc < 10)
         areamonster "099-7", 20, 20, 120, 120, "", 1149, 10-$@KeshlamMc, "Keshlam::OnDeath9";
 
-    // Boss (TODO give boss their own timer with 5 minutes)
+    // Boss (TODO maybe give boss their own timer with 5 minutes)
     set $@KeshlamMc, mobcount("099-7", "Keshlam::OnBoss")+1;
     if ($@KeshlamMc < 1)
         monster "099-7", 20, 105, "Grim Reaper", 1068, 1, "Keshlam::OnBoss";
@@ -717,6 +717,38 @@ L_TooMany:
     close;
 
 L_Close:
+    close;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Who wants experience?
+099-7,95,117,0|script|Knowledgeable Tree|400
+{
+    mes "If you kill every monster, this tree can warp you back.";
+    mes "You will receive experience points for cleaning the map.";
+    mes "";
+    mes "But be warned, monsters respawn on their own every five minutes.";
+    mes "The boss must also be defeated.";
+    next;
+    set @KeshlamMc, mobcount("099-7", "Keshlam::OnDeath8")+1;
+    set @KeshlamMc, @KeshlamMc+mobcount("099-7", "Keshlam::OnDeath9")+1;
+    set @KeshlamMc, @KeshlamMc+mobcount("099-7", "Keshlam::OnBoss")+1;
+    if (@KeshlamMc <= 0) goto L_Done;
+    mes "There is ##B"+@KeshlamMc+" monsters##b alive.";
+    close;
+
+L_Done:
+    mes "Go back?";
+    menu
+        "Yes", L_Yes,
+        "No", L_No;
+
+L_Yes:
+    getexp 1000000, 0;
+    warp "027-2", 50, 29;
+    close;
+
+L_No:
     close;
 }
 
