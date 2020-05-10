@@ -154,6 +154,7 @@ L_Kage:
     enablenpc "Wizard#7";
     enablenpc "Wizard#8";
     enablenpc "Arch-Wizard#9";
+    set $DOOMSDAY, 3;
     donpcevent "Doomsday::OnJanitor"; // TODO
     gmlog strcharinfo(0) + " changed doomsday to Act 5: The Doomsday.";
     return;
@@ -764,6 +765,10 @@ L_Doomsday3Bonus:
     set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
     areamonster "003-4", 20, 20, 85, 60, "", $@doomsday_mobs[$@DD_IDX], $@DD_UNITS;
 
+    // Tormenta
+    if (rand(10) <= $DOOMSDAY_CLUES)
+        monster "057-1", 126, 64, "", 1137, 1;
+
     set $@DD_UNITS, 0;
     set $@DD_IDX, 0;
     end;
@@ -801,6 +806,10 @@ OnDD4Spawn:
     monster $@DD_LOC$, $@DD_XPOS[$@DD_IDX1], $@DD_YPOS[$@DD_IDX1], "", 1145, 1, "Doomsday::OnDeathAct4";
     //debugmes "Success "+$@DD_LOC$+" ("+$@DD_XPOS[$@DD_IDX1]+", "+$@DD_YPOS[$@DD_IDX1]+")";
     mapannounce $@DD_LOC$, "Golem : FRAIL SMALL PEOPLE, ME SMASH!!!", 0;
+    // Spawn a few mobs
+    set $@DD_INT, 0;
+    set $@DD_UNITS, $DOOMSDAY_CLUES*4;
+    callsub S_DD3ThirdSpawns;
     goto OnDD4Smash;
 
 // Could use a new optional skill: FRAIL NOOBS, ZAX RULES! (causes new wave of 6 monsters)
@@ -1145,4 +1154,53 @@ OnInit:
     end;
 }
 
+008-1,97,28,0|script|#Haystack|400
+{
+    if ($DOOMSDAY != 3) end;
+    if ((gettimetick(2)-TUT_var < 5*7*86400) || (BaseLevel < 40)) //player must be created at least 5 weeks ago
+        goto L_EndTooYoung;
+    if (gettimetick(2) < #HAYSTACKTIMEPENALTY)
+        goto L_EndRateLimit;
+    set #HAYSTACKTIMEPENALTY, gettimetick(2) + 5;
+    message strcharinfo(0), "Haystack : What exactly are you looking for?";
+	if (rand(20) == 0) getitem "BentNeedle", 1; // 5% chance (was 1% on 2010)
+	close;
+
+L_EndTooYoung:
+    end;
+
+L_EndRateLimit:
+    message strcharinfo(0), "Haystack : I just searched this haystack... Gimme a break.";
+    end;
+}
+
+// This function controls death, both on Zax Domains as with Black Rose
+function|script|DoomsdayAct5
+{
+    if ($DOOMSDAY != 3)
+        goto L_Return;
+    if (countitem("BlackRose"))
+        goto L_WarpTo;
+    if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-6")
+        goto L_WarpOut;
+    goto L_Return;
+
+L_WarpTo:
+    //warp "099-1", 34, 34;
+    //delitem "BlackRose", 1;
+    return;
+
+L_WarpOut:
+    if (countitem("DarkPetal") < 1)
+        goto L_Failure;
+    delitem "DarkPetal", 1;
+    return;
+
+L_Failure:
+    set Class, 6;
+    return;
+
+L_Return:
+    return;
+}
 
