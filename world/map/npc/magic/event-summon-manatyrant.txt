@@ -1,17 +1,16 @@
--|script|summon-jande|32767
+-|script|summon-tyrant|32767
 {
     end;
 
 OnCast:
     if(call("magic_checks")) end;
-    // FIXME: Incomplete check, should still work during sieges
+    if ($DOOMSDAY_SUMMON < 2) end;
     if (getmapflag(getmap(), MF_TOWN)) end;
     if (Sp < 100) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
-    if (countitem("TinyManaElixir") < 1) end;
-    if (!$DOOMSDAY_SUMMON) end;
-    if (@ddcooldown > gettimetick(2)) goto L_Cooldown;
-    delitem "TinyManaElixir", 1;
+    if (countitem("LargeManaElixir") < 1) end;
+    if (@dd4cooldown > gettimetick(2)) goto L_Cooldown;
+    delitem "LargeManaElixir", 1;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 15000, "Magic Timer::OnClear"; // set the new debuff
     callfunc "adjust_spellpower";
@@ -22,10 +21,12 @@ OnCast:
     set .@puppet, puppet(getmap(), POS_X, POS_Y, .@puppet$, 127);
     if (.@puppet < 1) end;
     set .master, BL_ID, .@puppet;
-    set .lifetime, (@spellpower*9)+60000, .@puppet;
-    set @ddcooldown, gettimetick(2)+70; // This is measured in seconds
+    set .lifetime, (@spellpower*9)+150000, .@puppet;
+    set @dd4cooldown, gettimetick(2)+160; // This is measured in seconds
     addnpctimer 10000, .@puppet$+"::OnSummon";
     addnpctimer 11000, .@puppet$+"::OnDestroy";
+    // Causes caster to heal (I thought in converting MP to HP but meh)
+    heal 30000, 0;
     end;
 
 OnSummon:
@@ -43,7 +44,7 @@ OnDestroy:
     destroy;
 
 S_SummonAll:
-    summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, 1138, 2, .lifetime;
+    summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, 1150, 2, .lifetime;
     destroy;
 
 L_Cooldown:
@@ -52,7 +53,7 @@ L_Cooldown:
 
 OnInit:
     set .school, SKILL_MAGIC_ASTRAL;
-    set .invocation$, chr(MAGIC_SYMBOL) + "jande"; // used in npcs that refer to this spell
+    set .invocation$, chr(MAGIC_SYMBOL) + "manatez"; // used in npcs that refer to this spell
     void call("magic_register", "OnCast");
     set .level, 1;
     set .exp_gain, 1;

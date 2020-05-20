@@ -33,6 +33,7 @@ function|script|DoomsdayDebug
     mes "";
     mes "Can players summon Mana Guardians? "+if_then_else($DOOMSDAY_SUMMON, "Yes", "No");
     mes "Is TMW under Jande's control? "+if_then_else($DOOMSDAY_TAKENOVER, "Yes", "No");
+    mes "Zealite Upgrade? "+if_then_else($DOOMSDAY_SUMMON > 1, "Yes", "No");
     //($DOOMSDAY_SUMMON ? "Yes" : "No");
     next;
     // Only GM 80 and above can modify Doomsday
@@ -51,6 +52,7 @@ function|script|DoomsdayDebug
         "[2][4][1] Council - Tulimshar's Guild",L_TulimCouncil,
         "[2][4][2] Council - Celestia's Residence",L_HurnsCouncil,
         "[2][4][3] Council - Blue Sage's Residence",L_NivalCouncil,
+        "[2][4][4] Toggle Zealite Upgrade",L_Zealite,
         "[3][5][0] Kage's Final Battle",L_Kage,
         "[-] Close",L_Close;
 
@@ -140,6 +142,16 @@ L_NivalCouncil:
 
     enablenpc "Arch-Wizard#_DN";
     gmlog strcharinfo(0) + " called the Council to Nivalis.";
+    return;
+
+L_Zealite:
+    set $DOOMSDAY_SUMMON, 2;
+    disablenpc "Soul Menhir#deadmire";
+    disablenpc "Soul Menhir#hurnscald";
+    disablenpc "Soul Menhir#nivalis";
+    disablenpc "Soul Menhir#tulimshar";
+    //disablenpc "Soul Menhir#candor";
+    gmlog strcharinfo(0) + " changed the availability of #manatez spell.";
     return;
 
 // Act 5: The Doomsday
@@ -312,6 +324,16 @@ OnDoomsday2Restart:
 
     fakenpcname "Mede", "Mana Shopkeeper#_D", 420;
     fakenpcname "Bracco", "Mana Shopkeeper#2_D", 420;
+
+    if ($DOOMSDAY_SUMMON == 2)
+        goto L_MenhirUpdate;
+    end;
+
+L_MenhirUpdate:
+    disablenpc "Soul Menhir#deadmire";
+    disablenpc "Soul Menhir#hurnscald";
+    disablenpc "Soul Menhir#nivalis";
+    disablenpc "Soul Menhir#tulimshar";
     end;
 
 /////// Act 3 sieges
@@ -374,9 +396,9 @@ L_Doomsday3:
 
     // Nivalis
     if ($@DoomsdayLoc == 2)
-        setarray $@DD_XPOS, 44, 62, 63, 56, 70, 36, 62, 85;
+        setarray $@DD_XPOS, 90, 62, 63, 56, 70, 36, 62, 85;
     if ($@DoomsdayLoc == 2)
-        setarray $@DD_YPOS, 55, 49, 61, 83, 41, 37, 26, 30;
+        setarray $@DD_YPOS, 47, 49, 61, 83, 41, 37, 26, 30;
 
 
     // Make an extra announce for those whom missed
@@ -566,7 +588,7 @@ L_DD3Hurns:
 L_DD3Nival:
     // Compulsory spawns
     set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
-    monster "031-1", 44, 55, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
+    monster "031-1", 90, 47, "", $@doomsday_mobs[$@DD_IDX], 1, "Doomsday::OnDeathAct3";
     set $@DD_INT, $@DD_INT+1;
 
     set $@DD_IDX, rand(getarraysize($@doomsday_mobs));
