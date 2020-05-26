@@ -150,8 +150,9 @@ L_Zealite:
     disablenpc "Soul Menhir#hurnscald";
     disablenpc "Soul Menhir#nivalis";
     disablenpc "Soul Menhir#tulimshar";
+    enablenpc "Chest#Zealite";
     //disablenpc "Soul Menhir#candor";
-    gmlog strcharinfo(0) + " changed the availability of #manatez spell.";
+    gmlog strcharinfo(0) + " changed the availability of #manatez and Savior Armor.";
     return;
 
 // Act 5: The Doomsday
@@ -334,6 +335,7 @@ L_MenhirUpdate:
     disablenpc "Soul Menhir#hurnscald";
     disablenpc "Soul Menhir#nivalis";
     disablenpc "Soul Menhir#tulimshar";
+    enablenpc "Chest#Zealite";
     end;
 
 /////// Act 3 sieges
@@ -1173,6 +1175,45 @@ OnInit:
     disablenpc "Arch-Wizard#_DT";
     disablenpc "Arch-Wizard#_DH";
     disablenpc "Arch-Wizard#_DN";
+    end;
+}
+
+009-1,53,40,0|script|Chest#Zealite|111
+{
+    if ($DOOMSDAY != 2) end;
+    if ((gettimetick(2)-TUT_var < 3*7*86400) || (BaseLevel < 25)) //player must be created at least 3 weeks ago
+        goto L_EndTooYoung;
+    if (#DOOMSDAY_ARMOR)
+        goto L_EndTooYoung;
+    mes "[Chest]";
+    mes "Inside this chest, Jande left us some Zealite based armor.";
+    next;
+    mes "[Chest]";
+    mes "The @@5254|@@ can be really powerful. It'll be taken away once Doomsday Event ends.";
+    next;
+    mes "[Chest]";
+    mes "Should we take it? (Max. 1 per account)";
+    next;
+    mes "Event Details: [@@https://forums.themanaworld.org/viewtopic.php?t=20921|@@]";
+    menu
+        "Yes, take it", L_Yes,
+        "No, I don't trust it", L_No;
+
+L_Yes:
+    message strcharinfo(0), "Chest : You took the Savior Armor from the chest. It will be lost once event ends.";
+	getitem "SaviorArmor", 1;
+    set #DOOMSDAY_ARMOR, 1;
+	close;
+
+L_No:
+    close;
+
+L_EndTooYoung:
+    message strcharinfo(0), "Chest : It is empty!";
+    end;
+
+OnInit:
+    disablenpc "Chest#Zealite";
     end;
 }
 
