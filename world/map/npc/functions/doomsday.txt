@@ -172,6 +172,7 @@ L_Keshlam:
     enablenpc "Wizard#7";
     enablenpc "Wizard#8";
     enablenpc "Arch-Wizard#9";
+    enablenpc "Chest#DarkRose";
     set $DOOMSDAY, 3;
     donpcevent "Doomsday::OnJanitor"; // TODO
     gmlog strcharinfo(0) + " changed doomsday to Act 5: The Doomsday.";
@@ -239,6 +240,8 @@ OnInit:
         goto L_Doomsday1;
     if ($DOOMSDAY == 2)
         goto L_Doomsday2;
+    if ($DOOMSDAY == 3)
+        goto L_Doomsday3;
     // goto L_Check2;
     end;
 
@@ -872,6 +875,15 @@ OnDD4SurvivorReward:
     getexp 10000, 0;
     end;
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Act 5 utils
+L_Doomsday3:
+    enablenpc "Chest#DarkRose";
+    if ($DOOMSDAY_SUMMON == 2)
+        goto L_MenhirUpdate;
+    end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Respawn logic (5 minutes)
 OnTimer100000:
@@ -1255,6 +1267,8 @@ function|script|DoomsdayAct5
 {
     if ($DOOMSDAY != 3)
         goto L_Return;
+    if (getmap() == "099-8")
+        goto L_Return;
     if (countitem("BlackRose"))
         goto L_WarpTo;
     if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-6")
@@ -1263,6 +1277,7 @@ function|script|DoomsdayAct5
 
 L_WarpTo:
     delitem "BlackRose", 1;
+    heal 100000, 10000;
     if ($DOOMSDAY_TWARP == 0)
         goto L_KeshlamMaze;
     else
@@ -1293,5 +1308,48 @@ L_KeshlamMaze:
 L_KeshlamAbandoned:
     warp "099-1", 34, 34;
     return;
+}
+
+009-1,30,43,0|script|Chest#DarkRose|111
+{
+    if ($DOOMSDAY != 3) end;
+    if ((gettimetick(2)-TUT_var < 2*7*86400) || (BaseLevel < 35)) //player must be created at least 2 weeks ago
+        goto L_EndTooYoung;
+    if (#DOOMSDAY_FREEROSE < gettimetick(2))
+        goto L_Cooldown;
+    mes "[Old Woman]";
+    mes "Hello. I've been picking up some @@666|@@, they are growing in my garden.";
+    next;
+    mes "[Old Woman]";
+    mes "The last time this happened was 10 years ago. They give an ominous feeling.";
+    next;
+    mes "[Old Woman]";
+    mes "Do you want one? I don't like them. (Max. 1 per account)";
+    next;
+    mes "Event Details: [@@https://forums.themanaworld.org/viewtopic.php?t=20921|@@]";
+    menu
+        "Yes, take it", L_Yes,
+        "No, I don't trust it", L_No;
+
+L_Yes:
+    message strcharinfo(0), "Chest : You can get another black rose for free in 23 hours.";
+	getitem "BlackRose", 1;
+    set #DOOMSDAY_FREEROSE, gettimetick(2)+82800;
+	close;
+
+L_No:
+    close;
+
+L_EndTooYoung:
+    message strcharinfo(0), "Chest : It is locked.";
+    end;
+
+L_Cooldown:
+    message strcharinfo(0), "Chest : You can only claim a free rose every 23 hours, please come back later.";
+    end;
+
+OnInit:
+    disablenpc "Chest#DarkRose";
+    end;
 }
 
