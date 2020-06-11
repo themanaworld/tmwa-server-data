@@ -31,9 +31,13 @@ function|script|DoomsdayDebug
     mes "$DOOMSDAY_SCORE: "+$DOOMSDAY_SCORE;
     mes "$DOOMSDAY_CLUES: "+$DOOMSDAY_CLUES;
     mes "";
+    mes "Act 4:";
     mes "Can players summon Mana Guardians? "+if_then_else($DOOMSDAY_SUMMON, "Yes", "No");
     mes "Is TMW under Jande's control? "+if_then_else($DOOMSDAY_TAKENOVER, "Yes", "No");
     mes "Zealite Upgrade? "+if_then_else($DOOMSDAY_SUMMON > 1, "Yes", "No");
+    mes "";
+    mes "Act 5:";
+    mes "Warp to fake Keshlam? "+if_then_else($DOOMSDAY_TWARP > 1, "No", "Yes");
     //($DOOMSDAY_SUMMON ? "Yes" : "No");
     next;
     // Only GM 80 and above can modify Doomsday
@@ -53,7 +57,8 @@ function|script|DoomsdayDebug
         "[2][4][2] Council - Celestia's Residence",L_HurnsCouncil,
         "[2][4][3] Council - Blue Sage's Residence",L_NivalCouncil,
         "[2][4][4] Toggle Zealite Upgrade",L_Zealite,
-        "[3][5][0] Kage's Final Battle",L_Kage,
+        "[3][5][0] Keshlam Warps",L_Keshlam,
+        "[3][5][1] Kage's Final Battle",L_Kage,
         "[-] Close",L_Close;
 
 L_Close:
@@ -156,7 +161,7 @@ L_Zealite:
     return;
 
 // Act 5: The Doomsday
-L_Kage:
+L_Keshlam:
     mes "//-- TODO --//";
     enablenpc "Wizard#1";
     enablenpc "Wizard#2";
@@ -167,10 +172,19 @@ L_Kage:
     enablenpc "Wizard#7";
     enablenpc "Wizard#8";
     enablenpc "Arch-Wizard#9";
+    enablenpc "Chest#DarkRose";
     set $DOOMSDAY, 3;
     donpcevent "Doomsday::OnJanitor"; // TODO
     gmlog strcharinfo(0) + " changed doomsday to Act 5: The Doomsday.";
+    gmlog strcharinfo(0) + " changed doomsday warp to Keshlam Maze";
     return;
+
+L_Kage:
+    set $DOOMSDAY_TWARP, 1;
+    donpcevent "Doomsday::OnJanitor"; // TODO
+    gmlog strcharinfo(0) + " changed doomsday warp to Abandoned Building";
+    return;
+
 }
 
 // Doomsday script controller
@@ -226,6 +240,8 @@ OnInit:
         goto L_Doomsday1;
     if ($DOOMSDAY == 2)
         goto L_Doomsday2;
+    if ($DOOMSDAY == 3)
+        goto L_Doomsday5;
     // goto L_Check2;
     end;
 
@@ -859,6 +875,15 @@ OnDD4SurvivorReward:
     getexp 10000, 0;
     end;
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Act 5 utils
+L_Doomsday5:
+    enablenpc "Chest#DarkRose";
+    if ($DOOMSDAY_SUMMON == 2)
+        goto L_MenhirUpdate;
+    end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Respawn logic (5 minutes)
 OnTimer100000:
@@ -1180,7 +1205,7 @@ OnInit:
 
 009-1,53,40,0|script|Chest#Zealite|111
 {
-    if ($DOOMSDAY != 2) end;
+    if ($DOOMSDAY_SUMMON < 2) end;
     if ((gettimetick(2)-TUT_var < 3*7*86400) || (BaseLevel < 25)) //player must be created at least 3 weeks ago
         goto L_EndTooYoung;
     if (#DOOMSDAY_ARMOR)
@@ -1242,6 +1267,8 @@ function|script|DoomsdayAct5
 {
     if ($DOOMSDAY != 3)
         goto L_Return;
+    if (getmap() == "099-8")
+        goto L_Return;
     if (countitem("BlackRose"))
         goto L_WarpTo;
     if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-6")
@@ -1249,8 +1276,12 @@ function|script|DoomsdayAct5
     goto L_Return;
 
 L_WarpTo:
-    //warp "099-1", 34, 34;
-    //delitem "BlackRose", 1;
+    delitem "BlackRose", 1;
+    heal 100000, 10000;
+    if ($DOOMSDAY_TWARP == 0)
+        goto L_KeshlamMaze;
+    else
+        goto L_KeshlamAbandoned;
     return;
 
 L_WarpOut:
@@ -1265,5 +1296,60 @@ L_Failure:
 
 L_Return:
     return;
+
+///////////////////////////////////
+L_KeshlamMaze:
+    if (rand(10) % 2 == 1)
+        warp "099-8", 23, 378;
+    else
+        warp "099-8", 379, 378;
+    return;
+
+L_KeshlamAbandoned:
+    warp "099-1", 34, 34;
+    return;
+}
+
+009-1,30,43,0|script|Chest#DarkRose|111
+{
+    if ($DOOMSDAY != 3) end;
+    if ((gettimetick(2)-TUT_var < 2*7*86400) || (BaseLevel < 35)) //player must be created at least 2 weeks ago
+        goto L_EndTooYoung;
+    if (#DOOMSDAY_FREEROSE > gettimetick(2))
+        goto L_Cooldown;
+    mes "[Old Woman]";
+    mes "Hello. I've been picking up some @@666|@@, they are growing in my garden.";
+    next;
+    mes "[Old Woman]";
+    mes "The last time this happened was 10 years ago. They give me an ominous feeling.";
+    next;
+    mes "[Old Woman]";
+    mes "Do you want one? I don't like them. (Max. 1 per account)";
+    next;
+    mes "Event Details: [@@https://forums.themanaworld.org/viewtopic.php?t=20921|@@]";
+    menu
+        "Yes, take it", L_Yes,
+        "No, it sounds dangerous", L_No;
+
+L_Yes:
+    message strcharinfo(0), "Chest : You can get another black rose for free in 23 hours.";
+	getitem "BlackRose", 1;
+    set #DOOMSDAY_FREEROSE, gettimetick(2)+82800;
+	close;
+
+L_No:
+    close;
+
+L_EndTooYoung:
+    message strcharinfo(0), "Chest : It is locked.";
+    end;
+
+L_Cooldown:
+    message strcharinfo(0), "Chest : You can only claim a free rose every 23 hours, please come back later.";
+    end;
+
+OnInit:
+    disablenpc "Chest#DarkRose";
+    end;
 }
 
