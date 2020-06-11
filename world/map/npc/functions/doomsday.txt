@@ -31,9 +31,13 @@ function|script|DoomsdayDebug
     mes "$DOOMSDAY_SCORE: "+$DOOMSDAY_SCORE;
     mes "$DOOMSDAY_CLUES: "+$DOOMSDAY_CLUES;
     mes "";
+    mes "Act 4:";
     mes "Can players summon Mana Guardians? "+if_then_else($DOOMSDAY_SUMMON, "Yes", "No");
     mes "Is TMW under Jande's control? "+if_then_else($DOOMSDAY_TAKENOVER, "Yes", "No");
     mes "Zealite Upgrade? "+if_then_else($DOOMSDAY_SUMMON > 1, "Yes", "No");
+    mes "";
+    mes "Act 5:";
+    mes "Warp to fake Keshlam? "+if_then_else($DOOMSDAY_TWARP > 1, "No", "Yes");
     //($DOOMSDAY_SUMMON ? "Yes" : "No");
     next;
     // Only GM 80 and above can modify Doomsday
@@ -53,7 +57,8 @@ function|script|DoomsdayDebug
         "[2][4][2] Council - Celestia's Residence",L_HurnsCouncil,
         "[2][4][3] Council - Blue Sage's Residence",L_NivalCouncil,
         "[2][4][4] Toggle Zealite Upgrade",L_Zealite,
-        "[3][5][0] Kage's Final Battle",L_Kage,
+        "[3][5][0] Keshlam Warps",L_Keshlam,
+        "[3][5][1] Kage's Final Battle",L_Kage,
         "[-] Close",L_Close;
 
 L_Close:
@@ -156,7 +161,7 @@ L_Zealite:
     return;
 
 // Act 5: The Doomsday
-L_Kage:
+L_Keshlam:
     mes "//-- TODO --//";
     enablenpc "Wizard#1";
     enablenpc "Wizard#2";
@@ -170,7 +175,15 @@ L_Kage:
     set $DOOMSDAY, 3;
     donpcevent "Doomsday::OnJanitor"; // TODO
     gmlog strcharinfo(0) + " changed doomsday to Act 5: The Doomsday.";
+    gmlog strcharinfo(0) + " changed doomsday warp to Keshlam Maze";
     return;
+
+L_Kage:
+    set $DOOMSDAY_TWARP, 1;
+    donpcevent "Doomsday::OnJanitor"; // TODO
+    gmlog strcharinfo(0) + " changed doomsday warp to Abandoned Building";
+    return;
+
 }
 
 // Doomsday script controller
@@ -1249,8 +1262,11 @@ function|script|DoomsdayAct5
     goto L_Return;
 
 L_WarpTo:
-    //warp "099-1", 34, 34;
-    //delitem "BlackRose", 1;
+    delitem "BlackRose", 1;
+    if ($DOOMSDAY_TWARP == 0)
+        goto L_KeshlamMaze;
+    else
+        goto L_KeshlamAbandoned;
     return;
 
 L_WarpOut:
@@ -1264,6 +1280,18 @@ L_Failure:
     return;
 
 L_Return:
+    return;
+
+///////////////////////////////////
+L_KeshlamMaze:
+    if (rand(10) % 2 == 1)
+        warp "099-8", 23, 378;
+    else
+        warp "099-8", 379, 378;
+    return;
+
+L_KeshlamAbandoned:
+    warp "099-1", 34, 34;
     return;
 }
 
