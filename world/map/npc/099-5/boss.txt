@@ -1,0 +1,184 @@
+// Evol script
+// Author:
+//      Jesusalva
+// Description:
+//      099-5 FINAL EXAM
+//      The epic final showdown of The Mana World: Legacy
+/////////////////////////////////////////////////////////////////////////////////
+// $@DD5_STATUS     - Status of the battle
+//      0 - Idle
+//      1 - Timer running
+//      2 - Started, first cutscene
+//      3 - First Stage
+//      4 - Started, second cutscene
+//      5 - Second Stage
+//      6 - Started, third cutscene
+//      7 - Third Stage
+//      8 - Epilogue running
+
+099-5,0,0,0|script|#TMWFinalExam|32767
+{
+    // Main script
+    end;
+
+///////////////////////////////////////////////////////////
+// Map timers, against all players
+OnMTChallenge:
+    set @dd5_score, 0;
+    getexp 40000, 0;
+    set BOSS_POINTS, BOSS_POINTS + 5;
+    message strcharinfo(0), "This battle experience distribution is different, and death is final. Be careful!";
+    end;
+
+///////////////////////////////////////////////////////////
+// Before the battle begins
+OnWarn1:
+    announce "Doomsday : Doors to Zax De'Kagen domains will seal shut in ##1##B5 minutes##b##0, so prepare yourselves!", 0;
+    end;
+OnWarn2:
+    announce "Doomsday : Doors to Zax De'Kagen domains will seal shut in ##1##B3 minutes##b##0, so prepare yourselves!", 0;
+    end;
+OnWarn3:
+    announce "Doomsday : Doors to Zax De'Kagen domains will seal shut in ##1##B1 minute##b##0, last call for challengers!", 0;
+    end;
+OnBegin:
+    announce "Doomsday : Final Showdown: BEGIN!", 0;
+    set $@DD5_STATUS, 2;
+    addnpctimer 2000, "#TMWFinalExam::OnPrologue1";
+    end;
+
+///////////////////////////////////////////////////////////
+// Prologue
+OnPrologue1:
+    // set the sprite (implies enablenpc)
+    fakenpcname "Zax De'Kagen#0", "Zax De'Kagen#0", 1142;
+    mapannounce "099-5", "Zax De'Kagen : What is that, a bunch of Talpans in my domains?" , 0;
+    mapannounce "099-4", "Zax De'Kagen : What is that, a bunch of Talpans in my domains?" , 0;
+    npctalk "Zax De'Kagen#0", "What is that, a bunch of Talpans in my domains?";
+    addnpctimer 5000, "#TMWFinalExam::OnPrologue2";
+    end;
+
+OnPrologue2:
+    mapannounce "099-5", "Zax De'Kagen : Don't make me laugh. Do you really think you have what it takes to stop ME?!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Don't make me laugh. Do you really think you have what it takes to stop ME?!" , 0;
+    npctalk "Zax De'Kagen#0", "Don't make me laugh. Do you really think you have what it takes to stop ME?!";
+    addnpctimer 10000, "#TMWFinalExam::OnPrologue3";
+    end;
+
+OnPrologue3:
+    mapannounce "099-5", "Zax De'Kagen : Hmpf! We will see about that. Therefore..." , 0;
+    mapannounce "099-4", "Zax De'Kagen : Hmpf! We will see about that. Therefore..." , 0;
+    npctalk "Zax De'Kagen#0", "Hmpf! We will see about that. Therefore...";
+    addnpctimer 5000, "#TMWFinalExam::OnPrologue4";
+    end;
+
+OnPrologue4:
+    mapannounce "099-5", "Zax De'Kagen : Catch me if you can!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Catch me if you can!" , 0;
+    npctalk "Zax De'Kagen#0", "Catch me if you can!";
+    set $@DD5_STATUS, 3;
+    set $@DD5_PRIMARY, getmapusers("099-5")*3;
+    set $@DD5_SUPPORT, getmapusers("099-4")*3;
+    set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
+    disablenpc "Zax De'Kagen#0";
+    // Spawn first assault
+    areamonster "099-5", 43, 44, 56, 55, "", rand(getarraysize($@DD5MB_AVERAGE)),
+    $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-5", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_AVERAGE)),
+    $@DD5_PRIMARY, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-4", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_AVERAGE)),
+    $@DD5_SUPPORT, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-5", 20, 20, 75, 75, "", 1151,
+    $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    // Begin timers!
+    initnpctimer;
+    end;
+
+
+///////////////////////////////////////////////////////////
+// Timer Subsystem, spawns every 30 seconds
+OnTimer30000:
+    // Imperial Chamber
+    areamonster "099-5", 43, 44, 56, 55, "", rand(getarraysize($@DD5MB_WEAK)),
+    $@DD5_PRIMARY*3, "#TMWFinalExam::OnKillWeak";
+    // Map
+    areamonster "099-5", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_WEAK)),
+    $@DD5_TOTALPC*3, "#TMWFinalExam::OnKillWeak";
+    areamonster "099-4", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_WEAK)),
+    $@DD5_SUPPORT*3, "#TMWFinalExam::OnKillWeak";
+    // Prologue mobs
+    if ($@DD5_STATUS == 3)
+        areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    end;
+
+OnTimer60000:
+    // Imperial Chamber
+    areamonster "099-5", 43, 44, 56, 55, "", rand(getarraysize($@DD5MB_AVERAGE)),
+    $@DD5_PRIMARY, "#TMWFinalExam::OnKillAverage";
+    // Map
+    areamonster "099-5", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_AVERAGE)),
+    $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-4", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_AVERAGE)),
+    $@DD5_SUPPORT, "#TMWFinalExam::OnKillAverage";
+    // Prologue mobs
+    if ($@DD5_STATUS == 3)
+        areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    end;
+
+OnTimer90000:
+    // Imperial Chamber
+    areamonster "099-5", 43, 44, 56, 55, "", rand(getarraysize($@DD5MB_STRONG)),
+    $@DD5_PRIMARY/2, "#TMWFinalExam::OnKillStrong";
+    // Map
+    areamonster "099-5", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_STRONG)),
+    $@DD5_TOTALPC/2, "#TMWFinalExam::OnKillStrong";
+    areamonster "099-4", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_STRONG)),
+    $@DD5_SUPPORT/2, "#TMWFinalExam::OnKillStrong";
+    // Prologue mobs
+    if ($@DD5_STATUS == 3)
+        areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    initnpctimer;
+    end;
+
+///////////////////////////////////////////////////////////
+// Monster Death Label
+OnKillWeak:
+    set @dd5_score, @dd5_score+1;
+    end;
+
+OnKillAverage:
+    set @dd5_score, @dd5_score+10;
+    end;
+
+OnKillStrong:
+    set @dd5_score, @dd5_score+25;
+    end;
+
+///////////////////////////////////////////////////////////
+// Core
+OnInit:
+    setarray $@DD5MB_WEAK, 1155, 1156, 1155, 1156, 1155, 1156, 1157, 1158;
+    setarray $@DD5MB_AVERAGE, 1159, 1160, 1159, 1160, 1159, 1160, 1157, 1158;
+    setarray $@DD5MB_STRONG, 1152, 1153, 1154, 1152, 1153, 1154, 1152, 1153, 1154;
+    // Flower 1151, Mouboo 1158
+    end;
+}
+
+// Puppets
+099-5,50,49,0|script|Xakelbael the Dark#0|400
+{
+    end;
+OnInit:
+    disablenpc "Xakelbael the Dark#0";
+    end;
+}
+
+// Puppets
+099-5,50,49,0|script|Zax De'Kagen#0|400
+{
+    end;
+OnInit:
+    disablenpc "Zax De'Kagen#0";
+    end;
+}
+
