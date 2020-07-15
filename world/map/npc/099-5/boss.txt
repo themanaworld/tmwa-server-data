@@ -204,10 +204,11 @@ function|script|FinalExamAttack
     if (!isin("099-5", 50-ATTACKRANGE, 49-ATTACKRANGE, 50+ATTACKRANGE, 49+ATTACKRANGE))
         goto L_Return;
 
-    // TODO: Assign attack speed delay
+    // Assign attack speed delay - 300ms with pots, 600ms without
+    set @dd5_timer, if_then_else(sc_check(sc_raiseattackspeed0), gettimetick(0)+300, gettimetick(0)+600);
 
-    set @dd5_crit, rand(10000) < CRIT;
-    // Calculate HIT rate
+    // Calculate HIT and CRIT rate
+    set @dd5_crit, (rand(10000) < CRIT);
     if (rand(500) > HIT && !@dd5_crit)
         goto L_Miss;
 
@@ -216,6 +217,10 @@ function|script|FinalExamAttack
     // Calculate damage
     set @dd5_dmg, ATK1+BASE_ATK;
 
+    // Strength Potion - DMG +50%
+    if (sc_check(sc_raiseattackstrength))
+        set @dd5_dmg, @dd5_dmg*15/10;
+
     // Boss defense
     set @dd5_dmg, @dd5_dmg*(11-$@DD5_STATUS)/10;
 
@@ -223,6 +228,7 @@ function|script|FinalExamAttack
     if (@dd5_crit)
         set @dd5_dmg, @dd5_dmg*2;
 
+    // Apply the damage!
     set $@DD5_HP, $@DD5_HP-$@DD5_HP;
     message strcharinfo(0), "Combat : Damage -"+@dd5_dmg+" HP";
 
