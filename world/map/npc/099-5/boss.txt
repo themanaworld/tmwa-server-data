@@ -188,6 +188,10 @@ OnInit:
 ////////////////////////////////////////////////////////////////////////////////
 function|script|FinalExamAttack
 {
+    // Failsafe
+    if ($@DD5_STATUS != 3 && $@DD5_STATUS != 5 && $@DD5_STATUS != 7)
+        goto L_Return;
+
     // Cooldown
     if (@dd5_timer < gettimetick(2))
         goto L_Return;
@@ -196,13 +200,34 @@ function|script|FinalExamAttack
     if (!isin("099-5", 50-ATTACKRANGE, 49-ATTACKRANGE, 50+ATTACKRANGE, 49+ATTACKRANGE))
         goto L_Return;
 
-    // Assign attack speed delay
-    // Add damage
-    // FIXME: How to check if it was magic?
+    // TODO: Assign attack speed delay
+
+    set @dd5_crit, rand(10000) < CRIT;
+    // Calculate HIT rate
+    if (rand(500) > HIT && !@dd5_crit)
+        goto L_Miss;
+
+    // FIXME: How to check if it was magic? Magic causes no damage.
+
+    // Calculate damage
     set @dd5_dmg, ATK1+BASE_ATK;
 
-    // TODO: Fire events
+    // Boss defense
+    set @dd5_dmg, @dd5_dmg*(11-$@DD5_STATUS)/10;
+
+    // Consider criticals (no defense disregard, though)
+    if (@dd5_crit)
+        set @dd5_dmg, @dd5_dmg*2;
+
+    set $@DD5_HP, $@DD5_HP-$@DD5_HP;
+    message strcharinfo(0), "Combat : Damage -"+@dd5_dmg+" HP";
+
+    // TODO: Fire events if HP < 0
     goto L_Return;
+
+L_Miss:
+    message strcharinfo(0), "Combat : Miss";
+    return;
 
 L_Return:
     return;
