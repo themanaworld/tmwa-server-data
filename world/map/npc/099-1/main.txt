@@ -29,7 +29,7 @@
     // Default distance is 4 tiles - all we need
     callfunc "PCtoNPCRange";
     if(@npc_check) end;
-    if ($#DD5_OPENSESAME) goto L_Complete;
+    if ($@DD5_OPENSESAME) goto L_Complete;
 
 	mes ".:: Ritual Book ::.";
     mes "Perform the ritual?";
@@ -172,7 +172,7 @@ L_Close:
 	close;
 }
 
-099-3,72,75,0|script|#WarpToFinalShowdown|424
+099-3,72,75,0|script|#WarpToFinalShowdown|424,0,0
 {
     // Default distance is 4 tiles - all we need
     callfunc "PCtoNPCRange";
@@ -202,12 +202,33 @@ L_Busy:
     close;
 
 OnTouch:
-    if ($@DD5_CTRL)
+    if ($@DD5_TSWITCH != 18)
+        goto L_NotSwitch;
+
+    if (!$@DD5_OPENSESAME)
+        goto L_NotSesame;
+
+    if ($@DD5_STATUS > 1)
         goto L_Busy;
+
 	mes "##BGo to the final showdown?##b";
     mes "You cannot return from there!";
     mes "";
     mes "##1Warning: Warp will be unavailable during fights!";
+    if (GM >= GM_SYSOP)
+        goto L_Debug;
 	close;
+
+L_Debug:
+    menu
+        "Yes", L_Yes,
+        "No", L_No;
+L_No:
+    close;
+L_Yes:
+    warp "099-5", 50, 66;
+    if (!$@DD5_STATUS)
+        donpcevent "#TMWFinalExam::OnWarn0";
+    close;
 }
 

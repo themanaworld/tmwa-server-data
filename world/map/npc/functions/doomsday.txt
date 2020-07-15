@@ -37,7 +37,7 @@ function|script|DoomsdayDebug
     mes "Zealite Upgrade? "+if_then_else($DOOMSDAY_SUMMON > 1, "Yes", "No");
     mes "";
     mes "Act 5:";
-    mes "Warp to fake Keshlam? "+if_then_else($DOOMSDAY_TWARP > 1, "No", "Yes");
+    mes "Warp to fake Keshlam? "+if_then_else($DOOMSDAY_TWARP, "No", "Yes");
     //($DOOMSDAY_SUMMON ? "Yes" : "No");
     next;
     // Only GM 80 and above can modify Doomsday
@@ -174,6 +174,7 @@ L_Keshlam:
     enablenpc "Arch-Wizard#9";
     enablenpc "Chest#DarkRose";
     set $DOOMSDAY, 3;
+    set $DOOMSDAY_TWARP, 0;
     donpcevent "Doomsday::OnJanitor"; // TODO
     gmlog strcharinfo(0) + " changed doomsday to Act 5: The Doomsday.";
     gmlog strcharinfo(0) + " changed doomsday warp to Keshlam Maze";
@@ -1277,12 +1278,12 @@ function|script|DoomsdayAct5
         goto L_Return;
     if (getmap() == "099-8")
         goto L_Return;
-    if (countitem("BlackRose"))
-        goto L_WarpTo;
-    if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-4" || getmap() == "099-6")
-        goto L_WarpOut;
     if (getmap() == "099-5")
         goto L_WaitRoom;
+    if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-4" || getmap() == "099-6")
+        goto L_WarpOut;
+    if (countitem("BlackRose"))
+        goto L_WarpTo;
     goto L_Return;
 
 L_WarpTo:

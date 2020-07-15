@@ -39,18 +39,27 @@ OnMTWarmup:
 
 ///////////////////////////////////////////////////////////
 // Before the battle begins
+OnWarn0:
+    announce "Doomsday : The Final Showdown will start shortly! Make way to the Master Chamber at once!", 0;
+    set $@DD5_STATUS, 1;
+    addnpctimer 90000, "#TMWFinalExam::OnWarn1";
+    end;
 OnWarn1:
     announce "Doomsday : Doors to Zax De'Kagen domains will seal shut in ##1##B5 minutes##b##0, so prepare yourselves!", 0;
+    addnpctimer 120000, "#TMWFinalExam::OnWarn2";
     end;
 OnWarn2:
     announce "Doomsday : Doors to Zax De'Kagen domains will seal shut in ##1##B3 minutes##b##0, so prepare yourselves!", 0;
+    addnpctimer 120000, "#TMWFinalExam::OnWarn3";
     end;
 OnWarn3:
     announce "Doomsday : Doors to Zax De'Kagen domains will seal shut in ##1##B1 minute##b##0, last call for challengers!", 0;
+    addnpctimer 60000, "#TMWFinalExam::OnBegin";
     end;
 OnBegin:
     announce "Doomsday : Final Showdown: BEGIN!", 0;
     set $@DD5_STATUS, 2;
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTChallenge";
     addnpctimer 2000, "#TMWFinalExam::OnPrologue1";
     end;
 
@@ -188,6 +197,14 @@ OnInit:
     setarray $@DD5MB_AVERAGE, 1159, 1160, 1159, 1160, 1159, 1160, 1157, 1158;
     setarray $@DD5MB_STRONG, 1152, 1153, 1154, 1152, 1153, 1154, 1152, 1153, 1154;
     // Flower 1151, Mouboo 1158
+    end;
+
+OnMiteyo:
+    if ($DOOMSDAY != 3)
+        end;
+    if ($@DD5_HP < 1)
+        end;
+    message strcharinfo(0), "Estimated boss HP: "+$@DD5_HP+rand(-100, 100);
     end;
 }
 
