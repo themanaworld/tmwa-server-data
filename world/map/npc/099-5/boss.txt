@@ -23,6 +23,8 @@
 ///////////////////////////////////////////////////////////////////
 // 1151
 //      const int   - ID of the Void Flower (s1 only)
+// 1066
+//      const int   - ID of the Vampire Bat
 // 1142
 //      const int   - ID of the visuals for Zax De'Kagen
 ///////////////////////////////////////////////////////////////////
@@ -124,6 +126,7 @@ OnPrologue4:
     areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
     // Begin timers!
     initnpctimer;
+    donpcevent "Zax De'Kagen#0::OnEnable";
     end;
 
 ///////////////////////////////////////////////////////////
@@ -131,6 +134,7 @@ OnPrologue4:
 OnRubberBat:
     if ($@DD5_STATUS != 3)
         end;
+    areamonster getmap(), getx()-5, gety()-5, getx()+5, gety()+5, "", 1066, rand(2,4), "#TMWFinalExam::OnKillWeak";
     // FIXME
     end;
 
@@ -269,6 +273,8 @@ function|script|FinalExamAttack
     if (@dd5_crit)
         set @dd5_dmg, @dd5_dmg*2;
 
+    // TODO: Stages
+
     // Apply the damage!
     set $@DD5_HP, $@DD5_HP-$@DD5_HP;
     message strcharinfo(0), "Combat : Damage -"+@dd5_dmg+" HP";
@@ -295,13 +301,28 @@ OnInit:
     end;
 }
 
-// Puppets
+// Puppets, the timer on this one is for Stage 1
 099-5,50,49,0|script|Zax De'Kagen#0|400
 {
     callfunc "FinalExamAttack";
     end;
 OnInit:
     disablenpc "Zax De'Kagen#0";
+    end;
+
+OnTimer18000:
+    enablenpc strnpcinfo(0);
+    end;
+OnTimer24000:
+    disablenpc strnpcinfo(0);
+    initnpctimer;
+    end;
+
+OnEnable:
+    initnpctimer;
+    end;
+OnDisable:
+    stopnpctimer;
     end;
 }
 
