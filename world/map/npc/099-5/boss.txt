@@ -114,7 +114,7 @@ OnPrologue4:
     mapannounce "099-4", "Zax De'Kagen : Catch me if you can!" , 0;
     npctalk "Zax De'Kagen#0", "Catch me if you can!";
     set $@DD5_STATUS, 3;
-    set $@DD5_HP, 50000;
+    set $@DD5_HP, 30000;
     set $@DD5_PRIMARY, getmapusers("099-5")*3;
     set $@DD5_SUPPORT, getmapusers("099-4")*3;
     set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
@@ -142,6 +142,75 @@ OnPickledBeets:
     if ($@DD5_STATUS != 3)
         end;
     donpcevent "Zax De'Kagen#0::OnAdjustBeets";
+    end;
+
+///////////////////////////////////////////////////////////
+// Second Stage
+OnWarmedUp0:
+    stopnpctimer;
+    set $@DD5_STATUS, 4;
+    set $@DD5_HP, 0;
+    killmonster "099-5", "All";
+    killmonster "099-4", "All";
+
+    mapannounce "099-5", "Zax De'Kagen : Hahaha! Not bad, not bad at all!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Hahaha! Not bad, not bad at all!" , 0;
+    npctalk "Zax De'Kagen#0", "Hahaha! Not bad, not bad at all!";
+
+    addnpctimer 5000, "#TMWFinalExam::OnWarmedUp1";
+    donpcevent "Zax De'Kagen#0::OnDisable";
+    end;
+
+OnWarmedUp1:
+    mapannounce "099-5", "Zax De'Kagen : However..." , 0;
+    mapannounce "099-4", "Zax De'Kagen : However..." , 0;
+    npctalk "Zax De'Kagen#0", "However...";
+
+    addnpctimer 5000, "#TMWFinalExam::OnWarmedUp2";
+    end;
+
+OnWarmedUp2:
+    mapannounce "099-5", "Zax De'Kagen : This was only warm up!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : This was only warm up!" , 0;
+    npctalk "Zax De'Kagen#0", "This was only warm up!";
+
+    addnpctimer 10000, "#TMWFinalExam::OnWarmedUp3";
+    end;
+
+OnWarmedUp3:
+    mapannounce "099-5", "Zax De'Kagen : Look and behold, the form I took on this rewrite..." , 0;
+    mapannounce "099-4", "Zax De'Kagen : Look and behold, the form I took on this rewrite..." , 0;
+    npctalk "Zax De'Kagen#0", "Look and behold, the form I took on this rewrite...";
+
+    addnpctimer 10000, "#TMWFinalExam::OnWarmedUp4";
+    end;
+
+OnWarmedUp4:
+    mapannounce "099-5", "Zax De'Kagen : The name which I am known is..." , 0;
+    mapannounce "099-4", "Zax De'Kagen : The name which I am known is..." , 0;
+    npctalk "Zax De'Kagen#0", "The name which I am known is...";
+
+    addnpctimer 10000, "#TMWFinalExam::OnWarmedUp5";
+    end;
+
+OnWarmedUp5:
+    disablenpc "Zax De'Kagen#0";
+    fakenpcname "Xakelbael the Dark#0", "Xakelbael the Dark#0", 1142;
+    mapannounce "099-5", "Xakelbael the Dark : ...Xakelbael the Dark! PERISH!" , 0;
+    mapannounce "099-4", "Xakelbael the Dark : ...Xakelbael the Dark! PERISH!" , 0;
+    npctalk "Xakelbael the Dark#0", "...Xakelbael the Dark! PERISH!";
+
+    addnpctimer 3000, "#TMWFinalExam::OnWarmedUp6";
+    end;
+
+OnWarmedUp6:
+    set $@DD5_STATUS, 5;
+    set $@DD5_HP, 50000;
+    set $@DD5_PRIMARY, getmapusers("099-5")*3;
+    set $@DD5_SUPPORT, getmapusers("099-4")*3;
+    set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
+    // TODO FIXME
+    initnpctimer;
     end;
 
 ///////////////////////////////////////////////////////////
@@ -277,13 +346,25 @@ function|script|FinalExamAttack
 
     // Apply the damage!
     set $@DD5_HP, $@DD5_HP-$@DD5_HP;
+    set @dd5_score, @dd5_score+1;
     message strcharinfo(0), "Combat : Damage -"+@dd5_dmg+" HP";
 
     // TODO: Fire events if HP < 0
+    if ($@DD5_HP <= 0)
+        goto L_Slain;
     goto L_Return;
 
 L_Miss:
     message strcharinfo(0), "Combat : Miss";
+    return;
+
+L_Slain:
+    set @dd5_score, @dd5_score+100;
+    set BOSS_POINTS, BOSS_POINTS + 25;
+    if ($@DD5_STATUS == 3)
+        donpcevent "#TMWFinalExam::OnWarmedUp0";
+    // FIXME
+    message strcharinfo(0), "Combat : Boss Points +25";
     return;
 
 L_Return:
@@ -331,7 +412,7 @@ OnEnable:
     initnpctimer;
     end;
 OnDisable:
-    disablenpc strnpcinfo(0);
+    enablenpc strnpcinfo(0);
     stopnpctimer;
     end;
 }
