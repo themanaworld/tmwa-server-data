@@ -37,6 +37,11 @@
 //      int         - 3x the challengers in waiting room
 // $@DD5_TOTALPC
 //      int         - Primary + Support, used to ramp up difficulty
+////////////////////////
+// $@DD5_RAIN
+//      bool        - Is Xakelbael in rain?
+// @dd5_dmg
+//      int         - Calculated damage
 
 099-5|mapflag|nosave|099-3,72,74
 099-5|mapflag|resave|099-3,72,74
@@ -242,6 +247,13 @@ OnWarmedUp6:
     initnpctimer;
     end;
 
+OnRainCheck:
+    set .@name$, strnpcinfo(0,@target_id);
+    explode .@nearby$[0], .@name$, "#";
+    if (.@nearby$[0] != "rain" && .@nearby$[1] != "rain") end;
+    set $@DD5_RAIN, 1;
+    end;
+
 ///////////////////////////////////////////////////////////
 // Third Stage
 OnShowdown0:
@@ -404,6 +416,20 @@ OnMiteyo:
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+function|script|DD5RainCheck
+{
+    set $@DD5_RAIN, 0;
+
+    // Search for rain
+    set .@p, get(.max_radius, "rain") + 1;
+    foreach 1, getmap(), POS_X-.@p, POS_Y-.@p, POS_X+.@p, POS_Y+.@p, "#TMWFinalExam::OnRainCheck";
+
+    // Not in rain - nullify damage
+    if (!($@DD5_RAIN))
+        set @dd5_dmg, 0;
+    return;
+}
+
 function|script|FinalExamAttack
 {
     // Failsafe
@@ -447,7 +473,17 @@ function|script|FinalExamAttack
         set @dd5_dmg, @dd5_dmg*2;
 
     // TODO: Stages
+    if ($@DD5_STATUS == 5)
+        goto L_Rainy;
+    goto L_Damage;
 
+L_Rainy:
+    callfunc "DD5RainCheck";
+    if (!($@DD5_RAIN))
+        goto L_Miss;
+    goto L_Damage;
+
+L_Damage:
     // Apply the damage!
     set $@DD5_HP, $@DD5_HP-@dd5_dmg;
     set @dd5_score, @dd5_score+1;
