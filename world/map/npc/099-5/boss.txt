@@ -146,18 +146,12 @@ OnPrologue4:
     set $@DD5_PRIMARY, 3+getmapusers("099-5")*3;
     set $@DD5_SUPPORT, 3+getmapusers("099-4")*3;
     set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
-    debugmes "SPAWN SPAWN";
     // Spawn first assault
-    debugmes "TPC 1";
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
-    debugmes "PRM";
     areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_PRIMARY, "#TMWFinalExam::OnKillAverage";
-    debugmes "SPT";
     areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_SUPPORT, "#TMWFinalExam::OnKillAverage";
-    debugmes "TPC 2";
     areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
     // Begin timers!
-    debugmes "TIME TIME";
     initnpctimer;
     donpcevent "Zax De'Kagen#0::OnEnable";
     end;
@@ -165,7 +159,6 @@ OnPrologue4:
 ///////////////////////////////////////////////////////////
 // First Stage
 OnRubberBat:
-    debugmes "DD5 Rubber";
     if ($@DD5_STATUS != 3)
         end;
     areamonster getmap(), getx()-5, gety()-5, getx()+5, gety()+5, "", 1155, rand(2,4), "#TMWFinalExam::OnKillWeak";
@@ -173,7 +166,6 @@ OnRubberBat:
     end;
 
 OnPickledBeets:
-    debugmes "DD5 Beets";
     if ($@DD5_STATUS != 3)
         end;
     addtimer 10, "Zax De'Kagen#0::OnAdjustBeets";
@@ -340,31 +332,25 @@ OnMiteyo:
 ////////////////////////////////////////////////////////////////////////////////
 function|script|FinalExamAttack
 {
-    debugmes "FEA";
     // Failsafe
     if ($@DD5_STATUS != 3 && $@DD5_STATUS != 5 && $@DD5_STATUS != 7)
         goto L_Return;
 
-    debugmes "CDF";
     // CD Failsafe
     if (@dd5_timer > 1 && gettimetick(0) < 1)
         set @dd5_timer, gettimetick(0);
 
-    debugmes "CDC "+gettimetick(0)+" > "+@dd5_timer;
     // Cooldown
     if (gettimetick(0) < @dd5_timer)
         goto L_Return;
 
-    debugmes "RGC";
     // Verify range
     if (!(isin("099-5", 50-ATTACKRANGE, 49-ATTACKRANGE, 50+ATTACKRANGE, 49+ATTACKRANGE)))
         goto L_Return;
 
-    debugmes "ADLY";
     // Assign attack speed delay - 300ms with pots, 600ms without
     set @dd5_timer, if_then_else(sc_check(sc_raiseattackspeed0), gettimetick(0)+300, gettimetick(0)+600);
 
-    debugmes "HITCRT";
     // Calculate HIT and CRIT rate
     set @dd5_crit, (rand(10000) < CRIT);
     if (rand(500) > HIT && !@dd5_crit)
@@ -372,46 +358,38 @@ function|script|FinalExamAttack
 
     // FIXME: How to check if it was magic? Magic causes no damage.
 
-    debugmes "DMG";
     // Calculate damage
     set @dd5_dmg, ATK1+BASE_ATK;
 
-    debugmes "STR";
     // Strength Potion - DMG +50%
     if (sc_check(sc_raiseattackstrength))
         set @dd5_dmg, @dd5_dmg*15/10;
 
-    debugmes "DEF";
     // Boss defense
     set @dd5_dmg, @dd5_dmg*(11-$@DD5_STATUS)/10;
 
-    debugmes "CRI";
     // Consider criticals (no defense disregard, though)
     if (@dd5_crit)
         set @dd5_dmg, @dd5_dmg*2;
 
     // TODO: Stages
 
-    debugmes "HRM";
     // Apply the damage!
     set $@DD5_HP, $@DD5_HP-@dd5_dmg;
     set @dd5_score, @dd5_score+1;
     set $@DD5_PTS, $@DD5_PTS+1;
     message strcharinfo(0), "Combat : Damage -"+@dd5_dmg+" HP";
 
-    debugmes "FIRE";
     // TODO: Fire events if HP < 0
     if ($@DD5_HP <= 0)
         goto L_Slain;
     goto L_Return;
 
 L_Miss:
-    debugmes "MISS";
     message strcharinfo(0), "Combat : Miss";
     return;
 
 L_Slain:
-    debugmes "SUCCESS";
     set @dd5_score, @dd5_score+100;
     set $@DD5_PTS, $@DD5_PTS+100;
     set BOSS_POINTS, BOSS_POINTS + 25;
@@ -423,8 +401,6 @@ L_Slain:
     return;
 
 L_Return:
-    debugmes "END";
-    debugmes "";
     return;
 }
 
@@ -449,11 +425,9 @@ OnInit:
     end;
 
 OnTimer18000:
-    debugmes "Zax - Enable";
     enablenpc strnpcinfo(0);
     end;
 OnTimer24000:
-    debugmes strnpcinfo(0)+" - Disable";
     initnpctimer;
     disablenpc strnpcinfo(0);
     end;
