@@ -9,6 +9,26 @@
 099-2,0,0,0|script|#099-2_Prestart|32767
 {
     end;
+
+OnStorage:
+    if ($DOOMSDAY != 3)
+        end;
+    if (getmap() != "099-5" && getmap() != "099-4")
+        end;
+    if ($@DD5_STATUS != 1 && $@DD5_STATUS != 2 && $@DD5_STATUS != 4 && $@DD5_STATUS != 6)
+        end;
+    openstorage;
+    end;
+
+// FIXME DEBUG DEBUG DEBUG FIXME
+OnDebug:
+    if (!debug || $DOOMSDAY != 3 || GM < GM_SYSOP)
+        end;
+    set $@DD5_TSWITCH, 18;
+    set $@DD5_OPENSESAME, 1;
+    message strcharinfo(0), "DOOMSDAY ACT 5 DEBUG SUCCESSFUL";
+    end;
+
 OnInit:
     // Initialize the 18 switches
     set $@DD5_TSWITCH, 0;
@@ -32,6 +52,12 @@ OnInit:
              3555+rand(10000),
              3555+rand(10000),
              3555+rand(10000);
+
+    // TODO: Spawn monsters on maps
+
+    // Register commands
+    registercmd "@js33", strnpcinfo(0)+"::OnDebug";
+    registercmd "#storage", strnpcinfo(0)+"::OnStorage";
     end;
 }
 
