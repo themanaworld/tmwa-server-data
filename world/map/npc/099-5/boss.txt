@@ -63,7 +63,7 @@ OnMTChallenge:
     message strcharinfo(0), "This battle experience distribution is different, and death is final. Be careful!";
     end;
 
-OnMTReward5:
+OnMTReward50:
     set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
     if (!@dd5_share)
         end;
@@ -73,7 +73,7 @@ OnMTReward5:
     message strcharinfo(0), "Gained "+(@dd5_share/100)+" boss points!";
     end;
 
-OnMTReward4:
+OnMTReward40:
     set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
     if (!@dd5_share)
         end;
@@ -81,6 +81,26 @@ OnMTReward4:
     set Zeny, Zeny + @dd5_share/10;
     set BOSS_POINTS, BOSS_POINTS + @dd5_share/200;
     message strcharinfo(0), "Gained "+(@dd5_share/200)+" boss points!";
+    end;
+
+OnMTReward51:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*20, @dd5_share*2;
+    set Zeny, Zeny + (@dd5_share*2);
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/50;
+    message strcharinfo(0), "Gained "+(@dd5_share/50)+" boss points!";
+    end;
+
+OnMTReward41:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*2, @dd5_share/5;
+    set Zeny, Zeny + @dd5_share/5;
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/100;
+    message strcharinfo(0), "Gained "+(@dd5_share/100)+" boss points!";
     end;
 
 OnMTWarning:
@@ -186,6 +206,8 @@ OnWarmedUp0:
     set $@DD5_HP, 0;
     killmonster "099-5", "All";
     killmonster "099-4", "All";
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward50";
+    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward40";
 
     mapannounce "099-5", "Zax De'Kagen : Hahaha! Not bad, not bad at all!" , 0;
     mapannounce "099-4", "Zax De'Kagen : Hahaha! Not bad, not bad at all!" , 0;
@@ -262,6 +284,8 @@ OnShowdown0:
     set $@DD5_HP, 0;
     killmonster "099-5", "All";
     killmonster "099-4", "All";
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward51";
+    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward41";
     disablenpc "Xakelbael the Dark#0";
     enablenpc "Zax De'Kagen#0";
 
@@ -505,8 +529,8 @@ L_Slain:
     set BOSS_POINTS, BOSS_POINTS + 25;
     if ($@DD5_STATUS == 3)
         donpcevent "#TMWFinalExam::OnWarmedUp0";
-    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward5";
-    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward4";
+    if ($@DD5_STATUS == 5)
+        donpcevent "#TMWFinalExam::OnShowdown0";
     message strcharinfo(0), "You gained 25 Boss Points!";
     return;
 
