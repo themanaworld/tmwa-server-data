@@ -202,12 +202,18 @@ L_Busy:
     close;
 
 OnTouch:
+    if ($DOOMSDAY_VANILLA)
+        goto L_Menu;
+
     if ($@DD5_TSWITCH != 18)
         goto L_NotSwitch;
 
     if (!$@DD5_OPENSESAME)
         goto L_NotSesame;
 
+    goto L_Menu;
+
+L_Menu:
     if ($@DD5_STATUS > 1)
         goto L_Busy;
 
@@ -215,11 +221,9 @@ OnTouch:
     mes "You cannot return from there!";
     mes "";
     mes "##1Warning: Warp will be unavailable during fights!";
-    if (GM >= GM_SYSOP)
-        goto L_Debug;
-	close;
+    if (GM < GM_SYSOP)
+        close;
 
-L_Debug:
     menu
         "Yes", L_Yes,
         "No", L_No;
