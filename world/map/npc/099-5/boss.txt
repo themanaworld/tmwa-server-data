@@ -47,13 +47,13 @@
 //      0 - Defenseless (#------- TRANSPARENT)
 //      1 - Invencible (except to shearing) (#CC79A7 PURPLE)
 //      2 - All damage is halved (#E69F00 ORANGE)
-//      3 - Immune to buffed attackers (#F0E442 YELLOW)
-//      4 - Vulnerable only to buffed attackers (#56B4E9 CYAN)
-//      5 - (#999999 GRAY)
-//      6 - (#009E7E GREEN)
+//      3 - Immune to potion'ed attackers (#D55E00 BROWN)
+//      4 - Vulnerable only when wet (#56B4E9 CYAN)
+//      5 - Vulnerable only to melee (#999999 GRAY)
+//      6 - Vulnerable to Bone Knife/Bone Arrow (#FFFFFF WHITE)
 //      7 - (#0072B2 BLUE)
-//      8 - (#D55E00 BROWN)
-//      9 - (#FFFFFF WHITE)
+//      8 - (#F0E442 YELLOW)
+//      9 - (#009E7E GREEN)
 // @dd5_dmg
 //      int         - Calculated damage
 ///////////////////////////////////////////////////////////////////
@@ -69,11 +69,14 @@
 // mapmask
 //      1           - Show tiles
 //      2           - Epilogue Mode
-//      4           - 
-//      8           - 
-//     16           - 
-//     32           - 
-//     64           - 
+//      4           - DEFCON 1 INVENCIBLE
+//      8           - DEFCON 2 DOUBLE DEFENSE
+//     16           - DEFCON 3 POTION IMMUNITY
+//     32           - DEFCON 4 WATER VULNERABLE
+//     64           - DEFCON 5 RANGED INVULNERABILITY
+//     128          - DEFCON 6 BONE VULNERABLE
+//     256          - DEFCON 
+//     512          - DEFCON 
 
 099-5|mapflag|nosave|099-3,72,74
 099-5|mapflag|resave|099-3,72,74
@@ -260,11 +263,15 @@ OnFF06N:
 OnMTBlissOblivion:
     misceffect 51, strcharinfo(0);
     misceffect 52, strcharinfo(0); // FIXME
+    // TODO: Poison
+    // TODO: Map Mask
     end;
 
 OnBlissOblivion:
     killmonster "099-5", "All";
     killmonster "099-4", "All";
+    set $@DD5_DEFCON, rand(0, 6);
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTBlissOblivion";
     setnpctimer 89000;
     end;
 
