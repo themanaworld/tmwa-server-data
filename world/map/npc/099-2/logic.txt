@@ -6,11 +6,12 @@
 //      Controls gimmicks in 099-3 as well
 /////////////////////////////////////////////////////////////////////////////////
 
-099-2,0,0,0|script|#099-2_Prestart|32767
+-|script|#099-2_CMD|32767
 {
     end;
 
 OnStorage:
+    debugmes "STORAGE";
     if ($DOOMSDAY != 3)
         end;
     if (getmap() != "099-5" && getmap() != "099-4")
@@ -18,6 +19,27 @@ OnStorage:
     if ($@DD5_STATUS != 1 && $@DD5_STATUS != 2 && $@DD5_STATUS != 4 && $@DD5_STATUS != 6)
         end;
     openstorage;
+    end;
+
+// FIXME DEBUG DEBUG DEBUG FIXME
+OnDebug:
+    debugmes "JS33";
+    if (!debug || $DOOMSDAY != 3 || GM < GM_SYSOP)
+        end;
+    set $@DD5_TSWITCH, 18;
+    set $@DD5_OPENSESAME, 1;
+    message strcharinfo(0), "DOOMSDAY ACT 5 DEBUG SUCCESSFUL";
+    end;
+
+OnInit:
+    // Register commands
+    registercmd "@js33", strnpcinfo(0)+"::OnDebug";
+    registercmd "#storage", strnpcinfo(0)+"::OnStorage";
+    end;
+}
+
+099-2,0,0,0|script|#099-2_Prestart|32767
+{
     end;
 
 OnTrial1:
@@ -36,15 +58,6 @@ OnTrial2:
 OnTrial3:
     getexp 10000, 0;
     getitem "BentNeedle", 1;
-    end;
-
-// FIXME DEBUG DEBUG DEBUG FIXME
-OnDebug:
-    if (!debug || $DOOMSDAY != 3 || GM < GM_SYSOP)
-        end;
-    set $@DD5_TSWITCH, 18;
-    set $@DD5_OPENSESAME, 1;
-    message strcharinfo(0), "DOOMSDAY ACT 5 DEBUG SUCCESSFUL";
     end;
 
 OnInit:
@@ -92,11 +105,7 @@ OnInit:
     areamonster "099-3", 20, 20, 120,  80, "", 1152, 20;
 
     // The boss. Used to be 1137 Tormenta but... Well... Better not.
-    monster "099-1", 35, 27, "", 1147, 1, strnpcinfo(0)+"::OnTrial1";
-
-    // Register commands
-    registercmd "@js33", strnpcinfo(0)+"::OnDebug";
-    registercmd "#storage", strnpcinfo(0)+"::OnStorage";
+    monster "099-1", 35, 27, "", 1147, 1, "#099-2_Prestart::OnTrial1";
     end;
 }
 
