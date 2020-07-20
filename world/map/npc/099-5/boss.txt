@@ -117,6 +117,30 @@ OnMTReward41:
     goto OnMTMusicOff;
 
 ////////////////////////////
+// Third Stage Rewards
+OnMTReward52:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*500, @dd5_share*5;
+    set Zeny, Zeny + (@dd5_share*5);
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/20;
+    message strcharinfo(0), "Gained "+(@dd5_share/20)+" boss points!";
+    music "ghoulish-fun.ogg";
+    goto OnEpilogue1;
+
+OnMTReward42:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*50, @dd5_share;
+    set Zeny, Zeny + @dd5_share;
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/50;
+    message strcharinfo(0), "Gained "+(@dd5_share/50)+" boss points!";
+    music "ghoulish-fun.ogg";
+    goto OnEpilogue1;
+
+////////////////////////////
 // Fourth Fall
 OnMTFourthFall:
     misceffect 52, strcharinfo(0); // FIXME
@@ -476,9 +500,8 @@ OnEpilogue0:
     set $@DD5_HP, 0;
     killmonster "099-5", "All";
     killmonster "099-4", "All";
-    //areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward51";
-    //areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward41";
-    //areatimer 0, ...., "#TMWFinalExam::OnEpilogue1"
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward52";
+    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward42";
 
     set $@DD5_TPASSED, (gettimetick(2)-$@DD5_BEGIN);
     set $@DD5_TSPENT$, $@DD5_TPASSED/60+" minute(s) and "+$@DD5_TPASSED%60+" second(s)";
@@ -586,6 +609,7 @@ L_Epilogue1Check4:
     set $@DD5_SUPPORT, $@DD5_SUPPORT+1;
     if ($@DD5_SUPPORT >= getmapusers("099-4"))
         debugmes "ERROR FIXME - addnpctimer";
+    // TODO: Warp back to 099-5 to avoid excessive NPC duplication
     close;
 
 // If you exited it when convenient, force you to restart interaction
@@ -859,6 +883,8 @@ L_Slain:
         donpcevent "#TMWFinalExam::OnWarmedUp0";
     if ($@DD5_STATUS == 5)
         donpcevent "#TMWFinalExam::OnShowdown0";
+    if ($@DD5_STATUS == 7)
+        donpcevent "#TMWFinalExam::OnEpilogue0";
     message strcharinfo(0), "You gained 25 Boss Points!";
     return;
 
