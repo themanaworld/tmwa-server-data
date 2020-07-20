@@ -43,6 +43,15 @@
 // @dd5_dmg
 //      int         - Calculated damage
 ///////////////////////////////////////////////////////////////////
+// $@DD5_TALLY_     - Max Individual Score at tally time
+// $@DD5_TALLY$     - Player with highest tally
+// Tally is conducted at first epilogue scene
+// Reward is handed out at last epilogue scene
+// If player leaves in-between, reward will be forsaken
+// Players who already got the reward (#DD5_TALLY = True)
+// will not participate on the tally sequence.
+// Tally will not be conducted on Vanilla mode.
+///////////////////////////////////////////////////////////////////
 // mapmask
 //      1           - Show tiles
 //      2           - Black overlay (breaks mercilessy F mode) (FIXME)
@@ -127,6 +136,11 @@ OnMTReward52:
     set BOSS_POINTS, BOSS_POINTS + @dd5_share/20;
     message strcharinfo(0), "Gained "+(@dd5_share/20)+" boss points!";
     music "ghoulish-fun.ogg";
+
+    // Tally rewards
+    // FIXME TODO Use a bitwise to save space, this is TMWA
+    if (!#DD5_TALLY && !$DOOMSDAY_VANILLA)
+        goto OnTally;
     goto OnEpilogue1;
 
 OnMTReward42:
@@ -138,6 +152,22 @@ OnMTReward42:
     set BOSS_POINTS, BOSS_POINTS + @dd5_share/50;
     message strcharinfo(0), "Gained "+(@dd5_share/50)+" boss points!";
     music "ghoulish-fun.ogg";
+
+    // Tally rewards
+    // FIXME TODO Use a bitwise to save space, this is TMWA
+    if (!#DD5_TALLY && !$DOOMSDAY_VANILLA)
+        goto OnTally;
+    goto OnEpilogue1;
+
+// Blue Rose tally
+OnTally:
+    if (@dd5_score > $@DD5_TALLY_)
+        goto OnTallyOK;
+    goto OnEpilogue1;
+
+OnTallyOK:
+    set $@DD5_TALLY_, @dd5_score;
+    set $@DD5_TALLY$, strcharinfo(0);
     goto OnEpilogue1;
 
 ////////////////////////////
