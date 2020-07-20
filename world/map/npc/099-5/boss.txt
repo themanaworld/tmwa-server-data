@@ -78,7 +78,7 @@ OnMTReward50:
     set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
     if (!@dd5_share)
         end;
-    getexp @dd5_share*10, @dd5_share;
+    getexp @dd5_share*100, @dd5_share;
     set Zeny, Zeny + @dd5_share;
     set BOSS_POINTS, BOSS_POINTS + @dd5_share/100;
     message strcharinfo(0), "Gained "+(@dd5_share/100)+" boss points!";
@@ -88,7 +88,7 @@ OnMTReward40:
     set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
     if (!@dd5_share)
         end;
-    getexp @dd5_share, @dd5_share/10;
+    getexp @dd5_share*10, @dd5_share/10;
     set Zeny, Zeny + @dd5_share/10;
     set BOSS_POINTS, BOSS_POINTS + @dd5_share/200;
     message strcharinfo(0), "Gained "+(@dd5_share/200)+" boss points!";
@@ -100,7 +100,7 @@ OnMTReward51:
     set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
     if (!@dd5_share)
         end;
-    getexp @dd5_share*20, @dd5_share*2;
+    getexp @dd5_share*200, @dd5_share*2;
     set Zeny, Zeny + (@dd5_share*2);
     set BOSS_POINTS, BOSS_POINTS + @dd5_share/50;
     message strcharinfo(0), "Gained "+(@dd5_share/50)+" boss points!";
@@ -110,7 +110,7 @@ OnMTReward41:
     set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
     if (!@dd5_share)
         end;
-    getexp @dd5_share*2, @dd5_share/5;
+    getexp @dd5_share*20, @dd5_share/5;
     set Zeny, Zeny + @dd5_share/5;
     set BOSS_POINTS, BOSS_POINTS + @dd5_share/100;
     message strcharinfo(0), "Gained "+(@dd5_share/100)+" boss points!";
@@ -124,21 +124,67 @@ OnMTFourthFall:
     end;
 
 OnFourthFall:
+    debugmes "FOURTH FALL";
+
     // High Damage
     if (sc_check(sc_raiseattackspeed0))
-        heal -300, -100;
+        goto OnFF01Y;
+    goto OnFF01N;
+
+OnFF01Y:
+    heal -300, -100;
+    goto OnFF01N;
+
+OnFF01N:
     if (sc_check(sc_raiseattackstrength))
-        heal -300, -100;
+        goto OnFF02Y;
+    goto OnFF02N;
+
+OnFF02Y:
+    heal -300, -100;
+    goto OnFF02N;
+
+OnFF02N:
     // Medium Damage
     if (sc_check(SC_PHYS_SHIELD))
-        heal -250, -50;
+        goto OnFF03Y;
+    goto OnFF03N;
+
+OnFF03Y:
+    heal -250, -50;
+    goto OnFF03N;
+
+OnFF03N:
     if (sc_check(SC_MBARRIER))
-        heal -250, -50;
+        goto OnFF04Y;
+    goto OnFF04N;
+
+OnFF04Y:
+    heal -250, -50;
+    goto OnFF04N;
+
+OnFF04N:
     // Low Damage
     if (sc_check(SC_FLYING_BACKPACK))
-        heal -125, -25;
+        goto OnFF05Y;
+    goto OnFF05N;
+
+OnFF05Y:
+    heal -125, -25;
+    goto OnFF05N;
+
+OnFF05N:
     if (sc_check(sc_slowpoison))
-        heal -125, -25;
+        goto OnFF06Y;
+    goto OnFF06N;
+
+OnFF06Y:
+    heal -125, -25;
+    goto OnFF06N;
+
+OnFF06N:
+    debugmes "FOURTH WALL WAS BROKEN";
+    misceffect 52, strcharinfo(0); // FIXME
     end;
 
 ////////////////////////////
@@ -637,7 +683,7 @@ OnEpilogue6:
 OnTimer30000:
     // TODO: Life check
     // Imperial Chamber
-    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], $@DD5_PRIMARY*3, "#TMWFinalExam::OnKillWeak";
+    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], $@DD5_PRIMARY*2, "#TMWFinalExam::OnKillWeak";
     // Map
     areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], $@DD5_TOTALPC*3, "#TMWFinalExam::OnKillWeak";
     areamonster "099-4", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_WEAK)), $@DD5_SUPPORT*3, "#TMWFinalExam::OnKillWeak";
@@ -649,7 +695,7 @@ OnTimer30000:
 OnTimer60000:
     // TODO: Life check
     // Imperial Chamber
-    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_PRIMARY, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_PRIMARY/2, "#TMWFinalExam::OnKillAverage";
     // Map
     areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
     areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_SUPPORT, "#TMWFinalExam::OnKillAverage";
@@ -669,7 +715,7 @@ OnTimer90000:
     // TODO: Life check
     // Imperial Chamber
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], $@DD5_PRIMARY/2, "#TMWFinalExam::OnKillStrong";
-    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_BOSSLV[rand(getarraysize($@DD5MB_BOSSLV))], $@DD5_STAGE/2, "#TMWFinalExam::OnKillStrong";
+    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_BOSSLV[rand(getarraysize($@DD5MB_BOSSLV))], $@DD5_STATUS/2, "#TMWFinalExam::OnKillStrong";
     // Map
     areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], $@DD5_TOTALPC/2, "#TMWFinalExam::OnKillStrong";
     areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], $@DD5_SUPPORT/2, "#TMWFinalExam::OnKillStrong";
@@ -717,7 +763,7 @@ OnMiteyo:
         end;
     if ($@DD5_HP < 1)
         end;
-    message strcharinfo(0), "Estimated boss HP: "+$@DD5_HP+rand(-100, 100);
+    message strcharinfo(0), "Estimated boss HP: "+($@DD5_HP+rand(-100, 100));
     end;
 }
 
@@ -887,6 +933,8 @@ OnTimer50000:
     end;
 OnEnable:
     initnpctimer;
+    if (debug)
+        setnpctimer 45000;
     end;
 OnDisable:
     stopnpctimer;
