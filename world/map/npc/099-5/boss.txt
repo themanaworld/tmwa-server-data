@@ -21,6 +21,9 @@
 // $@DD5_PTS        - Total participation points distributed
 //      int
 // $@DD5_BEGIN      - Time where the battle begun
+//      time
+// $@DD5_MOBC       - Amount of monsters to spawn
+//      int
 // $@DD5MB_WEAK, $@DD5MB_AVERAGE, $@DD5MB_STRONG, $@DD5MB_BOSSLV
 //      int array   - Contains lists of monsters to be used
 ///////////////////////////////////////////////////////////////////
@@ -54,7 +57,7 @@
 ///////////////////////////////////////////////////////////////////
 // mapmask
 //      1           - Show tiles
-//      2           - Black overlay (breaks mercilessy F mode) (FIXME)
+//      2           - Epilogue Mode
 //      4           - 
 //      8           - 
 //     16           - 
@@ -731,6 +734,36 @@ OnEpilogue6:
 // ANON
 // We will do what we can to support you from sidelines. Now go!
 
+///////////////////////////////////////////////////////////
+// Spawn Subsystem
+S_DD5PrimarySpawn:
+    // Receives: $@DD5_MOBC
+    set $@DD5_TMP, rand(300) / 100;
+    if ($@DD5_TMP == 0)
+        goto L_DD5PSN;
+    if ($@DD5_TMP == 1)
+        goto L_DD5PSR;
+    if ($@DD5_TMP == 2)
+        goto L_DD5PSP;
+    goto L_DD5PSResume;
+
+L_DD5PSN:
+    callfunc "DD5SpawnNoob";
+    goto L_DD5PSResume;
+
+L_DD5PSR:
+    callfunc "DD5SpawnRegular";
+    goto L_DD5PSResume;
+
+L_DD5PSP:
+    callfunc "DD5SpawnPro";
+    goto L_DD5PSResume;
+
+L_DD5PSResume:
+    if ($@DD5_MOBC)
+        goto S_DD5PrimarySpawn;
+    set $@DD5_TMP, 0;
+    return;
 
 ///////////////////////////////////////////////////////////
 // Timer Subsystem, spawns every 30 seconds
@@ -739,8 +772,8 @@ OnTimer30000:
     // Imperial Chamber
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], $@DD5_PRIMARY*2, "#TMWFinalExam::OnKillWeak";
     // Map
-    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], $@DD5_TOTALPC*3, "#TMWFinalExam::OnKillWeak";
-    areamonster "099-4", 20, 20, 75, 75, "", rand(getarraysize($@DD5MB_WEAK)), $@DD5_SUPPORT*3, "#TMWFinalExam::OnKillWeak";
+    set $@DD5_MOBC, $@DD5_TOTALPC;
+    callsub S_DD5PrimarySpawn;
     // Prologue mobs
     if ($@DD5_STATUS == 3)
         areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
@@ -751,8 +784,8 @@ OnTimer60000:
     // Imperial Chamber
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_PRIMARY/2, "#TMWFinalExam::OnKillAverage";
     // Map
-    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
-    areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_SUPPORT, "#TMWFinalExam::OnKillAverage";
+    set $@DD5_MOBC, $@DD5_TOTALPC;
+    callsub S_DD5PrimarySpawn;
     // Prologue mobs
     if ($@DD5_STATUS == 3)
         areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
@@ -771,8 +804,8 @@ OnTimer90000:
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], $@DD5_PRIMARY/2, "#TMWFinalExam::OnKillStrong";
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_BOSSLV[rand(getarraysize($@DD5MB_BOSSLV))], $@DD5_STATUS/2, "#TMWFinalExam::OnKillStrong";
     // Map
-    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], $@DD5_TOTALPC/2, "#TMWFinalExam::OnKillStrong";
-    areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], $@DD5_SUPPORT/2, "#TMWFinalExam::OnKillStrong";
+    set $@DD5_MOBC, $@DD5_TOTALPC/2;
+    callsub S_DD5PrimarySpawn;
     // Prologue mobs
     if ($@DD5_STATUS == 3)
         areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
@@ -822,6 +855,30 @@ OnMiteyo:
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+function|script|DD5SpawnNoob
+{
+    areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], 3, "#TMWFinalExam::OnKillWeak";
+    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], 3, "#TMWFinalExam::OnKillWeak";
+    set $@DD5_MOBC, $@DD5_MOBC-1;
+    return;
+}
+function|script|DD5SpawnRegular
+{
+    if (rand(6) % 2 == 0)
+        areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], 1, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], 1, "#TMWFinalExam::OnKillAverage";
+    set $@DD5_MOBC, $@DD5_MOBC-1;
+    return;
+}
+function|script|DD5SpawnPro
+{
+    if (rand(6) % 2 == 0)
+        areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], 1, "#TMWFinalExam::OnKillStrong";
+    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], 1, "#TMWFinalExam::OnKillStrong";
+    set $@DD5_MOBC, $@DD5_MOBC-1;
+    return;
+}
+
 function|script|DD5RainCheck
 {
     set $@DD5_RAIN, 0;
@@ -836,6 +893,7 @@ function|script|DD5RainCheck
     return;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 function|script|FinalExamAttack
 {
     // Failsafe
