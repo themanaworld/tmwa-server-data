@@ -536,6 +536,7 @@ OnShowdown6:
     set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
     // TODO FIXME
     initnpctimer;
+    donpcevent "Zax De'Kagen#0::OnFinal";
     end;
 
 ///////////////////////////////////////////////////////////
@@ -560,6 +561,7 @@ OnEpilogue0:
     set $@DD5_TSPENT2$, $@DD5_TPASSED2/60+" minute(s)";
     set $@DD5_PRIMARY, getmapusers("099-5");
     set $@DD5_SUPPORT, getmapusers("099-4");
+    donpcevent "Zax De'Kagen#0::OnDisable";
     end;
 
 // Unfortunately we all know that
@@ -1083,11 +1085,22 @@ OnInit:
     end;
 
 OnTimer18000:
+    if ($@DD5_STATUS != 3)
+        end;
     enablenpc strnpcinfo(0);
     end;
 OnTimer24000:
+    if ($@DD5_STATUS != 3)
+        end;
     initnpctimer;
     disablenpc strnpcinfo(0);
+    end;
+OnTimer80000:
+    if ($@DD5_STATUS != 7)
+        end;
+    initnpctimer;
+    npctalk "Zax De'Kagen#0", "Bliss Of Oblivion!";
+    donpcevent "#TMWFinalExam::OnBlissOblivion";
     end;
 
 OnAdjustBat:
@@ -1098,6 +1111,10 @@ OnAdjustBeets:
     if (getnpctimer(0) > 18000)
         setnpctimer max(18000, getnpctimer(0)-rand(3000,5000));
     end;
+OnAdjustSomething:
+    if (getnpctimer(0) < 80000)
+        setnpctimer max(75000, getnpctimer(0)-rand(5000, 7000));
+    end;
 
 OnEnable:
     disablenpc "Zax De'Kagen#0";
@@ -1106,6 +1123,9 @@ OnEnable:
 OnDisable:
     enablenpc strnpcinfo(0);
     stopnpctimer;
+    end;
+OnFinal:
+    initnpctimer;
     end;
 }
 
