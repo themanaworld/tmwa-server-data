@@ -15,6 +15,7 @@
 //      6 - Started, third cutscene
 //      7 - Third Stage
 //      8 - Epilogue running
+//      9 - Epilogue OK
 ///////////////////////////////////////////////////////////////////
 // $@DD5_HP         - Real HitPoints bar of the NPC
 //      int
@@ -721,26 +722,69 @@ OnEpilogue6:
     mapannounce "099-5", "Jande : With Zax gone, I could finally arrive here." , 0;
     npctalk "Jande#0", "With Zax gone, I could finally arrive here.";
 
-    //addnpctimer 10000, "#TMWFinalExam::OnEpilogue7";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue7";
     end;
 
-// TAL
-// I believe some introductions are in order. I am Tal, the Great Dragon of Water.
-// I am also the creator of the Tritan race. Jande called me to help.
-// While I do not like this idea myself, we have an enemy in common.
+OnEpilogue7:
+    mapannounce "099-5", "Tal : I believe some introductions are in order. I am Tal, the Great Dragon of Water." , 0;
+    npctalk "Tal#0", "Tal : I believe some introductions are in order. I am Tal, the Great Dragon of Water.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue8";
+    end;
 
-// ANON
-// We prepared another ship, Gema III. This ship will bring you to the damned island.
-// Be careful, though. It is the final resting place of the Great Dragon of Air.
-// There is no telling on the horrors you'll find there.
+OnEpilogue8:
+    mapannounce "099-5", "Tal : I am also the creator of the Tritan race. Jande called me to help." , 0;
+    npctalk "Tal#0", "Tal : I am also the creator of the Tritan race. Jande called me to help.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue9";
+    end;
 
-// JANDE
-// A ship is not so fast a flying one, but I am sure you can make in time.
-// Do not let Zax De'Kagen reach the great dragon body. AT NO CIRCUMSTANCES!
-// (Talk to Gema III to embark)
+OnEpilogue9:
+    mapannounce "099-5", "Tal : While I do not like this idea myself, we have an enemy in common." , 0;
+    npctalk "Tal#0", "Tal : While I do not like this idea myself, we have an enemy in common.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue10";
+    end;
 
+OnEpilogue10:
+    mapannounce "099-5", "Anon : We prepared another ship, Gema III. This ship will bring you to the damned island." , 0;
+    npctalk "Anon", "We prepared another ship, Gema III. This ship will bring you to the damned island.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue11";
+    end;
+
+OnEpilogue11:
+    mapannounce "099-5", "Anon : Be careful, though. It is the final resting place of the Great Dragon of Air." , 0;
+    npctalk "Anon", "Be careful, though. It is the final resting place of the Great Dragon of Air.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue12";
+    end;
+
+OnEpilogue12:
+    mapannounce "099-5", "Anon : There is no telling on the horrors you'll find there." , 0;
+    npctalk "Anon", "There is no telling on the horrors you'll find there.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue13";
+    end;
+
+OnEpilogue13:
+    mapannounce "099-5", "Jande : A ship is not so fast a flying one, but I am sure you can make in time." , 0;
+    npctalk "Jande#0", "A ship is not so fast a flying one, but I am sure you can make in time.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue14";
+    end;
+
+OnEpilogue14:
+    mapannounce "099-5", "Jande : Whatever happens, DO NOT let Zax De'Kagen reach the great dragon body. Remember: Zax is wounded!" , 0;
+    npctalk "Jande#0", "Whatever happens, DO NOT let Zax De'Kagen reach the great dragon body. Remember: Zax is wounded!";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue15";
+    end;
+
+OnEpilogue15:
+    set $@DD5_STATUS, 9;
+    mapannounce "099-5", "##1(Talk to Gema III to embark)" , 0;
+    npctalk "Gema III", "##1(Talk to Gema III to embark)";
+    addnpctimer 30000, "#TMWFinalExam::OnEpilogue16";
+    end;
+
+
+// Conspiracy
+OnEpilogue16:
+    end;
 // Ontalk: mapmask 1
-// addtimer 30000
 
 // JANDE
 // (*whisper* Tal, do you think they'll make it?)
@@ -1054,8 +1098,65 @@ OnInit:
 // Puppets
 099-5,51,33,0|script|Gema III|395
 {
-    // TODO: Embark
+    if ($@DD5_STATUS != 9)
+        goto L_TooEarly;
+    mes "##1Embark on Gema III in pursuit?##0";
+    mes "You may be unable to return here!";
+    next;
+    menu
+        "Yes",L_Yes,
+        "No",L_No;
+
+L_No:
+    close;
+
+L_Yes:
+    // Stop rendering the map and Embark
+    mapmask 1 | 2;
+    music "epilogue.ogg";
+    addtimer 300, "Gema III::OnStart";
+    close;
+
+OnStart:
+    misceffect 53, strcharinfo(0);
+    addtimer 60000, "Gema III::OnPrompt";
     end;
+
+OnPrompt:
+    mes ".:: THE MANA WORLD - REVOLT ::.";
+    mes "";
+    mes "Server Name: ##BThe Mana World##b";
+    mes "Server Address: ##Bserver.themanaworld.org##b";
+    mes "Server Port: ##B6969##b";
+    mes "Server Type: ##BEvol2##b";
+    mes "Server Description: ##BMain Server for The Mana World##b";
+    mes "";
+    mes "##BCOMING SOON##b";
+    mes "##BMONTH DAY, 18:00 UTC##b";
+    next;
+    mes "##BPre-register##b here:";
+    mes "[@@https://vault.themanaworld.org/|@@]";
+    mes "Max. 1 account per player.";
+    next;
+    warp "009-1", 52, 40;
+    getexp 1000000, 0;
+    if (strcharinfo(0) == $@DD5_TALLY$)
+        goto L_Winner;
+    close;
+
+L_Winner:
+    getitem "BlueRose", 1;
+    set $@DD5_TALLY$, "";
+    set #DD5_TALLY, 1;
+    mes "##2You were the MVP with "+$@DD5_TALLY_+" points!##0";
+    mes "##2Exchange this blue rose with a Game Master!##0";
+    close;
+
+L_TooEarly:
+    mes "[" + strcharinfo(0) + "]";
+    mes "It is Gema III! How did they manage to bring the ship here?!";
+    end;
+
 OnInit:
     disablenpc "Gema III";
     end;
