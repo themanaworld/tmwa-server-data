@@ -477,7 +477,6 @@ OnWarmedUp6:
     set $@DD5_PRIMARY, 1+getmapusers("099-5")*3;
     set $@DD5_SUPPORT, 1+getmapusers("099-4")*3;
     set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
-    // TODO FIXME
     initnpctimer;
     donpcevent "Xakelbael the Dark#0::OnEnable";
     areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTMusicOn";
@@ -562,18 +561,12 @@ OnShowdown6:
     set $@DD5_PRIMARY, 3+getmapusers("099-5")*3;
     set $@DD5_SUPPORT, 3+getmapusers("099-4")*3;
     set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
-    // TODO FIXME
     initnpctimer;
     donpcevent "Zax De'Kagen#0::OnFinal";
     end;
 
 ///////////////////////////////////////////////////////////
 // Epilogue
-// FIXME Maybe I should here poof in Jande or whatever
-// So Zax's words doesn't seem "thrown on the air"
-// Bonus points if they use a table to check time spent
-// and modify speech based on this.
-// FIXME Even better: Make this a speech
 OnEpilogue0:
     stopnpctimer;
     set $@DD5_STATUS, 8;
@@ -1009,7 +1002,17 @@ function|script|DD5RainCheck
 /////////////////////////////////////////////////
 function|script|DD5DEFCONCheck
 {
-    // FIXME TODO
+    // Shearing magic is active?
+    if (@chipchipspell[2] > 0)
+        goto L_Shear;
+    goto L_Loop;
+
+L_Shear:
+    set @dd5_shear, 1;
+    addtimer 0, "shear::OnDischarge";
+    goto L_Loop;
+
+L_Loop:
     if ($@DD5_DEFCON == 0)
         goto L_DEFCON0;
     if ($@DD5_DEFCON == 1)
@@ -1125,8 +1128,6 @@ function|script|FinalExamAttack
     if (rand(500) > HIT && !@dd5_crit)
         goto L_Miss;
 
-    // FIXME: How to check if it was magic? Magic causes no damage.
-
     // Calculate damage
     set @dd5_dmg, ATK1+BASE_ATK;
 
@@ -1175,7 +1176,7 @@ L_Damage:
     set $@DD5_PTS, $@DD5_PTS+min(25, @dd5_dmg/50);
     message strcharinfo(0), "Battle : Damage -"+@dd5_dmg+" HP";
 
-    // TODO: Fire events if HP < 0
+    // Fire events if HP < 0
     if ($@DD5_HP <= 0)
         goto L_Slain;
     goto L_Return;
