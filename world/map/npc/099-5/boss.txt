@@ -57,6 +57,8 @@
 //      9 - (#0072B2 BLUE)
 // @dd5_dmg
 //      int         - Calculated damage
+// @dd5_shear
+//      bool        - Damage is from shearing skill
 ///////////////////////////////////////////////////////////////////
 // $@DD5_TALLY_     - Max Individual Score at tally time
 // $@DD5_TALLY$     - Player with highest tally
@@ -986,6 +988,7 @@ function|script|DD5SpawnPro
     return;
 }
 
+/////////////////////////////////////////////////
 function|script|DD5RainCheck
 {
     set $@DD5_RAIN, 0;
@@ -1000,9 +1003,86 @@ function|script|DD5RainCheck
     return;
 }
 
+/////////////////////////////////////////////////
 function|script|DD5DEFCONCheck
 {
     // FIXME TODO
+    if ($@DD5_DEFCON == 0)
+        goto L_DEFCON0;
+    if ($@DD5_DEFCON == 1)
+        goto L_DEFCON1;
+    if ($@DD5_DEFCON == 2)
+        goto L_DEFCON2;
+    if ($@DD5_DEFCON == 3)
+        goto L_DEFCON3;
+    if ($@DD5_DEFCON == 4)
+        goto L_DEFCON4;
+    if ($@DD5_DEFCON == 5)
+        goto L_DEFCON5;
+    if ($@DD5_DEFCON == 6)
+        goto L_DEFCON6;
+    if ($@DD5_DEFCON == 7)
+        goto L_DEFCON7;
+    debugmes "ERROR INVALID DEFCON: "+$@DD5_DEFCON;
+    goto L_Return;
+
+// DEFCON 0 - Vulnerable
+L_DEFCON0:
+    goto L_Return;
+
+// DEFCON 1 - Invulnerable
+L_DEFCON1:
+    // FIXME
+    if (@dd5_shear)
+        goto L_Return;
+    set @dd5_dmg, 0;
+    goto L_Return;
+
+// DEFCON 2 - Double Defense
+L_DEFCON2:
+    set @dd5_dmg, @dd5_dmg/2;
+    goto L_Return;
+
+// DEFCON 3 - Potion Immunity
+L_DEFCON3:
+    if (sc_check(sc_raiseattackspeed0))
+        set @dd5_dmg, 0;
+    if (sc_check(sc_raiseattackstrength))
+        set @dd5_dmg, 0;
+    goto L_Return;
+
+// DEFCON 4 - Water Vulnerable
+L_DEFCON4:
+    callfunc "DD5RainCheck";
+    goto L_Return;
+
+// DEFCON 5 - Ranged Invulnerable
+L_DEFCON5:
+    if (ATTACKRANGE > 2)
+        set @dd5_dmg, 0;
+    goto L_Return;
+
+// DEFCON 6 - Bone Vulnerable
+L_DEFCON6:
+    // Shearing is immune to DEFCON 6
+    if (@dd5_shear)
+        goto L_Return;
+    // Not using the allowed equips
+    if (getequipid(equip_arrow) != 1282 && getequipid(equip_hand1) != 570)
+        set @dd5_dmg, 0;
+    // Lame check for bows because I'm lazy
+    if (getequipid(equip_arrow) == 1282 && ATTACKRANGE < 4)
+        set @dd5_dmg, 0;
+    goto L_Return;
+
+// DEFCON 7 - Melee Absorb
+L_DEFCON7:
+    if (ATTACKRANGE < 3)
+        set @dd5_dmg, 0-(@dd5_dmg);
+    goto L_Return;
+
+L_Return:
+    set @dd5_shear, 1;
     return;
 }
 
@@ -1070,8 +1150,8 @@ L_Defcon:
         goto L_Miss;
     goto L_Damage;
 
-L_Damage:
-    // Apply the damage!
+L_Absorb:
+    // Ops! Zax appreciates the heal!
     set $@DD5_HP, $@DD5_HP-@dd5_dmg;
     message strcharinfo(0), "Battle : Absorbed +"+@dd5_dmg+" HP";
     goto L_Return;
