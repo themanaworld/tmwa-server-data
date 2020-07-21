@@ -53,7 +53,7 @@
 //      5 - Vulnerable only to melee (#999999 GRAY)
 //      6 - Vulnerable to Bone Knife/Bone Arrow (#FFFFFF WHITE)
 //      7 - Regenerate from melee (#009E7E GREEN)
-//      8 - (#F0E442 YELLOW)
+//      8 - Requires 10 GP per Damage (#F0E442 YELLOW)
 //      9 - (#0072B2 BLUE)
 // @dd5_dmg
 //      int         - Calculated damage
@@ -79,7 +79,8 @@
 //     64           - DEFCON 5 RANGED INVULNERABILITY
 //     128          - DEFCON 6 BONE VULNERABLE
 //     256          - DEFCON 7 MELEE REGEN
-//     512          - DEFCON 
+//     512          - DEFCON 8 GP COST
+//     1024         - DEFCON
 
 099-5|mapflag|nosave|099-3,72,74
 099-5|mapflag|resave|099-3,72,74
@@ -290,12 +291,14 @@ OnMTBlissOblivion:
         mapmask 1 | 128;
     if ($@DD5_DEFCON == 7)
         mapmask 1 | 256;
+    if ($@DD5_DEFCON == 8)
+        mapmask 1 | 512;
     end;
 
 OnBlissOblivion:
     killmonster "099-5", "All";
     killmonster "099-4", "All";
-    set $@DD5_DEFCON, rand(0, 7);
+    set $@DD5_DEFCON, rand(0, 8);
     areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTBlissOblivion";
     setnpctimer 89000;
     end;
@@ -1023,6 +1026,8 @@ function|script|DD5DEFCONCheck
         goto L_DEFCON6;
     if ($@DD5_DEFCON == 7)
         goto L_DEFCON7;
+    if ($@DD5_DEFCON == 8)
+        goto L_DEFCON8;
     debugmes "ERROR INVALID DEFCON: "+$@DD5_DEFCON;
     goto L_Return;
 
@@ -1079,6 +1084,13 @@ L_DEFCON6:
 L_DEFCON7:
     if (ATTACKRANGE < 3)
         set @dd5_dmg, 0-(@dd5_dmg);
+    goto L_Return;
+
+// DEFCON 8 - GP Greed
+L_DEFCON8:
+    if (Zeny < @dd5_dmg*10)
+        set @dd5_dmg, 0;
+    set Zeny, Zeny-(@dd5_dmg*10);
     goto L_Return;
 
 L_Return:
