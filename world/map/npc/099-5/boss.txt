@@ -98,6 +98,10 @@ OnMTChallenge:
     message strcharinfo(0), "This battle experience distribution is different, and death is final. Be careful!";
     end;
 
+OnMTWarpTo5:
+    warp "099-5", rand(53, 59), rand(37, 41);
+    end;
+
 ////////////////////////////
 // First Stage Rewards
 OnMTReward50:
@@ -672,8 +676,17 @@ OnIllegalExit1:
         goto OnEpilogue1;
     end;
 
+// Should we advance or warp map?
+OnEpilogue1b:
+    if ($@DD5_PRIMARY < getmapusers("099-5"))
+        end;
+    if ($@DD5_SUPPORT < getmapusers("099-4"))
+        end;
+    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTWarpTo5";
+    addnpctimer 300, "#TMWFinalExam::OnEpilogue2";
+    end;
+
 OnEpilogue2:
-    //enablenpc AIRSHIP
     mapannounce "099-5", "Zax De'Kagen : Now that I know where Nu'Rem is burried, nothing can stop me." , 0;
     mapannounce "099-4", "Zax De'Kagen : Now that I know where Nu'Rem is burried, nothing can stop me." , 0;
     npctalk "Zax De'Kagen#0", "Now that I know where Nu'Rem is burried, nothing can stop me.";
@@ -698,19 +711,19 @@ OnEpilogue4:
 
 OnEpilogue5:
     disablenpc "Zax De'Kagen#0";
-    //disablenpc AIRSHIP
+    disablenpc "Flying Ship";
 
-    //addnpctimer 15000, "#TMWFinalExam::OnEpilogue6";
+    addnpctimer 15000, "#TMWFinalExam::OnEpilogue6";
     end;
 
 OnEpilogue6:
-    //enablenpc Gema III
-    //enablenpc Jande
-    //enablenpc Tal
-    //enablenpc Anon
+    enablenpc "Gema III";
+    enablenpc "Jande#0";
+    enablenpc "Tal#0";
+    enablenpc "Anon#0";
     mapannounce "099-5", "Jande : With Zax gone, I could finally arrive here." , 0;
     mapannounce "099-4", "Jande : With Zax gone, I could finally arrive here." , 0;
-    //npctalk "Jande#0", "With Zax gone, I could finally arrive here.";
+    npctalk "Jande#0", "With Zax gone, I could finally arrive here.";
 
     //addnpctimer 10000, "#TMWFinalExam::OnEpilogue7";
     end;
