@@ -128,13 +128,13 @@ OnMTChallenge:
     message strcharinfo(0), "This battle experience distribution is different, and death is final. Be careful!";
     end;
 
-OnMTWarpTo5:
-    warp "099-5", rand(53, 59), rand(37, 41);
-    end;
-
 // FIXME not working for some reason
 OnMTWarpTo0:
     message strcharinfo(0), "Your party was defeated.";
+    warp "009-1", 54, 40;
+    end;
+
+OnMTDispose:
     warp "009-1", 54, 40;
     end;
 
@@ -195,6 +195,10 @@ OnMTReward52:
     music "ghoulish-fun.ogg";
     mapmask 1;
 
+    // Dispose dead bodies (BUG, should not happen)
+    if (isdead())
+        goto OnMTDispose;
+
     // Tally rewards
     // FIXME TODO Use a bitwise to save space, this is TMWA
     if (!#DD5_TALLY && !$DOOMSDAY_VANILLA)
@@ -210,6 +214,11 @@ OnMTReward42:
     set BOSS_POINTS, BOSS_POINTS + @dd5_share/50;
     message strcharinfo(0), "Gained "+(@dd5_share/50)+" boss points!";
     music "ghoulish-fun.ogg";
+
+    // Warp to 099-5 or dispose dead bodies
+    if (isdead())
+        goto OnMTDispose;
+    warp "099-5", rand(53, 59), rand(37, 41);
 
     // Tally rewards
     // FIXME TODO Use a bitwise to save space, this is TMWA
@@ -623,8 +632,7 @@ OnEpilogue0:
     set $@DD5_TSPENT$, $@DD5_TPASSED/60+" minute(s) and "+$@DD5_TPASSED%60+" second(s)";
     set $@DD5_TPASSED2, 2100+$@DD5_TPASSED; // 35 minutes, The Big Bad, Watchmen
     set $@DD5_TSPENT2$, $@DD5_TPASSED2/60+" minute(s)";
-    set $@DD5_PRIMARY, getmapusers("099-5");
-    set $@DD5_SUPPORT, getmapusers("099-4");
+    set $@DD5_PRIMARY, 0;
     donpcevent "Zax De'Kagen#0::OnDisable";
     end;
 
@@ -706,8 +714,6 @@ L_Epilogue1Part2:
     set @dd5_illegalexit, 0;
     if (getmap() == "099-5")
         goto L_Epilogue1Check5;
-    if (getmap() == "099-4")
-        goto L_Epilogue1Check4;
 
     // What. How? Force script to explode.
     set Hp, 0;
@@ -716,15 +722,9 @@ L_Epilogue1Part2:
 
 L_Epilogue1Check5:
     // Check if everyone saw it
+    // Can cause bugs if someone gets dc D:
     set $@DD5_PRIMARY, $@DD5_PRIMARY+1;
     if ($@DD5_PRIMARY >= getmapusers("099-5"))
-        goto OnEpilogue1b;
-    close;
-
-L_Epilogue1Check4:
-    // Check if everyone saw it
-    set $@DD5_SUPPORT, $@DD5_SUPPORT+1;
-    if ($@DD5_SUPPORT >= getmapusers("099-4"))
         goto OnEpilogue1b;
     close;
 
@@ -738,9 +738,6 @@ OnIllegalExit1:
 OnEpilogue1b:
     if ($@DD5_PRIMARY < getmapusers("099-5"))
         close;
-    if ($@DD5_SUPPORT < getmapusers("099-4"))
-        close;
-    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTWarpTo5";
     addnpctimer 300, "#TMWFinalExam::OnEpilogue2";
     close;
 
