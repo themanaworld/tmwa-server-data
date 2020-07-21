@@ -52,9 +52,9 @@
 //      4 - Vulnerable only when wet (#56B4E9 CYAN)
 //      5 - Vulnerable only to melee (#999999 GRAY)
 //      6 - Vulnerable to Bone Knife/Bone Arrow (#FFFFFF WHITE)
-//      7 - (#0072B2 BLUE)
+//      7 - Regenerate from melee (#009E7E GREEN)
 //      8 - (#F0E442 YELLOW)
-//      9 - (#009E7E GREEN)
+//      9 - (#0072B2 BLUE)
 // @dd5_dmg
 //      int         - Calculated damage
 ///////////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@
 //     32           - DEFCON 4 WATER VULNERABLE
 //     64           - DEFCON 5 RANGED INVULNERABILITY
 //     128          - DEFCON 6 BONE VULNERABLE
-//     256          - DEFCON 
+//     256          - DEFCON 7 MELEE REGEN
 //     512          - DEFCON 
 
 099-5|mapflag|nosave|099-3,72,74
@@ -271,7 +271,7 @@ OnMTBlissOblivion:
     misceffect 52, strcharinfo(0); // FIXME
     // Poison
     sc_start sc_poison, 1, 80;
-    // TODO: Map Mask
+    // Adjust Map Mask
     if ($@DD5_DEFCON == 0)
         mapmask 1;
     if ($@DD5_DEFCON == 1)
@@ -286,12 +286,14 @@ OnMTBlissOblivion:
         mapmask 1 | 64;
     if ($@DD5_DEFCON == 6)
         mapmask 1 | 128;
+    if ($@DD5_DEFCON == 7)
+        mapmask 1 | 256;
     end;
 
 OnBlissOblivion:
     killmonster "099-5", "All";
     killmonster "099-4", "All";
-    set $@DD5_DEFCON, rand(0, 6);
+    set $@DD5_DEFCON, rand(0, 7);
     areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTBlissOblivion";
     setnpctimer 89000;
     end;
@@ -998,6 +1000,12 @@ function|script|DD5RainCheck
     return;
 }
 
+function|script|DD5DEFCONCheck
+{
+    // FIXME TODO
+    return;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 function|script|FinalExamAttack
 {
@@ -1041,9 +1049,11 @@ function|script|FinalExamAttack
     if (@dd5_crit)
         set @dd5_dmg, @dd5_dmg*2;
 
-    // TODO: Stages
+    // Adjust to Stages
     if ($@DD5_STATUS == 5)
         goto L_Rainy;
+    if ($@DD5_STATUS == 7)
+        goto L_Defcon;
     goto L_Damage;
 
 L_Rainy:
@@ -1051,6 +1061,20 @@ L_Rainy:
     if (!($@DD5_RAIN))
         goto L_Miss;
     goto L_Damage;
+
+L_Defcon:
+    callfunc "DD5DEFCONCheck";
+    if (@dd5_dmg < 1)
+        goto L_Absorb;
+    if (@dd5_dmg == 0)
+        goto L_Miss;
+    goto L_Damage;
+
+L_Damage:
+    // Apply the damage!
+    set $@DD5_HP, $@DD5_HP-@dd5_dmg;
+    message strcharinfo(0), "Battle : Absorbed +"+@dd5_dmg+" HP";
+    goto L_Return;
 
 L_Damage:
     // Apply the damage!
