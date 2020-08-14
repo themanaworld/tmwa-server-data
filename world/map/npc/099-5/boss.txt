@@ -304,7 +304,7 @@ OnFF06Y:
     goto OnFF06N;
 
 OnFF06N:
-    debugmes "FOURTH WALL WAS BROKEN";
+    //debugmes "FOURTH WALL WAS BROKEN";
     misceffect 52, strcharinfo(0); // FIXME
     end;
 
@@ -375,7 +375,7 @@ OnWarn0:
     set $@DD5_PTS, 0;
     // FIXME DEBUG DEBUG DEBUG FIXME
     if (debug)
-        addnpctimer 5000, "#TMWFinalExam::OnBegin";
+        addnpctimer 10000, "#TMWFinalExam::OnBegin";
     else
         addnpctimer 90000, "#TMWFinalExam::OnWarn1";
     end;
@@ -633,6 +633,7 @@ OnEpilogue0:
     set $@DD5_TPASSED2, 2100+$@DD5_TPASSED; // 35 minutes, The Big Bad, Watchmen
     set $@DD5_TSPENT2$, $@DD5_TPASSED2/60+" minute(s)";
     set $@DD5_PRIMARY, 0;
+    set $@DD5_SUPPORT, 0;
     donpcevent "Zax De'Kagen#0::OnDisable";
     end;
 
@@ -713,20 +714,12 @@ L_Epilogue1Part2:
 
     set @dd5_illegalexit, 0;
     if (getmap() == "099-5")
-        goto L_Epilogue1Check5;
+        goto OnEpilogue1b;
 
     // What. How? Force script to explode.
     set Hp, 0;
     heal -99999, -99999;
     end;
-
-L_Epilogue1Check5:
-    // Check if everyone saw it
-    // Can cause bugs if someone gets dc D:
-    set $@DD5_PRIMARY, $@DD5_PRIMARY+1;
-    if ($@DD5_PRIMARY >= getmapusers("099-5"))
-        goto OnEpilogue1b;
-    close;
 
 // If you exited it when convenient, force you to restart interaction
 OnIllegalExit1:
@@ -738,9 +731,35 @@ OnIllegalExit1:
 // FIXME: Instead of using $@DD5_PRIMARY, use an areatimer
 // sum up like Candor Cave looking for a temporary variable,
 // And only if no one has the temporary variable anymore, advance.
+//    set $@DD5_PRIMARY, 0;
+//    set $@DD5_SUPPORT, 0;
+
+// TODO FIXME This looks like it'll explode the first chance it gets
 OnEpilogue1b:
-    if ($@DD5_PRIMARY < getmapusers("099-5"))
-        close;
+    set $@DD5_SUPPORT, 0;
+    // Would this timer ever run if player is on dialog?
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnEpilogue1c";
+    close;
+
+OnEpilogue1c:
+    if ($@DD5_PRIMARY)
+        end;
+    if (!@dd5_illegalexit)
+        set $@DD5_SUPPORT, $@DD5_SUPPORT+1;
+    addtimer 50, "#TMWFinalExam::OnEpilogue1d";
+    end;
+
+OnEpilogue1d:
+    if ($@DD5_PRIMARY)
+        end;
+    if ($@DD5_SUPPORT >= getmapusers("099-5"))
+        goto OnEpilogue1e;
+    set $@DD5_SUPPORT, 0;
+    end;
+
+OnEpilogue1e:
+    set $@DD5_PRIMARY, 1;
+    set $@DD5_SUPPORT, 0;
     addnpctimer 300, "#TMWFinalExam::OnEpilogue2";
     close;
 
@@ -915,7 +934,6 @@ L_DD5PSResume:
 ///////////////////////////////////////////////////////////
 // Timer Subsystem, spawns every 30 seconds
 OnTimer30000:
-    // TODO: Life check
     // Imperial Chamber
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], $@DD5_PRIMARY*2, "#TMWFinalExam::OnKillWeak";
     // Map
@@ -927,7 +945,6 @@ OnTimer30000:
     end;
 
 OnTimer60000:
-    // TODO: Life check
     // Imperial Chamber
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_PRIMARY/2, "#TMWFinalExam::OnKillAverage";
     // Map
@@ -946,7 +963,6 @@ OnTimer80000:
     end;
 
 OnTimer90000:
-    // TODO: Life check
     // Imperial Chamber
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], $@DD5_PRIMARY/3, "#TMWFinalExam::OnKillStrong";
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_BOSSLV[rand(getarraysize($@DD5MB_BOSSLV))], $@DD5_STATUS/2, "#TMWFinalExam::OnKillStrong";
@@ -1149,6 +1165,10 @@ function|script|FinalExamAttack
     // Failsafe
     if ($@DD5_STATUS != 3 && $@DD5_STATUS != 5 && $@DD5_STATUS != 7)
         goto L_Return;
+
+    // CD Initial failsafe
+    if (!@dd5_timer)
+        set @dd5_timer, 1-2147483647-1;
 
     // CD Failsafe
     if (@dd5_timer > 1 && gettimetick(0) < 1)
