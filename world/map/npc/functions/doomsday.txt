@@ -37,7 +37,8 @@ function|script|DoomsdayDebug
     mes "Zealite Upgrade? "+if_then_else($DOOMSDAY_SUMMON > 1, "Yes", "No");
     mes "";
     mes "Act 5:";
-    mes "Warp to fake Keshlam? "+if_then_else($DOOMSDAY_TWARP > 1, "No", "Yes");
+    mes "Warp to fake Keshlam? "+if_then_else($DOOMSDAY_TWARP, "No", "Yes");
+    mes "Vanilla Mode? "+if_then_else($DOOMSDAY_VANILLA, "Yes", "No");
     //($DOOMSDAY_SUMMON ? "Yes" : "No");
     next;
     // Only GM 80 and above can modify Doomsday
@@ -59,6 +60,7 @@ function|script|DoomsdayDebug
         "[2][4][4] Toggle Zealite Upgrade",L_Zealite,
         "[3][5][0] Keshlam Warps",L_Keshlam,
         "[3][5][1] Kage's Final Battle",L_Kage,
+        "[3][5][2] Vanilla Mode",L_Vanilla,
         "[-] Close",L_Close;
 
 L_Close:
@@ -174,6 +176,8 @@ L_Keshlam:
     enablenpc "Arch-Wizard#9";
     enablenpc "Chest#DarkRose";
     set $DOOMSDAY, 3;
+    set $DOOMSDAY_TWARP, 0;
+    set $DOOMSDAY_VANILLA, 0;
     donpcevent "Doomsday::OnJanitor"; // TODO
     gmlog strcharinfo(0) + " changed doomsday to Act 5: The Doomsday.";
     gmlog strcharinfo(0) + " changed doomsday warp to Keshlam Maze";
@@ -183,6 +187,12 @@ L_Kage:
     set $DOOMSDAY_TWARP, 1;
     donpcevent "Doomsday::OnJanitor"; // TODO
     gmlog strcharinfo(0) + " changed doomsday warp to Abandoned Building";
+    return;
+
+L_Vanilla:
+    set $DOOMSDAY_VANILLA, 1;
+    donpcevent "Doomsday::OnJanitor"; // TODO
+    gmlog strcharinfo(0) + " disabled rewards from final showdown (VANILLA).";
     return;
 
 }
@@ -226,7 +236,9 @@ OnJanitor:
     disablenpc "Arch-Wizard#_DT";
     disablenpc "Arch-Wizard#_DH";
     disablenpc "Arch-Wizard#_DN";
-    // TODO: Act 5: Not needed?
+    // Act 5: Cleanup
+    if ($DOOMSDAY == 3 && !$DOOMSDAY_TWARP)
+        donpcevent "Keshlam Maze::OnInit"; // Spawn monsters if needed
     // Clear timers
     setnpctimer 0;
     stopnpctimer;
@@ -1251,8 +1263,15 @@ OnInit:
         goto L_EndRateLimit;
     set #HAYSTACKTIMEPENALTY, gettimetick(2) + 5;
     message strcharinfo(0), "Haystack : What exactly are you looking for?";
-	if (rand(20) == 0) getitem "BentNeedle", 1; // 5% chance (was 1% on 2010)
+    // 5% chance (was 1% on 2010)
+	if (rand(20) == 0)
+        goto L_GetNeedle;
 	close;
+
+L_GetNeedle:
+    set #HAYSTACKTIMEPENALTY, gettimetick(2) + 3600; // 1 hours delay
+    getitem "BentNeedle", 1;
+    end;
 
 L_EndTooYoung:
     end;
@@ -1263,20 +1282,24 @@ L_EndRateLimit:
 }
 
 // This function controls death, both on Zax Domains as with Black Rose
+// Undead cannot use the Black Rose :>
 function|script|DoomsdayAct5
 {
-    if ($DOOMSDAY != 3)
+    if ($DOOMSDAY != 3 || Class == 6)
         goto L_Return;
     if (getmap() == "099-8")
         goto L_Return;
+    if (getmap() == "099-5")
+        goto L_WaitRoom;
+    if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-4" || getmap() == "099-6")
+        goto L_WarpOut;
     if (countitem("BlackRose"))
         goto L_WarpTo;
-    if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-6")
-        goto L_WarpOut;
     goto L_Return;
 
 L_WarpTo:
     delitem "BlackRose", 1;
+    getitem "DarkPetal", 1;
     heal 100000, 10000;
     if ($DOOMSDAY_TWARP == 0)
         goto L_KeshlamMaze;
@@ -1287,10 +1310,25 @@ L_WarpTo:
 L_WarpOut:
     if (countitem("DarkPetal") < 1)
         goto L_Failure;
+    if (rand(9) == 6)
+        goto L_Failure;
     delitem "DarkPetal", 1;
+    heal 100000, 10000;
+    warp "009-1", 52, 40;
+    message strcharinfo(0), "The Dark Petal has protected you from certain death!";
+    return;
+
+L_WaitRoom:
+    heal 100000, 10000;
+    warp "099-4", 50, 49;
+    message strcharinfo(0), "You were defeated in combat and warped to a parallel dimension where Zax does not exist.";
+    message strcharinfo(0), "Try to survive and provide support to your friends from the backline!";
     return;
 
 L_Failure:
+    heal 100000, 10000;
+    warp "009-1", 52, 40;
+    message strcharinfo(0), "You returned to life as an undead!";
     set Class, 6;
     return;
 

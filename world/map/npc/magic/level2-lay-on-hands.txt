@@ -10,6 +10,8 @@
     if (get(GM, @target_id) == 1) end;
     if (Hp <= get(MaxHp, @target_id) / 20) end; // hp needs to be > 1/20 * target hp
     callfunc "adjust_spellpower";
+    if (getmap() == "099-4") goto L_SpecialRules4;
+    if (getmap() == "099-5") goto L_SpecialRules5;
     if (distance(BL_ID, @target_id) >= (((sqrt(@spellpower)*12)+@spellpower)/100)+2) end;
     if (sc_check(SC_HALT_REGENERATE,@target_id)) end;
     if (getequipid(equip_head, @args$) == 888) end; // magic gm top hat
@@ -54,6 +56,20 @@ L_Mouboo:
     misceffect FX_MAGIC_LAY_HIT, @target_id; // on target
     callfunc "QuestMoubooHeal";
     end;
+
+// Special rules for a couple special maps
+L_SpecialRules4:
+    if (getmap(@target_id) != "099-5") end;
+    if (sc_check(SC_HALT_REGENERATE,@target_id)) end;
+    if (getequipid(equip_head, @args$) == 888) end; // magic gm top hat
+    set @needed, get(MaxHp, @target_id) - get(Hp, @target_id);
+    goto L_Pay;
+L_SpecialRules5:
+    if (getmap(@target_id) != "099-4") end;
+    if (sc_check(SC_HALT_REGENERATE,@target_id)) end;
+    if (getequipid(equip_head, @args$) == 888) end; // magic gm top hat
+    set @needed, get(MaxHp, @target_id) - get(Hp, @target_id);
+    goto L_Pay;
 
 OnInit:
     set .school, SKILL_MAGIC_LIFE;

@@ -1,0 +1,1600 @@
+// Evol script
+// Author:
+//      Jesusalva
+// Description:
+//      099-5 FINAL EXAM
+//      The epic final showdown of The Mana World: Legacy
+/////////////////////////////////////////////////////////////////////////////////
+// $@DD5_STATUS     - Status of the battle
+//      0 - Idle
+//      1 - Timer running
+//      2 - Started, first cutscene
+//      3 - First Stage
+//      4 - Started, second cutscene
+//      5 - Second Stage
+//      6 - Started, third cutscene
+//      7 - Third Stage
+//      8 - Epilogue running
+//      9 - Epilogue OK
+///////////////////////////////////////////////////////////////////
+// $@DD5_HP         - Real HitPoints bar of the NPC
+//      int
+// $@DD5_PTS        - Total participation points distributed
+//      int
+// $@DD5_BEGIN      - Time where the battle begun
+//      time
+// $@DD5_MOBC       - Amount of monsters to spawn
+//      int
+// $@DD5MB_WEAK, $@DD5MB_AVERAGE, $@DD5MB_STRONG, $@DD5MB_BOSSLV
+//      int array   - Contains lists of monsters to be used
+///////////////////////////////////////////////////////////////////
+// 1151
+//      const int   - ID of the Void Flower (s1 only)
+// 1155
+//      const int   - ID of the Void Bat
+// 1142
+//      const int   - ID of the visuals for Zax De'Kagen
+///////////////////////////////////////////////////////////////////
+// $@DD5_PRIMARY
+//      int         - 3x the challengers in boss room
+// $@DD5_SUPPORT
+//      int         - 3x the challengers in waiting room
+// $@DD5_TOTALPC
+//      int         - Primary + Support, used to ramp up difficulty
+///////////////////////////////////////////////////////////////////
+// $@DD5_RAIN       - Is Xakelbael in rain?
+//      bool
+// $@DD5_DEFCON     - Defensive mode of Zax De'Kagen
+//      0 - Defenseless (#------- TRANSPARENT)
+//      1 - Invencible (except to shearing) (#CC79A7 PURPLE)
+//      2 - All damage is halved (#E69F00 ORANGE)
+//      3 - Immune to potion'ed attackers (#D55E00 BROWN)
+//      4 - Vulnerable only when wet (#56B4E9 CYAN)
+//      5 - Vulnerable only to melee (#999999 GRAY)
+//      6 - Vulnerable to Bone Knife/Bone Arrow (#FFFFFF WHITE)
+//      7 - Regenerate from melee (#009E7E GREEN)
+//      8 - Requires 10 GP per Damage (#F0E442 YELLOW)
+//      9 - (#0072B2 BLUE)
+// @dd5_dmg
+//      int         - Calculated damage
+// @dd5_shear
+//      bool        - Damage is from shearing skill
+///////////////////////////////////////////////////////////////////
+// $@DD5_TALLY_     - Max Individual Score at tally time
+// $@DD5_TALLY$     - Player with highest tally
+// Tally is conducted at first epilogue scene
+// Reward is handed out at last epilogue scene
+// If player leaves in-between, reward will be forsaken
+// Players who already got the reward (#DD5_TALLY = True)
+// will not participate on the tally sequence.
+// Tally will not be conducted on Vanilla mode.
+///////////////////////////////////////////////////////////////////
+// mapmask
+//      1           - Show tiles
+//      2           - Epilogue Mode
+//      4           - DEFCON 1 INVENCIBLE
+//      8           - DEFCON 2 DOUBLE DEFENSE
+//     16           - DEFCON 3 POTION IMMUNITY
+//     32           - DEFCON 4 WATER VULNERABLE
+//     64           - DEFCON 5 RANGED INVULNERABILITY
+//     128          - DEFCON 6 BONE VULNERABLE
+//     256          - DEFCON 7 MELEE REGEN
+//     512          - DEFCON 8 GP COST
+//     1024         - DEFCON
+
+099-5|mapflag|nosave|099-3,72,74
+099-5|mapflag|resave|099-3,72,74
+099-4|mapflag|nosave|099-3,72,74
+099-4|mapflag|resave|099-3,72,74
+
+099-5,0,0,0|script|#TMWFinalExam|32767
+{
+    // Main script
+    end;
+
+OnAbort:
+    stopnpctimer;
+    set $@DD5_STATUS, 0;
+    set $@DD5_HP, 0;
+    set $@DD5_PTS, 0;
+    set $@DD5_BEGIN, 0;
+    set $@DD5_MOBC, 0;
+    set $@DD5_PRIMARY, 0;
+    set $@DD5_SUPPORT, 0;
+    set $@DD5_TOTALPC, 0;
+    set $@DD5_RAIN, 0;
+    set $@DD5_DEFCON, 0;
+    set $@DD5_TALLY_, 0;
+    set $@DD5_TALLY$, "";
+    killmonster "099-5", "All";
+    killmonster "099-4", "All";
+    disablenpc "Gema III";
+    disablenpc "Flying Ship";
+    disablenpc "Jande#0";
+    disablenpc "Tal#0";
+    disablenpc "Anon";
+    disablenpc "Zax De'Kagen#0";
+    disablenpc "Xakelbael the Dark#0";
+    donpcevent "Zax De'Kagen#0::OnAbort";
+    end;
+
+///////////////////////////////////////////////////////////
+// Map timers, against all players
+OnMTChallenge:
+    set @dd5_score, 0;
+    set @dd5_timer, gettimetick(0);
+    getexp 40000, 0;
+    set BOSS_POINTS, BOSS_POINTS + 5;
+    message strcharinfo(0), "This battle experience distribution is different, and death is final. Be careful!";
+    end;
+
+// FIXME not working for some reason
+OnMTWarpTo0:
+    message strcharinfo(0), "Your party was defeated.";
+    warp "009-1", 54, 40;
+    end;
+
+OnMTDispose:
+    warp "009-1", 54, 40;
+    end;
+
+////////////////////////////
+// First Stage Rewards
+OnMTReward50:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*100, @dd5_share;
+    set Zeny, Zeny + @dd5_share;
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/100;
+    message strcharinfo(0), "Gained "+(@dd5_share/100)+" boss points!";
+    goto OnMTMusicOff;
+
+OnMTReward40:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*10, @dd5_share/10;
+    set Zeny, Zeny + @dd5_share/10;
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/200;
+    message strcharinfo(0), "Gained "+(@dd5_share/200)+" boss points!";
+    goto OnMTMusicOff;
+
+////////////////////////////
+// Second Stage Rewards
+OnMTReward51:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*200, @dd5_share*2;
+    set Zeny, Zeny + (@dd5_share*2);
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/50;
+    message strcharinfo(0), "Gained "+(@dd5_share/50)+" boss points!";
+    goto OnMTMusicOff;
+
+OnMTReward41:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*20, @dd5_share/5;
+    set Zeny, Zeny + @dd5_share/5;
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/100;
+    message strcharinfo(0), "Gained "+(@dd5_share/100)+" boss points!";
+    goto OnMTMusicOff;
+
+////////////////////////////
+// Third Stage Rewards
+OnMTReward52:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*500, @dd5_share*5;
+    set Zeny, Zeny + (@dd5_share*5);
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/20;
+    message strcharinfo(0), "Gained "+(@dd5_share/20)+" boss points!";
+    music "ghoulish-fun.ogg";
+    mapmask 1;
+
+    // Dispose dead bodies (BUG, should not happen)
+    if (isdead())
+        goto OnMTDispose;
+
+    // Tally rewards
+    // FIXME TODO Use a bitwise to save space, this is TMWA
+    if (!#DD5_TALLY && !$DOOMSDAY_VANILLA)
+        goto OnTally;
+    goto OnEpilogue1;
+
+OnMTReward42:
+    set @dd5_share, 10000*@dd5_score/$@DD5_PTS;
+    if (!@dd5_share)
+        end;
+    getexp @dd5_share*50, @dd5_share;
+    set Zeny, Zeny + @dd5_share;
+    set BOSS_POINTS, BOSS_POINTS + @dd5_share/50;
+    message strcharinfo(0), "Gained "+(@dd5_share/50)+" boss points!";
+    music "ghoulish-fun.ogg";
+
+    // Warp to 099-5 or dispose dead bodies
+    if (isdead())
+        goto OnMTDispose;
+    warp "099-5", rand(53, 59), rand(37, 41);
+
+    // Tally rewards
+    // FIXME TODO Use a bitwise to save space, this is TMWA
+    if (!#DD5_TALLY && !$DOOMSDAY_VANILLA)
+        goto OnTally;
+    goto OnEpilogue1;
+
+// Blue Rose tally
+OnTally:
+    if (@dd5_score > $@DD5_TALLY_)
+        goto OnTallyOK;
+    goto OnEpilogue1;
+
+OnTallyOK:
+    set $@DD5_TALLY_, @dd5_score;
+    set $@DD5_TALLY$, strcharinfo(0);
+    goto OnEpilogue1;
+
+////////////////////////////
+// Fourth Fall
+OnMTFourthFall:
+    misceffect 52, strcharinfo(0); // FIXME
+    addtimer 3000, "#TMWFinalExam::OnFourthFall";
+    end;
+
+OnFourthFall:
+    debugmes "FOURTH FALL";
+
+    // High Damage
+    if (sc_check(sc_raiseattackspeed0))
+        goto OnFF01Y;
+    goto OnFF01N;
+
+OnFF01Y:
+    heal -300, -100;
+    goto OnFF01N;
+
+OnFF01N:
+    if (sc_check(sc_raiseattackstrength))
+        goto OnFF02Y;
+    goto OnFF02N;
+
+OnFF02Y:
+    heal -300, -100;
+    goto OnFF02N;
+
+OnFF02N:
+    // Medium Damage
+    if (sc_check(SC_PHYS_SHIELD))
+        goto OnFF03Y;
+    goto OnFF03N;
+
+OnFF03Y:
+    heal -250, -50;
+    goto OnFF03N;
+
+OnFF03N:
+    if (sc_check(SC_MBARRIER))
+        goto OnFF04Y;
+    goto OnFF04N;
+
+OnFF04Y:
+    heal -250, -50;
+    goto OnFF04N;
+
+OnFF04N:
+    // Low Damage
+    if (sc_check(SC_FLYING_BACKPACK))
+        goto OnFF05Y;
+    goto OnFF05N;
+
+OnFF05Y:
+    heal -125, -25;
+    goto OnFF05N;
+
+OnFF05N:
+    if (sc_check(sc_slowpoison))
+        goto OnFF06Y;
+    goto OnFF06N;
+
+OnFF06Y:
+    heal -125, -25;
+    goto OnFF06N;
+
+OnFF06N:
+    //debugmes "FOURTH WALL WAS BROKEN";
+    misceffect 52, strcharinfo(0); // FIXME
+    end;
+
+////////////////////////////
+// Bliss Of Oblivion
+OnMTBlissOblivion:
+    misceffect 51, strcharinfo(0);
+    misceffect 52, strcharinfo(0); // FIXME
+    // Poison
+    sc_start sc_poison, 1, 80;
+    // Adjust Map Mask
+    if ($@DD5_DEFCON == 0)
+        mapmask 1;
+    if ($@DD5_DEFCON == 1)
+        mapmask 1 | 4;
+    if ($@DD5_DEFCON == 2)
+        mapmask 1 | 8;
+    if ($@DD5_DEFCON == 3)
+        mapmask 1 | 16;
+    if ($@DD5_DEFCON == 4)
+        mapmask 1 | 32;
+    if ($@DD5_DEFCON == 5)
+        mapmask 1 | 64;
+    if ($@DD5_DEFCON == 6)
+        mapmask 1 | 128;
+    if ($@DD5_DEFCON == 7)
+        mapmask 1 | 256;
+    if ($@DD5_DEFCON == 8)
+        mapmask 1 | 512;
+    end;
+
+OnBlissOblivion:
+    killmonster "099-5", "All";
+    killmonster "099-4", "All";
+    set $@DD5_DEFCON, rand(0, 8);
+    // Keep a few tricks under the sleeve initially
+    if ($@DD5_HP > 100000 && $@DD5_DEFCON < 4)
+        set $@DD5_DEFCON, rand(4, 8);
+    // Re-rolls: Start avoiding initial movements
+    if ($@DD5_HP < 50000 && $@DD5_DEFCON > 3 && $@DD5_DEFCON < 7)
+        set $@DD5_DEFCON, rand(0, 8);
+    // If hurt badly, use invencible a bit more often (shearing is annoying)
+    if ($@DD5_HP < 10000 && $@DD5_DEFCON > 2)
+        set $@DD5_DEFCON, rand(0, 8);
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTBlissOblivion";
+    setnpctimer 89000;
+    end;
+
+////////////////////////////
+// Miniboss Spawning
+OnMTWarning:
+    misceffect 51, strcharinfo(0);
+    end;
+
+OnMTMusicOn:
+    music "Dramatic.ogg";
+    end;
+
+OnMTMusicOff:
+    music "ghoulish-fun.ogg";
+    end;
+
+///////////////////////////////////////////////////////////
+// Before the battle begins
+OnWarn0:
+    announce "Doomsday : The Final Showdown will start shortly! Make way to the Master Chamber at once!", 0;
+    set $@DD5_STATUS, 1;
+    set $@DD5_PTS, 0;
+    // FIXME DEBUG DEBUG DEBUG FIXME
+    if (debug)
+        addnpctimer 10000, "#TMWFinalExam::OnBegin";
+    else
+        addnpctimer 90000, "#TMWFinalExam::OnWarn1";
+    end;
+OnWarn1:
+    announce "Doomsday : Doors to Zax De'Kagen domains will seal shut in ##1##B5 minutes##b##0, so prepare yourselves!", 0;
+    addnpctimer 120000, "#TMWFinalExam::OnWarn2";
+    end;
+OnWarn2:
+    announce "Doomsday : Doors to Zax De'Kagen domains will seal shut in ##1##B3 minutes##b##0, so prepare yourselves!", 0;
+    addnpctimer 120000, "#TMWFinalExam::OnWarn3";
+    end;
+OnWarn3:
+    announce "Doomsday : Doors to Zax De'Kagen domains will seal shut in ##1##B1 minute##b##0, last call for challengers!", 0;
+    addnpctimer 60000, "#TMWFinalExam::OnBegin";
+    end;
+OnBegin:
+    announce "Doomsday : Final Showdown: BEGIN!", 0;
+    set $@DD5_STATUS, 2;
+    set $@DD5_BEGIN, gettimetick(2);
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTChallenge";
+    addnpctimer 2000, "#TMWFinalExam::OnPrologue1";
+    donpcevent "#099-2_Prestart::OnJanitor";
+    end;
+
+///////////////////////////////////////////////////////////
+// Prologue
+OnPrologue1:
+    // set the sprite (implies enablenpc)
+    fakenpcname "Zax De'Kagen#0", "Zax De'Kagen#0", 1142;
+    mapannounce "099-5", "Zax De'Kagen : What is that, a bunch of Talpans in my domains?" , 0;
+    mapannounce "099-4", "Zax De'Kagen : What is that, a bunch of Talpans in my domains?" , 0;
+    npctalk "Zax De'Kagen#0", "What is that, a bunch of Talpans in my domains?";
+    addnpctimer 5000, "#TMWFinalExam::OnPrologue2";
+    end;
+
+OnPrologue2:
+    mapannounce "099-5", "Zax De'Kagen : Don't make me laugh. Do you really think you have what it takes to stop ME?!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Don't make me laugh. Do you really think you have what it takes to stop ME?!" , 0;
+    npctalk "Zax De'Kagen#0", "Don't make me laugh. Do you really think you have what it takes to stop ME?!";
+    addnpctimer 10000, "#TMWFinalExam::OnPrologue3";
+    end;
+
+OnPrologue3:
+    mapannounce "099-5", "Zax De'Kagen : Hmpf! We will see about that. Therefore..." , 0;
+    mapannounce "099-4", "Zax De'Kagen : Hmpf! We will see about that. Therefore..." , 0;
+    npctalk "Zax De'Kagen#0", "Hmpf! We will see about that. Therefore...";
+    addnpctimer 5000, "#TMWFinalExam::OnPrologue4";
+    end;
+
+OnPrologue4:
+    mapannounce "099-5", "Zax De'Kagen : Catch me if you can!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Catch me if you can!" , 0;
+    npctalk "Zax De'Kagen#0", "Catch me if you can!";
+    set $@DD5_STATUS, 3;
+    set $@DD5_HP, 20000;
+    set $@DD5_PRIMARY, 3+getmapusers("099-5")*2;
+    set $@DD5_SUPPORT, 3+getmapusers("099-4")*2;
+    set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
+    // Spawn first assault
+    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_PRIMARY, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_SUPPORT, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    // Begin timers!
+    initnpctimer;
+    donpcevent "Zax De'Kagen#0::OnEnable";
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTMusicOn";
+    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTMusicOn";
+    end;
+
+///////////////////////////////////////////////////////////
+// First Stage
+OnRubberBat:
+    if ($@DD5_STATUS != 3)
+        end;
+    areamonster getmap(), getx()-5, gety()-5, getx()+5, gety()+5, "", 1155, rand(2,4), "#TMWFinalExam::OnKillWeak";
+    addtimer 10, "Zax De'Kagen#0::OnAdjustBat";
+    end;
+
+OnPickledBeets:
+    if ($@DD5_STATUS != 3)
+        end;
+    addtimer 10, "Zax De'Kagen#0::OnAdjustBeets";
+    end;
+
+///////////////////////////////////////////////////////////
+// Second Stage
+OnWarmedUp0:
+    stopnpctimer;
+    set $@DD5_STATUS, 4;
+    set $@DD5_HP, 0;
+    killmonster "099-5", "All";
+    killmonster "099-4", "All";
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward50";
+    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward40";
+
+    mapannounce "099-5", "Zax De'Kagen : Hahaha! Not bad, not bad at all!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Hahaha! Not bad, not bad at all!" , 0;
+    npctalk "Zax De'Kagen#0", "Hahaha! Not bad, not bad at all!";
+
+    addnpctimer 5000, "#TMWFinalExam::OnWarmedUp1";
+    donpcevent "Zax De'Kagen#0::OnDisable";
+    end;
+
+OnWarmedUp1:
+    mapannounce "099-5", "Zax De'Kagen : However..." , 0;
+    mapannounce "099-4", "Zax De'Kagen : However..." , 0;
+    npctalk "Zax De'Kagen#0", "However...";
+
+    addnpctimer 5000, "#TMWFinalExam::OnWarmedUp2";
+    end;
+
+OnWarmedUp2:
+    mapannounce "099-5", "Zax De'Kagen : This was only warm up!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : This was only warm up!" , 0;
+    npctalk "Zax De'Kagen#0", "This was only warm up!";
+
+    addnpctimer 10000, "#TMWFinalExam::OnWarmedUp3";
+    end;
+
+OnWarmedUp3:
+    mapannounce "099-5", "Zax De'Kagen : Look and behold, the form I took on this rewrite..." , 0;
+    mapannounce "099-4", "Zax De'Kagen : Look and behold, the form I took on this rewrite..." , 0;
+    npctalk "Zax De'Kagen#0", "Look and behold, the form I took on this rewrite...";
+
+    addnpctimer 10000, "#TMWFinalExam::OnWarmedUp4";
+    end;
+
+OnWarmedUp4:
+    mapannounce "099-5", "Zax De'Kagen : The name which I am known is..." , 0;
+    mapannounce "099-4", "Zax De'Kagen : The name which I am known is..." , 0;
+    npctalk "Zax De'Kagen#0", "The name which I am known is...";
+
+    addnpctimer 10000, "#TMWFinalExam::OnWarmedUp5";
+    end;
+
+OnWarmedUp5:
+    disablenpc "Zax De'Kagen#0";
+    fakenpcname "Xakelbael the Dark#0", "Xakelbael the Dark#0", 1161;
+    mapannounce "099-5", "Xakelbael the Dark : ...Xakelbael the Dark! PERISH!" , 0;
+    mapannounce "099-4", "Xakelbael the Dark : ...Xakelbael the Dark! PERISH!" , 0;
+    npctalk "Xakelbael the Dark#0", "...Xakelbael the Dark! PERISH!";
+
+    addnpctimer 3000, "#TMWFinalExam::OnWarmedUp6";
+    end;
+
+OnWarmedUp6:
+    set $@DD5_STATUS, 5;
+    set $@DD5_HP, 40000;
+    set $@DD5_PRIMARY, 1+getmapusers("099-5")*2;
+    set $@DD5_SUPPORT, 1+getmapusers("099-4")*2;
+    set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
+    initnpctimer;
+    donpcevent "Xakelbael the Dark#0::OnEnable";
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTMusicOn";
+    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTMusicOn";
+    end;
+
+OnRainCheck:
+    set .@name$, strnpcinfo(0,@target_id);
+    explode .@nearby$[0], .@name$, "#";
+    if (.@nearby$[0] != "rain" && .@nearby$[1] != "rain") end;
+    set $@DD5_RAIN, 1;
+    end;
+
+///////////////////////////////////////////////////////////
+// Third Stage
+OnShowdown0:
+    stopnpctimer;
+    set $@DD5_STATUS, 6;
+    set $@DD5_HP, 0;
+    killmonster "099-5", "All";
+    killmonster "099-4", "All";
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward51";
+    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward41";
+    disablenpc "Xakelbael the Dark#0";
+    enablenpc "Zax De'Kagen#0";
+
+    mapannounce "099-5", "Zax De'Kagen : Hah...! That was a good workout!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Hah...! That was a good workout!" , 0;
+    npctalk "Zax De'Kagen#0", "Hah...! That was a good workout!";
+
+    addnpctimer 5000, "#TMWFinalExam::OnShowdown1";
+    donpcevent "Xakelbael the Dark#0::OnDisable";
+    end;
+
+OnShowdown1:
+    mapannounce "099-5", "Zax De'Kagen : It was totally worth it! I was incredibly bored!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : It was totally worth it! I was incredibly bored!" , 0;
+    npctalk "Zax De'Kagen#0", "It was totally worth it! I was incredibly bored!";
+
+    addnpctimer 5000, "#TMWFinalExam::OnShowdown2";
+    end;
+
+OnShowdown2:
+    set $@DD5_TPASSED, (gettimetick(2)-$@DD5_BEGIN);
+    set $@DD5_TSPENT$, $@DD5_TPASSED/60+" minute(s) and "+$@DD5_TPASSED%60+" second(s)";
+    mapannounce "099-5", "Zax De'Kagen : Well, we still have time! Only "+$@DD5_TSPENT$+" passed!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Well, we still have time! Only "+$@DD5_TSPENT$+" passed!" , 0;
+    npctalk "Zax De'Kagen#0", "Well, we still have time! Only "+$@DD5_TSPENT$+" passed!";
+
+    set $@DD5_TPASSED, 0;
+    set $@DD5_TSPENT$, "";
+    addnpctimer 10000, "#TMWFinalExam::OnShowdown3";
+    end;
+
+OnShowdown3:
+    mapannounce "099-5", "Zax De'Kagen : I will now acknowledge your strength and fight for realz." , 0;
+    mapannounce "099-4", "Zax De'Kagen : I will now acknowledge your strength and fight for realz." , 0;
+    npctalk "Zax De'Kagen#0", "I will now acknowledge your strength and fight for realz.";
+
+    addnpctimer 10000, "#TMWFinalExam::OnShowdown4";
+    end;
+
+OnShowdown4:
+    mapannounce "099-5", "Zax De'Kagen : Don't blame me if you die!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Don't blame me if you die!" , 0;
+    npctalk "Zax De'Kagen#0", "Don't blame me if you die!";
+
+    addnpctimer 10000, "#TMWFinalExam::OnShowdown5";
+    end;
+
+OnShowdown5:
+    mapannounce "099-5", "Zax De'Kagen : Do your best to entretain me!" , 0;
+    mapannounce "099-4", "Zax De'Kagen : Do your best to entretain me!" , 0;
+    npctalk "Zax De'Kagen#0", "Do your best to entretain me!";
+
+    addnpctimer 3000, "#TMWFinalExam::OnShowdown6";
+    end;
+
+OnShowdown6:
+    set $@DD5_STATUS, 7;
+    set $@DD5_HP, 120000;
+    set $@DD5_PRIMARY, 3+getmapusers("099-5")*2;
+    set $@DD5_SUPPORT, 3+getmapusers("099-4")*2;
+    set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
+    initnpctimer;
+    donpcevent "Zax De'Kagen#0::OnFinal";
+    end;
+
+///////////////////////////////////////////////////////////
+// Epilogue
+OnEpilogue0:
+    stopnpctimer;
+    set $@DD5_STATUS, 8;
+    set $@DD5_HP, 0;
+    killmonster "099-5", "All";
+    killmonster "099-4", "All";
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward52";
+    areatimer 0, "099-4", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTReward42";
+    enablenpc "Flying Ship";
+
+    set $@DD5_TPASSED, (gettimetick(2)-$@DD5_BEGIN);
+    set $@DD5_TSPENT$, $@DD5_TPASSED/60+" minute(s) and "+$@DD5_TPASSED%60+" second(s)";
+    set $@DD5_TPASSED2, 2100+$@DD5_TPASSED; // 35 minutes, The Big Bad, Watchmen
+    set $@DD5_TSPENT2$, $@DD5_TPASSED2/60+" minute(s)";
+    set $@DD5_PRIMARY, 0;
+    set $@DD5_SUPPORT, 0;
+    donpcevent "Zax De'Kagen#0::OnDisable";
+    end;
+
+// Unfortunately we all know that
+// MANAPLUS ALLOWS YOU TO EXPLODE THE MENUS
+// So we need a control addtimer to fire
+// if you exit this illegally
+OnEpilogue1:
+    set @dd5_illegalexit, 1;
+    addtimer 10, "#TMWFinalExam::OnIllegalExit1";
+
+    mes "[Zax De'Kagen]";
+    mes "Thanks for the "+$@DD5_TSPENT$+" of fun you gave me!";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "This was not in the plan, but was fun nonetheless. Worth the detour.";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "However, now I need to go. Unlike you, I do not want to be late.";
+    next;
+    menu
+        "We just killed you?", L_Epilogue1Part1,
+        "Late? What do you mean?", L_Epilogue1Part1;
+
+L_Epilogue1Part1:
+    mes "[Zax De'Kagen]";
+    mes "You know villains never lie. Did you notice how I did not attack any of you directly?";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "I already finished my plans "+$@DD5_TSPENT2$+" ago, otherwise I would not be bothering myself with you.";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "I hope you did not hoped to kill me. Wait. You actually did?!";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "HAHAHAHAHAHAHAHA!!";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "Thanks for this, I don't recall laughing so hard the past five years.";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "Tell me... Enumerate me... Which beings on The Mana World remains dead after being killed?";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "Think a bit! Monsters respawn... Adventurers appear near the Soul Menhir...";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "...Or used to, at least; I don't know why that's not true anymore... anyway...";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "Did you really thought you could simply defeat me in combat and expect this to solve all your problems?";
+    next;
+    menu
+        "I did", L_Epilogue1Part21,
+        "I didn't", L_Epilogue1Part22;
+
+L_Epilogue1Part21:
+    mes "[Zax De'Kagen]";
+    mes "HAHAHAHAHAHAHAHA!!";
+    next;
+    goto L_Epilogue1Part2;
+L_Epilogue1Part22:
+    mes "[Zax De'Kagen]";
+    mes "So I assume you thought in a way to seal me? Not that it matters anymore.";
+    next;
+    goto L_Epilogue1Part2;
+
+L_Epilogue1Part2:
+    mes "[Zax De'Kagen]";
+    mes "I'm not even close to fainting yet.";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "Besides, only a handful of mana beings know how to erase something of existence.";
+    next;
+    mes "[Zax De'Kagen]";
+    mes "Anyway, just look! My ride arrived.";
+    next;
+
+    set @dd5_illegalexit, 0;
+    if (getmap() == "099-5")
+        goto OnEpilogue1b;
+
+    // What. How? Force script to explode.
+    set Hp, 0;
+    heal -99999, -99999;
+    end;
+
+// If you exited it when convenient, force you to restart interaction
+OnIllegalExit1:
+    if (@dd5_illegalexit)
+        goto OnEpilogue1;
+    end;
+
+// Should we advance or warp map?
+// “Instead of using $@DD5_PRIMARY, use an areatimer
+// sum up like Candor Cave looking for a temporary variable,
+// And only if no one has the temporary variable anymore, advance.”
+
+// TODO FIXME This looks like it'll explode the first chance it gets
+OnEpilogue1b:
+    set $@DD5_SUPPORT, 0;
+    // Would this timer ever run if player is on dialog?
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnEpilogue1c";
+    close;
+
+OnEpilogue1c:
+    if ($@DD5_PRIMARY)
+        end;
+    if (!@dd5_illegalexit)
+        set $@DD5_SUPPORT, $@DD5_SUPPORT+1;
+    addtimer 50, "#TMWFinalExam::OnEpilogue1d";
+    end;
+
+OnEpilogue1d:
+    if ($@DD5_PRIMARY)
+        end;
+    if ($@DD5_SUPPORT >= getmapusers("099-5"))
+        goto OnEpilogue1e;
+    set $@DD5_SUPPORT, 0;
+    end;
+
+OnEpilogue1e:
+    set $@DD5_PRIMARY, 1;
+    set $@DD5_SUPPORT, 0;
+    addnpctimer 300, "#TMWFinalExam::OnEpilogue2";
+    close;
+
+////////////// There are no players in 099-4 now
+OnEpilogue2:
+    mapannounce "099-5", "Zax De'Kagen : Now that I know where Nu'Rem is burried, nothing can stop me." , 0;
+    npctalk "Zax De'Kagen#0", "Now that I know where Nu'Rem is burried, nothing can stop me.";
+
+    // FIXME DEBUG DEBUG DEBUG FIXME
+    if (debug)
+        addnpctimer 2000, "#TMWFinalExam::OnEpilogue5";
+    else
+        addnpctimer 5000, "#TMWFinalExam::OnEpilogue3";
+    end;
+
+OnEpilogue3:
+    mapannounce "099-5", "Zax De'Kagen : Good bye, mortal adventurers." , 0;
+    npctalk "Zax De'Kagen#0", "Good bye, mortal adventurers.";
+
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue4";
+    end;
+
+OnEpilogue4:
+    mapannounce "099-5", "Zax De'Kagen : Heh, not like I wasn't one too, back then..." , 0;
+    npctalk "Zax De'Kagen#0", "Heh, not like I wasn't one too, back then...";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue5";
+    end;
+
+OnEpilogue5:
+    disablenpc "Zax De'Kagen#0";
+    disablenpc "Flying Ship";
+
+    addnpctimer 10000, "#TMWFinalExam::OnEpilogue6";
+    end;
+
+OnEpilogue6:
+    enablenpc "Gema III";
+    enablenpc "Jande#0";
+    enablenpc "Tal#0";
+    enablenpc "Anon";
+    mapannounce "099-5", "Jande : With Zax gone, I could finally arrive here." , 0;
+    npctalk "Jande#0", "With Zax gone, I could finally arrive here.";
+
+    // FIXME DEBUG DEBUG DEBUG FIXME
+    if (debug)
+        addnpctimer 2000, "#TMWFinalExam::OnEpilogue15";
+    else
+        addnpctimer 5000, "#TMWFinalExam::OnEpilogue7";
+    end;
+
+OnEpilogue7:
+    mapannounce "099-5", "Tal : I believe some introductions are in order. I am Tal, the Great Dragon of Water." , 0;
+    npctalk "Tal#0", "Tal : I believe some introductions are in order. I am Tal, the Great Dragon of Water.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue8";
+    end;
+
+OnEpilogue8:
+    mapannounce "099-5", "Tal : I also consider myself the creator of the Tritan race. Jande called me to help." , 0;
+    npctalk "Tal#0", "Tal : I also consider myself the creator of the Tritan race. Jande called me to help.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue9";
+    end;
+
+OnEpilogue9:
+    mapannounce "099-5", "Tal : While I do not like this idea myself, we have an enemy in common." , 0;
+    npctalk "Tal#0", "Tal : While I do not like this idea myself, we have an enemy in common.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue10";
+    end;
+
+OnEpilogue10:
+    mapannounce "099-5", "Anon : We prepared another ship, Gema III. This ship will bring you to the damned island." , 0;
+    npctalk "Anon", "We prepared another ship, Gema III. This ship will bring you to the damned island.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue11";
+    end;
+
+OnEpilogue11:
+    mapannounce "099-5", "Anon : Be careful, though. It is the final resting place of the Great Dragon of Air." , 0;
+    npctalk "Anon", "Be careful, though. It is the final resting place of the Great Dragon of Air.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue12";
+    end;
+
+OnEpilogue12:
+    mapannounce "099-5", "Anon : There is no telling on the horrors you'll find there." , 0;
+    npctalk "Anon", "There is no telling on the horrors you'll find there.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue13";
+    end;
+
+OnEpilogue13:
+    mapannounce "099-5", "Jande : A ship is not so fast as a flying one, but I am sure you can make in time." , 0;
+    npctalk "Jande#0", "A ship is not so fast a flying one, but I am sure you can make in time.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue14";
+    end;
+
+OnEpilogue14:
+    mapannounce "099-5", "Jande : Whatever happens, DO NOT let Zax De'Kagen reach the great dragon body. Remember: Zax is wounded!" , 0;
+    npctalk "Jande#0", "Whatever happens, DO NOT let Zax De'Kagen reach the great dragon body. Remember: Zax is wounded!";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue15";
+    end;
+
+OnEpilogue15:
+    set $@DD5_STATUS, 9;
+    mapannounce "099-5", "##1(Talk to Gema III to embark)" , 0;
+    npctalk "Gema III", "##1(Talk to Gema III to embark)";
+    // FIXME DEBUG DEBUG DEBUG FIXME
+    if (debug)
+        addnpctimer 2000, "#TMWFinalExam::OnEpilogue25";
+    else
+        addnpctimer 30000, "#TMWFinalExam::OnEpilogue16";
+    end;
+
+
+// Conspiracy
+OnEpilogue16:
+    npctalk "Jande#0", "(*whisper* Tal, do you think they'll make it?)";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue17";
+    end;
+OnEpilogue17:
+    npctalk "Tal#0", "Tal : (*whisper* I would be surprised if they survived the trip alone.)";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue18";
+    end;
+OnEpilogue18:
+    npctalk "Jande#0", "(*whisper* For now, let's hope for the best. I don't want another rewrite...)";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue19";
+    end;
+OnEpilogue19:
+    npctalk "Tal#0", "Tal : (*whisper* You worry too much. Di'Tal already put measures in place.)";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue20";
+    end;
+OnEpilogue20:
+    npctalk "Tal#0", "Tal : (*whisper* The same incident from years ago will not repeat itself.)";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue21";
+    end;
+OnEpilogue21:
+    npctalk "Tal#0", "Tal : (*whisper* Besides, shall they fail - they won't remember any of this.)";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue22";
+    end;
+OnEpilogue22:
+    npctalk "Jande#0", "(*whisper* We will have a good room to maneuver undercover, then.)";
+    addnpctimer 15000, "#TMWFinalExam::OnEpilogue23";
+    end;
+
+OnEpilogue23:
+    npctalk "Anon", "What are you waiting for? You're running against the clock.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue24";
+    end;
+OnEpilogue24:
+    npctalk "Anon", "You know Jande and Tal cannot get close to that... that thing.";
+    addnpctimer 5000, "#TMWFinalExam::OnEpilogue25";
+    end;
+OnEpilogue25:
+    npctalk "Anon", "We will do what we can to support you from sidelines. Now go!";
+    end;
+
+///////////////////////////////////////////////////////////
+// Spawn Subsystem
+S_DD5PrimarySpawn:
+    // Receives: $@DD5_MOBC
+    set $@DD5_TMP, rand(270) / 100;
+    if ($@DD5_TMP == 0)
+        goto L_DD5PSN;
+    if ($@DD5_TMP == 1)
+        goto L_DD5PSR;
+    if ($@DD5_TMP == 2)
+        goto L_DD5PSP;
+    goto L_DD5PSResume;
+
+L_DD5PSN:
+    callfunc "DD5SpawnNoob";
+    goto L_DD5PSResume;
+
+L_DD5PSR:
+    callfunc "DD5SpawnRegular";
+    goto L_DD5PSResume;
+
+L_DD5PSP:
+    callfunc "DD5SpawnPro";
+    goto L_DD5PSResume;
+
+L_DD5PSResume:
+    if ($@DD5_MOBC)
+        goto S_DD5PrimarySpawn;
+    set $@DD5_TMP, 0;
+    return;
+
+///////////////////////////////////////////////////////////
+// Timer Subsystem, spawns every 30 seconds
+OnTimer30000:
+    // Imperial Chamber
+    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], $@DD5_PRIMARY, "#TMWFinalExam::OnKillWeak";
+    // Map
+    set $@DD5_MOBC, $@DD5_TOTALPC/2+1;
+    callsub S_DD5PrimarySpawn;
+    // Prologue mobs
+    if ($@DD5_STATUS == 3)
+        areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    end;
+
+OnTimer60000:
+    // Imperial Chamber
+    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_PRIMARY/3+1, "#TMWFinalExam::OnKillAverage";
+    // Map
+    set $@DD5_MOBC, $@DD5_TOTALPC/2;
+    callsub S_DD5PrimarySpawn;
+    // Prologue mobs
+    if ($@DD5_STATUS == 3)
+        areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    end;
+
+// Warn players about the 90s rule closing in
+// They'll have 10 seconds to prepare themselves to the mini-boss spawn!
+// AND to get ready to the boss HP regeneration (which is small but anyway)
+OnTimer80000:
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTWarning";
+    end;
+
+OnTimer90000:
+    // Imperial Chamber
+    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], $@DD5_PRIMARY/3, "#TMWFinalExam::OnKillStrong";
+    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_BOSSLV[rand(getarraysize($@DD5MB_BOSSLV))], $@DD5_STATUS/2, "#TMWFinalExam::OnKillStrong";
+    // Map
+    set $@DD5_MOBC, $@DD5_TOTALPC/3+1;
+    callsub S_DD5PrimarySpawn;
+    // Prologue mobs
+    if ($@DD5_STATUS == 3)
+        areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
+    // Boss regeneration, which may overflow into infinity.
+    // A regular tick takes 7s - so ~13 cycles of regen
+    // It'll regen STATUS Hp per tick, so: 39, 65 and 91 HP every 90s
+    // Which is a ridiculously low amount, so I buffed it in 3
+    // A base healing of 3 HP per tick - So 117, 195 and 273 HP (still low)
+    set $@DD5_HP, $@DD5_HP+((13*$@DD5_STATUS)*3);
+    initnpctimer;
+    end;
+
+///////////////////////////////////////////////////////////
+// Monster Death Label
+OnKillWeak:
+    set @dd5_score, @dd5_score+1;
+    set $@DD5_PTS, $@DD5_PTS+1;
+    end;
+
+OnKillAverage:
+    set @dd5_score, @dd5_score+10;
+    set $@DD5_PTS, $@DD5_PTS+10;
+    end;
+
+OnKillStrong:
+    set @dd5_score, @dd5_score+25;
+    set $@DD5_PTS, $@DD5_PTS+25;
+    end;
+
+///////////////////////////////////////////////////////////
+// Core
+OnInit:
+    setarray $@DD5MB_WEAK, 1155, 1156, 1155, 1156, 1155, 1156, 1157, 1158;
+    setarray $@DD5MB_AVERAGE, 1159, 1160, 1159, 1160, 1159, 1160, 1157, 1158;
+    setarray $@DD5MB_STRONG, 1152, 1153, 1154, 1152, 1153, 1154, 1152, 1153, 1154;
+    setarray $@DD5MB_BOSSLV, 1146, 1147, 1140, 1141, 1143, 1149, 1148, 1140;
+    // Flower 1151, Mouboo 1158
+    end;
+
+OnMiteyo:
+    if ($DOOMSDAY != 3)
+        end;
+    if ($@DD5_HP < 1)
+        end;
+    message strcharinfo(0), "Estimated boss HP: "+($@DD5_HP+rand(-100, 100));
+    end;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+function|script|DD5SpawnNoob
+{
+    areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], 3, "#TMWFinalExam::OnKillWeak";
+    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_WEAK[rand(getarraysize($@DD5MB_WEAK))], 3, "#TMWFinalExam::OnKillWeak";
+    set $@DD5_MOBC, $@DD5_MOBC-1;
+    return;
+}
+function|script|DD5SpawnRegular
+{
+    if (rand(6) % 2 == 0)
+        areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], 1, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], 2, "#TMWFinalExam::OnKillAverage";
+    set $@DD5_MOBC, $@DD5_MOBC-1;
+    return;
+}
+function|script|DD5SpawnPro
+{
+    if (rand(6) % 2 == 0)
+        areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], 1, "#TMWFinalExam::OnKillStrong";
+    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], 1, "#TMWFinalExam::OnKillStrong";
+    set $@DD5_MOBC, $@DD5_MOBC-1;
+    return;
+}
+
+/////////////////////////////////////////////////
+function|script|DD5RainCheck
+{
+    set $@DD5_RAIN, 0;
+
+    // Search for rain
+    set .@p, get(.max_radius, "rain") + 1;
+    foreach 1, getmap(), POS_X-.@p, POS_Y-.@p, POS_X+.@p, POS_Y+.@p, "#TMWFinalExam::OnRainCheck";
+
+    // Not in rain - nullify damage
+    if (!($@DD5_RAIN))
+        set @dd5_dmg, 0;
+    return;
+}
+
+/////////////////////////////////////////////////
+function|script|DD5DEFCONCheck
+{
+    // Shearing magic is active?
+    if (@chipchipspell[2] > 0)
+        goto L_Shear;
+    goto L_Loop;
+
+L_Shear:
+    set @dd5_shear, 1;
+    addtimer 0, "shear::OnDischarge";
+    goto L_Loop;
+
+L_Loop:
+    if ($@DD5_DEFCON == 0)
+        goto L_DEFCON0;
+    if ($@DD5_DEFCON == 1)
+        goto L_DEFCON1;
+    if ($@DD5_DEFCON == 2)
+        goto L_DEFCON2;
+    if ($@DD5_DEFCON == 3)
+        goto L_DEFCON3;
+    if ($@DD5_DEFCON == 4)
+        goto L_DEFCON4;
+    if ($@DD5_DEFCON == 5)
+        goto L_DEFCON5;
+    if ($@DD5_DEFCON == 6)
+        goto L_DEFCON6;
+    if ($@DD5_DEFCON == 7)
+        goto L_DEFCON7;
+    if ($@DD5_DEFCON == 8)
+        goto L_DEFCON8;
+    debugmes "ERROR INVALID DEFCON: "+$@DD5_DEFCON;
+    goto L_Return;
+
+// DEFCON 0 - Vulnerable
+L_DEFCON0:
+    goto L_Return;
+
+// DEFCON 1 - Invulnerable
+L_DEFCON1:
+    // FIXME
+    if (@dd5_shear)
+        goto L_Return;
+    set @dd5_dmg, 0;
+    goto L_Return;
+
+// DEFCON 2 - Double Defense
+L_DEFCON2:
+    set @dd5_dmg, @dd5_dmg/2;
+    goto L_Return;
+
+// DEFCON 3 - Potion Immunity
+L_DEFCON3:
+    if (sc_check(sc_raiseattackspeed0))
+        set @dd5_dmg, 0;
+    if (sc_check(sc_raiseattackstrength))
+        set @dd5_dmg, 0;
+    goto L_Return;
+
+// DEFCON 4 - Water Vulnerable
+L_DEFCON4:
+    callfunc "DD5RainCheck";
+    goto L_Return;
+
+// DEFCON 5 - Ranged Invulnerable
+L_DEFCON5:
+    if (ATTACKRANGE > 2)
+        set @dd5_dmg, 0;
+    goto L_Return;
+
+// DEFCON 6 - Bone Vulnerable
+L_DEFCON6:
+    // Shearing is immune to DEFCON 6
+    if (@dd5_shear)
+        goto L_Return;
+    // Not using the allowed equips
+    if (getequipid(equip_arrow) != 1282 && getequipid(equip_hand1) != 570)
+        set @dd5_dmg, 0;
+    // Lame check for bows because I'm lazy
+    if (getequipid(equip_arrow) == 1282 && ATTACKRANGE < 4)
+        set @dd5_dmg, 0;
+    goto L_Return;
+
+// DEFCON 7 - Melee Absorb
+L_DEFCON7:
+    if (ATTACKRANGE < 3)
+        set @dd5_dmg, 0-(@dd5_dmg);
+    goto L_Return;
+
+// DEFCON 8 - GP Greed
+L_DEFCON8:
+    if (Zeny < @dd5_dmg*10)
+        set @dd5_dmg, 0;
+    set Zeny, Zeny-(@dd5_dmg*10);
+    goto L_Return;
+
+L_Return:
+    set @dd5_shear, 0;
+    return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+function|script|FinalExamAttack
+{
+    // Failsafe
+    if ($@DD5_STATUS != 3 && $@DD5_STATUS != 5 && $@DD5_STATUS != 7)
+        goto L_Return;
+
+    // CD Initial failsafe
+    if (!@dd5_timer)
+        set @dd5_timer, 1-2147483647-1;
+
+    // CD Failsafe
+    if (@dd5_timer > 1 && gettimetick(0) < 1)
+        set @dd5_timer, gettimetick(0);
+
+    // Cooldown
+    if (gettimetick(0) < @dd5_timer)
+        goto L_Return;
+
+    // Verify range
+    if (!(isin("099-5", 50-ATTACKRANGE, 49-ATTACKRANGE, 50+ATTACKRANGE, 49+ATTACKRANGE)))
+        goto L_Return;
+
+    // Assign attack speed delay - 300ms with pots, 600ms without
+    set @dd5_timer, if_then_else(sc_check(sc_raiseattackspeed0), gettimetick(0)+300, gettimetick(0)+600);
+
+    // Calculate HIT and CRIT rate
+    set @dd5_crit, (rand(10000) < CRIT);
+    if (rand(400) > HIT && !@dd5_crit)
+        goto L_Miss;
+
+    // Calculate damage
+    set @dd5_dmg, ATK1+BASE_ATK;
+
+    // Strength Potion - DMG +50%
+    if (sc_check(sc_raiseattackstrength))
+        set @dd5_dmg, @dd5_dmg*15/10;
+
+    // Boss defense
+    set @dd5_dmg, @dd5_dmg*(11-$@DD5_STATUS)/10;
+
+    // Consider criticals (no defense disregard, though)
+    if (@dd5_crit)
+        set @dd5_dmg, @dd5_dmg*2;
+
+    // Adjust to Stages
+    if ($@DD5_STATUS == 5)
+        goto L_Rainy;
+    if ($@DD5_STATUS == 7)
+        goto L_Defcon;
+    goto L_Damage;
+
+L_Rainy:
+    callfunc "DD5RainCheck";
+    if (!($@DD5_RAIN))
+        goto L_Miss;
+    goto L_Damage;
+
+L_Defcon:
+    callfunc "DD5DEFCONCheck";
+    if (@dd5_dmg == 0)
+        goto L_Miss;
+    if (@dd5_dmg < 1)
+        goto L_Absorb;
+    goto L_Damage;
+
+L_Absorb:
+    // Ops! Zax appreciates the heal!
+    set $@DD5_HP, $@DD5_HP-@dd5_dmg;
+    message strcharinfo(0), "Battle : Absorbed +"+@dd5_dmg+" HP";
+    goto L_Return;
+
+L_Damage:
+    // Apply the damage!
+    set $@DD5_HP, $@DD5_HP-@dd5_dmg;
+    set @dd5_score, @dd5_score+min(25, @dd5_dmg/50);
+    set $@DD5_PTS, $@DD5_PTS+min(25, @dd5_dmg/50);
+    message strcharinfo(0), "Battle : Damage -"+@dd5_dmg+" HP";
+
+    // Fire events if HP < 0
+    if ($@DD5_HP <= 0)
+        goto L_Slain;
+    goto L_Return;
+
+L_Miss:
+    message strcharinfo(0), "Battle : Miss";
+    return;
+
+L_Slain:
+    set @dd5_score, @dd5_score+100;
+    set $@DD5_PTS, $@DD5_PTS+100;
+    set BOSS_POINTS, BOSS_POINTS + 25;
+    if ($@DD5_STATUS == 3)
+        donpcevent "#TMWFinalExam::OnWarmedUp0";
+    if ($@DD5_STATUS == 5)
+        donpcevent "#TMWFinalExam::OnShowdown0";
+    if ($@DD5_STATUS == 7)
+        donpcevent "#TMWFinalExam::OnEpilogue0";
+    message strcharinfo(0), "You gained 25 Boss Points!";
+    return;
+
+L_Return:
+    return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Puppets
+099-5,52,35,0|script|Jande#0|426
+{
+    message strcharinfo(0), "Jande : What are you waiting for?";
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
+// Puppets
+099-5,47,34,0|script|Tal#0|427
+{
+    message strcharinfo(0), "Tal : What are you waiting for?";
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
+// Puppets
+099-5,49,35,0|script|Anon|425
+{
+    message strcharinfo(0), "Anon : What are you waiting for?";
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
+// Puppets
+099-5,51,33,0|script|Flying Ship|428
+{
+    message strcharinfo(0), "WHAT. IN. NAME. OF. JANDE. IS. THAT. THING?!";
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
+// Puppets
+099-5,51,33,0|script|Gema III|395
+{
+    if ($@DD5_STATUS != 9)
+        goto L_TooEarly;
+    if (@dd5_cutscene)
+        end;
+    mes "##1Embark on Gema III in pursuit?##0";
+    mes "You may be unable to return here!";
+    next;
+    menu
+        "Yes",L_Yes,
+        "No",L_No;
+
+L_No:
+    close;
+
+L_Yes:
+    set @dd5_cutscene, 1;
+    // Stop rendering the map and Embark
+    mapmask 1 | 2;
+    music "epilogue.ogg";
+    if (debug)
+        addtimer 5000, "Gema III::OnDebugPrompt";
+    if (!debug)
+        addtimer 300, "Gema III::OnStart";
+    close;
+
+OnStart:
+    specialeffect2 53;
+    message strcharinfo(0), "But it might be too late.";
+    addtimer 2300, "Gema III::OnFPS01";
+    end;
+
+OnFPS01:
+    message strcharinfo(0), "Brave adventurers from all around the world,";
+    addtimer 2500, "Gema III::OnFPS02";
+    end;
+
+OnFPS02:
+    message strcharinfo(0), "Marches toward that unknown island,";
+    addtimer 2100, "Gema III::OnFPS03";
+    end;
+
+OnFPS03:
+    message strcharinfo(0), "Said to have the key to stop Zax De'Kagen's ambitions.";
+    addtimer 4300, "Gema III::OnFPS04";
+    end;
+
+OnFPS04:
+    message strcharinfo(0), "Unbeknownst to them, Zax already made his move.";
+    addtimer 3200, "Gema III::OnFPS05";
+    end;
+
+OnFPS05:
+    message strcharinfo(0), "Before anyone can even reach him, he executes the plan,";
+    addtimer 3600, "Gema III::OnFPS06";
+    end;
+
+OnFPS06:
+    message strcharinfo(0), "Carefully written for over a decade.";
+    addtimer 3100, "Gema III::OnFPS07";
+    end;
+
+OnFPS07:
+    message strcharinfo(0), "Using Nu'Rem's body as a catalyst,";
+    addtimer 2000, "Gema III::OnFPS08";
+    end;
+
+OnFPS08:
+    message strcharinfo(0), "The Ether Spirit of Air is finally compromised.";
+    addtimer 2900, "Gema III::OnFPS09";
+    end;
+
+OnFPS09:
+    message strcharinfo(0), "Half from the Etheral Powers of Air,";
+    addtimer 2300, "Gema III::OnFPS10";
+    end;
+
+OnFPS10:
+    message strcharinfo(0), "Are absorbed by The Mana Seal.";
+    addtimer 2100, "Gema III::OnFPS11";
+    end;
+
+OnFPS11:
+    message strcharinfo(0), "The other half collides with the Earth Spirit,";
+    addtimer 2400, "Gema III::OnFPS12";
+    end;
+
+OnFPS12:
+    message strcharinfo(0), "And a new element is born.";
+    addtimer 2200, "Gema III::OnFPS13";
+    end;
+
+OnFPS13:
+    message strcharinfo(0), "History begins to rewrite itself,";
+    addtimer 2200, "Gema III::OnFPS14";
+    end;
+
+OnFPS14:
+    message strcharinfo(0), "Who's Zax? Something is not right.";
+    addtimer 3600, "Gema III::OnFPS15";
+    end;
+
+OnFPS15:
+    message strcharinfo(0), "But what will be of our brave adventurers,";
+    addtimer 3400, "Gema III::OnFPS16";
+    end;
+
+OnFPS16:
+    message strcharinfo(0), "lost midst all this cataclysm?";
+    addtimer 2800, "Gema III::OnFPS17";
+    end;
+
+OnFPS17:
+    message strcharinfo(0), "Will they reach Nu'Rem's grave?";
+    addtimer 2400, "Gema III::OnFPS18";
+    end;
+
+OnFPS18:
+    message strcharinfo(0), "Will they put a stop to Zax's evil ambitions?";
+    addtimer 3000, "Gema III::OnFPS19";
+    end;
+
+OnFPS19:
+    message strcharinfo(0), "Follow their journey, and take back the world, in";
+    addtimer 3600, "Gema III::OnFPS20";
+    end;
+
+OnFPS20:
+    message strcharinfo(0), "##2##BTHE MANA WORLD: REVOLT##b##0";
+    if (debug)
+        addtimer 5000, "Gema III::OnDebugPrompt";
+    if (!debug)
+        addtimer 5000, "Gema III::OnPrompt";
+    end;
+
+OnPrompt:
+    mes ".:: THE MANA WORLD - REVOLT ::.";
+    mes "";
+    mes "Server Name: ##BThe Mana World##b";
+    mes "Server Address: ##Bserver.themanaworld.org##b";
+    mes "Server Port: ##B6969##b";
+    mes "Server Type: ##BEvol2##b";
+    mes "Server Description: ##BMain Server for The Mana World##b";
+    mes "";
+    mes "##BCOMING SOON##b";
+    mes "##BMONTH DAY, 18:00 UTC##b";
+    next;
+    mes "##BPre-register##b here:";
+    mes "[@@https://vault.themanaworld.org/|@@]";
+    mes "Max. 1 account per player.";
+    next;
+    goto L_MissionComplete;
+
+OnDebugPrompt:
+    mes ".:: THE MANA WORLD - REVOLT ::.";
+    mes "";
+    mes "##BCOMING SOON##b";
+    mes "";
+    mes "Thanks for testing!";
+    mes "Stay tuned for updates!";
+    mes "";
+    mes "-- The Mana World Team";
+    next;
+    goto L_MissionComplete;
+
+L_MissionComplete:
+    set @dd5_cutscene, 0;
+    warp "009-1", 52, 40;
+    getexp 1000000, 0;
+    if (strcharinfo(0) == $@DD5_TALLY$)
+        goto L_Winner;
+    close;
+
+L_Winner:
+    getitem "BlueRose", 1;
+    set $@DD5_TALLY$, "";
+    set #DD5_TALLY, 1;
+    mes "##2You were the MVP with "+$@DD5_TALLY_+" points!##0";
+    mes "##2Exchange this blue rose with a Game Master!##0";
+    close;
+
+L_TooEarly:
+    mes "[" + strcharinfo(0) + "]";
+    mes "It is Gema III! How did they manage to bring the ship here?!";
+    close;
+
+OnInit:
+    disablenpc "Gema III";
+    end;
+}
+/////////////////////////////////////////////////////
+// Puppets, timers for Stage 2
+099-5,50,49,0|script|Xakelbael the Dark#0|400
+{
+    callfunc "FinalExamAttack";
+    end;
+OnInit:
+    disablenpc "Xakelbael the Dark#0";
+    end;
+
+OnTimer50000:
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTFourthFall";
+    initnpctimer;
+    npctalk "Xakelbael the Dark#0", "Fourth Fall!";
+    end;
+OnEnable:
+    initnpctimer;
+    end;
+OnAdjustSweet:
+    if ($@DD5_STATUS != 5)
+        end;
+    setnpctimer min(49000, getnpctimer(0)-rand(2500,5000));
+    end;
+OnDisable:
+    stopnpctimer;
+    end;
+}
+
+// Puppets, the timer on this one is for Stage 1
+099-5,50,49,0|script|Zax De'Kagen#0|400
+{
+    callfunc "FinalExamAttack";
+    end;
+OnInit:
+    disablenpc "Zax De'Kagen#0";
+    end;
+
+OnTimer18000:
+    if ($@DD5_STATUS != 3)
+        end;
+    enablenpc strnpcinfo(0);
+    end;
+OnTimer24000:
+    if ($@DD5_STATUS != 3)
+        end;
+    initnpctimer;
+    disablenpc strnpcinfo(0);
+    end;
+OnTimer80000:
+    if ($@DD5_STATUS != 7)
+        end;
+    initnpctimer;
+    npctalk "Zax De'Kagen#0", "Bliss Of Oblivion!";
+    donpcevent "#TMWFinalExam::OnBlissOblivion";
+    end;
+
+OnAdjustBat:
+    if (getnpctimer(0) < 18000)
+        setnpctimer max(17000, getnpctimer(0)+rand(1000,2500));
+    end;
+OnAdjustBeets:
+    if (getnpctimer(0) > 18000)
+        setnpctimer min(18000, getnpctimer(0)-rand(3000,5000));
+    end;
+OnAdjustPotion:
+    if ($@DD5_STATUS != 7)
+        end;
+    setnpctimer max(0, min(75000, getnpctimer(0)-rand(5000, 15000)));
+    // If it is me testing then it forwards >.>
+    if (debug && strcharinfo(0) == "Jesusalva")
+        setnpctimer 75000;
+    end;
+
+OnEnable:
+    disablenpc "Zax De'Kagen#0";
+    initnpctimer;
+    end;
+OnDisable:
+    enablenpc strnpcinfo(0);
+    stopnpctimer;
+    end;
+OnFinal:
+    initnpctimer;
+    end;
+OnAbort:
+    stopnpctimer;
+    areatimer 0, "099-4", 20, 20, 75, 75, 1000, "#TMWFinalExam::OnMTWarpTo0";
+    donpcevent "Xakelbael the Dark#0::OnDisable";
+    end;
+}
+

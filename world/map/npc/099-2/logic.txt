@@ -1,0 +1,1189 @@
+// Evol script
+// Author:
+//      Jesusalva
+// Description:
+//      099-2 and 099-6 KESHLAM ADVENTURER GUILD QUARTERS
+//      Controls gimmicks in 099-3 as well
+/////////////////////////////////////////////////////////////////////////////////
+
+-|script|#099-2_CMD|32767
+{
+    end;
+
+OnStorage:
+    if ($DOOMSDAY != 3)
+        end;
+    if (getmap() != "099-5" && getmap() != "099-4")
+        end;
+    if ($@DD5_STATUS != 1 && $@DD5_STATUS != 2 && $@DD5_STATUS != 4 && $@DD5_STATUS != 6)
+        end;
+    openstorage;
+    end;
+
+// FIXME DEBUG DEBUG DEBUG FIXME
+OnDebug:
+    debugmes "CHEAT - JS33";
+    if (!debug || $DOOMSDAY != 3 || GM < GM_SYSOP)
+        end;
+    set $@DD5_TSWITCH, 18;
+    set $@DD5_OPENSESAME, 1;
+    message strcharinfo(0), "DOOMSDAY ACT 5 DEBUG SUCCESSFUL";
+    end;
+
+// FIXME DEBUG DEBUG DEBUG FIXME
+OnDebugDamage:
+    if (!debug || $DOOMSDAY != 3 || GM < GM_SYSOP)
+        end;
+    if ($@DD5_HP <= 1000)
+        end;
+    set $@DD5_HP, max(1000, $@DD5_HP-2500);
+    message strcharinfo(0), "Battle: Damage -2500 HP";
+    callfunc "FinalExamAttack";
+    end;
+
+// FIXME DEBUG DEBUG DEBUG FIXME
+OnDebugX:
+    debugmes "CHEAT - JS99";
+    if (!debug || $DOOMSDAY != 3 || GM < GM_SYSOP || $@DD5_STATUS)
+        end;
+    set $@DD5_HP, 100;
+    set $@DD5_STATUS, 7;
+    set $@DD5_BEGIN, gettimetick(2);
+    warp "099-5", 0, 0;
+    fakenpcname "Zax De'Kagen#0", "Zax De'Kagen#0", 1142;
+    message strcharinfo(0), "DOOMSDAY ACT 5 SUPER DEBUG SUCCESSFUL";
+    end;
+
+OnInit:
+    // Register commands
+    registercmd "@js33", strnpcinfo(0)+"::OnDebug";
+    registercmd "@js67", strnpcinfo(0)+"::OnDebugDamage";
+    registercmd "@js99", strnpcinfo(0)+"::OnDebugX";
+    registercmd "#storage", strnpcinfo(0)+"::OnStorage";
+    end;
+}
+
+099-2,0,0,0|script|#099-2_Prestart|32767
+{
+    end;
+
+// FIXME Do not work. Again.
+OnTrial1:
+    monster "099-1", 35, 27, "", 1140, 1, strnpcinfo(0)+"::OnTrial2";
+    monster "099-1", 35, 27, "", 1141, 1, strnpcinfo(0)+"::OnTrial2";
+    getexp 10000, 0;
+    getitem "TreasureKey", 1;
+    end;
+
+OnTrial2:
+    monster "099-1", 35, 27, "", 1143, 1, strnpcinfo(0)+"::OnTrial3";
+    getexp 10000, 0;
+    getitem "DarkConcentrationPotion", 1;
+    end;
+
+OnTrial3:
+    getexp 10000, 0;
+    getitem "BentNeedle", 1;
+    end;
+
+// Janitor Function
+OnTimer30000:
+    if (!$@DD5_STATUS)
+        end;
+    if (getmapusers("099-5") < 1)
+        donpcevent "#TMWFinalExam::OnAbort";
+    initnpctimer;
+    end;
+
+OnInit:
+    // Initialize the 18 switches
+    set $@DD5_TSWITCH, 0;
+    // setarray $@DD5_SWITCH - not needed
+
+    // Initialize the 16 passwords
+    setarray $@DD5_PASSWORDS,
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000),
+             3555+rand(10000);
+
+    // Spawn monsters on maps
+    // The infantry
+    areamonster "099-2", 20, 20, 130, 130, "", 1159, 10;
+    areamonster "099-2", 20, 20, 130, 130, "", 1160, 10;
+    areamonster "099-6", 20, 20, 130, 130, "", 1159, 10;
+    areamonster "099-6", 20, 20, 130, 130, "", 1160, 10;
+    areamonster "099-3", 20, 20, 120,  80, "", 1159, 15;
+    areamonster "099-3", 20, 20, 120,  80, "", 1160, 15;
+
+    // The small fry
+    areamonster "099-1", 20, 20, 130, 130, "", 1156, 30;
+    areamonster "099-2", 20, 20, 130, 130, "", 1156, 20;
+    areamonster "099-6", 20, 20, 130, 130, "", 1156, 20;
+    areamonster "099-3", 20, 20, 120,  80, "", 1156, 60;
+    // The advanced mobs
+    areamonster "099-1", 20, 20, 130, 130, "", 1152, 15;
+    areamonster "099-2", 20, 20, 130, 130, "", 1152, 5;
+    areamonster "099-6", 20, 20, 130, 130, "", 1152, 5;
+    areamonster "099-3", 20, 20, 120,  80, "", 1152, 20;
+
+    // The boss. Used to be 1137 Tormenta but... Well... Better not.
+    monster "099-1", 35, 27, "", 1147, 1, "#099-2_Prestart::OnTrial1";
+    end;
+
+OnJanitor:
+    // Maintain 099-5 (janitor)
+    initnpctimer;
+    end;
+}
+
+/////////////////////////////////////////////////////
+// Switches subsystem
+// Switches are distributed between three maps
+// There is a total of 18 switches
+099-2,25,17,0|script|#099-2_25_17|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[0]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[0], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-2,90,18,0|script|#099-2_90_18|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[1]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[1], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-2,121,70,0|script|#099-2_121_70|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[2]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[2], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-2,23,95,0|script|#099-2_23_95|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[3]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[3], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-2,57,130,0|script|#099-2_57_130|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[4]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[4], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-6,25,17,0|script|#099-6_25_17|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[5]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[5], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-6,90,18,0|script|#099-6_90_18|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[6]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[6], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-6,121,71,0|script|#099-6_121_71|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[7]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[7], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-6,23,95,0|script|#099-6_23_95|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[8]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[8], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-6,57,130,0|script|#099-6_57_130|422
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[9]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[9], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-3,29,69,0|script|#099-3_29_69|422
+{
+    // For the cells I need a smaller distance
+    set @npc_distance, 2;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[10]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[10], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-3,35,69,0|script|#099-3_35_69|422
+{
+    // For the cells I need a smaller distance
+    set @npc_distance, 2;
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[11]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[11], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-3,41,69,0|script|#099-3_41_69|422
+{
+    // For the cells I need a smaller distance
+    set @npc_distance, 2;
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[12]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[12], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-3,59,69,0|script|#099-3_59_69|422
+{
+    // For the cells I need a smaller distance
+    set @npc_distance, 2;
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[13]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[13], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-3,79,69,0|script|#099-3_79_69|422
+{
+    // For the cells I need a smaller distance
+    set @npc_distance, 2;
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[14]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[14], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-3,91,69,0|script|#099-3_91_69|422
+{
+    // For the cells I need a smaller distance
+    set @npc_distance, 2;
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[15]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[15], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-3,97,69,0|script|#099-3_97_69|422
+{
+    // For the cells I need a smaller distance
+    set @npc_distance, 2;
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[16]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[16], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+099-3,115,69,0|script|#099-3_115_69|422
+{
+    // For the cells I need a smaller distance
+    set @npc_distance, 2;
+    if(@npc_check) end;
+
+	if (!$@DD5_SWITCH[17]) goto L_Enable;
+	end;
+
+L_NoItem:
+	mes "The switch is stuck, if I only had a Needle or something...";
+	close;
+
+L_Enable:
+	if ($DOOMSDAY_VANILLA)
+		end;
+	if (countitem("BentNeedle") == 0) goto L_NoItem;
+	delitem "BentNeedle", 1;
+	fakenpcname strnpcinfo(0), strnpcinfo(0)+"_", 423;
+	set $@DD5_SWITCH[17], 1;
+	set $@DD5_TSWITCH, $@DD5_TSWITCH+1;
+	getexp 100000, 0;
+	message strcharinfo(0), "The switch is now on!";
+	end;
+}
+
+
+
+
+
+/////////////////////////////////////////////////////
+// Password subsystem
+// Passwords are distributed between two maps
+// There is a total of 16 passwords
+099-2,119,18,0|script|Writing#2_119_18|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... NULL... It is... "+$@DD5_PASSWORDS[0]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-2,25,45,0|script|Writing#2_25_45|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... EIN... It is... "+$@DD5_PASSWORDS[1]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-2,93,42,0|script|Writing#2_93_42|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... ZWEI... It is... "+$@DD5_PASSWORDS[2]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-2,59,72,0|script|Writing#2_59_72|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... DREI... It is... "+$@DD5_PASSWORDS[3]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-2,89,66,0|script|Writing#2_89_66|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... VIER... It is... "+$@DD5_PASSWORDS[4]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-2,123,94,0|script|Writing#2_123_94|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... FUNF... It is... "+$@DD5_PASSWORDS[5]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-2,62,94,0|script|Writing#2_62_94|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... SECHS... It is... "+$@DD5_PASSWORDS[6]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-2,27,94,0|script|Writing#2_27_94|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... SIEBEN... It is... "+$@DD5_PASSWORDS[7]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-6,119,18,0|script|Writing#6_119_18|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... ACHT... It is... "+$@DD5_PASSWORDS[8]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-6,25,45,0|script|Writing#6_25_45|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... NEUN... It is... "+$@DD5_PASSWORDS[9]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-6,93,42,0|script|Writing#6_93_42|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... ZEHN... It is... "+$@DD5_PASSWORDS[10]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-6,59,72,0|script|Writing#6_59_72|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... ELF... It is... "+$@DD5_PASSWORDS[11]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-6,89,66,0|script|Writing#6_89_66|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... ZWOLF... It is... "+$@DD5_PASSWORDS[12]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-6,123,94,0|script|Writing#6_123_94|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... DREIZEHN... It is... "+$@DD5_PASSWORDS[13]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-6,62,94,0|script|Writing#6_62_94|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... VIERZEHN... It is... "+$@DD5_PASSWORDS[14]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+099-6,27,94,0|script|Writing#6_27_94|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is a strange writing here. ##0";
+	mes "";
+	mes "##1Password... FUNFZEHN... It is... "+$@DD5_PASSWORDS[15]+"...";
+	mes "The remainder was too blurred to read.";
+	close;
+}
+
+
+
+
+
+/////////////////////////////////////////////////////
+// Lore subsystem
+// Lore tidbits are distributed between four maps
+// Strategy notes are mixed as well
+// There is a total of 18 lore parts
+
+099-2,57,17,0|script|???#099-2_57_17|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: V0id Flower ::.";
+	mes "This orange flower is dangerous!";
+    mes "Do not disturb them - they have great range and damage!";
+    mes "";
+    mes "Whoever designed this artifical flower must have been crazy!";
+    mes "Killing it is not fast enough, avoid its nectar at all costs!";
+	close;
+}
+
+099-2,123,128,0|script|???#099-2_123_128|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: V0id Slime ::.";
+	mes "A crazy combat unit made in a crazy laboratory.";
+    mes "If you can, just avoid it. It is slow enough.";
+    mes "It can be slain, but have a decent defense, so use magic.";
+	close;
+}
+
+099-2,95,122,0|script|???#099-2_95_122|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: V0id Snake ::.";
+	mes "If I find who designed these monsters ... Grr...";
+    mes "They are fast. And powerful. Goes down quickly, though.";
+	close;
+}
+
+099-2,28,122,0|script|???#099-2_28_122|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "Last night, we were attacked by Xakelbael the Dark.";
+    mes "Our attacks could barely do him any harm, and then...";
+    mes "He cast \"Fourth Fall\". All our buffed soldiers fell down the same instant.";
+    mes "";
+    mes "I am gravely injured, but I'm leaving this note here.";
+    mes "Comrades, please avenge me!";
+	close;
+}
+
+099-2,91,92,0|script|???#099-2_91_92|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: Sasquatch ::.";
+	mes "Developed for protection of the Earth Crystal.";
+    mes "They are extreme power houses capable to smash intruders.";
+    mes "They have very meh defense, though.";
+    mes "Also, even then could not harm Xakelbael the Dark.";
+	close;
+}
+
+099-2,62,43,0|script|???#099-6_62_43|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "Zax De'Kagen trademark skill, the Bliss of Oblivion.";
+    mes "A powerful skill which dispels mana around himself.";
+    mes "Monsters will perish the very moment he cast it, and anyone too close";
+    mes "will have their mana drained as well, and might die from it.";
+    mes "";
+    mes "Not only that, but he may become immune to certain sources of damage.";
+    mes "It is a killer move which also allows him to assemble an army right after.";
+    mes "I do believe there is a weakness, though. Something about excessive fur growth?";
+	close;
+}
+
+099-6,57,17,0|script|???#099-6_57_17|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: V0id Soldier ::.";
+	mes "These units can endure a lot of pain and use bows.";
+	mes "They are not dangerous, but do not let they become fodder.";
+	mes "A lot of soldiers can be very difficult to kill later on.";
+    mes "Random trivia: They are afraid of bone arrows and knifes.";
+	close;
+}
+
+099-6,123,128,0|script|???#099-6_123_128|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: V0id Mouboo ::.";
+	mes "A solid all rounder unit, it has decent health and damage.";
+    mes "But it proved useless as a security biopart.";
+    mes "Figures out, we could not subvert its peaceful nature.";
+	close;
+}
+
+099-6,95,122,0|script|???#099-6_95_122|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: Tengu ::.";
+	mes "Developed for protection of the Earth Crystal.";
+    mes "There shouldn't be any here, but they have a high defense.";
+    mes "They turned out vulnerable to magic, unfortunately.";
+	close;
+}
+
+099-6,28,122,0|script|???#099-6_28_122|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: V0id Bat ::.";
+	mes "They fly very fast and can quickly swarm you.";
+    mes "Their damage and health is not important.";
+    mes "But if not careful, they will overwhelm you.";
+    mes "Also, did you hear about lay on hands on overlapping dimensions?";
+    mes "This have nothing to do with bats but is a cool fact!";
+	close;
+}
+
+099-6,91,92,0|script|???#099-6_91_92|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: Mana Slayer ::.";
+	mes "An anti-magic unit, made to run and slay mages.";
+    mes "They look so much like us, that we are afraid of them all time.";
+    mes "Not strong against physical damage, but can resist magic pretty well.";
+	close;
+}
+
+099-6,62,43,0|script|???#099-6_92_43|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "Do not neglect the potions which you deemed useless until now.";
+    mes "Our foe is formidable. Our knowledge is being tested, here.";
+    mes "The same techniques which worked for years simply do not apply.";
+    mes "";
+    mes "Knowing what and when to cast is important in survival.";
+    mes "I think what should sense magic, might sense mana devoid-ness as well.";
+    mes "In this case, such would be the only way to know how far of killing we are.";
+    mes "But I'm not sure if such trick would work except on support role.";
+	close;
+}
+
+
+
+///////////////////////////////
+099-1,43,14,0|script|Painting#099-1|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes "Reading this is as hard as finding a needle in a haystack.";
+    if (countitem("FlawedLens") < 1) goto L_Tools;
+	mes "Although the painting also has no artistic value on its own...";
+    mes "Something tells you there is something ominous with it.";
+    next;
+    mes "##9 Use [Flawed Lens] on the painting? ##0";
+    menu
+        "No", L_Close,
+        "Yes", L_UseLens;
+
+L_Close:
+    close;
+
+L_Tools:
+    mes "The painting itself has no artistic value, either.";
+    mes "There is something ominous, but you don't know what.";
+    close;
+
+L_UseLens:
+    delitem "FlawedLens", 1;
+    getexp 10000, 10000;
+    mes "[@@https://wiki.themanaworld.org/images/5/57/Kirin_by_clef.jpg|There is the image of a woman on it@@].";
+    mes "";
+    mes "You can make out the following words on it:";
+    mes "In memoriam ..... Kirin De'Kagen.";
+    mes ".... help .... stop ... neither .....";
+    mes "Went missing .... .... .... The War.";
+    mes "";
+    mes "Rest in Peace. Damnatio memoriae. Effective immediately.";
+    // ;-- TRANSLATORS: Damnatio memoriae - "condemnation of memory", indicating that a person is to be excluded from official accounts. History rewrite if required.
+    next;
+    mes "The lens break! They were not only poorly effective but also of bad quality.";
+    mes "If only we could make the real Lens, we would have been able to find out";
+    mes "what is up with this ominous, eerie feeling this picture gives.";
+    close;
+}
+
+099-1,35,22,0|script|Fireplace#099-1|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "##9 There is something interesting on this fireplace. ##0";
+	mes "##9 It doesn't seems to fit this building. ##0";
+	mes "##9 As if it have been taken from another world and put here. ##0";
+    next;
+	mes "##9 After searching it, you found nothing. ##0";
+	mes "##9 It is just a common fireplace, after all. ##0";
+	close;
+}
+
+///////////////////////////////
+// Basic Monsters Knowledge
+099-1,20,22,0|script|Bookcase#099-1|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: V0id Scorpion ::.";
+	mes "The most basic combat unit in Keshlam.";
+    mes "They have decent health, damage, and speed.";
+    mes "";
+    mes ".:: V0id Mushroom ::.";
+	mes "The most basic combat unit in Keshlam.";
+    mes "They have decent health, damage, and speed, and a higher range.";
+    mes "Unlike the scorpions, they can move faster, but attack is slower.";
+	close;
+}
+
+099-1,45,22,0|script|Bookcase#099-1b|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    mes ".:: V0id Maggot ::.";
+	mes "They are pathetic individually, and slow, a failed experiment.";
+    mes "But do not let them overwhelm you, togheter they are formidable!";
+    mes "";
+    mes ".:: V0id Archant ::.";
+	mes "An advanced combat unit, without weak points.";
+    mes "They are slow in movement, but other than that, they are good.";
+	close;
+}
+
+///////////////////////////////
+// Boss fight general knowledge
+099-3,107,50,0|script|Music Score#099-3|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "There is a nice score here.";
+    mes "I assume important info will be sent by SFX only.";
+    next;
+    mes "Also, the time beats of this score are all in 600ms intervals.";
+    mes "Could it be that attack speed is overridden during the fight?!";
+    mes "";
+    mes "However, potions will still work, hmm.";
+    mes "There is also a spell here: \"##B#storage##b\".";
+    mes "I assume it only works at specific times.";
+	close;
+}
+
+099-3,39,46,0|script|Outstanding Book#099-3|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+	mes "Zax De'Kagen's Diary, entry #27";
+    mes "";
+    mes "##9 I am all soaking wet. They found my weak point. ##0";
+    mes "##9 However it was too late, Fourth Fall brought the end to this. ##0";
+    mes "##9 I did not even had to cancel my illusion. ##0";
+    next;
+	mes "Zax De'Kagen's Diary, entry #34";
+    mes "";
+    mes "##9 Today my Rubber Bat flew away. Probably shouldn't have given life to it. ##0";
+    mes "##9 I'll miss it, my dear friend, I hope one day he returns? ##0";
+    next;
+	mes "Zax De'Kagen's Diary, entry #42";
+    mes "";
+    mes "##9 What I wouldn't give for some pickled beets right now... ##0";
+    mes "##9 Meh, whatever. I'm not going to Dimond's Cove ever again! ##0";
+	close;
+}
+
+099-3,64,62,0|script|Pan#099-3|400
+{
+    // Default distance is 4 tiles - all we need
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+
+    if (rand(6) % 2 == 0)
+        goto L_Shock;
+    goto L_Potion;
+
+L_Shock:
+	mes "Some was trying to make Shock Sweets here.";
+    mes "However, it doesn't seems to have been finished.";
+    next;
+    mes "There are the initials \"To stop F.F.\" nearby.";
+    mes "One can only wonder who or what F.F. is.";
+	close;
+
+L_Potion:
+	mes "Some was trying to make a Mana Potion here.";
+    mes "However, it doesn't seems to have been finished.";
+    next;
+    mes "There are the initials \"To stop Bob\" nearby.";
+    mes "Well, I assume it is \"Bob\", text is fainted.";
+    mes "it could be \"boo\" as well. Maybe from Mouboo?";
+	close;
+}
+
