@@ -20,45 +20,8 @@ OnStorage:
     openstorage;
     end;
 
-// FIXME DEBUG DEBUG DEBUG FIXME
-OnDebug:
-    debugmes "CHEAT - JS33";
-    if (!debug || $DOOMSDAY != 3 || GM < GM_SYSOP)
-        end;
-    set $@DD5_TSWITCH, 18;
-    set $@DD5_OPENSESAME, 1;
-    message strcharinfo(0), "DOOMSDAY ACT 5 DEBUG SUCCESSFUL";
-    end;
-
-// FIXME DEBUG DEBUG DEBUG FIXME
-OnDebugDamage:
-    if (!debug || $DOOMSDAY != 3 || GM < GM_SYSOP)
-        end;
-    if ($@DD5_HP <= 1000)
-        end;
-    set $@DD5_HP, max(1000, $@DD5_HP-2500);
-    message strcharinfo(0), "Battle: Damage -2500 HP";
-    callfunc "FinalExamAttack";
-    end;
-
-// FIXME DEBUG DEBUG DEBUG FIXME
-OnDebugX:
-    debugmes "CHEAT - JS99";
-    if (!debug || $DOOMSDAY != 3 || GM < GM_SYSOP || $@DD5_STATUS)
-        end;
-    set $@DD5_HP, 100;
-    set $@DD5_STATUS, 7;
-    set $@DD5_BEGIN, gettimetick(2);
-    warp "099-5", 0, 0;
-    fakenpcname "Zax De'Kagen#0", "Zax De'Kagen#0", 1142;
-    message strcharinfo(0), "DOOMSDAY ACT 5 SUPER DEBUG SUCCESSFUL";
-    end;
-
 OnInit:
     // Register commands
-    registercmd "@js33", strnpcinfo(0)+"::OnDebug";
-    registercmd "@js67", strnpcinfo(0)+"::OnDebugDamage";
-    registercmd "@js99", strnpcinfo(0)+"::OnDebugX";
     registercmd "#storage", strnpcinfo(0)+"::OnStorage";
     end;
 }
@@ -1029,6 +992,7 @@ L_Enable:
     if(@npc_check) end;
 
     mes "Reading this is as hard as finding a needle in a haystack.";
+    if (debug) goto L_Close;
     if (countitem("FlawedLens") < 1) goto L_Tools;
 	mes "Although the painting also has no artistic value on its own...";
     mes "Something tells you there is something ominous with it.";
@@ -1049,7 +1013,9 @@ L_Tools:
 L_UseLens:
     delitem "FlawedLens", 1;
     getexp 10000, 10000;
+    mes "~~~graphics/images/kirin.png~";
     mes "[@@https://wiki.themanaworld.org/images/5/57/Kirin_by_clef.jpg|There is the image of a woman on it@@].";
+    next;
     mes "";
     mes "You can make out the following words on it:";
     mes "In memoriam ..... Kirin De'Kagen.";
@@ -1165,7 +1131,7 @@ L_UseLens:
     callfunc "PCtoNPCRange";
     if(@npc_check) end;
 
-    if (rand(6) % 2 == 0)
+    if (rand(60) % 2 == 0)
         goto L_Shock;
     goto L_Potion;
 
