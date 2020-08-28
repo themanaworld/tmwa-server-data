@@ -248,6 +248,10 @@ OnJanitor:
     // Act 5: Cleanup
     if ($DOOMSDAY == 3 && !$DOOMSDAY_TWARP)
         donpcevent "Keshlam Maze::OnInit"; // Spawn monsters if needed
+    if ($DOOMSDAY != 3)
+        disablenpc "To Underworld";
+    if ($DOOMSDAY == 3)
+        enablenpc "To Underworld";
     // Clear timers
     setnpctimer 0;
     stopnpctimer;
@@ -1302,6 +1306,10 @@ function|script|DoomsdayAct5
         goto L_WaitRoom;
     if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-4" || getmap() == "099-6")
         goto L_WarpOut;
+    // Iilia, Candor, Botcheck, etc.
+    if (getmapflag(getmap(), MF_NOSAVE))
+        goto L_Return;
+    // Anywhere else is fine
     if (countitem("BlackRose") || @alonso)
         goto L_WarpTo;
     goto L_Return;
@@ -1312,12 +1320,12 @@ L_WarpTo:
         goto L_KeshlamMaze;
     if ($DOOMSDAY_TJANDE == 1)
         goto L_KeshlamAbandoned;
-    // Ops, nowhere to go, please stay dead
     if (!@alonso)
-        heal -100000, -10000;
+        message strcharinfo(0), "The Black Rose did a miracle! Failed to die!";
     else
-        set @alonso, 0;
-    return;
+        message strcharinfo(0), "World Shift : Shifted to full health";
+    // Ops, nowhere to go!
+    goto L_Payment;
 
 L_Payment:
     if (@alonso)
@@ -1331,7 +1339,8 @@ L_PayAlonso:
 
 L_PayNormal:
     delitem "BlackRose", 1;
-    getitem "DarkPetal", 1;
+    if (rand(5) < 3)
+        getitem "DarkPetal", 1;
     return;
 
 L_WarpOut:
