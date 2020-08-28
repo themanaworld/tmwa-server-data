@@ -84,6 +84,8 @@ L_Main:
     end;
 
 // Labels
+OnDeath0:
+    end;
 OnDeath1:
     end;
 OnDeath2:
@@ -107,8 +109,6 @@ OnDeath10:
 OnDeath11:
     end;
 OnDeath12:
-    end;
-OnDeath13:
     end;
 }
 
@@ -162,6 +162,8 @@ function|script|HocusCampaign
     if (@JACKOID < 1)
         goto L_Return;
 
+    set @JACKOID, @JACKOID-1;
+
     if ($@HW2020_TIMER[@JACKOID] > gettimetick(2))
         goto L_Check;
 
@@ -185,7 +187,6 @@ function|script|HocusCampaign
         "Not now!", L_Abort;
 
 L_Begin:
-    set @JACKOID, @JACKOID-1;
     if ($@HW2020_TIMER[@JACKOID] > gettimetick(2))
         goto L_Return;
 
@@ -211,18 +212,18 @@ L_Begin:
     if (@JACKOID % 8 == 7)
         set @mobID, 1124; // Wight
 
-    // Define mob amound
-        set @mobAM, 8; // Zombie
+    // Define mob amount
+    set @mobAM, 8; // Default
     if (@JACKOID % 8 == 0)
         set @mobAM, 12; // Soul Snake must be more
     if (@JACKOID % 8 >= 4)
         set @mobAM, 6; // Stalker, JackO, Red and Wigh must be less
 
     // Spawn the Monsters
-    areamonster "003-1", getx()-10, gety()-10, getx()+10, gety()+10, "", @mobID, @mobAM, "HW2020 Mobs::OnDeath"+(@JACKOID+1);
+    areamonster "003-1", getx()-10, gety()-10, getx()+10, gety()+10, "", @mobID, @mobAM, "HW2020 Mobs::OnDeath"+@JACKOID;
 
     // Announce
-     mapannounce "003-1", "JackO : Hohoho... You cannot defeat me1" , 0;
+     mapannounce "003-1", "JackO : Hohoho... You cannot defeat meeeee!" , 0;
 
     // Clear temporary variables
     set @mobID, 0;
@@ -236,7 +237,7 @@ L_Abort:
 
 L_Check:
     // Count Monsters
-    set @TulimMc, mobcount("003-1", "HW2020 Mobs::OnDeath"+(@JACKOID+1))+1;
+    set @TulimMc, mobcount("003-1", "HW2020 Mobs::OnDeath"+@JACKOID)+1;
     if (@TulimMc)
         goto L_Information;
 
@@ -249,7 +250,8 @@ L_Check:
     return;
 
 L_Information:
-    message strcharinfo(0), "JackO : Hohoho... Still "+@TulimMC+" monsters alive... Defeat meeeeee.....!";
+    message strcharinfo(0), "JackO : Hohoho... Still "+@TulimMc+" monsters alive... Defeat meeeeee.....!";
+    set @TulimMc, 0;
     return;
 
 L_Return:
