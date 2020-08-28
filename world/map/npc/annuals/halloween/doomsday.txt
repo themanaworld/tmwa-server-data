@@ -8,7 +8,8 @@
 // Variables:
 //  $@HW2020_SLAIN, array
 //  $@HW2020_TIMER, array
-//  $@HW2020_HOCUS, integer (0 - Not yet, 1 - Ambushed, 2 - Completed)
+//  $@HW2020_HOCUS, integer
+//  (0 - Not yet, 1 - Cutscene, 2 - Ambushed, 3 - Completed)
 //  $@HW2020_CNT, temporary int
 //  $@JACKOID, temporary int
 //  $@UnderMc, temporary int
@@ -229,6 +230,15 @@ OnInit:
 
 
 ////////////////////////////////////////////////
+003-1,44,64,0|script|#HW2020ActionLess|400,3,0
+{
+    end;
+OnTouch:
+    if ($@HW2020_HOCUS == 2)
+        warp "070-1", 0, 0;
+    end;
+}
+
 003-1,44,40,0|script|#HW2020Bazar|424,0,0
 {
     close;
@@ -237,16 +247,50 @@ OnTouch:
     if ($@HW2020_HOCUS == 0)
         goto L_Ambush;
     if ($@HW2020_HOCUS == 1)
+        end;
+    if ($@HW2020_HOCUS == 2)
         goto L_Check;
     warp "009-1", 52, 40;
     end;
 
+// TODO
 L_Ambush:
-    // TODO
+    set $@HW2020_HOCUS, 1;
+    mapannounce "003-1", "What, did you thought it would be so easy?" , 0;
+    addnpctimer 3000, "#HW2020Bazar::OnAmbush1";
+    end;
+
+OnAmbush1:
+    mapannounce "003-1", "Hahaha! I am the self-proclaimed sovereign of the underworld..." , 0;
+    addnpctimer 3000, "#HW2020Bazar::OnAmbush2";
+    end;
+
+OnAmbush2:
+    mapannounce "003-1", "...THE LOST! Return to where you come from!!" , 0;
+    // Boss and his shrooms
+    monster "003-1", 44, 40, "", 1073, 1, "HW2020 Mobs::OnDeath1";
+    areamonster "003-1", 20, 20, 60, 60, "", 1106, 12, "HW2020 Mobs::OnDeath2";
+    // Collection of nearly every monster you saw thus far :>
+    areamonster "003-1", 20, 20, 60, 40, "", 1096, 8, "HW2020 Mobs::OnDeath3";
+    areamonster "003-1", 20, 20, 60, 40, "", 1036, 6, "HW2020 Mobs::OnDeath4";
+    areamonster "003-1", 20, 20, 60, 40, "", 1103, 6, "HW2020 Mobs::OnDeath5";
+    areamonster "003-1", 20, 20, 60, 40, "", 1045, 4, "HW2020 Mobs::OnDeath6";
+    areamonster "003-1", 20, 20, 60, 40, "", 1022, 2, "HW2020 Mobs::OnDeath7";
+    areamonster "003-1", 20, 20, 60, 40, "", 1075, 2, "HW2020 Mobs::OnDeath8";
+    areamonster "003-1", 20, 20, 60, 40, "", 1074, 2, "HW2020 Mobs::OnDeath9";
+    areamonster "003-1", 20, 20, 60, 40, "", 1124, 2, "HW2020 Mobs::OnDeath10";
+    set $@HW2020_HOCUS, 2;
+    areatimer 0, "003-1", 15, 15, 150, 100, 10, "#HW2020Bazar::OnStopThere";
     end;
 
 L_Check:
     // TODO
+    end;
+
+OnStopThere:
+    if (getx() > 66 || gety() > 62)
+        warp "003-1", 44, 61;
+    sendcollision "003-1", 1, 42, 62, 46, 64;
     end;
 
 OnReward:
