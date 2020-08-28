@@ -81,7 +81,6 @@ L_Main:
 
     // Done
     set $@UnderMc, 0;
-    set $@TulimMc, 0;
     end;
 
 // Labels
@@ -135,71 +134,284 @@ OnInit:
 003-1,44,40,0|script|#HW2020Bazar|424,0,0
 {
     close;
+
+OnTouch:
+
+    // BOSS: 1073 The Lost
+
+    end;
+
+OnInit:
+    disablenpc "#HW2020Bazar";
+    end;
+}
+
+////////////////////////////////////////////////
+// Hocus Campaign Main Function
+// HocusCampaign( @JACKOID )
+// Use getmap(), getx() and gety() for spawn centering
+// OnBegin:
+// $@HW2020_SLAIN[ JACKOID ] = False
+// $@HW2020_TIMER[ JACKOID ] = gettimetick(2)
+// Have HW2020 Mobs timer controlling all of them (runs every minute for expire)
+// OnFinish:
+// $@HW2020_SLAIN[ JACKOID ] = True
+// Timer NOT updated!!
+function|script|HocusCampaign
+{
+    if (@JACKOID < 1)
+        goto L_Return;
+
+    if ($@HW2020_TIMER[@JACKOID] > gettimetick(2))
+        goto L_Check;
+
+    mes "[Jack O]";
+    mes "Hohoho... I am the JackO who curses this lost soul.";
+    mes "Do you want to free this person? Defeat meeeeee....";
+    next;
+    mes "[Jack O]";
+    mes "Hohoho... Prove your worth, defeat meeeeee....";
+    mes "Slay all my minions, can you prove yourself to meeeeee....?";
+    next;
+    mes "##3.:: Mission Goals ::.##0";
+    mes "1. Defeat all monsters spawned by JackO";
+    mes "2. Talk to JackO after this to lift the curse";
+    mes "3. Once all 13 NPCs curse is lifted, go to the Bazar.";
+    mes "";
+    mes "##1Time Limit: 1 hour since first JackO monster spawn.";
+    next;
+    menu
+        "Bring it on!", L_Begin,
+        "Not now!", L_Abort;
+
+L_Begin:
+    set @JACKOID, @JACKOID-1;
+    if ($@HW2020_TIMER[@JACKOID] > gettimetick(2))
+        goto L_Return;
+
+    // Assign timer, set JackO to ACTIVE
+    set $@HW2020_SLAIN[@JACKOID], 0;
+    set $@HW2020_TIMER[@JACKOID], gettimetick(2)+3600;
+
+    // Define mob id
+    if (@JACKOID % 8 == 0)
+        set @mobID, 1096; // Soul Snake
+    if (@JACKOID % 8 == 1)
+        set @mobID, 1036; // Zombie
+    if (@JACKOID % 8 == 2)
+        set @mobID, 1103; // Witch Guard
+    if (@JACKOID % 8 == 3)
+        set @mobID, 1045; // Fallen
+    if (@JACKOID % 8 == 4)
+        set @mobID, 1022; // JackO
+    if (@JACKOID % 8 == 5)
+        set @mobID, 1075; // Stalker
+    if (@JACKOID % 8 == 6)
+        set @mobID, 1074; // Red Bone
+    if (@JACKOID % 8 == 7)
+        set @mobID, 1124; // Wight
+
+    // Define mob amound
+        set @mobAM, 8; // Zombie
+    if (@JACKOID % 8 == 0)
+        set @mobAM, 12; // Soul Snake must be more
+    if (@JACKOID % 8 >= 4)
+        set @mobAM, 6; // Stalker, JackO, Red and Wigh must be less
+
+    // Spawn the Monsters
+    areamonster "003-1", getx()-10, gety()-10, getx()+10, gety()+10, "", @mobID, @mobAM, "HW2020 Mobs::OnDeath"+(@JACKOID+1);
+
+    // Announce
+     mapannounce "003-1", "JackO : Hohoho... You cannot defeat me1" , 0;
+
+    // Clear temporary variables
+    set @mobID, 0;
+    set @mobAM, 0;
+    close2;
+    return;
+
+L_Abort:
+    close2;
+    return;
+
+L_Check:
+    // Count Monsters
+    set @TulimMc, mobcount("003-1", "HW2020 Mobs::OnDeath"+(@JACKOID+1))+1;
+    if (@TulimMc)
+        goto L_Information;
+
+    // Disable JackO here, the script will catch that
+    set $@HW2020_SLAIN[@JACKOID], 1;
+
+    mes "[JackO]";
+    mes "Hohoho... We'll meet againnnnnnnn!";
+    close2;
+    return;
+
+L_Information:
+    message strcharinfo(0), "JackO : Hohoho... Still "+@TulimMC+" monsters alive... Defeat meeeeee.....!";
+    return;
+
+L_Return:
+    return;
+
 }
 
 ////////////////////////////////////////////////
 // JackOs (13 JackOs)
-003-1,26,73,0|script|JackO#Tybalt|184
+003-1,26,73,0|script|JackO#Tybalt|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 1;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,101,31,0|script|JackO#Nicolas|184
+003-1,101,31,0|script|JackO#Nicolas|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 2;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,38,66,0|script|JackO#Elanore|184
+003-1,38,66,0|script|JackO#Elanore|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 3;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,56,70,0|script|JackO#Aisha|184
+003-1,56,70,0|script|JackO#Aisha|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 4;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,119,33,0|script|JackO#Nina|184
+003-1,119,33,0|script|JackO#Nina|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 5;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,32,30,0|script|JackO#Ian|184
+003-1,32,30,0|script|JackO#Ian|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 6;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,113,43,0|script|JackO#Luca|184
+003-1,113,43,0|script|JackO#Luca|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 7;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,47,79,0|script|JackO#Ekinu|184
+003-1,47,79,0|script|JackO#Ekinu|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 8;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,38,79,0|script|JackO#Ryan|184
+003-1,38,79,0|script|JackO#Ryan|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 9;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,53,45,0|script|JackO#Neko|184
+003-1,53,45,0|script|JackO#Neko|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 10;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,54,51,0|script|JackO#Ishi|184
+003-1,54,51,0|script|JackO#Ishi|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 11;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,71,61,0|script|JackO#Sandra|184
+003-1,71,61,0|script|JackO#Sandra|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 12;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
 
-003-1,136,35,0|script|JackO#Vincent|184
+003-1,136,35,0|script|JackO#Vincent|133
 {
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 13;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
     close;
 }
+
