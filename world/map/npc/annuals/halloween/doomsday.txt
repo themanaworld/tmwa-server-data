@@ -6,6 +6,60 @@
 // Operates: 057-1 070-1 003-1
 // See also: npc/annuals/halloween/munro.txt
 
+////////////////////////////////////////////////
+// JackO Central Processing Core ($@JACKOID)
+function|script|HocusJackO
+{
+    if (!$@HW2020_SLAIN[$@JACKOID])
+        goto L_Return;
+
+    if ($@HW2020_TIMER[$@JACKOID] < gettimetick(2))
+        goto L_Expired;
+
+    // Count the JackO
+    set $@HW2020_CNT, $@HW2020_CNT+1;
+    set $@JACKOID, 0;
+    return;
+
+// Time expired!
+L_Expired:
+    set $@HW2020_SLAIN[$@JACKOID], 0;
+    // Re-enable the NPC
+    if ($@JACKOID == 0)
+        enablenpc "JackO#Tybalt";
+    if ($@JACKOID == 1)
+        enablenpc "JackO#Nicolas";
+    if ($@JACKOID == 2)
+        enablenpc "JackO#Elanore";
+    if ($@JACKOID == 3)
+        enablenpc "JackO#Aisha";
+    if ($@JACKOID == 4)
+        enablenpc "JackO#Nina";
+    if ($@JACKOID == 5)
+        enablenpc "JackO#Ian";
+    if ($@JACKOID == 6)
+        enablenpc "JackO#Luca";
+    if ($@JACKOID == 7)
+        enablenpc "JackO#Ekinu";
+    if ($@JACKOID == 8)
+        enablenpc "JackO#Ryan";
+    if ($@JACKOID == 9)
+        enablenpc "JackO#Neko";
+    if ($@JACKOID == 10)
+        enablenpc "JackO#Ishi";
+    if ($@JACKOID == 11)
+        enablenpc "JackO#Sandra";
+    if ($@JACKOID == 12)
+        enablenpc "JackO#Vincent";
+    set $@JACKOID, 0;
+    return;
+
+L_Return:
+    set $@JACKOID, 0;
+    return;
+}
+
+////////////////////////////////////////////////
 // Monster Script Control
 -|script|HW2020 Mobs|32767
 {
@@ -110,6 +164,37 @@ OnDeath11:
     end;
 OnDeath12:
     end;
+
+OnTimer30000:
+    // Check every JackO
+    set $@HW2020_CNT, 0;
+    set $@JACKOID, 0; callfunc "HocusJackO";
+    set $@JACKOID, 1; callfunc "HocusJackO";
+    set $@JACKOID, 2; callfunc "HocusJackO";
+    set $@JACKOID, 3; callfunc "HocusJackO";
+    set $@JACKOID, 4; callfunc "HocusJackO";
+    set $@JACKOID, 5; callfunc "HocusJackO";
+    set $@JACKOID, 6; callfunc "HocusJackO";
+    set $@JACKOID, 7; callfunc "HocusJackO";
+    set $@JACKOID, 8; callfunc "HocusJackO";
+    set $@JACKOID, 9; callfunc "HocusJackO";
+    set $@JACKOID, 10; callfunc "HocusJackO";
+    set $@JACKOID, 11; callfunc "HocusJackO";
+    set $@JACKOID, 12; callfunc "HocusJackO";
+
+    // Check if portal is to be active
+    if ($@HW2020_CNT >= 13)
+        goto L_Active;
+
+    // Janitor
+    set $@HW2020_CNT, 0;
+    initnpctimer;
+    end;
+
+L_Active:
+    mapannounce "003-1", "##1There is a loud sound coming from the Bazar.##0" , 0;
+    enablenpc "#HW2020Bazar";
+    end;
 }
 
 
@@ -178,7 +263,7 @@ function|script|HocusCampaign
     mes "##3.:: Mission Goals ::.##0";
     mes "1. Defeat all monsters spawned by JackO";
     mes "2. Talk to JackO after this to lift the curse";
-    mes "3. Once all 13 NPCs curse is lifted, go to the Bazar.";
+    mes "3. Once all 13 NPCs curse is lifted, go to ?????";
     mes "";
     mes "##1Time Limit: 1 hour since first JackO monster spawn.";
     next;
@@ -246,6 +331,7 @@ L_Check:
 
     mes "[JackO]";
     mes "Hohoho... We'll meet againnnnnnnn!";
+    donpcevent "HW2020 Mobs::OnTimer30000";
     close2;
     return;
 
