@@ -48,9 +48,6 @@ L_ShroomRule:
         "[Dark Magic] Check Status", L_ShroomCheck,
         "[Dangerous] Try to cross", L_ShroomCross;
 
-L_Close:
-    close;
-
 L_ShroomCheck:
     if (getskilllv(SKILL_MAGIC_DARK) > 0)
         mes "Status: "+if_then_else($DOOMSDAY_CNT2 < 150,
@@ -77,7 +74,44 @@ L_ShroomCross:
 L_ChapelRule:
     if ($DOOMSDAY_TJANDE == 1) end;
     if (!$@halloween_time) end;
-    // TODO
+
+    mes ".:: Eternal Seals Gate ::.";
+    mes "";
+    mes "This chapel is clearly unlocked.";
+    mes "The lock seems to have been removed ##BOn purpose, from the outside.##b";
+    mes "This is probably where Tormenta lives.";
+    next;
+    mes "##9Warning: This is the Underworld and it may defy common logic.";
+    mes "Are you ready?##0";
+    mes "##1Cost: 1x [@@666|@@]";
+    next;
+    menu
+        "Cancel", L_Close,
+        "Open the gate!", L_GateCheck;
+
+L_GateCheck:
+    if (!(countitem("BlackRose")))
+        close;
+
+    close2;
+    misceffect FX_PENTAGRAM_BUILDUP, strcharinfo(0);
+    addtimer 6000, "alonsialonso::OnChapelCross";
+    end;
+
+OnChapelCross:
+    if (Hp < 1)
+        end;
+    if (!(countitem("BlackRose")))
+        end;
+
+    // Payment Execution
+    delitem "BlackRose", 1;
+    getitem "DarkPetal", 1;
+
+    // Warp you to Tulimshar MMVI
+    warp "003-1", 44, 94;
+    message strcharinfo(0), "World Shift : Shifted to Tulimshar (Area MMVI)";
+    misceffect FX_PENTAGRAM_BUILDUP, strcharinfo(0);
     end;
 
 //////////////////////////////////////////////////////
@@ -92,6 +126,9 @@ L_EmulateDeath:
     set @alonso, 1;
     callfunc "DoomsdayAct5";
     end;
+
+L_Close:
+    close;
 
 //////////////////////////////////////////////////////
 OnInit:
