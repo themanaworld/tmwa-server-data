@@ -334,6 +334,7 @@ OnAmbush2:
     areamonster "003-1", 20, 20, 60, 40, "", 1124, 2, "HW2020 Mobs::OnDeath10";
     set $@HW2020_HOCUS, 2;
     areatimer 0, "003-1", 18, 18, 150, 100, 10, "HW2020 Mobs::OnStopThere";
+    initnpctimer;
     end;
 
 L_Check:
@@ -371,10 +372,40 @@ L_Finish:
     announce "Doomsday : Jande has been rescued from the Underworld." , 0;
     mapannounce "003-1", "The Lost : To be defeated... You should all get lost here forever..." , 0;
     areatimer 0, "003-1", 18, 18, 66, 62, 2000, "HW2020 Mobs::OnReward";
+    stopnpctimer;
     end;
 
 OnInit:
     disablenpc "#HW2020Bazar";
+    end;
+
+// Players defeated? :(
+OnTimer5000:
+    if (getmapusers("003-1") < 1)
+        goto L_Janitor;
+    initnpctimer;
+    end;
+
+L_Janitor:
+    killmonster "003-1", "All";
+    set $@HW2020_HOCUS, 0;
+    cleararray $@HW2020_SLAIN;
+    cleararray $@HW2020_TIMER;
+    enablenpc "JackO#Tybalt";
+    enablenpc "JackO#Nicolas";
+    enablenpc "JackO#Elanore";
+    enablenpc "JackO#Aisha";
+    enablenpc "JackO#Nina";
+    enablenpc "JackO#Ian";
+    enablenpc "JackO#Luca";
+    enablenpc "JackO#Ekinu";
+    enablenpc "JackO#Ryan";
+    enablenpc "JackO#Neko";
+    enablenpc "JackO#Ishi";
+    enablenpc "JackO#Sandra";
+    enablenpc "JackO#Vincent";
+    disablenpc strnpcinfo(0);
+    stopnpctimer;
     end;
 }
 
