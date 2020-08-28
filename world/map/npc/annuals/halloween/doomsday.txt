@@ -9,10 +9,11 @@
 //  $@HW2020_SLAIN, array
 //  $@HW2020_TIMER, array
 //  $@HW2020_HOCUS, integer
-//  (0 - Not yet, 1 - Cutscene, 2 - Ambushed, 3 - Completed)
+//  (0 - Not yet, 1 - Cutscene, 2 - Ambushed, 3 - Completing, 4 - Completed)
 //  $@HW2020_CNT, temporary int
 //  $@JACKOID, temporary int
 //  $@UnderMc, temporary int
+//  @TulimMc, temporary int
 //  @JACKOID, temporary int
 //  @mobID, temporary int
 //  @mobAM, temporary int
@@ -205,6 +206,7 @@ OnTimer30000:
 L_Active:
     mapannounce "003-1", "##1There is a loud sound coming from the Bazar.##0" , 0;
     enablenpc "#HW2020Bazar";
+    stopnpctimer;
     end;
 }
 
@@ -250,6 +252,8 @@ OnTouch:
         end;
     if ($@HW2020_HOCUS == 2)
         goto L_Check;
+    if ($@HW2020_HOCUS == 3)
+        end;
     warp "009-1", 52, 40;
     end;
 
@@ -284,7 +288,39 @@ OnAmbush2:
     end;
 
 L_Check:
-    // TODO
+    set @TulimMc, mobcount("003-1", "HW2020 Mobs::OnDeath1")+1;
+    if (@TulimMc)
+        goto L_Reaper;
+
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath2")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath3")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath4")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath5")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath6")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath7")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath8")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath9")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath10")+1;
+
+    if (@TulimMc)
+        goto L_NotReady;
+
+    goto L_Finish;
+
+L_Reaper:
+    message strcharinfo(0), "The Lost : Hahaha! Don't you think I can't see you!";
+    set @TulimMc, 0;
+    end;
+
+L_NotReady:
+    message strcharinfo(0), strcharinfo(0) + " : I can still count "+@TulimMc+" monsters which need to be defeated first.";
+    set @TulimMc, 0;
+    end;
+
+L_Finish:
+    set $@HW2020_HOCUS, 3;
+    mapannounce "003-1", "The Lost : To be defeated... You should all get lost here forever..." , 0;
+    areatimer 0, "003-1", 15, 15, 66, 62, 5000, "#HW2020Bazar::OnReward";
     end;
 
 OnStopThere:
@@ -294,6 +330,7 @@ OnStopThere:
     end;
 
 OnReward:
+    set $@HW2020_HOCUS, 4;
     mes "[Jande]";
     mes "Jande was rescued. Numa will take care of him until he recovers.";
     mes "He struggled for words, but the time he spent there did a number on him.";
