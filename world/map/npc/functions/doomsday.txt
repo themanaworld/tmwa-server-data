@@ -1302,18 +1302,33 @@ function|script|DoomsdayAct5
         goto L_WaitRoom;
     if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-4" || getmap() == "099-6")
         goto L_WarpOut;
-    if (countitem("BlackRose"))
+    if (countitem("BlackRose") || @alonso)
         goto L_WarpTo;
     goto L_Return;
 
 L_WarpTo:
-    delitem "BlackRose", 1;
-    getitem "DarkPetal", 1;
     heal 100000, 10000;
     if ($DOOMSDAY_TWARP == 0)
         goto L_KeshlamMaze;
-    else
+    if ($DOOMSDAY_TJANDE == 1)
         goto L_KeshlamAbandoned;
+    // Ops, nowhere to go, please stay dead
+    heal -100000, -10000;
+    return;
+
+L_Payment:
+    if (@alonso)
+        goto L_PayAlonso;
+    goto L_PayNormal;
+
+L_PayAlonso:
+    delitem "DarkPetal", 1;
+    set @alonso, 0;
+    return;
+
+L_PayNormal:
+    delitem "BlackRose", 1;
+    getitem "DarkPetal", 1;
     return;
 
 L_WarpOut:
@@ -1350,11 +1365,11 @@ L_KeshlamMaze:
         warp "099-8", 23, 378;
     else
         warp "099-8", 379, 378;
-    return;
+    goto L_Payment;
 
 L_KeshlamAbandoned:
     warp "099-1", 34, 34;
-    return;
+    goto L_Payment;
 }
 
 009-1,30,43,0|script|Chest#DarkRose|111
