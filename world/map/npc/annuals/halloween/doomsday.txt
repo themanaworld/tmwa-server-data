@@ -1,0 +1,714 @@
+// Evol script
+// Year: 2020
+//
+// Controls Doomsday Event - Vanilla Jande's Rescue (Halloween 2020)
+//
+// Operates: 057-1 070-1 003-1
+// See also: npc/annuals/halloween/munro.txt
+// Variables:
+//  $@HW2020_SLAIN, array
+//  $@HW2020_TIMER, array
+//  $@HW2020_HOCUS, integer
+//  (0 - Not yet, 1 - Cutscene, 2 - Ambushed, 3 - Completing, 4 - Completed)
+//  $@HW2020_CNT, temporary int
+//  $@JACKOID, temporary int
+//  $@UnderMc, temporary int
+//  @TulimMc, temporary int
+//  @JACKOID, temporary int
+//  @mobID, temporary int
+//  @mobAM, temporary int
+
+////////////////////////////////////////////////
+// JackO Central Processing Core ($@JACKOID)
+function|script|HocusJackO
+{
+    if (!$@HW2020_SLAIN[$@JACKOID])
+        goto L_Return;
+
+    if ($@HW2020_TIMER[$@JACKOID] < gettimetick(2))
+        goto L_Expired;
+
+    // Count the JackO
+    set $@HW2020_CNT, $@HW2020_CNT+1;
+    set $@JACKOID, 0;
+    return;
+
+// Time expired!
+L_Expired:
+    set $@HW2020_SLAIN[$@JACKOID], 0;
+    // Re-enable the NPC
+    if ($@JACKOID == 0)
+        enablenpc "JackO#Tybalt";
+    if ($@JACKOID == 1)
+        enablenpc "JackO#Nicolas";
+    if ($@JACKOID == 2)
+        enablenpc "JackO#Elanore";
+    if ($@JACKOID == 3)
+        enablenpc "JackO#Aisha";
+    if ($@JACKOID == 4)
+        enablenpc "JackO#Nina";
+    if ($@JACKOID == 5)
+        enablenpc "JackO#Ian";
+    if ($@JACKOID == 6)
+        enablenpc "JackO#Luca";
+    if ($@JACKOID == 7)
+        enablenpc "JackO#Ekinu";
+    if ($@JACKOID == 8)
+        enablenpc "JackO#Ryan";
+    if ($@JACKOID == 9)
+        enablenpc "JackO#Neko";
+    if ($@JACKOID == 10)
+        enablenpc "JackO#Ishi";
+    if ($@JACKOID == 11)
+        enablenpc "JackO#Sandra";
+    if ($@JACKOID == 12)
+        enablenpc "JackO#Vincent";
+    set $@JACKOID, 0;
+    return;
+
+L_Return:
+    set $@JACKOID, 0;
+    return;
+}
+
+////////////////////////////////////////////////
+// Monster Script Control
+-|script|HW2020 Mobs|32767
+{
+    close;
+
+OnInit:
+    goto L_Main;
+
+// They'll respawn at midday.
+OnClock1200:
+    goto L_Main;
+
+L_Main:
+    // Do not waste RAM/CPU if we don't need it
+    if ($DOOMSDAY != 3 || !$@halloween_time)
+        end;
+    if ($DOOMSDAY_TJANDE || !$DOOMSDAY_TWARP)
+        end;
+
+    /////////////////////////////////////////////////////////////////////////
+    // Underworld Controller
+
+    // TYPE 1141, SASQUATCH
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath1")+1;
+    if ($@UnderMc < 20)
+        areamonster "070-1", 20, 20, 75, 100, "", 1141, 20-$@UnderMc, "HW2020 Mobs::OnDeath1";
+
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath2")+1;
+    if ($@UnderMc < 20)
+        areamonster "070-1", 77, 20, 127, 100, "", 1141, 20-$@UnderMc, "HW2020 Mobs::OnDeath2";
+
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath3")+1;
+    if ($@UnderMc < 20)
+        areamonster "070-1", 130, 20, 170, 100, "", 1141, 20-$@UnderMc, "HW2020 Mobs::OnDeath3";
+
+    // TYPE 1140, TENGU
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath4")+1;
+    if ($@UnderMc < 20)
+        areamonster "070-1", 20, 20, 75, 100, "", 1140, 20-$@UnderMc, "HW2020 Mobs::OnDeath4";
+
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath5")+1;
+    if ($@UnderMc < 20)
+        areamonster "070-1", 77, 20, 127, 100, "", 1140, 20-$@UnderMc, "HW2020 Mobs::OnDeath5";
+
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath6")+1;
+    if ($@UnderMc < 20)
+        areamonster "070-1", 130, 20, 170, 100, "", 1140, 20-$@UnderMc, "HW2020 Mobs::OnDeath6";
+
+    // TYPE 1143, SLAYER
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath7")+1;
+    if ($@UnderMc < 20)
+        areamonster "070-1", 20, 20, 75, 100, "", 1143, 20-$@UnderMc, "HW2020 Mobs::OnDeath7";
+
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath8")+1;
+    if ($@UnderMc < 20)
+        areamonster "070-1", 77, 20, 127, 100, "", 1143, 20-$@UnderMc, "HW2020 Mobs::OnDeath8";
+
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath9")+1;
+    if ($@UnderMc < 20)
+        areamonster "070-1", 130, 20, 170, 100, "", 1143, 20-$@UnderMc, "HW2020 Mobs::OnDeath9";
+
+    // GUARDIANS
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath10")+1;
+    if ($@UnderMc < 3)
+        areamonster "070-1", 132, 30, 140, 36, "", 1147, 3-$@UnderMc, "HW2020 Mobs::OnDeath10";
+
+    set $@UnderMc, mobcount("070-1", "HW2020 Mobs::OnDeath11")+1;
+    if ($@UnderMc < 1)
+        areamonster "070-1", 134, 32, 135, 34, "", 1146, 1, "HW2020 Mobs::OnDeath10";
+
+    /////////////////////////////////////////////////////////////////////////
+    // Tulimshar Controller
+
+    // Done
+    set $@UnderMc, 0;
+    end;
+
+// Labels
+OnDeath0:
+    end;
+OnDeath1:
+    end;
+OnDeath2:
+    end;
+OnDeath3:
+    end;
+OnDeath4:
+    end;
+OnDeath5:
+    end;
+OnDeath6:
+    end;
+OnDeath7:
+    end;
+OnDeath8:
+    end;
+OnDeath9:
+    end;
+OnDeath10:
+    end;
+OnDeath11:
+    end;
+OnDeath12:
+    end;
+
+OnTimer30000:
+    // Check every JackO
+    set $@HW2020_CNT, 0;
+    set $@JACKOID, 0; callfunc "HocusJackO";
+    set $@JACKOID, 1; callfunc "HocusJackO";
+    set $@JACKOID, 2; callfunc "HocusJackO";
+    set $@JACKOID, 3; callfunc "HocusJackO";
+    set $@JACKOID, 4; callfunc "HocusJackO";
+    set $@JACKOID, 5; callfunc "HocusJackO";
+    set $@JACKOID, 6; callfunc "HocusJackO";
+    set $@JACKOID, 7; callfunc "HocusJackO";
+    set $@JACKOID, 8; callfunc "HocusJackO";
+    set $@JACKOID, 9; callfunc "HocusJackO";
+    set $@JACKOID, 10; callfunc "HocusJackO";
+    set $@JACKOID, 11; callfunc "HocusJackO";
+    set $@JACKOID, 12; callfunc "HocusJackO";
+
+    // Check if portal is to be active
+    if ($@HW2020_CNT >= 13)
+        goto L_Active;
+
+    // Janitor
+    set $@HW2020_CNT, 0;
+    initnpctimer;
+    end;
+
+L_Active:
+    mapannounce "003-1", "##1There is a loud sound coming from the Bazar.##0" , 0;
+    enablenpc "#HW2020Bazar";
+    stopnpctimer;
+    end;
+
+// Misc functions
+OnStopThere:
+    if (getx() > 66 || gety() > 62)
+        warp "003-1", 44, 61;
+    sendcollision "003-1", 1, 42, 62, 46, 64;
+    end;
+
+OnReward:
+    set $@HW2020_HOCUS, 4;
+    mes "[Jande]";
+    mes "Jande was rescued. Numa will take care of him until he recovers.";
+    mes "He struggled for words, but the time he spent there did a number on him.";
+    mes "";
+    mes "What Jande found out? Where is Zax De'Kagen?";
+    next;
+    mes ".:: DOOMSDAY ACT 5: THE FINAL BATTLE ::.";
+    mes "---- ----";
+    mes "INTERLUDE III: RESCUING JANDE";
+    mes "";
+    mes "Continues in ##BOctober 24th, 17:30 UTC##b";
+    mes "##1The Final Snapshot will happen at October 31st.##0";
+    next;
+    // Reward
+    set @rand, rand(7);
+    if (@rand == 0)
+        getitem "Eyepatch", 1; // Classic from HW and Christmas (10% chance)
+    if (@rand == 1)
+        getitem "MoubooHead", 1; // Replaced from: Circlet
+    if (@rand == 2)
+        getitem "Goggles", 1;
+    if (@rand == 3)
+        getitem "LeatherGoggles", 1;
+    if (@rand == 4)
+        getitem "SailorHat", 1; // Replaced from: Pirate Hat (Rarity)
+    if (@rand == 5)
+        getitem "SkullMask", 1;
+    if (@rand == 6)
+        getitem "FaceMask", 1; // Actually Christmas
+    warp "009-1", 52, 40;
+    message strcharinfo(0), "Numa : Thanks for helping. I know it is not much, but here is a reward for you.";
+    close;
+
+}
+
+
+////////////////////////////////////////////////
+// Return gate
+003-1,142,18,0|script|To Underworld|400,1,0
+{
+    end;
+OnTouch:
+    if ($DOOMSDAY != 3) end;
+    if ($DOOMSDAY_TJANDE == 1) end;
+    if (!$@halloween_time) end;
+
+    warp "070-1", 134, 30;
+    close;
+
+OnInit:
+    if ($DOOMSDAY != 3)
+        disablenpc "To Underworld";
+    end;
+}
+
+
+////////////////////////////////////////////////
+003-1,44,64,0|script|#HW2020ActionLess|400,3,0
+{
+    end;
+OnTouch:
+    if ($@HW2020_HOCUS == 2 || $@HW2020_HOCUS == 3)
+        warp "070-1", 0, 0;
+    end;
+}
+
+003-1,44,40,0|script|#HW2020Bazar|424,0,0
+{
+    close;
+
+OnTouch:
+    if ($@HW2020_HOCUS == 0)
+        goto L_Ambush;
+    if ($@HW2020_HOCUS == 1)
+        end;
+    if ($@HW2020_HOCUS == 2)
+        goto L_Check;
+    if ($@HW2020_HOCUS == 3)
+        end;
+    warp "009-1", 52, 40;
+    end;
+
+// TODO
+L_Ambush:
+    set $@HW2020_HOCUS, 1;
+    mapannounce "003-1", "What, did you thought it would be so easy?" , 0;
+    addnpctimer 3000, "#HW2020Bazar::OnAmbush1";
+    end;
+
+OnAmbush1:
+    mapannounce "003-1", "Hahaha! I am the self-proclaimed sovereign of the underworld..." , 0;
+    addnpctimer 3000, "#HW2020Bazar::OnAmbush2";
+    end;
+
+OnAmbush2:
+    mapannounce "003-1", "...THE LOST! Return to where you come from!!" , 0;
+    // Boss and his shrooms
+    monster "003-1", 44, 40, "", 1073, 1, "HW2020 Mobs::OnDeath1";
+    areamonster "003-1", 20, 20, 60, 60, "", 1106, 12, "HW2020 Mobs::OnDeath2";
+    // Collection of nearly every monster you saw thus far :>
+    areamonster "003-1", 20, 25, 60, 40, "", 1096, 8, "HW2020 Mobs::OnDeath3";
+    areamonster "003-1", 20, 25, 60, 40, "", 1036, 6, "HW2020 Mobs::OnDeath4";
+    areamonster "003-1", 20, 20, 60, 35, "", 1103, 6, "HW2020 Mobs::OnDeath5";
+    areamonster "003-1", 20, 20, 60, 35, "", 1045, 4, "HW2020 Mobs::OnDeath6";
+    areamonster "003-1", 20, 20, 60, 30, "", 1022, 2, "HW2020 Mobs::OnDeath7";
+    areamonster "003-1", 20, 20, 60, 30, "", 1075, 2, "HW2020 Mobs::OnDeath8";
+    areamonster "003-1", 20, 20, 60, 40, "", 1074, 2, "HW2020 Mobs::OnDeath9";
+    areamonster "003-1", 20, 20, 60, 40, "", 1124, 2, "HW2020 Mobs::OnDeath10";
+    set $@HW2020_HOCUS, 2;
+    areatimer 0, "003-1", 18, 18, 150, 100, 10, "HW2020 Mobs::OnStopThere";
+    initnpctimer;
+    end;
+
+L_Check:
+    set @TulimMc, mobcount("003-1", "HW2020 Mobs::OnDeath1")+1;
+    if (@TulimMc)
+        goto L_Reaper;
+
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath2")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath3")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath4")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath5")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath6")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath7")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath8")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath9")+1;
+    set @TulimMc, @TulimMc+mobcount("003-1", "HW2020 Mobs::OnDeath10")+1;
+
+    if (@TulimMc)
+        goto L_NotReady;
+
+    goto L_Finish;
+
+L_Reaper:
+    message strcharinfo(0), "The Lost : Hahaha! Don't you think I can't see you!";
+    set @TulimMc, 0;
+    end;
+
+L_NotReady:
+    message strcharinfo(0), strcharinfo(0) + " : I can still count "+@TulimMc+" monsters which need to be defeated first.";
+    set @TulimMc, 0;
+    end;
+
+L_Finish:
+    set $@HW2020_HOCUS, 3;
+    announce "Doomsday : Jande has been rescued from the Underworld." , 0;
+    mapannounce "003-1", "The Lost : To be defeated... You should all get lost here forever..." , 0;
+    areatimer 0, "003-1", 18, 18, 66, 62, 2000, "HW2020 Mobs::OnReward";
+    stopnpctimer;
+    end;
+
+OnInit:
+    disablenpc "#HW2020Bazar";
+    end;
+
+// Players defeated? :(
+OnTimer5000:
+    if (getmapusers("003-1") < 1)
+        goto L_Janitor;
+    initnpctimer;
+    end;
+
+L_Janitor:
+    killmonster "003-1", "All";
+    set $@HW2020_HOCUS, 0;
+    cleararray $@HW2020_SLAIN, 0, 20;
+    cleararray $@HW2020_TIMER, 0, 20;
+    enablenpc "JackO#Tybalt";
+    enablenpc "JackO#Nicolas";
+    enablenpc "JackO#Elanore";
+    enablenpc "JackO#Aisha";
+    enablenpc "JackO#Nina";
+    enablenpc "JackO#Ian";
+    enablenpc "JackO#Luca";
+    enablenpc "JackO#Ekinu";
+    enablenpc "JackO#Ryan";
+    enablenpc "JackO#Neko";
+    enablenpc "JackO#Ishi";
+    enablenpc "JackO#Sandra";
+    enablenpc "JackO#Vincent";
+    disablenpc strnpcinfo(0);
+    stopnpctimer;
+    end;
+}
+
+////////////////////////////////////////////////
+// Hocus Campaign Main Function
+// HocusCampaign( @JACKOID )
+// Use getmap(), getx() and gety() for spawn centering
+// OnBegin:
+// $@HW2020_SLAIN[ JACKOID ] = False
+// $@HW2020_TIMER[ JACKOID ] = gettimetick(2)
+// Have HW2020 Mobs timer controlling all of them (runs every minute for expire)
+// OnFinish:
+// $@HW2020_SLAIN[ JACKOID ] = True
+// Timer NOT updated!!
+function|script|HocusCampaign
+{
+    if (@JACKOID < 1)
+        goto L_Return;
+
+    set @JACKOID, @JACKOID-1;
+
+    if ($@HW2020_TIMER[@JACKOID] > gettimetick(2))
+        goto L_Check;
+
+    mes "[Jack O]";
+    mes "Hohoho... I am the JackO who curses this lost soul.";
+    mes "Do you want to free this person? Defeat meeeeee....";
+    next;
+    mes "[Jack O]";
+    mes "Hohoho... Prove your worth, defeat meeeeee....";
+    mes "Slay all my minions, can you prove yourself to meeeeee....?";
+    next;
+    mes "##3.:: Mission Goals ::.##0";
+    mes "1. Defeat all monsters spawned by JackO";
+    mes "2. Talk to JackO after this to lift the curse";
+    mes "3. Once all 13 NPCs curse is lifted, go to ?????";
+    mes "";
+    mes "##1Time Limit: 30 minutes since first JackO monster spawn.";
+    next;
+    menu
+        "Bring it on!", L_Begin,
+        "Not now!", L_Abort;
+
+L_Begin:
+    if ($@HW2020_TIMER[@JACKOID] > gettimetick(2))
+        goto L_Return;
+
+    // Assign timer, set JackO to ACTIVE
+    set $@HW2020_SLAIN[@JACKOID], 0;
+    set $@HW2020_TIMER[@JACKOID], gettimetick(2)+1800;
+
+    // Define mob id
+    if (@JACKOID % 8 == 0)
+        set @mobID, 1096; // Soul Snake
+    if (@JACKOID % 8 == 1)
+        set @mobID, 1036; // Zombie
+    if (@JACKOID % 8 == 2)
+        set @mobID, 1103; // Witch Guard
+    if (@JACKOID % 8 == 3)
+        set @mobID, 1045; // Fallen
+    if (@JACKOID % 8 == 4)
+        set @mobID, 1022; // JackO
+    if (@JACKOID % 8 == 5)
+        set @mobID, 1075; // Stalker
+    if (@JACKOID % 8 == 6)
+        set @mobID, 1074; // Red Bone
+    if (@JACKOID % 8 == 7)
+        set @mobID, 1124; // Wight
+
+    // Define mob amount
+    set @mobAM, 8; // Default
+    if (@JACKOID % 8 == 0)
+        set @mobAM, 12; // Soul Snake must be more
+    if (@JACKOID % 8 >= 4)
+        set @mobAM, 6; // Stalker, JackO, Red and Wigh must be less
+
+    // Spawn the Monsters
+    areamonster "003-1", getx()-10, gety()-10, getx()+10, gety()+10, "", @mobID, @mobAM, "HW2020 Mobs::OnDeath"+@JACKOID;
+
+    // Announce
+     mapannounce "003-1", "JackO : Hohoho... You cannot defeat meeeee!" , 0;
+
+    // Clear temporary variables
+    set @mobID, 0;
+    set @mobAM, 0;
+    close2;
+    return;
+
+L_Abort:
+    close2;
+    return;
+
+L_Check:
+    // Count Monsters
+    set @TulimMc, mobcount("003-1", "HW2020 Mobs::OnDeath"+@JACKOID)+1;
+    if (@TulimMc)
+        goto L_Information;
+
+    // Disable JackO here, the script will catch that
+    set $@HW2020_SLAIN[@JACKOID], 1;
+
+    mes "[JackO]";
+    mes "Hohoho... We'll meet againnnnnnnn!";
+    donpcevent "HW2020 Mobs::OnTimer30000";
+    close2;
+    return;
+
+L_Information:
+    message strcharinfo(0), "JackO : Hohoho... Still "+@TulimMc+" monsters alive... Defeat meeeeee.....!";
+    set @TulimMc, 0;
+    return;
+
+L_Return:
+    return;
+
+}
+
+////////////////////////////////////////////////
+// JackOs (13 JackOs)
+003-1,26,73,0|script|JackO#Tybalt|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 1;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,101,31,0|script|JackO#Nicolas|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 2;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,38,66,0|script|JackO#Elanore|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 3;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,56,70,0|script|JackO#Aisha|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 4;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,119,33,0|script|JackO#Nina|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 5;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,32,30,0|script|JackO#Ian|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 6;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,113,43,0|script|JackO#Luca|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 7;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,47,79,0|script|JackO#Ekinu|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 8;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,38,79,0|script|JackO#Ryan|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 9;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,53,45,0|script|JackO#Neko|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 10;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,54,51,0|script|JackO#Ishi|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 11;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,71,61,0|script|JackO#Sandra|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 12;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+003-1,136,35,0|script|JackO#Vincent|133
+{
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    set @JACKOID, 13;
+    callfunc "HocusCampaign";
+    if ($@HW2020_SLAIN[@JACKOID])
+        disablenpc strnpcinfo(0);
+    set @JACKOID, 0;
+    close;
+}
+
+057-1,126,63,0|script|#HW2020Shroom|400
+{
+    // Halloween only
+    if (!$@halloween_time) end;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    mes "This is a strange mushroom.";
+    mes "Seeing it makes you feel like saying";
+    mes "##B" + get(.invocation$, "alonsialonso") + "##b";
+    next;
+    mes "This never happened before. Must be halloween.";
+    mes "I should be careful, it could be related to [@@666|@@]!";
+    next;
+    mes "##9HINT: Use the spell only in the precise area of interest.##0";
+    mes "##9Side effects of spell misuse includes and are not limited to:##0";
+    mes "##9death, warp, heal and/or item loss.##0";
+    mes "";
+    mes "##9The spell will cease to function once Halloween is over.##0";
+    close;
+}
+
+070-1,134,30,0|script|#HW2020Chapel|400
+{
+    // Halloween only
+    if (!$@halloween_time) end;
+    callfunc "PCtoNPCRange";
+    if(@npc_check) end;
+    mes "Past this door lies the crypt where Tormenta was supposed to be.";
+    mes "I really should not lock myself up in a place where I cannot leave.";
+    next;
+    mes "It should be safe to try the following on the door:";
+    mes "##B" + get(.invocation$, "alonsialonso") + "##b";
+    // NOTE: This door should lead to 070-3, Abyss/Reaper Room.
+    // Players from TMW Hardcore would know.
+    close;
+}
+

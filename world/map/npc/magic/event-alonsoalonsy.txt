@@ -1,0 +1,137 @@
+// #alonsialonso
+// Replacement of Easter 2010 spell
+// Known as "World Shift Spell"
+//
+// Variables:
+// @alonso -> Nods to DoomsdayAct5() that you'll pay in petals
+
+-|script|alonsialonso|32767
+{
+    if (call("magic_checks", 1)) end;
+    callfunc "magic_exp";
+
+    // Not during Act 5 of Doomsday
+    if ($DOOMSDAY != 3) end;
+
+    // Rule 1: Mushroom Spot
+    if (isin("057-1", 125, 62, 127, 64))
+        goto L_ShroomRule;
+
+    // Rule 2: Underworld Chapel
+    if (isin("070-1", 134, 30, 134, 30))
+        goto L_ChapelRule;
+
+    // Rule 3: Tulimshar MMVI
+    //if (isin("003-1", 42, 92, 46, 95))
+    //    goto L_TulimRule;
+
+    // General rule: Simulate death
+    if (countitem("DarkPetal"))
+        goto L_EmulateDeath;
+
+    message strcharinfo(0), "You cannot shift worlds at this time.";
+    end;
+
+//////////////////////////////////////////////////////
+L_ShroomRule:
+    if (!$@halloween_time) end;
+    if (!$DOOMSDAY_TWARP) end;
+    if ($DOOMSDAY_TJANDE == 1) end;
+
+    mes ".:: Eternal Seals Gate ::.";
+    mes "";
+    mes "One of the many (?) passages leading to the Underworld.";
+    mes "During halloween, it is weakened enough to allow beings to cross.";
+    mes "Perhaps it could be widened?";
+    next;
+    menu
+        "Leave", L_Close,
+        "[Dark Magic] Check Status", L_ShroomCheck,
+        "[Dangerous] Try to cross", L_ShroomCross;
+
+L_ShroomCheck:
+    if (getskilllv(SKILL_MAGIC_DARK) > 0)
+        mes "Status: "+if_then_else($DOOMSDAY_CNT2 < 150,
+        "##1Insufficient##0", "##2Sufficient##0")+
+        if_then_else(getskilllv(SKILL_MAGIC_DARK) > 1,
+        " ("+($DOOMSDAY_CNT2*100/150)+" %)", "");
+    else
+        mes "Status: ##8Unknown##0";
+    close;
+
+L_ShroomCross:
+    if ($DOOMSDAY_CNT2 < 150)
+        goto L_FailCross;
+    if (Hp < 1)
+        close;
+
+    // Warp you to Underworld
+    warp "070-1", 30, 92;
+    message strcharinfo(0), "World Shift : Shifted to Underworld (Area 70)";
+    misceffect FX_PENTAGRAM_BUILDUP, strcharinfo(0);
+    close;
+
+//////////////////////////////////////////////////////
+L_ChapelRule:
+    if ($DOOMSDAY_TJANDE == 1) end;
+    if (!$@halloween_time) end;
+
+    mes ".:: Eternal Seals Gate ::.";
+    mes "";
+    mes "This chapel is clearly unlocked.";
+    mes "The lock seems to have been removed ##BOn purpose, from the outside.##b";
+    mes "This is probably where Tormenta lives.";
+    next;
+    mes "##9Warning: This is the Underworld and it may defy common logic.";
+    mes "Are you ready?##0";
+    mes "##1Cost: 1x [@@666|@@]";
+    next;
+    menu
+        "Cancel", L_Close,
+        "Open the gate!", L_GateCheck;
+
+L_GateCheck:
+    if (!(countitem("BlackRose")))
+        close;
+
+    close2;
+    misceffect FX_PENTAGRAM_BUILDUP, strcharinfo(0);
+    addtimer 6000, "alonsialonso::OnChapelCross";
+    end;
+
+OnChapelCross:
+    if (Hp < 1)
+        end;
+    if (!(countitem("BlackRose")))
+        end;
+
+    // Payment Execution
+    delitem "BlackRose", 1;
+    getitem "DarkPetal", 1;
+
+    // Warp you to Tulimshar MMVI
+    warp "003-1", 142, 22;
+    message strcharinfo(0), "World Shift : Shifted to Tulimshar (Area MMVI)";
+    misceffect FX_PENTAGRAM_BUILDUP, strcharinfo(0);
+    end;
+
+//////////////////////////////////////////////////////
+L_EmulateDeath:
+    set @alonso, 1;
+    callfunc "DoomsdayAct5";
+    end;
+
+L_Close:
+    close;
+
+L_FailCross:
+    warp "045-1", 105, 125;
+    close;
+
+//////////////////////////////////////////////////////
+OnInit:
+    set .invocation$, chr(MAGIC_SYMBOL) + "alonsialonso"; // used in npcs that refer to this spell
+    registercmd .invocation$, strnpcinfo(0);
+    end;
+}
+

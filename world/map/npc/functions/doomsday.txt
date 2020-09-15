@@ -38,6 +38,9 @@ function|script|DoomsdayDebug
     mes "";
     mes "Act 5:";
     mes "Warp to fake Keshlam? "+if_then_else($DOOMSDAY_TWARP, "No", "Yes");
+    mes "Jande was rescued? "+if_then_else($@HW2020_HOCUS > 2, "Yes", "No");
+    mes "Jande has recovered? "+if_then_else($DOOMSDAY_TJANDE, "Yes", "No");
+    mes "$DOOMSDAY_CNT2: "+$DOOMSDAY_CNT2;
     mes "Vanilla Mode? "+if_then_else($DOOMSDAY_VANILLA, "Yes", "No");
     //($DOOMSDAY_SUMMON ? "Yes" : "No");
     next;
@@ -59,8 +62,9 @@ function|script|DoomsdayDebug
         "[2][4][3] Council - Blue Sage's Residence",L_NivalCouncil,
         "[2][4][4] Toggle Zealite Upgrade",L_Zealite,
         "[3][5][0] Keshlam Warps",L_Keshlam,
-        "[3][5][1] Kage's Final Battle",L_Kage,
-        "[3][5][2] Vanilla Mode",L_Vanilla,
+        "[3][5][1] Rescuing Jande",L_Jande,
+        "[3][5][2] Kage's Final Battle",L_Kage,
+        "[3][5][3] Vanilla Mode",L_Vanilla,
         "[-] Close",L_Close;
 
 L_Close:
@@ -183,10 +187,16 @@ L_Keshlam:
     gmlog strcharinfo(0) + " changed doomsday warp to Keshlam Maze";
     return;
 
-L_Kage:
+L_Jande:
     set $DOOMSDAY_TWARP, 1;
     donpcevent "Doomsday::OnJanitor"; // TODO
     gmlog strcharinfo(0) + " changed doomsday warp to Abandoned Building";
+    return;
+
+L_Kage:
+    set $DOOMSDAY_TJANDE, 1;
+    donpcevent "Doomsday::OnJanitor"; // TODO
+    gmlog strcharinfo(0) + " changed Jande from MIA to ACT. Final battle begun.";
     return;
 
 L_Vanilla:
@@ -239,6 +249,10 @@ OnJanitor:
     // Act 5: Cleanup
     if ($DOOMSDAY == 3 && !$DOOMSDAY_TWARP)
         donpcevent "Keshlam Maze::OnInit"; // Spawn monsters if needed
+    if ($DOOMSDAY != 3)
+        disablenpc "To Underworld";
+    if ($DOOMSDAY == 3)
+        enablenpc "To Underworld";
     // Clear timers
     setnpctimer 0;
     stopnpctimer;
@@ -1293,18 +1307,41 @@ function|script|DoomsdayAct5
         goto L_WaitRoom;
     if (getmap() == "099-1" || getmap() == "099-2" || getmap() == "099-3" || getmap() == "099-4" || getmap() == "099-6")
         goto L_WarpOut;
-    if (countitem("BlackRose"))
+    // Iilia, Candor, Botcheck, etc.
+    if (getmapflag(getmap(), MF_NOSAVE))
+        goto L_Return;
+    // Anywhere else is fine
+    if (countitem("BlackRose") || @alonso)
         goto L_WarpTo;
     goto L_Return;
 
 L_WarpTo:
-    delitem "BlackRose", 1;
-    getitem "DarkPetal", 1;
     heal 100000, 10000;
     if ($DOOMSDAY_TWARP == 0)
         goto L_KeshlamMaze;
-    else
+    if ($DOOMSDAY_TJANDE == 1)
         goto L_KeshlamAbandoned;
+    if (!@alonso)
+        message strcharinfo(0), "The Black Rose did a miracle! Failed to die!";
+    else
+        message strcharinfo(0), "World Shift : Shifted to full health";
+    // Ops, nowhere to go!
+    goto L_Payment;
+
+L_Payment:
+    if (@alonso)
+        goto L_PayAlonso;
+    goto L_PayNormal;
+
+L_PayAlonso:
+    delitem "DarkPetal", 1;
+    set @alonso, 0;
+    return;
+
+L_PayNormal:
+    delitem "BlackRose", 1;
+    if (rand(5) < 3)
+        getitem "DarkPetal", 1;
     return;
 
 L_WarpOut:
@@ -1341,11 +1378,11 @@ L_KeshlamMaze:
         warp "099-8", 23, 378;
     else
         warp "099-8", 379, 378;
-    return;
+    goto L_Payment;
 
 L_KeshlamAbandoned:
     warp "099-1", 34, 34;
-    return;
+    goto L_Payment;
 }
 
 009-1,30,43,0|script|Chest#DarkRose|111
