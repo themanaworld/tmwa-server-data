@@ -297,10 +297,39 @@ OnTouch:
         goto L_Check;
     if ($@HW2020_HOCUS == 3)
         end;
-    warp "009-1", 52, 40;
-    end;
+    // GM Special Menu
+    if (GM < G_GM)
+        warp "009-1", 52, 40;
+    if (GM < G_GM)
+        end;
+    goto L_GMMenu;
 
-// TODO
+// GM Menu
+L_GMMenu:
+    mes "This event is already over.";
+    mes "However, you are a Game Master.";
+    mes "Do you want to allow the battle to happen again?";
+    next;
+    menu
+        "No, I was trying to get to Hurns", L_GMNo,
+        "YES, BEGIN THE AMBUSH", L_GMYes,
+        "No, it was an accident.", L_GMCancel;
+
+L_GMYes:
+    set $@HW2020_HOCUS, 0;
+    gmlog strcharinfo(0) + " has reset Halloween 2020 Battle.";
+    mes "* BEEEEEEEP *";
+    mes "##9(Talk to portal again to ambush)##0";
+    close;
+
+L_GMNo:
+    warp "009-1", 52, 40;
+    close;
+
+L_GMCancel:
+    close;
+
+// Main Event
 L_Ambush:
     set $@HW2020_HOCUS, 1;
     mapannounce "003-1", "What, did you thought it would be so easy?" , 0;

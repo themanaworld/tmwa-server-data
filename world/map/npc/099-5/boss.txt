@@ -81,6 +81,7 @@
 //     256          - DEFCON 7 MELEE REGEN
 //     512          - DEFCON 8 GP COST
 //     1024         - DEFCON
+// NOTE: Personal score overflows at 214,000 points
 
 099-5|mapflag|nosave|099-3,72,74
 099-5|mapflag|resave|099-3,72,74
@@ -126,6 +127,9 @@ OnMTChallenge:
     getexp 40000, 0;
     set BOSS_POINTS, BOSS_POINTS + 5;
     message strcharinfo(0), "This battle experience distribution is different, and death is final. Be careful!";
+    // Give everyone some participation points simply for continued survival
+    set @dd5_score, 1000;
+    set $@DD5_PTS, $@DD5_PTS+1000;
     end;
 
 // FIXME not working for some reason
@@ -350,13 +354,13 @@ OnBlissOblivion:
     if ($@DD5_HP < 10000 && $@DD5_DEFCON > 2)
         set $@DD5_DEFCON, rand(0, 8);
     areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTBlissOblivion";
-    setnpctimer 89000;
+    setnpctimer 119000;
     end;
 
 ////////////////////////////
 // Miniboss Spawning
 OnMTWarning:
-    misceffect 51, strcharinfo(0);
+    misceffect 54, strcharinfo(0);
     end;
 
 OnMTMusicOn:
@@ -451,7 +455,7 @@ OnPrologue4:
 OnRubberBat:
     if ($@DD5_STATUS != 3)
         end;
-    areamonster getmap(), getx()-5, gety()-5, getx()+5, gety()+5, "", 1155, rand(2,4), "#TMWFinalExam::OnKillWeak";
+    areamonster getmap(), getx()-5, gety()-5, getx()+5, gety()+5, "", 1155, rand(1,2), "#TMWFinalExam::OnKillWeak";
     addtimer 10, "Zax De'Kagen#0::OnAdjustBat";
     end;
 
@@ -608,7 +612,7 @@ OnShowdown5:
 
 OnShowdown6:
     set $@DD5_STATUS, 7;
-    set $@DD5_HP, 120000;
+    set $@DD5_HP, 115000;
     set $@DD5_PRIMARY, 3+getmapusers("099-5")*2;
     set $@DD5_SUPPORT, 3+getmapusers("099-4")*2;
     set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
@@ -955,7 +959,7 @@ OnTimer30000:
         areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
     end;
 
-OnTimer60000:
+OnTimer75000:
     // Imperial Chamber
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_PRIMARY/3+1, "#TMWFinalExam::OnKillAverage";
     // Map
@@ -966,16 +970,16 @@ OnTimer60000:
         areamonster "099-5", 20, 20, 75, 75, "", 1151, $@DD5_TOTALPC, "#TMWFinalExam::OnKillAverage";
     end;
 
-// Warn players about the 90s rule closing in
+// Warn players about the 110s rule closing in
 // They'll have 10 seconds to prepare themselves to the mini-boss spawn!
 // AND to get ready to the boss HP regeneration (which is small but anyway)
-OnTimer80000:
+OnTimer104000:
     areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTWarning";
     end;
 
-OnTimer90000:
+OnTimer120000:
     // Imperial Chamber
-    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], $@DD5_PRIMARY/3, "#TMWFinalExam::OnKillStrong";
+    areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_STRONG[rand(getarraysize($@DD5MB_STRONG))], max(3, 1+$@DD5_PRIMARY/3), "#TMWFinalExam::OnKillStrong";
     areamonster "099-5", 43, 44, 56, 55, "", $@DD5MB_BOSSLV[rand(getarraysize($@DD5MB_BOSSLV))], $@DD5_STATUS/2, "#TMWFinalExam::OnKillStrong";
     // Map
     set $@DD5_MOBC, $@DD5_TOTALPC/3+1;
@@ -1209,7 +1213,7 @@ function|script|FinalExamAttack
         set @dd5_dmg, @dd5_dmg*15/10;
 
     // Boss defense
-    set @dd5_dmg, @dd5_dmg*(11-$@DD5_STATUS)/10;
+    set @dd5_dmg, @dd5_dmg*(11-$@DD5_STATUS)/9;
 
     // Consider criticals (no defense disregard, though)
     if (@dd5_crit)
@@ -1556,7 +1560,7 @@ OnTimer24000:
     initnpctimer;
     disablenpc strnpcinfo(0);
     end;
-OnTimer80000:
+OnTimer90000:
     if ($@DD5_STATUS != 7)
         end;
     initnpctimer;
