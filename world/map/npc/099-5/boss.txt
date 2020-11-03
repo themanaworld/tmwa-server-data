@@ -83,10 +83,18 @@
 //     1024         - DEFCON
 // NOTE: Personal score overflows at 214,000 points
 
-099-5|mapflag|nosave|099-3,72,74
-099-5|mapflag|resave|099-3,72,74
-099-4|mapflag|nosave|099-3,72,74
-099-4|mapflag|resave|099-3,72,74
+099-5|mapflag|nosave|009-1,52,40
+099-5|mapflag|resave|009-1,52,40
+099-4|mapflag|nosave|009-1,52,40
+099-4|mapflag|resave|009-1,52,40
+
+// Additional mapflags
+099-3|mapflag|nosave|099-7,75,36
+099-3|mapflag|resave|099-7,75,36
+099-2|mapflag|nosave|099-7,75,36
+099-2|mapflag|resave|099-7,75,36
+099-1|mapflag|nosave|099-7,75,36
+099-1|mapflag|resave|099-7,75,36
 
 099-5,0,0,0|script|#TMWFinalExam|32767
 {
@@ -128,8 +136,8 @@ OnMTChallenge:
     set BOSS_POINTS, BOSS_POINTS + 5;
     message strcharinfo(0), "This battle experience distribution is different, and death is final. Be careful!";
     // Give everyone some participation points simply for continued survival
-    set @dd5_score, 1000;
-    set $@DD5_PTS, $@DD5_PTS+1000;
+    set @dd5_score, 1200;
+    set $@DD5_PTS, $@DD5_PTS+1200;
     end;
 
 // FIXME not working for some reason
@@ -249,7 +257,7 @@ OnMTFourthFall:
     end;
 
 OnFourthFall:
-    debugmes "FOURTH FALL";
+    //debugmes "FOURTH FALL";
 
     // High Damage
     if (sc_check(sc_raiseattackspeed0))
@@ -434,7 +442,7 @@ OnPrologue4:
     mapannounce "099-4", "Zax De'Kagen : Catch me if you can!" , 0;
     npctalk "Zax De'Kagen#0", "Catch me if you can!";
     set $@DD5_STATUS, 3;
-    set $@DD5_HP, 20000;
+    set $@DD5_HP, 20000+(getmapusers("099-5")*100);
     set $@DD5_PRIMARY, 5+getmapusers("099-5");
     set $@DD5_SUPPORT, 3+getmapusers("099-4");
     set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
@@ -528,10 +536,14 @@ OnWarmedUp5:
 
 OnWarmedUp6:
     set $@DD5_STATUS, 5;
-    set $@DD5_HP, 40000;
+    set $@DD5_HP, 40000+(getmapusers("099-5")*100);
     set $@DD5_PRIMARY, 1+getmapusers("099-5")*15/10;
     set $@DD5_SUPPORT, 1+getmapusers("099-4")*15/10;
     set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
+    // Spawn second wave
+    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_PRIMARY, "#TMWFinalExam::OnKillAverage";
+    areamonster "099-4", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_AVERAGE))], $@DD5_SUPPORT, "#TMWFinalExam::OnKillAverage";
+    // Begin timers
     initnpctimer;
     donpcevent "Xakelbael the Dark#0::OnEnable";
     areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTMusicOn";
@@ -612,11 +624,14 @@ OnShowdown5:
 
 OnShowdown6:
     set $@DD5_STATUS, 7;
-    set $@DD5_HP, 115000;
-    set $@DD5_PRIMARY, 3+getmapusers("099-5")*2;
-    set $@DD5_SUPPORT, 3+getmapusers("099-4")*2;
-    set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT;
+    set $@DD5_HP, 115000+(getmapusers("099-5")*100);
+    set $@DD5_PRIMARY, 3+getmapusers("099-5")*15/10;
+    set $@DD5_SUPPORT, 3+getmapusers("099-4")*15/10;
+    set $@DD5_TOTALPC, $@DD5_PRIMARY+$@DD5_SUPPORT-2;
+    areamonster "099-5", 20, 20, 75, 75, "", $@DD5MB_AVERAGE[rand(getarraysize($@DD5MB_WEAK))], $@DD5_PRIMARY, "#TMWFinalExam::OnKillWeak";
     initnpctimer;
+    set $@DD5_DEFCON, rand(4, 8);
+    areatimer 0, "099-5", 20, 20, 75, 75, 10, "#TMWFinalExam::OnMTBlissOblivion";
     donpcevent "Zax De'Kagen#0::OnFinal";
     end;
 
@@ -1016,7 +1031,7 @@ OnKillStrong:
 ///////////////////////////////////////////////////////////
 // Core
 OnInit:
-    setarray $@DD5MB_WEAK, 1155, 1156, 1155, 1156, 1155, 1156, 1157, 1158;
+    setarray $@DD5MB_WEAK, 1155, 1156, 1155, 1156, 1155, 1156, 1158;
     setarray $@DD5MB_AVERAGE, 1159, 1160, 1159, 1160, 1159, 1160, 1157, 1158;
     setarray $@DD5MB_STRONG, 1152, 1153, 1154, 1152, 1153, 1154, 1152, 1153, 1154;
     setarray $@DD5MB_BOSSLV, 1146, 1147, 1140, 1141, 1143, 1149, 1148, 1140;
@@ -1462,7 +1477,7 @@ OnPrompt:
     mes "";
     mes "Server Name: ##BThe Mana World##b";
     mes "Server Address: ##Bserver.themanaworld.org##b";
-    mes "Server Port: ##B6969##b";
+    mes "Server Port: ##BXXXX##b";
     mes "Server Type: ##BEvol2##b";
     mes "Server Description: ##BMain Server for The Mana World##b";
     mes "";
