@@ -1,0 +1,294 @@
+// The Mana World Scripts
+// Christmas 2020
+// (C) Jesusalva, Hocus, Ledmitz, toams, monwarez, jak1, Hello=) et. al., 2020
+// Licensed under the GPLv2 or later
+// XXmas is not a typo, "XX" is twenty and the year is twenty-twenty.
+
+034-1,0,0,0|script|XXmas0341|32767
+{
+    end;
+
+OnHit:
+    debugmes "Checking: Time "+$@xmas_time;
+    // Not Christmas yet
+    if (!$@xmas_time)
+        end;
+    debugmes "Checking: Reward Time "+$@xmas_reward_time;
+    // Reward time
+    if ($@xmas_time == $@xmas_reward_time)
+        end;
+    // player must be created at least two weeks ago
+    if ((BaseLevel < 30) || (gettimetick(2) - TUT_var < 2*7*86400))
+        end;
+    debugmes "Checking: Arrow "+getequipid(equip_arrow);
+    debugmes "Checking: Bow "+getequipid(equip_hand1);
+
+    // Not equipped to hunt Grinchboos
+    if (getequipid(equip_arrow) != 5260)
+        end;
+    if (getequipid(equip_hand1) != 5261)
+        end;
+
+    // Grinchboo slain
+    debugmes "Grinchboo slain: "+strcharinfo(0);
+    set XMAS2020, XMAS2020 + 1;
+    set $XMAS2020_BOO, $XMAS2020_BOO + 1;
+    debugmes "Local: "+XMAS2020;
+    debugmes "Global: "+$XMAS2020_BOO;
+    set @loop, 0;
+    set @rank, 0;
+    goto L_MaybeInsertNext;
+
+L_MaybeInsertNext:
+    if (XMAS2020 > $Record_XXmas_Kills[@rank])
+        goto L_InsertScore;
+    // you already had a better score
+    if (strcharinfo(0) == $Record_XXmas_Name$[@rank])
+        goto L_Reward1;
+    set @rank, @rank + 1;
+    if (@rank == MAX_HIGH_SCORES)
+        goto L_Reward1;
+    goto L_MaybeInsertNext;
+
+L_InsertScore:
+    set @loop, @rank;
+    goto L_FindLastScore;
+
+L_FindLastScore:
+    // comment this out to allow the player to be in the list more than once
+    // though actually, it might be better just to assume the list is full
+    if (strcharinfo(0) == $Record_XXmas_Name$[@loop])
+        goto L_MoveStuff;
+
+    set @loop, @loop + 1;
+    if (@loop == MAX_HIGH_SCORES)
+        goto L_MoveStuff;
+    goto L_FindLastScore;
+
+L_MoveStuff:
+    if (@loop == @rank)
+        goto L_FinallyInsertMe;
+    set $Record_XXmas_Kills[@loop], $Record_XXmas_Kills[@loop - 1];
+    set $Record_XXmas_Name$[@loop], $Record_XXmas_Name$[@loop - 1];
+    set $Record_XXmas_Date$[@loop], $Record_XXmas_Date$[@loop - 1];
+    set @loop, @loop - 1;
+    goto L_MoveStuff;
+
+L_FinallyInsertMe:
+    set $Record_XXmas_Kills[@rank], XMAS2020;
+    set $Record_XXmas_Name$[@rank], strcharinfo(0);
+    callfunc "time_stamp";
+    set $Record_XXmas_Date$[@rank], @ts_date$ + " " + @ts_time$;
+    set @ts_date$, "";
+    set @ts_time$, "";
+    goto L_Reward1;
+
+L_Reward1:
+    // Ehm, nothing to see here I guess
+    end;
+}
+
+// Scatter the grinchboos
+// Nivalis
+034-1,0,0,0,0|monster|Grinchboo|1162,20,100000ms,30000ms,XXmas0341::OnHit
+030-1,0,0,0,0|monster|Grinchboo|1162,7,100000ms,30000ms,XXmas0341::OnHit
+031-1,0,0,0,0|monster|Grinchboo|1162,2,100000ms,30000ms,XXmas0341::OnHit
+033-1,0,0,0,0|monster|Grinchboo|1162,5,100000ms,30000ms,XXmas0341::OnHit
+019-1,0,0,0,0|monster|Grinchboo|1162,2,100000ms,30000ms,XXmas0341::OnHit
+// Thermin
+045-1,0,0,0,0|monster|Grinchboo|1162,10,100000ms,30000ms,XXmas0341::OnHit
+046-1,0,0,0,0|monster|Grinchboo|1162,8,100000ms,30000ms,XXmas0341::OnHit
+047-1,0,0,0,0|monster|Grinchboo|1162,6,100000ms,30000ms,XXmas0341::OnHit
+
+// Bring Santa back!!! With speeches from all previous events because I'M LAZY
+// Same place as he was in 2009, instead of his room in 030-2,197,62
+020-1,78,85,0|script|Santa|105
+{
+    if (Sex)
+        set @honorific$, "Young Hero";
+    if (!Sex)
+        set @honorific$, "Young Heroine";
+
+
+    // Not Christmas yet
+    if (!$@xmas_time)
+        goto L_PreXmas;
+    // Past Christmas
+    if ($@xmas_time == $@xmas_reward_time)
+        goto L_Reward;
+    // Already equipped, so...
+    if (countitem("SnowLauncher") > 0)
+        goto L_Doing;
+
+    // Begin exactly like it was in 2009
+    mes "[Santa Claus]";
+    mes "\"ho-hum ho-hum ho-hum, I'm sorry, "  + @honorific$ +  "  Not really in the Christmas spirit.";
+    mes "That Evil Jack Frost has stolen all the Christmas ornaments!";
+    mes "He will never get off the Naughty List!";
+    mes "How can we have Christmas without a proper Christmas tree?\"";
+    mes "\"The Elves are too depressed to work";
+    mes "Christmas will be ruined!\"";
+    next;
+    // But this is not 2009...
+    mes "[Santa Claus]";
+    mes "\"OOPS! That was Christmas 2009! We are in 2020, how could I forget? Ho! Ho! Ho!\"";
+    next;
+    mes "[Santa Claus]";
+    mes "\"But still! Can you believe Jack Frost turned all my Reinboos into Grinchboos?! Christmas will be ruined!\"";
+    next;
+    mes "[Santa Claus]";
+    mes "\"Say, Why don't you help me?";
+    mes "In fact, You are just the "  + @honorific$ + " I am looking for!\"";
+    mes "\"What do you say, will you help save Christmas?\"";
+    next;
+    menu
+        "I won't.", L_Close,
+        "How can I help?", L_Help;
+
+L_Help:
+    // player must be created at least two weeks ago
+    if ((BaseLevel < 30) || (gettimetick(2) - TUT_var < 2*7*86400))
+        goto L_Young;
+	mes "[Santa Claus]";
+	mes "\"Oh that is excellent news!";
+	mes "Thank you.\"";
+	mes "##9Santa shakes your hand with delight.##0";
+    next;
+    mes "[Santa Claus]";
+    mes "\"You see, if you hit the grinchboos with snowballs, they can be purified! (Don't ask me how it works, Christmas is weird this year!)\"";
+    next;
+    mes "[Santa Claus]";
+    mes "\"However, you cannot just throw snowballs at them. But I have the ideal tool for this task!\"";
+    next;
+    mes "[Santa Claus]";
+    mes "\"You can use this super ##BCandy-Caned Anti-Grinch-Rifle 2020™##b! Hit as many as you can! Ho ho ho!\"";
+    menu
+        "Many thanks, Santa!", L_Item,
+        "I already have one, I'll get to work!", L_Close;
+
+L_Young:
+    mes "[Santa]";
+    mes "\"That's a very friendly offer! But I don't think we need any help.\"";
+    goto L_Close;
+
+L_Item:
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Full;
+    getitem "SnowLauncher", 1;
+    mes "[Santa Claus]";
+    mes "\"Ho Ho Ho Merry Christmas!\"";
+    close;
+
+L_Close:
+    close;
+
+L_Full:
+    mes "[Santa Claus]";
+    mes "\"Your backpack seems to be full. You should get rid of some unused stuff before you get my gifts, or maybe try one super resistant red bag, my personal favorite! Hoh-hoh!\"";
+    close;
+
+L_PreXmas:
+    mes "[Santa Claus]";
+    mes "\"Ho, Ho... See you later " +@honorific$+ "!\"";
+    close;
+
+L_ShowRecord:
+    set @rank, 0;
+    set @loop, 0;
+    goto L_ShowNextRecord;
+
+L_ShowNextRecord:
+    if ($Record_XXmas_Kills[@loop] == 0)
+        goto L_Close;
+    mes (@loop + 1) + " - " + $Record_XXmas_Name$[@loop] + " - " + $Record_XXmas_Kills[@loop] + " Grinchboos saved at " + $Record_XXmas_Date$[@loop];
+    set @loop, @loop + 1;
+    if (MAX_HIGH_SCORES > 4 && (@loop % 5) == 0 && $Record_XXmas_Kills[@loop] > 0)
+        goto L_NextShowNextRecord;
+    goto L_ShowNextRecord;
+
+L_NextShowNextRecord:
+    next;
+    goto L_ShowNextRecord;
+
+L_Doing:
+    mes "[Santa]";
+    mes "\"Hello " + strcharinfo(0) + ". I heard about your efforts to help. I'm very happy to hear that.\"";
+    next;
+    menu
+        "I'll go back to work.", L_Close,
+        "What are current highscores?", L_ShowRecord;
+
+L_Done:
+    mes "[Santa]";
+    mes "\"Hello " + strcharinfo(0) + ". I heard about your efforts to help. I'm very happy to hear that.\"";
+    close;
+
+L_Reward:
+    if (XMAS2020 <= 0)
+        goto L_Done;
+    mes "[Santa Claus]";
+    mes "\"You are so generous! I believe I can give you one of the hats from this bag. I know you like these silly hats. Yes, Santa knows this kind of thing... Ho-Ho-Ho! Put your hand here and pick one hat...\"";
+    next;
+    getinventorylist;
+    if (@inventorylist_count > 95) goto L_Full;
+    set @rank, 0;
+    set @loop, 0;
+    goto L_FindRank;
+
+L_FindRank:
+    if (strcharinfo(0) == $Record_XXmas_Name$[@rank])
+        goto L_Continue;
+    set @rank, @rank + 1;
+    if (@rank == MAX_HIGH_SCORES)
+        goto L_Continue;
+    goto L_FindRank;
+
+L_Continue:
+    getinventorylist;
+    if (@inventorylist_count > 95) goto L_Full;
+    set XMAS2020, 0;
+    setarray @oldstock$, "PlushMouboo", "StickReinboo", "Doll", "LeatherBall", "SantaSnowGlobe", "SnowmanSnowGlobe", "RedOrnament", "YellowOrnament", "GreenOrnament", "AquaOrnament", "BlueOrnament", "MagentaOrnament";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    cleararray @oldstock$, "", getarraysize(@oldstock$);
+    if (@rank < 15)
+        goto L_Extra1;
+    close;
+
+// TOP 15 reward
+L_Extra1:
+    mes "[Santa Claus]";
+    mes "\"The official Christmas 2009 headgear!";
+    mes "Ho Ho Ho Merry Christmas!\"";
+    getitem "SnowGoggles", 1;
+    if (@rank < 10)
+        goto L_Extra2;
+    close;
+
+// TOP 10 reward
+L_Extra2:
+    setarray @oldstock$, "PlushMouboo", "StickReinboo", "Doll", "LeatherBall", "SantaSnowGlobe", "SnowmanSnowGlobe", "RedOrnament", "YellowOrnament", "GreenOrnament", "AquaOrnament", "BlueOrnament", "MagentaOrnament";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    cleararray @oldstock$, "", getarraysize(@oldstock$);
+    if (@rank < 5)
+        goto L_Extra3;
+    close;
+
+// TOP 5 reward
+L_Extra3:
+    setarray @oldstock$, "MoubooHead", "MushHat", "ChristmasElfHat", "FunkyHat", "ShroomHat", "ElfNightcap", "BowlerHat", "TopHat";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    cleararray @oldstock$, "", getarraysize(@oldstock$);
+    if (@rank < 2)
+        goto L_Extra4;
+    close;
+
+// TOP 2 reward
+L_Extra4:
+    setarray @oldstock$, "SantaBeardHat", "ChristmasTreeHat", "EyePatch", "AntlerHat";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    cleararray @oldstock$, "", getarraysize(@oldstock$);
+    close;
+
+}
+
+
