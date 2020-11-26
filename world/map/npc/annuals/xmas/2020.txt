@@ -9,19 +9,15 @@
     end;
 
 OnHit:
-    debugmes "Checking: Time "+$@xmas_time;
     // Not Christmas yet
     if (!$@xmas_time)
         end;
-    debugmes "Checking: Reward Time "+$@xmas_reward_time;
     // Reward time
     if ($@xmas_time == $@xmas_reward_time)
         end;
     // player must be created at least two weeks ago
     if ((BaseLevel < 30) || (gettimetick(2) - TUT_var < 2*7*86400))
         end;
-    debugmes "Checking: Arrow "+getequipid(equip_arrow);
-    debugmes "Checking: Bow "+getequipid(equip_hand1);
 
     // Not equipped to hunt Grinchboos
     if (getequipid(equip_arrow) != 5260)
@@ -30,11 +26,8 @@ OnHit:
         end;
 
     // Grinchboo slain
-    debugmes "Grinchboo slain: "+strcharinfo(0);
     set XMAS2020, XMAS2020 + 1;
     set $XMAS2020_BOO, $XMAS2020_BOO + 1;
-    debugmes "Local: "+XMAS2020;
-    debugmes "Global: "+$XMAS2020_BOO;
     set @loop, 0;
     set @rank, 0;
     goto L_MaybeInsertNext;
@@ -90,15 +83,15 @@ L_Reward1:
 
 // Scatter the grinchboos
 // Nivalis
-034-1,0,0,0,0|monster|Grinchboo|1162,20,100000ms,30000ms,XXmas0341::OnHit
-030-1,0,0,0,0|monster|Grinchboo|1162,7,100000ms,30000ms,XXmas0341::OnHit
-031-1,0,0,0,0|monster|Grinchboo|1162,2,100000ms,30000ms,XXmas0341::OnHit
-033-1,0,0,0,0|monster|Grinchboo|1162,5,100000ms,30000ms,XXmas0341::OnHit
-019-1,0,0,0,0|monster|Grinchboo|1162,2,100000ms,30000ms,XXmas0341::OnHit
+034-1,0,0,0,0|monster|Grinchboo|1162,14,100000ms,30000ms,XXmas0341::OnHit
+//030-1,0,0,0,0|monster|Grinchboo|1162,7,100000ms,30000ms,XXmas0341::OnHit
+//031-1,0,0,0,0|monster|Grinchboo|1162,2,100000ms,30000ms,XXmas0341::OnHit
+033-1,0,0,0,0|monster|Grinchboo|1162,5,100000ms,30000ms,XXmas0331::OnHit
+//019-1,0,0,0,0|monster|Grinchboo|1162,2,100000ms,30000ms,XXmas0341::OnHit
 // Thermin
-045-1,0,0,0,0|monster|Grinchboo|1162,10,100000ms,30000ms,XXmas0341::OnHit
-046-1,0,0,0,0|monster|Grinchboo|1162,8,100000ms,30000ms,XXmas0341::OnHit
-047-1,0,0,0,0|monster|Grinchboo|1162,6,100000ms,30000ms,XXmas0341::OnHit
+//045-1,0,0,0,0|monster|Grinchboo|1162,10,100000ms,30000ms,XXmas0341::OnHit
+046-1,0,0,0,0|monster|Grinchboo|1162,8,100000ms,30000ms,XXmas0461::OnHit
+047-1,0,0,0,0|monster|Grinchboo|1162,6,100000ms,30000ms,XXmas0471::OnHit
 
 // Bring Santa back!!! With speeches from all previous events because I'M LAZY
 // Same place as he was in 2009, instead of his room in 030-2,197,62
@@ -193,6 +186,9 @@ L_PreXmas:
     close;
 
 L_ShowRecord:
+    mes "[Santa Claus]";
+    mes "You have purified "+XMAS2020+" Grinchboos thus far.";
+    mes "All players have purified "+$XMAS2020_BOO+" Grinchboos in total.";
     set @rank, 0;
     set @loop, 0;
     goto L_ShowNextRecord;
@@ -221,7 +217,10 @@ L_Doing:
 L_Done:
     mes "[Santa]";
     mes "\"Hello " + strcharinfo(0) + ". I heard about your efforts to help. I'm very happy to hear that.\"";
-    close;
+    next;
+    menu
+        "Santa, you are the best!", L_Close,
+        "What were the highscores?", L_ShowRecord;
 
 L_Reward:
     if (XMAS2020 <= 0)
@@ -231,6 +230,8 @@ L_Reward:
     next;
     getinventorylist;
     if (@inventorylist_count > 95) goto L_Full;
+    mes "You have purified "+XMAS2020+" Grinchboos thus far.";
+    mes "All players have purified "+$XMAS2020_BOO+" Grinchboos in total.";
     set @rank, 0;
     set @loop, 0;
     goto L_FindRank;
@@ -291,4 +292,237 @@ L_Extra4:
 
 }
 
+
+
+////////////////////////////////
+033-1,0,0,0|script|XXmas0331|32767
+{
+    end;
+
+OnHit:
+    // Not Christmas yet
+    if (!$@xmas_time)
+        end;
+    // Reward time
+    if ($@xmas_time == $@xmas_reward_time)
+        end;
+    // player must be created at least two weeks ago
+    if ((BaseLevel < 30) || (gettimetick(2) - TUT_var < 2*7*86400))
+        end;
+
+    // Not equipped to hunt Grinchboos
+    if (getequipid(equip_arrow) != 5260)
+        end;
+    if (getequipid(equip_hand1) != 5261)
+        end;
+
+    // Grinchboo slain
+    set XMAS2020, XMAS2020 + 1;
+    set $XMAS2020_BOO, $XMAS2020_BOO + 1;
+    set @loop, 0;
+    set @rank, 0;
+    goto L_MaybeInsertNext;
+
+L_MaybeInsertNext:
+    if (XMAS2020 > $Record_XXmas_Kills[@rank])
+        goto L_InsertScore;
+    // you already had a better score
+    if (strcharinfo(0) == $Record_XXmas_Name$[@rank])
+        goto L_Reward1;
+    set @rank, @rank + 1;
+    if (@rank == MAX_HIGH_SCORES)
+        goto L_Reward1;
+    goto L_MaybeInsertNext;
+
+L_InsertScore:
+    set @loop, @rank;
+    goto L_FindLastScore;
+
+L_FindLastScore:
+    // comment this out to allow the player to be in the list more than once
+    // though actually, it might be better just to assume the list is full
+    if (strcharinfo(0) == $Record_XXmas_Name$[@loop])
+        goto L_MoveStuff;
+
+    set @loop, @loop + 1;
+    if (@loop == MAX_HIGH_SCORES)
+        goto L_MoveStuff;
+    goto L_FindLastScore;
+
+L_MoveStuff:
+    if (@loop == @rank)
+        goto L_FinallyInsertMe;
+    set $Record_XXmas_Kills[@loop], $Record_XXmas_Kills[@loop - 1];
+    set $Record_XXmas_Name$[@loop], $Record_XXmas_Name$[@loop - 1];
+    set $Record_XXmas_Date$[@loop], $Record_XXmas_Date$[@loop - 1];
+    set @loop, @loop - 1;
+    goto L_MoveStuff;
+
+L_FinallyInsertMe:
+    set $Record_XXmas_Kills[@rank], XMAS2020;
+    set $Record_XXmas_Name$[@rank], strcharinfo(0);
+    callfunc "time_stamp";
+    set $Record_XXmas_Date$[@rank], @ts_date$ + " " + @ts_time$;
+    set @ts_date$, "";
+    set @ts_time$, "";
+    goto L_Reward1;
+
+L_Reward1:
+    // Ehm, nothing to see here I guess
+    end;
+}
+
+046-1,0,0,0|script|XXmas0461|32767
+{
+    end;
+
+OnHit:
+    // Not Christmas yet
+    if (!$@xmas_time)
+        end;
+    // Reward time
+    if ($@xmas_time == $@xmas_reward_time)
+        end;
+    // player must be created at least two weeks ago
+    if ((BaseLevel < 30) || (gettimetick(2) - TUT_var < 2*7*86400))
+        end;
+
+    // Not equipped to hunt Grinchboos
+    if (getequipid(equip_arrow) != 5260)
+        end;
+    if (getequipid(equip_hand1) != 5261)
+        end;
+
+    // Grinchboo slain
+    set XMAS2020, XMAS2020 + 1;
+    set $XMAS2020_BOO, $XMAS2020_BOO + 1;
+    set @loop, 0;
+    set @rank, 0;
+    goto L_MaybeInsertNext;
+
+L_MaybeInsertNext:
+    if (XMAS2020 > $Record_XXmas_Kills[@rank])
+        goto L_InsertScore;
+    // you already had a better score
+    if (strcharinfo(0) == $Record_XXmas_Name$[@rank])
+        goto L_Reward1;
+    set @rank, @rank + 1;
+    if (@rank == MAX_HIGH_SCORES)
+        goto L_Reward1;
+    goto L_MaybeInsertNext;
+
+L_InsertScore:
+    set @loop, @rank;
+    goto L_FindLastScore;
+
+L_FindLastScore:
+    // comment this out to allow the player to be in the list more than once
+    // though actually, it might be better just to assume the list is full
+    if (strcharinfo(0) == $Record_XXmas_Name$[@loop])
+        goto L_MoveStuff;
+
+    set @loop, @loop + 1;
+    if (@loop == MAX_HIGH_SCORES)
+        goto L_MoveStuff;
+    goto L_FindLastScore;
+
+L_MoveStuff:
+    if (@loop == @rank)
+        goto L_FinallyInsertMe;
+    set $Record_XXmas_Kills[@loop], $Record_XXmas_Kills[@loop - 1];
+    set $Record_XXmas_Name$[@loop], $Record_XXmas_Name$[@loop - 1];
+    set $Record_XXmas_Date$[@loop], $Record_XXmas_Date$[@loop - 1];
+    set @loop, @loop - 1;
+    goto L_MoveStuff;
+
+L_FinallyInsertMe:
+    set $Record_XXmas_Kills[@rank], XMAS2020;
+    set $Record_XXmas_Name$[@rank], strcharinfo(0);
+    callfunc "time_stamp";
+    set $Record_XXmas_Date$[@rank], @ts_date$ + " " + @ts_time$;
+    set @ts_date$, "";
+    set @ts_time$, "";
+    goto L_Reward1;
+
+L_Reward1:
+    // Ehm, nothing to see here I guess
+    end;
+}
+
+047-1,0,0,0|script|XXmas0471|32767
+{
+    end;
+
+OnHit:
+    // Not Christmas yet
+    if (!$@xmas_time)
+        end;
+    // Reward time
+    if ($@xmas_time == $@xmas_reward_time)
+        end;
+    // player must be created at least two weeks ago
+    if ((BaseLevel < 30) || (gettimetick(2) - TUT_var < 2*7*86400))
+        end;
+
+    // Not equipped to hunt Grinchboos
+    if (getequipid(equip_arrow) != 5260)
+        end;
+    if (getequipid(equip_hand1) != 5261)
+        end;
+
+    // Grinchboo slain
+    set XMAS2020, XMAS2020 + 1;
+    set $XMAS2020_BOO, $XMAS2020_BOO + 1;
+    set @loop, 0;
+    set @rank, 0;
+    goto L_MaybeInsertNext;
+
+L_MaybeInsertNext:
+    if (XMAS2020 > $Record_XXmas_Kills[@rank])
+        goto L_InsertScore;
+    // you already had a better score
+    if (strcharinfo(0) == $Record_XXmas_Name$[@rank])
+        goto L_Reward1;
+    set @rank, @rank + 1;
+    if (@rank == MAX_HIGH_SCORES)
+        goto L_Reward1;
+    goto L_MaybeInsertNext;
+
+L_InsertScore:
+    set @loop, @rank;
+    goto L_FindLastScore;
+
+L_FindLastScore:
+    // comment this out to allow the player to be in the list more than once
+    // though actually, it might be better just to assume the list is full
+    if (strcharinfo(0) == $Record_XXmas_Name$[@loop])
+        goto L_MoveStuff;
+
+    set @loop, @loop + 1;
+    if (@loop == MAX_HIGH_SCORES)
+        goto L_MoveStuff;
+    goto L_FindLastScore;
+
+L_MoveStuff:
+    if (@loop == @rank)
+        goto L_FinallyInsertMe;
+    set $Record_XXmas_Kills[@loop], $Record_XXmas_Kills[@loop - 1];
+    set $Record_XXmas_Name$[@loop], $Record_XXmas_Name$[@loop - 1];
+    set $Record_XXmas_Date$[@loop], $Record_XXmas_Date$[@loop - 1];
+    set @loop, @loop - 1;
+    goto L_MoveStuff;
+
+L_FinallyInsertMe:
+    set $Record_XXmas_Kills[@rank], XMAS2020;
+    set $Record_XXmas_Name$[@rank], strcharinfo(0);
+    callfunc "time_stamp";
+    set $Record_XXmas_Date$[@rank], @ts_date$ + " " + @ts_time$;
+    set @ts_date$, "";
+    set @ts_time$, "";
+    goto L_Reward1;
+
+L_Reward1:
+    // Ehm, nothing to see here I guess
+    end;
+}
 
