@@ -38,6 +38,7 @@ function|script|magic_checks
     if(@_M_BLOCK) goto L_Blocked; // check if last debuff ended
     if(Hp < 1) goto L_Dead; // can not cast when dead
     if (MATK1 < 1 && .@nonmagic < 1) goto L_Greybar; // can not cast with a grey mana bar
+    if ($@xmas_time && $@xmas_time != $@xmas_reward_time) goto L_Christmas2020;
     return 0;
 
 L_Hidden:
@@ -59,6 +60,35 @@ L_Greybar:
 L_Login:
     smsg SMSG_FAILURE, "Magic: Impossible to cast for 10s after logging in.";
     return 5;
+
+L_Xmas2020:
+    smsg SMSG_FAILURE, "Magic: Jack Frost's magical powers prevented your summoning!";
+    return 6;
+
+
+L_Christmas2020:
+    if (gettime(7) != 2020)
+        goto L_Return;
+
+    // If it is not Astral nor Dark I don't really care
+    if (.school != SKILL_MAGIC_ASTRAL && .school != SKILL_MAGIC_DARK)
+        goto L_Return;
+
+    // TODO: Not all astral nor all dark magic are summons
+    // But I don't have that sort of fine grained control in TMWA
+    // So I must whitelist a few invocations and hope they cover everything
+    if (.invocation$ == "#asorm" || .invocation$ == "#anwiltyp" || .invocation$ == "#phlex")
+        goto L_Return;
+
+    // Not in burst time, so not really important?
+    // Actually, nevermind, that would not use snowball >__>
+
+    // Unallowed in the map
+    if (getmap() == "034-1" || getmap() == "033-1" || getmap() == "046-1" || getmap() == "047-1")
+        goto L_Xmas2020;
+
+    // Other map? Don't care
+    goto L_Return;
 
 L_Return:
     return 0;
