@@ -1,0 +1,40 @@
+-|script|@getexp|32767
+{
+    callfunc "argv_splitter";
+    set .@n$, if_then_else(@argv$[1] != "", "char", "") + "getexp";
+    if (GM < CMD_ZENY && GM < G_SYSOP) goto L_GM; // check if you can use it on self
+    set .@target_id, BL_ID;
+    if (@argv$[1] != "") set .@target_id, getcharid(3, @argv$[1]);
+    if (@argv$[1] != "" && !(isloggedin(.@target_id))) goto L_Failed; // do NOT fallback to self
+    if (@argv$[1] != "" && GM < CMD_CHARZENY && GM < G_SYSOP) goto L_GM; // when target is not self, use charzeny permission
+    set .@delta, @argv[0]; // ± exp
+
+    if (.@delta > .max_int) goto L_OutOfBounds;
+    if (!(attachrid(.@target_id))) goto L_Failed;
+    getexp .@delta, 0;
+    goto L_Success;
+
+L_OutOfBounds:
+    // XXX: maybe we could also take from other chars from the same accout?
+    message strcharinfo(0), .@n$+" : Impossible to proceed! This would cause the player to have less than 0 zeny or more than " + .max_int + ".";
+    end;
+
+L_Failed:
+    message strcharinfo(0), .@n$+" : Impossible to attach to the target player. Did you try putting the name in \"quotation marks\"?";
+    end;
+
+L_Success:
+    gmlog "@getexp " + @args$;
+    message strcharinfo(0), .@n$+" : The operation succeeded.";
+    end;
+
+L_GM:
+    message strcharinfo(0), .@n$+" : GM command is level "+ if_then_else(@argv$[1] != "", CMD_CHARZENY, CMD_ZENY) +", but you are level " + GM;
+    end;
+
+OnInit:
+    set .max_int,  2147483647; // max int32 value
+    registercmd chr(ATCMD_SYMBOL) + "getexp", strnpcinfo(0);
+    registercmd chr(ATCMD_SYMBOL) + "chargetexp", strnpcinfo(0);
+    end;
+}
