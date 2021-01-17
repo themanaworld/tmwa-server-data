@@ -1,0 +1,94 @@
+// The Beheader
+// "To behead a terranite, you need a clear cut at the Hyoid Bone, otherwise you won't be able to behead them even with the proper weapon. I took a decade training and even so I rarely manage to get a clear cut."
+// "No, you'll never get a clear cut at a Hyoid Bone without training."
+// mes "##9(Because TMWA Engine does not support it, but don't worry, Evol2 engine does, and rEvolt will have this feature.)##0";
+// PS. The Hyoid Bone actually exists - https://teachmeanatomy.info/neck/bones/hyoid-bone/
+
+012-3,450,67,0|script|The Beheader|429
+{
+    if (FLAGS & FLAG_BEHEADER_MASK) goto L_Complete;
+    mes "[The Beheader]";
+    mes "\"I am The Beheader, known for beheading Terranites.\"";
+    next;
+    mes "[The Beheader]";
+    mes "\"Unfortunately, even with this disguise they could recognize and avoid me. I'll need a new one...\"";
+    next;
+    menu
+        "I'm sorry to hear that.", L_Close,
+        "Uh... Try wearing a mask?", L_Mask,
+        "You monster!", L_Close;
+
+L_Mask:
+    mes "";
+    mes "[The Beheader]";
+    mes "\"A mask, ohh! Not a bad idea. I might even have a better idea! If only...\"";
+    next;
+    mes "[The Beheader]";
+    mes "\"Hey, how about we do this deal: You bring me a [@@766|@@] and I'll give you one of my finest [@@5209|@@]. It has even been polished and might be useful in combat for you.\"";
+    next;
+    menu
+        "Sorry, I'm keeping my helmet.", L_Close,
+        "Take it, I thought it was ugly anyway...", L_Exchange;
+
+L_Exchange:
+    mes "";
+    if (countitem("TerraniteHelmet") < 1)
+        goto L_Nope;
+
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Nope;
+
+    delitem "TerraniteHelmet", 1;
+    getitem "TerraniteHead", 1;
+    getexp 100000, 0;
+    set FLAGS, FLAGS | FLAG_BEHEADER_MASK;
+    mes "[The Beheader]";
+    mes "\"Muahaha, I'll let you know how it went later.\"";
+    close;
+
+L_Complete:
+    mes "[The Beheader]";
+    mes "\"I am The Beheader, known for beheading Terranites.\"";
+    next;
+    mes "[The Beheader]";
+    mes "\"Come back later, my [@@576|@@] is itching to strike on something.\"";
+    next;
+    menu
+        "Okay, good bye.", L_Close,
+        "How much later?", L_Later,
+        "Can I behead Terranites on my own?", L_Beheader;
+
+L_Later:
+    mes "[The Beheader]";
+    mes "\"Some February, I don't know. If you want to help, go to Hurnscald square, look for the noisy person with an AFK Cap which is always sitting with their kitty, and tell them to start working. That might just do the trick.\"";
+    // TODO: Coming soon February 2020 likely
+    // The "noisy person w/ an AFK Cap and a kytty" is Jesusalva (script author)
+    close;
+
+L_Beheader:
+    mes "[The Beheader]";
+    mes "\"You obviously know nothing about Terranite Anatomy, hahaha!\"";
+    next;
+    mes "[The Beheader]";
+    mes "\"You don't even have the proper tools. Nah, I bet you wouldn't know how to use them even if you had, hahaha!\"";
+    next;
+    mes "[The Beheader]";
+    //mes "\"How about this: I give you the tool, and you tell me how epically you failed? Hahahah!\"";
+    mes "\"Sorry, this is just funny! Most people of your age already realized that it takes a life of dedication and skill honing to be able to scavenge anything from a monster.\"";
+    // NOTE: Why bugs don't always drop bug legs? Because when you kill the bugs,
+    // you are cautious and/or skilled enough to don't damage the usable parts.
+    // Some parts are more prone to damage than others, and Terranites, due their
+    // anatomy, has a zero per cent success rate for the head surviving death.
+    // ...Ever noticed how they crumble to the floor once slain?
+    close;
+
+L_Nope:
+    mes "[The Beheader]";
+    mes "\"Stop trolling me, or I might consider putting your head on my collection.\"";
+    close;
+
+L_Close:
+    close;
+}
+
