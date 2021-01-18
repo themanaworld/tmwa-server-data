@@ -16,6 +16,7 @@
     menu
         "I'm sorry to hear that.", L_Close,
         "Uh... Try wearing a mask?", L_Mask,
+        "Can I behead Terranites on my own?", L_Beheader,
         "You monster!", L_Close;
 
 L_Mask:
@@ -27,7 +28,8 @@ L_Mask:
     mes "\"Hey, how about we do this deal: You bring me a [@@766|@@] and I'll give you one of my finest [@@5209|@@]. It has even been polished and might be useful in combat for you.\"";
     next;
     menu
-        "Sorry, I'm keeping my helmet.", L_Close,
+        "Maybe later, pal.", L_Close,
+        "Sorry, I'm keeping my helmet.", L_Confirm,
         "Take it, I thought it was ugly anyway...", L_Exchange;
 
 L_Exchange:
@@ -45,6 +47,29 @@ L_Exchange:
     set FLAGS, FLAGS | FLAG_BEHEADER_MASK;
     mes "[The Beheader]";
     mes "\"Muahaha, I'll let you know how it went later.\"";
+    close;
+
+L_Confirm:
+    mes "";
+    mes "[The Beheader]";
+    mes "\"What, really? A Terranite Head is waaay cooler than the helmet. And to be honest, you will never be able to obtain a head as cool as the one I am offering you.\"";
+    next;
+    mes "[The Beheader]";
+    mes "\"You may regret in not making this deal with me! I ask you to reconsider.\"";
+    mes "##9Note: Refusing to exchange is permanent and you'll never be able to obtain a [@@5209|@@] with this char, unless you win one at an event. Please be sure you really want this.##0";
+    next;
+    menu
+        "...I'll think on this more thoroughly.", L_Close,
+        "Sorry, I'm keeping my helmet.", L_ReallyGiveUp;
+
+L_ReallyGiveUp:
+    mes "";
+    if (countitem("TerraniteHelmet") < 1)
+        goto L_Nope;
+    getexp 100000, 0;
+    set FLAGS, FLAGS | FLAG_BEHEADER_MASK;
+    mes "[The Beheader]";
+    mes "\"Meeeh, I'll try to get someone else to do it for me, then! Hmpf.\"";
     close;
 
 L_Complete:
@@ -81,6 +106,7 @@ L_Beheader:
     // Some parts are more prone to damage than others, and Terranites, due their
     // anatomy, has a zero per cent success rate for the head surviving death.
     // ...Ever noticed how they crumble to the floor once slain?
+    // set FLAGS, FLAGS | FLAG_GOT_BEHEADER_SWORD;
     close;
 
 L_Nope:
