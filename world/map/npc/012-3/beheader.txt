@@ -1,8 +1,11 @@
 // The Beheader
-// "To behead a terranite, you need a clear cut at the Hyoid Bone, otherwise you won't be able to behead them even with the proper weapon. I took a decade training and even so I rarely manage to get a clear cut."
-// "No, you'll never get a clear cut at a Hyoid Bone without training."
-// mes "##9(Because TMWA Engine does not support it, but don't worry, Evol2 engine does, and rEvolt will have this feature.)##0";
 // PS. The Hyoid Bone actually exists - https://teachmeanatomy.info/neck/bones/hyoid-bone/
+/////////////////////////////////////////////////////////////////////////////////
+// NOTE: Why bugs don't always drop bug legs? Because when you kill the bugs,
+// you are cautious and/or skilled enough to don't damage the usable parts.
+// Some parts are more prone to damage than others, and Terranites, due their
+// anatomy, has a zero per cent success rate for the head surviving death.
+// ...Ever noticed how they crumble to the floor once slain?
 
 012-3,450,67,0|script|The Beheader|429
 {
@@ -85,13 +88,18 @@ L_Complete:
         "Can I behead Terranites on my own?", L_Beheader;
 
 L_Later:
+    mes "";
     mes "[The Beheader]";
     mes "\"Some February, I don't know. If you want to help, go to Hurnscald square, look for the noisy person with an AFK Cap which is always sitting with their kitty, and tell them to start working. That might just do the trick.\"";
-    // TODO: Coming soon February 2020 likely
+    // NOTE: Room for future expansion if needed.
     // The "noisy person w/ an AFK Cap and a kytty" is Jesusalva (script author)
     close;
 
 L_Beheader:
+    if (FLAGS & FLAG_GOT_BEHEADER_SWORD) goto L_Again;
+    if (TERRAC == 2001) goto L_Finish;
+    if (TERRAC > 0) goto L_Status;
+    mes "";
     mes "[The Beheader]";
     mes "\"You obviously know nothing about Terranite Anatomy, hahaha!\"";
     next;
@@ -99,14 +107,74 @@ L_Beheader:
     mes "\"You don't even have the proper tools. Nah, I bet you wouldn't know how to use them even if you had, hahaha!\"";
     next;
     mes "[The Beheader]";
-    //mes "\"How about this: I give you the tool, and you tell me how epically you failed? Hahahah!\"";
     mes "\"Sorry, this is just funny! Most people of your age already realized that it takes a life of dedication and skill honing to be able to scavenge anything from a monster.\"";
-    // NOTE: Why bugs don't always drop bug legs? Because when you kill the bugs,
-    // you are cautious and/or skilled enough to don't damage the usable parts.
-    // Some parts are more prone to damage than others, and Terranites, due their
-    // anatomy, has a zero per cent success rate for the head surviving death.
-    // ...Ever noticed how they crumble to the floor once slain?
-    // set FLAGS, FLAGS | FLAG_GOT_BEHEADER_SWORD;
+
+    // Quest requirement check (not really needed, is old code)
+    if (BaseLevel < 60) goto L_Close;
+    next;
+    mes "[The Beheader]";
+    mes "\"Maybe we can make a deal. I can give you the proper tools but not the proper training, so don't expect much; But I'm interested in seeing how you'll fail at my hands... I'm an old man and seeing young people like you running around meaningless tasks is fun.\"";
+    next;
+    //mes "\"So. Hmm. Lemme think. What I wanted again? *suffers from AFK-induced amnesia and becomes a huge TODO sign*\"";
+    menu
+        "Very well. Give me your task.", L_Accept,
+        "I knew it, you are as crazy as Arkim!", L_Close;
+
+L_Accept:
+    mes "";
+    mes "[The Beheader]";
+    mes "So... Hmm, lemme think... Ah, I know! Thou shall ##Bkill me 2000 [@@m1062|@@]##b. Why? Because that's pointless, and you want a weapon you won't be able to use, so a pointless task for a pointless reward! Now get going!";
+    set TERRAC, 1;
+    close;
+
+L_Status:
+    mes "";
+    mes "[The Beheader]";
+    mes "\"Get going, running in circles and amusing me, you only killed "+(TERRAC-1)+"/2000 [@@m1062|@@] until now.\"";
+    close;
+
+L_Again:
+    mes "";
+    mes "[The Beheader]";
+    mes "\"Again, it takes a life of dedication and skill honing to be able to scavenge anything from a monster.\"";
+    next;
+    mes "[The Beheader]";
+    mes "\"You must imagine where the Hyoid bone would be in a Terranite and make a clear cut with a [@@576|@@], but as you are currently, that will not be possible. Maybe in the future you may find a monster anatomy professor.\"";
+    mes "##9(Development note: TMWA Engine does not support altering monster drops depending on the weapon. However, Evol2 engine does, and TMW rEvolt probably will have this feature.)##0";
+    close;
+
+L_Finish:
+    mes "";
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Nope;
+
+    mes "[The Beheader]";
+    mes "\"I'm always impressed at how the young folks never give up on their dreams. Well, listen carefully:\"";
+    next;
+
+    mes "[The Beheader]";
+    mes "\"To behead a Terranite, you need a clear cut at the Hyoid Bone, otherwise you won't be able to behead them even with the proper weapon. I took a decade training and even so I rarely manage to get a clear cut.\"";
+    next;
+    mes "[The Beheader]";
+    mes "\"Uh? No man, Terranites doesn't have neck bones. Ever saw a Terranite turning its neck to face you?? I said that because we Talpans have and it was the only reference I could think of for you.\"";
+    next;
+    mes "[The Beheader]";
+    mes "\"Well, I guess you'll need an anatomy professor to teach you the specifics to get a Terranite Head... Uh, and of course, you might want to learn how to polish them. You know. For the bonuses.\"";
+    next;
+
+    getinventorylist;
+    if (@inventorylist_count == 100)
+        goto L_Nope;
+
+    getitem "Beheader", 1;
+    getexp 200000, 0;
+    set FLAGS, FLAGS | FLAG_GOT_BEHEADER_SWORD;
+    set TERRAC, 0;
+
+    mes "[The Beheader]";
+    mes "\"Anyway, a deal is a deal and here is your [@@576|@@]. I hope you can actually make a good use of it!\"";
+    mes "##9(Development note: TMWA Engine does not support altering monster drops depending on the weapon. However, Evol2 engine does, and TMW rEvolt probably will have this feature.)##0";
     close;
 
 L_Nope:
