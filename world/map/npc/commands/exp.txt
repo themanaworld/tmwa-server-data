@@ -4,6 +4,7 @@
     set .@n$, if_then_else(@argv$[1] != "", "char", "") + "getexp";
     if (GM < CMD_ZENY && GM < G_SYSOP) goto L_GM; // check if you can use it on self
     set .@target_id, BL_ID;
+    set .@caster_id, BL_ID;
     if (@argv$[1] != "") set .@target_id, getcharid(3, @argv$[1]);
     if (@argv$[1] != "" && !(isloggedin(.@target_id))) goto L_Failed; // do NOT fallback to self
     if (@argv$[1] != "" && GM < CMD_CHARZENY && GM < G_SYSOP) goto L_GM; // when target is not self, use charzeny permission
@@ -12,11 +13,12 @@
     if (.@delta > .max_int) goto L_OutOfBounds;
     if (!(attachrid(.@target_id))) goto L_Failed;
     getexp .@delta, 0;
+    if (!(attachrid(.@caster_id))) goto L_Failed;
     goto L_Success;
 
 L_OutOfBounds:
-    // XXX: maybe we could also take from other chars from the same accout?
-    message strcharinfo(0), .@n$+" : Impossible to proceed! This would cause the player to have less than 0 zeny or more than " + .max_int + ".";
+    // XXX: can getexp even work with a negative number?
+    message strcharinfo(0), .@n$+" : Impossible to proceed! This would cause the player to have less than 0 xp or more than " + .max_int + ".";
     end;
 
 L_Failed:
@@ -24,7 +26,7 @@ L_Failed:
     end;
 
 L_Success:
-    gmlog "@getexp " + @args$;
+    gmlog "@" + .@n$ + " " + @args$;
     message strcharinfo(0), .@n$+" : The operation succeeded.";
     end;
 

@@ -1,0 +1,29 @@
+// Cannot have a (power) bow in inventory to equip
+// Variables passed to this script:
+//  @slotId The slot in which the item would have been equipped in. This is passed automagically when called in an equip script.
+
+function|script|NoBowItem
+{
+    // Developers are always allowed to use this item
+    if (getgmlevel() >= G_DEV)
+        goto L_Return;
+
+    // Bows which are not allowed
+    if (countitem("BansheeBow") > 0)
+        goto L_Abort;
+    if (countitem("DesertBow") > 0)
+        goto L_Abort;
+    if (countitem("ForestBow") > 0)
+        goto L_Abort;
+    // Don't care with Bow/ShortBow/slings and darts
+
+    goto L_Return;
+
+L_Abort:
+    message strcharinfo(0), "This item is too cumbersome to use and could potentially break your valuable bow by accident. So you give up.";
+    callfunc "UnequipLater";
+    goto L_Return;
+
+L_Return:
+    return;
+}
