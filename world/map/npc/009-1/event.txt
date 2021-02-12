@@ -1,0 +1,150 @@
+// Kytty <3 Valentine Day 2021
+// Valentine Day 2021-02-14 script authored by Jesusalva on the 12th
+
+009-1,30,34,0|script|Kytty|430
+{
+    // Core Variable Switcher
+    if (gettime(5) >= 13 && gettime(5) <= 15) goto L_Quest;
+    if (gettime(5) > 15 && strcharinfo(0) == "kytty" && $VALENTINE2021) goto L_StopEvent;
+    if (gettime(5) > 15 && GM >= GM_DEV && $VALENTINE2021) goto L_ReadOnly;
+    mes "[Kytty]";
+    mes "\"Uh? Hello there. I am looking for my husband to stare at him, don't mind me.\"";
+    close;
+
+L_Quest:
+    if (#VALENTINE2021) goto L_Running;
+    // Core dialog
+    mes "[Kytty]";
+    mes "\"Hey, "+strcharinfo(0)+"! I have a problem and perhaps you can help me!\"";
+    next;
+    menu
+        "Sure, m'am... What should I do?", L_Continue,
+        "Who, me? Sorry, wrong person.", L_Close;
+
+L_Continue:
+    mes "";
+    mes "[Kytty]";
+    mes "\"I feel like my husband is staring at other people, and that is ABSURD! He should only stare at kytty!\" %%e";
+    next;
+    mes "[Kytty]";
+    mes "\"So kytty came up with a great plan - kytty will brew some [@@5263|Love Potions@@] so hubby only stares at me!\"";
+    next;
+    mes "[Kytty]";
+    mes "\"I have most ingredients, but a few are still missing and I was hoping you could help me out:\"";
+    mes "- 20x Cherry";
+    mes "- 20x Chocolate Bar";
+    mes "- 1x Diamond";
+    mes "- 1x Chocolate Cake";
+    next;
+    mes "[Kytty]";
+    mes "\"Uh? Of course I won't put everything in the potion! Wyara will sell me some other ingredients for the diamond, and... Hey, stop making questions!\"";
+    next;
+    mes "[Kytty]";
+    mes "\"Do you have everything I've asked for?\"";
+    menu
+        "I do.", L_Check,
+        "I don't.", L_Close;
+
+L_Check:
+    mes "";
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Full;
+
+    if (countitem("ChocolateBar") < 20) goto L_NotEnough;
+    if (countitem("Cherry") < 20) goto L_NotEnough;
+    if (countitem("Diamond") < 1) goto L_NotEnough;
+    if (countitem("ChocolateCake") < 1) goto L_NotEnough;
+
+    delitem "ChocolateBar", 20;
+    delitem "Cherry", 20;
+    delitem "Diamond", 1;
+    delitem "ChocolateCake", 1;
+    getitem "LovePotion", 1;
+    getexp 50000, 0;
+    set #VALENTINE2021, 1;
+    mes "[Kytty]";
+    mes "\"With this, he will totally stare only at me now! Thanks for the help. Here, you can have an extra, but you are not cute like him so don't blame me if it don't work or present... side effects.\"";
+    next;
+    mes "[Kytty]";
+    mes "\"Also, I love chocolate. I'll give you a spare potion every fifty [@@509|@@] you bring me.\"";
+    close;
+
+L_NotEnough:
+    mes "";
+    mes "[Kytty]";
+    mes "\"Don't try to troll me, I know you don't have everything.\"";
+    close;
+
+L_Full:
+    mes "[Kytty]";
+    mes "\"Free up some space in your inventory, please.\"";
+    close;
+
+/////////////////////////////////////////////////////////////////////
+L_Running:
+    getinventorylist;
+    if (@inventorylist_count == 100) goto L_Full;
+    mes "[Kytty]";
+    mes "\"Have you brought me more chocolate? I am starving with only "+$VALENTINE2021+" [@@509|@@]. You ##Bonly##b gave me "+(#VALENTINE2021-1)+" bar(s), after all!\"";
+    next;
+    menu
+        "Not yet, but I'll be back.", L_Close,
+        "Sure thing miss, take all you want!", L_Collect;
+
+L_Collect:
+    mes "";
+    set @choco, countitem("ChocolateBar");
+    set @bonus, (#VALENTINE2021%50)+@choco;
+    set @potio, @bonus/50;
+    //debugmes "Choco "+@choco+" Potio "+@potio+" Bonus "+@bonus+".";
+    set @bonus, 0;
+    delitem "ChocolateBar", @choco;
+    set #VALENTINE2021, #VALENTINE2021+@choco;
+    set $VALENTINE2021, $VALENTINE2021+@choco;
+    getexp @choco*15, @choco*7;
+    if (@potio) goto L_BonusPots;
+    mes "[Kytty]";
+    mes "\"Yummy! Thanks for your support. Tell me if you have more chocolate!\"";
+    close;
+
+L_BonusPots:
+    getitem "LovePotion", @potio;
+    mes "[Kytty]";
+    mes "\"Here are some love potions for you. But as I said - I'm not sure if you are cute enough for them.\"";
+    close;
+
+L_StopEvent:
+    mes "[Kytty]";
+    mes "\"Hey other me! I still have "+$VALENTINE2021+" chocolate bars, but I'm a NPC and cannot eat them, so here they are!\"";
+    next;
+    set @choco, min($VALENTINE2021, 30000);
+    getitem "ChocolateBar", @choco;
+    set $VALENTINE2021, $VALENTINE2021-@choco;
+    mes "[Kytty]";
+    mes "\"Also: Jesusalva asked me to wish you a happy Valentine Day.\"";
+    close;
+
+L_ReadOnly:
+    mes "[Kytty]";
+    mes "\"I'm still holding on "+$VALENTINE2021+" chocolate bars, but I'll eat them soon!\"";
+    close;
+
+////////////////////////////////////////////////////////////////////
+L_Close:
+    close;
+
+L_Off:
+    disablenpc "Kytty";
+    end;
+
+L_On:
+    enablenpc "Kytty";
+    end;
+
+OnInit:
+    if (gettime(7) == 2021 && gettime(6) == 2) goto L_On;
+    goto L_Off;
+
+OnClock0000:
+    goto OnInit;
+}
