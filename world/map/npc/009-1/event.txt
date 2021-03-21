@@ -1,19 +1,20 @@
 // Kytty <3 Valentine Day 2021
 // Valentine Day 2021-02-14 script authored by Jesusalva on the 12th
-// WARNING: Rewards handled by clear_vars.txt - change it before re-enabling event
+// St. Valentine Day is always on the 14th, the event goes from 13th to 15th
 
 009-1,30,34,0|script|Kytty|430
 {
     // Core Variable Switcher
     if (gettime(5) >= 13 && gettime(5) <= 15) goto L_Quest;
-    if (gettime(5) > 15 && strcharinfo(0) == "kytty" && $VALENTINE2021) goto L_StopEvent;
-    if (gettime(5) > 15 && GM >= GM_DEV && $VALENTINE2021) goto L_ReadOnly;
+    if (gettime(5) > 15 && strcharinfo(0) == "kytty" && $VALENTINE) goto L_StopEvent;
+    if (gettime(5) > 15 && #VALENTINE) goto L_ClaimRewards;
+    if (gettime(5) > 15 && GM >= GM_DEV && $VALENTINE) goto L_ReadOnly;
     mes "[Kytty]";
     mes "\"Uh? Hello there. I am looking for my husband to stare at him, don't mind me.\"";
     close;
 
 L_Quest:
-    if (#VALENTINE2021) goto L_Running;
+    if (#VALENTINE) goto L_Running;
     // Core dialog
     mes "[Kytty]";
     mes "\"Hey, "+strcharinfo(0)+"! I have a problem and perhaps you can help me!\"";
@@ -62,7 +63,7 @@ L_Check:
     delitem "ChocolateCake", 1;
     getitem "LovePotion", 1;
     getexp 50000, 0;
-    set #VALENTINE2021, 1;
+    set #VALENTINE, 1;
     mes "[Kytty]";
     mes "\"With this, he will totally stare only at me now! Thanks for the help. Here, you can have an extra, but you are not cute like him so don't blame me if it don't work or present... side effects.\"";
     next;
@@ -86,7 +87,7 @@ L_Running:
     getinventorylist;
     if (@inventorylist_count == 100) goto L_Full;
     mes "[Kytty]";
-    mes "\"Have you brought me more chocolate? I am starving with only "+$VALENTINE2021+" [@@509|@@]. You ##Bonly##b gave me "+(#VALENTINE2021-1)+" bar(s), after all!\"";
+    mes "\"Have you brought me more chocolate? I am starving with only "+$VALENTINE+" [@@509|@@]. You ##Bonly##b gave me "+(#VALENTINE-1)+" bar(s), after all!\"";
     next;
     menu
         "Not yet, but I'll be back.", L_Close,
@@ -95,13 +96,13 @@ L_Running:
 L_Collect:
     mes "";
     set @choco, countitem("ChocolateBar");
-    set @bonus, (#VALENTINE2021%50)+@choco;
+    set @bonus, (#VALENTINE%50)+@choco;
     set @potio, @bonus/50;
     //debugmes "Choco "+@choco+" Potio "+@potio+" Bonus "+@bonus+".";
     set @bonus, 0;
     delitem "ChocolateBar", @choco;
-    set #VALENTINE2021, #VALENTINE2021+@choco;
-    set $VALENTINE2021, $VALENTINE2021+@choco;
+    set #VALENTINE, #VALENTINE+@choco;
+    set $VALENTINE, $VALENTINE+@choco;
     getexp @choco*15, @choco*7;
     if (@potio) goto L_BonusPots;
     mes "[Kytty]";
@@ -116,18 +117,33 @@ L_BonusPots:
 
 L_StopEvent:
     mes "[Kytty]";
-    mes "\"Hey other me! I still have "+$VALENTINE2021+" chocolate bars, but I'm a NPC and cannot eat them, so here they are!\"";
+    mes "\"Hey other me! I still have "+$VALENTINE+" chocolate bars, but I'm a NPC and cannot eat them, so here they are!\"";
     next;
-    set @choco, min($VALENTINE2021, 30000);
+    set @choco, min($VALENTINE, 30000);
     getitem "ChocolateBar", @choco;
-    set $VALENTINE2021, $VALENTINE2021-@choco;
+    set $VALENTINE, $VALENTINE-@choco;
     mes "[Kytty]";
     mes "\"Also: Jesusalva asked me to wish you a happy Valentine Day.\"";
     close;
 
 L_ReadOnly:
     mes "[Kytty]";
-    mes "\"I'm still holding on "+$VALENTINE2021+" chocolate bars, but I'll eat them soon!\"";
+    mes "\"I'm still holding on "+$VALENTINE+" chocolate bars, but I'll eat them soon!\"";
+    close;
+
+////////////////////////////////////////////////////////////////////
+L_ClaimRewards:
+    if(!#VALENTINE) goto L_Close;
+    getinventorylist;
+    if (@inventorylist_count > 95) goto L_Full;
+    setarray @oldstock$, "GrassFedTofu", "Honey", "VeganWater", "FairTradeSoil", "LactoseFreeAcorn", "RawAir", "FreeRangeMoss";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    cleararray @oldstock$, "", getarraysize(@oldstock$);
+    //getitem "BlueWolfHelmet", 1; // FIXME?
+    getitem "ShockSweet", rand(4, 7);
+    getitem "DarkConcentrationPotion", rand(2, 5);
+    getexp 1+(#VALENTINE*BaseLevel)/2, 0;
+    set #VALENTINE, 0;
     close;
 
 ////////////////////////////////////////////////////////////////////
@@ -143,7 +159,7 @@ L_On:
     end;
 
 OnInit:
-    if (gettime(7) == 2021 && gettime(6) == 2) goto L_On;
+    if (gettime(6) == 2) goto L_On; // NPC shows only in February
     goto L_Off;
 
 OnClock0000:
