@@ -4,6 +4,18 @@
 {
     set @EXP_BRAWLING, 2000;
 
+    setarray @luca_reward_item_id,
+        756,  // "AssassinGloves", // player learned all six Focus Skills
+        757,  // "AssassinBoots",  // player got 2 Focus Skills at lvl 9
+        731,  // "AssassinPants",  // player got 4 Focus Skills at lvl 9
+        5267; // "AssassinMask";   // player got 6 Focus Skills at lvl 9    
+
+    setarray @luca_reward_exp,
+        60000, // player learned all six Focus Skills
+        70000, // player got 2 Focus Skills at lvl 9
+        80000, // player got 4 Focus Skills at lvl 9
+        90000; // player got 6 Focus Skills at lvl 9
+
     if (BaseLevel >= 35) goto L_teach;
 
     if (BaseLevel >= 25) goto L_teach_soon;
@@ -214,6 +226,102 @@ L_teachmore:
     mes "[Luca the Hunter]";
     mes "\"Good to see you again!\"";
     next;
+
+    set @mallard, getskilllv(SKILL_MALLARDS_EYE);
+    set @brawling, getskilllv(SKILL_BRAWLING);
+    set @speed, getskilllv(SKILL_SPEED);
+    set @poison, getskilllv(SKILL_RESIST_POISON);
+    set @astralsoul, getskilllv(SKILL_ASTRAL_SOUL);
+    set @raging, getskilllv(SKILL_RAGING);
+
+    set @lvl9skills, 0;
+    if (@mallard == 9)
+       set @lvl9skills, @lvl9skills + 1;
+    if (@brawling == 9)
+       set @lvl9skills, @lvl9skills + 1;
+    if (@speed == 9)
+       set @lvl9skills, @lvl9skills + 1;
+    if (@poison == 9)
+       set @lvl9skills, @lvl9skills + 1;
+    if (@astralsoul == 9)
+       set @lvl9skills, @lvl9skills + 1;
+    if (@raging == 9)
+       set @lvl9skills, @lvl9skills + 1;
+
+    if ((FLAGS & (FLAG_LUCA_GOT_SIX_SKILLS + FLAG_LUCA_2SKILLS_MAXED + FLAG_LUCA_4SKILLS_MAXED + FLAG_LUCA_6SKILLS_MAXED)) == (FLAG_LUCA_GOT_SIX_SKILLS + FLAG_LUCA_2SKILLS_MAXED + FLAG_LUCA_4SKILLS_MAXED + FLAG_LUCA_6SKILLS_MAXED)) goto L_CheckSkillsEnd;
+
+        if (!(@mallard && @brawling && @speed && @poison && @astralsoul && @raging) || (FLAGS & FLAG_LUCA_GOT_SIX_SKILLS)) goto L_Check2Skills;
+            mes "[Luca the Hunter]";
+            mes "I've heard you learned all six Focus Skills.";
+            mes "For that, the other teachers and I want to give you a reward!";
+            next;
+            getinventorylist;
+            if (@inventorylist_count == 100) goto L_InvFull;
+            mes "Here take the [@@" + @luca_reward_item_id[0] + "|@@].";
+            mes "[" + @luca_reward_exp[0] + " experience points]";
+            getitem @luca_reward_item_id[0], 1;
+            getexp @luca_reward_exp[0], 0;
+            set FLAGS, FLAGS | FLAG_LUCA_GOT_SIX_SKILLS;
+            next;
+            goto L_Check2Skills;
+
+L_Check2Skills:
+        if (!@lvl9skills >= 2 || (FLAGS & FLAG_LUCA_2SKILLS_MAXED)) goto L_Check4Skills;
+            mes "[Luca the Hunter]";
+            mes "I sense you have maxed out two Focus Skills!";
+            mes "For that I give you a reward!";
+            next;
+            getinventorylist;
+            if (@inventorylist_count == 100) goto L_InvFull;
+            mes "Here take the [@@" + @luca_reward_item_id[1] + "|@@].";
+            mes "[" + @luca_reward_exp[1] + " experience points]";
+            getitem @luca_reward_item_id[1], 1;
+            getexp @luca_reward_exp[1], 0;
+            set FLAGS, FLAGS | FLAG_LUCA_2SKILLS_MAXED;
+            next;
+            goto L_Check4Skills;
+
+L_Check4Skills:
+        if (!@lvl9skills >= 4 || (FLAGS & FLAG_LUCA_4SKILLS_MAXED)) goto L_Check6Skills;
+            mes "[Luca the Hunter]";
+            mes "I sense you have maxed out four Focus Skills!";
+            mes "For that I give the next reward!";
+            next;
+            getinventorylist;
+            if (@inventorylist_count == 100) goto L_InvFull;
+            mes "Here take the [@@" + @luca_reward_item_id[2] + "|@@].";
+            mes "[" + @luca_reward_exp[2] + " experience points]";
+            getitem @luca_reward_item_id[2], 1;
+            getexp @luca_reward_exp[2], 0;
+            set FLAGS, FLAGS | FLAG_LUCA_4SKILLS_MAXED;
+            next;
+            goto L_Check6Skills;
+
+L_Check6Skills:
+        if (!@lvl9skills >= 6 || (FLAGS & FLAG_LUCA_6SKILLS_MAXED)) goto L_CheckSkillsEnd;
+            mes "[Luca the Hunter]";
+            mes "I sense you have maxed out six Focus Skills!";
+            mes "For that I give the final reward!";
+            next;
+            getinventorylist;
+            if (@inventorylist_count == 100) goto L_InvFull;
+            mes "Here take the [@@" + @luca_reward_item_id[3] + "|@@].";
+            mes "[" + @luca_reward_exp[3] + " experience points]";
+            getitem @luca_reward_item_id[3], 1;
+            getexp @luca_reward_exp[3], 0;
+            set FLAGS, FLAGS | FLAG_LUCA_6SKILLS_MAXED;
+            next;
+            goto L_CheckSkillsEnd;
+
+L_InvFull:
+            mes "[Luca the Hunter]";
+            mes "Looks like your bag is full!";
+            mes "To get your reward you must make some room first!";
+            next;
+            goto L_CheckSkillsEnd;
+
+L_CheckSkillsEnd:
+
     goto L_teachmore2;
 
 L_teachmore2:

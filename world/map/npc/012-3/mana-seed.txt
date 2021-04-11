@@ -48,6 +48,14 @@
     // Set up SkillUp function
     set @SUP_id, SKILL_MAGIC;
     set @SUP_name$, "Magic";
+    
+	set @manapearl_id,	5270;
+	set @manapearl_exp,	500000;
+	set @manapearl_lvl_for_reward, 50;
+	set @manapearl_mexp_for_reward, 5404;
+	// At 5404 #abizit returned always:
+	// "Magic flows naturally from you, readily and with ease. Your understanding of what you can currently control at present is flawless, far beyond your requirements to cast magic at this level.";
+	// So i take this as needed magic exp.
 
     if (@has_magic)
         goto L_magic_start;
@@ -138,6 +146,40 @@ L_nomagic_destroy:
 
 // Magic main menu ------------------------------------------------------------
 L_magic_start:
+
+    if (MAGIC_FLAGS & MFLAG_GOT_MANA_PEARL) goto L_ManaPearlEnd;
+
+    set @debug_mask, 65535;
+    set @debug_shift, 0;
+    set @mexp, ((MAGIC_EXPERIENCE & @debug_mask) >> @debug_shift);
+
+    if (! (@mexp >= @manapearl_mexp_for_reward && BaseLevel >= @manapearl_lvl_for_reward)) goto L_ManaPearlEnd;
+        getinventorylist;
+        if (countitem("Pearl") > 1 && @inventorylist_count == 100) goto L_ManaPearlHasNoRoom;
+        //if (!countitem("Pearl") >= 1) goto L_ManaPearlEnd; // without the brackets it crashes the server!
+        if (!(countitem("Pearl") >= 1)) goto L_ManaPearlEnd;
+            mes "As you approach the Mana Seed, suddenly a pearl from your bag starts to float and shine in a blue light.";
+            mes "It seems since Magic flows naturally from you, you and the Mana Seed are in resonance now";
+            mes "and the crystalline structure of that pearl was different from other pearls which let it also resonate with that flow.";
+            mes "Since this resonance is established, the Mana Pearl channels some power from the Mana Seed to you.";
+            next;
+            mes "You gain the [@@" + @manapearl_id + "|@@].";
+            mes "[" + @manapearl_exp + " experience points]";
+            delitem "Pearl", 1;
+            getitem @manapearl_id, 1;
+            getexp @manapearl_exp, 0;
+            set MAGIC_FLAGS, MAGIC_FLAGS | MFLAG_GOT_MANA_PEARL;
+            next;
+            goto L_ManaPearlEnd;
+
+L_ManaPearlHasNoRoom:
+    mes "Something in your bag is moving but it seems it is stuck since your bag too stuffed.";
+    mes "Maybe you should make some room first.";
+    next;
+    goto L_ManaPearlEnd;
+
+L_ManaPearlEnd:
+
     mes "[Mana Seed]";
     mes "The Mana Seed is still in the same place as during your last visit, spreading its light throughout the cavern.";
     mes "What would you like to do?";
