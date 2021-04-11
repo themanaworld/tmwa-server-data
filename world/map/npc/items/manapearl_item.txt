@@ -1,0 +1,31 @@
+// The Mana Pearl can only be used when player has a natural mana flow:
+// "Magic flows naturally from you, readily and with ease. Your understanding of what you can currently control at present is flawless, far beyond your requirements to cast magic at this level.";
+// Variables passed to this script:
+//  @slotId The slot in which the item would have been equipped in. This is passed automagically when called in an equip script.
+
+function|script|ManaPearlItem
+{
+
+    set @debug_mask, 65535;
+    set @debug_shift, 0;
+    set @mexp, ((MAGIC_EXPERIENCE & @debug_mask) >> @debug_shift);
+
+    set @manapearl_mexp_needed, 5404;
+
+    if ( @mexp >= @manapearl_mexp_needed )
+        goto L_Return;
+
+    message strcharinfo(0), "You are not expirienced enough to keep up the mana flow that is needed to stay in resonance with the Mana Pearl.";
+
+    // This is for debug
+    if (getgmlevel() >= 60)
+        bonus bAgi, -7;
+    if (getgmlevel() >= 60)
+        goto L_Return;
+
+    callfunc "UnequipLater";
+    goto L_Return;
+
+L_Return:
+    return;
+}
