@@ -15,6 +15,7 @@ OnInit:
     close;
 
 OnSpawn:
+    if (GM < G_SYSOP) goto L_GM;
     callfunc "argv_splitter";
     if (@argv$[4] == "") goto L_Failed;
     set $@PMAP$, @argv$[0];
@@ -22,8 +23,8 @@ OnSpawn:
     set $@PY, @argv$[2];
     set $@PNAME$, @argv$[3];
     set $@PNPC, @argv$[4];
-    debugmes "Map "+$@PMAP$+" ID "+$@PNPC;
-   if (puppet($@PMAP$, $@PX, $@PY, $@PNAME$, $@PNPC) < 1) debugmes "Error";
+   if (puppet($@PMAP$, $@PX, $@PY, $@PNAME$, $@PNPC) > 0)
+            gmlog "@puppeter " + @args$;
     set $@PMAP$, "";
     set $@PX, 0;
     set $@PY, 0;
@@ -33,6 +34,10 @@ OnSpawn:
 
 L_Failed:
     message strcharinfo(0), "Syntax: @puppeter MAP X Y NAME NPCID";
+    end;
+
+L_GM:
+    message strcharinfo(0), "puppeter : GM command is level "+ G_SYSOP +", but you are level " + GM;
     end;
 
 OnInit:
