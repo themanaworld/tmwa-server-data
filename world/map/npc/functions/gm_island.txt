@@ -9,6 +9,36 @@ OnInit:
     disablenpc "Gm Event#3";
     end;
 }
+-|script|#Puppet|32767
+{
+    mes "You found me! Now please send my coordinates to staff.";
+    close;
+
+OnSpawn:
+    callfunc "argv_splitter";
+    if (@argv$[4] == "") goto L_Failed;
+    set $@PMAP$, @argv$[0];
+    set $@PX, @argv$[1];
+    set $@PY, @argv$[2];
+    set $@PNAME$, @argv$[3];
+    set $@PNPC, @argv$[4];
+    debugmes "Map "+$@PMAP$+" ID "+$@PNPC;
+   if (puppet($@PMAP$, $@PX, $@PY, $@PNAME$, $@PNPC) < 1) debugmes "Error";
+    set $@PMAP$, "";
+    set $@PX, 0;
+    set $@PY, 0;
+    set $@PNAME$, "";
+    set $@PNPC, 0;
+    end;
+
+L_Failed:
+    message strcharinfo(0), "Syntax: @puppeter MAP X Y NAME NPCID";
+    end;
+
+OnInit:
+    registercmd chr(ATCMD_SYMBOL) + "puppeter", strnpcinfo(0)+"::OnSpawn";
+    end;
+}
 function|script|GmWarp
 {
     if ($@GM_EVENT_WARP == 1) warp "028-1", 110, 30;
