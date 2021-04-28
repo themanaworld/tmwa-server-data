@@ -18,6 +18,7 @@ function|script|ClearVariables
     callsub S_Flags;
     callsub S_Bitmask;
     callsub S_BlueSage;
+    callsub S_Luca;
 
     callsub S_Easter;
     callsub S_Easter2008;
@@ -234,6 +235,35 @@ S_Bitmask:
 S_BlueSage:
     if (QUEST_BlueSage & (1 << 7))
         set QUEST_BlueSage, QUEST_BlueSage & ~((1<<5)|(1<<6)|(1<<7));
+    return;
+
+S_Luca:
+    if (FLAGS & FLAG_LUCA_FIX) goto S_Return;
+    if (FLAGS & FLAG_LUCA_6SKILLS_MAXED) goto S_Luca6;
+    if (FLAGS & FLAG_LUCA_4SKILLS_MAXED) goto S_Luca4;
+    if (FLAGS & FLAG_LUCA_2SKILLS_MAXED) goto S_Luca2;
+    goto S_LucaX;
+
+S_Luca6:
+    if (countitem("AssassinMask") < 1) goto S_Return;
+    delitem "AssassinMask", 1;
+    set FLAGS, FLAGS ^ FLAG_LUCA_6SKILLS_MAXED;
+    goto S_Luca4;
+
+S_Luca4:
+    if (countitem("AssassinPants") < 1) goto S_Return;
+    delitem "AssassinPants", 1;
+    set FLAGS, FLAGS ^ FLAG_LUCA_4SKILLS_MAXED;
+    goto S_Luca2;
+
+S_Luca2:
+    if (countitem("AssassinBoots") < 1) goto S_Return;
+    delitem "AssassinBoots", 1;
+    set FLAGS, FLAGS ^ FLAG_LUCA_2SKILLS_MAXED;
+    goto S_LucaX;
+
+S_LucaX:
+    set FLAGS, FLAGS | FLAG_LUCA_FIX;
     return;
 
 S_Flags:

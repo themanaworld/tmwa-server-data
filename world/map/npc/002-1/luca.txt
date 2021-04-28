@@ -50,6 +50,8 @@ L_teach_soon:
     goto L_Close;
 
 L_teach:
+    // Bugfix death
+    if (!(FLAGS & FLAG_LUCA_FIX)) goto L_Nev;
     if (getskilllv(SKILL_POOL)) goto L_teachmore;
 
     mes "[Luca the Hunter]";
@@ -235,20 +237,23 @@ L_teachmore:
     set @raging, getskilllv(SKILL_RAGING);
 
     set @lvl9skills, 0;
-    if (@mallard == 9)
+    if (@mallard >= 9)
        set @lvl9skills, @lvl9skills + 1;
-    if (@brawling == 9)
+    if (@brawling >= 9)
        set @lvl9skills, @lvl9skills + 1;
-    if (@speed == 9)
+    if (@speed >= 9)
        set @lvl9skills, @lvl9skills + 1;
-    if (@poison == 9)
+    if (@poison >= 9)
        set @lvl9skills, @lvl9skills + 1;
-    if (@astralsoul == 9)
+    if (@astralsoul >= 9)
        set @lvl9skills, @lvl9skills + 1;
-    if (@raging == 9)
+    if (@raging >= 9)
        set @lvl9skills, @lvl9skills + 1;
 
-    if ((FLAGS & (FLAG_LUCA_GOT_SIX_SKILLS + FLAG_LUCA_2SKILLS_MAXED + FLAG_LUCA_4SKILLS_MAXED + FLAG_LUCA_6SKILLS_MAXED)) == (FLAG_LUCA_GOT_SIX_SKILLS + FLAG_LUCA_2SKILLS_MAXED + FLAG_LUCA_4SKILLS_MAXED + FLAG_LUCA_6SKILLS_MAXED)) goto L_CheckSkillsEnd;
+    if ((FLAGS & FLAG_LUCA_GOT_SIX_SKILLS) &&
+        (FLAGS & FLAG_LUCA_2SKILLS_MAXED) &&
+        (FLAGS & FLAG_LUCA_4SKILLS_MAXED) &&
+        (FLAGS & FLAG_LUCA_6SKILLS_MAXED)) goto L_CheckSkillsEnd;
 
         if (!(@mallard && @brawling && @speed && @poison && @astralsoul && @raging) || (FLAGS & FLAG_LUCA_GOT_SIX_SKILLS)) goto L_Check2Skills;
             mes "[Luca the Hunter]";
@@ -266,7 +271,7 @@ L_teachmore:
             goto L_Check2Skills;
 
 L_Check2Skills:
-        if (!@lvl9skills >= 2 || (FLAGS & FLAG_LUCA_2SKILLS_MAXED)) goto L_Check4Skills;
+        if (@lvl9skills < 2 || (FLAGS & FLAG_LUCA_2SKILLS_MAXED)) goto L_Check4Skills;
             mes "[Luca the Hunter]";
             mes "I sense you have maxed out two Focus Skills!";
             mes "For that I give you a reward!";
@@ -282,7 +287,7 @@ L_Check2Skills:
             goto L_Check4Skills;
 
 L_Check4Skills:
-        if (!@lvl9skills >= 4 || (FLAGS & FLAG_LUCA_4SKILLS_MAXED)) goto L_Check6Skills;
+        if (@lvl9skills < 4 || (FLAGS & FLAG_LUCA_4SKILLS_MAXED)) goto L_Check6Skills;
             mes "[Luca the Hunter]";
             mes "I sense you have maxed out four Focus Skills!";
             mes "For that I give the next reward!";
@@ -298,7 +303,7 @@ L_Check4Skills:
             goto L_Check6Skills;
 
 L_Check6Skills:
-        if (!@lvl9skills >= 6 || (FLAGS & FLAG_LUCA_6SKILLS_MAXED)) goto L_CheckSkillsEnd;
+        if (@lvl9skills < 6 || (FLAGS & FLAG_LUCA_6SKILLS_MAXED)) goto L_CheckSkillsEnd;
             mes "[Luca the Hunter]";
             mes "I sense you have maxed out six Focus Skills!";
             mes "For that I give the final reward!";
@@ -321,7 +326,6 @@ L_InvFull:
             goto L_CheckSkillsEnd;
 
 L_CheckSkillsEnd:
-
     goto L_teachmore2;
 
 L_teachmore2:
