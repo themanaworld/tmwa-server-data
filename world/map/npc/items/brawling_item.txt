@@ -4,10 +4,28 @@
 
 function|script|BrawlingItem
 {
+    cleararray @skilllist_name$[0], "", 8;
+    cleararray @skilllist_id[0], 0, 8;
+    cleararray @skilllist_count[0], 0, 8;
+    getactivatedpoolskilllist;
+
+    if (@skilllist_id[0] == SKILL_BRAWLING)
+        goto L_BrawlingItem_Check_Weapon;
+
+    message strcharinfo(0), "This item can only be equipped by an true brawler.";
+
+    goto L_BrawlingItem_UnequipLater;
+
+L_BrawlingItem_Check_Weapon:
+
     if (getequipid(equip_hand1) == -1)
         goto L_Return;
 
     message strcharinfo(0), "This item's curse does not allow it to be used with weapons equipped.";
+
+    goto L_BrawlingItem_UnequipLater;
+
+L_BrawlingItem_UnequipLater:
 
     // This is for debug
     if (getgmlevel() >= 60)
