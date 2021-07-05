@@ -39,8 +39,14 @@ news: world/map/news.txt world/map/news.html world/map/news.rss world/map/news.j
 updates:
 	cd tools/client/ ; ./make-updates.sh
 
+
+.PHONY: frob sql stats
+
 frob:
 	deno run --allow-read=. --allow-write=world/save tools/server/frob/index.ts -- $(items)
 
 sql:
 	deno run --allow-read=. --allow-net tools/server/frob/index.ts -- --dry --sql
+
+stats:
+	deno run --allow-read=. --allow-write=log --allow-net=server.themanaworld.org,raw.githubusercontent.com tools/server/frob/index.ts -- --dry --stats
