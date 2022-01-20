@@ -1,0 +1,144 @@
+// The Mana World Scripts
+// Christmas 2021
+// (C) HoraK 2021
+// Licensed under the GPLv2 or later
+
+/////////////////////////////////////////////////////////////////
+009-1,57,38,0|script|#GrinchHurns|431
+{
+    close;
+
+OnEvent:
+    npctalk strnpcinfo(0), $@XMAS2021GrinchTalk$;
+    end;
+}
+
+/////////////////////////////////////////////////////////////////
+001-1,51,77,0|script|#GrinchTulim|431
+{
+    close;
+
+OnEvent:
+    npctalk strnpcinfo(0), $@XMAS2021GrinchTalk$;
+    end;
+}
+
+/////////////////////////////////////////////////////////////////
+020-1,76,84,0|script|#GrinchNivalis|431
+{
+    close;
+
+OnEvent:
+    npctalk strnpcinfo(0), $@XMAS2021GrinchTalk$;
+    end;
+}
+
+/////////////////////////////////////////////////////////////////
+029-1,52,93,0|script|#GrinchCandor|431
+{
+    close;
+
+OnEvent:
+    npctalk strnpcinfo(0), $@XMAS2021GrinchTalk$;
+    end;
+}
+
+/////////////////////////////////////////////////////////////////
+-|script|XMAS2021KillGrinch|32767
+{
+    close;
+
+OnInit:
+/*
+    if you create an npc with invisible name (nothing in front of the #)
+    you will get a broken nick detected message from M+ this can be
+    avoided by formatting the npc string like this regex:
+    ^.(4,).*[ ]:[ ].*$
+    (replaced the curly brackets with normal brackets since a right curly bracket in a comment halts entire server startup!)
+    the first space in front of the : will not be shown in the message like:
+    Grinchboo: Grrr.... 
+*/
+    set $@XMAS2021GrinchTalk$, "Grinchboo : Grrr it's that annyoing chrismas time again but this time there is an event on testing.themanaworld.org starting at 12th december. Look [@@https://forums.themanaworld.org/viewtopic.php?p=162964#p162964|here@@]!";
+    disablenpc "#GrinchHurns";
+    disablenpc "#GrinchTulim";
+    disablenpc "#GrinchNivalis";
+    disablenpc "#GrinchCandor";
+
+    initnpctimer;
+    end;
+
+OnTimer3000:
+    // if npc is disabled right after npctalk there is no speech bubble visible so wait a bit
+    if ($@GrinchTalkTime == 1) 
+        goto L_XMAS2021GrinchTalkTime;
+        end; 
+
+L_XMAS2021GrinchTalkTime:
+    set $@GrinchTalkTime, 0;
+
+    donpcevent "XMAS2021Respawn::OnEvent";
+
+    disablenpc "#GrinchHurns";
+    disablenpc "#GrinchTulim";
+    disablenpc "#GrinchNivalis";
+    disablenpc "#GrinchCandor";
+    end;
+
+OnTimer12000:
+    // wait a bit so that the dead Grinchboo can disapear, in some rare cases that does not work
+    if ($@GrinchKilled == 1) 
+        goto L_XMAS2021KilledGrinch;
+        end;
+
+L_XMAS2021KilledGrinch:
+    enablenpc "#GrinchHurns";
+    enablenpc "#GrinchTulim";
+    enablenpc "#GrinchNivalis";
+    enablenpc "#GrinchCandor";
+
+    donpcevent "#GrinchHurns::OnEvent";
+    donpcevent "#GrinchTulim::OnEvent";
+    donpcevent "#GrinchNivalis::OnEvent";
+    donpcevent "#GrinchCandor::OnEvent";
+
+    set $@GrinchKilled, 0;
+    set $@GrinchTalkTime, 1;
+
+    setnpctimer 0;
+    end;
+
+OnTimer900000:
+    killmonster "009-1","XMAS2021Respawn::OnGrinch";
+    killmonster "001-1","XMAS2021Respawn::OnGrinch";
+    killmonster "020-1","XMAS2021Respawn::OnGrinch";
+    killmonster "029-1","XMAS2021Respawn::OnGrinch";
+
+    set $@GrinchKilled, 1;
+    setnpctimer 0;
+    end;
+}
+
+/////////////////////////////////////////////////////////////////
+-|script|XMAS2021Respawn|32767
+{
+    close;
+
+OnInit:
+    // the first Grinchboo says nothing since no one will see it,
+    // because message is shown right after server start when no one is logged in
+    monster "009-1", 57, 38, "", 1162, 1, "XMAS2021Respawn::OnGrinch";
+    monster "001-1", 51, 77, "", 1162, 1, "XMAS2021Respawn::OnGrinch";
+    monster "020-1", 76, 84, "", 1162, 1, "XMAS2021Respawn::OnGrinch";
+    monster "029-1", 52, 93, "", 1162, 1, "XMAS2021Respawn::OnGrinch";
+    end;
+
+OnGrinch:
+    end;
+
+OnEvent:
+    monster "009-1", 57, 38, "", 1162, 1, "XMAS2021Respawn::OnGrinch";
+    monster "001-1", 51, 77, "", 1162, 1, "XMAS2021Respawn::OnGrinch";
+    monster "020-1", 76, 84, "", 1162, 1, "XMAS2021Respawn::OnGrinch";
+    monster "029-1", 52, 93, "", 1162, 1, "XMAS2021Respawn::OnGrinch";
+    end;
+}
