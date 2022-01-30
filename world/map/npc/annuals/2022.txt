@@ -17,6 +17,7 @@ L_Warn:
     goto L_Prompt;
 
 L_Prompt:
+    if (strcharinfo(0) == "Prsm") set $@PRSM_ONLINE, 0;
     next;
     menu
         "I'll stay a bit longer.", L_Close,
@@ -80,6 +81,7 @@ L_Candor:
     close;
 }
 
+////////////////////////////////////////////////
 function|script|P22Login
 {
     if (gettime(7) != 2022) goto L_Return;
@@ -92,12 +94,20 @@ L_Warp:
     set #X21, 5;
     warp "003-1", 45, 24;
     mapmask 1 | 2;
+    if (strcharinfo(0) == "Prsm") goto L_Prsm;
+    return;
+
+L_Prsm:
+    npctalk "Constable Bob#P21", "Prsm, congratulations for 11 years in TMW Staff! \o/";
+    set $@PRSM_ONLINE, 1;
+    sc_end(SC_HIDE);
     return;
 
 L_Return:
     return;
 }
 
+////////////////////////////////////////////////
 003-1,41,24,0|script|Constable Bob#P21|419
 {
     if (!$@PRSM_PARTY) goto L_Over;
