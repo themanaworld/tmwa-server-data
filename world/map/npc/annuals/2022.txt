@@ -87,11 +87,17 @@ function|script|P22Login
     if (gettime(7) != 2022) goto L_Return;
     if (gettime(6) != 4) goto L_Return;
     if (gettime(5) != 2 && gettime(5) != 3) goto L_Return;
-    if (#X21 < 5) goto L_Warp;
+    if (gettimetick(2) - TUT_var < 1*7*86400) goto L_Return; // One week
+    if (#X21 < 4) goto L_Warp;
+    if (getmap() == "003-1") goto L_FixMask;
+    return;
+
+L_FixMask:
+    mapmask 1 | 2;
     return;
 
 L_Warp:
-    set #X21, 5;
+    set #X21, 4;
     warp "003-1", 45, 24;
     mapmask 1 | 2;
     if (strcharinfo(0) == "Prsm") goto L_Prsm;
@@ -144,6 +150,86 @@ L_Off:
 
 L_None:
     end;
+}
+
+////////////////////////////////////////////////
+// $GUESTBOOK_AUTHOR$[entry] + $GUESTBOOK_MESSAGE$[entry]
+// Persistent to survive an eventual crash
+// Major bit: 8 (#X21 & 8) ─ Because it could tax map server otherwise
+// NOTE: We actually could use Elli, as she is the notes keeper?
+003-1,34,46,0|script|Numa#P22|393
+{
+    if (strcharinfo(0) == "Prsm") goto L_Done;
+    if (#X21 & 8) goto L_Done;
+    if (!$@PRSM_PARTY) goto L_Over;
+    mapmask 1 | 2;
+    mes "[Numa]";
+    mes "\"I'm making a book with the wishes from the whole The Mana World Community. Do you want to write something to Prsm? Everyone will be able to read it.\"";
+    next;
+    menu
+        "Yes", L_Write,
+        "No", L_Close;
+
+L_Write:
+    set @msg$, "";
+    input @msg$;
+    if (@msg$ == "")
+        goto L_Close;
+    mes "[Numa]";
+    mes @msg$;
+    mes "##0##BNuma carefully looks over your message, and nodding in approval, she says:##b";
+    mes "\"Are you sure you want to post this? Do note that spam, harassment, and attempts to ruin the party will get you kicked or worse, so think carefully!\"";
+    menu
+        "Yes", L_Save,
+        "No", L_Close;
+
+L_Save:
+    set @loop, getarraysize($GUESTBOOK_AUTHOR$) - 1;
+    if (@loop < 0) set @loop, 0;
+    if ($GUESTBOOK_AUTHOR$[@loop] != "") set @loop, @loop + 1;
+    set $GUESTBOOK_AUTHOR$[@loop], strcharinfo(0);
+    set $GUESTBOOK_MESSAGE$[@loop], @msg$;
+    set #X21, #X21 | 8;
+    mes "[Numa]";
+    mes "\"There we go! Thanks. Do you want to read the book, now?\"";
+    next;
+    menu
+        "Yes", L_Show,
+        "No", L_Close;
+
+L_Over:
+    mes "[Numa]";
+    mes "\"The party is over; Please leave with the south gate before the developers seal it off again.\"";
+    close;
+
+L_Done:
+    mes "[Numa]";
+    mes "\"Do you want to read what the players wrote for Prsm?\"";
+    menu
+        "Yes", L_Show,
+        "No", L_Close;
+
+L_Show:
+    set @loop, 0;
+    goto L_ShowNext;
+
+L_ShowNext:
+    if ($GUESTBOOK_AUTHOR$[@loop] == "")
+        goto L_Close;
+    mes "##B"+$GUESTBOOK_AUTHOR$[@loop] + "##b - " + $GUESTBOOK_MESSAGE$[@loop]+"##0";
+    set @loop, @loop + 1;
+    if ((@loop % 5) == 0 && $GUESTBOOK_AUTHOR$[@loop] != "")
+        goto L_PauseCont;
+    goto L_ShowNext;
+
+L_PauseCont:
+    next;
+    goto L_ShowNext;
+
+L_Close:
+    set @msg$, "";
+    set @loop, 0;
+    close;
 }
 
 
