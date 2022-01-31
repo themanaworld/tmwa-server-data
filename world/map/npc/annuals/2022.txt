@@ -156,7 +156,7 @@ L_None:
 // $GUESTBOOK_AUTHOR$[entry] + $GUESTBOOK_MESSAGE$[entry]
 // Persistent to survive an eventual crash
 // Major bit: 8 (#X21 & 8) ─ Because it could tax map server otherwise
-// NOTE: We actually could use Elli, as she is the notes keeper?
+// Note: We actually could use Elli, as she is the notes keeper?
 003-1,34,46,0|script|Numa#P22|393
 {
     if (strcharinfo(0) == "Prsm") goto L_Done;
@@ -232,4 +232,55 @@ L_Close:
     close;
 }
 
+
+////////////////////////////////////////////////
+// FIXME: Elli sprite, she'll collect
+// Present Boxes for Prsm, and give players
+// their commemorative hat for attending.
+// If the player has none, they can use Tybalt's storage
+// Or go to the "Botcheck area" from the party:
+// The far corner where the scammer is.
+// $PARTY_GIFTS track how many gifts were given
+// NOTE: Elli is Hocus' protegee.
+003-1,28,47,0|script|Elli#P22|393
+{
+    if (strcharinfo(0) == "Prsm") goto L_Done;
+    if (#X21 & 2) goto L_Done;
+    if (!$@PRSM_PARTY) goto L_Over;
+    mes "[Elli]";
+    mes "\"Don't call me Elli! %%e Geez, what's Hocus thinking, writing my name this way... Oh! Hello, "+strcharinfo(0)+", and welcome to Prsm's Surprise Party!\"";
+    next;
+    mes "[Elli]";
+    mes "\"I'm collecting presents to give to Prsm, if you give him one, I can give you a cool commemoration hat to remember this occasion.\"";
+    next;
+    mes "[Elli]";
+    mes "\"White present boxes are more valuable than yellow ones, which are more useful than green, blue and purple in that order. But it is the thought that counts, not the box! So, how will you cheer up Prsm's day today?\"";
+    next;
+    menu
+        "I forgot a gift!", L_More,
+//        "White Present Box", L_White,
+//        "Yellow Present Box", L_Yellow,
+//        "Green Present Box", L_Green,
+//        "Blue Present Box", L_Blue,
+//        "Purple Present Box", L_Purple,
+        "Not now", L_Close;
+
+L_Close:
+    close;
+
+L_More:
+    mes "[Elli]";
+    mes "\"How can you come to a party and forget a gift?! Whatever, there's a botcheck area a little east from here. Just don't ask the scammer for one, he'll charge you a ridiculous amount.\"";
+    close;
+
+L_Done:
+    mes "[Elli]";
+    mes "\"I collected "+ $PARTY_GIFTS +" gifts for Prsm's special day. Hocus wanted to give him more than one, but I slapped him back to his senses.\"";
+    close;
+
+L_Over:
+    mes "[Elli]";
+    mes "\"The party is over; Please leave with the south gate before the developers seal it off again.\"";
+    close;
+}
 
