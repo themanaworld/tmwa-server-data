@@ -1,6 +1,6 @@
 // Evol script
 // Year: 2022
-//
+// 1 = Christmas 2021 ; 2 = First Warp ; 4 = Gifts ; 8 = Guest Book; 15 = ALL
 ////////////////////////////////////////////////
 // Controls the party and puppets
 
@@ -9,7 +9,7 @@
     end;
 OnTouch:
     mes "Do you want to leave the party?";
-    if (#X21 < 10) goto L_Warn;
+    if (#X21 < 14) goto L_Warn;
     goto L_Prompt;
 
 L_Warn:
@@ -35,48 +35,48 @@ L_Close:
     close;
 
 L_Tulim:
-    set #X21, 10;
+    set #X21, 15;
     warp "002-1", 60, 42;
     close;
 
 L_Pachua:
-    set #X21, 10;
+    set #X21, 15;
     warp "006-1", 28, 97;
     close;
 
 L_Hurns:
-    set #X21, 10;
+    set #X21, 15;
     warp "008-1", 79, 84;
     close;
 
 L_Terra:
-    set #X21, 10;
+    set #X21, 15;
     warp "012-3", 445, 65;
     close;
 
 L_Nivalis:
-    set #X21, 10;
+    set #X21, 15;
     warp "020-1", 53, 122;
     close;
 
 L_Blue:
-    set #X21, 10;
+    set #X21, 15;
     warp "048-2", 26, 47;
     close;
 
 L_Crypt:
-    set #X21, 10;
+    set #X21, 15;
     warp "026-1", 49, 45;
     close;
 
 // FIXME Map size changed?
 L_Keshlam:
-    set #X21, 10;
+    set #X21, 15;
     warp "099-7", 75, 13;
     close;
 
 L_Candor:
-    set #X21, 10;
+    set #X21, 15;
     warp "029-1", 69, 69;
     close;
 }
@@ -88,7 +88,7 @@ function|script|P22Login
     if (gettime(6) != 4) goto L_Return;
     if (gettime(5) != 2 && gettime(5) != 3) goto L_Return;
     if (gettimetick(2) - TUT_var < 1*7*86400) goto L_Return; // One week
-    if (#X21 < 4) goto L_Warp;
+    if (!(#X21 & 2)) goto L_Warp;
     if (getmap() == "003-1") goto L_FixMask;
     return;
 
@@ -97,7 +97,7 @@ L_FixMask:
     return;
 
 L_Warp:
-    set #X21, 4;
+    set #X21, #X21 | 2;
     warp "003-1", 45, 24;
     mapmask 1 | 2;
     if (strcharinfo(0) == "Prsm") goto L_Prsm;
@@ -245,7 +245,7 @@ L_Close:
 003-1,28,47,0|script|Elli#P22|393
 {
     if (strcharinfo(0) == "Prsm") goto L_Done;
-    if (#X21 & 2) goto L_Done;
+    if (#X21 & 4) goto L_Done;
     if (!$@PRSM_PARTY) goto L_Over;
     mes "[Elli]";
     mes "\"Don't call me Elli! %%e Geez, what's Hocus thinking, writing my name this way... Oh! Hello, "+strcharinfo(0)+", and welcome to Prsm's Surprise Party!\"";
@@ -254,18 +254,61 @@ L_Close:
     mes "\"I'm collecting presents to give to Prsm, if you give him one, I can give you a cool commemoration hat to remember this occasion.\"";
     next;
     mes "[Elli]";
-    mes "\"White present boxes are more valuable than yellow ones, which are more useful than green, blue and purple in that order. But it is the thought that counts, not the box! So, how will you cheer up Prsm's day today?\"";
+    mes "\"White present boxes have more spiritual attachment than yellow ones, which is worth more than green, blue and purple in that order. But it is the thought that counts, not the box! So, how will you cheer up Prsm's day today?\"";
     next;
     menu
         "I forgot a gift!", L_More,
-//        "White Present Box", L_White,
-//        "Yellow Present Box", L_Yellow,
-//        "Green Present Box", L_Green,
-//        "Blue Present Box", L_Blue,
-//        "Purple Present Box", L_Purple,
+        "White Present Box", L_White,
+        "Yellow Present Box", L_Yellow,
+        "Green Present Box", L_Green,
+        "Blue Present Box", L_Blue,
+        "Purple Present Box", L_Purple,
         "Not now", L_Close;
 
 L_Close:
+    close;
+
+L_White:
+    if (countitem("WhitePresentBox") < 1) goto L_NoGift;
+    delitem "WhitePresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 5;
+    goto L_Final;
+
+L_Yellow:
+    if (countitem("YellowPresentBox") < 1) goto L_NoGift;
+    delitem "YellowPresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 4;
+    goto L_Final;
+
+L_Green:
+    if (countitem("GreenPresentBox") < 1) goto L_NoGift;
+    delitem "GreenPresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 3;
+    goto L_Final;
+
+L_Blue:
+    if (countitem("BluePresentBox") < 1) goto L_NoGift;
+    delitem "BluePresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 2;
+    goto L_Final;
+
+L_Purple:
+    if (countitem("PurplePresentBox") < 1) goto L_NoGift;
+    delitem "PurplePresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 1;
+    goto L_Final;
+
+L_Final:
+    // FIXME Give the hat
+    mes "[Elli]";
+    mes "\"FIXME: Give the hat\"";
+    // getitem "NewHat", 1;
+    set #X21, #X21 | 4;
+    close;
+
+L_NoGift:
+    mes "[Elli]";
+    mes "\"I hate liars. "+strcharinfo(0)+" bad, ban!\"";
     close;
 
 L_More:
@@ -273,9 +316,10 @@ L_More:
     mes "\"How can you come to a party and forget a gift?! Whatever, there's a botcheck area a little east from here. Just don't ask the scammer for one, he'll charge you a ridiculous amount.\"";
     close;
 
+// WORDING: It is not gifts, but their spiritual attachment >.<
 L_Done:
     mes "[Elli]";
-    mes "\"I collected "+ $PARTY_GIFTS +" gifts for Prsm's special day. Hocus wanted to give him more than one, but I slapped him back to his senses.\"";
+    mes "\"I collected gifts worth "+ $PARTY_GIFTS +" feelings for Prsm's special day. Hocus wanted to give him more than one, but I slapped him back to his senses.\"";
     close;
 
 L_Over:
