@@ -1,7 +1,11 @@
 # Contributing
-*This repository is* ***feature-frozen****. Anything that changes gameplay, adds new content, or extends existing content will NOT be merged.*  
+*This repository is* ***feature-frozen****. Anything that changes gameplay,
+adds new content, or extends existing content will NOT be merged.*
 
-Only patches for the following will be accepted:  
+However, we may still merge content also available on TMW Evolved.
+
+
+Otherwise, only patches for the following will be accepted:  
 
 
 ## High priority patches
