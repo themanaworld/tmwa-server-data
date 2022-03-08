@@ -1,5 +1,5 @@
 // Evol script
-// Year: 2022
+// The last party made for the greatest Game Master of The Mana World (Year: 2022)
 // 1 = Christmas 2021 ; 2 = First Warp ; 4 = Gifts ; 8 = Guest Book; 15 = ALL
 ////////////////////////////////////////////////
 // Controls the party and puppets
@@ -84,6 +84,7 @@ L_Candor:
 ////////////////////////////////////////////////
 function|script|P22Login
 {
+    if (1 + 1 == 2) goto L_FixMask; // FIXME Debug Marker
     if (gettime(7) != 2022) goto L_Return;
     if (gettime(6) != 4) goto L_Return;
     if (gettime(5) != 2 && gettime(5) != 3) goto L_Return;
@@ -115,6 +116,7 @@ L_FixMask:
     sendcollision "003-1", 1, 31, 26, 33, 28;
     sendcollision "003-1", 1, 31, 31, 33, 33;
     sendcollision "003-1", 1, 31, 36, 33, 38;
+    set @P22FOOD, 255; // Anti-Cheat
     return;
 
 L_Warp:
@@ -188,9 +190,23 @@ OnClock0000:
 
 L_Off:
     set $@PRSM_PARTY, 0;
+    disablenpc "!#P22A";
+    disablenpc "!#P22B";
+    disablenpc "!#P22C";
+    disablenpc "!#P22D";
+    disablenpc "!#P22E";
+    disablenpc "!#P22F";
+    disablenpc "!#P22G";
     end;
 
 L_None:
+    disablenpc "!#P22A";
+    disablenpc "!#P22B";
+    disablenpc "!#P22C";
+    disablenpc "!#P22D";
+    disablenpc "!#P22E";
+    disablenpc "!#P22F";
+    disablenpc "!#P22G";
     end;
 }
 
@@ -341,10 +357,11 @@ L_Purple:
     goto L_Final;
 
 L_Final:
-    // FIXME Give the hat
     mes "[Elli]";
-    mes "\"FIXME: Give the hat\"";
-    // getitem "NewHat", 1;
+    mes "\"Thanks, here is your party hat.\"";
+    setarray @oldstock$, "PartyHatR", "PartyHatG", "PartyHatB";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    cleararray @oldstock$, "", getarraysize(@oldstock$);
     set #X21, #X21 | 4;
     close;
 
@@ -368,5 +385,99 @@ L_Over:
     mes "[Elli]";
     mes "\"The party is over; Please leave with the south gate before the developers seal it off again.\"";
     close;
+}
+
+////////////////////////////////////////////////
+// You are allowed to take some food
+003-1,40,34,0|script|!#P22A|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 1) goto L_Close;
+    set @P22FOOD, @P22FOOD | 1;
+    getitem "ChickenLeg", 3;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,42,34,0|script|!#P22B|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 2) goto L_Close;
+    set @P22FOOD, @P22FOOD | 2;
+    getitem "Steak", 5;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,44,34,0|script|!#P22C|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 4) goto L_Close;
+    set @P22FOOD, @P22FOOD | 4;
+    getitem "WhiteCake", 1;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,46,34,0|script|!#P22D|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 8) goto L_Close;
+    set @P22FOOD, @P22FOOD | 8;
+    getitem "GrassSnakeEgg", 2;
+    end;
+
+L_Close:
+    end;
+}
+
+// Side dishes
+003-1,32,37,0|script|!#P22E|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 16) goto L_Close;
+    set @P22FOOD, @P22FOOD | 16;
+    getitem "CaramelCandy", 3;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,54,37,0|script|!#P22F|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 32) goto L_Close;
+    set @P22FOOD, @P22FOOD | 32;
+    if (rand(2) == 1) goto L_Milk;
+    getitem "Beer", 1;
+    end;
+
+L_Milk:
+    getitem "Milk", 1;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,51,54,0|script|!#P22G|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 64) goto L_Close;
+    set @P22FOOD, @P22FOOD | 64;
+    setarray @oldstock$, "CranberryLollipop", "GrapeLollipop", "OrangeLollipop", "LollipopColor1", "LollipopColor2", "LollipopColor3";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    cleararray @oldstock$, "", getarraysize(@oldstock$);
+    end;
+
+L_Close:
+    end;
 }
 
