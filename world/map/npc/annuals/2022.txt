@@ -1,0 +1,483 @@
+// Evol script
+// The last party made for the greatest Game Master of The Mana World (Year: 2022)
+// 1 = Christmas 2021 ; 2 = First Warp ; 4 = Gifts ; 8 = Guest Book; 15 = ALL
+////////////////////////////////////////////////
+// Controls the party and puppets
+
+003-1,42,94,0|script|#P2022Exit|400,4,0
+{
+    end;
+OnTouch:
+    mes "Do you want to leave the party?";
+    if (#X21 < 14) goto L_Warn;
+    goto L_Prompt;
+
+L_Warn:
+    mes "##1You won't be able to complete the party events once you leave.##0";
+    goto L_Prompt;
+
+L_Prompt:
+    if (strcharinfo(0) == "Prsm") set $@PRSM_ONLINE, 0;
+    next;
+    menu
+        "I'll stay a bit longer.", L_Close,
+        "Leave to Tulimshar", L_Tulim,
+        "Leave to Pachua Village", L_Pachua,
+        "Leave to Hurnscald", L_Hurns,
+        "Leave to Terranite Cave", L_Terra,
+        "Leave to Nivalis", L_Nivalis,
+        "Leave to Blue Sage Manor", L_Blue,
+        "Leave to Graveyard", L_Crypt,
+        "Leave to Keshlam Swamps", L_Keshlam,
+        "Leave to Candor", L_Candor,
+        "I've changed my mind.", L_Close;
+L_Close:
+    close;
+
+L_Tulim:
+    set #X21, 15;
+    warp "002-1", 60, 42;
+    close;
+
+L_Pachua:
+    set #X21, 15;
+    warp "006-1", 28, 97;
+    close;
+
+L_Hurns:
+    set #X21, 15;
+    warp "008-1", 79, 84;
+    close;
+
+L_Terra:
+    set #X21, 15;
+    warp "012-3", 445, 65;
+    close;
+
+L_Nivalis:
+    set #X21, 15;
+    warp "020-1", 53, 122;
+    close;
+
+L_Blue:
+    set #X21, 15;
+    warp "048-2", 26, 47;
+    close;
+
+L_Crypt:
+    set #X21, 15;
+    warp "026-1", 49, 45;
+    close;
+
+// FIXME Map size changed?
+L_Keshlam:
+    set #X21, 15;
+    warp "099-7", 75, 13;
+    close;
+
+L_Candor:
+    set #X21, 15;
+    warp "029-1", 69, 69;
+    close;
+}
+
+////////////////////////////////////////////////
+function|script|P22Login
+{
+    if (gettime(7) != 2022) goto L_Return;
+    if (gettime(6) != 4) goto L_Return;
+    if (gettime(5) != 2 && gettime(5) != 3) goto L_Return;
+    if (!TUT_var) goto L_Return; // Freshly created
+    if (gettimetick(2) - TUT_var < 1*7*86400) goto L_Return; // One week
+    if (!(#X21 & 2)) goto L_Warp;
+    if (getmap() == "003-1") goto L_FixMask;
+    return;
+
+L_FixMask:
+    mapmask 1 | 2;
+    sendcollision "003-1", 1, 50, 53, 52, 55; // Ishi Tables
+    sendcollision "003-1", 1, 26, 50, 31, 50; // Gift Rows
+    sendcollision "003-1", 1, 26, 52, 31, 52;
+    sendcollision "003-1", 1, 26, 54, 31, 54;
+    sendcollision "003-1", 1, 26, 56, 31, 56;
+    sendcollision "003-1", 1, 33, 51, 38, 51;
+    sendcollision "003-1", 1, 33, 53, 38, 53;
+    sendcollision "003-1", 1, 33, 55, 38, 55;
+    sendcollision "003-1", 1, 39, 34, 48, 35; // Main Table
+    sendcollision "003-1", 1, 53, 26, 55, 28; // Right Side Tables
+    sendcollision "003-1", 1, 53, 31, 55, 33;
+    sendcollision "003-1", 1, 53, 36, 55, 38;
+    sendcollision "003-1", 1, 58, 26, 60, 28;
+    sendcollision "003-1", 1, 58, 31, 60, 33;
+    sendcollision "003-1", 1, 58, 36, 60, 38;
+    sendcollision "003-1", 1, 26, 26, 28, 28; // Left Side Tables
+    sendcollision "003-1", 1, 26, 31, 28, 33;
+    sendcollision "003-1", 1, 26, 36, 28, 38;
+    sendcollision "003-1", 1, 31, 26, 33, 28;
+    sendcollision "003-1", 1, 31, 31, 33, 33;
+    sendcollision "003-1", 1, 31, 36, 33, 38;
+    set @P22FOOD, 255; // Anti-Cheat
+    return;
+
+L_Warp:
+    set #X21, #X21 | 2;
+    warp "003-1", 45, 24;
+    mapmask 1 | 2;
+    sendcollision "003-1", 1, 50, 53, 52, 55; // Ishi Tables
+    sendcollision "003-1", 1, 26, 50, 31, 50; // Gift Rows
+    sendcollision "003-1", 1, 26, 52, 31, 52;
+    sendcollision "003-1", 1, 26, 54, 31, 54;
+    sendcollision "003-1", 1, 26, 56, 31, 56;
+    sendcollision "003-1", 1, 33, 51, 38, 51;
+    sendcollision "003-1", 1, 33, 53, 38, 53;
+    sendcollision "003-1", 1, 33, 55, 38, 55;
+    sendcollision "003-1", 1, 39, 34, 48, 35; // Main Table
+    sendcollision "003-1", 1, 53, 26, 55, 28; // Right Side Tables
+    sendcollision "003-1", 1, 53, 31, 55, 33;
+    sendcollision "003-1", 1, 53, 36, 55, 38;
+    sendcollision "003-1", 1, 58, 26, 60, 28;
+    sendcollision "003-1", 1, 58, 31, 60, 33;
+    sendcollision "003-1", 1, 58, 36, 60, 38;
+    sendcollision "003-1", 1, 26, 26, 28, 28; // Left Side Tables
+    sendcollision "003-1", 1, 26, 31, 28, 33;
+    sendcollision "003-1", 1, 26, 36, 28, 38;
+    sendcollision "003-1", 1, 31, 26, 33, 28;
+    sendcollision "003-1", 1, 31, 31, 33, 33;
+    sendcollision "003-1", 1, 31, 36, 33, 38;
+    if (strcharinfo(0) == "Prsm") goto L_Prsm;
+    return;
+
+L_Prsm:
+    npctalk "Constable Bob#P21", "Prsm, congratulations for 11 years in TMW Staff! \o/";
+    set $@PRSM_ONLINE, 1;
+    sc_end(SC_HIDE);
+    return;
+
+L_Return:
+    return;
+}
+
+////////////////////////////////////////////////
+003-1,41,24,0|script|Constable Bob#P21|419
+{
+    if (!$@PRSM_PARTY) goto L_Over;
+    mapmask 1 | 2;
+    mes "[Constable Bob]";
+    mes "\"Hello, and welcome to the celebration I've prepared for my best friend and comrade in keeping The Mana World safe: ##BPrsm##b.\"";
+    next;
+    mes "[Constable Bob]";
+    mes "\"Prsm has enforced the laws for ##Beleven years##b, that's way longer than me. Not to say how he have been around for at least fifteen.\"";
+    mes "\"This may be just my seventh year on staff, but I must admit that working with Prsm made the most wonderful years I had. I couldn't ask for a better partner.\"";
+    next;
+    mes "[Constable Bob]";
+    mes "\"Which is why I asked the admins for mass warp powers and the devs to prepare a party; this is the least I could do for my friend. Please enjoy yourself while you're here, and once you're done, you can leave with the south gate.\"";
+    close;
+
+L_Over:
+    mes "[Constable Bob]";
+    mes "\"The party is over; Please leave with the south gate before the developers seal it off again.\"";
+    close;
+
+OnInit:
+    goto OnClock0000;
+
+OnClock0000:
+    if (gettime(7) != 2022) goto L_None;
+    if (gettime(6) != 4) goto L_None;
+    if (gettime(5) != 2 && gettime(5) != 3) goto L_Off;
+    set $@PRSM_PARTY, 1;
+    end;
+
+L_Off:
+    set $@PRSM_PARTY, 0;
+    disablenpc "!#P22A";
+    disablenpc "!#P22B";
+    disablenpc "!#P22C";
+    disablenpc "!#P22D";
+    disablenpc "!#P22E";
+    disablenpc "!#P22F";
+    disablenpc "!#P22G";
+    end;
+
+L_None:
+    disablenpc "!#P22A";
+    disablenpc "!#P22B";
+    disablenpc "!#P22C";
+    disablenpc "!#P22D";
+    disablenpc "!#P22E";
+    disablenpc "!#P22F";
+    disablenpc "!#P22G";
+    end;
+}
+
+////////////////////////////////////////////////
+// $GUESTBOOK_AUTHOR$[entry] + $GUESTBOOK_MESSAGE$[entry]
+// Persistent to survive an eventual crash
+// Major bit: 8 (#X21 & 8) ─ Because it could tax map server otherwise
+// Note: We actually could use Elli, as she is the notes keeper?
+003-1,34,46,0|script|Numa#P22|393
+{
+    if (strcharinfo(0) == "Prsm") goto L_Done;
+    if (#X21 & 8) goto L_Done;
+    if (!$@PRSM_PARTY) goto L_Over;
+    mapmask 1 | 2;
+    mes "[Numa]";
+    mes "\"I'm making a book with the wishes from the whole The Mana World Community. Do you want to write something to Prsm? Everyone will be able to read it.\"";
+    next;
+    menu
+        "Yes", L_Write,
+        "No", L_Close;
+
+L_Write:
+    set @msg$, "";
+    input @msg$;
+    if (@msg$ == "")
+        goto L_Close;
+    mes "[Numa]";
+    mes @msg$;
+    mes "##0##BNuma carefully looks over your message, and nodding in approval, she says:##b";
+    mes "\"Are you sure you want to post this? Do note that spam, harassment, and attempts to ruin the party will get you kicked or worse, so think carefully!\"";
+    menu
+        "Yes", L_Save,
+        "No", L_Close;
+
+L_Save:
+    set @loop, getarraysize($GUESTBOOK_AUTHOR$) - 1;
+    if (@loop < 0) set @loop, 0;
+    if ($GUESTBOOK_AUTHOR$[@loop] != "") set @loop, @loop + 1;
+    set $GUESTBOOK_AUTHOR$[@loop], strcharinfo(0);
+    set $GUESTBOOK_MESSAGE$[@loop], @msg$;
+    set #X21, #X21 | 8;
+    mes "[Numa]";
+    mes "\"There we go! Thanks. Do you want to read the book, now?\"";
+    next;
+    menu
+        "Yes", L_Show,
+        "No", L_Close;
+
+L_Over:
+    mes "[Numa]";
+    mes "\"The party is over; Please leave with the south gate before the developers seal it off again.\"";
+    close;
+
+L_Done:
+    mes "[Numa]";
+    mes "\"Do you want to read what the players wrote for Prsm?\"";
+    menu
+        "Yes", L_Show,
+        "No", L_Close;
+
+L_Show:
+    set @loop, 0;
+    goto L_ShowNext;
+
+L_ShowNext:
+    if ($GUESTBOOK_AUTHOR$[@loop] == "")
+        goto L_Close;
+    mes "##B"+$GUESTBOOK_AUTHOR$[@loop] + "##b - " + $GUESTBOOK_MESSAGE$[@loop]+"##0";
+    set @loop, @loop + 1;
+    if ((@loop % 5) == 0 && $GUESTBOOK_AUTHOR$[@loop] != "")
+        goto L_PauseCont;
+    goto L_ShowNext;
+
+L_PauseCont:
+    next;
+    goto L_ShowNext;
+
+L_Close:
+    set @msg$, "";
+    set @loop, 0;
+    close;
+}
+
+
+////////////////////////////////////////////////
+// Elli will come back in Olympics. Collects
+// Present Boxes for Prsm, and give players
+// their commemorative hat for attending.
+// If the player has none, they can use Tybalt's storage
+// Or go to the "Botcheck area" from the party:
+// The far corner where the scammer is.
+// $PARTY_GIFTS track how many gifts were given
+// NOTE: Elli is Hocus' protegee.
+003-1,28,47,0|script|Elli#P22|441
+{
+    if (strcharinfo(0) == "Prsm") goto L_Done;
+    if (#X21 & 4) goto L_Done;
+    if (!$@PRSM_PARTY) goto L_Over;
+    mes "[Elli]";
+    mes "\"Don't call me Elli! %%e Geez, what's Hocus thinking, writing my name this way... Oh! Hello, "+strcharinfo(0)+", and welcome to Prsm's Surprise Party!\"";
+    next;
+    mes "[Elli]";
+    mes "\"I'm collecting presents to give to Prsm, if you give him one, I can give you a cool commemoration hat to remember this occasion.\"";
+    next;
+    mes "[Elli]";
+    mes "\"White present boxes have more spiritual attachment than yellow ones, which is worth more than green, blue and purple in that order. But it is the thought that counts, not the box! So, how will you cheer up Prsm's day today?\"";
+    next;
+    menu
+        "I forgot a gift!", L_More,
+        "White Present Box", L_White,
+        "Yellow Present Box", L_Yellow,
+        "Green Present Box", L_Green,
+        "Blue Present Box", L_Blue,
+        "Purple Present Box", L_Purple,
+        "Not now", L_Close;
+
+L_Close:
+    close;
+
+L_White:
+    if (countitem("WhitePresentBox") < 1) goto L_NoGift;
+    delitem "WhitePresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 5;
+    goto L_Final;
+
+L_Yellow:
+    if (countitem("YellowPresentBox") < 1) goto L_NoGift;
+    delitem "YellowPresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 4;
+    goto L_Final;
+
+L_Green:
+    if (countitem("GreenPresentBox") < 1) goto L_NoGift;
+    delitem "GreenPresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 3;
+    goto L_Final;
+
+L_Blue:
+    if (countitem("BluePresentBox") < 1) goto L_NoGift;
+    delitem "BluePresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 2;
+    goto L_Final;
+
+L_Purple:
+    if (countitem("PurplePresentBox") < 1) goto L_NoGift;
+    delitem "PurplePresentBox", 1;
+    set $PARTY_GIFTS, $PARTY_GIFTS + 1;
+    goto L_Final;
+
+L_Final:
+    mes "[Elli]";
+    mes "\"Thanks, here is your party hat.\"";
+    setarray @oldstock$, "PartyHatR", "PartyHatG", "PartyHatB";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    cleararray @oldstock$, "", getarraysize(@oldstock$);
+    set #X21, #X21 | 4;
+    close;
+
+L_NoGift:
+    mes "[Elli]";
+    mes "\"I hate liars. "+strcharinfo(0)+" bad, ban!\"";
+    close;
+
+L_More:
+    mes "[Elli]";
+    mes "\"How can you come to a party and forget a gift?! Whatever, there's a botcheck area a little east from here. Just don't ask the scammer for one, he'll charge you a ridiculous amount.\"";
+    close;
+
+// WORDING: It is not gifts, but their spiritual attachment >.<
+L_Done:
+    mes "[Elli]";
+    mes "\"I collected gifts worth "+ $PARTY_GIFTS +" feelings for Prsm's special day. Hocus wanted to give him more than one, but I slapped him back to his senses.\"";
+    close;
+
+L_Over:
+    mes "[Elli]";
+    mes "\"The party is over; Please leave with the south gate before the developers seal it off again.\"";
+    close;
+}
+
+////////////////////////////////////////////////
+// You are allowed to take some food
+003-1,40,34,0|script|!#P22A|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 1) goto L_Close;
+    set @P22FOOD, @P22FOOD | 1;
+    getitem "ChickenLeg", 3;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,42,34,0|script|!#P22B|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 2) goto L_Close;
+    set @P22FOOD, @P22FOOD | 2;
+    getitem "Steak", 5;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,44,34,0|script|!#P22C|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 4) goto L_Close;
+    set @P22FOOD, @P22FOOD | 4;
+    getitem "WhiteCake", 1;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,46,34,0|script|!#P22D|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 8) goto L_Close;
+    set @P22FOOD, @P22FOOD | 8;
+    getitem "GrassSnakeEgg", 2;
+    end;
+
+L_Close:
+    end;
+}
+
+// Side dishes
+003-1,32,37,0|script|!#P22E|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 16) goto L_Close;
+    set @P22FOOD, @P22FOOD | 16;
+    getitem "CaramelCandy", 3;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,54,37,0|script|!#P22F|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 32) goto L_Close;
+    set @P22FOOD, @P22FOOD | 32;
+    if (rand(2) == 1) goto L_Milk;
+    getitem "Beer", 1;
+    end;
+
+L_Milk:
+    getitem "Milk", 1;
+    end;
+
+L_Close:
+    end;
+}
+
+003-1,51,54,0|script|!#P22G|400
+{
+    if (#X21 >= 15) goto L_Close;
+    if (@P22FOOD & 64) goto L_Close;
+    set @P22FOOD, @P22FOOD | 64;
+    setarray @oldstock$, "CranberryLollipop", "GrapeLollipop", "OrangeLollipop", "LollipopColor1", "LollipopColor2", "LollipopColor3";
+    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
+    cleararray @oldstock$, "", getarraysize(@oldstock$);
+    end;
+
+L_Close:
+    end;
+}
+
