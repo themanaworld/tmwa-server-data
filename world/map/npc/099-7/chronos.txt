@@ -1,0 +1,249 @@
+// Cronos, the lord of time and apparently a shopkeeper
+// There's also Father Time in the GM stuff
+
+099-7,95,27,0|script|Chronos|313
+{
+    cleararray @items$, "", getarraysize(@items$); // must be cleared here if someone used the close button last time then items would remain in list
+    cleararray @item_names$, "", getarraysize(@item_names$);
+    cleararray @shopopt$, "", getarraysize(@shopopt$);
+    mes "[Chronos]";
+    mes "\"I'm Chronos, lord of time, the immortal, the head editor of the Almanach, the... Alright, let's forget that.\"";
+    if (BOSS_POINTS < .price) goto L_Close;
+    // (Does this even work? I'm not sure)
+    set @cur_date, (gettime(7) << 5) | (gettime(6) << 1);
+    if (#CHRONOS == @cur_date) goto L_Maxed;
+    if ($CHRONOS_STOCK < 1) goto L_Maxed;
+    set @cur_date, 0;
+    next;
+    // Boss Points validation
+    set @cur, BOSS_POINTS / .price;
+    set @dif, @cur - #BOSS_MEDALS;
+    if (@dif >= 1) goto L_GiveMedals;
+    mes "[Chronos]";
+    mes "\"You don't made any progress so i can't give you any Boss Medals.\"";
+    mes "";
+
+    if (#BOSS_MEDALS_AVAILABLE >= 1) goto L_Qestion;
+    mes "[Chronos]";
+    mes "\"Sadly there are no Boss Medals for you to do shopping left.\"";
+    goto L_Close;
+
+L_GiveMedals:
+    // BUG, FIXME! 2 + 4 = 4 boss medals
+    set #BOSS_MEDALS, #BOSS_MEDALS + @dif;
+    set #BOSS_MEDALS_AVAILABLE, @dif;
+    mes "[Chronos]";
+    mes "\"For your deeds, I shall bestow upon you " + @dif + " Boss Medals. Use them wisely, they are the results of your hard effort.";
+    mes "Boss Medals are earned each " + .price + " boss points. They are account-bound and cannot be given to other players, not even other versions of you.";
+    mes "I will keep them for you until you evolved a bit.\"";
+    next;
+    goto L_Qestion;
+
+L_Qestion:
+    // Shopkeeping
+    mes "[Chronos]";
+    mes "\"All things shall pass, but with the limited time you have, please enjoy shopkeeping.\"";
+    if (countitem("UnderworldKey")<1) goto L_Shop;
+        menu
+            "Thanks.", L_Shop,
+            "Do you know what the Underworld Key is for?", L_UKey; // not needed here but why not?
+L_UKey:
+    mes "";
+    mes "[Chronos]";
+    mes "\"Yes, I do. But now is not the time. One day, when the event horizon aligns itself and the lazy titans move, then I shall tell you what you need to know.\""; // lazy titans = The developers and shout out to Kronus from mythology
+    goto L_Close;
+
+L_Shop:
+    set @num_medals, 0; // set to 0 to be safe
+
+    set @default_choice$, "I'm not sure right now maybe later.";
+    set @r, 0;
+
+    set @shopoptcounter, 0;
+    setarray @shopopt$, "", "", "", "", "";
+
+    if(#BOSS_MEDALS_AVAILABLE < 1) goto L_Close;
+    set @shopopt$[@shopoptcounter], "1 Boss Medal";
+    set @shopoptcounter, @shopoptcounter + 1;
+
+    if(#BOSS_MEDALS_AVAILABLE < 2) goto L_ShopMenuCreated;
+    set @shopopt$[@shopoptcounter], "2 Boss Medals";
+    set @shopoptcounter, @shopoptcounter + 1;
+
+    if(#BOSS_MEDALS_AVAILABLE < 3) goto L_ShopMenuCreated;
+    set @shopopt$[@shopoptcounter], "3 Boss Medals";
+    set @shopoptcounter, @shopoptcounter + 1;
+
+    if(#BOSS_MEDALS_AVAILABLE < 4) goto L_ShopMenuCreated;
+    set @shopopt$[@shopoptcounter], "4 Boss Medals";
+    set @shopoptcounter, @shopoptcounter + 1;
+    goto L_ShopMenuCreated;
+
+L_ShopMenuCreated:
+    set @shopopt$[@shopoptcounter], "I must think about this again, good bye.";
+    mes "";
+    mes "[Chronos]";
+    mes "\"You have " + #BOSS_MEDALS_AVAILABLE + " Boss Medals left.";
+    mes "For which amount of Boss Medals you want to get a reward?\"";
+    menu
+        @shopopt$[0], L_MenuItems,
+        @shopopt$[1], L_MenuItems,
+        @shopopt$[2], L_MenuItems,
+        @shopopt$[3], L_MenuItems,
+        @shopopt$[4], L_MenuItems;
+
+L_MenuItems:
+    set @menu, @menu - 1;
+    if(@menu >= @shopoptcounter) goto L_Close;
+    if(@menu == 0) goto L_Show1MedalRewards;
+    if(@menu == 1) goto L_Show2MedalRewards;
+    if(@menu == 2) goto L_Show3MedalRewards;
+    if(@menu == 3) goto L_Show4MedalRewards;
+    goto L_Close;
+
+L_Show1MedalRewards:
+    set @num_medals, 1;
+    cleararray @items$, "", getarraysize($@chronos_1_medal$);
+    cleararray @item_names$, "", getarraysize($@chronos_1_medal_n$);
+    set @j, getarraysize($@chronos_1_medal$);
+    goto L_CloneArray;
+
+L_Show2MedalRewards:
+    set @num_medals, 2;
+    cleararray @items$, "", getarraysize($@chronos_2_medal$);
+    cleararray @item_names$, "", getarraysize($@chronos_2_medal_n$);
+    set @j, getarraysize($@chronos_2_medal$);
+    goto L_CloneArray;
+
+L_Show3MedalRewards:
+    set @num_medals, 3;
+    cleararray @items$, "", getarraysize($@chronos_3_medal$);
+    cleararray @item_names$, "", getarraysize($@chronos_3_medal_n$);
+    set @j, getarraysize($@chronos_3_medal$);
+    goto L_CloneArray;
+
+L_Show4MedalRewards:
+    set @num_medals, 4;
+    cleararray @items$, "", getarraysize($@chronos_4_medal$);
+    cleararray @item_names$, "", getarraysize($@chronos_4_medal_n$);
+    set @j, getarraysize($@chronos_4_medal$);
+    goto L_CloneArray;
+
+L_CloneArray:
+    if(@num_medals==1) goto L_CloneArray1;
+    if(@num_medals==2) goto L_CloneArray2;
+    if(@num_medals==3) goto L_CloneArray3;
+    if(@num_medals==4) goto L_CloneArray4;
+    goto L_Close;
+
+L_CloneArray1:
+    set @items$[@r], $@chronos_1_medal$[@r];
+    set @item_names$[@r], $@chronos_1_medal_n$[@r];
+    goto L_CloneArrayNext;
+L_CloneArray2:
+    set @items$[@r], $@chronos_2_medal$[@r];
+    set @item_names$[@r], $@chronos_2_medal_n$[@r];
+    goto L_CloneArrayNext;
+L_CloneArray3:
+    set @items$[@r], $@chronos_3_medal$[@r];
+    set @item_names$[@r], $@chronos_3_medal_n$[@r];
+    goto L_CloneArrayNext;
+L_CloneArray4:
+    set @items$[@r], $@chronos_4_medal$[@r];
+    set @item_names$[@r], $@chronos_4_medal_n$[@r];
+    goto L_CloneArrayNext;
+
+L_CloneArrayNext:
+    set @r, @r + 1;
+    if(@r < @j) goto L_CloneArray;
+    goto L_rewards_choice;
+
+L_rewards_choice:
+    mes "";
+    mes "[Chronos]";
+    mes "\"What Item you want?\"";
+    next;
+    callfunc "ItemMenu$";
+    if(@item$ == "") goto L_Close;
+    mes "";
+
+    getinventorylist;
+    if ((checkweight(@item$, 1) == 0) || (@inventorylist_count == 100)) goto L_InvFull;
+    if ($CHRONOS_STOCK < 1) goto L_Maxed;
+
+    mes "[Chronos]";
+    mes "\"Here's your " + @item_names$[@index] + ", good bye.\"";
+    wgm "=> Player `"+strcharinfo(0) + "` obtained the following item from Chronos: "+ @item_names$[@index];
+    set #BOSS_MEDALS_AVAILABLE, #BOSS_MEDALS_AVAILABLE - @num_medals;
+    set $CHRONOS_STOCK, $CHRONOS_STOCK - 1;
+    set @cur_date, (gettime(7) << 5) | (gettime(6) << 1);
+    set #CHRONOS, @cur_date;
+    set @cur_date, 0;
+    getitem @item$, 1;
+    goto L_Close;
+
+L_Maxed:
+    set @cur_date, 0;
+    mes "[Chronos]";
+    mes "\"I'm afraid I don't have anything now, please wait until my next travel, or complete the Tree of Knowledge quest for my amusement.\"";
+    goto L_Close;
+
+L_InvFull:
+    mes "[Chronos]";
+    mes "\"Your inventory is full come again when you have some free space, good bye.\"";
+    goto L_Close;
+
+L_Close:
+    set @cur, 0;
+    set @dif, 0;
+    set @num_medals, 0;
+    set @item$, 0;
+    set @index, 0;
+    set @default_choice$, "";
+    set @r, 0;
+    set @j, 0;
+    cleararray @items$, "", getarraysize(@items$);
+    cleararray @item_names$, "", getarraysize(@item_names$);
+    set @shopoptcounter, 0;
+    cleararray @shopopt$, "", getarraysize(@shopopt$);
+    close;
+
+OnClock0010:
+    if (gettime(5) == 1)
+        set $CHRONOS_STOCK, 5;
+    end;
+
+OnInit:
+    set .price, 5000;
+    if ($CHRONOS_STOCK < 1)
+        set $CHRONOS_STOCK, 3;
+
+    setarray $@chronos_1_medal$, "MovieCap", "BlueWolfHelmet", "CloverHat", "RabbitEars", "Goggles", "LeatherGoggles", "Crown", "Cap",
+                                 "GuyFawkesMask", "WitchDoctorsMask", "ElfNightcap", "Sunglasses", "ChristmasTreeHat", "SantaBeardHat", "MoubooHead", "PaperBag", "BunchOfParsley", "SkullMask",
+                                 "SnowGoggles", "HeartGlasses", "OperaMask", "JesterMask", "WitchHat", "GoblinMask",
+                                 "ChefHat", "EskimoHat", "AFKCap", "SmileyCap",
+                                 "RedShades", "GreenShades", "DarkBlueShades", "YellowShades", "LightBlueShades", "PinkShades", "BlackShades", "OrangeShades", "PurpleShades", "DarkGreenShades",
+                                 "SnowLauncher";
+    setarray $@chronos_1_medal_n$, "Movie Cap", "Blue Wolf Helmet", "Clover Top Hat", "White Rabbit Ears", "Goggles", "Leather Goggles", "Crown", "Cap",
+                                   "Guy Fawkes Mask", "Witch Doctor's Mask", "Elf Nightcap", "Sunglasses", "Christmas Tree Hat", "Santa Beard Hat", "Mouboo Head", "Paper Bag", "Bunch of Parsley", "Skull Mask",
+                                   "Snow Goggles", "Heart Glasses", "Opera Mask", "Jester Mask", "Witch Hat", "Goblin Mask",
+                                   "Chef Hat", "Eskimo Hat", "AFK Cap", "Smiley Cap",
+                                   "Red Shades", "Green Shades", "Dark Blue Shades", "Yellow Shades", "Light Blue Shades", "Pink Shades", "Black Shades", "Orange Shades", "Purple Shades", "Dark Green Shades",
+                                   "Candy-Caned Anti-Grinch-Rifle 2020";
+
+    setarray $@chronos_2_medal$, "Eyepatch", "TopHat", "FunkyHat", "MushHat", "ShroomHat", "ChristmasElfHat", "FaceMask", "CaptainsHat", "TamOShanter", "BunnyEars", "PanHat", "PilotHat",
+                                 "CarbonGasMask", "GroovyHat", "JazzyHat", "AnniversaryHat", "ChicSantaHat", "ReadingGlasses", "EggshellHat", "Pipe", "ScarabArmlet",
+                                 "BlinkingEvil", "BlinkingEvilRed", "BlinkingEvilBlue", "BlinkingEvilPink", "BlinkingEvilYellow", "BlinkingHocus", "GoldenPlatemail", "Earmuffs";
+    setarray $@chronos_2_medal_n$, "Eyepatch", "Top Hat", "Funky Hat", "Mush Hat", "Shroom Hat", "Christmas Elf Hat", "Face Mask", "Captain's Hat", "Tam O' Shanter", "Bunny Ears", "Pan Hat", "Pilot Hat",
+                                   "Carbon Gas Mask", "Groovy Hat", "Jazzy Hat", "Anniversary Hat", "Chic Santa Hat", "Reading Glasses", "Eggshell Hat", "Smoking Pipe", "Scarab Armlet",
+                                   "Mask of Blinking Evil (Green)", "Mask of Blinking Evil (Red)", "Mask of Blinking Evil (Blue)", "Mask of Blinking Evil (Pink)", "Mask of Blinking Evil (Yellow)", "Mask of Blinking Hocus", "Golden Platemail", "Earmuffs";
+
+    setarray $@chronos_3_medal$, "BlinkingEvilHalloween", "MoonshroomHat", "WhiteEvokersRobeBlue", "BlackEvokersRobeBlue", "ApprenticeRobe", "GoldenWarlordPlate", "MageRing";
+    setarray $@chronos_3_medal_n$, "Mask of Blinking Evil (Orange)", "Moonshroom Hat", "White Evoker's Robe (Blue)", "Black Evoker's Robe (Blue)", "Apprentice Robe", "Golden Warlord Plate", "Magic Ring";
+
+    setarray $@chronos_4_medal$, "OverlordsHelmet", "DarkTalisman", "Aureole", "PaladinsHelmet", "EnchantersAmulet",
+                                 "HeartOfIsis", "BansheeBow", "BullHelmet", "AssassinShirt", "LazuriteRobe", "DarkHelm", "UnderworldMask", "Phylactery";
+    setarray $@chronos_4_medal_n$, "Overlord's Helmet", "Dark Talisman", "Prsm Aura", "Paladin's Helmet", "Enchanter's Amulet",
+                                   "Heart of Isis", "Banshee Bow", "Bull Helmet", "Assassin Shirt", "Lazurite Robe", "Dark Helm", "Underworld Mask", "Phylactery";
+    end;
+}
