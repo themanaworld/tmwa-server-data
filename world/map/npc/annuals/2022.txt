@@ -1,0 +1,213 @@
+// Evol script
+// Year: 2022
+//
+////////////////////////////////////////////////
+// Red Corsair Day
+
+-|script|#CRC2022|32767
+{
+    end;
+
+OnFirst:
+    if (GM < G_SYSOP) end;
+    set $@CRC22, 1;
+    enablenpc "Unknown Ship";
+    initnpctimer;
+    goto OnTimer90000;
+
+OnSecond:
+    if (GM < G_SYSOP) end;
+    set $@CRC22, 2;
+    disablenpc "Unknown Ship";
+    initnpctimer;
+    goto L_Extra;
+
+OnThird:
+    if (GM < G_SYSOP) end;
+    set $@CRC22, 3;
+    disablenpc "Enemy Ship";
+    stopnpctimer;
+    end;
+
+OnStatus:
+    if (!$@CRC22) end;
+    set $@CRC22Mc, mobcount("007-1", "#CRC2022::OnDie")+
+                   mobcount("008-1", "#CRC2022::OnDie")+
+                   mobcount("009-1", "#CRC2022::OnDie")+
+                   mobcount("011-1", "#CRC2022::OnDie")+
+                   mobcount("031-1", "#CRC2022::OnDie")+
+                   mobcount("018-1", "#CRC2022::OnDie")+
+                   mobcount("018-3", "#CRC2022::OnDie")+
+                   7;
+    message strcharinfo(0), "Monsters remaining: "+$@CRC22Mc;
+    if ($@CRC22Mc <= 0)
+        set $@CRC22, 0;
+    // TODO: Announce
+    set $@CRC22Mc, 0;
+    end;
+
+OnTimer30000:
+    // Outskirts
+    set $@CRC22Mc, mobcount("008-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 30;
+    set $@CRC22M$, "008-1";
+    set $@CRC22Xm, 140;
+    set $@CRC22Ym, 100;
+    if ($@CRC22Mc >= $@CRC22Gl) goto L_End;
+    callsub S_Spawn;
+    end;
+
+L_End:
+    end;
+
+// Redundant
+OnTimer60000:
+    goto OnTimer30000;
+
+OnTimer90000:
+    // Hurnscald [LOCKED DOWN]
+    set $@CRC22Mc, mobcount("009-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 100;
+    set $@CRC22M$, "009-1";
+    set $@CRC22Xm, 100;
+    set $@CRC22Ym, 60;
+    if ($@CRC22Mc >= $@CRC22Gl) goto L_T2;
+    callsub S_Spawn;
+    goto L_T2;
+
+L_T2:
+    // Outskirts
+    set $@CRC22Mc, mobcount("008-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 40;
+    set $@CRC22M$, "008-1";
+    set $@CRC22Xm, 140;
+    set $@CRC22Ym, 100;
+    if ($@CRC22Mc >= $@CRC22Gl) goto L_T3;
+    callsub S_Spawn;
+    goto L_T3;
+
+L_T3:
+    // South Forest (LOCKED DOWN)
+    set $@CRC22Mc, mobcount("007-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 220;
+    set $@CRC22M$, "007-1";
+    set $@CRC22Xm, 130;
+    set $@CRC22Ym, 90;
+    if ($@CRC22Mc >= $@CRC22Gl) goto L_T4;
+    callsub S_Spawn;
+    goto L_T4;
+
+L_T4:
+    // West Forest (LOCKED DOWN)
+    set $@CRC22Mc, mobcount("011-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 240;
+    set $@CRC22M$, "011-1";
+    set $@CRC22Xm, 130;
+    set $@CRC22Ym, 110;
+    if ($@CRC22Mc >= $@CRC22Gl) goto L_T5;
+    callsub S_Spawn;
+    goto L_T5;
+
+L_T5:
+    // Nivalis Port (LOCKED DOWN)
+    set $@CRC22Mc, mobcount("031-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 100;
+    set $@CRC22M$, "031-1";
+    set $@CRC22Xm, 110;
+    set $@CRC22Ym, 130;
+    if ($@CRC22Mc >= $@CRC22Gl) goto L_T6;
+    callsub S_Spawn;
+    goto L_T6;
+
+L_T6:
+    if ($@CRC22 > 1) goto L_Extra;
+    // Nothing at mines yet
+    initnpctimer;
+    end;
+
+L_Extra:
+    // Outskirts [LOCKDOWN]
+    set $@CRC22Mc, mobcount("008-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 80;
+    set $@CRC22M$, "008-1";
+    set $@CRC22Xm, 140;
+    set $@CRC22Ym, 100;
+    if ($@CRC22Mc >= $@CRC22Gl) goto L_X1;
+    callsub S_Spawn;
+    goto L_X1;
+
+L_X1:
+    // Hurnscald Mines (Outskirt)
+    set $@CRC22Mc, mobcount("018-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 40;
+    set $@CRC22M$, "018-1";
+    set $@CRC22Xm, 140;
+    set $@CRC22Ym, 100;
+    if ($@CRC22Mc >= $@CRC22Gl) goto L_X2;
+    callsub S_Spawn;
+    goto L_X2;
+
+L_X2:
+    // Obelisk Cave & Mines [LOCKED DOWN]
+    set $@CRC22Mc, mobcount("018-3", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 300;
+    set $@CRC22M$, "018-3";
+    set $@CRC22Xm, 180;
+    set $@CRC22Ym, 180;
+    if ($@CRC22Mc < $@CRC22Gl) goto L_X3;
+    callsub S_Spawn;
+    goto L_X3;
+
+L_X3:
+    initnpctimer;
+    end;
+
+// Extra wave control system [0]
+S_Spawn:
+    set $@CRC_IDX, rand(getarraysize($@crc_mobs));
+
+    areamonster $@CRC22M$, 20, 20, $@CRC22Xm, $@CRC22Ym, "", $@crc_mobs[$@CRC_IDX], 1, "#CRC2022::OnDie";
+
+    set $@CRC22Mc, $@CRC22Mc + 1;
+    if($@CRC22Mc < $@CRC22Gl) goto S_Spawn;
+    return;
+
+OnDie:
+    end;
+
+OnInit:
+    setarray $@crc_mobs, 1119, 1120, 1121, 1119, 1120, 1121, 1157, 1155, 1163, 1090, 1064, 1119, 1120, 1121, 1119, 1120;
+    // Register commands
+    registercmd "#crcstart", strnpcinfo(0)+"::OnFirst";
+    registercmd "#crcnext", strnpcinfo(0)+"::OnSecond";
+    registercmd "#crclast", strnpcinfo(0)+"::OnThird";
+    end;
+}
+
+// Puppets
+008-1,140,70,0|script|Enemy Ship|395
+{
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
+// Puppets
+018-1,142,72,0|script|Unknown Ship|395
+{
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
+// Puppets
+008-1,140,70,0|script|Tal#CRC|427
+{
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
