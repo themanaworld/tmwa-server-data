@@ -1,0 +1,273 @@
+// Evol script
+// Year: 2022
+//
+////////////////////////////////////////////////
+// Red Corsair Day
+
+-|script|#CRC2022|32767
+{
+    end;
+
+OnFirst:
+    if (strcharinfo(0) != "Dave Sugar" && GM < G_SYSOP) end;
+    wgm "==> CRC Day Phase 1 Started by "+strcharinfo(0);
+    set $@CRC22, 1;
+    enablenpc "Unknown Ship";
+    initnpctimer;
+    goto OnTimer30000;
+
+OnSecond:
+    if (strcharinfo(0) != "Zax De'Kagen" && GM < G_SYSOP) end;
+    wgm "==> CRC Day Phase 2 Started by "+strcharinfo(0);
+    set $@CRC22, 2;
+    disablenpc "Unknown Ship";
+    initnpctimer;
+    goto L_Extra;
+
+OnThird:
+    if (strcharinfo(0) != "Red Reidy" && GM < G_SYSOP) end;
+    wgm "==> CRC Day Phase 3 Started by "+strcharinfo(0);
+    set $@CRC22, 3;
+    disablenpc "Enemy Ship";
+    stopnpctimer;
+    end;
+
+OnStatus:
+    if (!$@CRC22) end;
+    set $@CRC22Mc, mobcount("007-1", "#CRC2022::OnDie")+
+                   mobcount("008-1", "#CRC2022::OnDie")+
+                   mobcount("009-1", "#CRC2022::OnDie")+
+                   mobcount("011-1", "#CRC2022::OnDie")+
+                   mobcount("031-1", "#CRC2022::OnDie")+
+                   mobcount("018-1", "#CRC2022::OnDie")+
+                   mobcount("018-3", "#CRC2022::OnDie")+
+                   7;
+    message strcharinfo(0), "Monsters remaining: "+$@CRC22Mc;
+    if ($@CRC22Mc <= 0)
+        set $@CRC22, 0;
+    // TODO: Announce?
+    set $@CRC22Mc, 0;
+    end;
+
+OnTimer30000:
+    // Outskirts
+    set $@CRC22Mc, mobcount("008-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 32;
+    set $@CRC22M$, "008-1";
+    set $@CRC22Xm, 140;
+    set $@CRC22Ym, 100;
+    if ($@CRC22Mc >= $@CRC22Gl) goto L_End;
+    callsub S_Spawn;
+    end;
+
+L_End:
+    end;
+
+// Redundant
+OnTimer15000:
+    goto OnTimer30000;
+
+// Redundant
+OnTimer45000:
+    goto OnTimer30000;
+
+// Redundant
+OnTimer60000:
+    goto OnTimer30000;
+
+OnTimer70000:
+    // Hurnscald [LOCKED DOWN]
+    set $@CRC22Mc, mobcount("009-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 100;
+    set $@CRC22M$, "009-1";
+    set $@CRC22Xm, 100;
+    set $@CRC22Ym, 60;
+    if ($@CRC22Mc >= $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+OnTimer72000:
+    // Outskirts
+    set $@CRC22Mc, mobcount("008-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 40;
+    set $@CRC22M$, "008-1";
+    set $@CRC22Xm, 140;
+    set $@CRC22Ym, 100;
+    if ($@CRC22Mc >= $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+// Duplicate for infinity loop bug
+OnTimer74000:
+    // South Forest (LOCKED DOWN)
+    set $@CRC22Mc, mobcount("007-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 110;
+    set $@CRC22M$, "007-1";
+    set $@CRC22Xm, 130;
+    set $@CRC22Ym, 90;
+    if ($@CRC22Mc >= $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+OnTimer75000:
+    // South Forest (LOCKED DOWN)
+    set $@CRC22Mc, mobcount("007-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 220;
+    set $@CRC22M$, "007-1";
+    set $@CRC22Xm, 130;
+    set $@CRC22Ym, 90;
+    if ($@CRC22Mc >= $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+// Duplicate for infinity loop bug
+OnTimer76000:
+    // West Forest (LOCKED DOWN)
+    set $@CRC22Mc, mobcount("011-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 120;
+    set $@CRC22M$, "011-1";
+    set $@CRC22Xm, 130;
+    set $@CRC22Ym, 110;
+    if ($@CRC22Mc >= $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+OnTimer77000:
+    // West Forest (LOCKED DOWN)
+    set $@CRC22Mc, mobcount("011-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 240;
+    set $@CRC22M$, "011-1";
+    set $@CRC22Xm, 130;
+    set $@CRC22Ym, 110;
+    if ($@CRC22Mc >= $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+OnTimer78000:
+    // Nivalis Port (LOCKED DOWN)
+    set $@CRC22Mc, mobcount("031-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 100;
+    set $@CRC22M$, "031-1";
+    set $@CRC22Xm, 110;
+    set $@CRC22Ym, 130;
+    if ($@CRC22Mc >= $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+OnTimer80000:
+    if ($@CRC22 > 1) goto L_Extra;
+    // Nothing at mines yet
+    initnpctimer;
+    end;
+
+L_Extra:
+    // Outskirts [LOCKDOWN]
+    set $@CRC22Mc, mobcount("008-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 80;
+    set $@CRC22M$, "008-1";
+    set $@CRC22Xm, 140;
+    set $@CRC22Ym, 100;
+    if ($@CRC22Mc >= $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+OnTimer84000:
+    // Hurnscald Mines (Outskirt)
+    set $@CRC22Mc, mobcount("018-1", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 40;
+    set $@CRC22M$, "018-1";
+    set $@CRC22Xm, 140;
+    set $@CRC22Ym, 100;
+    if ($@CRC22Mc >= $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+// Duplicate for infinity loop bug
+OnTimer86000:
+    // Obelisk Cave & Mines [LOCKED DOWN]
+    set $@CRC22Mc, mobcount("018-3", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 100;
+    set $@CRC22M$, "018-3";
+    set $@CRC22Xm, 180;
+    set $@CRC22Ym, 180;
+    if ($@CRC22Mc < $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+// Duplicate for infinity loop bug
+OnTimer88000:
+    // Obelisk Cave & Mines [LOCKED DOWN]
+    set $@CRC22Mc, mobcount("018-3", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 200;
+    set $@CRC22M$, "018-3";
+    set $@CRC22Xm, 180;
+    set $@CRC22Ym, 180;
+    if ($@CRC22Mc < $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+OnTimer89000:
+    // Obelisk Cave & Mines [LOCKED DOWN]
+    set $@CRC22Mc, mobcount("018-3", "#CRC2022::OnDie")+1;
+    set $@CRC22Gl, 300;
+    set $@CRC22M$, "018-3";
+    set $@CRC22Xm, 180;
+    set $@CRC22Ym, 180;
+    if ($@CRC22Mc < $@CRC22Gl) end;
+    callsub S_Spawn;
+    end;
+
+OnTimer90000:
+    initnpctimer;
+    end;
+
+// Extra wave control system [0]
+S_Spawn:
+    set $@CRC_IDX, rand(getarraysize($@crc_mobs));
+
+    areamonster $@CRC22M$, 20, 20, $@CRC22Xm, $@CRC22Ym, "", $@crc_mobs[$@CRC_IDX], 1, "#CRC2022::OnDie";
+
+    set $@CRC22Mc, $@CRC22Mc + 1;
+    if($@CRC22Mc < $@CRC22Gl) goto S_Spawn;
+    return;
+
+OnDie:
+    end;
+
+OnInit:
+    setarray $@crc_mobs, 1119, 1120, 1121, 1119, 1120, 1121, 1157, 1155, 1163, 1090, 1064, 1119, 1120, 1121, 1119, 1120;
+    // Register commands
+    registercmd "#crcstart", strnpcinfo(0)+"::OnFirst";
+    registercmd "#crcnext", strnpcinfo(0)+"::OnSecond";
+    registercmd "#crclast", strnpcinfo(0)+"::OnThird";
+    registercmd "#crcstatus", strnpcinfo(0)+"::OnStatus";
+    end;
+}
+
+// Puppets
+008-1,140,72,0|script|Enemy Ship|395
+{
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
+// Puppets
+018-1,142,74,0|script|Unknown Ship|395
+{
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
+// Puppets
+008-1,140,70,0|script|Tal#CRC|427
+{
+    end;
+OnInit:
+    disablenpc strnpcinfo(0);
+    end;
+}
+
