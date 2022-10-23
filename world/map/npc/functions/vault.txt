@@ -9,7 +9,10 @@ function|script|VaultLogin
 
     callsub S_Exp;
     callsub S_Gold;
+    callsub S_Preset;
 
+    // Clean up
+    set @last_preset, 0;
     return; // go back to global handler
 
 S_Return: // this is to end execution of a sub
@@ -28,6 +31,81 @@ S_Gold:
     if (##ADD_GP < 1) goto S_Return;
     set Zeny, Zeny + ##ADD_GP;
     set ##ADD_GP, 0;
+    return;
+
+S_Preset:
+    if (##PRESET < 1) goto S_Return;
+    set @last_preset, (#X21 & BYTE_3_MASK) >> BYTE_3_SHIFT;
+    set #X21, (#X21 & ~(BYTE_3_MASK)) | (##PRESET << BYTE_3_SHIFT);
+
+    // Each preset is 5 levels (Preset 1 = Lv 5, Preset 10 = Lv 50, Max Preset 20 - hard limit is 127)
+    /* Handle weapons */
+    if (##PRESET >= 1 && @last_preset < 1)
+        getitem "SharpKnife",1;
+    if (##PRESET >= 2 && @last_preset < 2)
+        getitem "Dagger",1;
+    if (##PRESET >= 3 && @last_preset < 3)
+        getitem "Bow",1;
+    if (##PRESET >= 3 && @last_preset < 3)
+        getitem "Arrow",500;
+    if (##PRESET >= 4 && @last_preset < 4)
+        getitem "Arrow",500;
+    if (##PRESET >= 5 && @last_preset < 5)
+        getitem "Scythe",1;
+    if (##PRESET >= 6 && @last_preset < 6)
+        getitem "ShortBow",1;
+    if (##PRESET >= 7 && @last_preset < 7)
+        getitem "IronArrow",500;
+    if (##PRESET >= 8 && @last_preset < 8)
+        getitem "ShortSword",1;
+    if (##PRESET >= 9 && @last_preset < 9)
+        getitem "BoneArrows",100;
+    if (##PRESET >= 10 && @last_preset < 10)
+        getitem "ForestBow",1;
+    if (##PRESET >= 11 && @last_preset < 11)
+        getitem "IronArrow",500;
+    if (##PRESET >= 12 && @last_preset < 12)
+        getitem "IceGladius",1;
+    if (##PRESET >= 13 && @last_preset < 13)
+        getitem "Arrow",500;
+    if (##PRESET >= 14 && @last_preset < 14)
+        getitem "TerraniteArrow",100;
+    if (##PRESET >= 15 && @last_preset < 15)
+        getitem "BoneArrows",100;
+    if (##PRESET >= 16 && @last_preset < 16)
+        getitem "BoneKnife",1;
+    if (##PRESET >= 17 && @last_preset < 17)
+        getitem "TerraniteArrow",100;
+    if (##PRESET >= 18 && @last_preset < 18)
+        getitem "Setzer",1;
+    if (##PRESET >= 19 && @last_preset < 19)
+        getitem "TerraniteArrow",250;
+    //if (##PRESET >= 20 && @last_preset < 20)
+    //    getitem "BansheeBow",1;
+
+    /* Handle equipment */
+    if (##PRESET >= 2 && @last_preset < 2)
+        getitem "SilkHeadband",1;
+    if (##PRESET >= 4 && @last_preset < 4)
+        getitem "LeatherShirt",1;
+    if (##PRESET >= 6 && @last_preset < 6)
+        getitem "JeansShorts",1;
+    if (##PRESET >= 8 && @last_preset < 8)
+        getitem "SilkRobe",1;
+    if (##PRESET >= 10 && @last_preset < 10)
+        getitem "InfantryHelmet",1;
+    if (##PRESET >= 12 && @last_preset < 12)
+        getitem "ChainmailShirt",1;
+    if (##PRESET >= 14 && @last_preset < 14)
+        getitem "CottonBoots",1;
+    if (##PRESET >= 16 && @last_preset < 16)
+        getitem "JeansChaps",1;
+    if (##PRESET >= 18 && @last_preset < 18)
+        getitem "CottonGloves",1;
+    if (##PRESET >= 20 && @last_preset < 20)
+        getitem "LightPlatemail",1;
+
+    set ##PRESET, 0;
     return;
 }
 
