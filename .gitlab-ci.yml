@@ -14,9 +14,11 @@ pages:
     UPDATE_DIR: "../../../public"
     UPDATE_HTTP: "none"
     CC: "clang"
+  tags:
+    - glados
   script:
   - apt-get -qq update
-  - apt-get install -qq -y make clang zip zlib1g-dev zlibc python
+  - apt-get install -qq -y make clang zip zlib1g-dev zlibc python ssh rsync
   - mkdir public
   - make updates
   - make news
@@ -28,6 +30,11 @@ pages:
   # path for legacy compatibility
   - mkdir -p public/updates
   - cp -v public/*.* public/updates/
+  - echo "Now deploying..."
+  - mkdir -p ~/.ssh
+  - echo "${SSH_PRIVATE_KEY}" | base64 -d | tr -d '\r' > ~/.ssh/id_rsa
+  - chmod -R 700 ~/.ssh
+  - rsync -e 'ssh -p 22 -o StrictHostKeyChecking=no' -aHv --delete $MYHOST:$FILE_LOCATION public
   artifacts:
     paths:
     - public
