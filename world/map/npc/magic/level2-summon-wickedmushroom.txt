@@ -10,10 +10,15 @@ OnCast:
     if (getskilllv(.school) < .level) end;
     if (countitem("DarkCrystal") < 1 || countitem("SmallMushroom") < 1) end;
     if (OrumQuest <= 36) end;
+    if (getmap() == "033-1") goto L_SpecialRules6;
+    goto L_Pay;
+
+L_Pay:
     delitem "DarkCrystal", 1;
     delitem "SmallMushroom", 1;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 15000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 15000, 0, BL_ID;
     callfunc "adjust_spellpower";
     set Sp, Sp - 35;
     misceffect FX_MAGIC_WICKED_CAST, strcharinfo(0);
@@ -52,6 +57,12 @@ S_SummonAll:
     set .@i, .@i + 1;
     if (.@i < .count) goto S_SummonAll;
     destroy;
+
+L_SpecialRules6:
+    if ($@KIMARR_EVENT < 1) goto L_Pay;
+    if ($@Fluffy_FighterID == BL_ID) goto L_Pay;
+    message strcharinfo(0), "You can't summon here unless hunting fluffies.";
+    end;
 
 OnInit:
     set .school, SKILL_MAGIC_DARK;

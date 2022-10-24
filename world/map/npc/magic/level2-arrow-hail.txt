@@ -11,13 +11,24 @@ OnCast:
     explode .@map_ext[0], getmap(), "-";
     if (.@map_ext[1] != 1 && getmap() != "099-5") end; // XXX this is fugly, in the future let's use MF_OUTSIDE to detect if a map is "outside" or "inside"
     if (getmapflag(getmap(), MF_TOWN)) end;
-    if   (countitem("Arrow")     >= 20 && countitem("SulphurPowder") >= 1) delitem "Arrow",     20;
-    elif (countitem("IronArrow") >= 20 && countitem("SulphurPowder") >= 1) delitem "IronArrow", 20;
+    if   (countitem("Arrow")     >= 20 && countitem("SulphurPowder") >= 1) goto L_Continue;
+    elif (countitem("IronArrow") >= 20 && countitem("SulphurPowder") >= 1) goto L_Continue;
     else end;
+    goto L_Continue;
+
+L_Continue:
+    if (getmap() == "033-1") goto L_SpecialRules6;
+    goto L_Pay;
+
+L_Pay:
+    if (countitem("Arrow") >= 20) delitem "Arrow", 20;
+    else delitem "IronArrow", 20;
     delitem "SulphurPowder", 1;
     set Sp, Sp - 25;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 5000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 5000, 0, BL_ID;
+    sc_start SC_COOLDOWN_AR, 30000, 0, BL_ID; // Set it to lenght of timeout
 
     setarray @away[0], POS_X, POS_Y, getdir(), (.range + 1), 0;
     callsub S_AwayFrom;
@@ -70,7 +81,10 @@ OnLaunch:
     if(get(Hp, .caster) < 1) destroy; // destroy if caster is missing
     if(getmap(.caster) != strnpcinfo(3)) destroy; // destroy if caster left the map
     set .hit, .hit + 1;
-    if(.hit > .max_hit) destroy;
+    if(.hit > .max_hit) goto L_Destroy;
+    goto L_Launch;
+
+L_Launch:
     set .launch, 0;
     callsub S_Launch;
     addnpctimer 250 + rand(50) + rand(50), strnpcinfo(0)+"::OnLaunch"; // loop until max
@@ -87,7 +101,12 @@ S_Launch:
         set Hp, get(Hp, .caster) - (.damage + rand(.damage_bonus) + rand(.damage_bonus)), .caster; // injure caster
     set .launch, .launch + 1;
     if(.launch < 3) goto S_Launch;
+
     return;
+
+L_Destroy:
+    if (attachrid(.caster)) sc_end SC_COOLDOWN_AR;
+    destroy;
 
 OnTimer30000:
     debugmes "frillyar timeout! [this shouldn't happen]";
@@ -105,6 +124,12 @@ OnHit:
         set .@damage, (.@damage * (100 - get(MDEF1, @target_id))) / 100;
     injure .caster, @target_id, .@damage;
     set .done, 1;
+    end;
+
+L_SpecialRules6:
+    if ($@KIMARR_EVENT < 1) goto L_Pay;
+    if ($@Fluffy_FighterID == BL_ID) goto L_Pay;
+    message strcharinfo(0), "You can't use this spell here unless hunting fluffies.";
     end;
 
 OnInit:
