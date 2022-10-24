@@ -5,21 +5,26 @@
     set .@level, getskilllv(.school);
     if (.@level < .level) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
-    if (.@level <= 3 && countitem("SilkCocoon") >= 1) delitem "SilkCocoon", 1;
-    elif (.@level <= 3) end;
-    set @_M_BLOCK, 1; // block casting, until the timer clears it
-    addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
-    callfunc "adjust_spellpower";
-    set Sp, Sp - 12;
-    misceffect FX_MAGIC_FLYING_CAST, strcharinfo(0);
-    callfunc "magic_exp";
+    if (.@level <= 3 && countitem("SilkCocoon") < 1) end;
     set @target_id, getcharid(3, @args$);
     if (@target_id < 1 || !(isloggedin(@target_id)) || get(INVISIBLE, @target_id) == 1)
         set @target_id, BL_ID; // fallback to self
     if (distance(BL_ID, @target_id) >= (@spellpower/30)+2) set @target_id, BL_ID;
-    if (get(GM, @target_id) == 1) end;
-    if (BL_ID != @target_id) misceffect FX_MAGIC_FLYING_HIT, @args$;
     if (BL_ID == @target_id) set @args$, strcharinfo(0);
+    if (get(GM, @target_id) == 1) end;
+    if (getmap() == "033-1") goto L_SpecialRules6;
+    goto L_Pay;
+
+L_Pay:
+    if (.@level <= 3) delitem "SilkCocoon", 1;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 1000, 0, BL_ID;
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 12;
+    misceffect FX_MAGIC_FLYING_CAST, strcharinfo(0);
+    callfunc "magic_exp";
+    if (BL_ID != @target_id) misceffect FX_MAGIC_FLYING_HIT, @args$;
     set @plugh_time, (@spellpower*500)+5000, @target_id;
     sc_start SC_FLYING_BACKPACK, @plugh_time, 0, @target_id;
     message @args$, "Backpack : Your backpack is lifted by a mystical force; you no longer feel it pressing on your back.";
@@ -32,6 +37,12 @@ OnEnd:
     if (sc_check(SC_FLYING_BACKPACK) != 1) end;
     message strcharinfo(0), "Backpack : Your backpack is no longer levitating.";
     misceffect FX_MAGIC_FLYING_END, strcharinfo(0);
+    end;
+
+L_SpecialRules6:
+    if ($@KIMARR_EVENT < 1) goto L_Pay;
+    if (@target_id == BL_ID) goto L_Pay;
+    message strcharinfo(0), "You can't cast this spell at others here.";
     end;
 
 OnInit:

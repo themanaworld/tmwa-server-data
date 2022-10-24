@@ -7,15 +7,21 @@ OnCast:
     if(call("magic_checks")) end;
     if (getskilllv(.school) < .level) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (getskilllv(.school) < 4 && countitem("BottleOfWater") < 1) end;
     if (Sp < 17) end;
     explode .@map_ext[0], getmap(), "-";
     if (.@map_ext[1] != 1 && getmap() != "099-5") end; // XXX this is fugly, in the future let's use MF_OUTSIDE to detect if a map is "outside" or "inside"
     if (getmapflag(getmap(), MF_TOWN)) end;
-    if   (getskilllv(.school) < 4 && countitem("BottleOfWater") >= 1) delitem "BottleOfWater", 1;
-    elif (getskilllv(.school) < 4) end;
+    if (getmap() == "033-1") goto L_SpecialRules6;
+    goto L_Pay;
+
+L_Pay:
+    if (getskilllv(.school) < 4) delitem "BottleOfWater", 1;
     set Sp, Sp - 17;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 3000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 3000, 0, BL_ID;
+    sc_start SC_COOLDOWN_R, 30000, 0, BL_ID; // Set it to lenght of timeout
 
     callfunc "adjust_spellpower";
     set @krad, min(.max_radius,(min(@spellpower,200)/30)+3); // kaflosh radius
@@ -47,7 +53,7 @@ L_Absorb:
 
 OnNearbyNpc:
     explode .@nearby$[0], strnpcinfo(0,@target_id), "#";
-    if(.@nearby$[1] == "DruidTree0" || .@nearby$[1] == "DruidTree0") goto L_Tree;
+    if(.@nearby$[0] == "DruidTree0" || .@nearby$[1] == "DruidTree0") goto L_Tree;
     if(.@nearby$[0] == "rain" || .@nearby$[1] == "rain")
         set @nearby, @nearby + 1;
     end;
@@ -68,7 +74,10 @@ OnLaunch:
     if(get(Hp, .caster) < 1) destroy; // destroy if caster is missing
     if(getmap(.caster) != strnpcinfo(3)) destroy; // destroy if caster left the map
     set .count, .count + 1;
-    if(.count > .max) destroy;
+    if(.count > .max) goto L_Destroy;
+    goto L_Launch;
+
+L_Launch:
     set .launch, 0;
     callsub S_Launch;
     addnpctimer 400 + rand(100), strnpcinfo(0)+"::OnLaunch"; // loop until max
@@ -81,6 +90,10 @@ S_Launch:
     set .launch, .launch + 1;
     if(.launch < .max_launch) goto S_Launch;
     return;
+
+L_Destroy:
+    if (attachrid(.caster)) sc_end SC_COOLDOWN_R;
+    destroy;
 
 OnHit:
     if (!(isloggedin(.caster))) destroy;
@@ -95,6 +108,12 @@ OnHit:
 OnDestroy:
     debugmes "kaflosh timeout! [this shouldn't happen]"; // XXX: looks like this CAN happen with higher levels of magic, so we might want to cap max charges
     destroy;
+
+L_SpecialRules6:
+    if ($@KIMARR_EVENT < 1) goto L_Pay;
+    if ($@Fluffy_FighterID == BL_ID) goto L_Pay;
+    message strcharinfo(0), "You can't use this spell here unless hunting fluffies.";
+    end;
 
 OnInit:
     set .school, SKILL_MAGIC_NATURE;

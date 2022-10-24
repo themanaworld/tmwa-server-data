@@ -9,10 +9,16 @@ OnCast:
     if (Sp < 100) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
     if (countitem("LargeManaElixir") < 1) end;
-    if (@dd4cooldown > gettimetick(2)) goto L_Cooldown;
+//    if (@dd4cooldown > gettimetick(2)) goto L_Cooldown;
+    if (sc_check(SC_COOLDOWN_MT)) goto L_Cooldown;
+    if (getmap() == "033-1") goto L_SpecialRules6;
+    goto L_Pay;
+
+L_Pay:
     delitem "LargeManaElixir", 1;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 15000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 15000, 0, BL_ID;
     callfunc "adjust_spellpower";
     set Sp, Sp - 100;
     misceffect FX_MAGIC_MAGGOT_CAST, strcharinfo(0);
@@ -22,7 +28,8 @@ OnCast:
     if (.@puppet < 1) end;
     set .master, BL_ID, .@puppet;
     set .lifetime, (@spellpower*9)+150000, .@puppet;
-    set @dd4cooldown, gettimetick(2)+160; // This is measured in seconds
+//    set @dd4cooldown, gettimetick(2)+160; // This is measured in seconds
+    sc_start SC_COOLDOWN_MT, (@spellpower*9)+160000, 0, BL_ID; // .lifetime + OnSummon
     addnpctimer 10000, .@puppet$+"::OnSummon";
     addnpctimer 11000, .@puppet$+"::OnDestroy";
     // Causes caster to heal (I thought in converting MP to HP but meh)
@@ -49,6 +56,12 @@ S_SummonAll:
 
 L_Cooldown:
     message strcharinfo(0), "This skill is in forced cooldown; Please wait your first summon to expire.";
+    end;
+
+L_SpecialRules6:
+    if ($@KIMARR_EVENT < 1) goto L_Pay;
+    if ($@Fluffy_FighterID == BL_ID) goto L_Pay;
+    message strcharinfo(0), "You can't summon here unless hunting fluffies.";
     end;
 
 OnInit:

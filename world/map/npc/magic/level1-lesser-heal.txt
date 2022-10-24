@@ -12,8 +12,13 @@
     if (distance(BL_ID, @target_id) >= .@range) end;
     if (PVP_CHANNEL != get(PVP_CHANNEL, @target_id) && get(PVP_CHANNEL, @target_id) != 0) end;
     if (countitem("Lifestone") < 1) end;
+    if (getmap() == "033-1") goto L_SpecialRules6;
+    goto L_Pay;
+
+L_Pay:
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 500, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 500, 0, BL_ID;
     delitem "Lifestone", 1;
     callfunc "adjust_spellpower";
     set Sp, Sp - 6;
@@ -44,6 +49,13 @@ L_Mouboo:
     if (distance(BL_ID, @target_id) >= .@range) end;
     mes "Magic : ##3##BThis spell has no effect on animals.";
     close;
+
+L_SpecialRules6:
+    if ($@KIMARR_EVENT < 1) goto L_Pay;
+    if (@target_id == BL_ID) goto L_Pay;
+    if ($@Fluffy_FighterID != @target_id) goto L_Pay;
+    message strcharinfo(0), "You can't heal others hunting here.";
+    end;
 
 OnInit:
     set .school, SKILL_MAGIC_LIFE;
