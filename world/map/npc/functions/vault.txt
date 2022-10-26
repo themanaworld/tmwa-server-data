@@ -39,6 +39,8 @@ S_Preset:
     set #X21, (#X21 & ~(BYTE_3_MASK)) | (##PRESET << BYTE_3_SHIFT);
 
     // Each preset is 5 levels (Preset 1 = Lv 5, Preset 10 = Lv 50, Max Preset 20 - hard limit is 127)
+    // TODO: Give more ammo, iron powder, sulphur powder, etc. instead of equips
+    // Give also some bug legs and maggot slime if applicable?
     /* Handle weapons */
     if (##PRESET >= 1 && @last_preset < 1)
         getitem "SharpKnife",1;
@@ -106,6 +108,65 @@ S_Preset:
         getitem "LightPlatemail",1;
 
     set ##PRESET, 0;
+    return;
+}
+
+
+// Remember: ##VAULT_EXP, ##VAULT_GOTO, ##VAULT_MLTO for Mirror Lake Protocol
+// However, without kick(7), it is not really worth anything
+// Remember: Quote symbols are illegal, simple or double, except for parameter
+// To reset the database:
+//    cleararray $EXPORT_DATA$[0], "", 254;
+//    set $EXPORT_MAX_ID, 0;
+
+// Schemas:
+//API_VAULT: "UID", ##VAULT, "GID", getcharid(3)
+//API_SENDMAIL: "UID": ##VAULT, "MSG": "message", "TITLE": "subject line"
+//
+// Using the API_EXPORT hack for TMWA:
+//
+// set $@API_PROTOCOL, API_SENDMAIL;
+// set $@API_DATA$, "'UID': 0, 'TITLE': 'About TMWA', 'MSG': 'I hate it!'";
+// callfunc "FlushAPI";
+//
+// (The curly brace is added to DATA on its own)
+function|script|FlushAPI
+{
+    // Function called improperly
+    // DATA cannot be null or the array order will crash
+    if ($@API_PROTO <= 0) goto L_Dumb;
+    if ($@API_DATA$ == "") goto L_Dumb;
+
+    // Save it to mapreg
+    // The script will strip "##"
+    // and convert the part after to a JSON dict
+    set $EXPORT_DATA$[$EXPORT_MAX_ID], $@API_PROTO + "##" + $@API_DATA$;
+    set $@API_PROTO, "";
+    set $@API_DATA$, "";
+
+    // Update TMWA tracker
+    set $EXPORT_MAX_ID, $EXPORT_MAX_ID + 1;
+
+    // Keep in mind an array can only go up to 255
+    // Trying to go past that, causes a SIGSEGV and map server dies
+    // So we periodically truncate the table when it's full
+    if ($EXPORT_MAX_ID > 240) goto L_Flush;
+    if ($EXPORT_MAX_ID == 120) goto L_Flush2;
+    return;
+
+L_Dumb:
+    debugmes "FlushAPI called without enough arguments";
+    debugmes " - $@API_PROTO, API_* constant";
+    debugmes " - $@API_DATA$, json dict without curly braces";
+    return;
+
+L_Flush:
+    cleararray $EXPORT_DATA$[0], "", 220;
+    set $EXPORT_MAX_ID, 0;
+    return;
+
+L_Flush2:
+    cleararray $EXPORT_DATA$[220], "", 25;
     return;
 }
 
