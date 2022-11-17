@@ -4,6 +4,8 @@ function|script|MobPoints
 {
     if (@mobID < 1002) goto L_Return;
 
+    callsub S_Vault;
+
     setarray @points,
         1,   // 1002 Maggot
         2,   // 1003 Scorpion
@@ -176,7 +178,11 @@ function|script|MobPoints
         0,   // 1165 RESERVED
         0,   // 1166 RESERVED
         0,   // 1167 RESERVED
-        0    // 1168 Floyd
+        0,   // 1168 Floyd
+        0,   // 1169 Crystal Spider
+        0,   // 1170 Crystal Golem
+        0,   // 1171 Black Crystal Golem
+        0    // 1172 Bif
     ;
 
     if ((MPQUEST == 1) && (@mobID < 1128))
@@ -265,6 +271,13 @@ L_Terranite:
         message strcharinfo(0), "Terranite : ##3Total Terranites Slain: "+TERRAC;
     set TERRAC, TERRAC + 1;
     goto L_Return;
+
+S_Vault:
+    if (#EXP_CREDIT < 1) goto L_Return;
+    set @exp_bonus, min(#EXP_CREDIT, mobinfo(@mobID, MOB_BASEEXP) * 2);
+    set #EXP_CREDIT, #EXP_CREDIT - @exp_bonus;
+    getexp @exp_bonus, 0;
+    return;
 
 L_Return:
     set @value, 0;
