@@ -1,4 +1,4 @@
-// Author: Jenalya
+// Author: Jenalya, Jesusalva
 
 026-2,38,118,0|script|Cerhan|311
 {
@@ -15,19 +15,21 @@ L_Story:
     next;
     mes "\"I'm an experienced weapon master and I was thinking about establishing a smithy here. I'll need some more equipment, though.\"";
     next;
-    if (countitem("MylarinDust") > 0)
+    if (countitem(MylarinDust) > 0)
         menu
             "Do you know something about 'Mylarin Dust'?", L_Mylarin,
+            "Do you work with bows or only swords and armor?", L_Banshee,
             "Good luck with that.",L_GoodLuckWith;
     goto L_GoodLuckWith;
 
 L_GoodLuckWith:
     mes "[Cerhan]";
     mes "\"If you're interested in weapons and armor, you may want to come back later.\"";
-    if (countitem("SandCutter") > 0)
+    if (countitem(SandCutter) > 0)
         menu
             "[Leave]",L_Close,
-            "Actually, I exchanged my Mylarin Dust with a bunny girl.", L_SandCutter;
+            "Actually, I exchanged my Mylarin Dust with a bunny girl.", L_SandCutter,
+            "Do you work with bows or only swords and armor?", L_Banshee;
     close;
 
 L_SandCutter:
@@ -49,6 +51,51 @@ L_Mylarin:
     next;
     mes "\"Please come back, when I'm ready for that. Mylarin dust... amazing.\"";
     goto L_Close;
+
+L_Banshee:
+    mes "[Cerhan]";
+    mes "\"I work mostly with ##Bdaggers##b and armor, not swords. Umfrey is selling arrows; He should be at your right, talk to him instead.\"";
+    if (countitem(BansheeBow) < 1) goto L_Close;
+    next;
+    mes "[Cerhan]";
+    mes "\"Actually, what the fletching. How could you curse your [@@"+ImperialBow+"|@@] like that?! It is ruined! Would you really sacrifice anything for just some extra points in attack speed? Don't you have any virtues?!\""; // TRANSLATORS: Fletching is the fin-shaped aerodynamic stabilization device attached on arrows, bolts, darts, or javelins.
+    next;
+    mes "[Cerhan]";
+    mes "\"Sure, I can see it is much more powerful now as a [@@"+BansheeBow+"|@@] but really. A cursed item. Aren't you afraid of dying?!\"";
+    next;
+    mes "[Cerhan]";
+    mes "\"Wyara might believe that a @@"+PurificationPotion+"|@@ should only be used to purify impurities in nature, but at Thermin, we make do with what we have, so I'll offer you a deal. I can remove the curse on your bow and restore it to its original glory...\"";
+    next;
+    mes "[Cerhan]";
+    mes "\"...For only 5,000 GP. And please note, that it will be purified, not uncursed. If it was lying in, say, a chest for too long and you put it there again, the curse will resurrect and it'll be ruined again.\"";
+    next;
+    if (Zeny < 5000) goto L_NoMoney;
+    mes "[Cerhan]";
+    mes "\"So whaddaya say? Do we have a deal?\"";
+    menu
+        "I'm a bit broke right now, so maybe later.", L_NoMoney,
+        "Sure, please purify my Banshee Bow.", L_Purify;
+
+L_NoMoney:
+    next;
+    mes "[Cerhan]";
+    mes "\"Just bring me the money, and I'll do it in a jiff.\"";
+    close;
+
+L_Purify:
+    if (countitem(BansheeBow) < 1) goto L_Banshee;
+    if (Zeny < 5000) goto L_NoMoney;
+    set Zeny, Zeny - 5000;
+    delitem BansheeBow, 1;
+    getitem ImperialBow, 1;
+    mes "[Cerhan]";
+    mes "\"And here we go, your Imperial Bow was restored to its former glory! Should be much easier to survive now, eh?\"";
+    if ((checkweight(ArmorBreaker, 50) == 0) || (@inventorylist_count == 100)) goto L_Close;
+    next;
+    mes "[Cerhan]";
+    mes "\"I'll even give you a little memento. Now go, and make me proud!\"";
+    getitem ArmorBreaker, 50; // In average, each arrow went for 100 gp, a bargain
+    close;
 
 L_Close:
     close;
