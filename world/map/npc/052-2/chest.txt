@@ -119,11 +119,27 @@ L_InventoryNoSpace:
 L_AskLeaving:
     mes "It's time to leave this place now.";
     next;
+    if (countitem(ImperialBow)) goto L_Banshee;
+    goto L_ReallyLeave;
+
+L_ReallyLeave:
     // Force the hero to leave last, as this event triggers the end of the quest
     // as well as some dialogs from Valia, when the hero returns.
     if (strcharinfo(0) == $@ILLIA_HERO$ && getareausers("052-2", 19, 8, 137, 88) > 1)
         goto L_WaitHelpersLeave;
     goto L_PrepareLeaving;
+
+L_Banshee:
+    mes "Actually, should I place the [@@"+ImperialBow+"|@@] here? If I do, it'll be cursed into a [@@"+BansheeBow+"|@@] again.";
+    menu
+        "Ridiculous. Why would I curse my weapon again?", L_ReallyLeave,
+        "Yes, that's a good idea. I would sacrifice anything for the extra power.", L_CurseBanshee;
+
+L_CurseBanshee:
+    if (countitem(ImperialBow) < 1) goto L_ReallyLeave;
+    delitem ImperialBow, 1;
+    getitem BansheeBow, 1;
+    goto L_ReallyLeave;
 
 L_WaitHelpersLeave:
     mes "However, I'd better wait my friends leave before I do.";

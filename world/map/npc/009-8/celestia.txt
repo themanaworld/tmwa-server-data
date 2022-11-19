@@ -19,9 +19,9 @@
 009-8,31,123,0|script|Celestia|144
 {
     callfunc "CelestiaState";
-    if (getequipid(equip_head) == 4027) // check if yeti mask (4027) is equipped
+    if (getequipid(equip_head) == YetiMask) // check if yeti mask (4027) is equipped
         goto L_YetiMask;
-    if (getequipid(equip_head) == 647) // check if Developer's Cap (647) is equipped
+    if (getequipid(equip_head) == DevelopersCap) // check if Developer's Cap (647) is equipped
         goto L_Debug;
     if (QL_CELESTIA == 2) // check if the player has the easy quest
         goto L_ExplainEasy;
@@ -127,7 +127,7 @@ L_ExplainEasy:
     mes "  %%E  50 ["+ getitemlink("GingerBreadMan") +"]";
     next;
     mes "\"I really hope you can find a reliable provider for these items before it forces me to put an end to my tea parties.\"";
-    if (countitem("ChocolateBar") >= 100 && countitem("GingerBreadMan") >= 50) // check if the player has the items
+    if (countitem(ChocolateBar) >= 100 && countitem(GingerBreadMan) >= 50) // check if the player has the items
         menu // if yes then allow the player to give them
             "I have the grocery order of Chocolate Bars and Ginger Bread Men for you.", L_GiveGroceries,
             "I will come back later.", L_InstaClose;
@@ -147,9 +147,9 @@ L_GiveGroceries:
     mes "["+getitemlink("Beret")+"]";
     mes "[10,000 GP]";
     mes "[20,000 EXP]";
-    delitem "ChocolateBar", 100; // remove chocolate bars
-    delitem "GingerBreadMan", 50; // remove ginger bread men
-    getitem "Beret", 1; // give beret
+    delitem ChocolateBar, 100; // remove chocolate bars
+    delitem GingerBreadMan, 50; // remove ginger bread men
+    getitem Beret, 1; // give beret
     getexp 20000, 0; // XXX is this amount reasonable?
     set Zeny, Zeny + 10000; // XXX is this amount reasonable?
     set QL_CELESTIA, 3; // set the state to "completed easy quest"
@@ -213,7 +213,7 @@ L_AcceptTrinket:
     mes "\"May our path cross again.\"";
     mes;
     mes "["+getitemlink("HeartNecklace")+"]";
-    getitem "HeartNecklace", 1;
+    getitem HeartNecklace, 1;
     set QL_CELESTIA, 206;
     close;
 
@@ -287,7 +287,7 @@ function|script|CelestiaState
 {
     if (BaseLevel >= 40 && QL_CELESTIA == 0) // if the player is at least level 40
         set QL_CELESTIA, 1; // show the quest marker
-    if (BaseLevel >= 90 && QL_CELESTIA == 3 && @scared_celestia) // check if level >= 90, if scared celestia and if easy quest done
+    if (BaseLevel >= 70 && QL_CELESTIA == 3 && @scared_celestia) // check if level >= 70, if scared celestia and if easy quest done
         set QL_CELESTIA, 4; // show the quest marker for the secret advanced quest
     return;
 }
@@ -311,7 +311,7 @@ function|script|CelestiaState
 }
 009-8,40,125,0|script|Celestia Basement|32767,0,0
 {
-    if ($DOOMSDAY == 2||countitem(647)||countitem(725)||countitem(1178)||countitem(5131)||countitem(5132)||countitem(5133)||countitem(5134)||countitem(5135)||countitem(5136)||countitem(5137)||countitem(5138)||countitem(5139)||countitem(5140)||(getgmlevel()>=20)||
+    if ($DOOMSDAY == 2||countitem(DevelopersCap)||countitem(GMCap)||countitem(1178)||countitem(5131)||countitem(5132)||countitem(5133)||countitem(5134)||countitem(5135)||countitem(5136)||countitem(5137)||countitem(5138)||countitem(5139)||countitem(5140)||(getgmlevel()>=20)||
         strcharinfo(1) == "Celestia's Tea Party")
         warp "009-8", 82, 126;
     if (strcharinfo(1) != "Celestia's Tea Party" && $DOOMSDAY != 2)
@@ -331,7 +331,7 @@ OnPCLoginEvent:
     end;
 
 L_Stomp:
-    set Hp, 0;
+    warp "009-8", 70, 124;
     end;
 }
 
