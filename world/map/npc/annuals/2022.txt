@@ -266,8 +266,8 @@ L_Start:
     mesq l("That's because I forgot Jack Frost existed, hohoho! So, if you could collect the [@@5288|@@] back to me... Well, you would get a Christmas gift, that's for sure, hohoho!");
     next;
     mesn l("Santa Claus");
-    mesq l("I recovered "+$XMAS2022+" [@@5288|@@]. From these, you gave me "+XMAS2022+" [@@5288|@@]. Grinchboos have them but they only appear every hour in four maps, and the others were lost to time, so... Do you want to give me some more? Ah, ##Bbe careful with the snowmans##b, it seems like wicked magic is turning the Naftalin into snowmans!");
-    mes l("##1Date limit: Event ended. Jan 10th 23:59 time limit to deliver##0");
+    mesq l("I recovered "+$XMAS2022+" [@@5288|@@]. From these, you gave me "+XMAS2022+" [@@5288|@@]. I'll start handing out the rewards tomorrow!");
+    mes l("##1Date limit: Event ended. Delivery will not be ranked.##0");
     mes l("##1Rewards will only be available until January 31st, 23:59 UTC##0");
     next;
     menu
@@ -279,52 +279,6 @@ L_Deliver:
     set XMAS2022, XMAS2022 + countitem(Naftalin);
     set $XMAS2022, $XMAS2022 + countitem(Naftalin);
     delitem Naftalin, countitem(Naftalin);
-    set @loop, 0;
-    set @rank, 0;
-    goto L_MaybeInsertNext;
-
-L_MaybeInsertNext:
-    if (XMAS2022 > $Record_XXXmas_Kills[@rank])
-        goto L_InsertScore;
-    // you already had a better score
-    if (strcharinfo(0) == $Record_XXXmas_Name$[@rank])
-        goto L_Scores;
-    set @rank, @rank + 1;
-    if (@rank == MAX_HIGH_SCORES)
-        goto L_Scores;
-    goto L_MaybeInsertNext;
-
-L_InsertScore:
-    set @loop, @rank;
-    goto L_FindLastScore;
-
-L_FindLastScore:
-    // comment this out to allow the player to be in the list more than once
-    // though actually, it might be better just to assume the list is full
-    if (strcharinfo(0) == $Record_XXXmas_Name$[@loop])
-        goto L_MoveStuff;
-
-    set @loop, @loop + 1;
-    if (@loop == MAX_HIGH_SCORES)
-        goto L_MoveStuff;
-    goto L_FindLastScore;
-
-L_MoveStuff:
-    if (@loop == @rank)
-        goto L_FinallyInsertMe;
-    set $Record_XXXmas_Kills[@loop], $Record_XXXmas_Kills[@loop - 1];
-    set $Record_XXXmas_Name$[@loop], $Record_XXXmas_Name$[@loop - 1];
-    set $Record_XXXmas_Date$[@loop], $Record_XXXmas_Date$[@loop - 1];
-    set @loop, @loop - 1;
-    goto L_MoveStuff;
-
-L_FinallyInsertMe:
-    set $Record_XXXmas_Kills[@rank], XMAS2022;
-    set $Record_XXXmas_Name$[@rank], strcharinfo(0);
-    callfunc "time_stamp";
-    set $Record_XXXmas_Date$[@rank], @ts_date$ + " " + @ts_time$;
-    set @ts_date$, "";
-    set @ts_time$, "";
     goto L_Scores;
 
 L_Scores:
