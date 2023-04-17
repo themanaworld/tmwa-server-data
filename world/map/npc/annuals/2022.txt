@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////
 // Red Corsair Day
 
--|script|#CRC2023|32767
+002-1,0,0,0|script|#CRC2023|32767
 {
     end;
 
@@ -12,12 +12,13 @@ OnFirst:
     if (strcharinfo(0) != "Blanc" && GM < G_SYSOP) end;
     wgm "==> Flagship spawned by "+strcharinfo(0);
     monster "002-1", 29, 61, "", MontBlanc, 1, "#CRC2022::OnExplode";
+    areatimer 0, "002-1", 20, 20, 100, 120, 10, "#CRC2023::OnMusic";
     initnpctimer;
     end;
 
 OnThird:
     if (strcharinfo(0) != "Blanc" && GM < G_SYSOP) end;
-    wgm strcharinfo(0)+" : @spawn CRCMonsters 25";
+    gmlog strcharinfo(0)+" : @spawn CRCMonsters 25";
     //set $@CRC22Mc, mobcount("002-1", "#CRC2022::OnDie")+1;
     set $@CRC22Mc, 0;
     set $@CRC22Gl, 25;
@@ -28,14 +29,15 @@ OnThird:
     callsub S_Spawn;
     end;
 
-// Not necessary, and use @music instead
-//OnMusic:
-//    music "Dramatic.ogg";
-//    end;
+// Use @music instead, but this is to help you
+OnMusic:
+    music "Dramatic.ogg";
+    end;
 
+// Main ship cannon (range = infinity)
 OnBoom:
     misceffect 30, strcharinfo(0);
-    heal -35-(BaseLevel*2), 0;
+    heal -(rand(BaseLevel*2)), 0;
     end;
 
 // Extra wave control system [0]
@@ -57,8 +59,9 @@ OnDie:
     end;
 
 OnExplode:
+    wgm "==> Flagship sank by "+strcharinfo(0);
     stopnpctimer;
-    mapannounce "002-1", "Mont Blanc : Captain! Fall back!! "+strcharinfo(0)+" has damaged the outer hull!", 0;
+    mapannounce "002-1", "Mont Blanc : Captain! Fall back!! They have damaged the outer hull!", 0;
     end;
 
 OnInit:
@@ -66,6 +69,7 @@ OnInit:
     // Register commands
     registercmd "#crcflagship", strnpcinfo(0)+"::OnFirst";
     registercmd "#crcmobs", strnpcinfo(0)+"::OnThird";
+    registercmd "#crcdie", strnpcinfo(0)+"::OnExplode";
     end;
 }
 
