@@ -4,224 +4,40 @@
 ////////////////////////////////////////////////
 // Red Corsair Day
 
--|script|#CRC2022|32767
+002-1,0,0,0|script|#CRC2023|32767
 {
     end;
 
 OnFirst:
     if (strcharinfo(0) != "Blanc" && GM < G_SYSOP) end;
-    wgm "==> CRC Day Phase 1 Started by "+strcharinfo(0);
-    set $@CRC22, 1;
-    enablenpc "Red Bearer";
+    wgm "==> Flagship spawned by "+strcharinfo(0);
+    monster "002-1", 29, 61, "", MontBlanc, 1, "#CRC2022::OnExplode";
+    areatimer 0, "002-1", 20, 20, 100, 120, 10, "#CRC2023::OnMusic";
     initnpctimer;
-    goto OnTimer30000;
-
-OnSecond:
-    if (strcharinfo(0) != "Cerise" && GM < G_SYSOP) end;
-    wgm "==> CRC Day Phase 2 Started by "+strcharinfo(0);
-    set $@CRC22, 2;
-    disablenpc "Red Bearer";
-    //enablenpc "Zax De'Kagen#CRC";
-    // set the sprite (implies enablenpc)
-    fakenpcname "Zax De'Kagen#CRC", "Zax De'Kagen#CRC", 1142;
-    initnpctimer;
-    goto L_Extra;
+    end;
 
 OnThird:
-    if (strcharinfo(0) != "Cerise" && GM < G_SYSOP) end;
-    wgm "==> CRC Day Phase 3 Started by "+strcharinfo(0);
-    set $@CRC22, 3;
-    disablenpc "Halifax";
-    stopnpctimer;
-    end;
-
-OnStatus:
-    if (!$@CRC22) end;
-    set $@CRC22Mc, mobcount("007-1", "#CRC2022::OnDie")+
-                   mobcount("008-1", "#CRC2022::OnDie")+
-                   mobcount("009-1", "#CRC2022::OnDie")+
-                   mobcount("011-1", "#CRC2022::OnDie")+
-                   mobcount("031-1", "#CRC2022::OnDie")+
-                   mobcount("018-1", "#CRC2022::OnDie")+
-                   mobcount("018-3", "#CRC2022::OnDie")+
-                   7;
-    message strcharinfo(0), "Monsters remaining: "+$@CRC22Mc;
-    if ($@CRC22Mc <= 0)
-        set $@CRC22, 0;
-    // TODO: Announce?
+    if (strcharinfo(0) != "Blanc" && GM < G_SYSOP) end;
+    gmlog strcharinfo(0)+" : @spawn CRCMonsters 25";
+    //set $@CRC22Mc, mobcount("002-1", "#CRC2022::OnDie")+1;
     set $@CRC22Mc, 0;
-    end;
-
-OnTimer30000:
-    // Outskirts
-    set $@CRC22Mc, mobcount("008-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 32;
-    set $@CRC22M$, "008-1";
-    set $@CRC22Xm, 140;
-    set $@CRC22Ym, 100;
-    if ($@CRC22Mc >= $@CRC22Gl) goto L_End;
-    callsub S_Spawn;
-    end;
-
-L_End:
-    end;
-
-// Redundant
-OnTimer15000:
-    goto OnTimer30000;
-
-// Redundant
-OnTimer45000:
-    goto OnTimer30000;
-
-// Redundant
-OnTimer60000:
-    goto OnTimer30000;
-
-OnTimer70000:
-    // Hurnscald [LOCKED DOWN]
-    set $@CRC22Mc, mobcount("009-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 100;
-    set $@CRC22M$, "009-1";
-    set $@CRC22Xm, 100;
-    set $@CRC22Ym, 60;
-    if ($@CRC22Mc >= $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-OnTimer72000:
-    // Outskirts
-    set $@CRC22Mc, mobcount("008-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 40;
-    set $@CRC22M$, "008-1";
-    set $@CRC22Xm, 140;
+    set $@CRC22Gl, 25;
+    set $@CRC22M$, "002-1";
+    set $@CRC22Xm, 52;
     set $@CRC22Ym, 100;
     if ($@CRC22Mc >= $@CRC22Gl) end;
     callsub S_Spawn;
     end;
 
-// Duplicate for infinity loop bug
-OnTimer74000:
-    // South Forest (LOCKED DOWN)
-    set $@CRC22Mc, mobcount("007-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 110;
-    set $@CRC22M$, "007-1";
-    set $@CRC22Xm, 130;
-    set $@CRC22Ym, 90;
-    if ($@CRC22Mc >= $@CRC22Gl) end;
-    callsub S_Spawn;
+// Use @music instead, but this is to help you
+OnMusic:
+    music "Dramatic.ogg";
     end;
 
-OnTimer75000:
-    // South Forest (LOCKED DOWN)
-    set $@CRC22Mc, mobcount("007-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 220;
-    set $@CRC22M$, "007-1";
-    set $@CRC22Xm, 130;
-    set $@CRC22Ym, 90;
-    if ($@CRC22Mc >= $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-// Duplicate for infinity loop bug
-OnTimer76000:
-    // West Forest (LOCKED DOWN)
-    set $@CRC22Mc, mobcount("011-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 120;
-    set $@CRC22M$, "011-1";
-    set $@CRC22Xm, 130;
-    set $@CRC22Ym, 110;
-    if ($@CRC22Mc >= $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-OnTimer77000:
-    // West Forest (LOCKED DOWN)
-    set $@CRC22Mc, mobcount("011-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 240;
-    set $@CRC22M$, "011-1";
-    set $@CRC22Xm, 130;
-    set $@CRC22Ym, 110;
-    if ($@CRC22Mc >= $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-OnTimer78000:
-    // Nivalis Port (LOCKED DOWN)
-    set $@CRC22Mc, mobcount("031-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 100;
-    set $@CRC22M$, "031-1";
-    set $@CRC22Xm, 110;
-    set $@CRC22Ym, 130;
-    if ($@CRC22Mc >= $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-OnTimer80000:
-    if ($@CRC22 > 1) goto L_Extra;
-    // Nothing at mines yet
-    initnpctimer;
-    end;
-
-L_Extra:
-    // Outskirts [LOCKDOWN]
-    set $@CRC22Mc, mobcount("008-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 80;
-    set $@CRC22M$, "008-1";
-    set $@CRC22Xm, 140;
-    set $@CRC22Ym, 100;
-    if ($@CRC22Mc >= $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-OnTimer84000:
-    // Hurnscald Mines (Outskirt)
-    set $@CRC22Mc, mobcount("018-1", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 40;
-    set $@CRC22M$, "018-1";
-    set $@CRC22Xm, 140;
-    set $@CRC22Ym, 100;
-    if ($@CRC22Mc >= $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-// Duplicate for infinity loop bug
-OnTimer86000:
-    // Obelisk Cave & Mines [LOCKED DOWN]
-    set $@CRC22Mc, mobcount("018-3", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 100;
-    set $@CRC22M$, "018-3";
-    set $@CRC22Xm, 180;
-    set $@CRC22Ym, 180;
-    if ($@CRC22Mc < $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-// Duplicate for infinity loop bug
-OnTimer88000:
-    // Obelisk Cave & Mines [LOCKED DOWN]
-    set $@CRC22Mc, mobcount("018-3", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 200;
-    set $@CRC22M$, "018-3";
-    set $@CRC22Xm, 180;
-    set $@CRC22Ym, 180;
-    if ($@CRC22Mc < $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-OnTimer89000:
-    // Obelisk Cave & Mines [LOCKED DOWN]
-    set $@CRC22Mc, mobcount("018-3", "#CRC2022::OnDie")+1;
-    set $@CRC22Gl, 300;
-    set $@CRC22M$, "018-3";
-    set $@CRC22Xm, 180;
-    set $@CRC22Ym, 180;
-    if ($@CRC22Mc < $@CRC22Gl) end;
-    callsub S_Spawn;
-    end;
-
-OnTimer90000:
-    initnpctimer;
+// Main ship cannon (range = infinity)
+OnBoom:
+    misceffect 30, strcharinfo(0);
+    heal -(rand(BaseLevel*2)), 0;
     end;
 
 // Extra wave control system [0]
@@ -234,295 +50,28 @@ S_Spawn:
     if($@CRC22Mc < $@CRC22Gl) goto S_Spawn;
     return;
 
+OnTimer5000:
+    areatimer 0, "002-1", 20, 20, 500, 500, 100, "#CRC2023::OnBoom";
+    initnpctimer;
+    end;
+
 OnDie:
     end;
 
+OnExplode:
+    wgm "==> Flagship sank by "+strcharinfo(0);
+    stopnpctimer;
+    mapannounce "002-1", "Mont Blanc : Captain! Fall back!! They have damaged the outer hull!", 0;
+    end;
+
 OnInit:
-    setarray $@crc_mobs, 1119, 1120, 1121, 1119, 1120, 1121, 1157, 1155, 1163, 1090, 1064, 1119, 1120, 1121, 1119, 1120;
+    setarray $@crc_mobs, Thug, Swashbuckler, Grenadier, Thug, Swashbuckler, Grenadier, VoidSoldier, Bandit, Thug, Swashbuckler, Grenadier, Thug, Swashbuckler;
     // Register commands
-    registercmd "#crcstart", strnpcinfo(0)+"::OnFirst";
-    registercmd "#crcnext", strnpcinfo(0)+"::OnSecond";
-    registercmd "#crclast", strnpcinfo(0)+"::OnThird";
-    registercmd "#crcstatus", strnpcinfo(0)+"::OnStatus";
+    registercmd "#crcflagship", strnpcinfo(0)+"::OnFirst";
+    registercmd "#crcmobs", strnpcinfo(0)+"::OnThird";
+    registercmd "#crcdie", strnpcinfo(0)+"::OnExplode";
     end;
 }
 
 
-020-1,78,85,0|script|Santa#X2022|200
-{
-    if (gettime(7) <= 2022)
-        goto L_Start;
-    if (gettime(6) > 1)
-        goto L_Scores;
-    if (gettime(5) >= 11)
-        goto L_Reward;
-    goto L_Start;
-
-L_Start:
-    mesn l("Santa Claus");
-    mesq l("Hey folks! I was using [@@5288|@@] to foil Baltashar attempts to ruin Christmas for the poor kids, but the plan turned against me this time! Hohoho!");
-    next;
-    mesn l("Santa Claus");
-    mesq l("That's because I forgot Jack Frost existed, hohoho! So, if you could collect the [@@5288|@@] back to me... Well, you would get a Christmas gift, that's for sure, hohoho!");
-    next;
-    mesn l("Santa Claus");
-    mesq l("I recovered "+$XMAS2022+" [@@5288|@@]. From these, you gave me "+XMAS2022+" [@@5288|@@]. I'll start handing out the rewards tomorrow!");
-    mes l("##1Date limit: Event ended. Delivery will not be ranked.##0");
-    mes l("##1Rewards will only be available until January 31st, 23:59 UTC##0");
-    next;
-    menu
-        "Deliver", L_Deliver,
-        "Scoreboards", L_Scores,
-        "I'll get to it.", L_Close;
-
-L_Deliver:
-    set XMAS2022, XMAS2022 + countitem(Naftalin);
-    set $XMAS2022, $XMAS2022 + countitem(Naftalin);
-    delitem Naftalin, countitem(Naftalin);
-    goto L_Scores;
-
-L_Scores:
-    mes l("I recovered "+$XMAS2022+" [@@5288|@@]. From these, you gave me "+XMAS2022+" [@@5288|@@].");
-    mes "";
-    set @rank, 0;
-    set @loop, 0;
-    goto L_ShowNextRecord;
-
-L_ShowNextRecord:
-    if ($Record_XXXmas_Kills[@loop] == 0)
-        goto L_Close;
-    mes (@loop + 1) + " - " + $Record_XXXmas_Name$[@loop] + " - " + $Record_XXXmas_Kills[@loop] + " [@@5288|@@] delivered at " + $Record_XXXmas_Date$[@loop];
-    set @loop, @loop + 1;
-    if (MAX_HIGH_SCORES > 4 && (@loop % 5) == 0 && $Record_XXXmas_Kills[@loop] > 0)
-        goto L_NextShowNextRecord;
-    goto L_ShowNextRecord;
-
-L_NextShowNextRecord:
-    next;
-    goto L_ShowNextRecord;
-
-L_Full:
-    mes "[Santa Claus]";
-    mes "\"Your backpack seems to be full. You should get rid of some unused stuff before you get my gifts, or maybe try one super resistant red bag, my personal favorite! Hoh-hoh!\"";
-    close;
-
-
-L_Reward:
-    if (XMAS2022 < 1) goto L_Scores;
-    getinventorylist;
-    if (@inventorylist_count > 80) goto L_Full;
-    mes l("Ho-ho-ho, you gave me "+XMAS2022+" [@@5288|@@]! Time for late Christmas and New Year gifts!");
-    mes "";
-    // Individual Performance
-    if (XMAS2022 >= 1) goto L_Del1;
-    goto L_Del1_Return;
-
-L_Del1_Return:
-    if (XMAS2022 >= 100) goto L_Del100;
-    goto L_Del100_Return;
-
-L_Del100_Return:
-    if (XMAS2022 >= 500) goto L_Del500;
-    goto L_Del500_Return;
-
-L_Del500_Return:
-    if (XMAS2022 >= 1000) goto L_Del1000;
-    goto L_Del1000_Return;
-
-L_Del1000_Return:
-    if (XMAS2022 >= 2500) goto L_Del2500;
-    goto L_Del2500_Return;
-
-L_Del2500_Return:
-    if (XMAS2022 >= 5000) goto L_Del5000;
-    goto L_Del5000_Return;
-
-L_Del5000_Return:
-    if (XMAS2022 >= 10000) goto L_Del10000;
-    goto L_Del10000_Return;
-
-L_Del10000_Return:
-    // Santa gift for global performance
-    if ($XMAS2022 >= 10000) goto L_Global10k;
-    goto L_Global10k_Return;
-
-L_Global10k_Return:
-    if ($XMAS2022 >= 25000) goto L_Global25k;
-    goto L_Global25k_Return;
-
-L_Global25k_Return:
-    if ($XMAS2022 >= 50000) goto L_Global50k;
-    goto L_Global50k_Return;
-
-L_Global50k_Return:
-    if ($XMAS2022 >= 75000) goto L_Global75k;
-    goto L_Global75k_Return;
-
-L_Global75k_Return:
-    if ($XMAS2022 >= 100000) goto L_Global100k;
-    goto L_Global100k_Return;
-
-L_Global100k_Return:
-    if ($XMAS2022 >= 150000) goto L_Global150k;
-    goto L_Global150k_Return;
-
-L_Global150k_Return:
-    if ($XMAS2022 >= 200000) goto L_Global200k;
-    goto L_Global200k_Return;
-
-L_Global200k_Return:
-    // Scoreboard performance
-    set XMAS2022, 0;
-    set @loop, 0;
-    goto L_ScoreGift;
-
-L_ScoreGift:
-    if (@loop == MAX_HIGH_SCORES)
-        goto L_Finish;
-    if (strcharinfo(0) == $Record_XXXmas_Name$[@loop])
-        goto L_LoopReward;
-    set @loop, @loop + 1;
-    goto L_ScoreGift;
-
-L_LoopReward:
-    if (@loop < 15) goto L_Rank15;
-    goto L_LoopReward15;
-L_LoopReward15:
-    if (@loop < 10) goto L_Rank10;
-    goto L_LoopReward10;
-L_LoopReward10:
-    if (@loop < 5) goto L_Rank5;
-    goto L_LoopReward5;
-L_LoopReward5:
-    if (@loop < 2) goto L_Rank2;
-    goto L_LoopReward2;
-L_LoopReward2:
-    goto L_Finish;
-
-L_Finish:
-    set @loop, 0;
-    mesn;
-    mesq l("Ho-ho-ho! Thanks for helping me to retrieve the Naphtalene! See you next year, ho-ho-ho!");
-    next;
-    goto L_Scores;
-
-L_Del1:
-    // Minimum 20 gp, Maximum 125,000 Naphtalenes
-    set @gp, min(XMAS2022 * 20, 2500000);
-    set Zeny, Zeny + @gp;
-    getexp @gp, 0;
-    mes l("##9Gained "+@gp+" GP!##0");
-    mes l("##9Gained "+@gp+" Experience points.##0");
-    set @gp, 0;
-    goto L_Del1_Return;
-
-L_Del100:
-    getitem IronPotion, 10;
-    getitem ConcentrationPotion, 10;
-    goto L_Del100_Return;
-
-L_Del500:
-    getitem IronPotion, 20;
-    getitem ConcentrationPotion, 20;
-    getitem MediumManaElixir, 10;
-    goto L_Del500_Return;
-
-L_Del1000:
-    // Minimum 40 boss points, Maximum 5,000 boss points
-    set @bp, min(XMAS2022 / 25, 5000);
-    set BOSS_POINTS, BOSS_POINTS + @bp;
-    mes l("Gained "+@bp+" Boss points!");
-    set @bp, 0;
-    goto L_Del1000_Return;
-
-L_Del2500:
-    getitem IronPotion, 20;
-    getitem ConcentrationPotion, 20;
-    getitem MediumManaElixir, 15;
-    goto L_Del2500_Return;
-
-L_Del5000:
-    getitem MediumManaElixir, 25;
-    getitem GumiCandy, 25;
-    goto L_Del5000_Return;
-
-L_Del10000:
-    getitem LovePotion, 50;
-    getitem BlueRose, 1;
-    goto L_Del10000_Return;
-
-L_Global10k:
-    setarray @oldstock$, "PlushMouboo", "StickReinboo", "Doll", "LeatherBall", "SantaSnowGlobe", "SnowmanSnowGlobe", "RedOrnament", "YellowOrnament", "GreenOrnament", "AquaOrnament", "BlueOrnament", "MagentaOrnament";
-    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
-    cleararray @oldstock$, "", getarraysize(@oldstock$);
-    goto L_Global10k_Return;
-
-L_Global25k:
-    setarray @oldstock$, "PlushMouboo", "StickReinboo", "Doll", "LeatherBall", "SantaSnowGlobe", "SnowmanSnowGlobe", "RedOrnament", "YellowOrnament", "GreenOrnament", "AquaOrnament", "BlueOrnament", "MagentaOrnament", "RawTalisman", "FlightTalisman";
-    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
-    cleararray @oldstock$, "", getarraysize(@oldstock$);
-    goto L_Global25k_Return;
-
-L_Global50k:
-    setarray @oldstock$, "PlushMouboo", "StickReinboo", "Doll", "LeatherBall", "SantaSnowGlobe", "SnowmanSnowGlobe", "RedOrnament", "YellowOrnament", "GreenOrnament", "AquaOrnament", "BlueOrnament", "MagentaOrnament", "RawTalisman", "FlightTalisman", "StrangeCoin";
-    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
-    cleararray @oldstock$, "", getarraysize(@oldstock$);
-    goto L_Global50k_Return;
-
-L_Global75k:
-    setarray @oldstock$, "PlushMouboo", "StickReinboo", "Doll", "LeatherBall", "SantaSnowGlobe", "SnowmanSnowGlobe", "RedOrnament", "YellowOrnament", "GreenOrnament", "AquaOrnament", "BlueOrnament", "MagentaOrnament", "RawTalisman", "FlightTalisman", "StrangeCoin", "RedChristmasStocking";
-    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
-    cleararray @oldstock$, "", getarraysize(@oldstock$);
-    goto L_Global75k_Return;
-
-L_Global100k:
-    setarray @oldstock$, "MoubooHead", "MushHat", "ChristmasElfHat", "FunkyHat", "ShroomHat", "ElfNightcap", "BowlerHat", "TopHat";
-    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
-    cleararray @oldstock$, "", getarraysize(@oldstock$);
-    goto L_Global100k_Return;
-
-L_Global150k:
-    setarray @oldstock$, "PlushMouboo", "StickReinboo", "Doll", "LeatherBall", "SantaSnowGlobe", "SnowmanSnowGlobe", "RedOrnament", "YellowOrnament", "GreenOrnament", "AquaOrnament", "BlueOrnament", "MagentaOrnament", "RawTalisman", "FlightTalisman", "StrangeCoin", "RedChristmasStocking";
-    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
-    cleararray @oldstock$, "", getarraysize(@oldstock$);
-    goto L_Global150k_Return;
-
-L_Global200k:
-    setarray @oldstock$, "PlushMouboo", "StickReinboo", "Doll", "LeatherBall", "SantaSnowGlobe", "SnowmanSnowGlobe", "RedOrnament", "YellowOrnament", "GreenOrnament", "AquaOrnament", "BlueOrnament", "MagentaOrnament", "RawTalisman", "FlightTalisman", "StrangeCoin", "RedChristmasStocking";
-    getitem @oldstock$[rand(getarraysize(@oldstock$))], 1;
-    cleararray @oldstock$, "", getarraysize(@oldstock$);
-    goto L_Global200k_Return;
-
-L_Rank15:
-    setarray @oldstock, ChristmasElfHat, Towel, ElfNightcap, PaperBag, ChristmasTreeHat, MovieCap, FourLeafClover, BlueWolfHelmet;
-    getitem @oldstock[rand(getarraysize(@oldstock))], 1;
-    cleararray @oldstock, 0, getarraysize(@oldstock);
-    goto L_LoopReward15;
-
-L_Rank10:
-    setarray @oldstock, ChristmasElfHat, Towel, ElfNightcap, PaperBag, Earmuffs, FunkyHat, ScarabArmlet, SantaBeardHat, MovieCap, AFKCap, FourLeafClover, ChicSantaHat, BlueWolfHelmet;
-    getitem @oldstock[rand(getarraysize(@oldstock))], 1;
-    cleararray @oldstock, 0, getarraysize(@oldstock);
-    goto L_LoopReward10;
-
-L_Rank5:
-    setarray @oldstock, Earmuffs, FunkyHat, ScarabArmlet, ChristmasTreeHat, TamOShanter, SantaBeardHat, GroovyHat, JazzyHat, AFKCap, DarkHelm, ChicSantaHat, PilotHat;
-    getitem @oldstock[rand(getarraysize(@oldstock))], 1;
-    cleararray @oldstock, 0, getarraysize(@oldstock);
-    goto L_LoopReward5;
-
-L_Rank2:
-    setarray @oldstock, TamOShanter, GroovyHat, JazzyHat, DarkHelm, PilotHat;
-    getitem @oldstock[rand(getarraysize(@oldstock))], 1;
-    cleararray @oldstock, 0, getarraysize(@oldstock);
-    goto L_LoopReward2;
-L_Close:
-    close;
-}
-
-// Override mapflags for Christmas 2022
-033-1|mapflag|town
-034-1|mapflag|town
-046-1|mapflag|town
-047-1|mapflag|town
 
