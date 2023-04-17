@@ -11,7 +11,7 @@
 OnFirst:
     if (strcharinfo(0) != "Blanc" && GM < G_SYSOP) end;
     wgm "==> Flagship spawned by "+strcharinfo(0);
-    monster "002-1", 29, 61, "", MontBlanc, 1, "#CRC2022::OnDie";
+    monster "002-1", 29, 61, "", MontBlanc, 1, "#CRC2022::OnExplode";
     initnpctimer;
     end;
 
@@ -28,6 +28,16 @@ OnThird:
     callsub S_Spawn;
     end;
 
+// Not necessary, and use @music instead
+//OnMusic:
+//    music "Dramatic.ogg";
+//    end;
+
+OnBoom:
+    misceffect 30, strcharinfo(0);
+    heal -35-(BaseLevel*2), 0;
+    end;
+
 // Extra wave control system [0]
 S_Spawn:
     set $@CRC_IDX, rand(getarraysize($@crc_mobs));
@@ -39,12 +49,16 @@ S_Spawn:
     return;
 
 OnTimer5000:
-    // TODO: boom!
-    // effect id 30 for random player
+    areatimer 0, "002-1", 20, 20, 500, 500, 100, "#CRC2023::OnBoom";
     initnpctimer;
     end;
 
 OnDie:
+    end;
+
+OnExplode:
+    stopnpctimer;
+    mapannounce "002-1", "Mont Blanc : Captain! Fall back!! "+strcharinfo(0)+" has damaged the outer hull!", 0;
     end;
 
 OnInit:
