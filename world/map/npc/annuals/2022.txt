@@ -9,7 +9,7 @@
     end;
 
 OnFirst:
-    if (strcharinfo(0) != "Blanc" && GM < G_SYSOP) end;
+    if (strcharinfo(0) != "Blanc" && GM < G_ADMIN) end;
     wgm "==> Flagship spawned by "+strcharinfo(0);
     monster "002-1", 29, 61, "", MontBlanc, 1, "#CRC2022::OnExplode";
     areatimer 0, "002-1", 20, 20, 100, 120, 10, "#CRC2023::OnMusic";
@@ -17,7 +17,7 @@ OnFirst:
     end;
 
 OnThird:
-    if (strcharinfo(0) != "Blanc" && GM < G_SYSOP) end;
+    if (strcharinfo(0) != "Blanc" && GM < G_ADMIN) end;
     gmlog strcharinfo(0)+" : @spawn CRCMonsters 25";
     //set $@CRC22Mc, mobcount("002-1", "#CRC2022::OnDie")+1;
     set $@CRC22Mc, 0;
@@ -34,10 +34,14 @@ OnMusic:
     music "Dramatic.ogg";
     end;
 
+OnDeMusic:
+    music "faith.ogg";
+    end;
+
 // Main ship cannon (range = infinity)
 OnBoom:
     misceffect 30, strcharinfo(0);
-    heal -(rand(BaseLevel*2)), 0;
+    heal -(rand(BaseLevel*3/2)), 0;
     end;
 
 // Extra wave control system [0]
@@ -58,10 +62,15 @@ OnTimer5000:
 OnDie:
     end;
 
+OnExplodeT:
+    if (strcharinfo(0) != "Blanc" && GM < G_ADMIN) end;
+    goto OnExplode;
+
 OnExplode:
     wgm "==> Flagship sank by "+strcharinfo(0);
     stopnpctimer;
     mapannounce "002-1", "Mont Blanc : Captain! Fall back!! They have damaged the outer hull!", 0;
+    areatimer 0, "002-1", 20, 20, 100, 120, 10, "#CRC2023::OnDeMusic";
     end;
 
 OnInit:
@@ -69,7 +78,7 @@ OnInit:
     // Register commands
     registercmd "#crcflagship", strnpcinfo(0)+"::OnFirst";
     registercmd "#crcmobs", strnpcinfo(0)+"::OnThird";
-    registercmd "#crcdie", strnpcinfo(0)+"::OnExplode";
+    registercmd "#crcdie", strnpcinfo(0)+"::OnExplodeT";
     end;
 }
 
