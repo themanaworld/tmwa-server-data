@@ -88,3 +88,28 @@ pages:
     - public
   only:
   - stable
+
+clientdata:
+  stage: deploy
+  tags:
+    - glados
+  script:
+  - apt-get -qq update
+  - apt-get install -qq -y make zip zlib1g-dev zlibc python ssh rsync python3 git
+  - git submodule update --init
+  - git config --global credential.helper store
+  - echo "https://numa:$SYNC_KEY@git.themanaworld.org" > ~/.git-credentials
+  - git clone https://git.themanaworld.org/evolved/clientdata.git evolved
+  - cd evolved
+  - git checkout master
+  - cp -v ../client-data/monsters.xml .
+  - cp -v --recursive ../client-data/graphics/sprites/monsters/* graphics/sprites/monsters/
+  - git status
+  - git config user.email "numa@themanaworld.org"
+  - git config user.name "Numa"
+  - git commit -a -m "Sync with Legacy repo" --author="Numa <numa@themanaworld.org>"
+  - git push
+  only:
+  - stable
+  allow_failure: true
+
