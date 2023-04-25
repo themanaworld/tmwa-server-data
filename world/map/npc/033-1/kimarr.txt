@@ -477,7 +477,7 @@ L_CRC_MaybeInsertNext:
     if (strcharinfo(0) == $Record_CRC_Fluffy_Name$[@rank])
         goto L_CRC_MaybeRecordScore;
     set @rank, @rank + 1;
-    if (@rank == MAX_HIGH_SCORES)
+    if (@rank == MAX_HIGH_SCORES_CRC)
         goto L_CRC_MaybeRecordScore;
     goto L_CRC_MaybeInsertNext;
 
@@ -492,7 +492,7 @@ L_CRC_FindLastScore:
         goto L_CRC_MoveStuff;
 
     set @loop, @loop + 1;
-    if (@loop == MAX_HIGH_SCORES)
+    if (@loop == MAX_HIGH_SCORES_CRC)
         goto L_CRC_MoveStuff;
     goto L_CRC_FindLastScore;
 
@@ -524,7 +524,7 @@ L_CRC_ShowNextRecord:
         goto L_Close;
     mes (@loop + 1) + " - " + $Record_CRC_Fluffy_Name$[@loop] + " - " + $Record_CRC_Fluffy_Kills[@loop] + " Fluffies killed at " + $Record_CRC_Fluffy_Date$[@loop];
     set @loop, @loop + 1;
-    if (MAX_HIGH_SCORES > 4 && (@loop % 5) == 0 && $Record_CRC_Fluffy_Kills[@loop] > 0)
+    if (MAX_HIGH_SCORES_CRC > 4 && (@loop % 5) == 0 && $Record_CRC_Fluffy_Kills[@loop] > 0)
         goto L_CRC_NextShowNextRecord;
     goto L_CRC_ShowNextRecord;
 
@@ -554,19 +554,120 @@ function|script|FluffyDebug
 {
     mes "[Numa]";
     mes "Please select an action.";
+    goto L_Menu;
+
+L_Menu:
     menu
         "Enable/Disable Event Scoreboards", L_Enable,
+        "Show Event Scoreboards",L_CRC_ShowRecord,
+        "Erase Player from Scoreboard", L_Erase,
         "Reset event scoreboards", L_Reset;
 
+// If you want to erase a player and you are not sure if all will went good maybe backup the tmwa-server-data/world/map/save/mapreg.txt first
+
 L_Enable:
+    if (GM < G_EVENT) goto L_Decline;
     set $@KIMARR_EVENT, !$@KIMARR_EVENT;
     return;
 
+L_CRC_ShowRecord:
+    set @rank, 0;
+    set @loop, 0;
+    goto L_CRC_ShowNextRecord;
+
+L_CRC_ShowNextRecord:
+    if ($Record_CRC_Fluffy_Kills[@loop] == 0)
+        goto L_Close;
+    mes (@loop + 1) + " - " + $Record_CRC_Fluffy_Name$[@loop] + " - " + $Record_CRC_Fluffy_Kills[@loop] + " Fluffies killed at " + $Record_CRC_Fluffy_Date$[@loop];
+    set @loop, @loop + 1;
+    //if (MAX_HIGH_SCORES_CRC > 4 && (@loop % 5) == 0 && $Record_CRC_Fluffy_Kills[@loop] > 0)
+    //    goto L_CRC_NextShowNextRecord;
+    goto L_CRC_ShowNextRecord;
+
+//L_CRC_NextShowNextRecord:
+//    next;
+//    goto L_CRC_ShowNextRecord;
+
+// I let this here commented out in case someone wants to enable pause after 5 players.
+
+L_Erase:
+    if (GM < G_EVENT) goto L_Decline;
+    if ($@Fluffy_Hunting) goto L_HuntRunning;
+    if ($Record_CRC_Fluffy_Kills[0] == 0) goto L_NothingToErase;
+    set @max_rank, getarraysize($Record_CRC_Fluffy_Kills);
+    //if (@max_rank < 1) goto L_NothingToErase; // does not work getarraysize returns 1 even on an empty array
+    mes "\"Input the rank of the player that should be erased.\"";
+    mes "\"1 - " + @max_rank + "\"";
+    input @player_rank;
+    if (@player_rank < 1 || @player_rank > @max_rank) goto L_WrongRank;
+    set @tmp_rank$, @player_rank + " - " + $Record_CRC_Fluffy_Name$[@player_rank-1] + " - " + $Record_CRC_Fluffy_Kills[@player_rank-1] + " Fluffies killed at " + $Record_CRC_Fluffy_Date$[@player_rank-1];
+    mes "\"You selected:\"";
+    mes @tmp_rank$;
+    mes "Are you sure to erase this rank?";
+    menu
+        "No.",L_Close,
+        "Yes, do it!",L_EraseRank;
+
+L_EraseRank:
+    if ($@Fluffy_Hunting) goto L_HuntRunning;
+    if (@player_rank-1 == MAX_HIGH_SCORES_CRC || @player_rank == @max_rank) goto L_EraseLast;
+    set @loop, @player_rank-1;
+    goto L_EraseRankLoop;
+
+L_EraseRankLoop:
+    set $Record_CRC_Fluffy_Name$[@loop], $Record_CRC_Fluffy_Name$[@loop+1];
+    set $Record_CRC_Fluffy_Kills[@loop], $Record_CRC_Fluffy_Kills[@loop+1];
+    set $Record_CRC_Fluffy_Date$[@loop], $Record_CRC_Fluffy_Date$[@loop+1];
+    set @loop, @loop + 1;
+    if (@loop < @max_rank-1) goto L_EraseRankLoop;
+    goto L_EraseLast;
+
+L_EraseLast:
+    set $Record_CRC_Fluffy_Name$[@max_rank-1], "";
+    set $Record_CRC_Fluffy_Kills[@max_rank-1], 0;
+    set $Record_CRC_Fluffy_Date$[@max_rank-1], "";
+    mes "\"Rank erased!\"";
+    gmlog strcharinfo(0) + " wiped a rank from the Fluffy Hunt Event Scoreboards: " + @tmp_rank$;
+    next;
+    goto L_Close;
+
+L_WrongRank:
+    mes "\"You entered a wrong rank please try again.\"";
+    next;
+    goto L_Close;
+
+L_HuntRunning:
+    mes "\"There is a hunt running at the moment please try again later.\"";
+    // if you have the dialog open and someone finishes meanwhile he is maybe on the spot you wanted to erase or someone else moved there.
+    next;
+    goto L_Close;
+
+L_NothingToErase:
+    mes "\"There is nothing to erase.\"";
+    next;
+    goto L_Close;
+
+L_Close:
+    // clear all temporary player variables that are not otherwise cleared
+
+    set @loop, 0;
+    set @player_rank, 0;
+    set @max_rank, 0;
+    set @tmp_rank$, "";
+
+    goto L_Menu;
+
 L_Reset:
     if (GM < G_EVENT) goto L_Decline;
-    cleararray $Record_CRC_Fluffy_Kills, 0, MAX_HIGH_SCORES;
-    cleararray $Record_CRC_Fluffy_Name$, "", MAX_HIGH_SCORES;
-    cleararray $Record_CRC_Fluffy_Date$, "", MAX_HIGH_SCORES;
+    mes "Really reset the event scoreboards?";
+    menu
+        "No.",L_Menu,
+        "Yes, do it!",L_ResetYes;
+
+L_ResetYes:
+    cleararray $Record_CRC_Fluffy_Kills, 0, MAX_HIGH_SCORES_CRC;
+    cleararray $Record_CRC_Fluffy_Name$, "", MAX_HIGH_SCORES_CRC;
+    cleararray $Record_CRC_Fluffy_Date$, "", MAX_HIGH_SCORES_CRC;
     gmlog strcharinfo(0) + " wiped Fluffy Hunt Event Scoreboards.";
     return;
 
