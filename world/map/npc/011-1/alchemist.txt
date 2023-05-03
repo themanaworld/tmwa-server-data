@@ -26,7 +26,8 @@
     set @CHOICE_MANA_POTION, 5;
     set @CHOICE_SULPHUR_POWDER, 6;
     set @CHOICE_IRON_POWDER, 7;
-    set @CHOICE_ABORT, 8;
+    set @CHOICE_LAB, 8;
+    set @CHOICE_ABORT, 9;
 
     setarray @menuitems$, "", "", "", "", "", "", "", "";
     set @c, 0;
@@ -37,6 +38,10 @@
 
     set @menuitems$[@c], "Concentration potion.";
     set @menuID[@c], @CHOICE_CONCENTRATION;
+    set @c, @c + 1;
+
+    set @menuitems$[@c], "Alchemy lab locations.";
+    set @menuID[@c], @CHOICE_LAB;
     set @c, @c + 1;
 
     if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANAPOTION))
@@ -114,7 +119,8 @@ L_main_menu:
         @menuitems$[4], L_MenuItems,
         @menuitems$[5], L_MenuItems,
         @menuitems$[6], L_MenuItems,
-        @menuitems$[7], L_MenuItems;
+        @menuitems$[7], L_MenuItems,
+        @menuitems$[8], L_MenuItems;
 
 L_MenuItems:
     set @menu, @menu - 1;
@@ -137,9 +143,30 @@ L_MenuItems:
         goto L_sulphur;
     if (@menuID[@menu] == @CHOICE_IRON_POWDER)
         goto L_iron_powder;
+    if (@menuID[@menu] == @CHOICE_LAB)
+        goto L_lab;
     if (@menuID[@menu] == @CHOICE_ABORT)
         goto L_abort;
     goto L_abort;
+
+L_lab:
+    mes "[Rauk the Alchemist]";
+    mes "\"There's a few labs around. From here, I'd either go to Asphodel Moor's store or Candor Island's lab. I so enjoy the ferry. If you travel to Tulimshar, visit the magic school. Some of the classrooms may still have some lab equipment.\"";
+    next;
+    menu
+        "Thanks a bunch.", L_abort,
+        "Where can one learn alchemy recipes?", L_recipes;
+
+L_recipes:
+    mes "[Rauk the Alchemist]";
+    mes "\"So you wish to become an alchemist?\"";
+    mes "Rauk can't seem to hold back a smirk.";
+    mes "\"Trying to find alchemy recipes can be challenging. These are well guarded amongst my fellow tradesmen. Most that I've known have learned by experimenting on their own. It can be dangerous to fool with the unknown though.\"";
+    mes "He seems to consider something for a moment.";
+    mes "\"No... I just can't give away my secrets. Some alchemists, like Caul, have tried for years to learn my [@@567|@@] methods. I'd trade techniques with him, gladly, but he knows nothing of interest to me.\"";
+    mes "\"He keeps trying to exchange his [@@750|@@] formula for it, but they'll never move like iron potions do.\"";
+    mes "Rauk appears to look proud.";
+    close;
 
 L_iron_powder:
     mes "[Rauk the Alchemist]";
