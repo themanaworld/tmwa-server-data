@@ -1,5 +1,6 @@
 -|script|magic-knuckles|32767
 {
+    if @_U_BLOCK >= 1 goto L_Still_Exhausted;
     if (call("magic_checks")) end;
     if (Sp < 20) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
@@ -13,6 +14,7 @@
     sc_start SC_COOLDOWN, 500, 0, BL_ID;
     callfunc "adjust_spellpower";
     set Sp, Sp - 20;
+    set .caster, getcharid(3);
     misceffect FX_MAGIC_KNUCKLE_CAST, strcharinfo(0);
     setarray @upmarmuspell[0],
         max(1, BASE_ATK - 100 + min(100, Int)), // dmg
@@ -27,7 +29,20 @@ OnAttack:
     if (getequipid(equip_hand1) != -1 || getequipid(equip_hand2) != -1) goto OnDischarge;
     if (target(BL_ID, @target_id, 22) != 22) goto L_FreeRecast; // 0x10 | 0x02 | 0x04
     void call("elt_damage", @upmarmuspell[0], (@upmarmuspell[3] + @upmarmuspell[4]), ELT_WATER, ELT_FIRE, FX_NONE);
+
+    // This timer is if you stopped somewhere below max hits then after 25sec you recover fully and start at 0 hits again
+    stopnpctimer;
+    // to get this work stoptimer must be executed here or after setnpctimer and then started again else
+    // a timer somehow detaches that cant be set anymore, startnpctimer then attaches it again somehow
+    // i think the problem is in npc_timerevent_calc_next somewhere
+    if (@num_upmarmu_hits < 1) initnpctimer;
+    setnpctimer 0;
+    startnpctimer;
+
     set @upmarmuspell[1], @upmarmuspell[1] - 1;
+    set @num_upmarmu_hits, @num_upmarmu_hits + 1;
+
+    if @num_upmarmu_hits > UPMARMU_HITS_TILL_EXHAUST goto L_Exhausted;
     goto L_FreeRecast;
 
 L_FreeRecast:
@@ -35,16 +50,41 @@ L_FreeRecast:
         addtimer 0, strnpcinfo(0) + "::OnSetRecast";
     end;
 
+L_Exhausted:
+    set @_U_BLOCK, 1;
+    set @upmarmuspell[1], 0;
+    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
+    overrideattack;
+    addtimer UPMARMU_EXHAUST_DURATION, "Upmarmu Exhaust Timer::OnClear"; // set the exhaustion time
+    sc_start SC_COOLDOWN_UPMARMU, UPMARMU_EXHAUST_DURATION, 0, BL_ID;
+    smsg SMSG_FAILURE, "Magic: You are too exhausted to use this spell for a while!";
+    goto L_StopTimer;
+
+L_Still_Exhausted:
+    smsg SMSG_FAILURE, "Magic: You are still too exhausted to use this spell for a while!";
+    end;
+
+L_StopTimer:
+    stopnpctimer;
+    setnpctimer 0;
+    end;
+
 OnDischarge:
     if (@upmarmuspell[1] < 1) end;
     set @upmarmuspell[1], 0;
     misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
     overrideattack;
-    end;
+    goto L_StopTimer;
 
 OnSetRecast:
     overrideattack (@upmarmuspell[2] * @upmarmuspell[2]), 1, ATTACK_ICON_GENERIC, OVERRIDE_KNUCKLES, strnpcinfo(0)+"::OnAttack", @upmarmuspell[1]; // delay needs to be squared
     end;
+
+OnTimer25000:
+    if (attachrid(.caster) < 1) end;
+    set @num_upmarmu_hits, 0;
+    detachrid;
+    goto L_StopTimer;
 
 OnInit:
     set .school, SKILL_MAGIC_WAR;
@@ -52,5 +92,15 @@ OnInit:
     void call("magic_register");
     set .level, 2;
     set .exp_gain, 1;
+    end;
+}
+
+-|script|Upmarmu Exhaust Timer|32767
+{
+    end;
+
+OnClear:
+    set @_U_BLOCK, 0;
+    set @num_upmarmu_hits, 0;
     end;
 }
