@@ -18,6 +18,7 @@ function|script|ClearVariables
     callsub S_Bitmask;
     callsub S_BlueSage;
     callsub S_Luca;
+    callsub S_Keshlam;
 
     callsub S_Valentine2021;
 
@@ -78,6 +79,21 @@ S_Luca2:
 
 S_LucaX:
     set FLAGS, FLAGS | FLAG_LUCA_FIX;
+    return;
+
+S_Keshlam:
+    if (FLAGS & FLAG_KESHLAM_REPACKED) goto S_Return;
+    set KESHLAM_STATE, #BOSS_MEDALS | (#BOSS_MEDALS_AVAILABLE << BYTE_1_SHIFT);
+    set #BOSS_MEDALS, 0;
+    set #BOSS_MEDALS_AVAILABLE, 0;
+    // old
+    // FLAG_KESHLAM_FLAWEDLENS 16384  shift 14
+    // FLAG_KESHLAM_RAREDROP   32768  shift 15
+    // new
+    // FLAG_KESHLAM_FLAWEDLENS 65536  shift 16
+    // FLAG_KESHLAM_RAREDROP   131072 shift 17
+    set KESHLAM_STATE, KESHLAM_STATE | ((FLAGS & 16384) >> 14) << 16 | ((FLAGS & 32768) >> 15) << 17;
+    set FLAGS, FLAGS | FLAG_KESHLAM_REPACKED ^ 16384 ^ 32768;
     return;
 
 S_Flags:

@@ -1,4 +1,4 @@
-// Cronos, the lord of time and apparently a shopkeeper
+// Chronos, the lord of time and apparently a shopkeeper
 // There's also Father Time in the GM stuff
 
 099-7,95,27,0|script|Chronos|313
@@ -6,6 +6,7 @@
     cleararray @items$, "", getarraysize(@items$); // must be cleared here if someone used the close button last time then items would remain in list
     cleararray @item_names$, "", getarraysize(@item_names$);
     cleararray @shopopt$, "", getarraysize(@shopopt$);
+
     mes "[Chronos]";
     mes "\"I'm Chronos, lord of time, the immortal, the head editor of the Almanach, the... Alright, let's forget that.\"";
     if (BOSS_POINTS < .price) goto L_Close;
@@ -16,30 +17,69 @@
     if ($CHRONOS_STOCK < 1) goto L_Maxed;
     set @cur_date, 0;
     next;
+
     // Boss Points validation
     set @cur, BOSS_POINTS / .price;
-    set @dif, @cur - #BOSS_MEDALS;
+    set @BOSS_MEDALS, (KESHLAM_STATE & BYTE_0_MASK);
+    set @BOSS_MEDALS_AVAILABLE, (KESHLAM_STATE & BYTE_1_MASK) >> BYTE_1_SHIFT;
+    if ( @BOSS_MEDALS >= CHRONOS_BOSS_MEDALS_MAX) goto L_CantGiveMedals;
+
+    set @dif, @cur - @BOSS_MEDALS;
     if (@dif >= 1) goto L_GiveMedals;
     mes "[Chronos]";
     mes "\"You haven't made any progress, so I can't give you any Boss Medals at this time.\"";
     mes "";
+    goto L_CheckAvailableMedals;
 
-    if (#BOSS_MEDALS_AVAILABLE >= 1) goto L_Qestion;
+L_CantGiveMedals:
+    mes "[Chronos]";
+    mes "\"You reached the maximum possible Boss Medals I can keep track for you already so I will not look if you deserve more sorry.\"";
+    mes "";
+    goto L_CheckAvailableMedals;
+
+L_CheckAvailableMedals:
+    if (@BOSS_MEDALS_AVAILABLE >= 1) goto L_Question;
     mes "[Chronos]";
     mes "\"Sadly there are no Boss Medals for you to do shopping left.\"";
     goto L_Close;
 
 L_GiveMedals:
-    set #BOSS_MEDALS, #BOSS_MEDALS + @dif;
-    set #BOSS_MEDALS_AVAILABLE, #BOSS_MEDALS_AVAILABLE + @dif;
+    set @BOSS_MEDALS, @BOSS_MEDALS + @dif;
+    if (@BOSS_MEDALS > CHRONOS_BOSS_MEDALS_MAX) goto L_ExededMaxMedals;
+    set @BOSS_MEDALS_AVAILABLE, @BOSS_MEDALS_AVAILABLE + @dif;
+    set KESHLAM_STATE, (KESHLAM_STATE & ~(BYTE_0_MASK + BYTE_1_MASK)) | @BOSS_MEDALS | @BOSS_MEDALS_AVAILABLE << BYTE_1_SHIFT;
     mes "[Chronos]";
     mes "\"For your deeds, I shall bestow upon you " + @dif + " Boss Medals. Use them wisely, they are the results of your hard effort.";
-    mes "Boss Medals are earned each " + .price + " boss points. They are account-bound and cannot be given to other players, not even other versions of you.";
+    mes "Boss Medals are earned each " + .price + " boss points. They are character-bound and cannot be given to other players, not even other versions of you.";
     mes "I will keep them for you until you evolved a bit.\"";
     next;
-    goto L_Qestion;
+    if (@BOSS_MEDALS == CHRONOS_BOSS_MEDALS_MAX) goto L_MaxedMedals;
+    goto L_Question;
 
-L_Qestion:
+L_MaxedMedals:
+    wgm "=> Player `"+strcharinfo(0) + "` reached maximum possible Boss Medals (" + CHRONOS_BOSS_MEDALS_MAX + ") from Chronos.";
+    debugmes "=> Player `"+strcharinfo(0) + "` reached maximum possible Boss Medals (" + CHRONOS_BOSS_MEDALS_MAX + ") from Chronos.";
+    mes "[Chronos]";
+    mes "\"Oh you just reached the maximum possible Boss Medals I can keep track for you this means I can't give you more in the future.";
+    mes "I just reached out telepatically to the invisible forces that keep this world into motion and told them what happened to you, so they are aware of your situation.\"";
+    next;
+    goto L_Question;
+    
+L_ExededMaxMedals:
+    set @cur, CHRONOS_BOSS_MEDALS_MAX - (@BOSS_MEDALS - @dif);
+    set @BOSS_MEDALS, CHRONOS_BOSS_MEDALS_MAX;
+    set @BOSS_MEDALS_AVAILABLE, @BOSS_MEDALS_AVAILABLE + @cur;
+    set @dif, @dif - @cur;
+    set KESHLAM_STATE, (KESHLAM_STATE & ~(BYTE_0_MASK + BYTE_1_MASK)) | @BOSS_MEDALS | @BOSS_MEDALS_AVAILABLE << BYTE_1_SHIFT;
+    wgm "=> Player `"+strcharinfo(0) + "` exeded maximum possible Boss Medals (" + CHRONOS_BOSS_MEDALS_MAX + ") from Chronos by " + @dif +  " .";
+    debugmes "=> Player `"+strcharinfo(0) + "` exeded maximum possible Boss Medals (" + CHRONOS_BOSS_MEDALS_MAX + ") from Chronos by " + @dif +  " .";
+    mes "[Chronos]";
+    mes "\"Oh you just exeded the maximum possible Boss Medals I can keep track for you by " + @dif + " so I can only bestow upon you " + @cur +  " Boss Medals now and this means I can't give you more in the future.";
+    mes "I just reached out telepatically to the invisible forces that keep this world into motion and told them what happened to you, maybe they can help you.\"";
+    next;
+    goto L_Question;
+
+L_Question:
     // Shopkeeping
     mes "[Chronos]";
     mes "\"All things shall pass, but with the limited time you have, please enjoy shopkeeping.\"";
@@ -62,19 +102,19 @@ L_Shop:
     set @shopoptcounter, 0;
     setarray @shopopt$, "", "", "", "", "";
 
-    if(#BOSS_MEDALS_AVAILABLE < 1) goto L_Close;
+    if(@BOSS_MEDALS_AVAILABLE < 1) goto L_Close;
     set @shopopt$[@shopoptcounter], "1 Boss Medal";
     set @shopoptcounter, @shopoptcounter + 1;
 
-    if(#BOSS_MEDALS_AVAILABLE < 2) goto L_ShopMenuCreated;
+    if(@BOSS_MEDALS_AVAILABLE < 2) goto L_ShopMenuCreated;
     set @shopopt$[@shopoptcounter], "2 Boss Medals";
     set @shopoptcounter, @shopoptcounter + 1;
 
-    if(#BOSS_MEDALS_AVAILABLE < 3) goto L_ShopMenuCreated;
+    if(@BOSS_MEDALS_AVAILABLE < 3) goto L_ShopMenuCreated;
     set @shopopt$[@shopoptcounter], "3 Boss Medals";
     set @shopoptcounter, @shopoptcounter + 1;
 
-    if(#BOSS_MEDALS_AVAILABLE < 4) goto L_ShopMenuCreated;
+    if(@BOSS_MEDALS_AVAILABLE < 4) goto L_ShopMenuCreated;
     set @shopopt$[@shopoptcounter], "4 Boss Medals";
     set @shopoptcounter, @shopoptcounter + 1;
     goto L_ShopMenuCreated;
@@ -83,7 +123,7 @@ L_ShopMenuCreated:
     set @shopopt$[@shopoptcounter], "I must think about this again, good bye.";
     mes "";
     mes "[Chronos]";
-    mes "\"You have " + #BOSS_MEDALS_AVAILABLE + " Boss Medals left.";
+    mes "\"You have " + @BOSS_MEDALS_AVAILABLE + " Boss Medals left.";
     mes "For which amount of Boss Medals you want to get a reward?\"";
     menu
         @shopopt$[0], L_MenuItems,
@@ -173,7 +213,7 @@ L_rewards_choice:
         "Yes", L_Yes;
     // to prevent fast key pressers and clickers from doing an error put No first as it's the highlighted item then.
     // but its not able to handle if someone moves the mouse on the wrong menu item and double clicks.
- 
+
 L_Yes:
     getinventorylist;
     if ((checkweight(@item$, 1) == 0) || (@inventorylist_count == 100)) goto L_InvFull;
@@ -184,7 +224,8 @@ L_Yes:
     mes "\"Here's your " + @item_names$[@index] + ", good bye.\"";
     wgm "=> Player `"+strcharinfo(0) + "` obtained the following item from Chronos: "+ @item_names$[@index];
     debugmes "=> Player `"+strcharinfo(0) + "` obtained the following item from Chronos: "+ @item_names$[@index];
-    set #BOSS_MEDALS_AVAILABLE, #BOSS_MEDALS_AVAILABLE - @num_medals;
+    set @BOSS_MEDALS_AVAILABLE, @BOSS_MEDALS_AVAILABLE - @num_medals;
+    set KESHLAM_STATE, (KESHLAM_STATE & ~BYTE_1_MASK) | @BOSS_MEDALS_AVAILABLE << BYTE_1_SHIFT;
     set $CHRONOS_STOCK, $CHRONOS_STOCK - 1;
     set @cur_date, (gettime(7) << 5) | (gettime(6) << 1);
     set #CHRONOS, @cur_date;
@@ -206,6 +247,8 @@ L_InvFull:
     goto L_Close;
 
 L_Close:
+    set @BOSS_MEDALS, 0;
+    set @BOSS_MEDALS_AVAILABLE, 0;
     set @cur, 0;
     set @dif, 0;
     set @num_medals, 0;
