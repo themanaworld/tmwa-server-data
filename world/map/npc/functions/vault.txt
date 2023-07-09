@@ -11,6 +11,7 @@ function|script|VaultLogin
     callsub S_Exp;
     callsub S_Gold;
     callsub S_Preset;
+    callsub S_Quest_CR1;
 
     // Clean up
     set @last_preset, 0;
@@ -85,9 +86,27 @@ S_Preset:
     if (##PRESET >= 19 && @last_preset < 19)
         getitem "TerraniteArrow",250;
     */
-
     set ##PRESET, 0;
     return;
+
+////////////////////////////////
+
+S_Quest_CR1:
+    if (!(##01_CRQUEST & 1)) goto S_Return;
+    if (##03_TMWWORLD & MLP_CR_DEBUT) goto S_Return;
+    // Check if you can receive the rewards
+    getinventorylist;
+    if (@inventorylist_count >= 96) goto S_Return;
+    // Mark quest as done and issue rewards
+    set BOSS_POINTS, BOSS_POINTS + 871;
+    set ##03_TMWWORLD, ##03_TMWWORLD | MLP_CR_DEBUT;
+    getitem WhiteCake, 1;
+    getitem ChocolateCake, 1;
+    getitem OrangeCake, 1;
+    getitem AppleCake, 1;
+    message strcharinfo(0), "Mirror Lake : You gained 871 boss points.";
+    return;
+
 }
 
 
