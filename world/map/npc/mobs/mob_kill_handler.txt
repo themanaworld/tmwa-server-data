@@ -1,0 +1,66 @@
+
+-|script|#MobKillHandlerInit|32767
+{
+    end;
+
+OnInit:
+    setarray $@QuestMobs, Maggot, Scorpion, RedScorpion, BlackScorpion, Pinkie, Fluffy, EasterFluffy, Mouboo, Squirrel, TameScorpion, HouseMaggot, AngryScorpion,
+                        Terranite, Yeti, Reinboo, DemonicMouboo, ViciousSquirrel, WickedMushroom, Bluepar, Santaboo, Pollett;
+    setarray $@NatureKarmaGood, Scorpion, RedScorpion, BlackScorpion, AngryScorpion, DemonicMouboo, ViciousSquirrel, WickedMushroom, Bluepar;
+    setarray $@NatureKarmaBad, Pinkie, Fluffy, EasterFluffy, Mouboo, Squirrel, Reinboo, Santaboo, Pollett;
+    setarray $@NatureKarmaBadVal,   3,      3,            3,      4,        2,       3,        3,       3;
+    end;
+}
+
+function|script|MobKillHandler
+{
+    if (@mobID < 1002) goto L_Return;
+
+    set .@find, array_search(@mobID, $@QuestMobs);
+    if (.@find < 0) goto L_Return;
+
+    callfunc "ValonCount";
+    if (((QL_VALON >= 2) && (QL_VALON < 6)) && (@mobID == $@ValonMob[@valon_mob]))
+        goto L_ValonMobKill;
+    goto L_NatureKarma;
+
+L_ValonMobKill:
+    callfunc "AddValonCntMask";
+    goto L_NatureKarma;
+
+L_NatureKarma:
+    set .@find, array_search(@mobID, $@NatureKarmaGood);
+    if (.@find >= 0) goto L_Good;
+    set .@find, array_search(@mobID, $@NatureKarmaBad);
+    if (.@find >= 0) goto L_Bad;
+    goto L_Celestia;
+
+    // Attitude adjustment for the witch (can we refactor this to another function?  Not sure about max. recursion depth)
+
+L_Bad:
+    set @value, $@NatureKarmaBadVal[.@find];
+    callfunc "QuestSagathaAnnoy";
+    goto L_Celestia;
+
+L_Good:
+    set @value, 1;
+    callfunc "QuestSagathaHappy";
+    goto L_Celestia;
+
+L_Celestia:
+    if (QL_CELESTIA < 5 || QL_CELESTIA >= 205 || @mobID != Yeti) goto L_Terranite;
+    set QL_CELESTIA, QL_CELESTIA + 1;
+    if (QL_CELESTIA == 205)
+        message strcharinfo(0), "Yeti : ##3This should be enough yetis killed to please Celestia.";
+    goto L_Terranite;
+
+L_Terranite:
+    if (TERRAC < 1 || TERRAC > 1500 || @mobID != Terranite) goto L_Return;
+    if (TERRAC % 100 == 0)
+        message strcharinfo(0), "Terranite : ##3Total Terranites Slain: "+TERRAC;
+    set TERRAC, TERRAC + 1;
+    goto L_Return;
+
+L_Return:
+    return;
+}
