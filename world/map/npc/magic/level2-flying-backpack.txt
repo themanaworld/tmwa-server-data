@@ -9,9 +9,11 @@
     set @target_id, getcharid(3, @args$);
     if (@target_id < 1 || !(isloggedin(@target_id)) || get(INVISIBLE, @target_id) == 1)
         set @target_id, BL_ID; // fallback to self
+    callfunc "adjust_spellpower";
     if (distance(BL_ID, @target_id) >= (@spellpower/30)+2) set @target_id, BL_ID;
     if (BL_ID == @target_id) set @args$, strcharinfo(0);
     if (get(GM, @target_id) == 1) end;
+    if (get(Hp, @target_id) < 1) end;
     if (getmap() == "033-1") goto L_SpecialRules6;
     goto L_Pay;
 
@@ -20,16 +22,15 @@ L_Pay:
     set @_M_BLOCK, 1; // block casting, until the timer clears it
     addtimer 1000, "Magic Timer::OnClear"; // set the new debuff
     sc_start SC_COOLDOWN, 1000, 0, BL_ID;
-    callfunc "adjust_spellpower";
     set Sp, Sp - 12;
     misceffect FX_MAGIC_FLYING_CAST, strcharinfo(0);
     callfunc "magic_exp";
     if (BL_ID != @target_id) misceffect FX_MAGIC_FLYING_HIT, @args$;
-    set @plugh_time, (@spellpower*500)+5000, @target_id;
-    sc_start SC_FLYING_BACKPACK, @plugh_time, 0, @target_id;
+    set .@plugh_time, (@spellpower*500)+5000;
+    sc_start SC_FLYING_BACKPACK, .@plugh_time, 0, @target_id;
     message @args$, "Backpack : Your backpack is lifted by a mystical force; you no longer feel it pressing on your back.";
-    set @plugh_future, gettimetick(0) + @plugh_time - 100, @target_id;
-    addtimer @plugh_time - 100, strnpcinfo(0)+"::OnEnd", @target_id;
+    set @plugh_future, gettimetick(0) + .@plugh_time - 100, @target_id;
+    addtimer .@plugh_time - 100, strnpcinfo(0)+"::OnEnd", @target_id;
     end;
 
 OnEnd:
