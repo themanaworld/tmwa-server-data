@@ -21,18 +21,20 @@
     set @CHOICE_IRON, 0;
     set @CHOICE_ENLIGHTENING, 1;
     set @CHOICE_CONCENTRATION, 2;
-    set @CHOICE_DYEING_INTRO, 3;
-    set @CHOICE_DYE, 4;
-    set @CHOICE_MONSTER_OIL, 5;
-    set @CHOICE_MANA_POTION, 6;
-    set @CHOICE_SULPHUR_POWDER, 7;
-    set @CHOICE_IRON_POWDER, 8;
-    set @CHOICE_ABORT, 9;
+    set @CHOICE_SLOW_POISON, 3;
+    set @CHOICE_DYEING_INTRO, 4;
+    set @CHOICE_DYE, 5;
+    set @CHOICE_MONSTER_OIL, 6;
+    set @CHOICE_MANA_POTION, 7;
+    set @CHOICE_SULPHUR_POWDER, 8;
+    set @CHOICE_IRON_POWDER, 9;
+    set @CHOICE_LAB, 10;
+    set @CHOICE_ABORT, 11;
 
-    setarray @menuitems$, "", "", "", "", "", "", "", "";
+    setarray @menuitems$, "", "", "", "", "", "", "", "", "", "";
     set @c, 0;
 
-    set @menuitems$[@c], "Iron potion.";
+    set @menuitems$[@c], "Iron Potion.";
     set @menuID[@c], @CHOICE_IRON;
     set @c, @c + 1;
 
@@ -40,8 +42,16 @@
     set @menuID[@c], @CHOICE_ENLIGHTENING;
     set @c, @c + 1;
 
-    set @menuitems$[@c], "Concentration potion.";
+    set @menuitems$[@c], "Concentration Potion.";
     set @menuID[@c], @CHOICE_CONCENTRATION;
+    set @c, @c + 1;
+
+    set @menuitems$[@c], "Slow Poison Potion.";
+    set @menuID[@c], @CHOICE_SLOW_POISON;
+    set @c, @c + 1;
+
+    set @menuitems$[@c], "Alchemy lab locations.";
+    set @menuID[@c], @CHOICE_LAB;
     set @c, @c + 1;
 
     if (!(MAGIC_FLAGS & MFLAG_KNOWS_MANAPOTION))
@@ -119,7 +129,10 @@ L_main_menu:
         @menuitems$[4], L_MenuItems,
         @menuitems$[5], L_MenuItems,
         @menuitems$[6], L_MenuItems,
-        @menuitems$[7], L_MenuItems;
+        @menuitems$[7], L_MenuItems,
+        @menuitems$[8], L_MenuItems;
+        @menuitems$[9], L_MenuItems;
+        @menuitems$[10], L_MenuItems;
 
 L_MenuItems:
     set @menu, @menu - 1;
@@ -132,6 +145,8 @@ L_MenuItems:
         goto L_enlightening;
     if (@menuID[@menu] == @CHOICE_CONCENTRATION)
         goto L_concentration;
+    if (@menuID[@menu] == @CHOICE_SLOW_POISON)
+        goto L_slow_poison;
     if (@menuID[@menu] == @CHOICE_DYEING_INTRO)
         goto L_dyeing_intro;
     if (@menuID[@menu] == @CHOICE_DYE)
@@ -144,9 +159,31 @@ L_MenuItems:
         goto L_sulphur;
     if (@menuID[@menu] == @CHOICE_IRON_POWDER)
         goto L_iron_powder;
+    if (@menuID[@menu] == @CHOICE_LAB)
+        goto L_lab;
     if (@menuID[@menu] == @CHOICE_ABORT)
         goto L_abort;
     goto L_abort;
+
+L_lab:
+    mes "[Rauk the Alchemist]";
+    mes "\"There's a few labs around. From here, I'd either go to Asphodel Moor's store or Candor Island's lab. I so enjoy the ferry. If you travel to Tulimshar, visit the magic school. Some of the classrooms may still have some lab equipment.\"";
+    next;
+    menu
+        "Thanks a bunch.", L_abort,
+        "Where can one learn alchemy recipes?", L_recipes;
+
+L_recipes:
+    mes "[Rauk the Alchemist]";
+    mes "\"So you wish to become an alchemist?\"";
+    mes "Rauk can't seem to hold back a smirk";
+    mes "\"Trying to find alchemy recipes can be challenging. These are well guarded amongst my fellow tradesmen. Most that I've known have learned by experimenting on their own. It can be dangerous to fool with the unknown though.\"";
+    mes "He seems to consider something for a moment";
+    mes "\"No... I just can't give away my secrets. Some alchemists, like Caul, have tried for years to learn my [@@567|@@] methods. I'd trade techniques with him, gladly, but he knows nothing of interest to me.\"";
+    mes "winks";
+    mes "\"He keeps trying to exchange his [@@750|@@] formula for it, but you can't learn what you already know.\"";
+    mes "Rauk appears to look proud.";
+    close;
 
 L_iron_powder:
     mes "[Rauk the Alchemist]";
@@ -363,16 +400,40 @@ L_concentration:
     getitem "ConcentrationPotion", @count;
     close;
 
+L_slow_poison;:
+    set @COST_PER_SLOW_POISON_POTION, 2;
+
+    mes "\" To make them, I'm going to need " + @COST_PER_SLOW_POISON_POTION + " Mountain Snake Tongues per Slow Poison Potion. How many Slow Poison Potions would you like?\"";
+    input @count;
+
+    if (@count == 0)
+        close;
+    set @empty, countitem("MountainSnakeTongue");
+
+    if (@empty < @count * @COST_PER_SLOW_POISON_POTION)
+        goto L_no_slow_poison;
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitem("MountainSnakeTongue") == 0 && @empty > @count)
+        goto L_TooMany;
+
+    delitem "MountainSnakeTongue", @COST_PER_SLOW_POISON_POTION * @count;
+    getitem "SlowPoisonPotion", @count;
+    close;
+
 L_no_iron:
-    mes "\"You have to bring me 2 Small Mushrooms for each Iron Potion.\"";
+    mes "\"You have to bring me 2 [@@566|@@]s for each [@@567|@@].\"";
     close;
 
 L_no_enlightening:
-    mes "\"You have to bring me 2 Mana Dust for each Enlightening Elixir.\"";
+    mes "\"You have to bring me 2 [@@5309|@@] for each [@@5310|@@].\"";
     close;
 
 L_no_concentration:
-    mes "\"You have to bring me 2 Pink Petals for each Concentration Potion.\"";
+    mes "\"You have to bring me 2 [@@565|@@]s for each [@@568|@@].\"";
+    close;
+
+L_no_slow_poison
+    mes "\"You have to bring me 2 [@@711|@@]s for each [@@750|@@].\"";
     close;
 
 L_dyeing_intro:
