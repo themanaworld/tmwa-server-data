@@ -19,20 +19,25 @@
     set @QUEST_GUESS_BASE, 4;
 
     set @CHOICE_IRON, 0;
-    set @CHOICE_CONCENTRATION, 1;
-    set @CHOICE_DYEING_INTRO, 2;
-    set @CHOICE_DYE, 3;
-    set @CHOICE_MONSTER_OIL, 4;
-    set @CHOICE_MANA_POTION, 5;
-    set @CHOICE_SULPHUR_POWDER, 6;
-    set @CHOICE_IRON_POWDER, 7;
-    set @CHOICE_ABORT, 8;
+    set @CHOICE_ENLIGHTENING, 1;
+    set @CHOICE_CONCENTRATION, 2;
+    set @CHOICE_DYEING_INTRO, 3;
+    set @CHOICE_DYE, 4;
+    set @CHOICE_MONSTER_OIL, 5;
+    set @CHOICE_MANA_POTION, 6;
+    set @CHOICE_SULPHUR_POWDER, 7;
+    set @CHOICE_IRON_POWDER, 8;
+    set @CHOICE_ABORT, 9;
 
     setarray @menuitems$, "", "", "", "", "", "", "", "";
     set @c, 0;
 
     set @menuitems$[@c], "Iron potion.";
     set @menuID[@c], @CHOICE_IRON;
+    set @c, @c + 1;
+
+    set @menuitems$[@c], "Enlightening Elixir.";
+    set @menuID[@c], @CHOICE_ENLIGHTENING;
     set @c, @c + 1;
 
     set @menuitems$[@c], "Concentration potion.";
@@ -123,6 +128,8 @@ L_MenuItems:
         goto L_abort;
     if (@menuID[@menu] == @CHOICE_IRON)
         goto L_iron;
+    if (@menuID[@menu] == @CHOICE_ENLIGHTENING)
+        goto L_enlightening;
     if (@menuID[@menu] == @CHOICE_CONCENTRATION)
         goto L_concentration;
     if (@menuID[@menu] == @CHOICE_DYEING_INTRO)
@@ -315,6 +322,27 @@ L_iron:
     getitem "IronPotion", @count;
     close;
 
+L_enlightening:
+    set @COST_PER_ENLIGHTENING_ELIXIR, 2;
+
+    mes "\" To make them, I'm going to need " + @COST_PER_ENLIGHTENING_ELIXIR + " Mana Dust per Enlightening Elixir. How many Enlightening Elixirs would you like?\"";
+    input @count;
+
+    if (@count == 0)
+        close;
+    set @empty, countitem("ManaDust");
+
+    if (@empty < @count * @COST_PER_ENLIGHTENING_ELIXIR)
+        goto L_no_enlightening;
+    getinventorylist;
+    if (@inventorylist_count == 100 && countitem("EnlighteningElixir") == 0 && @empty > @count)
+        goto L_TooMany;
+
+    delitem "ManaDust", @COST_PER_ENLIGHTENING_ELIXIR * @count;
+    getitem "EnlighteningElixir", @count;
+    close;
+
+
 L_concentration:
     set @COST_PER_CONCENTRATION_POTION, 2;
 
@@ -337,6 +365,10 @@ L_concentration:
 
 L_no_iron:
     mes "\"You have to bring me 2 Small Mushrooms for each Iron Potion.\"";
+    close;
+
+L_no_enlightening:
+    mes "\"You have to bring me 2 Mana Dust for each Enlightening Elixir.\"";
     close;
 
 L_no_concentration:
