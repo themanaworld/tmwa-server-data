@@ -52,6 +52,8 @@ L_RitualMenu:
         "Right.", L_RitualRight;
 
 L_RitualLeft:
+    if ($@CRYPT_FIGHT3 != 0)
+        goto L_Close;
     if (BaseLevel < @minlevel)
         goto L_ToWeak;
     if ( (countitem("Soul") < @TEROGAN_SOUL_REQ)
@@ -60,30 +62,25 @@ L_RitualLeft:
         || (countitem("UndeadEar") < @TEROGAN_UNDEAD_EAR_REQ) )
         goto L_MissingReagents;
     if (getareausers("027-8", 43, 39, 58, 60, 1) == 0)
-        goto L_NeedOther;
+        goto L_NeedOthersLeft;
+    goto L_NeedOthersLeftReturn;
+
+L_NeedOthersLeftReturn:
     delitem "Soul", @TEROGAN_SOUL_REQ;
     delitem "RottenRags", @TEROGAN_ROTTEN_RAGS_REQ;
     delitem "UndeadEye", @TEROGAN_UNDEAD_EYE_REQ;
     delitem "UndeadEar", @TEROGAN_UNDEAD_EAR_REQ;
     mes "As you perform the ritual you can feel the energy amass.";
     next;
+    warp "027-8", 27, 43;
     mes "A cold shiver runs down your spine as you feel something manifesting out of the void.";
-    if ($@CRYPT_FIGHT3 != 0)
-        goto L_Close;
-
-    // initialize fight
-    set $@CRYPT_FIGHT3, 1;
-    set $@CRYPT_FIGHT3_WAVE, 0;
-    set $@CRYPT_FIGHT3_SUMMONS_COUNT, 2;
-    set $@CRYPT_FIGHT3_PLAYER_COUNT, getareausers("027-8", 43, 39, 58, 60, 1) + getareausers("027-8", 20, 39, 35, 60, 1);
-    areamonster "027-8", 43, 39, 58, 60, "", Wight, 1, "General Terogan#Main::OnPetDeath";
-    areamonster "027-8", 20, 39, 35, 60, "", Stalker, 1, "General Terogan#Main::OnPetDeath";
 
     initnpctimer;
-    warp "027-8", 27, 43;
-    goto L_Announce;
+    end;
 
 L_RitualRight:
+    if ($@CRYPT_FIGHT3 != 0)
+        goto L_Close;
     if (BaseLevel < @minlevel)
         goto L_ToWeak;
     if ( (countitem("Soul") < @TEROGAN_SOUL_REQ)
@@ -92,32 +89,35 @@ L_RitualRight:
         || (countitem("UndeadEar") < @TEROGAN_UNDEAD_EAR_REQ) )
         goto L_MissingReagents;
     if (getareausers("027-8", 20, 39, 35, 60, 1) == 0)
-        goto L_NeedOther;
+        goto L_NeedOthersRight;
+    goto L_NeedOthersRightReturn;
+
+L_NeedOthersRightReturn:
     delitem "Soul", @TEROGAN_SOUL_REQ;
     delitem "RottenRags", @TEROGAN_ROTTEN_RAGS_REQ;
     delitem "UndeadEye", @TEROGAN_UNDEAD_EYE_REQ;
     delitem "UndeadEar", @TEROGAN_UNDEAD_EAR_REQ;
     mes "As you perform the ritual you can feel the energy amass.";
     next;
-    mes "A cold shiver runs down your spine as you feel something manifesting out of the void.";
     warp "027-8", 51, 43;
-    if ($@CRYPT_FIGHT3 != 0)
-        goto L_Close;
-
-    // initialize fight
-    set $@CRYPT_FIGHT3, 1;
-    set $@CRYPT_FIGHT3_WAVE, 0;
-    set $@CRYPT_FIGHT3_SUMMONS_COUNT, 2;
-    set $@CRYPT_FIGHT3_PLAYER_COUNT, getareausers("027-8", 43, 39, 58, 60, 1) + getareausers("027-8", 20, 39, 35, 60, 1);
-    areamonster "027-8", 43, 39, 58, 60, "", Wight, 1, "General Terogan#Main::OnPetDeath";
-    areamonster "027-8", 20, 39, 35, 60, "", Stalker, 1, "General Terogan#Main::OnPetDeath";
+    mes "A cold shiver runs down your spine as you feel something manifesting out of the void.";
 
     initnpctimer;
-    goto L_Announce;
+    end;
 
-L_NeedOther:
-    mes "You need at least one other person in the the other chamber to start.";
-    goto L_TomeMain;
+L_NeedOthersLeft:
+    mes "The other side is empty you really want to start?";
+    mes "##9(You have time until the second wave to get to Keshlam Swamp)##0";
+    menu
+        "No.", L_Close,
+        "Yes.", L_NeedOthersLeftReturn;
+
+L_NeedOthersRight:
+    mes "The other side is empty you really want to start?";
+    mes "##9(You have time until the second wave to get to Keshlam Swamp)##0";
+    menu
+        "No.", L_Close,
+        "Yes.", L_NeedOthersRightReturn;
 
 L_ToWeak:
     mes "You try to perform the ritual but nothing happens. You don't seem experienced enough.";
@@ -131,6 +131,24 @@ L_Close:
     set @TEROGAN_UNDEAD_EYE_REQ, 0;
     set @TEROGAN_UNDEAD_EAR_REQ, 0;
     close;
+
+OnTimer1000:
+    // Moved the battle init to a timer since if you do getareausers right after a warp the warping player is not counted
+    // which leads to loss on the first OnTimer5000 which calls L_CryptLogic,
+    // with this it has a bit time to update player position properly.
+    if ($@CRYPT_FIGHT3 != 0)
+        end;
+
+    // initialize fight
+    set $@CRYPT_FIGHT3, 1;
+    set $@CRYPT_FIGHT3_2ND_WAVE_REACHED, 0;
+    set $@CRYPT_FIGHT3_WAVE, 0;
+    set $@CRYPT_FIGHT3_SUMMONS_COUNT, 2;
+    set $@CRYPT_FIGHT3_PLAYER_COUNT, getareausers("027-8", 43, 39, 58, 60, 1) + getareausers("027-8", 20, 39, 35, 60, 1);
+    areamonster "027-8", 43, 39, 58, 60, "", Wight, 1, "General Terogan#Main::OnPetDeath";
+    areamonster "027-8", 20, 39, 35, 60, "", Stalker, 1, "General Terogan#Main::OnPetDeath";
+
+    goto L_Announce;
 
 // Fight logic attached to npc
 OnTimer5000:
@@ -149,7 +167,7 @@ L_CryptLogic:
     if ($@CRYPT_FIGHT3_ROUND_PEN > 60)
         set $@CRYPT_FIGHT3_ROUND_PEN, 60;
     if ($@CRYPT_FIGHT3_PLAYER_COUNT <= 0) goto L_CleanUpLosers;
-    if ( (getareausers("027-8", 43, 39, 58, 60, 1) < 1) || (getareausers("027-8", 20, 39, 35, 60, 1) < 1) ) goto L_Failure;
+    if ( ((getareausers("027-8", 43, 39, 58, 60, 1) < 1) || (getareausers("027-8", 20, 39, 35, 60, 1) < 1)) && ($@CRYPT_FIGHT3_2ND_WAVE_REACHED != 0) ) goto L_Failure;
     set $@CRYPT_FIGHT3_SUMMONS_ROUND_TIMER, $@CRYPT_FIGHT3_SUMMONS_ROUND_TIMER + 5; // Advance 5 seconds
     if (mobcount("027-8", "General Terogan#Main::OnPetDeath") < 0)
         goto L_NextWave;
@@ -181,6 +199,7 @@ L_SummonNuke:
     goto L_Announce;
 
 L_WeakSummons:
+    set $@CRYPT_FIGHT3_2ND_WAVE_REACHED, 1;
     set $@CRYPT_FIGHT3_SUMMONS_NUMBER, (5 + (1 * $@CRYPT_FIGHT3_WAVE) + (2 * $@CRYPT_FIGHT3_PLAYER_COUNT))/2;
     set $@CRYPT_FIGHT3_SUMMONS_COUNT, $@CRYPT_FIGHT3_SUMMONS_COUNT + ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2) + ($@CRYPT_FIGHT3_SUMMONS_NUMBER/2);
 
