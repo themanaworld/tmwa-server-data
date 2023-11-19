@@ -322,8 +322,22 @@ L_DyeChecks:
     mes "[Stranger]";
     mes "\"Ok, I'll need a bottle of water first.\"";
     next;
+
     getinventorylist;
-    if (@inventorylist_count == 100) goto L_Full_Inv;
+    // Check if there is enough space for dyed towel and empty bottle.
+    // does not consider freed space due to powder deletion.
+    set .@free_slots, (100 - @inventorylist_count);
+    if (countitem("HitchhikersTowel") == 1)
+        set .@free_slots, .@free_slots + 1;
+    if (countitem("BottleOfWater") == 1)
+        set .@free_slots, .@free_slots + 1;
+    if (countitem(@warpTowelName$) > 0)
+        set .@free_slots, .@free_slots + 1;
+    if (countitem("EmptyBottle") > 0)
+        set .@free_slots, .@free_slots + 1;
+    if (.@free_slots < 2)
+        goto L_Full_Inv;
+
     if (countitem("BottleOfWater") < 1) goto L_No_Water;
     set @powderCheckCount, 0;
     goto L_PowderChecks;
