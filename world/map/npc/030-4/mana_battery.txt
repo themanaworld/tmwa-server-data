@@ -18,7 +18,7 @@
 // player gets state set to finished for winning the battle once and mode bit set on easy/hard accordingly
 // every player *is* allowed to restart the quest ONCE himself if he hasnt started it himself yet
 
-//TODO Add an icreasing particle effect to the chest, move it half a tile right
+// TODO Add an icreasing particle effect to the chest, move it half a tile right
 // and make it one of those lab tables from the slime quests
 
 030-4,32,21,0|script|AniManOMat|400
@@ -212,7 +212,9 @@ L_CaveLogic:
 
 L_NextWave:
     set $@BombTimer, 0;
-    set $@DangerCellNumber, rand(8);
+    disablenpc "#DC" + $@DangerCellNumber;
+    set $@DangerCellNumber, rand(9);
+    enablenpc "#DC" + $@DangerCellNumber;
     set $@XmasBossRound, $@XmasBossRound + 1;
     if (($@XmasBossRound > 10)  && ((mobcount("030-4", "AniManOMat::OnGuardDeath") + 1) == 0))
         goto L_Finished;
@@ -294,6 +296,7 @@ L_Finished:
     goto L_CleanUp;
 
 L_CleanUp:
+    disablenpc "#DC" + $@DangerCellNumber;
     areatimer 0, "030-4", 0, 0, 50, 50, 10, "AniManOMat::OnReward";
     set $@XmasBossPlayerCount, 0;
     set $@XmasBossRound, 0;
@@ -319,7 +322,7 @@ OnReward:
     set @xmas_state, $@xmas_reward_start;
     callfunc "XmasSetState";
     set @xmas_state, 0;
-    //following line seems to do nothing since xmas_boss_bonus is not defined anywhere
+    // following line seems to do nothing since xmas_boss_bonus is not defined anywhere
     set @karma_bonus, $@xmas_boss_bonus;
     message strcharinfo(0), "Wow, what happened here?.";
     goto L_End;
@@ -406,7 +409,7 @@ L_Restart:
     end;
 
 S_Announce:
-    mapannounce "030-4", "Danger Cell Activated. Zone " + $@DangerCellNumber + " activated.", 0;
+    mapannounce "030-4", "Danger Cell Activated. Zone " + ($@DangerCellNumber + 1) + " activated.", 0;
     mapannounce "030-4", $@msg$, 0;
     mapannounce "030-2", $@msg$, 0;
     set $@msg$, "";
@@ -452,4 +455,87 @@ OnTimer120000:
     set $@XmasBattleCoolDown, 0;
     stopnpctimer;
     end;
+}
+
+// Danger Cells
+
+// 0: 19,20,29,29
+030-4,24,26,0|script|#DC0|434
+{
+  end;
+  OnInit:
+    disablenpc "#DC0";
+  end;
+}
+
+// 1: 30,20,40,29
+030-4,34,26,0|script|#DC1|432
+{
+  end;
+  OnInit:
+    disablenpc "#DC1";
+  end;
+}
+
+// 2: 41,20,50,29
+030-4,45,26,0|script|#DC2|434
+{
+  end;
+  OnInit:
+    disablenpc "#DC2";
+  end;
+}
+
+// 3: 19,31,29,40
+030-4,24,37,0|script|#DC3|434
+{
+  end;
+  OnInit:
+    disablenpc "#DC3";
+  end;
+}
+
+// 4: 30,31,40,40
+030-4,34,37,0|script|#DC4|432
+{
+  end;
+  OnInit:
+    disablenpc "#DC4";
+  end;
+}
+
+// 5: 41,31,50,40
+030-4,45,37,0|script|#DC5|434
+{
+  end;
+  OnInit:
+    disablenpc "#DC5";
+  end;
+}
+
+// 6: 19,42,29,50
+030-4,24,48,0|script|#DC6|435
+{
+  end;
+  OnInit:
+    disablenpc "#DC6";
+  end;
+}
+
+// 7: 30,42,40,50
+030-4,34,48,0|script|#DC7|433
+{
+  end;
+  OnInit:
+    disablenpc "#DC7";
+  end;
+}
+
+// 8: 41,42,50,50
+030-4,45,48,0|script|#DC8|435
+{
+  end;
+  OnInit:
+    disablenpc "#DC8";
+  end;
 }
