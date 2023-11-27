@@ -1,19 +1,61 @@
 //
 
 012-1,36,99,0|shop|#FlowerShop|32767,RedRose:*1,PinkRose:*1,YellowRose:*1,WhiteRose:*1,OrangeRose:*1,DarkRedRose:*1,RedTulip:*1,PinkTulip:*1,YellowTulip:*1,WhiteTulip:*1,OrangeTulip:*1
+012-1,36,99,0|shop|#FlowerPetalShop|32767,PinkPetal:*1,RedRose:*1,PinkRose:*1,YellowRose:*1,WhiteRose:*1,OrangeRose:*1,DarkRedRose:*1,RedTulip:*1,PinkTulip:*1,YellowTulip:*1,WhiteTulip:*1,OrangeTulip:*1
 
 012-1,36,99,0|script|Blossom|163
 {
+    goto L_Start;
+
+L_Start:
+    set @shopopt$, "";
+    if ( (HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_ASKED_FOR_PETALS ) set @shopopt$, "Do you sell Pink Petals?";
+    if ( (HURNS1_STATE & BYTE_0_MASK) >= PINK_PETAL_SHOP_ASKED_FOR_PETALS && (HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS ) set @shopopt$, "How many Pink Flower Seeds do I need again?";
+    if ( (HURNS1_STATE & BYTE_0_MASK) == PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS ) set @shopopt$, "I want to deliver the Pink Flower Seeds.";
+
     mes "[Blossom]";
     mes "\"Hello, would you like to buy some flowers?\"";
     menu
         "Sure.", L_Shop,
         "Not right now.", L_Close,
-        "Can I trade this Rose Hat for a differently colored one?", L_RoseHat;
+        "Can I trade this Rose Hat for a differently colored one?", L_RoseHat,
+        @shopopt$, L_Petals;
 
 L_Shop:
+    if ( (HURNS1_STATE & BYTE_0_MASK) == PINK_PETAL_SHOP_DELIVERED_FLOWER_SEEDS ) goto L_ShopPetals;
     close2;
     shop "#FlowerShop";
+
+L_ShopPetals:
+    close2;
+    shop "#FlowerPetalShop";
+
+L_Petals:
+    if ( (HURNS1_STATE & BYTE_0_MASK) >= PINK_PETAL_SHOP_ASKED_FOR_PETALS && (HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS ) goto L_HowMany;
+    if ( (HURNS1_STATE & BYTE_0_MASK) == PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS ) goto L_Deliver;
+
+    set HURNS1_STATE, (HURNS1_STATE & ~BYTE_0_MASK) | PINK_PETAL_SHOP_ASKED_FOR_PETALS;
+
+    mes "[Blossom]";
+    mes "\"Not at the moment but I could grow some if you bring me " + PINK_FLOWER_SEEDS_NEEDED + " [@@"+ PinkFlowerSeed + "|Pink Flower Seeds@@].\"";
+    goto L_Close;
+
+L_HowMany:
+    mes "[Blossom]";
+    mes "\"You need " + PINK_FLOWER_SEEDS_NEEDED + " [@@"+ PinkFlowerSeed + "|Pink Flower Seeds@@].\"";
+    goto L_Close;
+
+L_Deliver:
+    if ( countitem(PinkFlowerSeed) < PINK_FLOWER_SEEDS_NEEDED ) goto L_HowMany;
+
+    set HURNS1_STATE, (HURNS1_STATE & ~BYTE_0_MASK) | PINK_PETAL_SHOP_DELIVERED_FLOWER_SEEDS;
+    delitem PinkFlowerSeed, PINK_FLOWER_SEEDS_NEEDED;
+
+    mes "[Blossom]";
+    mes "\"Wonderful you found all the [@@"+ PinkFlowerSeed + "|Pink Flower Seeds@@].";
+    mes "I found some myself while you where away and so I already have some [@@" + PinkPetal +"|Pink Petals@@] on stock since that flowers grow real fast.";
+    mes "But with all your seeds I can establish a liftime supply for you now.\"";
+    goto L_Close;
 
 L_RoseHat:
     set @base_id, 897;

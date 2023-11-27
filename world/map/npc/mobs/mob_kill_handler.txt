@@ -5,7 +5,8 @@
 
 OnInit:
     setarray $@QuestMobs, Maggot, Scorpion, RedScorpion, BlackScorpion, Pinkie, Fluffy, EasterFluffy, Mouboo, Squirrel, TameScorpion, HouseMaggot, AngryScorpion,
-                        Terranite, Yeti, Reinboo, DemonicMouboo, ViciousSquirrel, WickedMushroom, Bluepar, Santaboo, Pollett;
+                        Terranite, Yeti, Reinboo, DemonicMouboo, ViciousSquirrel, WickedMushroom, Bluepar, Santaboo, Pollett, PinkFlower;
+
     setarray $@NatureKarmaGood, Scorpion, RedScorpion, BlackScorpion, AngryScorpion, DemonicMouboo, ViciousSquirrel, WickedMushroom, Bluepar;
     setarray $@NatureKarmaBad, Pinkie, Fluffy, EasterFluffy, Mouboo, Squirrel, Reinboo, Santaboo, Pollett;
     setarray $@NatureKarmaBadVal,   3,      3,            3,      4,        2,       3,        3,       3;
@@ -22,11 +23,11 @@ function|script|MobKillHandler
     callfunc "ValonCount";
     if (((QL_VALON >= 2) && (QL_VALON < 6)) && (@mobID == $@ValonMob[@valon_mob]))
         goto L_ValonMobKill;
-    goto L_NatureKarma;
+    goto L_NatureKarma; // no return here since NatureKarma shares a mob with Valon
 
 L_ValonMobKill:
     callfunc "AddValonCntMask";
-    goto L_NatureKarma;
+    goto L_NatureKarma; // no return here since NatureKarma shares a mob with Valon
 
 L_NatureKarma:
     set .@find, array_search(@mobID, $@NatureKarmaGood);
@@ -40,25 +41,57 @@ L_NatureKarma:
 L_Bad:
     set @value, $@NatureKarmaBadVal[.@find];
     callfunc "QuestSagathaAnnoy";
-    goto L_Celestia;
+    goto L_Return;
 
 L_Good:
     set @value, 1;
     callfunc "QuestSagathaHappy";
-    goto L_Celestia;
+    goto L_Return;
 
 L_Celestia:
-    if (QL_CELESTIA < 5 || QL_CELESTIA >= 205 || @mobID != Yeti) goto L_Terranite;
+    if ( @mobID != Yeti ) goto L_Terranite;
+    if (QL_CELESTIA < 5 || QL_CELESTIA >= 205) goto L_Return;
     set QL_CELESTIA, QL_CELESTIA + 1;
     if (QL_CELESTIA == 205)
         message strcharinfo(0), "Yeti : ##3This should be enough yetis killed to please Celestia.";
-    goto L_Terranite;
+    goto L_Return;
 
 L_Terranite:
-    if (TERRAC < 1 || TERRAC > 1500 || @mobID != Terranite) goto L_Return;
+    if ( @mobID != Terranite ) goto L_Pink_Flower;
+    if (TERRAC < 1 || TERRAC > 1500) goto L_Return;
     if (TERRAC % 100 == 0)
         message strcharinfo(0), "Terranite : ##3Total Terranites Slain: "+TERRAC;
     set TERRAC, TERRAC + 1;
+    goto L_Return;
+
+L_Pink_Flower:
+    if ( @mobID != PinkFlower ) goto L_Return; // next mob label here
+    if ( ((HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_ASKED_FOR_PETALS) || ((HURNS1_STATE & BYTE_0_MASK) >= PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS) )
+        goto L_Return;
+
+    if (rand(PINK_FLOWER_SEEDS_CHANCE) < 1) goto L_Get_Seed;
+    goto L_Return;
+
+L_Get_Seed:
+    getinventorylist;
+    set .@free_slots, (100 - @inventorylist_count);
+    if (countitem(PinkFlowerSeed) >= 1 && countitem(PinkFlowerSeed) < 30000 )
+        set .@free_slots, .@free_slots + 1;
+    if (.@free_slots < 1 || checkweight(PinkFlowerSeed, 1) == 0)
+        goto L_Pink_Flower_Seeds_Inv_Full;
+
+    set HURNS1_STATE, (HURNS1_STATE & ~BYTE_0_MASK) | ((HURNS1_STATE & BYTE_0_MASK) + 1);
+    getitem PinkFlowerSeed, 1;
+    if ( (HURNS1_STATE & BYTE_0_MASK) >= PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS)
+        goto L_Pink_Flower_Seeds_Full;
+    goto L_Return;
+
+L_Pink_Flower_Seeds_Full:
+    message strcharinfo(0), "Pink Flower : ##3You found enough [@@"+ PinkFlowerSeed + "|Pink Flower Seeds@@] for Blossom.";
+    goto L_Return;
+
+L_Pink_Flower_Seeds_Inv_Full:
+    message strcharinfo(0), "Pink Flower : ##3Your Inventory is full you can't pickup the [@@"+ PinkFlowerSeed + "|@@].";
     goto L_Return;
 
 L_Return:
