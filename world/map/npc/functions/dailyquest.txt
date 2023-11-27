@@ -58,7 +58,8 @@ L_Bonus:
 
 function|script|DailyQuest
 {
-    set @multipler, 0;
+    set @dq_multiplier, 0;
+
     callfunc "DailyQuestPoints";
 
     if (BaseLevel < @dq_level)
@@ -80,7 +81,9 @@ L_Next:
 L_Trade:
     if (countitem(@dq_name$) < @dq_count)
         goto L_Not_Enough;
-    set @multipler, 1;
+
+    set @dq_multiplier, 1;
+
     delitem @dq_name$, @dq_count;
 
     set Zeny, Zeny + @dq_money;
@@ -106,16 +109,16 @@ L_All:
     set @dp_multiple, (DailyQuestPoints / @dq_cost);
 
     if (@dp_multiple > @item_multiple)
-        set @multipler, @item_multiple;
+        set @dq_multiplier, @item_multiple;
     if (@item_multiple >= @dp_multiple)
-        set @multipler, @dp_multiple;
+        set @dq_multiplier, @dp_multiple;
 
-    set DailyQuestPoints, DailyQuestPoints - (@dq_cost * @multipler);
+    set DailyQuestPoints, DailyQuestPoints - (@dq_cost * @dq_multiplier);
 
-    delitem @dq_name$, (@dq_count * @multipler);
+    delitem @dq_name$, (@dq_count * @dq_multiplier);
 
-    set Zeny, Zeny + (@dq_money * @multipler);
-    getexp (@dq_exp * @multipler), 0;
+    set Zeny, Zeny + (@dq_money * @dq_multiplier);
+    getexp (@dq_exp * @dq_multiplier), 0;
 
     if (@dq_handle_return)
         goto L_Exit_Good;
@@ -123,8 +126,8 @@ L_All:
     mes "\"Thank you!\"";
     callsub S_SayPhrase;
     mes "";
-    mes "[" + (@dq_money * @multipler) + " money]";
-    mes "[" + (@dq_exp * @multipler) + " experience points]";
+    mes "[" + (@dq_money * @dq_multiplier) + " money]";
+    mes "[" + (@dq_exp * @dq_multiplier) + " experience points]";
     goto L_Exit_Good;
 
 L_Exit_Good:
