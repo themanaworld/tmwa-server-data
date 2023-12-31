@@ -130,7 +130,10 @@ L_Start:
     set $@XmasBattleStatusClone, $@XmasBattleStatus;
     set $@XmasBossRound, 0;
     set $@XmasBossPlayerCount, getmapusers("030-4");
+    set $@DangerCellNumber, rand(9);
+    enablenpc "#DC" + $@DangerCellNumber;
     areamonster "030-4", 20, 21, 40, 40, "", 1114, 1, "AniManOMat::OnGuardDeath";
+    callsub S_Announce;
     initnpctimer;
     goto L_Close;
 
@@ -393,23 +396,24 @@ L_Restart:
         "Avalia : W00t you actually made it through. I think now that the manabattery lost some of its abundant power this seems to have given those nutcrackers that didn't go crazy a good boost of life energy. Thank you for your help all and come see me for a reward.",
         "Balthasar : Good. They are dead. Now GET OUT OF THERE, this bomb is dangerous!";
     // Danger Cells to attack sitters
-    // 0: 19,20,29,29
-    // 1: 30,20,40,29
-    // 2: 41,20,50,29
-    // 3: 19,31,29,40
-    // 4: 30,31,40,40
-    // 5: 41,31,50,40
-    // 6: 19,42,29,50
-    // 7: 30,42,40,50
-    // 8: 41,42,50,50
-    setarray $@DangerCellX1, 19, 30, 41, 19, 30, 41, 19, 30, 41;
-    setarray $@DangerCellY1, 20, 20, 20, 31, 31, 31, 42, 42, 42;
-    setarray $@DangerCellX2, 29, 40, 50, 29, 40, 50, 29, 40, 50;
-    setarray $@DangerCellY2, 29, 29, 29, 40, 40, 40, 50, 50, 50;
+    // 0: 20,21,29,30
+    // 1: 30,21,39,30
+    // 2: 40,21,49,30
+    // 3: 20,31,29,41
+    // 4: 30,31,39,41
+    // 5: 40,31,49,41
+    // 6: 20,42,29,49
+    // 7: 30,42,39,49
+    // 8: 40,42,49,49
+    setarray $@DangerCellX1, 20, 30, 40, 20, 30, 40, 20, 30, 40;
+    setarray $@DangerCellY1, 21, 21, 21, 31, 31, 31, 42, 42, 42;
+    setarray $@DangerCellX2, 29, 39, 49, 29, 39, 49, 29, 39, 49;
+    setarray $@DangerCellY2, 30, 30, 30, 41, 41, 41, 49, 49, 49;
     end;
 
 S_Announce:
     mapannounce "030-4", "Danger Cell Activated. Zone " + ($@DangerCellNumber + 1) + " activated.", 0;
+    if ($@XmasBossRound < 1) goto L_Return;
     mapannounce "030-4", $@msg$, 0;
     mapannounce "030-2", $@msg$, 0;
     set $@msg$, "";
@@ -440,6 +444,10 @@ S_ClearVariables:
     set @xmas_battle_status, 0;
     set @karma_bonus, 0;
     return;
+
+OnCommandDing:
+    specialeffect 402;
+    end;
 }
 
 030-4,0,0,0|script|#XmasChamberCooler|32767
@@ -454,12 +462,14 @@ OnCommandCoolDown:
 OnTimer120000:
     set $@XmasBattleCoolDown, 0;
     stopnpctimer;
+    mapannounce "030-4", "The AniManOMat has cooled down.", 0;
+    donpcevent "AniManOMat::OnCommandDing";
     end;
 }
 
 // Danger Cells
 
-// 0: 19,20,29,29
+// 0: 20,21,29,30
 030-4,24,26,0|script|#DC0|434
 {
   end;
@@ -468,7 +478,7 @@ OnTimer120000:
   end;
 }
 
-// 1: 30,20,40,29
+// 1: 30,21,39,30
 030-4,34,26,0|script|#DC1|432
 {
   end;
@@ -477,7 +487,7 @@ OnTimer120000:
   end;
 }
 
-// 2: 41,20,50,29
+// 2: 40,21,49,30
 030-4,45,26,0|script|#DC2|434
 {
   end;
@@ -486,7 +496,7 @@ OnTimer120000:
   end;
 }
 
-// 3: 19,31,29,40
+// 3: 20,31,29,41
 030-4,24,37,0|script|#DC3|434
 {
   end;
@@ -495,7 +505,7 @@ OnTimer120000:
   end;
 }
 
-// 4: 30,31,40,40
+// 4: 30,31,39,41
 030-4,34,37,0|script|#DC4|432
 {
   end;
@@ -504,7 +514,7 @@ OnTimer120000:
   end;
 }
 
-// 5: 41,31,50,40
+// 5: 40,31,49,41
 030-4,45,37,0|script|#DC5|434
 {
   end;
@@ -513,7 +523,7 @@ OnTimer120000:
   end;
 }
 
-// 6: 19,42,29,50
+// 6: 20,42,29,49
 030-4,24,48,0|script|#DC6|435
 {
   end;
@@ -522,7 +532,7 @@ OnTimer120000:
   end;
 }
 
-// 7: 30,42,40,50
+// 7: 30,42,39,49
 030-4,34,48,0|script|#DC7|433
 {
   end;
@@ -531,7 +541,7 @@ OnTimer120000:
   end;
 }
 
-// 8: 41,42,50,50
+// 8: 40,42,49,49
 030-4,45,48,0|script|#DC8|435
 {
   end;
