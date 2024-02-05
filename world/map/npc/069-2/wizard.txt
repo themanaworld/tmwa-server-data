@@ -137,17 +137,38 @@ L_Doomsday:
     mes "\"...The Doomsday was a fierce battle. If you go there alone, you definitely will die. You should make a party and bring them all here, then I'll consider helping you.\"";
     next;
     mes "[Rodium]";
-    mes "\"##1##BBut... not yet. The time wheel is broken again! Oh dear, these things happen, so I guess that to see the past... You must wait for the future...##b##0\"";
-    if (debug) goto L_Warp;
-    if (GM >= G_EVENT) goto L_Warp;
-    goto L_Menu2;
+    mes "\"I'll require 2× [@@"+BlackRose+"|@@] and 500 GP to warp everyone here back in time. The events, however, are already fixed; time travel cannot change the past, and you are too weak to make a parallel universe with only that. Ah! There are no refunds, if you're alone then it is your loss.\"";
+    next;
+    mes "[Rodium]";
+    mes "\"So? What will you do?\"";
+    menu "Nothing for now, thanks for the info and sorry for the bother.", L_Close,
+         "Please, bring me to Keshlam!", L_Fine;
+
+L_Fine:
+    if (countitem(BlackRose) < 2) goto L_Close;
+    if (Zeny < 500) goto L_Close;
+    delitem BlackRose, 2;
+    set Zeny, Zeny - 500;
+    set $@RODIUM$, strcharinfo(0);
+    // centered in Rodium (107,90) visible radius: 15 tiles
+    areatimer 0, "069-2", 92, 75, 122, 105, 10, "Mclecht Rodium::OnWarp";
+    goto L_Close;
 
 L_Warp:
-    // TODO: Require some sort of payment
     // TODO: Revive all mobs from 099-1/-2/-3 (they do not respawn, iirc)
     // TODO: Reduce amount of mobs >.<
     warp "099-1", 34, 34;
     close;
+
+OnWarp:
+    if (strcharinfo(0) == $@RODIUM$) goto L_Warp;
+    mes "[Rodium]";
+    mes "\"Hey, "+$@RODIUM$+" is inviting you to time-trip to Keshlam. If they didn't explain you any detail, then don't bother. Otherwise, do you want me to warp you, too?\"";
+    next;
+    mes "[Rodium]";
+    mes "\"Please make your decision.\"";
+    menu "I don't know what you're talking about, old man!", L_Close,
+         "Yeah, they're my friend, please warp me!", L_Warp;
 
 L_Close:
     close;
