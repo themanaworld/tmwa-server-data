@@ -94,6 +94,41 @@ L_Return:
     return 0;
 }
 
+
+// this function is call()-only
+// Custom version of checks for Dungeon Masters boss "powerups".
+// Both GMs and player eventers MAY eventually call boss powerups.
+// That's why GM Lv check removed, some things relaxed.
+// Its up to powerup "spell" itself to check who can call it or why.
+
+function|script|boss_powerup_checks
+{
+    set .@flags, getarg(0);
+    set .@nonmagic, .@flags & (1<<0);
+
+    if ($BOSS_KILLSWITCH) goto L_Killswitch;  // If things go wrong direction, boss powers can be disabled.
+    if(HIDDEN) goto L_Hidden;                 // can not cast with @hide
+    if(@_M_BLOCK) goto L_Blocked;             // check if last debuff ended
+    if(Hp < 1) goto L_Dead;                   // can not cast when dead
+    return 0;
+
+L_Killswitch:
+    smsg SMSG_FAILURE, "BossPowers: disabled by kill switch!";
+    return 7;
+
+L_Hidden:
+    smsg SMSG_FAILURE, "BossPowers: can't be used when hidden!";
+    return 1;
+
+L_Blocked:
+    smsg SMSG_FAILURE, "BossPowers: cooldown is in effect. Please wait.";
+    return 2;
+
+L_Dead:
+    smsg SMSG_FAILURE, "BossPowers: you're dead!";
+    return 3;
+}
+
 function|script|elt_damage
 {
     // args are damage, dmgplus(mutation), bonus_elt, malus_elt, effect

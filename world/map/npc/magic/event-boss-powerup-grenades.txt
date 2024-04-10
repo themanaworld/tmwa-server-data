@@ -1,0 +1,46 @@
+-|script|powerup-grenades|32767
+{
+    end;
+
+OnCast:
+    message strcharinfo(0), "[boss-grenades] : -> OnCast";
+    if(call("boss_powerup_checks")) end;
+    message strcharinfo(0), "[boss-grenades] : after boss powerup check";
+    if (getmapflag(getmap(), MF_TOWN)) goto L_Fail_town;
+    message strcharinfo(0), "[boss-grenades] : after mapflags check";
+//  TBD who can use this.
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 10000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 10000, 0, BL_ID;
+    misceffect FX_MEDIUM_EXPLOSION, strcharinfo(0);
+    set @dist, 5;
+    foreach 0, getmap(), (POS_X - @dist), (POS_Y - @dist), (POS_X + @dist), (POS_Y + @dist), strnpcinfo(0) + "::OnHit";
+    message strcharinfo(0), "[boss-grenades] : after foreach";
+    message strcharinfo(0), "[boss-grenades] : <- OnCast";
+    end;
+
+OnHit:
+    if (@target_id == BL_ID) end;               // Do not hit caster
+    if ((get(Hp, @target_id))) < 1 end;         // Do not touch dead
+    message strcharinfo(0, @target_id), "[boss-grenades] : "+strcharinfo(0, BL_ID)+" dropped grenade on you!";
+    addtimer (100+rand(300)), strnpcinfo(0)+"::OnGrenadeHit", @target_id;
+    end;
+
+OnGrenadeHit:
+    misceffect FX_MEDIUM_SMOKE, strcharinfo(0);
+    heal (0 - rand(Hp)), 0;
+    set Sp, (Sp / 3);
+    end;
+
+L_Fail_town:
+    message strcharinfo(0), "[boss-grenades] : not allowed in towns!";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "grenades"; // used in npcs that refer to this spell
+    void call("magic_register", "OnCast");
+    set .level, 0;
+    set .exp_gain, 0;
+    end;
+}

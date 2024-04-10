@@ -1,0 +1,52 @@
+-|script|powerup-manadrain|32767
+{
+    end;
+
+OnCast:
+    message strcharinfo(0), "[boss-manadrain] : -> OnCast";
+    if(call("boss_powerup_checks")) end;
+    message strcharinfo(0), "[boss-manadrain] : after boss powerup check";
+    if (getmapflag(getmap(), MF_TOWN)) goto L_Fail_town;
+    message strcharinfo(0), "[boss-manadrain] : after mapflags check";
+    message strcharinfo(0), "[boss-manadrain] : HP="+get(Hp, BL_ID);
+//  TBD who can use this.
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 10000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 10000, 0, BL_ID;
+    misceffect FX_BLUE_MAGIC_CAST, strcharinfo(0);
+    set @dist, 16;
+    foreach 0, getmap(), (POS_X - @dist), (POS_Y - @dist), (POS_X + @dist), (POS_Y + @dist), strnpcinfo(0) + "::OnHit";
+    message strcharinfo(0), "[boss-manadrain] : after foreach";
+    message strcharinfo(0), "[boss-manadrain] : HP="+get(Hp, BL_ID);
+    message strcharinfo(0), "[boss-manadrain] : <- OnCast";
+    end;
+
+OnHit:
+    if (@target_id == BL_ID) end;               // Do not drain caster
+    if ((get(Hp, @target_id)) < 1) end;         // Do not touch dead
+    set @targetmp, get(Sp, @target_id);         // Get MP of victim
+    if (@targetmp > 0) goto L_cont;
+    set @targetmp, 0;
+    end;                                        // Do not drain dead!
+L_cont:
+    set @hpgain, min((@targetmp * 2 ), 900);    // Clamp in case of weird setups.
+    message strcharinfo(0, @target_id), "[boss-manadrain] : "+strcharinfo(0, BL_ID)+" drains all your mana!";
+    misceffect FX_CHANNELLING_RAISE, strcharinfo(0, @target_id);
+    set Sp, 1, @target_id;                      // Drain victim
+    set Hp, (Hp + @hpgain), BL_ID;              // Heal caster by computed amount
+    set @hpgain, 0;
+    set @targetmp, 0;
+    end;
+
+L_Fail_town:
+    message strcharinfo(0), "[boss-manadrain] : aura of this place doesn't lets you drain mana!";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "mapmanadrain"; // used in npcs that refer to this spell
+    void call("magic_register", "OnCast");
+    set .level, 0;
+    set .exp_gain, 0;
+    end;
+}

@@ -1,0 +1,47 @@
+-|script|powerup-disarm|32767
+{
+    end;
+
+OnCast:
+    message strcharinfo(0), "[boss-disarm] : -> OnCast";
+    if(call("boss_powerup_checks")) end;
+    message strcharinfo(0), "[boss-disarm] : after boss powerup check";
+    if (getmapflag(getmap(), MF_TOWN)) goto L_Fail_town;
+    message strcharinfo(0), "[boss-disarm] : after mapflags check";
+//  TBD who can use this.
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 10000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 10000, 0, BL_ID;
+    misceffect FX_MEDIUM_EXPLOSION, strcharinfo(0);
+    set @dist, 12;
+    foreach 0, getmap(), (POS_X - @dist), (POS_Y - @dist), (POS_X + @dist), (POS_Y + @dist), strnpcinfo(0) + "::OnHit";
+    message strcharinfo(0), "[boss-disarm] : after foreach";
+    message strcharinfo(0), "[boss-disarm] : <- OnCast";
+    end;
+
+OnHit:
+    if (@target_id == BL_ID) end;               // Do not disarm caster
+    if ((get(Hp, @target_id)) < 1) end;           // Do not touch dead
+    message strcharinfo(0, @target_id), "[boss-disarm] : "+strcharinfo(0, BL_ID)+" disarms you!";
+    addtimer 500, strnpcinfo(0)+"::OnUnequip", @target_id;
+    end;
+
+OnUnequip:
+    misceffect FX_EMOTE_SURPRISE, strcharinfo(0);
+    unequipbyid 8;  // Hand ?1
+    unequipbyid 9;  // Hand ?2
+    unequipbyid 10; // Ammo
+    end;
+
+L_Fail_town:
+    message strcharinfo(0), "[boss-disarm] : can't mass-poison in towns!";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "mapdisarm"; // used in npcs that refer to this spell
+    void call("magic_register", "OnCast");
+    set .level, 0;
+    set .exp_gain, 0;
+    end;
+}

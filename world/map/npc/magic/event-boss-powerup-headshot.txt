@@ -1,0 +1,57 @@
+-|script|powerup-headshot|32767
+{
+    end;
+
+OnCast:
+    message strcharinfo(0), "[boss-headshot] : -> OnCast";
+    if(call("boss_powerup_checks")) end;
+    message strcharinfo(0), "[boss-headshot] : after boss powerup check";
+    if (getmapflag(getmap(), MF_TOWN)) goto L_Fail_town;
+    message strcharinfo(0), "[boss-headshot] : after mapflags check";
+//  TBD who can use this.
+    set @target_id, getcharid(3, @args$);
+    if (@target_id < 1 || !(isloggedin(@target_id)) || get(INVISIBLE, @target_id) == 1) goto L_Fail_target;
+    if (distance(BL_ID, @target_id) > 9) goto L_Too_far;
+    if ((get(Hp, @target_id)) < 1) goto L_Too_dead;      // Do not touch dead
+    if (target(BL_ID, @target_id, 0x20) != 0x20) goto L_No_los;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 10000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 10000, 0, BL_ID;
+
+    misceffect FX_MEDIUM_EXPLOSION, strcharinfo(0);
+    set @tgthp, (get(Hp, @target_id) / 2);
+    set Sp, 1, @target_id;              // Hurt target
+    if (@tgthp < 1500) set @tgthp, 1;   // Boss or not? (>3000 HP)
+    set Hp, @tgthp, @target_id;         // Hurt target
+    message strcharinfo(0, @target_id), "[boss-headshot] : "+strcharinfo(0, BL_ID)+" shot you!";
+    set @tgthp, 0;
+    end;
+
+L_Fail_town:
+    message strcharinfo(0), "[boss-headshot] : not allowed in towns!";
+    end;
+
+L_Fail_target:
+    message strcharinfo(0), "[boss-headshot] : need valid target (player).";
+    end;
+
+L_Too_far:
+    message strcharinfo(0), "[boss-headshot] : target is too far away.";
+    end;
+
+L_Too_dead:
+    message strcharinfo(0), "[boss-headshot] : why shoot already dead?!";
+    end;
+
+L_No_los:
+    message strcharinfo(0), "[boss-headshot] : no line of sight to target";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "headshot"; // used in npcs that refer to this spell
+    void call("magic_register", "OnCast");
+    set .level, 0;
+    set .exp_gain, 0;
+    end;
+}

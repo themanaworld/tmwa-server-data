@@ -1,0 +1,52 @@
+-|script|powerup-lifedrain|32767
+{
+    end;
+
+OnCast:
+    message strcharinfo(0), "[boss-lifedrain] : -> OnCast";
+    if(call("boss_powerup_checks")) end;
+    message strcharinfo(0), "[boss-lifedrain] : after boss powerup check";
+    if (getmapflag(getmap(), MF_TOWN)) goto L_Fail_town;
+    message strcharinfo(0), "[boss-lifedrain] : after mapflags check";
+    message strcharinfo(0), "[boss-lifedrain] : HP="+get(Hp, BL_ID);
+//  TBD who can use this.
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 10000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 10000, 0, BL_ID;
+    misceffect FX_PENTAGRAM_BURST, strcharinfo(0);
+    set @dist, 12;
+    foreach 0, getmap(), (POS_X - @dist), (POS_Y - @dist), (POS_X + @dist), (POS_Y + @dist), strnpcinfo(0) + "::OnHit";
+    message strcharinfo(0), "[boss-lifedrain] : after foreach";
+    message strcharinfo(0), "[boss-lifedrain] : HP="+get(Hp, BL_ID);
+    message strcharinfo(0), "[boss-lifedrain] : <- OnCast";
+    end;
+
+OnHit:
+    if (@target_id == BL_ID) end;               // Do not drain caster
+    set @targethp, get(Hp, @target_id);         // Get HP of victim
+    if (@targethp > 0) goto L_cont;
+    set @targethp, 0;
+    end;                                        // Do not drain dead!
+L_cont:
+    set @hpgain, min((@targethp / 4), 500);        // Boss could be beefy -> clamp
+    message strcharinfo(0, @target_id), "[boss-lifedrain] : "+strcharinfo(0, BL_ID)+" drains "+(@hpgain * 2)+" hitpoints!";
+    misceffect FX_CHANNELLING_RAISE, strcharinfo(0, @target_id);
+    set Hp, (@targethp - (2 * @hpgain)), @target_id; // Drain victim
+    set @targethp, (get(Hp, BL_ID) + @hpgain);     // Compute caster's HP + bonus 
+    set Hp, (@targethp), BL_ID;                    // Heal caster by half drain
+    set @hpgain, 0;
+    set @targethp, 0;
+    end;
+
+L_Fail_town:
+    message strcharinfo(0), "[boss-lifedrain] : aura of this place doesn't lets you to drain life!";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "maplifedrain"; // used in npcs that refer to this spell
+    void call("magic_register", "OnCast");
+    set .level, 0;
+    set .exp_gain, 0;
+    end;
+}
