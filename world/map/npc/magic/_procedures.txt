@@ -97,36 +97,47 @@ L_Return:
 
 // this function is call()-only
 // Custom version of checks for Dungeon Masters boss "powerups".
-// Both GMs and player eventers MAY eventually call boss powerups.
-// That's why GM Lv check removed, some things relaxed.
-// Its up to powerup "spell" itself to check who can call it or why.
+// Both GMs and player eventers MAY eventually call "boss powerups".
+// By default, only GMs >= 40 can use BossPowers, but:
+// - If someone abuses BossPowers, setting #BOSS_POWERS_DISABLED = 1 on them locks them out.
+// - Some (trusted) player can be allowed to invoke this by setting #IS_EVENTER = 42 on them.
+// On TMWA these changes need GM Lv 80 to issue @setvar, so access can only be changed by Lv 80.
+// Advantage of this permissions system is: no need to shuffle GM levels, nor there's need to restart server.
 
 function|script|boss_powerup_checks
 {
     set .@flags, getarg(0);
     set .@nonmagic, .@flags & (1<<0);
 
-    if ($BOSS_KILLSWITCH) goto L_Killswitch;  // If things go wrong direction, boss powers can be disabled.
-    if(HIDDEN) goto L_Hidden;                 // can not cast with @hide
-    if(@_M_BLOCK) goto L_Blocked;             // check if last debuff ended
-    if(Hp < 1) goto L_Dead;                   // can not cast when dead
-    return 0;
+    if ($BOSS_KILLSWITCH) goto L_Killswitch;  // If things go wrong, boss powers can be completely disabled.
+    if (#BOSS_POWERS_DISABLED) goto L_Killswitch; // If someone abuses BossPowers they can get DENY flag set.
+    if (HIDDEN) goto L_Hidden;                // can not cast with @hide
+    if (@_M_BLOCK) goto L_Blocked;            // check if last debuff ended
+    if (Hp < 1) goto L_Dead;                  // can not cast when dead
+    if (GM >= 40) goto L_Allowed;             // GM >= 40 can use boss actions
+    if (#IS_EVENTER == 42) goto L_Allowed;    // Trusted player(s) could be allowed to access Eventer "magic":
+                                              // Use @setvar #IS_EVENTER 0 42 Nick (GM Lv 80 command) to do it.
+    smsg SMSG_FAILURE, "BossPowers: Only few of mere mortals may try to enter the twilight zone";
+    return 1;                                 // Not allowed by default.
+
+L_Allowed:
+    return 0;                                 // Whoever gets here allowed to invoke BossPowers spells
 
 L_Killswitch:
     smsg SMSG_FAILURE, "BossPowers: disabled by kill switch!";
-    return 7;
+    return 2;
 
 L_Hidden:
     smsg SMSG_FAILURE, "BossPowers: can't be used when hidden!";
-    return 1;
+    return 3;
 
 L_Blocked:
     smsg SMSG_FAILURE, "BossPowers: cooldown is in effect. Please wait.";
-    return 2;
+    return 4;
 
 L_Dead:
     smsg SMSG_FAILURE, "BossPowers: you're dead!";
-    return 3;
+    return 5;
 }
 
 function|script|elt_damage
