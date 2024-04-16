@@ -70,7 +70,7 @@ function|script|DailyQuest
     mes "\"If you bring me " + @dq_count + " " + @dq_friendly_name$ + ", I will give you a reward.\"";
     menu
         "I have what you want.", L_Trade,
-        "Take all you need.", L_All,
+        "Take all you need.", L_Trade_All,
         "Ok, I'll get to work.", L_Next,
         "Nah, I'm not going to help you.", L_Next;
 
@@ -79,39 +79,24 @@ L_Next:
     goto L_Exit;
 
 L_Trade:
-    if (countitem(@dq_name$) < @dq_count)
-        goto L_Not_Enough;
-
     set @dq_multiplier, 1;
+    goto L_Trade_Combined;
 
-    delitem @dq_name$, @dq_count;
-
-    set Zeny, Zeny + @dq_money;
-    getexp @dq_exp, 0;
-
-    set DailyQuestPoints, DailyQuestPoints - @dq_cost;
-
-    if (@dq_handle_return)
-        goto L_Exit_Good;
-
-    mes "\"Thank you!\"";
-    callsub S_SayPhrase;
-    mes "";
-    mes "[" + @dq_money + " money]";
-    mes "[" + @dq_exp + " experience points]";
-    goto L_Exit_Good;
-
-L_All:
-    if (countitem(@dq_name$) < @dq_count)
-        goto L_Not_Enough;
-
+L_Trade_All:
     set @item_multiple, (countitem(@dq_name$) / @dq_count);
     set @dp_multiple, (DailyQuestPoints / @dq_cost);
 
     if (@dp_multiple > @item_multiple)
         set @dq_multiplier, @item_multiple;
-    if (@item_multiple >= @dp_multiple)
+    else
         set @dq_multiplier, @dp_multiple;
+
+    goto L_Trade_Combined;
+
+L_Trade_Combined:
+    // the check for points already happens before the menu.
+    if (countitem(@dq_name$) < @dq_count)
+        goto L_Not_Enough;
 
     set DailyQuestPoints, DailyQuestPoints - (@dq_cost * @dq_multiplier);
 
