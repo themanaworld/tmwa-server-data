@@ -22,13 +22,13 @@ legacy:
   - ./evolved.py
   - cd ..
   - git status
+  - (git status --porcelain  | grep '.*') || exit 0 # skip if nothing to commit
   - git config user.email "numa@themanaworld.org"
   - git config user.name "Numa"
   - git commit -a -m "Regenerate databases" --author="Numa <numa@themanaworld.org>"
   - git push # may cause a CI loop >.<
   only:
   - master
-  allow_failure: true
 
 evolved:
   stage: deploy
@@ -45,13 +45,13 @@ evolved:
   - cp -v ../world/map/db/mob_db.conf db/pre-re/
   - cp -v ../world/map/db/item_db.conf db/pre-re/
   - git status
+  - (git status --porcelain  | grep '.*') || exit 0 # skip if nothing to commit
   - git config user.email "numa@themanaworld.org"
   - git config user.name "Numa"
   - git commit -a -m "Sync with Legacy repo" --author="Numa <numa@themanaworld.org>"
   - git push
   only:
   - master
-  allow_failure: true
 
 pages:
   stage: deploy
