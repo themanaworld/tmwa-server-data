@@ -38,20 +38,10 @@ function|script|DailyQuestPoints
     set @dq_increments, (gettimetick(2) - DailyQuestTime)*BaseLevel / 86400;
     set DailyQuestTime, DailyQuestTime + @dq_increments*86400/BaseLevel;
 
-    // player can't regenerate any quest points, but might have a bonus
-    if (DailyQuestPoints >= BaseLevel)
-        goto L_Bonus;
-
     // normal recharging case - increment, but don't let it recharge more than a day's worth
     set DailyQuestPoints, DailyQuestPoints + @dq_increments;
     if (DailyQuestPoints > BaseLevel)
         set DailyQuestPoints, BaseLevel;
-    // fallthrough to bonus, which *is* allowed to push DailyQuestPoints above BaseLevel
-    goto L_Bonus;
-
-L_Bonus:
-    set DailyQuestPoints, DailyQuestPoints + DailyQuestBonus;
-    set DailyQuestBonus, 0;
 
     return;
 }
@@ -64,13 +54,15 @@ function|script|DailyQuest
 
     if (BaseLevel < @dq_level)
         goto L_Low_Level;
-    if (DailyQuestPoints < @dq_cost)
+
+    set .@total_points, (DailyQuestPoints + DailyQuestBonus);
+    if (.@total_points < @dq_cost)
         goto L_Not_Enough_Points;
 
     mes "\"If you bring me " + @dq_count + " " + @dq_friendly_name$ + ", I will give you a reward.\"";
     menu
         "I have what you want.", L_Trade,
-        "Take all you need.", L_All,
+        "Take all you need.", L_Trade_All,
         "Ok, I'll get to work.", L_Next,
         "Nah, I'm not going to help you.", L_Next;
 
@@ -79,41 +71,32 @@ L_Next:
     goto L_Exit;
 
 L_Trade:
-    if (countitem(@dq_name$) < @dq_count)
-        goto L_Not_Enough;
-
     set @dq_multiplier, 1;
+    goto L_Trade_Combined;
 
-    delitem @dq_name$, @dq_count;
+L_Trade_All:
+    set .@total_points, (DailyQuestPoints + DailyQuestBonus);
+    set .@item_multiple, (countitem(@dq_name$) / @dq_count);
+    set .@dp_multiple, (.@total_points / @dq_cost);
 
-    set Zeny, Zeny + @dq_money;
-    getexp @dq_exp, 0;
+    if (.@dp_multiple > .@item_multiple)
+        set @dq_multiplier, .@item_multiple;
+    else
+        set @dq_multiplier, .@dp_multiple;
 
-    set DailyQuestPoints, DailyQuestPoints - @dq_cost;
+    goto L_Trade_Combined;
 
-    if (@dq_handle_return)
-        goto L_Exit_Good;
-
-    mes "\"Thank you!\"";
-    callsub S_SayPhrase;
-    mes "";
-    mes "[" + @dq_money + " money]";
-    mes "[" + @dq_exp + " experience points]";
-    goto L_Exit_Good;
-
-L_All:
+L_Trade_Combined:
+    // the check for points already happens before the menu.
     if (countitem(@dq_name$) < @dq_count)
         goto L_Not_Enough;
 
-    set @item_multiple, (countitem(@dq_name$) / @dq_count);
-    set @dp_multiple, (DailyQuestPoints / @dq_cost);
+    set .@dq_cost_total, @dq_cost * @dq_multiplier;
+    set .@dq_cost_bonus, .@dq_cost_total - DailyQuestPoints;
 
-    if (@dp_multiple > @item_multiple)
-        set @dq_multiplier, @item_multiple;
-    if (@item_multiple >= @dp_multiple)
-        set @dq_multiplier, @dp_multiple;
-
-    set DailyQuestPoints, DailyQuestPoints - (@dq_cost * @dq_multiplier);
+    set DailyQuestPoints, max(0, -.@dq_cost_bonus);
+    if (.@dq_cost_bonus > 0)
+        set DailyQuestBonus, DailyQuestBonus - .@dq_cost_bonus;
 
     delitem @dq_name$, (@dq_count * @dq_multiplier);
 
@@ -158,15 +141,17 @@ L_Exit:
 S_SayPhrase:
     if (@dq_handle_return)
         goto L_Return;
-    if (DailyQuestPoints < @dq_cost)
+
+    set .@total_points, (DailyQuestPoints + DailyQuestBonus);
+    if (.@total_points < @dq_cost)
         goto L_Exhausted;
-    if (DailyQuestPoints > BaseLevel)
+    if (.@total_points > BaseLevel)
         goto L_Over;
-    if (DailyQuestPoints > (BaseLevel*9)/10)
+    if (.@total_points > (BaseLevel*9)/10)
         goto L_P90;
-    if (DailyQuestPoints > (BaseLevel*7)/10)
+    if (.@total_points > (BaseLevel*7)/10)
         goto L_P70;
-    if (DailyQuestPoints > (BaseLevel*5)/10)
+    if (.@total_points > (BaseLevel*5)/10)
         goto L_P50;
     goto L_Low;
 
