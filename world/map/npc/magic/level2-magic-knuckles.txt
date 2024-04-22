@@ -1,6 +1,7 @@
 -|script|magic-knuckles|32767
 {
     if @_U_BLOCK >= 1 goto L_Still_Exhausted;
+/*
     set @upmarmu_spell_npc_name$, "#Upmarmu#" + getcharid(3); // make a unique puppet name for every player
     set .upmarmu_spell_npc, getnpcid(@upmarmu_spell_npc_name$);
     if ( .upmarmu_spell_npc >= 1 ) goto L_NPC_Exists; // if this npc already exist reuse it so that idle recovery timer does not get destroyed
@@ -11,6 +12,7 @@
     goto L_NPC_Exists;
 
 L_NPC_Exists:
+*/
     if (call("magic_checks")) end;
     if (Sp < 20) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
@@ -27,11 +29,15 @@ L_NPC_Exists:
     set CASTS, CASTS + 1;
     if (CASTS < 0) set CASTS, 1; // overflow
 
+    set .@delay, (200-(Agi+Agi2))/8;
+    if   ( .@delay < 12 ) set .@delay, 12; // 144 attack delay max @ 97 agi
+    elif ( .@delay > 22 ) set .@delay, 22; // 484 attack delay min
+
     misceffect FX_MAGIC_KNUCKLE_CAST, strcharinfo(0);
     setarray @upmarmuspell[0],
         max(1, BASE_ATK + (@spellpower / 6)), // dmg
         ((@spellpower/12) + (((Dex+Dex2) * 8)/(sqrt(BaseLevel + 34)) + 20)), // charges (you get more at lower levels)
-        ((sqrt((300 - ((Agi+Agi2) * 2)) - (10/2))) * 3), // delay
+        .@delay, // delay
         (((Str+Str2) + (Dex+Dex2)) / 5), // dmg bonus
         (((BaseLevel/5) + Str) * 2); // do not allow to equip light armor, cast, and then switch to heavy armor to get bonus str
 
@@ -43,7 +49,7 @@ OnAttack:
     if (target(BL_ID, @target_id, 22) != 22) goto L_FreeRecast; // 0x10 | 0x02 | 0x04
     void call("elt_damage", @upmarmuspell[0], (@upmarmuspell[3] + @upmarmuspell[4]), ELT_WATER, ELT_FIRE, FX_NONE);
 
-    addtimer 0, @upmarmu_spell_npc_name$ + "::OnResetTimer";
+//    addtimer 0, @upmarmu_spell_npc_name$ + "::OnResetTimer";
 
     set @upmarmuspell[1], @upmarmuspell[1] - 1;
     set @num_upmarmu_hits, @num_upmarmu_hits + 1;
@@ -71,7 +77,7 @@ L_Still_Exhausted:
     end;
 
 L_StopTimer:
-    addtimer 0, @upmarmu_spell_npc_name$ + "::OnStopTimer";
+//    addtimer 0, @upmarmu_spell_npc_name$ + "::OnStopTimer";
     end;
 
 OnDischarge:
@@ -85,6 +91,7 @@ OnSetRecast:
     overrideattack (@upmarmuspell[2] * @upmarmuspell[2]), 1, ATTACK_ICON_GENERIC, OVERRIDE_KNUCKLES, strnpcinfo(0)+"::OnAttack", @upmarmuspell[1]; // delay needs to be squared
     end;
 
+/*
 OnResetTimer:
     // This timer is if you stopped somewhere below max hits then after 25sec you recover fully and start at 0 hits again
     stopnpctimer;
@@ -112,6 +119,7 @@ OnTimer25000:
 
 OnDestroy:
     destroy;
+*/
 
 OnInit:
     set .school, SKILL_MAGIC_WAR;
