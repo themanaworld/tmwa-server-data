@@ -6,11 +6,17 @@
 function|script|VaultLogin
 {
     if (##VAULT < 1) goto L_Return;
-    // TODO: Or #VAULT ? Which of the two is set?
 
+    // Imports & Vitals
     callsub S_Exp;
     callsub S_Gold;
     callsub S_Preset;
+
+    // Quest Handlers
+    callsub S_Quest_CR1;
+
+    // Mirror lake
+    callsub S_MirrorLake;
 
     // Clean up
     set @last_preset, 0;
@@ -41,8 +47,9 @@ S_Preset:
 
     // Each preset is 5 levels (Preset 1 = Lv 5, Preset 10 = Lv 50, Max Preset 20 - hard limit is 127)
     // TODO: Give more ammo, iron powder, sulphur powder, etc. instead of equips
-    // Give also some insect legs and insect slimes if applicable?
+    // Give also some insect legs and insect slime if applicable?
     /* Handle weapons */
+    /*
     if (##PRESET >= 1 && @last_preset < 1)
         getitem "SharpKnife",1;
     if (##PRESET >= 2 && @last_preset < 2)
@@ -83,14 +90,55 @@ S_Preset:
         getitem "IronPowder", 150;
     if (##PRESET >= 19 && @last_preset < 19)
         getitem "TerraniteArrow",250;
-
+    */
     set ##PRESET, 0;
+    return;
+
+////////////////////////////////
+S_Quest_CR1:
+    if (!(##01_CRQUEST & 1)) goto S_Return;
+    if (##03_TMWWORLD & MLP_CR_DEBUT) goto S_Return;
+    // Check if you can receive the rewards
+    getinventorylist;
+    if (@inventorylist_count >= 96) goto S_Return;
+    // Mark quest as done and issue rewards
+    set BOSS_POINTS, BOSS_POINTS + 871;
+    set ##03_TMWWORLD, ##03_TMWWORLD | MLP_CR_DEBUT;
+    getitem WhiteCake, 1;
+    getitem ChocolateCake, 1;
+    getitem OrangeCake, 1;
+    getitem AppleCake, 1;
+    message strcharinfo(0), "Mirror Lake : You gained 871 boss points.";
+    return;
+
+////////////////////////////////
+S_MirrorLake:
+    // Wipe any existing TMWA internal mirror lake information
+    set ##VAULT_GOTO, 0;
+    set ##VAULT_MLTO, 0;
+    // TODO: Put the Mirror Lake Portal into the shipwreck? (see portal #2)
+    set .@gto, call("get_byte",   ##00_INFO, 3);
+    set .@mlp, call("get_nibble", ##00_INFO, 5);
+    // If we're moving from Mirror Lake to TMW
+    if (.@gto != WORLD_ID) goto S_MirrorFix;
+    debugmes "Vault User "+##VAULT+" moved to lake "+.@mlp;
+    if (.@mlp == 1) warp "013-2", 37, 23; // Hurnscald Mirror Lake
+    if (.@mlp == 2) warp "002-1", 30, 58; // Tulimshar Mirror Lake
+    // Unset the target lake/world
+    void call("set_byte",   ##00_INFO, 3, 0);
+    void call("set_nibble", ##00_INFO, 5, 0);
+    return;
+
+// We've moved to the wrong world, so preserve it.
+S_MirrorFix:
+    set ##VAULT_GOTO, call("get_byte",   ##00_INFO, 3);
+    set ##VAULT_MLTO, call("get_nibble", ##00_INFO, 5);
     return;
 }
 
 
 // Remember: ##VAULT_EXP, ##VAULT_GOTO, ##VAULT_MLTO for Mirror Lake Protocol
-// However, without kick(7), it is not really worth anything
+// However, without kick(7), it is not really worth anything - so I presumed 7
 // Remember: Quote symbols are illegal, simple or double, except for parameter
 // To reset the database:
 //    cleararray $EXPORT_DATA$[0], "", 254;
@@ -154,6 +202,26 @@ function|script|VaultLogout
     set $@API_PROTOCOL, API_VAULT;
     set $@API_DATA$, "'UID': "+##VAULT+", 'GID': "+getcharid(3);
     callfunc "FlushAPI";
+
+    return;
+
+L_Return:
+    return;
+}
+
+// MirrorLakeSendTo(World)
+function|script|MirrorLakeSendTo
+{
+    if (##VAULT < 1) goto L_Return;
+    set ##VAULT_GOTO, getarg(0);
+    // This is TMWA - so it'll always use Lake #0 for performance reasons
+    set $@API_PROTOCOL, API_VAULT;
+    set $@API_DATA$, "'UID': "+##VAULT+", 'GID': "+getcharid(3);
+    callfunc "FlushAPI";
+    message strcharinfo(0), "Darkness fills your vision...";
+    // TODO: Misc effects
+    // TODO: Sleep for 10~15 seconds (for mapreg)
+    // TODO: Disconnect user
     return;
 
 L_Return:
