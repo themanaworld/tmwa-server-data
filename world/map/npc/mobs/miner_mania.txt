@@ -1,0 +1,209 @@
+
+///////////////////////////////////////////////////////////////////////////////
+// Miner Mania
+-|script|Miner_Mania|32767
+{
+    close;
+
+OnInit:
+/*
+1 tick = 1 sec
+If $@bif/slime_mine_maps_x0/y0/x1/y1 = -1 the matching min/max corner value is taken x0 = 0, y0 = 0, x1 = max x, y1 = max y
+
+$@bifs_big and $@bifs_small must always have the same size as $@bifs
+
+$@bifs/slimes_multi set after how many ticks this map/spot spawns.
+For example multi 6 would spawn on 6th tick which is 6 sec on 1 sec tick duration.
+For example if you have multiple sqares on a map and to not spawn <num of squares> * 1 tick faster than other maps, use multi = num of squares:
+    setarray $@bif_mine_maps$,   "009-1", "009-1", "009-1", "009-2", "008-1", "018-1";
+    setarray $@bifs_count,             4,      20,      20,      44,      44,      44;
+    setarray $@bifs_multi,             3,       3,       3,       1,       1,       1;
+    setarray $@bif_mine_maps_x0,      30,      25,      41,      -1,      -1,      -1;
+    setarray $@bif_mine_maps_y0,      34,      39,      39,      -1,      -1,      -1;
+    setarray $@bif_mine_maps_x1,      33,      34,      48,      -1,      -1,      -1;
+    setarray $@bif_mine_maps_y1,      37,      51,      51,      -1,      -1,      -1;
+*/
+
+    setarray $@bif_mine_maps$,   "002-4", "002-5", "005-3", "006-3", "009-3", "011-4", "011-6", "012-3", "012-4", "013-3", "018-3", "014-3", "017-3", "032-3", "043-3", "043-4", "055-3";
+    setarray $@bifs_count,            15,      15,      25,      25,      25,      25,      30,      30,      40,      20,      30,      10,      10,      20,      20,      25,      20;
+    setarray $@bifs_multi,             1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1;
+    setarray $@bif_mine_maps_x0,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,     101,      -1;
+    setarray $@bif_mine_maps_y0,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      96,      -1;
+    setarray $@bif_mine_maps_x1,      -1,      -1,     100,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,     143,      -1;
+    setarray $@bif_mine_maps_y1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,     147,      -1;
+    setarray $@bifs,       Bif,           AmethystBif,      DiamondBif,      EmeraldBif,      RubyBif,     SapphireBif,       TopazBif;
+    setarray $@bifs_small, SmallBif, SmallAmethystBif, SmallDiamondBif, SmallEmeraldBif, SmallRubyBif, SmallSapphireBif, SmallTopazBif;
+    setarray $@bifs_big,   BigBif,     BigAmethystBif,   BigDiamondBif,   BigEmeraldBif,   BigRubyBif,   BigSapphireBif,   BigTopazBif;
+
+    setarray $@slime_mine_maps$,   "002-4", "002-5", "005-3", "006-3", "009-3", "011-4", "011-6", "012-3", "012-4", "013-3", "018-3", "014-3", "017-3", "032-3", "043-3", "043-4", "055-3";
+    setarray $@slimes_count,            15,      15,      25,      25,      25,      25,      30,      30,      40,      20,      30,      10,      10,      20,      20,      25,      20;
+    setarray $@slimes_multi,             1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1,       1;
+    setarray $@slime_mine_maps_x0,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,     101,      -1;
+    setarray $@slime_mine_maps_y0,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      96,      -1;
+    setarray $@slime_mine_maps_x1,      -1,      -1,     100,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,     143,      -1;
+    setarray $@slime_mine_maps_y1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1,     147,      -1;
+    setarray $@slimes, CopperSlime, SilverSlime, BromenalSlime, GoldSlime, IronSlime, CoalSlime;
+
+// Bifs -----------------------------
+
+    set .map_count, getarraysize($@bif_mine_maps$[0]);
+    set .map_nr, 0;
+
+    goto L_BifMapInitLoop;
+
+L_BifMapInitLoop:
+
+    if ($@bif_mine_maps_x0[.map_nr] > -1) goto L_BifMapInitLoop_x0Set;
+
+    set $@bif_mine_maps_x0[.map_nr], 0;
+    goto L_BifMapInitLoop_x0Set;
+
+L_BifMapInitLoop_x0Set:
+
+    if ($@bif_mine_maps_y0[.map_nr] > -1) goto L_BifMapInitLoop_y0Set;
+
+    set $@bif_mine_maps_y0[.map_nr], 0;
+    goto L_BifMapInitLoop_y0Set;
+
+L_BifMapInitLoop_y0Set:
+
+    if ($@bif_mine_maps_x1[.map_nr] > -1) goto L_BifMapInitLoop_x1Set;
+
+    set $@bif_mine_maps_x1[.map_nr], getmapmaxx($@bif_mine_maps$[.map_nr]);
+    goto L_BifMapInitLoop_x1Set;
+
+L_BifMapInitLoop_x1Set:
+
+    if ($@bif_mine_maps_y1[.map_nr] > -1) goto L_BifMapInitLoop_y1Set;
+
+    set $@bif_mine_maps_y1[.map_nr], getmapmaxy($@bif_mine_maps$[.map_nr]);
+    goto L_BifMapInitLoop_y1Set;
+
+L_BifMapInitLoop_y1Set:
+
+    if ($@bifs_multi[.map_nr] < 1) set $@bifs_multi[.map_nr], 1;
+    set $@bifs_multi_count[.map_nr], $@bifs_multi[.map_nr];
+
+    set .map_nr, .map_nr + 1;
+    if (.map_nr < .map_count) goto L_BifMapInitLoop;
+
+// Slimes -----------------------------
+
+    set .map_count, getarraysize($@slime_mine_maps$[0]);
+    set .map_nr, 0;
+
+    goto L_SlimeMapInitLoop;
+
+L_SlimeMapInitLoop:
+
+    if ($@slime_mine_maps_x0[.map_nr] > -1) goto L_SlimeMapInitLoop_x0Set;
+
+    set $@slime_mine_maps_x0[.map_nr], 0;
+    goto L_SlimeMapInitLoop_x0Set;
+
+L_SlimeMapInitLoop_x0Set:
+
+    if ($@slime_mine_maps_y0[.map_nr] > -1) goto L_SlimeMapInitLoop_y0Set;
+
+    set $@slime_mine_maps_y0[.map_nr], 0;
+    goto L_SlimeMapInitLoop_y0Set;
+
+L_SlimeMapInitLoop_y0Set:
+
+    if ($@slime_mine_maps_x1[.map_nr] > -1) goto L_SlimeMapInitLoop_x1Set;
+
+    set $@slime_mine_maps_x1[.map_nr], getmapmaxx($@slime_mine_maps$[.map_nr]);
+    goto L_SlimeMapInitLoop_x1Set;
+
+L_SlimeMapInitLoop_x1Set:
+
+    if ($@slime_mine_maps_y1[.map_nr] > -1) goto L_SlimeMapInitLoop_y1Set;
+
+    set $@slime_mine_maps_y1[.map_nr], getmapmaxy($@slime_mine_maps$[.map_nr]);
+    goto L_SlimeMapInitLoop_y1Set;
+
+L_SlimeMapInitLoop_y1Set:
+
+    if ($@slimes_multi[.map_nr] < 1) set $@slimes_multi[.map_nr], 1;
+    set $@slimes_multi_count[.map_nr], $@slimes_multi[.map_nr];
+
+    set .map_nr, .map_nr + 1;
+    if (.map_nr < .map_count) goto L_SlimeMapInitLoop;
+
+    initnpctimer;
+
+    end;
+
+OnTimer1000:
+
+// Bifs -----------------------------
+
+    set .map_count, getarraysize($@bif_mine_maps$[0]);
+    set .map_nr, 0;
+    freeloop 1; // do not check for infinity loop
+
+    goto L_BifMapLoop;
+
+L_BifMapLoop:
+    set $@bifs_multi_count[.map_nr], $@bifs_multi_count[.map_nr] - 1;
+    if ($@bifs_multi_count[.map_nr] >= 1) goto L_BifContinue;
+
+    set $@bifs_multi_count[.map_nr], $@bifs_multi[.map_nr];
+
+    set .bifs_alive, mobcount($@bif_mine_maps$[.map_nr], "Miner_Mania::OnBifMined" + .map_nr)+1;
+    set .bifs_respawn_count, $@bifs_count[.map_nr] - .bifs_alive;
+
+    if (.bifs_respawn_count < 1) goto L_BifContinue;
+
+    if (rand(GEM_BIF_CHANCE)<1) set .bif, rand(getarraysize($@bifs[0])-1)+1;
+    else set .bif, 0;
+
+    if (rand(BIG_BIF_CHANCE)<1)
+        areamonster $@bif_mine_maps$[.map_nr], $@bif_mine_maps_x0[.map_nr], $@bif_mine_maps_y0[.map_nr], $@bif_mine_maps_x1[.map_nr], $@bif_mine_maps_y1[.map_nr], "",   $@bifs_big[.bif], 1, "Miner_Mania::OnBifMined" + .map_nr;
+    elif (rand(NORMAL_BIF_CHANCE)<1)
+        areamonster $@bif_mine_maps$[.map_nr], $@bif_mine_maps_x0[.map_nr], $@bif_mine_maps_y0[.map_nr], $@bif_mine_maps_x1[.map_nr], $@bif_mine_maps_y1[.map_nr], "",       $@bifs[.bif], 1, "Miner_Mania::OnBifMined" + .map_nr;
+    else
+        areamonster $@bif_mine_maps$[.map_nr], $@bif_mine_maps_x0[.map_nr], $@bif_mine_maps_y0[.map_nr], $@bif_mine_maps_x1[.map_nr], $@bif_mine_maps_y1[.map_nr], "", $@bifs_small[.bif], 1, "Miner_Mania::OnBifMined" + .map_nr;
+
+    goto L_BifContinue;
+
+L_BifContinue:
+    set .map_nr, .map_nr + 1;
+    if (.map_nr < .map_count) goto L_BifMapLoop;
+
+// Slimes -----------------------------
+
+    set .map_count, getarraysize($@slime_mine_maps$[0]);
+    set .map_nr, 0;
+
+    goto L_SlimeMapLoop;
+
+L_SlimeMapLoop:
+    set $@slimes_multi_count[.map_nr], $@slimes_multi_count[.map_nr] - 1;
+    if ($@slimes_multi_count[.map_nr] >= 1) goto L_SlimeContinue;
+
+    set $@slimes_multi_count[.map_nr], $@slimes_multi[.map_nr];
+
+    set .slimes_alive, mobcount($@slime_mine_maps$[.map_nr], "Miner_Mania::OnSlimeSlain" + .map_nr)+1;
+    set .slimes_respawn_count, $@slimes_count[.map_nr] - .slimes_alive;
+
+    if (.slimes_respawn_count < 1) goto L_SlimeContinue;
+
+    set .slime, rand(getarraysize($@slimes[0]));
+
+    areamonster $@slime_mine_maps$[.map_nr], $@slime_mine_maps_x0[.map_nr], $@slime_mine_maps_y0[.map_nr], $@slime_mine_maps_x1[.map_nr], $@slime_mine_maps_y1[.map_nr], "", $@slimes[.slime], 1, "Miner_Mania::OnSlimeSlain" + .map_nr;
+
+    goto L_SlimeContinue;
+
+L_SlimeContinue:
+    set .map_nr, .map_nr + 1;
+    if (.map_nr < .map_count) goto L_SlimeMapLoop;
+
+    freeloop 0; // re-enable infinity loop check
+
+    stopnpctimer;
+    setnpctimer 0;
+    startnpctimer;
+
+    end;
+}
