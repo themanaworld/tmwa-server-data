@@ -117,26 +117,25 @@ L_WarpPlayer:
     goto L_BreakChance;
 
 L_BreakChance:
-    if (rand(15))
-        goto L_Keep;
-    getitem "HitchhikersTowel", 1;
+    if (@warpTowelName$ != "HitchhikersTowel" && rand(15) < 1)
+        goto L_Break;
     goto L_End;
 
 L_Forbid:
     message strcharinfo(0), "Towel : This area is protected by a force that doesn't tolerate the power of the Towel.";
-    goto L_Keep;
+    goto L_End;
 
 L_Prison:
     message strcharinfo(0), "Towel : You must be warped by a GM to leave the botcheck area.";
-    goto L_Keep;
+    goto L_End;
 
 L_DontPanic:
     callfunc "HumanTime";
     message strcharinfo(0), "Towel : Your towel is still too low on power to jump again. Try again in ##B"+ @time$ + "##b.";
-    goto L_Keep;
+    goto L_End;
 
-L_Keep:
-    getitem @warpTowelName$, 1;
+L_Break:
+    delitem @warpTowelName$, 1;
     goto L_End;
 
 L_End:
