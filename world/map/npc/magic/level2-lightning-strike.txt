@@ -30,12 +30,11 @@
 
 OnAttack:
     if (target(BL_ID, @target_id, 0x36) != 0x36) goto L_FreeRecast; // 0x10 | 0x02 | 0x04 | 0x20
-
     set .@p, get(.max_radius, "rain") + 1;
     set @ingravspell[5], @target_id; // store it because foreach overwrites it
     foreach 1, getmap(), POS_X-.@p, POS_Y-.@p, POS_X+.@p, POS_Y+.@p, strnpcinfo(0)+"::OnNpc";
     set @target_id, @ingravspell[5]; // now restore it
-
+    if (@ingravspell[2] <= 0) overrideattack; // workaround for caster in rain death case
     set @ingravspell[2], @ingravspell[2] - 1;
     if (@ingravspell[4] & 1) goto L_InRain;
     void call("elt_damage", @ingravspell[0], (@ingravspell[0]/2)+1, ELT_EARTH, ELT_WIND, FX_LIGHTNING1 + rand(3));
@@ -49,6 +48,7 @@ L_FreeRecast:
 OnDischarge:
     if (@ingravspell[2] < 1) end;
     set @ingravspell[2], 0;
+    set @ingravspell[4], 0;     // Clean up "in rain" flag, it caused funny bugs.
     misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
     overrideattack;
     end;
