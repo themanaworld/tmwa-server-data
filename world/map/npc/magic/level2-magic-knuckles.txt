@@ -1,18 +1,17 @@
 -|script|magic-knuckles|32767
 {
     if @_U_BLOCK >= 1 goto L_Still_Exhausted;
-/*
-    set @upmarmu_spell_npc_name$, "#Upmarmu#" + getcharid(3); // make a unique puppet name for every player
+
+    set @upmarmu_spell_npc_name$, "#Upmarmu#" + getcharid(0); // make a unique puppet name for every player
     set .upmarmu_spell_npc, getnpcid(@upmarmu_spell_npc_name$);
     if ( .upmarmu_spell_npc >= 1 ) goto L_NPC_Exists; // if this npc already exist reuse it so that idle recovery timer does not get destroyed
 
     set .upmarmu_spell_npc, puppet(getmap(), 0, 0, @upmarmu_spell_npc_name$, 127); // clone npc => get puppet id (npc 127 is invisible and can't be targeted)
     if (.upmarmu_spell_npc < 1) end;
-    set .caster, getcharid(3), .upmarmu_spell_npc; // tell the puppet who controls it
+    set .caster, getcharid(0), .upmarmu_spell_npc; // tell the puppet who controls it
     goto L_NPC_Exists;
 
 L_NPC_Exists:
-*/
     if (call("magic_checks")) end;
     if (Sp < 20) end;
     if (getskilllv(SKILL_MAGIC) < .level) end;
@@ -49,35 +48,29 @@ OnAttack:
     if (target(BL_ID, @target_id, 22) != 22) goto L_FreeRecast; // 0x10 | 0x02 | 0x04
     void call("elt_damage", @upmarmuspell[0], (@upmarmuspell[3] + @upmarmuspell[4]), ELT_WATER, ELT_FIRE, FX_NONE);
 
-//    addtimer 0, @upmarmu_spell_npc_name$ + "::OnResetTimer";
+    addtimer 0, @upmarmu_spell_npc_name$ + "::OnResetTimer";
 
     set @upmarmuspell[1], @upmarmuspell[1] - 1;
-    set @num_upmarmu_hits, @num_upmarmu_hits + 1;
 
-    if @num_upmarmu_hits >= UPMARMU_HITS_TILL_EXHAUST goto L_Exhausted;
+    if @num_upmarmu_hits >= UPMARMU_HITS_TILL_EXHAUST goto L_FreeRecast;
+    set @num_upmarmu_hits, @num_upmarmu_hits + 1;
+    if @num_upmarmu_hits >= UPMARMU_HITS_TILL_EXHAUST set .exhausted, 1, .upmarmu_spell_npc;
+
     goto L_FreeRecast;
 
 L_FreeRecast:
     if (@upmarmuspell[1] > 0)
         addtimer 0, strnpcinfo(0) + "::OnSetRecast";
+    else
+        addtimer 0, @upmarmu_spell_npc_name$ + "::OnExhausted";
     end;
-
-L_Exhausted:
-    set @_U_BLOCK, 1;
-    set @upmarmuspell[1], 0;
-    misceffect FX_MAGIC_DISCHARGE, strcharinfo(0);
-    overrideattack;
-    addtimer UPMARMU_EXHAUST_DURATION, "Upmarmu Exhaust Timer::OnClear"; // set the exhaustion time
-    sc_start SC_COOLDOWN_UPMARMU, UPMARMU_EXHAUST_DURATION, 0, BL_ID;
-    smsg SMSG_FAILURE, "Magic: You are too exhausted to use this spell for a while!";
-    goto L_StopTimer;
 
 L_Still_Exhausted:
     smsg SMSG_FAILURE, "Magic: You are still too exhausted to use this spell for a while!";
     end;
 
 L_StopTimer:
-//    addtimer 0, @upmarmu_spell_npc_name$ + "::OnStopTimer";
+    addtimer 0, @upmarmu_spell_npc_name$ + "::OnStopTimer";
     end;
 
 OnDischarge:
@@ -91,7 +84,6 @@ OnSetRecast:
     overrideattack (@upmarmuspell[2] * @upmarmuspell[2]), 1, ATTACK_ICON_GENERIC, OVERRIDE_KNUCKLES, strnpcinfo(0)+"::OnAttack", @upmarmuspell[1]; // delay needs to be squared
     end;
 
-/*
 OnResetTimer:
     // This timer is if you stopped somewhere below max hits then after 25sec you recover fully and start at 0 hits again
     stopnpctimer;
@@ -117,9 +109,20 @@ OnTimer25000:
     setnpctimer 0;
     end;
 
+OnExhausted:
+    if (.exhausted < 1) end;
+
+    set @_U_BLOCK, 1;
+    set @upmarmuspell[1], 0;
+    set @num_upmarmu_hits, 0;
+    set .exhausted, 0;
+    addtimer UPMARMU_EXHAUST_DURATION, "Upmarmu Exhaust Timer::OnClear"; // set the exhaustion time
+    sc_start SC_COOLDOWN_UPMARMU, UPMARMU_EXHAUST_DURATION, 0, BL_ID;
+    smsg SMSG_FAILURE, "Magic: You are too exhausted to use this spell for a while!";
+    goto L_StopTimer;
+
 OnDestroy:
     destroy;
-*/
 
 OnInit:
     set .school, SKILL_MAGIC_WAR;
@@ -136,6 +139,5 @@ OnInit:
 
 OnClear:
     set @_U_BLOCK, 0;
-    set @num_upmarmu_hits, 0;
     end;
 }
