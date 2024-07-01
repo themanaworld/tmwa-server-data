@@ -1,0 +1,56 @@
+function|script|useAnchorStone
+{
+    addtimer 0, "AS_Core::OnUse";
+    return;
+}
+
+-|script|AS_Core|32767
+{
+    end;
+
+OnUse:
+    if ( @StoneName$ == "AnchorStone" ) goto L_AnchorStone;
+    if ( @StoneName$ == "AnchoredAnchorStone" ) goto L_AnchoredAnchorStone;
+    goto L_Close;
+
+L_AnchorStone:
+    mes "\"You really want to bind the [@@" + AnchorStone + "|@@] to this place?\"";
+    menu
+        "No", L_Close,
+        "Yes", L_AS_Yes;
+
+L_AS_Yes:
+    set AnchorStoneDest, getmaphash(getmap()); // since a hash could be negative I take a seperate variable for that since shifting would destroy the sign bit and create a different hash
+    set AnchorStoneDestCoord, gety() << AS_Y_SHIFT | getx() << AS_X_SHIFT;
+
+    delitem AnchorStone, 1;
+    getitem AnchoredAnchorStone, 1;
+    close;
+
+L_AnchoredAnchorStone:
+    if ((AnchorStoneDest < 1) && (AnchorStoneDest > -1)) goto L_AAS_Error;
+    mes "\"You want to recall to the place the [@@" + AnchoredAnchorStone + "|@@] is bond to?\"";
+    menu
+        "No", L_Close,
+        "Yes", L_AAS_Yes;
+
+L_AAS_Yes:
+    warp getmapnamefromhash(AnchorStoneDest), (AnchorStoneDestCoord & AS_X_MASK >> AS_X_SHIFT), (AnchorStoneDestCoord & AS_Y_MASK >> AS_Y_SHIFT);
+
+    goto L_AAStoAS;
+
+L_AAS_Error:
+    mes "\"Something went wrong the [@@" + AnchoredAnchorStone + "|@@] lost its destination and turns back to normal.\"";
+    goto L_AAStoAS;
+
+L_AAStoAS:
+    set AnchorStoneDest, 0;
+    set AnchorStoneDestCoord, 0;
+
+    delitem AnchoredAnchorStone, 1;
+    getitem AnchorStone, 1;
+    close;
+
+L_Close:
+    close;
+}
