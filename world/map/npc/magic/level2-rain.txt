@@ -102,9 +102,18 @@ OnHit:
     if(get(Hp, .caster) < 1) destroy; // destroy if caster is missing
     if(getmap(.caster) != strnpcinfo(3)) destroy; // destroy if caster left the map
     if(target(.caster, @target_id, 16) != 16 && .caster != @target_id) end;
-    if((get(BL_TYPE, @target_id) & 1) == 0) end; // either mob or pc
+    if((get(BL_TYPE, @target_id) & 1) == 0) end;  // either mob or pc
     if(get(ELTTYPE, @target_id) == ELT_FIRE)
         injure .caster, @target_id, ((rand((@spellpower/15)+5)+2) * (100 - get(MDEF1, @target_id))) / 100;
+    if ($NO_RAIN_SPAWNS) end;                     // server-wide killswitch for rain pranks if spawns logic would backfire.
+    if (mobcount(getmap(), "rain::OnRainSpawnDeath") > 30) end; // Abort if too crowded.
+    if(get(Class, @target_id) == EntAbomination)                // Rain hit Ent? This scores little perk!
+        monster getmap(), getnpcx(), getnpcy(), "", LogHead, 1+rand(1+(.max/150)), "rain::OnRainSpawnDeath";
+    if((get(Class, @target_id) == LogHead) && (rand(5) == 3))   // Rain hit LogHead? Little perk as well (plants)
+        monster getmap(), getnpcx(), getnpcy(), "", MauvePlant+rand(5), 1, "rain::OnRainSpawnDeath";
+    end;
+
+OnRainSpawnDeath:
     end;
 
 OnDestroy:
