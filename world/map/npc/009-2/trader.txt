@@ -62,6 +62,7 @@ L_Trademenu:
         "Do you have Iron Powder?", L_Iron,
         "How about Sulphur Powder?", L_Sulphur,
         "I need Medium Healing Potions.", L_Healpots,
+        "I'd like to acquire an Enchanter's Amulet.", L_Eamulet,
         "I think I have everything I need, thanks.", L_Close;
 
 L_Iron:
@@ -84,6 +85,13 @@ L_Healpots:
     menu
         "Alright.", L_Pots,
         "Whoa, that's way too much.", L_Close;
+
+L_Eamulet:
+    mes "[Trader]";
+    mes "\"These amulets are quite rare. Three times as rare as a Magic Ring, they say. I do have one though and would trade it off for three Magic Rings and thirteen Blood Stones. I've had a hard time finding those stones.\"";
+    menu
+        "Alright.", L_GetEamuletConfirm,
+        "I'd better check the shops out first.", L_Close;
 
 L_Ipowder:
     if (countitem("IronOre") < 1) goto L_Missing;
@@ -123,6 +131,26 @@ L_Pots:
     getitem "MediumHealingPotion", 1;
     mes "[Trader]";
     mes "\"There you go. Would you like to trade anything else?\"";
+    menu
+        "Yes.", L_Trademenu,
+        "No.", L_No;
+
+L_GetEamuletConfirm:
+    mes "[Trader]";
+    mes "\"Are you sure you wish to trade for the Enchanter's Amulet? All trades are final.\"";
+    menu
+        "No, I'd better think this over a bit more.", L_No,
+        "No thanks. I've changed my mind. What else do you trade, again?", L_Trademenu,
+        "Yes, I'm positive.", L_GetEamulet;
+
+L_GetEamulet:
+    if (countitem("MageRing") < 3) goto L_Missing;
+    if (countitem("Bloodstone") < 13) goto L_Missing;
+    delitem "MageRing", 3;
+    delitem "Bloodstone", 13;
+    getitem "EnchantersAmulet", 1;
+    mes "[Trader]";
+    mes "\"Make good use of your new amulet. Would you like to trade anything else?\"";
     menu
         "Yes.", L_Trademenu,
         "No.", L_No;
