@@ -12,6 +12,9 @@
     if (CASTS < 0) set CASTS, 1; // overflow
     misceffect FX_MAGIC_DETECT_CAST, strcharinfo(0);
     set .@range, (@spellpower/50)+1;
+    set .caster, getcharid(3);
+    foreach 0, getmap(), POS_X - .@range, POS_Y - .@range, POS_X + .@range, POS_Y + .@range,
+            strnpcinfo(0) + "::OnNearbyPlayer";
     foreach 1, getmap(), POS_X - .@range, POS_Y - .@range, POS_X + .@range, POS_Y + .@range,
             strnpcinfo(0) + "::OnNearbyNpc";
     if (getmap() == "099-4")
@@ -19,6 +22,14 @@
     if (getmap() == "099-5")
         addtimer 10, "#TMWFinalExam::OnMiteyo";
     callfunc "magic_exp";
+    end;
+
+OnNearbyPlayer:
+    if (@target_id == BL_ID) end;           // Dont do lookups on caster.
+    if (sc_check(SC_HIDE, @target_id)) end; // Also skip hidden (anwiltyp) players.
+    if (attachrid(@target_id) < 1) end;     // Switch context -> found player (to look up focused skills)
+    if (call("is_magician")) misceffect FX_MAGIC_DETECT_HIT, BL_ID; // BL_ID because now attached to target
+    if (attachrid(.caster) < 1) end;        // Try to reattach back -> caster (is it needed?)
     end;
 
 OnNearbyNpc:
@@ -34,4 +45,24 @@ OnInit:
     set .level, 1;
     set .exp_gain, 0;
     end;
+}
+
+// This function tests if current RID is a magician (Astral soul skill Lv 9).
+function|script|is_magician
+{
+    getactivatedpoolskilllist;
+    if (@skilllist_count != 0) goto L_iterate_focused; // Had some focused skills -> look further
+    goto L_focus_notfound; // No focused skills at all -> bail out.
+
+L_iterate_focused:
+    set @skilllist_count, @skilllist_count-1;
+    if ((@skilllist_id[@skilllist_count] == SKILL_ASTRAL_SOUL) && (getskilllv(SKILL_ASTRAL_SOUL) >= 2)) goto L_focus_found;
+    if (@skilllist_count == 0) goto L_focus_notfound;
+    goto L_iterate_focused; // iterate via array of focused skills.
+
+L_focus_found:
+    return 1;
+
+L_focus_notfound:
+    return 0;
 }
