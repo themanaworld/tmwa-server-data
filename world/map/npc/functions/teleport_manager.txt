@@ -1,0 +1,589 @@
+// GateBuilders toolkit aka "arbitrary teleports".
+// GateBuilders toolkit aka "arbitrary teleports".
+// Author: Hello=). Credits go to Freeyorp and HoraK for some insights.
+
+// This lacks limits of previously existing teleport systems.
+// * New teleports can be instatiated as needed, running side by side.
+// * Teleports can have finite lifetime, disappearing themself.
+// * Teleports can be removed, leaving no side effects.
+// * No leftovers or side effects after teleport removed.
+// * Up to about 100 teleports can coexist.
+// * Flexible condition check based on cookie. If some gate got cookie set
+//   then it only lets players with matching variable to pass.
+// * Aspects like timeout, FX and their timing, etc can be customized.
+// * Teleports meant to be registered in TeleportManager. However, its
+//      possible to create "unmanaged" teleports (e.g. for spells).
+// * In future it can allow custom hooks/checks on teleporters (planned)
+
+// Technically, TeleportManager NPC keeps teleports as array of integers.
+// with structure .teleports[.index] = Teleport's NPC ID.
+// Up to 100 teleports allowed (.index = 1..100, .index = 0 is unused).
+// if .teleports[.index] = 0 -> empty/reusable slot.
+// All teleport specific data stored in puppet NPC itself.
+// Teleport NPCs are puppets of TeleportManager and inherit its code.
+
+// Attempt will be made to make it reasonably robust. That is,
+// * Try to handle usage bugs/bogus data/etc.
+// * No actions causing big server side fallouts.
+// * No out of bounds, nonexistent NPC references, etc.
+
+// Teleports have the following variables (some are set on teleport_create)
+// .srcmap$    - source map of teleport's npc
+// .src_x      - source map of teleport's npc, X coord
+// .src_y      - source map of teleport's npc, Y coord
+// .dstmap$    - destination map of teleport's npc
+// .dst_x      - destination map of teleport's npc, X coord
+// .dst_y      - destination map of teleport's npc, Y coord
+// .lifetime   - teleport's lifetime, in ms. 0 = permanent (until server restart)
+// .cookie     - if set, only teleport players with teleport_cookie == NPC's .cookie
+// .fx,        - FX effect to play on teleport.
+// .fx_time,   - Time FX allowed to play before teleport actually happens.
+// .IS_MANAGER - Indicates TeleportManager NPC. Puppets wouldnst have that.
+// .managed    - Indicates its teleport managed by TeleportManager. Its possible to
+//                 create unmanaged teleports, e.g. transient teleports by spells.
+// .teleport   - Set to 1 to be able to distinguish teleport NPCs from other NPCs
+// .info$      - Description, shown to user when clicking NPC
+// .inactive   - set to disable OnTouch reaction. Useful for staged shutdown or
+//                 e.g. temporarily deactivating teleport for whatever reason.
+
+// Key functcions: teleport_add and teleport_del. Rest are "helpers".
+
+// Main NPC code, runs on both TeleportManager and teleport puppets.
+// Do not rename NPC: functions below rely on NPC name.
+-|script|TeleportManager|32767
+{
+    message strcharinfo(0), .info$;  // Display info about teleport, var allows message change.
+    end;
+
+// Manager code below - puppets dont use OnCmd* events
+// Invoked when someone adds teleport via @teleportadd
+OnCmdAdd:
+    debugmes "OnAdd called";
+    if (call("teleport_access_check")) end; // Not allowed to use this.
+    set .@idx, call("teleport_find_slot", 0); // Try to find empty slot (containing 0)
+    if (.@idx <= 0) goto L_AddNoRoom;         // No empty slots? NB: teleports[0] not used.
+    if (call ("teleportadd_parseargs") <= 0)  goto L_AddArgsFail; // @VARs like @POS_X, @NAME$, etc set by teleportadd_parseargs()
+//  Create actual teleport NPC ------- src map - src x  src y --- name - NPC ----  Sz Sz dst map - dst x - dst y -- time - cook managed?
+    set .@tp, call("teleport_create", getmap(), @POS_X, @POS_Y, @NAME$, @NPCSPRITE, 0, 0, @DSTMAP$, @DST_X, @DST_Y, @TIMEOUT, 0, 1);
+    if (.@tp <= 0) goto L_AddPuppetFail;      // Has puppet() failed?
+    set .teleports[.@idx], .@tp;              // Store NPC ID -> .teleports[.@idx] slot. Access safe: teleport_find_slot() == 1..100
+    gmlog strcharinfo(0) + " accessed TeleportManager: @teleportadd " + @args$;
+    wgm strcharinfo(0) + " accessed TeleportManager: @teleportadd " + @args$;
+    message strcharinfo(0), "[TeleportManager] : Added: [" + .@idx + "] " +
+                 (get(.srcmap$, .@tp)) + " " + (get(.src_x, .@tp)) + "," + (get(.src_y, .@tp)) +
+        " -> " + (get(.dstmap$, .@tp)) + " " + (get(.dst_x, .@tp)) + "," + (get(.dst_y, .@tp)) +
+        " lifetime:" + ((get(.lifetime, .@tp)) / 1000) + "s, Name:" + strnpcinfo(0, .@tp) + " (" + .@tp + ")";
+    debugmes "OnAdd: npc="+.@tp+" idx="+.@idx;
+    end;
+
+L_AddNoRoom:
+    message strcharinfo(0), "[TeleportManager] : Too many teleports open, max 100 tracked teleports";
+    message strcharinfo(0), "[TeleportManager] : use @teleportlist to list and @teleportdel to remove some.";
+    end;
+
+L_AddArgsFail:
+    if (@DSTMAP$ != "help") message strcharinfo(0), "[TeleportManager] : try @teleportadd help or @teleporthelp";
+    end; 
+
+L_AddPuppetFail:
+    message strcharinfo(0), "[TeleportManager] : failed to add teleport, check params. Duplicate NPC name maybe?";
+    end;
+
+// Invoked when someone removes teleport via @teleportdel
+OnCmdDel:
+    debugmes "OnDel called";
+    if (call("teleport_access_check")) end; // Not allowed to use this.
+    callfunc "argv_splitter";
+    if (@argv[0] <= 0) goto L_DelFail;
+    if (call("teleport_delete", @argv[0]) <= 0) goto L_DelNotFound;
+    message strcharinfo(0), "[TeleportManager] : requested teleport ID [" + @argv[0] + "] to terminate";
+    gmlog strcharinfo(0) + " accessed TeleportManager: @teleportdel " + @args$;
+    wgm strcharinfo(0) + " accessed TeleportManager: @teleportdel " + @args$;
+    end;
+
+L_DelNotFound:
+    message strcharinfo(0), "[TeleportManager] : teleport ID [" + @argv[0] + "] not found.";
+    end;
+
+L_DelFail:
+    message strcharinfo(0), "[TeleportManager] : Bad parameters.";
+    callfunc("teleport_help_del");
+    end;
+
+// Invoked when someone lists teleports via @teleportlist
+OnCmdList:
+    debugmes "OnList called";
+    if (call("teleport_access_check")) end; // Not allowed to use this.
+    callfunc("teleports_list");
+    gmlog strcharinfo(0) + " accessed TeleportManager: @teleporlist" + @args$;
+    end;
+
+// Invoked when someone requests help via @teleporthelp
+// (doesn't needs access checks - does nothing dangerous)
+OnCmdHelp:
+    debugmes "OnHelp called";
+    message strcharinfo(0), "[TeleportManager] : Commands: @teleportadd @teleportdel @teleportlist @teleporthelp";
+    message strcharinfo(0), "[TeleportManager] : @teleportlist - display list of active teleports";
+    callfunc("teleport_help_del");
+    callfunc("teleport_help_add");
+    end;
+
+// Puppets (teleportation pads) logic below.
+// Invoked when player steps on npc. Manager NPC ignores this.
+OnTouch:
+    debugmes "OnTouch";
+    if (.IS_MANAGER) end;     // Manager NPC isnt teleport -> no interaction.
+    if (.inactive) end;       // If gate deactivated -> no interaction.
+    if ((.cookie) && (teleport_cookie != .cookie)) goto L_CantPass;
+    set teleport_cookie, 0;   // Clear teleport cookie of player on teleport use.
+    sc_start SC_SLOWMOVE, .fx_time+100, 100000; // Slow player temporarily to avoid movement VS warp DCs
+    addtimer .fx_time, strnpcinfo(0)+"::OnTeleport"; // time before teleporting away
+    misceffect .fx;           // Default .fx set in teleport_add, other code can override it.
+    end;
+L_CantPass:
+    message strcharinfo(0), .cantpass$; // NPC var allows to change message.
+    end;                      // "keyed" teleport and player didnt had proper cookie.
+
+// Teleportation timer event (attached to player). Queued by OnTouch.
+OnTeleport:
+    debugmes "OnTeleport -> " + .dstmap$ + " X=" + .dst_x + " Y=" + .dst_y;
+    warp .dstmap$, .dst_x, .dst_y;
+    end;
+
+// Invoked on timed teleport's NPC timer expired.
+OnTeleportExpired:
+    debugmes "OnTeleportExpired";
+    set .inactive, 1; // Flag shutdown so OnTouch ignores incoming players.
+    addnpctimer (.fx_time + 1000), strnpcinfo(0)+"::OnTeleportShutdown"; // Give time to in-flight players to teleport.
+    end;
+
+// Does actual teleport shutdown.
+OnTeleportShutdown:
+    debugmes "OnTeleportShutdown";
+    void call("teleport_mgr_clean"); // Cleanups adequately both "managed" and "unmanaged" teleports.
+    if !(.IS_MANAGER) destroy;       // Dont ever try to destroy manager npc.
+    end;
+
+OnInit:
+    set .IS_MANAGER, 1;        // Only Manager NPC would have this, puppets wouldnt.
+    set .info$, "TeleportManager : This thing is unlike anything you've seen before"; // Manager's NPC message on click.
+    registercmd "@teleportadd",  "TeleportManager::OnCmdAdd";
+    registercmd "@teleportdel",  "TeleportManager::OnCmdDel";
+    registercmd "@teleportlist", "TeleportManager::OnCmdList";
+    registercmd "@teleporthelp", "TeleportManager::OnCmdHelp";
+    registercmd "@teleport",     "TeleportManager::OnCmdHelp";
+    end;
+}
+
+// PUBLIC API. Creates requested teleport NPC. Arg 0..6 are like puppet().
+// This function designed to run in ANY context, whether RID attached or not.
+// It creates puppet + setups all relevant data in created NPC.
+// arg(0): Teleport's map.
+// arg(1): Teleport's X
+// arg(2): Teleport's Y
+// arg(3): Teleport's NPC label
+// arg(4): Teleport's NPC sprite ID
+// arg(5): Teleport's X size
+// arg(6): Teleport's Y size
+// arg(7): Destination map name.
+// arg(8): Destination X
+// arg(9): Destination Y
+// arg(10):Teleport lifetime ( > 0 or -1 = indefinite) 
+// arg(11):Teleport magic cookie, 0 = everyone allowed, otherwise checks match.
+// arg(12):Whether teleport managed, 0 = unmanaged, != 0 means it is.
+// Return: On success: NPC ID of teleport created.
+//         On failure: 0 if puppet failed, -1 if arg check failed.
+function|script|teleport_create
+{
+    debugmes "teleport_create -> Enter";
+    set .@map$,     getarg(0,  "");   // Get args (+failsafe defailts)
+    set .@x,        getarg(1,  -10);  // Get args (+failsafe defailts)
+    set .@y,        getarg(2,  -10);  // Get args (+failsafe defailts)
+    set .@name$,    getarg(3,  "");   // Get args (+failsafe defailts)
+    set .@sprite,   getarg(4,  -10);  // Get args (+failsafe defailts)
+    set .@xsz,      getarg(5,  -10);  // Get args (+failsafe defailts)
+    set .@ysz,      getarg(6,  -10);  // Get args (+failsafe defailts)
+    set .@dstmap$,  getarg(7,  -10);  // Get args (+failsafe defailts)
+    set .@dst_x,    getarg(8,  -10);  // Get args (+failsafe defailts)
+    set .@dst_y,    getarg(9,  -10);  // Get args (+failsafe defailts)
+    set .@lifetime, getarg(10, -10);  // Get args (+failsafe defailts)
+    set .@cookie,   getarg(11, -10);  // Get args (+failsafe defailts)
+    set .@managed,  getarg(12, -10);  // Get args (+failsafe defailts)
+    set .@res, -1;                    // Validate what caller gave
+    if !(call("teleport_map_valid", .@map$ ))  goto L_Fail; // Validate src map$
+    if !(call("teleport_map_valid", .@dstmap$)) goto L_Fail; // Validate dst map$
+    if ((.@x < 0)     || (.@y < 0)) goto L_Fail;     // SRC X/Y cant be < 0
+    if ((.@dst_x < 0) || (.@dst_y < 0)) goto L_Fail; // DST X/Y cant be < 0
+    if ((.@xsz < 0)  || (.@ysz < 0))    goto L_Fail; // NPC X/Y size cant be <= 0
+    if (.@name$ == "")  goto L_Fail;  // NPC name cant be empty
+    if (.@sprite <= 0)  goto L_Fail;  // NPC sprite cant be <= 0
+    if (.@lifetime < -1 || (.@lifetime) == 0) goto L_Fail; // Lifetime either > 0 or -1 = infinite
+    if ((.@cookie < 0)  || (.@managed < 0)) goto L_Fail;   // Cookie and managed cant be < 0
+    set .@res, puppet(.@map$, .@x, .@y, .@name$, .@sprite, .@xsz, .@ysz); // instatiate teleport NPC
+    if (.@res <= 0) goto L_Fail;
+    //NPC's var     value       NPC ID -- teleport defaults
+    set .srcmap$,  .@map$,     .@res;  // set .srcmap$ of NPC
+    set .src_x,    .@x,        .@res;  // set .src_x of NPC
+    set .src_y,    .@y,        .@res;  // set .src_y of NPC
+    set .dstmap$,  .@dstmap$,  .@res;  // set .dstmap$ of NPC
+    set .dst_x,    .@dst_x,    .@res;  // set .dst_x of NPC
+    set .dst_y,    .@dst_y,    .@res;  // set .dst_y of NPC
+    set .lifetime, .@lifetime, .@res;  // set .lifetime of NPC
+    set .cookie,   .@cookie,   .@res;  // set .cookie of NPC
+    set .fx,       41,         .@res;  // set default teleport FX 
+    set .fx_time,  350,        .@res;  // set default FX time (warp delay)
+    set .managed,  .@managed,  .@res;  // If > 0, npc managed by TeleportManager (unmanaged temp TPs can be e.g. spells)
+    set .teleport, 1,          .@res;  // All teleports created by teleport_create have this.
+    set .info$, "Teleport : strange structure of unknown origins", .@res; // Default on-click message.
+    set .cantpass$, "Teleport : structure seems to ignore you", .@res; // Default "can't pass" message.
+    // If timeout requested, set up teardown timer.
+    if (.@lifetime > 0) addnpctimer .@lifetime, .@name$+"::OnTeleportExpired";
+    debugmes "teleport_create <- Puppet: Map="+.@map$+" X="+.@x+" Y="+.@y+" Nm="+.@name$+" SpID="+.@sprite+" xsz="+.@xsz+" ysz="+.@ysz+" .@res="+.@res;
+    return .@res;
+
+L_Fail:
+    debugmes "arg0:"+getarg(0)+" arg1:"+getarg(1)+" arg2:"+getarg(2)+" arg3:"+getarg(3)+" arg4:"+getarg(4)+" arg5:"+getarg(5)+" arg6:"+getarg(6)+" arg7:"+getarg(7)+" arg8:"+getarg(8)+" arg9:"+getarg(9)+" arg10:"+getarg(10)+" arg11:"+getarg(11)+" arg12:"+getarg(12);
+    debugmes "teleport_create <- Leave, call failed ["+.@res+"]";
+    return .@res;
+}
+
+// PUBLIC API. This function deletes teleport.
+// This function designed to run in ANY context, whether RID attached or not.
+// Teleport removed by NPC destroy + setting its .teleports[.index] = 0.
+// Inputs: arg[0] is either slot index (1..100) or NPC ID to remove.
+// Return: 1 on success, <= 0 on failure.
+function|script|teleport_delete
+{
+    debugmes "teleports_delete -> enter";
+    set .@npctodel, getarg(0, -1);         // This is either slot # or NPC ID 
+    if (.@npctodel <= 0) goto L_Error;
+    if (.@npctodel > 100) goto L_GotNpcId; // If > 100 assume its NPC ID, not slot.
+    set .@npctodel, call("teleport_get_slot_val", .@npctodel); // Get NPC id from teleport manager slot.
+    if (.@npctodel <= 0) goto L_Error;     // Failed to get NPC ID?
+    goto L_GotNpcId;
+
+L_GotNpcId:
+    if !(get(.teleport, .@npctodel)) goto L_Error; // Sanity check its teleport NPC indeed
+    donpcevent strnpcinfo(0, .@npctodel)+"::OnTeleportShutdown"; // Request teleport NPC to perform shutdown.
+    return 1;
+
+L_Error:
+    debugmes "teleports_delete <- leave, failed";
+    return 0;
+}
+
+// This function prints teleports known to TeleportManager.
+// This function MUST run in player context with RID attached to send messages.
+// Inputs: nothing, all data taken from TeleportManager NPC.
+// Return: nothing, just prints info as it iterates manager's slots.
+function|script|teleports_list
+{
+    debugmes "teleports_list -> enter";
+    set .@idx, 0;
+    freeloop 1;                      // Loops via 100 slots -> can time out.
+    message strcharinfo(0), "[TeleportManager] : ---- Active teleports ----";
+    goto L_NextSlot;
+
+L_NextSlot:
+    set .@idx, (.@idx+1);
+    if (.@idx > 100) goto L_Done;    // Iterated whole array.
+    set .@npc, call("teleport_get_slot_val", .@idx);
+    debugmes "teleport_list idx=" + .@idx + " val=" + .@npc;
+    if (.@npc < 0)  goto L_Error;    // Abort iteration on error and report it.
+    if (.@npc > 0) goto L_PrintSlot; // Print slot data.
+    goto L_NextSlot; // .@npc == 0   // just iterate to next slot
+
+L_PrintSlot:
+    if !(get(.managed, .@npc)) goto L_Error; // Sanity check its really "managed teleport" NPC
+    debugmes "teleport_list: after managed check";
+    // Display info about teleport, data taken from NPC.
+    message strcharinfo(0), "[TeleportManager] : [" + .@idx + "] " +
+                 (get(.srcmap$, .@npc)) + " " + (get(.src_x, .@npc)) + "," + (get(.src_y, .@npc)) +
+        " -> " + (get(.dstmap$, .@npc)) + " " + (get(.dst_x, .@npc)) + "," + (get(.dst_y, .@npc)) +
+        " lifetime:" + ((get(.lifetime, .@npc)) / 1000) + "s, Name:" + strnpcinfo(0, .@npc) + " (" + .@npc + ")";
+    goto L_NextSlot;
+
+L_Done:
+    freeloop 0;
+    message strcharinfo(0), "[TeleportManager] : ---- End ----";
+    debugmes "teleports_list <- Leave, ok";
+    return;
+
+L_Error:
+    freeloop 0;
+    debugmes "teleports_list <- Leave, error";
+    message strcharinfo(0), "[TeleportManager] : Error iterating TeleportManager slots (bug?!)";
+    return;
+}
+
+// This function finds slot in TeleportManager with given NPC ID.
+// This function designed to run in ANY context, whether RID attached or not.
+// Inputs: arg[0]: NPC ID to find, 0 means "find free slot",
+// Return: slot index in 1..100 range if slot found, <= 0 on fail.
+function|script|teleport_find_slot
+{
+    debugmes "teleport_find_slot -> Enter";
+    if (getarg(0) < 0) goto L_Fail;  // Caller gave some crap?
+    set .@wanted, getarg(0);         // NPC ID to find (or 0 to find free slot)
+    set .@manager, getnpcid("TeleportManager");
+    if (.@manager <= 0) goto L_Fail; // Manager NPC not found?
+    set .@i, 1;     // 0 slot not used.
+    freeloop 1;
+    goto L_TrySlot; // Start iterating via teleport slots on TeleportManager.
+
+L_TrySlot:
+    set .@npcid, get(.teleports[.@i], .@manager);
+    debugmes "teleport_find_slot: @i="+.@i+" npcid="+.@npcid;
+    if (.@npcid == .@wanted) goto L_Found; //.teleports[.@i] == desired ID?
+    if (.@i > 100) goto L_Fail;         // No free slots in teleports[1..100]
+    set .@i, (.@i + 1); goto L_TrySlot; // Try next slot
+
+L_Found:
+    debugmes "teleport_find_slot <- Leave, found slot .@i="+.@i;
+    freeloop 0;
+    return .@i;
+
+L_Fail:
+    debugmes "teleport_find_slot <- Leave, call failed";
+    freeloop 0;
+    return 0;
+}
+
+// This function returns value in TeleportManager's slot with given indes.
+// This function designed to run in ANY context, whether RID attached or not.
+// Inputs: arg[0]: slot ID, must be 1 .. 100;
+// Return: -1 on error, 0 on empty slot, or NPC ID of teleport in given sslot.
+function|script|teleport_get_slot_val
+{
+    debugmes "teleport_get_slot_val -> Enter";
+    if ((getarg(0) < 1) || (getarg (0) > 100)) goto L_Fail; // Bogus index?
+    set .@index, getarg(0);
+    set .@manager, getnpcid("TeleportManager");
+    if (.@manager <= 0) goto L_Fail; // Manager NPC not found?
+    set .@ret, get(.teleports[.@index], .@manager);
+    debugmes "teleport_get_slot_val <- Leave, ok";
+    return .@ret;
+
+L_Fail:
+    debugmes "teleport_get_slot_val <- Leave, failed";
+    return -1;
+}
+
+// This function sets slot in TeleportManager with given value.
+// This function designed to run in ANY context, whether RID attached or not.
+// Inputs: arg[0]: slot ID, must be 1 .. 100;
+//         arg[1]: value to store to slot;
+// Return: 1 on success, <= 0 on failure. 
+function|script|teleport_set_slot_val
+{
+    debugmes "teleport_set_slot_val -> Enter";
+    if ((getarg(0) < 1) || (getarg (0) > 100)) goto L_Fail; // Bogus index?
+    if (getarg(1) < 0) goto L_Fail; // TP slots are NPC ID or 0 for empty
+    set .@index, getarg(0);
+    set .@val, getarg(1);
+    set .@manager, getnpcid("TeleportManager");
+    if (.@manager <= 0) goto L_Fail; // Manager NPC not found?
+    set .teleports[.@i], .@val, .@manager;
+    debugmes "teleport_set_slot_val <- Leave, ok";
+    return 1;
+
+L_Fail:
+    debugmes "teleport_set_slot_val <- Leave, failed";
+    return 0;
+}
+
+// PRIVATE: This function cleans up slot in TeleportManager on teleport shutdown.
+// This function ONLY meant to be invoked by teleport NPC puppet on shutdown!
+// Inputs: nothing. Gets data from its calling NPC.
+// Return: 1 on success, <= 0 on failure. 
+function|script|teleport_mgr_clean
+{
+    if !(.managed) goto L_RetOk; // Teleport not managed by TeleportManager -> no cleanup
+    set .@my_id, getnpcid();
+    if (.@my_id <= 0) goto L_RetFail; // Give up on cleanup, slot will leak
+    // Call chaining OK: teleport_set_slot_val() checks slot # sanity, so teleport_find_slot() fail handled.
+    set .@res, call("teleport_set_slot_val", call("teleport_find_slot", .@my_id), 0);
+    if (.@res != 1) goto L_RetFail;
+    goto L_RetOk;
+L_RetOk:
+    return 1;
+
+L_RetFail:
+    debugmes "OnTeleportShutdown: TeleportManaer cleanup failure -> will leak slot. Likely bug!";
+    return 0;
+}
+
+// PRIVATE: This function validates @teleportadd args and prepares for teleport_add() call.
+// This function MUST be invoked with player RID attached, by TeleportManager NPC
+// Inputs: nothing, but assumes args$ set.
+// Return: <= 0 on failure, 1 on success.
+// Return: sets @POS_X, @POS_X, @DSTMAP$, @DST_X, @DST_Y,
+function|script|teleportadd_parseargs
+{
+    debugmes "teleportadd_parseargs -> Enter";
+    // FIXME check arg presence$ if ()
+    callfunc "argv_splitter";
+    debugmes "teleportadd_parseargs @argv$[0]"+@argv$[0]+" @argv[1]"+@argv[1]+" @argv[2]"+@argv[2]+" @argv$[3]"+@argv$[3]+" @argv[4]"+@argv[4]+" @argv[5]"+@argv[5];
+    set @DSTMAP$, @argv$[0];  // Destination map
+    set @DST_X,   @argv[1];   // Dst warp coordinates
+    set @DST_Y,   @argv[2];   // Dst warp coordinates
+    set @NAME$,   @argv$[3];  // Teleport's label
+    set @TIMEOUT, @argv[4];   // Teleport's lifetime
+    set @NPCSPRITE, @argv[5]; // Teleport's NPC sprite (optional)
+    debugmes "teleportadd_parseargs 1 DSTMAP$="+@DSTMAP$+" @DST_X="+@DST_X+" @DST_Y="+@DST_Y+" @NAME$="+@NAME$+" @TIMEOUT="+@TIMEOUT+" @NPCSPRITE="+@NPCSPRITE;
+    // Check DST map is okay
+    if ((@DSTMAP$ == "help") || (@DSTMAP$ == "")) goto L_DisplayHelp; // @teleportadd help or @teleportadd
+    if !(call("teleport_map_valid", @DSTMAP$)) goto L_FailBadmap; // DST: invalid map?
+    // Check DST X,Y sane
+    if ((@DST_X <= 0) || (@DST_Y <= 0)) goto L_FailBadDstXY1;     // DST: invalids coords <= 0?
+    if ((getmapmaxx(@DSTMAP$) < @DST_X) || (getmapmaxy(@DSTMAP$) < @DST_Y)) goto L_FailBadDstXY2; // Outside of map?
+    // Check if DST is collision
+    if (iscollision(@DSTMAP$, @DST_X, @DST_Y)) goto L_FailDstCollide;
+    // Try adaptive NPC placement. Above caller if there's room or on caller if not.
+    set @POS_X, POS_X;
+    if ((POS_Y > 2) && !(iscollision(getmap(), POS_X, (POS_Y-2)))) set @POS_Y, (POS_Y - 2);
+    else set @POS_Y, POS_Y;  // Overhead placement failed, use caller's tile
+    // NPC name checks
+    if (@NAME$ == "") goto L_FailNPCName;
+    // TIMEOUT checks and setup
+    if ((@TIMEOUT < -1) || (@TIMEOUT == 0) || (@TIMEOUT > 2000000)) goto L_FailTimeout;
+    if (@TIMEOUT > 0) set @TIMEOUT, (@TIMEOUT * 1000); // translate seconds -> ms to make more wieldy numbers
+    // NPC SPRITE configuration 
+    if ((@NPCSPRITE != 424) && (@NPCSPRITE != 369) && (@NPCSPRITE != 368)
+        && (NPCSPRITE != 325) && (@NPCSPRITE != 324)) set @NPCSPRITE, 424;
+    // All checks complete
+    debugmes "teleportadd_parseargs 2 DSTMAP$="+@DSTMAP$+" @DST_X="+@DST_X+" @DST_Y="+@DST_Y+" @NAME$="+@NAME$+" @TIMEOUT="+@TIMEOUT+" @NPCSPRITE="+@NPCSPRITE;
+    return 1;  // Everything OK
+
+L_FailBadmap:
+    message strcharinfo(0), "[TeleportManager] : @teleportadd: unknown destination map:" + @DSTMAP$;
+    debugmes "teleportadd_parseargs <- Leave, fail Badmap";
+    return -1;
+
+L_FailBadDstXY1:
+    message strcharinfo(0), "[TeleportManager] : @teleportadd: destination X,Y must be > 0! Given X=" + @DST_X + " Y=" + @DST_Y;
+    debugmes "teleportadd_parseargs <- Leave, fail BadDstXY1";
+    return -2;
+
+L_FailBadDstXY2:
+    message strcharinfo(0), "[TeleportManager] : @teleportadd: destination X,Y outside of map! Given X=" + @DST_X+ " Y=" + @DST_Y;
+    debugmes "teleportadd_parseargs <- Leave, fail BadDstXY2";
+    return -3;
+
+L_FailDstCollide:
+    message strcharinfo(0), "[TeleportManager] : @teleportadd: destination MAP=" + @DSTMAP$ + " X=" + @DST_X + " Y=" + @DST_Y + " is a collision (impassable)";
+    debugmes "teleportadd_parseargs <- Leave, fail DstCollide";
+    return -4;
+
+L_FailNPCName:
+    message strcharinfo(0), "[TeleportManager] : @teleportadd: NPCNAME can't be empty!";
+    debugmes "teleportadd_parseargs <- Leave, fail NPCName";
+    return -5;
+
+L_FailTimeout:
+    message strcharinfo(0), "[TeleportManager] : @teleportadd: timeout must be either -1, or > 0 and < 2000000 (seconds)";
+    debugmes "teleportadd_parseargs <- Leave, fail NPCName";
+    return -6;
+
+L_DisplayHelp:
+    void call("teleport_help_add");
+    return -7;
+}
+
+// PUBLIC API: This function checks if map name known and OK to use.
+// This function designed to run in any context.
+// Inputs: arg$[0] is map name to check for sanity.
+// Return: 1 for known maps, 0 for unknown
+function|script|teleport_map_valid
+{
+    set .@inputmap$, getarg(0, "");
+    set .@i, 0;
+    setarray .@maps1$,  "001-1", "001-2", "001-3", "002-1", "002-2", "002-3",
+                        "002-4", "002-5", "003-1", "003-4", "004-1", "004-3",
+                        "004-4", "004-5", "005-3", "006-1", "006-2", "006-3",
+                        "007-1", "007-2", "008-1", "009-1", "009-2", "009-3",
+                        "009-4", "009-5", "009-6", "009-7", "009-8", "010-1",
+                        "010-2", "011-1", "011-3", "011-4", "011-6", "012-1",
+                        "012-3", "012-4", "013-1", "013-2", "013-3", "014-1",
+                        "014-3", "015-1", "015-3", "016-1", "016-2", "017-1",
+                        "017-2", "017-3", "017-4", "017-9", "018-1", "018-2",
+                        "018-3", "019-1", "019-3", "019-4", "020-1", "020-2",
+                        "020-3", "021-3", "023-1", "023-2", "023-3", "025-1",
+                        "025-3", "025-4", "026-1", "026-2", "027-1", "027-2",
+                        "027-3", "027-4", "027-5", "027-6", "027-7", "027-8",
+                        "028-1", "028-3", "029-1", "029-2", "029-3", "029-4",
+                        "030-1", "030-2", "030-3", "030-4", "031-1", "031-2",
+                        "031-3", "031-4", "032-3", "033-1", "034-1", "034-2",
+                        "035-2", "036-2", "041-1", "042-1", "043-1", "043-3",
+                        "043-4", "045-1", "046-1", "046-3", "047-1", "047-3";
+// Had to split to 2 arrays as its too big for array initializer
+    setarray .@maps2$,  "048-2", "051-1", "051-3", "052-1", "052-2", "055-1",
+                        "055-3", "056-2", "057-1", "058-1", "058-2", "069-2",
+                        "070-1", "070-3", "099-1", "099-2", "099-3", "099-4",
+                        "099-5", "099-6", "099-7", "099-8", "botcheck";
+    set .@arr_sz1, getarraysize(.@maps1$[0]);
+    set .@arr_sz2, getarraysize(.@maps2$[0]);
+    freeloop 1;         // Needed to iterate over array of about 150 maps
+    goto L_NextMap;     // Start iterating over array of maps.
+
+L_NextMap:
+    if (.@inputmap$ == .@maps1$[.@i]) goto L_Found; // Found map in arr 1?
+    if (.@inputmap$ == .@maps2$[.@i]) goto L_Found; // Found map in arr 2?
+    set .@i, (.@i + 1);                        // increment .@maps$[] index
+    if ((.@i >= .@arr_sz1) && (.@i >= .@arr_sz2)) goto L_NotFound;  // Abort if whole arrays scanned
+    goto L_NextMap;                            // Try next map in .@maps$[]
+
+L_NotFound:
+    freeloop 0;
+    return 0;
+
+L_Found:
+    freeloop 0;
+    return 1;
+}
+
+// PRIVATE: This function displays usage help for TeleportManager - @teleportadd
+// This function should be invoked by TeleportManager with RID attached.
+// Inputs: nothing.
+// Return: nothing, just shows usage -> caller.
+function|script|teleport_help_add
+{
+    message strcharinfo(0), "[TeleportManager] : @teleportadd <MAP> <X> <Y> <NPCNAME> <TIMEOUT> [sprite]";
+    message strcharinfo(0), "[TeleportManager] : <MAP> <X> <Y>: teleport's destination map and coordinates";
+    message strcharinfo(0), "[TeleportManager] : <NPCNAME>: name of NPC, unique and nonempty. If it stats with # its hidden";
+    message strcharinfo(0), "[TeleportManager] : <TIMEOUT>: teleport lifetime (sec), < 2 000 000 sec, -1 = persistent";
+    message strcharinfo(0), "[TeleportManager] : [sprite]: optional, NPC sprite (424,369,368,325 and 324 accepted)";
+    message strcharinfo(0), "[TeleportManager] : Example: @teleportadd 009-1 52 39 Hurns -1 adds permanent teleport to Hurns menhir";
+    message strcharinfo(0), "[TeleportManager] : Example: @teleportadd 009-1 52 39 Hurns 600 324 - same but 10 min, and red circle";
+    return;
+}
+
+// PRIVATE: This function displays usage help for TeleportManager - @teleportdel
+// This function should be invoked by TeleportManager with RID attached.
+// Inputs: nothing.
+// Return: nothing, just shows usage -> caller.
+function|script|teleport_help_del
+{
+    message strcharinfo(0), "[TeleportManager] : @teleportdel <ID>";
+    message strcharinfo(0), "[TeleportManager] : ID either slot# (1..100) or teleport NPC ID";
+    return;
+}
+
+// Access checks for TeleportManager. Based on cut-down BossPowers checks.
+function|script|teleport_access_check
+{
+    if ($BP_DISABLE) goto L_Killswitch;   // If things go wrong, TeleportManager can be disabled.
+    if (#BP_DISABLE) goto L_Killswitch;   // If someone abuses feature, there's _per-account_ DENY flag.
+    if (GM >= 40) goto L_Allowed;         // GM >= 40 can use boss actions.
+    if (IS_EVENTER == 42) goto L_Allowed; // Trusted player(s) could be allowed to access Eventer "magic"
+    if (debug) goto L_Allowed;            // Allow on debug.
+    message strcharinfo(0), "[TeleportManager] : You can't use this feature at this time. Sorry. [1]";
+    return 1;                             // Not allowed by default.
+
+L_Allowed:
+    return 0;                             // Whoever gets here allowed to invoke BossPowers spells
+
+L_Killswitch:
+    message strcharinfo(0), "[TeleportManager] : You can't use this feature at this time. Sorry. [2]";
+    return 2;
+}
