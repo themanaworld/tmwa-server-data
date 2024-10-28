@@ -57,7 +57,6 @@
 // Manager code below - puppets dont use OnCmd* events
 // Invoked when someone adds teleport via @teleportadd
 OnCmdAdd:
-    debugmes "OnAdd called";
     if (call("teleport_access_check")) end; // Not allowed to use this.
     set .@idx, call("teleport_find_slot", 0); // Try to find empty slot (containing 0)
     if (.@idx <= 0) goto L_AddNoRoom;         // No empty slots? NB: teleports[0] not used.
@@ -72,7 +71,6 @@ OnCmdAdd:
                  (get(.srcmap$, .@tp)) + " " + (get(.src_x, .@tp)) + "," + (get(.src_y, .@tp)) +
         " -> " + (get(.dstmap$, .@tp)) + " " + (get(.dst_x, .@tp)) + "," + (get(.dst_y, .@tp)) +
         " lifetime:" + ((get(.lifetime, .@tp)) / 1000) + "s, Name:" + strnpcinfo(0, .@tp) + " (" + .@tp + ")";
-    debugmes "OnAdd: npc="+.@tp+" idx="+.@idx;
     end;
 
 L_AddNoRoom:
@@ -90,7 +88,6 @@ L_AddPuppetFail:
 
 // Invoked when someone removes teleport via @teleportdel
 OnCmdDel:
-    debugmes "OnDel called";
     if (call("teleport_access_check")) end; // Not allowed to use this.
     callfunc "argv_splitter";
     if (@argv[0] <= 0) goto L_DelFail;
@@ -111,7 +108,6 @@ L_DelFail:
 
 // Invoked when someone lists teleports via @teleportlist
 OnCmdList:
-    debugmes "OnList called";
     if (call("teleport_access_check")) end; // Not allowed to use this.
     callfunc("teleports_list");
     gmlog strcharinfo(0) + " accessed TeleportManager: @teleporlist" + @args$;
@@ -120,7 +116,6 @@ OnCmdList:
 // Invoked when someone requests help via @teleporthelp
 // (doesn't needs access checks - does nothing dangerous)
 OnCmdHelp:
-    debugmes "OnHelp called";
     message strcharinfo(0), "[TeleportManager] : Commands: @teleportadd @teleportdel @teleportlist @teleporthelp";
     message strcharinfo(0), "[TeleportManager] : @teleportlist - display list of active teleports";
     callfunc("teleport_help_del");
@@ -130,7 +125,6 @@ OnCmdHelp:
 // Puppets (teleportation pads) logic below.
 // Invoked when player steps on npc. Manager NPC ignores this.
 OnTouch:
-    debugmes "OnTouch";
     if (.IS_MANAGER) end;     // Manager NPC isnt teleport -> no interaction.
     if (.inactive) end;       // If gate deactivated -> no interaction.
     if ((.cookie) && (teleport_cookie != .cookie)) goto L_CantPass;
@@ -145,20 +139,17 @@ L_CantPass:
 
 // Teleportation timer event (attached to player). Queued by OnTouch.
 OnTeleport:
-    debugmes "OnTeleport -> " + .dstmap$ + " X=" + .dst_x + " Y=" + .dst_y;
     warp .dstmap$, .dst_x, .dst_y;
     end;
 
 // Invoked on timed teleport's NPC timer expired.
 OnTeleportExpired:
-    debugmes "OnTeleportExpired";
     set .inactive, 1; // Flag shutdown so OnTouch ignores incoming players.
     addnpctimer (.fx_time + 1000), strnpcinfo(0)+"::OnTeleportShutdown"; // Give time to in-flight players to teleport.
     end;
 
 // Does actual teleport shutdown.
 OnTeleportShutdown:
-    debugmes "OnTeleportShutdown";
     void call("teleport_mgr_clean"); // Cleanups adequately both "managed" and "unmanaged" teleports.
     if !(.IS_MANAGER) destroy;       // Dont ever try to destroy manager npc.
     end;
@@ -194,7 +185,6 @@ OnInit:
 //         On failure: 0 if puppet failed, -1 if arg check failed.
 function|script|teleport_create
 {
-    debugmes "teleport_create -> Enter";
     set .@map$,     getarg(0,  "");   // Get args (+failsafe defailts)
     set .@x,        getarg(1,  -10);  // Get args (+failsafe defailts)
     set .@y,        getarg(2,  -10);  // Get args (+failsafe defailts)
@@ -237,12 +227,9 @@ function|script|teleport_create
     set .cantpass$, "Teleport : structure seems to ignore you", .@res; // Default "can't pass" message.
     // If timeout requested, set up teardown timer.
     if (.@lifetime > 0) addnpctimer .@lifetime, .@name$+"::OnTeleportExpired";
-    debugmes "teleport_create <- Puppet: Map="+.@map$+" X="+.@x+" Y="+.@y+" Nm="+.@name$+" SpID="+.@sprite+" xsz="+.@xsz+" ysz="+.@ysz+" .@res="+.@res;
     return .@res;
 
 L_Fail:
-    debugmes "arg0:"+getarg(0)+" arg1:"+getarg(1)+" arg2:"+getarg(2)+" arg3:"+getarg(3)+" arg4:"+getarg(4)+" arg5:"+getarg(5)+" arg6:"+getarg(6)+" arg7:"+getarg(7)+" arg8:"+getarg(8)+" arg9:"+getarg(9)+" arg10:"+getarg(10)+" arg11:"+getarg(11)+" arg12:"+getarg(12);
-    debugmes "teleport_create <- Leave, call failed ["+.@res+"]";
     return .@res;
 }
 
@@ -253,7 +240,6 @@ L_Fail:
 // Return: 1 on success, <= 0 on failure.
 function|script|teleport_delete
 {
-    debugmes "teleports_delete -> enter";
     set .@npctodel, getarg(0, -1);         // This is either slot # or NPC ID 
     if (.@npctodel <= 0) goto L_Error;
     if (.@npctodel > 100) goto L_GotNpcId; // If > 100 assume its NPC ID, not slot.
@@ -267,7 +253,6 @@ L_GotNpcId:
     return 1;
 
 L_Error:
-    debugmes "teleports_delete <- leave, failed";
     return 0;
 }
 
@@ -277,7 +262,6 @@ L_Error:
 // Return: nothing, just prints info as it iterates manager's slots.
 function|script|teleports_list
 {
-    debugmes "teleports_list -> enter";
     set .@idx, 0;
     freeloop 1;                      // Loops via 100 slots -> can time out.
     message strcharinfo(0), "[TeleportManager] : ---- Active teleports ----";
@@ -287,14 +271,12 @@ L_NextSlot:
     set .@idx, (.@idx+1);
     if (.@idx > 100) goto L_Done;    // Iterated whole array.
     set .@npc, call("teleport_get_slot_val", .@idx);
-    debugmes "teleport_list idx=" + .@idx + " val=" + .@npc;
     if (.@npc < 0)  goto L_Error;    // Abort iteration on error and report it.
     if (.@npc > 0) goto L_PrintSlot; // Print slot data.
     goto L_NextSlot; // .@npc == 0   // just iterate to next slot
 
 L_PrintSlot:
     if !(get(.managed, .@npc)) goto L_Error; // Sanity check its really "managed teleport" NPC
-    debugmes "teleport_list: after managed check";
     // Display info about teleport, data taken from NPC.
     message strcharinfo(0), "[TeleportManager] : [" + .@idx + "] " +
                  (get(.srcmap$, .@npc)) + " " + (get(.src_x, .@npc)) + "," + (get(.src_y, .@npc)) +
@@ -305,12 +287,10 @@ L_PrintSlot:
 L_Done:
     freeloop 0;
     message strcharinfo(0), "[TeleportManager] : ---- End ----";
-    debugmes "teleports_list <- Leave, ok";
     return;
 
 L_Error:
     freeloop 0;
-    debugmes "teleports_list <- Leave, error";
     message strcharinfo(0), "[TeleportManager] : Error iterating TeleportManager slots (bug?!)";
     return;
 }
@@ -321,7 +301,6 @@ L_Error:
 // Return: slot index in 1..100 range if slot found, <= 0 on fail.
 function|script|teleport_find_slot
 {
-    debugmes "teleport_find_slot -> Enter";
     if (getarg(0) < 0) goto L_Fail;  // Caller gave some crap?
     set .@wanted, getarg(0);         // NPC ID to find (or 0 to find free slot)
     set .@manager, getnpcid("TeleportManager");
@@ -332,18 +311,15 @@ function|script|teleport_find_slot
 
 L_TrySlot:
     set .@npcid, get(.teleports[.@i], .@manager);
-    debugmes "teleport_find_slot: @i="+.@i+" npcid="+.@npcid;
     if (.@npcid == .@wanted) goto L_Found; //.teleports[.@i] == desired ID?
     if (.@i > 100) goto L_Fail;         // No free slots in teleports[1..100]
     set .@i, (.@i + 1); goto L_TrySlot; // Try next slot
 
 L_Found:
-    debugmes "teleport_find_slot <- Leave, found slot .@i="+.@i;
     freeloop 0;
     return .@i;
 
 L_Fail:
-    debugmes "teleport_find_slot <- Leave, call failed";
     freeloop 0;
     return 0;
 }
@@ -354,17 +330,14 @@ L_Fail:
 // Return: -1 on error, 0 on empty slot, or NPC ID of teleport in given sslot.
 function|script|teleport_get_slot_val
 {
-    debugmes "teleport_get_slot_val -> Enter";
     if ((getarg(0) < 1) || (getarg (0) > 100)) goto L_Fail; // Bogus index?
     set .@index, getarg(0);
     set .@manager, getnpcid("TeleportManager");
     if (.@manager <= 0) goto L_Fail; // Manager NPC not found?
     set .@ret, get(.teleports[.@index], .@manager);
-    debugmes "teleport_get_slot_val <- Leave, ok";
     return .@ret;
 
 L_Fail:
-    debugmes "teleport_get_slot_val <- Leave, failed";
     return -1;
 }
 
@@ -375,7 +348,6 @@ L_Fail:
 // Return: 1 on success, <= 0 on failure. 
 function|script|teleport_set_slot_val
 {
-    debugmes "teleport_set_slot_val -> Enter";
     if ((getarg(0) < 1) || (getarg (0) > 100)) goto L_Fail; // Bogus index?
     if (getarg(1) < 0) goto L_Fail; // TP slots are NPC ID or 0 for empty
     set .@index, getarg(0);
@@ -383,11 +355,9 @@ function|script|teleport_set_slot_val
     set .@manager, getnpcid("TeleportManager");
     if (.@manager <= 0) goto L_Fail; // Manager NPC not found?
     set .teleports[.@i], .@val, .@manager;
-    debugmes "teleport_set_slot_val <- Leave, ok";
     return 1;
 
 L_Fail:
-    debugmes "teleport_set_slot_val <- Leave, failed";
     return 0;
 }
 
@@ -408,7 +378,7 @@ L_RetOk:
     return 1;
 
 L_RetFail:
-    debugmes "OnTeleportShutdown: TeleportManaer cleanup failure -> will leak slot. Likely bug!";
+    debugmes "teleport_mgr_clean: TeleportManager cleanup failure -> slot leak. Likely bug! .@my_id=" + .@my_id + ".@res=" + .@res;
     return 0;
 }
 
@@ -419,17 +389,13 @@ L_RetFail:
 // Return: sets @POS_X, @POS_X, @DSTMAP$, @DST_X, @DST_Y,
 function|script|teleportadd_parseargs
 {
-    debugmes "teleportadd_parseargs -> Enter";
-    // FIXME check arg presence$ if ()
     callfunc "argv_splitter";
-    debugmes "teleportadd_parseargs @argv$[0]"+@argv$[0]+" @argv[1]"+@argv[1]+" @argv[2]"+@argv[2]+" @argv$[3]"+@argv$[3]+" @argv[4]"+@argv[4]+" @argv[5]"+@argv[5];
     set @DSTMAP$, @argv$[0];  // Destination map
     set @DST_X,   @argv[1];   // Dst warp coordinates
     set @DST_Y,   @argv[2];   // Dst warp coordinates
     set @NAME$,   @argv$[3];  // Teleport's label
     set @TIMEOUT, @argv[4];   // Teleport's lifetime
     set @NPCSPRITE, @argv[5]; // Teleport's NPC sprite (optional)
-    debugmes "teleportadd_parseargs 1 DSTMAP$="+@DSTMAP$+" @DST_X="+@DST_X+" @DST_Y="+@DST_Y+" @NAME$="+@NAME$+" @TIMEOUT="+@TIMEOUT+" @NPCSPRITE="+@NPCSPRITE;
     // Check DST map is okay
     if ((@DSTMAP$ == "help") || (@DSTMAP$ == "")) goto L_DisplayHelp; // @teleportadd help or @teleportadd
     if !(call("teleport_map_valid", @DSTMAP$)) goto L_FailBadmap; // DST: invalid map?
@@ -451,37 +417,30 @@ function|script|teleportadd_parseargs
     if ((@NPCSPRITE != 424) && (@NPCSPRITE != 369) && (@NPCSPRITE != 368)
         && (NPCSPRITE != 325) && (@NPCSPRITE != 324)) set @NPCSPRITE, 424;
     // All checks complete
-    debugmes "teleportadd_parseargs 2 DSTMAP$="+@DSTMAP$+" @DST_X="+@DST_X+" @DST_Y="+@DST_Y+" @NAME$="+@NAME$+" @TIMEOUT="+@TIMEOUT+" @NPCSPRITE="+@NPCSPRITE;
     return 1;  // Everything OK
 
 L_FailBadmap:
     message strcharinfo(0), "[TeleportManager] : @teleportadd: unknown destination map:" + @DSTMAP$;
-    debugmes "teleportadd_parseargs <- Leave, fail Badmap";
     return -1;
 
 L_FailBadDstXY1:
     message strcharinfo(0), "[TeleportManager] : @teleportadd: destination X,Y must be > 0! Given X=" + @DST_X + " Y=" + @DST_Y;
-    debugmes "teleportadd_parseargs <- Leave, fail BadDstXY1";
     return -2;
 
 L_FailBadDstXY2:
     message strcharinfo(0), "[TeleportManager] : @teleportadd: destination X,Y outside of map! Given X=" + @DST_X+ " Y=" + @DST_Y;
-    debugmes "teleportadd_parseargs <- Leave, fail BadDstXY2";
     return -3;
 
 L_FailDstCollide:
     message strcharinfo(0), "[TeleportManager] : @teleportadd: destination MAP=" + @DSTMAP$ + " X=" + @DST_X + " Y=" + @DST_Y + " is a collision (impassable)";
-    debugmes "teleportadd_parseargs <- Leave, fail DstCollide";
     return -4;
 
 L_FailNPCName:
     message strcharinfo(0), "[TeleportManager] : @teleportadd: NPCNAME can't be empty!";
-    debugmes "teleportadd_parseargs <- Leave, fail NPCName";
     return -5;
 
 L_FailTimeout:
     message strcharinfo(0), "[TeleportManager] : @teleportadd: timeout must be either -1, or > 0 and < 2000000 (seconds)";
-    debugmes "teleportadd_parseargs <- Leave, fail NPCName";
     return -6;
 
 L_DisplayHelp:
@@ -575,7 +534,7 @@ function|script|teleport_access_check
     if (#BP_DISABLE) goto L_Killswitch;   // If someone abuses feature, there's _per-account_ DENY flag.
     if (GM >= 40) goto L_Allowed;         // GM >= 40 can use boss actions.
     if (IS_EVENTER == 42) goto L_Allowed; // Trusted player(s) could be allowed to access Eventer "magic"
-    if (debug) goto L_Allowed;            // Allow on debug.
+//  if (debug) goto L_Allowed;            // Allow on debug.
     message strcharinfo(0), "[TeleportManager] : You can't use this feature at this time. Sorry. [1]";
     return 1;                             // Not allowed by default.
 
