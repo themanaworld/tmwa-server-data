@@ -1,0 +1,75 @@
+-|script|summon-sgolem|32767
+{
+    end;
+
+OnCast:
+    if(call("magic_checks")) end;
+    // FIXME: Incomplete check, should still work during sieges
+    if (getmapflag(getmap(), MF_TOWN)) end;
+    if (Sp < 100) end;
+    if (getskilllv(SKILL_MAGIC) < .level) end;
+    if (countitem("Stone") < 5) end;
+//    if (!$DOOMSDAY_SUMMON) end;
+//    if (@ddcooldown > gettimetick(2)) goto L_Cooldown;
+    if (sc_check(SC_COOLDOWN_SG)) goto L_Cooldown;
+    if (getmap() == "033-1") goto L_SpecialRules6;
+    goto L_Pay;
+
+L_Pay:
+    delitem "Stone", 5;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 15000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 15000, 0, BL_ID;
+    callfunc "adjust_spellpower";
+    set Sp, Sp - 100;
+    set CASTS, CASTS + 1;
+    if (CASTS < 0) set CASTS, 1; // overflow
+    misceffect FX_MAGIC_MAGGOT_CAST, strcharinfo(0);
+    callfunc "magic_exp";
+    set .@puppet$, "#"+strnpcinfo(0)+"#"+BL_ID;
+    set .@puppet, puppet(getmap(), POS_X, POS_Y, .@puppet$, 127);
+    if (.@puppet < 1) end;
+    set .master, BL_ID, .@puppet;
+    set .lifetime, (@spellpower*9)+60000, .@puppet;
+//    set @ddcooldown, gettimetick(2)+70; // This is measured in seconds
+    sc_start SC_COOLDOWN_SG, (@spellpower*9)+70000, 0, BL_ID; // .lifetime + OnSummon
+    addnpctimer 10000, .@puppet$+"::OnSummon";
+    addnpctimer 11000, .@puppet$+"::OnDestroy";
+    end;
+
+OnSummon:
+    if (!(isloggedin(.master))) destroy;
+    if(get(Hp, .master) < 1) destroy; // destroy if master is missing
+    if(getmap(.master) != strnpcinfo(3)) destroy; // destroy if master left the map
+    specialeffect FX_MAGIC_MAGGOT_SPAWN;
+    set .@x, getnpcx();
+    set .@y, getnpcy();
+    set .@map$, strnpcinfo(3);
+    callsub S_SummonAll;
+    end;
+
+OnDestroy:
+    destroy;
+
+S_SummonAll:
+    summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, "Stone Golem Summon", StoneGolem, 2, .lifetime;
+    destroy;
+
+L_Cooldown:
+    message strcharinfo(0), "This skill is in forced cooldown; Please wait your first summon to expire.";
+    end;
+
+L_SpecialRules6:
+    if ($@KIMARR_EVENT < 1) goto L_Pay;
+    if ($@Fluffy_FighterID == BL_ID) goto L_Pay;
+    message strcharinfo(0), "You can't summon here unless hunting fluffies.";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC_ASTRAL;
+    set .invocation$, chr(MAGIC_SYMBOL) + "stogolis"; // used in npcs that refer to this spell
+    void call("magic_register", "OnCast");
+    set .level, 1;
+    set .exp_gain, 1;
+    end;
+}
