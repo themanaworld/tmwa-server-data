@@ -1,0 +1,94 @@
+// Opens transient teleport to allow boss to flee!
+-|script|powerup-flee|32767
+{
+    end;
+
+OnCast:
+    if (call("boss_powerup_checks")) end;
+    if (call("bossflee_parseargs")) goto L_EscPlanFail1; // @VARs like @POS_X set by bossflee_parseargs()
+//  Create actual teleport NPC ------- src map - src x  src y  --- name --- -NPC- Sz Sz dst map - dst x - dst y --time----cookie---managed?
+    set .@tp, call("teleport_create", getmap(), @POS_X, @POS_Y, "#bossflee", 324, 0, 0, @DSTMAP$, @DST_X, @DST_Y, 7000, 0xBADB055, 0);
+    if (.@tp <= 0) goto L_EscPlanFail2;  // Has puppet() failed?
+    set .info$, "Teleport : Boss escapes!", .@tp; // on-click message.
+    set .cantpass$, "Teleport : somehow structure ignores you", .@tp;   // "can't pass" message.
+    set teleport_cookie, 0xBADB055;      // Allow caller (boss) to use teleport
+    mapannounce getmap(), strcharinfo(0)+" : Catch me, if you can!", 0;
+    end;
+
+L_EscPlanFail1:
+    message strcharinfo(0), "[#bossflee] : Escape plan status: fail! (bad destination?)";
+    end; 
+
+L_EscPlanFail2:
+    message strcharinfo(0), "[#bossflee] : Escape plan status: fail! (teleport creation failed)";
+    end; 
+
+// Puppet (teleportation pads) logic below.
+// Invoked when player steps on npc.
+OnTouch:
+    if ((.cookie) && (teleport_cookie != .cookie)) goto L_CantPass;
+    set teleport_cookie, 0;   // Clear teleport cookie of player on teleport use.
+    sc_start SC_SLOWMOVE, .fx_time+100, 100000; // Slow player temporarily to avoid movement VS warp DCs
+    addtimer .fx_time, strnpcinfo(0)+"::OnTeleport"; // time before teleporting away
+    misceffect .fx;           // Default .fx set in teleport_add, other code can override it.
+    end;
+
+L_CantPass:
+    message strcharinfo(0), .cantpass$; // NPC var allows to change message.
+    end;                      // "keyed" teleport and player didnt had proper cookie.
+
+// Teleportation timer event (attached to player). Queued by OnTouch.
+OnTeleport:
+    warp .dstmap$, .dst_x, .dst_y;
+    end;
+
+// Invoked on timed teleport's NPC timer expired.
+OnTeleportExpired:
+    destroy;
+
+OnInit:
+    set .invocation$, chr(MAGIC_SYMBOL) + "bossflee"; // used in npcs that refer to this spell
+    void call("magic_register", "OnCast");
+    end;
+}
+
+// Based on TeleportManager code - with 
+// This function MUST be invoked with player RID attached by powerup-flee
+// Inputs: nothing, but assumes args$ set.
+// Return: <= 0 on failure, 1 on success.
+// Return: sets @POS_X, @POS_X, @DSTMAP$, @DST_X, @DST_Y, @NPCSPRITE, @TIMEOUT
+function|script|bossflee_parseargs
+{
+    callfunc "argv_splitter";
+    set @DSTMAP$, @argv$[0];  // Destination map
+    set @DST_X,   @argv[1];   // Dst warp coordinates
+    set @DST_Y,   @argv[2];   // Dst warp coordinates
+    // Check DST map is okay
+    if !(call("teleport_map_valid", @DSTMAP$)) goto L_FailBadmap; // DST: invalid map?
+    // Check DST X,Y sane
+    if ((@DST_X <= 0) || (@DST_Y <= 0)) goto L_FailBadDstXY1;     // DST: invalids coords <= 0?
+    if ((getmapmaxx(@DSTMAP$) < @DST_X) || (getmapmaxy(@DSTMAP$) < @DST_Y)) goto L_FailBadDstXY2; // Outside of map?
+    // Check if DST is collision
+    if (iscollision(@DSTMAP$, @DST_X, @DST_Y)) goto L_FailDstCollide;
+    // Try adaptive NPC placement. Above caller if there's room or on caller if not.
+    set @POS_X, POS_X;
+    if ((POS_Y > 2) && !(iscollision(getmap(), POS_X, (POS_Y-2)))) set @POS_Y, (POS_Y - 2);
+    else set @POS_Y, POS_Y;  // Overhead placement failed, use caller's tile
+    return 0;  // Everything OK
+
+L_FailBadmap:
+    message strcharinfo(0), "[#bossflee] : unknown flee map:" + @DSTMAP$;
+    return 1;
+
+L_FailBadDstXY1:
+    message strcharinfo(0), "[#bossflee] : flee map X,Y must be > 0! Given X=" + @DST_X + " Y=" + @DST_Y;
+    return 2;
+
+L_FailBadDstXY2:
+    message strcharinfo(0), "[#bossflee] : flee map X,Y outside of map! Given X=" + @DST_X+ " Y=" + @DST_Y;
+    return 3;
+
+L_FailDstCollide:
+    message strcharinfo(0), "[#bossflee] : flee MAP=" + @DSTMAP$ + " X=" + @DST_X + " Y=" + @DST_Y + " is a collision (impassable)";
+    return 4;
+}

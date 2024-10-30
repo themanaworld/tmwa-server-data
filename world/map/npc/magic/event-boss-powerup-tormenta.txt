@@ -6,6 +6,7 @@ OnCast:
     if(call("boss_powerup_checks")) end;
     bonus bMaxHP, 20000;
     set Hp, (Hp+20000), BL_ID;
+    set @oldclass, get(Class, BL_ID);
     set Class, 1137, BL_ID;
     warp getmap(), POS_X, POS_Y;                // Refresh witch appearance
     addtimer 1500, strnpcinfo(0)+"::OnFix";
@@ -23,9 +24,11 @@ OnFix:
 L_done:
     message strcharinfo(0, BL_ID), "[boss-tormenta] : Tormenta impersonation ended!";
     set @fix_count, 0;
-    set Class, 0, BL_ID;
+    set Class, @oldclass, BL_ID;
     bonus bMaxHP, 0;
     set Hp, 100, BL_ID;
+    sc_start SC_SLOWMOVE, 500, 10000; // Slow player temporarily to avoid movement VS warp DCs
+    warp getmap(), POS_X, POS_Y;      // warp (under char's RID!)
     end;
 
 OnInit:

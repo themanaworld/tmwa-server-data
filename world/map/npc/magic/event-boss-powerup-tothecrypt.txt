@@ -9,8 +9,8 @@ OnCast:
     if (call("boss_powerup_checks")) end;
     if (getmapflag(getmap(), MF_TOWN)) goto L_Fail_town;
     set @_M_BLOCK, 1; // block casting, until the timer clears it
-    addtimer 60000, "Magic Timer::OnClear"; // set the new debuff
-    sc_start SC_COOLDOWN, 60000, 0, BL_ID;
+    addtimer 30000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 30000, 0, BL_ID;
     misceffect FX_BLUE_MAGIC_CAST, strcharinfo(0);
     set @dist, 25;
     foreach 0, getmap(), (POS_X - @dist), (POS_Y - @dist), (POS_X + @dist), (POS_Y + @dist), strnpcinfo(0) + "::OnHit";
@@ -19,23 +19,24 @@ OnCast:
 OnHit:
     if ((get(Hp, @target_id)) < 1) end;         // Do not touch dead
     set Sp, 1, @target_id;                      // Hurt target
-    set Hp, min(((Hp/2)), 100), @target_id;     // Hurt target
+    set Hp, (Hp/4), @target_id;                 // Hurt target
     sc_start SC_POISON, 1, 10, @target_id;      // Poison target
     message strcharinfo(0, @target_id), "[boss-to-the-crypt] : "+strcharinfo(0, BL_ID)+" ##B PULLS YOU TO THE CRYPT!!";
     misceffect FX_CHANNELLING_RAISE, strcharinfo(0, @target_id);
-    addtimer 1000, strnpcinfo(0)+"::OnTeleport", @target_id;
+    sc_start SC_SLOWMOVE, 6000, 10000; // Slow player temporarily to avoid movement VS warp DCs
+    addtimer 500+rand(500), strnpcinfo(0)+"::OnTeleport", @target_id;
     end;
 
 // Runs attached to player, beware. Dont try access vars from former code!
 OnTeleport:
     warp "027-5", 71+rand(3), 51+rand(3);       // warp (under char's RID!)
-    addtimer 1500, strnpcinfo(0)+"::OnArrival"; // To play FX after player's arrival -> map
+    addtimer 1000, strnpcinfo(0)+"::OnArrival"; // To play FX after player's arrival -> map
     end;                                        // Done.
 
 // Runs attached to player, beware. Dont try access vars from former code!
 OnArrival:
     misceffect 50, strcharinfo(0);              // Unfortunately hell glow lacks const.
-    addtimer 15000, strnpcinfo(0)+"::OnClean";  // To cancel former "infinite" FX.
+    addtimer 2800, strnpcinfo(0)+"::OnClean";   // To cancel former "infinite" FX.
     end;                                        // Done.
 
 // Runs attached to player, beware. Dont try access vars from former code!

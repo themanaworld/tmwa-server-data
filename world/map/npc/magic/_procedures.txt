@@ -94,50 +94,49 @@ L_Return:
     return 0;
 }
 
-
-// this function is call()-only
 // Custom version of checks for Dungeon Masters boss "powerups".
 // Both GMs and player eventers MAY eventually call "boss powerups".
 // By default, only GMs >= 40 can use BossPowers, but:
-// - If someone abuses BossPowers, setting #BOSS_POWERS_DISABLED = 1 on them locks them out.
-// - Some (trusted) player can be allowed to invoke this by setting #IS_EVENTER = 42 on them.
+// - If someone abuses BossPowers, setting #BP_DISABLED = 1 on them locks them out.
+// - Some (trusted) player can be allowed to invoke this by setting BP_EVENTER = 42 on them.
 // On TMWA these changes need GM Lv 80 to issue @setvar, so access can only be changed by Lv 80.
 // Advantage of this permissions system is: no need to shuffle GM levels, nor there's need to restart server.
-
 function|script|boss_powerup_checks
 {
-    set .@flags, getarg(0);
-    set .@nonmagic, .@flags & (1<<0);
-
-    if ($BOSS_KILLSWITCH) goto L_Killswitch;  // If things go wrong, boss powers can be completely disabled.
-    if (#BOSS_POWERS_DISABLED) goto L_Killswitch; // If someone abuses BossPowers they can get DENY flag set.
-    if (HIDDEN) goto L_Hidden;                // can not cast with @hide
-    if (@_M_BLOCK) goto L_Blocked;            // check if last debuff ended
-    if (Hp < 1) goto L_Dead;                  // can not cast when dead
-    if (GM >= 40) goto L_Allowed;             // GM >= 40 can use boss actions
-    if (#IS_EVENTER == 42) goto L_Allowed;    // Trusted player(s) could be allowed to access Eventer "magic":
-                                              // Use @setvar #IS_EVENTER 0 42 Nick (GM Lv 80 command) to do it.
+    if (HIDDEN) goto L_Hidden;             // can not cast with @hide
+    if (Hp < 1) goto L_Dead;               // can not cast when dead
+    if (@_M_BLOCK) goto L_Blocked;         // check if last debuff ended
+    if ($BP_DISABLE) goto L_Killswitch1;   // If things go wrong, boss powers can be completely disabled.
+    if (#BP_DISABLE) goto L_Killswitch2;   // If someone abuses BossPowers there's _per-account_ DENY flag.
+    if (GM >= 40) goto L_Allowed;          // GM >= 40 can use boss actions.
+    if (IS_EVENTER == 42) goto L_Allowed;  // Trusted player(s) could be allowed to access Eventer "magic":
+                                           // Use @setvar BP_EVENTER 0 42 Nick (GM Lv 80 command).
     smsg SMSG_FAILURE, "BossPowers: Only few of mere mortals may try to enter the twilight zone";
-    return 1;                                 // Not allowed by default.
+    return 1;                              // Not allowed by default.
 
 L_Allowed:
-    return 0;                                 // Whoever gets here allowed to invoke BossPowers spells
+    return 0;                              // Whoever gets here allowed to invoke BossPowers spells
 
-L_Killswitch:
-    smsg SMSG_FAILURE, "BossPowers: disabled by kill switch!";
+L_Dead:
+    smsg SMSG_FAILURE, "BossPowers: you're dead!";
     return 2;
 
 L_Hidden:
     smsg SMSG_FAILURE, "BossPowers: can't be used when hidden!";
     return 3;
 
-L_Blocked:
-    smsg SMSG_FAILURE, "BossPowers: cooldown is in effect. Please wait.";
+L_Killswitch1:
+    smsg SMSG_FAILURE, "BossPowers: unavailable at the moment (KillSwitch 1)";
     return 4;
 
-L_Dead:
-    smsg SMSG_FAILURE, "BossPowers: you're dead!";
+L_Killswitch2:
+    smsg SMSG_FAILURE, "BossPowers: unavailable at the moment (KillSwitch 2)";
     return 5;
+
+L_Blocked:
+    smsg SMSG_FAILURE, "BossPowers: cooldown is in effect. Please wait.";
+    return 6;
+
 }
 
 function|script|elt_damage
@@ -285,4 +284,75 @@ function|script|gain_heal_xp
 
 L_Return:
     return 0;
+}
+
+// magic_activity should be called with player RID attached.
+// This function used to keep track of magic activity.
+function|script|magic_activity
+{
+    set CASTS, CASTS + 1;
+    if (CASTS < 0) set CASTS, 1; // overflow
+    return;
+}
+
+// consume_sp must be called with player RID attached.
+// Params: arg(0): amount of XP to consume.
+// Return: 0 on success. On failure: nonzero + message to caster.
+function|script|consume_sp
+{
+    if (getarg(0) <= 0) goto L_SpArgFail; // Usage bug? Function fails.
+    if (Sp < getarg(0)) goto L_NoSp;      // Caster lacks enough Sp, fail.
+    set Sp, (Sp - getarg(0));  // Consume Sp and return success.
+    callfunc "magic_activity"; // Call activity here to unclutter spells.
+    return 0;
+
+L_NoSp:
+    message strcharinfo(0), "Magic : ##3##BNot enough Mana!";
+    return 1;
+
+L_SpArgFail:
+    debugmes "bug: consume_sp needs arg(0) > 0";
+    return 2;
+}
+
+// spell_lv_checks helper must be called by spell NPC, with player RID attached.
+// It expects "typical" spell NPC structure with .level ans .school
+// Params: no args. Data taken from spell NPC.
+// Return: 0 on success. On failure: nonzero + message to caster.
+function|script|lvl_and_school_check
+{
+    if ((.level <= 0) || (.school <= 0)) goto L_LvCkFail;  // Weird/missing school/level on NPC?
+    if (getskilllv(SKILL_MAGIC) < .level) goto L_LvCkReqs; // General magic < required level?
+    if (getskilllv(.school) < .level) goto L_LvCkReqs;     // Magic school < required level?
+    return 0;                                              // All checks passed -> success.
+
+L_LvCkReqs:
+    message strcharinfo(0), "Magic : ##3##BThis spell too hard for you yet.";
+    return 1; // User below spell requirements set on spell's NPC
+
+L_LvCkFail:
+    debugmes "bug: lvl_and_school_check needs .school and .level > 0 on spell NPC";
+    return 2; // NPC bug or not called by spell NPC -> fail
+}
+
+// magic_cooldown helper should be called with player RID attached.
+// This function used to lock out spell.
+// Input: arg0 - length of cooldown.
+// Input: arg1 - optional: custom SC_COOLDOWN ID to use.
+function|script|magic_block
+{
+    if (getarg(0) <= 0) goto L_Block_Fail;
+    set @_M_BLOCK, 1;     // block casting, until the timer clears it
+    addtimer getarg(0), "Magic Timer::OnClear"; // Disable spell casting
+    if (getarg(1) > 0) goto L_CustomCool;       // Custom cooldown ID given?
+    sc_start SC_COOLDOWN, getarg(0), 0, BL_ID;  // If not -> default SC_COOLDOWN
+    return;
+
+L_CustomCool:
+    sc_start getarg(1), getarg(0), 0, BL_ID;    // Apply custom cooldown.
+    return;
+
+L_Block_Fail:
+    debugmes "bug: magic_block needs arg(0) > 0";
+    return; // Called wrong way -> spell bug.
 }

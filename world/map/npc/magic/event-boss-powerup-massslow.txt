@@ -1,0 +1,35 @@
+-|script|powerup-massslow|32767
+{
+    end;
+
+OnCast:
+    if(call("boss_powerup_checks")) end;
+    if (getmapflag(getmap(), MF_TOWN)) goto L_Fail_town;
+    set @_M_BLOCK, 1; // block casting, until the timer clears it
+    addtimer 10000, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, 10000, 0, BL_ID;
+    misceffect FX_PENTAGRAM_BURST, strcharinfo(0);
+    set @dist, 12;
+    foreach 0, getmap(), (POS_X - @dist), (POS_Y - @dist), (POS_X + @dist), (POS_Y + @dist), strnpcinfo(0) + "::OnHit";
+    end;
+
+OnHit:
+    if (@target_id == BL_ID) end;                // Do not slow caster
+    if (get(Hp, @target_id) <= 0) end;           // Dont slow dead.
+    message strcharinfo(0, @target_id), "[boss-massslow] : "+strcharinfo(0, BL_ID)+" cast slow spell on you!";
+    misceffect 23, strcharinfo(0, @target_id);   // Show slow effect
+    sc_start SC_SLOWMOVE, 5000, 300, @target_id; // Slow player temporarily
+    end;
+
+L_Fail_town:
+    message strcharinfo(0), "[boss-massslow] : city protected by strong magic, your spell dissipates";
+    end;
+
+OnInit:
+    set .school, SKILL_MAGIC;
+    set .invocation$, chr(MAGIC_SYMBOL) + "mapmassslow"; // used in npcs that refer to this spell
+    void call("magic_register", "OnCast");
+    set .level, 0;
+    set .exp_gain, 0;
+    end;
+}
