@@ -20,11 +20,13 @@ OnPCLoginEvent:
     callfunc "VaultLogin"; // Mirror Lake Protocol biddings
     callfunc "VaultLogout"; // Clean some stuff, to be safe
     if (WEIGHT_LIMIT) set MaxWeightOverride, WEIGHT_LIMIT; // If this char var set, override max weight (tradebots, etc)
+    if (PC_BOSS_REWARD) set @PC_BOSS_REWARD, PC_BOSS_REWARD; // Load tempvar from per-acct var (needed by maybe_reward_boss_kill)
     // add more here
     set @login_event, 2;
     end;
 
 OnPCKillEvent:
+    callfunc "maybe_reward_boss_kill";
     callfunc "elanore_decrease_exp"; // decrease heal exp for doing bad things
     callfunc "SweetTooth";
     end;
@@ -58,4 +60,19 @@ OnInit:
 OnDay0411:
     callfunc "MaybeAnnounceBirthday";
     end;
+}
+
+// Inputs: nothing, but assumes RID attached and @victimrid set on PK kill
+// Return: nothing, but adjusts BOSS_POINTS
+// TODO: move this func somewhere else maybe?
+function|script|maybe_reward_boss_kill
+{   // not here or lacks reward for head -> skip rewarding.
+    if ((@victimrid < 1) || !(isloggedin(@victimrid)) || (get(@PC_BOSS_REWARD, @victimrid)) < 1) goto L_SkipReward;
+    set BOSS_POINTS, (BOSS_POINTS + get(@PC_BOSS_REWARD, @victimrid));
+    message strcharinfo(0), "[boss reward] : you killed eventer-controlled boss and gained " + get(@PC_BOSS_REWARD, @victimrid) +
+                            " boss points, for total of " + BOSS_POINTS + " boss points";
+    return;
+
+L_SkipReward:
+    return;
 }
