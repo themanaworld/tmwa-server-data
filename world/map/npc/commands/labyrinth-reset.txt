@@ -1,0 +1,23 @@
+-|script|labyrinth-reset|32767
+{
+    if (GM < 60) goto L_GM;
+    gmlog "(Labyrinth XP Chest state reset) @labyrinth-reset " + @args$;
+    wgm "labyrinth-reset : " + strcharinfo(0) + " invoked @labyrinth-reset (Labyrinth XP Chest state cleaner) " + @args$;
+    set .@i, 0;
+    goto L_CleanSlot;
+
+L_CleanSlot:
+    set $DD5A_EXPCHEST$[.@i], "";
+    set .@i, (.@i + 1);
+    if (.@i > 99) message strcharinfo(0), "labyrinth-reset : complete!";
+    if (.@i > 99) end;
+    goto L_CleanSlot;
+
+L_GM:
+    message strcharinfo(0), "labyrinth-reset : GM command is level 60, but you are level " + GM;
+    end;
+
+OnInit:
+    registercmd chr(ATCMD_SYMBOL) + "labyrinth-reset", strnpcinfo(0);
+    end;
+}
