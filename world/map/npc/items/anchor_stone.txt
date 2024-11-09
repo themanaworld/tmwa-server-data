@@ -9,6 +9,11 @@ function|script|useAnchorStone
     end;
 
 OnUse:
+    if (isin("botcheck",25,27,51,47))
+        goto L_Prison;
+    if (getmapflag(getmap(), MF_NOSAVE) || getmapflag(getmap(), MF_NOTELEPORT) || getmapflag(getmap(), MF_NOWARP) || isin("009-7",$@fightclub_x1,$@fightclub_y1,$@fightclub_x2,$@fightclub_y2))
+        goto L_Forbid;
+
     if ( @StoneName$ == "AnchorStone" ) goto L_AnchorStone;
     if ( @StoneName$ == "AnchoredAnchorStone" ) goto L_AnchoredAnchorStone;
     goto L_Close;
@@ -32,12 +37,19 @@ L_AnchoredAnchorStone:
     mes "\"You want to recall to the place the [@@" + AnchoredAnchorStone + "|@@] is bound to?\"";
     menu
         "No", L_Close,
-        "Yes", L_AAS_Yes;
+        "Yes", L_AAS_Yes,
+        "Unbind Anchored Anchor Stone", L_AAS_Unbind;
 
 L_AAS_Yes:
     warp getmapnamefromhash(AnchorStoneDest), (AnchorStoneDestCoord & AS_X_MASK >> AS_X_SHIFT), (AnchorStoneDestCoord & AS_Y_MASK >> AS_Y_SHIFT);
-
     goto L_AAStoAS;
+
+L_AAS_Unbind:
+    mes "";
+    mes "\"You really want to unbind the [@@" + AnchoredAnchorStone + "|@@] from it's destination?\"";
+    menu
+        "No", L_Close,
+        "Yes", L_AAStoAS;
 
 L_AAS_Error:
     mes "\"Something went wrong the [@@" + AnchoredAnchorStone + "|@@] lost its destination and turns back to normal.\"";
@@ -50,6 +62,14 @@ L_AAStoAS:
     delitem AnchoredAnchorStone, 1;
     getitem AnchorStone, 1;
     close;
+
+L_Forbid:
+    message strcharinfo(0), "Anchor Stone : This area is protected by a force that doesn't tolerate the power of the Anchor Stone.";
+    goto L_Close;
+
+L_Prison:
+    message strcharinfo(0), "Anchor Stone : You must be warped by a GM to leave the botcheck area.";
+    goto L_Close;
 
 L_Close:
     close;
