@@ -445,8 +445,12 @@ S_ClearVariables:
     set @karma_bonus, 0;
     return;
 
-OnCommandDing:
-    specialeffect 402;
+OnCommandOverHeat:
+    specialeffect 407;
+    end;
+
+OnCommandCoolDown:
+    specialeffect 408;
     end;
 }
 
@@ -454,17 +458,31 @@ OnCommandDing:
 {
     end;
 OnCommandCoolDown:
+    donpcevent "AniManOMat::OnCommandOverHeat";
+    enablenpc "#MBE0";
     set $@XmasBattleStatus, 0;
     set $@XmasBattleCoolDown, 1;
     initnpctimer;
     end;
 
 OnTimer120000:
+    donpcevent "AniManOMat::OnCommandCoolDown";
+    disablenpc "#MBE0";
     set $@XmasBattleCoolDown, 0;
     stopnpctimer;
     mapannounce "030-4", "The AniManOMat has cooled down.", 0;
-    donpcevent "AniManOMat::OnCommandDing";
     end;
+}
+
+// Mana battery effects
+
+// Smoke and sparks
+030-4,32,21,0|script|#MBE0|436
+{
+  end;
+  OnInit:
+    disablenpc "#MBE0";
+  end;
 }
 
 // Danger Cells
