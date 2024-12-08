@@ -129,7 +129,7 @@ OnTouch:
     if (.inactive) end;       // If gate deactivated -> no interaction.
     if ((.cookie) && (teleport_cookie != .cookie)) goto L_CantPass;
     set teleport_cookie, 0;   // Clear teleport cookie of player on teleport use.
-    sc_start SC_SLOWMOVE, .fx_time+100, 100000; // Slow player temporarily to avoid movement VS warp DCs
+    sc_start SC_SLOWMOVE, .fx_time+200, 100000; // Slow player temporarily to avoid movement VS warp DCs
     addtimer .fx_time, strnpcinfo(0)+"::OnTeleport"; // time before teleporting away
     misceffect .fx;           // Default .fx set in teleport_add, other code can override it.
     end;
@@ -140,6 +140,12 @@ L_CantPass:
 // Teleportation timer event (attached to player). Queued by OnTouch.
 OnTeleport:
     warp .dstmap$, .dst_x, .dst_y;
+    addtimer 3000, strnpcinfo(0)+"::OnWarpDone"; // Mostly to clean up SC icon
+    end;
+
+// Mostly used to remove slow icon that sticks in some cases.
+OnWarpDone:
+    sc_end SC_SLOWMOVE;
     end;
 
 // Invoked on timed teleport's NPC timer expired.
@@ -415,7 +421,7 @@ function|script|teleportadd_parseargs
     if (@TIMEOUT > 0) set @TIMEOUT, (@TIMEOUT * 1000); // translate seconds -> ms to make more wieldy numbers
     // NPC SPRITE configuration 
     if ((@NPCSPRITE != 424) && (@NPCSPRITE != 369) && (@NPCSPRITE != 368)
-        && (NPCSPRITE != 325) && (@NPCSPRITE != 324)) set @NPCSPRITE, 424;
+        && (@NPCSPRITE != 325) && (@NPCSPRITE != 324)) set @NPCSPRITE, 424;
     // All checks complete
     return 1;  // Everything OK
 
