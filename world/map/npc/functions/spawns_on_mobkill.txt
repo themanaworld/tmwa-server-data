@@ -8,8 +8,9 @@ function|script|spawns_on_mobkill
     if (@mobID == SeaSlimeMother) goto L_SplitSea;
     if (@mobID == GreenSlimeMother) goto L_SplitGreen;
     if (@mobID == Tormenta) goto L_TorWitchDead;
+    if (@mobID == Blanc1) goto L_Blanc1Dead;
     if ((@mobID == Luvia) && (getmap() != "052-2")) goto L_LuvWitchDead; // Skip spawns if its Illia
-    return;
+    return; // Not mob of interest -> do nothing
 
 L_SplitSea:
     void call("spawn_mobs_around", getmap(), @mobX, @mobY, AngrySeaSlime, rand(8, 20));
@@ -29,6 +30,10 @@ L_LuvWitchDead:
     void call("spawn_mobs_around", getmap(), @mobX, @mobY, VoidBat, rand(6, 10));
     void call("spawn_mobs_around", getmap(), @mobX, @mobY, DemonicSpirit, rand(4, 8));
     return;
+
+L_Blanc1Dead:
+    void call("spawn_mobs_around", getmap(), @mobX, @mobY, Blanc2, 1);
+    return;
 }
 
 // Spawns mobs around spot, if it can - or stacks mobs on spot if no room for 3x3 area
@@ -44,11 +49,13 @@ function|script|spawn_mobs_around
     set .@mobQTY, getarg(4, -1); // Amount.
     if ((.@map$ == "") || (.@mobX < 1) || (.@mobY < 1) || (.@mobID < 1002) ||
         (.@mobX > getmapmaxx(.@map$))  || (.@mobX > getmapmaxy(.@map$))    ||
-        (.@mobQTY < 1)) goto L_Abort;
-    if ((.@mobX > 1) && (.@mobY > 1) && (.@mobX < getmapmaxx(.@map$)) && (.@mobY < getmapmaxy(.@map$))) //Enough room for 3x3
+        (.@mobQTY < 1)) // Invalid parameters given?
+        goto L_Abort;   // Yell and return
+    if ((.@mobX > 1) && (.@mobY > 1) && (.@mobX < getmapmaxx(.@map$)) &&
+        (.@mobY < getmapmaxy(.@map$)) && (.@mobQTY > 1)) //Enough room for 3x3 && "mass" spawn
         areamonster .@map$, (.@mobX-1), (.@mobY-1), (.@mobX+1), (.@mobY+1), "", .@mobID, .@mobQTY;
     else
-        monster .@map$, .@mobX, .@mobY, "", .@mobID, .@mobQTY; // 3x3 wouldnt fit -> use spot.
+        monster .@map$, .@mobX, .@mobY, "", .@mobID, .@mobQTY; // 3x3 wouldnt fit or just 1 mob.
     return;
 
 L_Abort:
