@@ -1,23 +1,39 @@
-// Spawns some mobs on death of some other mob. Say split slime -> few smaller ones
+// Mob splitting/spawn logic By Hello=)
+
+// Spawns some mobs on death of other mob. E.g. split BIG slime -> few smaller ones
 // This function meant to be called with player RID attached (usually in OnMobKillEvent)
 // Inputs: nothing, but expects @mobID, @mobX and @mobY set (usually by server)
 // Return: nothing, but spawns few things.
-// TODO: Add few big slime mobs and "split" these (this needs big slime GFX and making mob).
 function|script|spawns_on_mobkill
 {
     if (@mobID == SeaSlimeMother) goto L_SplitSea;
-    if (@mobID == GreenSlimeMother) goto L_SplitGreen;
+    if ((@mobID == GreenSlimeMother) || (@mobID == GreenSuperSlime)) goto L_SplitGreen;
+    if (@mobID == YellowSuperSlime) goto L_SplitYellow;
+    if (@mobID == RedSuperSlime) goto L_SplitRed;
+    if (@mobID == BlueSuperSlime) goto L_SplitBlue;
     if (@mobID == Tormenta) goto L_TorWitchDead;
-    if (@mobID == Blanc1) goto L_Blanc1Dead;
     if ((@mobID == Luvia) && (getmap() != "052-2")) goto L_LuvWitchDead; // Skip spawns if its Illia
+    if (@mobID == Blanc1) goto L_Blanc1Dead;
     return; // Not mob of interest -> do nothing
 
 L_SplitSea:
-    void call("spawn_mobs_around", getmap(), @mobX, @mobY, AngrySeaSlime, rand(8, 20));
+    void call("spawn_mobs_around", getmap(), @mobX, @mobY, AngrySeaSlime, rand(8, 16));
     return;
 
 L_SplitGreen:
-    void call("spawn_mobs_around", getmap(), @mobX, @mobY, AngryGreenSlime, rand(8, 20));
+    void call("spawn_mobs_around", getmap(), @mobX, @mobY, AngryGreenSlime, rand(8, 16));
+    return;
+
+L_SplitYellow:
+    void call("spawn_mobs_around", getmap(), @mobX, @mobY, YellowSlime, rand(6, 16));
+    return;
+
+L_SplitRed:
+    void call("spawn_mobs_around", getmap(), @mobX, @mobY, RedSlime, rand(6, 16));
+    return;
+
+L_SplitBlue:
+    void call("spawn_mobs_around", getmap(), @mobX, @mobY, BlueSlime, rand(3, 6));
     return;
 
 L_TorWitchDead:
@@ -27,8 +43,9 @@ L_TorWitchDead:
     return;
 
 L_LuvWitchDead:
-    void call("spawn_mobs_around", getmap(), @mobX, @mobY, VoidBat, rand(6, 10));
-    void call("spawn_mobs_around", getmap(), @mobX, @mobY, DemonicSpirit, rand(4, 8));
+    void call("spawn_mobs_around", getmap(), @mobX, @mobY, VoidBat, rand(7, 12));
+    void call("spawn_mobs_around", getmap(), @mobX, @mobY, DemonicSpirit, rand(5, 8));
+    void call("spawn_mobs_around", getmap(), @mobX, @mobY, UndeadWitch, 1);
     return;
 
 L_Blanc1Dead:
