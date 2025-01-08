@@ -202,17 +202,27 @@ OnReward:
     set @bonus, (BaseLevel/2);
     set DailyQuestBonus, DailyQuestBonus + @bonus;
     message strcharinfo(0), "You feel a temporary rush of power and zest for action. " + @bonus + " daily bonus gained." ;
+    set @bonus, 0;
+
     if (QL_CINDY != 1 )
-        goto L_End;
+        goto L_RepeatReward;
+
     set QL_CINDY, 2;
     message strcharinfo(0), "Cindy looks relieved and as if she wants to talk with you.";
     getexp 100000, 0;
     set BOSS_POINTS, BOSS_POINTS + 70;
     message strcharinfo(0), "You gain 70 Boss Points giving you a total of " + BOSS_POINTS + ".";
-    goto L_End;
+    end;
 
-L_End:
-    set @bonus, 0;
+L_RepeatReward:
+    message strcharinfo(0), "Cindy looks relieved and is grateful for helping to save her again.";
+    getexp 5000, 0;
+    // Reward is 20 BP and starts decreasing, one per 5 levels, after lvl 74.
+    // Bottoms out at lvl 120 and 10 boss points.
+    set @bp, 20 - max (0, min ((BaseLevel - 74)/5, 10));
+    set BOSS_POINTS, BOSS_POINTS + @bp;
+    message strcharinfo(0), "You gain " + @bp + " Boss Points giving you a total of " + BOSS_POINTS + ".";
+    set @bp, 0;
     end;
 
 OnInit:
