@@ -91,7 +91,7 @@ L_Later:
     mes "";
     mes "[The Beheader]";
     mes "\"Time passes so quickly. It would seem that later is now. I wonder if now is then, then. Hmmmm...\"";
-    if (!(FLAGS & FLAG_GOT_BEHEADER_SWORD)) goto L_MaybeBeheader;
+    if (!QL_BEHEADER_COMPLETE) goto L_MaybeBeheader;
     // NOTE: Room for future expansion if needed.
     // Previous text: "Some February, I don't know. If you want to help, go to Hurnscald square, look for the noisy person with an AFK Cap which is always sitting with their kitty, and tell them to start working. That might just do the trick."
     // The "noisy person w/ an AFK Cap and a kytty" is Jesusalva (script author)
@@ -104,9 +104,9 @@ L_MaybeBeheader:
         "Can I behead Terranites on my own?", L_Beheader;
 
 L_Beheader:
-    if (FLAGS & FLAG_GOT_BEHEADER_SWORD) goto L_Again;
-    if (TERRAC == 1501) goto L_Finish;
-    if (TERRAC > 0) goto L_Status;
+    if (QL_BEHEADER_COMPLETE) goto L_Again;
+    if (QL_BEHEADER_TERRAC == 1501) goto L_Finish;
+    if (QL_BEHEADER_TERRAC > 0) goto L_Status;
     mes "";
     mes "[The Beheader]";
     mes "\"You obviously know nothing about Terranite Anatomy, hahaha!\"";
@@ -132,13 +132,14 @@ L_Accept:
     mes "";
     mes "[The Beheader]";
     mes "So... Hmm, lemme think... Ah, I know! Thou shall ##Bkill me 1500 [@@m1062|@@]##b. Why? Because that's pointless, and you want a weapon you won't be able to use, so a pointless task for a pointless reward! Now get going!";
-    set TERRAC, 1;
+    set QL_BEHEADER_TERRAC, 1;
     close;
 
 L_Status:
     mes "";
     mes "[The Beheader]";
-    mes "\"Get going, running in circles and amusing me, you only killed "+(TERRAC-1)+"/1500 [@@m1062|@@] until now.\"";
+    mes "\"Get going, running in circles and amusing me, you only killed "
+        + (QL_BEHEADER_TERRAC-1)+"/1500 [@@m1062|@@] until now.\"";
     close;
 
 L_Again:
@@ -177,8 +178,8 @@ L_Finish:
 
     getitem "Beheader", 1;
     getexp 1000000, 0;
-    set FLAGS, FLAGS | FLAG_GOT_BEHEADER_SWORD;
-    set TERRAC, 0;
+    set QL_BEHEADER_COMPLETE, 1;
+    set QL_BEHEADER_TERRAC, 0;
 
     mes "[The Beheader]";
     mes "\"Anyway, a deal is a deal and here is your [@@576|@@]. I hope you can actually make good use of it!\"";
