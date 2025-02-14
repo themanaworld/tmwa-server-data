@@ -9,9 +9,14 @@
 
 L_Start:
     set @shopopt$, "";
-    if ( (HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_ASKED_FOR_PETALS ) set @shopopt$, "Do you sell Pink Petals?";
-    if ( (HURNS1_STATE & BYTE_0_MASK) >= PINK_PETAL_SHOP_ASKED_FOR_PETALS && (HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS ) set @shopopt$, "How many Pink Flower Seeds do I need again?";
-    if ( (HURNS1_STATE & BYTE_0_MASK) == PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS ) set @shopopt$, "I want to deliver the Pink Flower Seeds.";
+    if ( (HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_ASKED_FOR_PETALS )
+        set @shopopt$, "Do you sell Pink Petals?";
+
+    if ( (HURNS1_STATE & BYTE_0_MASK) >= PINK_PETAL_SHOP_ASKED_FOR_PETALS && (HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS )
+        set @shopopt$, "How many Pink Flower Seeds do I need again?";
+
+    if ( (HURNS1_STATE & BYTE_0_MASK) == PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS )
+        set @shopopt$, "I want to deliver the Pink Flower Seeds.";
 
     mes "[Blossom]";
     mes "\"Hello, would you like to buy some flowers?\"";
@@ -31,8 +36,10 @@ L_ShopPetals:
     shop "#FlowerPetalShop";
 
 L_Petals:
-    if ( (HURNS1_STATE & BYTE_0_MASK) >= PINK_PETAL_SHOP_ASKED_FOR_PETALS && (HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS ) goto L_HowMany;
-    if ( (HURNS1_STATE & BYTE_0_MASK) == PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS ) goto L_Deliver;
+    if ( (HURNS1_STATE & BYTE_0_MASK) >= PINK_PETAL_SHOP_ASKED_FOR_PETALS && (HURNS1_STATE & BYTE_0_MASK) < PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS )
+        goto L_HowMany;
+    if ( (HURNS1_STATE & BYTE_0_MASK) == PINK_PETAL_SHOP_FOUND_FLOWER_SEEDS )
+        goto L_Deliver;
 
     set HURNS1_STATE, (HURNS1_STATE & ~BYTE_0_MASK) | PINK_PETAL_SHOP_ASKED_FOR_PETALS;
 
@@ -46,7 +53,8 @@ L_HowMany:
     goto L_Close;
 
 L_Deliver:
-    if ( countitem(PinkFlowerSeed) < PINK_FLOWER_SEEDS_NEEDED ) goto L_HowMany;
+    if ( countitem(PinkFlowerSeed) < PINK_FLOWER_SEEDS_NEEDED )
+        goto L_HowMany;
 
     set HURNS1_STATE, (HURNS1_STATE & ~BYTE_0_MASK) | PINK_PETAL_SHOP_DELIVERED_FLOWER_SEEDS;
     delitem PinkFlowerSeed, PINK_FLOWER_SEEDS_NEEDED;
