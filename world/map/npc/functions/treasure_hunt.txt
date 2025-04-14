@@ -1,0 +1,468 @@
+// Pirate Treasures Hunt quest (c) 2025 Hello=)
+
+// This NPC handles treasure placement
+-|script|TreasureHunt|32767
+{
+    end;
+
+OnTreasurePlace:
+    if (GM < 60) end;
+    gmlog strcharinfo(0) + " shuffled treasure placement";
+    wgm strcharinfo(0) + " shuffled treasure placement";
+    set $TREASURE_X, 0; // To force reinit
+    void call("treasure_place");
+    end;
+
+OnInit:
+    registercmd "@treasure_place", "TreasureHunt::OnTreasurePlace";
+    void call("treasure_place");
+    end;
+}
+
+// Applies defaults to global vars if unconfigured
+function|script|treasure_place
+{
+    if ($TREASURE_MAP$ == "") || !($TREASURE_X) || !($TREASURE_Y)  // Not looks configured?
+        goto L_Setup;
+    return;
+
+L_Setup:
+    // Apply defaults
+    set $TREASURE_REWARD, Eyepatch; // main reward
+    set $TREASURE_BOOTY, 200; // max amount of booty (worst case anti-milking cap)
+    set $TREASURE_DIFFICULTY,  100; // common rounds difficulty
+    set $TREASURE_DIFFICULTY2, 100; // extra rounds difficulty (if player found treasure)
+    set $TREASURE_MAP$, "003-4"; // Map to use. Ships are hardwired so far, beware.
+    set $TREASURE_X1, 97; // Rectangle
+    set $TREASURE_X2, 104;
+    set $TREASURE_Y1, 61;
+    set $TREASURE_Y2, 100;
+        // $TREASURE_DEBUG // Debug mode, a lot of battle flow/trace spam.
+        // $TREASURE_TURBO // Play battle real fast. You'll need @hide and GM Hat to survive.
+    goto L_TryPlacement;
+
+L_TryPlacement:
+    // Try placement
+    set $TREASURE_X, rand($TREASURE_X1, $TREASURE_X2); // Choose exact spot
+    set $TREASURE_Y, rand($TREASURE_Y1, $TREASURE_Y2);
+    if (iscollision($TREASURE_MAP$, $TREASURE_X, $TREASURE_Y))
+        goto L_TryPlacement; // do not place trasure on collisions
+    debugmes "treasure_place: treasure placed and configured";
+    return;
+}
+
+// Handler to be invoked from item usage attempt of shovels.
+// This function supposed to be called with player RID attached (its item use by player)
+// Input: Arg0: shovel name from item use handler function.
+// Return: 1 = item use handled (swallowed) by quest, 0 = not handled.
+function|script|treasure_try_shovel
+{
+    set .@shovel$, getarg(0, "");
+    set .@handled, 0;
+    if ($TREASURE_DEBUG) debugmes "treasure_try_shovel, shovel=" + .@shovel$;
+    if (.@shovel$ == "LegendaryShovel") set .@handled, 1; // TH handles everything about Legendary Shovel
+    if (!(.@handled) && (getmap() == $TREASURE_MAP$))     // Hint player they need different shovel on treasure map
+        message strcharinfo(0), "There're rocks in these sands. You'll need different shovel here...";
+    if ($TREASURE_DEBUG) debugmes "treasure_try_shovel, .@handled=" + .@handled;
+    if (.@handled) addtimer 0, "TreasureDig::OnDig", BL_ID; // Request NPC to do its thing just like #treasuredig.
+    return .@handled;
+}
+
+// Handler to be invoked from item usage attempt of maps.
+// This function supposed to be called with player RID attached (its item use by player)
+// Input: Arg0: map name from item use handler function.
+// Return: 1 = item use handled (swallowed) by quest, 0 = not handled.
+function|script|treasure_try_map
+{
+    set .@mapname$, getarg(0, "");
+    if ($TREASURE_DEBUG) debugmes "treasure_try_map, map=" + .@mapname$;
+    set .@handled, 0;
+    if (.@mapname$ == "LegendaryTreasureMap") set .@handled, 1; // TH handles everything about Legendary Treasure Map
+    if ($TREASURE_DEBUG) debugmes "treasure_try_map, .@handled=" + .@handled;
+    if ((getmap() != $TREASURE_MAP$) && (.@handled))
+        message strcharinfo(0), "Treasure Map : This place doesn't looks like one on map.";
+    if ((getmap() == $TREASURE_MAP$) && (.@handled) &&
+        !(isin($TREASURE_MAP$, $TREASURE_X1, $TREASURE_Y1, $TREASURE_X2, $TREASURE_Y2)))
+        message strcharinfo(0), "Treasure Map : This place looks right! Yet [X] mark isn't where you stand.";
+    if ((getmap() == $TREASURE_MAP$) && (.@handled) &&
+        (isin($TREASURE_MAP$, $TREASURE_X1, $TREASURE_Y1, $TREASURE_X2, $TREASURE_Y2)))
+        message strcharinfo(0), "Treasure Map : Aha! Right spot! Unfortunately X mark is big and crude. Promising area is " +
+            "(" + $TREASURE_X1 +"," + $TREASURE_Y1 + ")<->(" + $TREASURE_X2 + "," + $TREASURE_Y2 + ")";
+    return .@handled;
+}
+
+// This NPC handles traeasure dig.
+-|script|TreasureDig|32767
+{
+    end;
+
+OnDig:
+    if ($TREASURE_DISABLE) message strcharinfo(0), "Tough luck, seems there's no booty at this time!";
+    if ($TREASURE_DISABLE) end;
+    set @treasureMobs,
+        mobcount($TREASURE_MAP$, "TreasureDigAux::OnMobKill") +
+        mobcount($TREASURE_MAP$, "TreasureDigAux::OnPirateKill");
+    if ($TREASURE_DEBUG) debugmes "OnDig: mob count = " + @treasureMobs;
+    if (@treasureMobs > 220) message strcharinfo(0), "Its too crowded here to dig! Perhaps kill some mob first?";
+    if (@treasureMobs > 220) end; // Do not let users spam server by mobs indefinitely
+    set .@puppet$, "#"+strnpcinfo(0)+"#"+BL_ID;
+    set .@puppet, puppet(getmap(), POS_X, POS_Y, .@puppet$, 127);
+    if (.@puppet < 1) end; // It also denies player launching N instances at once.
+    // Set up instance of treasure hunt attempt
+    set .digger, BL_ID, .@puppet;
+    set .diggernm$, strcharinfo(0), .@puppet;
+    set .delay, 1000, .@puppet; // Initial round delay
+    set .tiles, TILES_WALKED, .@puppet;
+    if ($TREASURE_DEBUG) debugmes "OnDig: starting";
+    npctalk .@puppet$, "Digging : " + strcharinfo(0) + " starts digging in hope to find something..";
+    if ($TREASURE_MAP$ == getmap())
+        addnpctimer 4000, .@puppet$+"::OnDiggingRound"; // Start digging rounds.
+    else
+        addnpctimer 12000, .@puppet$+"::OnDiggingRound"; // Start digging rounds - fake - slow 'em a bit.
+    addnpctimer 700000, .@puppet$+"::OnDestroy"; // Failsafe quest shutdown on timeout
+    end;
+
+OnDiggingRound:
+    set .dig_round, .dig_round + 1;
+    if ($TREASURE_DEBUG) debugmes "OnDiggingRound: my name=" + strnpcinfo(0) + " digger=" + .digger;
+    if ($TREASURE_DEBUG) debugmes "OnDiggingRound: PLAYER: POSX=" + get(POS_X, .digger) + " POSY=" + get(POS_Y, .digger) + " MAP=" + getmap(.digger) + " TILES=" + get(TILES_WALKED, .digger);
+    if ($TREASURE_DEBUG) debugmes "OnDiggingRound: NPC:    POSX=" + getnpcx() + " POSY=" + getnpcy() + " MAP=" + strnpcinfo(3) + " TILES=" + .tiles;
+    if (!(isloggedin(.digger))) set .failed, 2; // Treasure digger disappeared?
+    if (get(Hp, .digger) < 1)  set .failed, 3;  // Digger digger died?
+    if ((getmap(.digger) != strnpcinfo(3)) ||   // Digger left map?
+        (get(POS_X, .digger) != getnpcx()) ||
+        (get(POS_Y, .digger) != getnpcy()) ||
+        (get(TILES_WALKED, .digger) != .tiles))
+            set .failed, 4;                     // Has digger moved?
+    if ($TREASURE_MAP$ != strnpcinfo(3)) set .failed, 9; // Trying to dig on wrong map? Side effects avoidance.
+    if ($TREASURE_DEBUG) debugmes "OnDiggingRound: failed1=" + .failed;
+    if (.failed) goto L_DiggFail;
+    // Basic checks ok -> next round starts
+    misceffect FX_CHANNELLING_RAISE_RED, strcharinfo(0, .digger);
+    set .failed, call("treasure_dig_round", .dig_round); // core function of digging
+    if ($TREASURE_DEBUG) debugmes "OnDiggingRound: failed2=" + .failed;
+    if !($TREASURE_TURBO) set .delay, .delay + 1000; // Turbo == "skip AI moves" for test/debug: FAST battle, @hide+gm map to observe
+    if ((.failed == 9) && call("treasure_is_here") && ($TREASURE_REWARD != 0))
+        goto L_DiggFound; // MaxRound && Found treasure?! Its WIN, not .fail :)
+    if ((.failed == 9) && call("treasure_is_here") && ($TREASURE_REWARD == 0))
+        set .failed, 10; // Found it - but someone got there first? How unfortunate.
+    if (.failed) goto L_DiggFail; // catches e.g. (running to max round && no treasure)
+    else addnpctimer .delay, strnpcinfo(0)+"::OnDiggingRound";
+    end;
+
+// Invoked when digging failed for any reason, by both OnDiggingRound and OnBootyRound.
+L_DiggFail:
+    if ($TREASURE_DEBUG) debugmes "TreasureDig: digging done, .failed=" + .failed;
+    if   (.failed == 2) npctalk strnpcinfo(0), "Digging : ##3##BDigger " + .diggernm$ + " disappeared... strange...";
+    elif (.failed == 3) npctalk strnpcinfo(0), "Digging : ##3##BDigger " + .diggernm$ + " haven't made it, digging site collapsed";
+    elif (.failed == 4) npctalk strnpcinfo(0), "Digging : ##3##BDigger " + .diggernm$ + " has lost focus and digging site collapsed";
+    elif (.failed == 9) npctalk strnpcinfo(0), "Digging : ##3##BDoh! Seems there's no treasure on this spot!";
+    elif (.failed == 10) npctalk strnpcinfo(0), "Digging : ##3##BDoh! Someone already digged treasure out!";
+    else /*error, etc*/ npctalk strnpcinfo(0), "Digging : ##3##BDigger " + .diggernm$ + " something went wrong, digging site collapsed";
+    destroy;
+
+L_DiggFound:
+    if !($TREASURE_TURBO) set .delay, 16000; // Configure booty rounds
+    else set .delay, 3000;
+    set .failed, 0;
+    set .round, 1;
+    monster $TREASURE_MAP$, 94, 74, "Pirates!", MontBlanc, 1, "TreasureDigAux::OnPirateKill"; // FIXME hardwired thing
+    monster $TREASURE_MAP$, 95, 66, "Pirates!", MontBlanc, 1, "TreasureDigAux::OnPirateKill";
+    monster $TREASURE_MAP$, 97, 91, "Pirates!", MontBlanc, 1, "TreasureDigAux::OnPirateKill";
+    mapannounce strnpcinfo(3), "Emo : WHAT DO WE HAVE HERE?! Contenders for OUR booty?! Pirates! Kill them all! YARRR!!", 0;
+    addnpctimer .delay, strnpcinfo(0)+"::OnBootyRound"; // Hand over -> OnBootyRound but do not destroy puppet.
+    end;
+
+// Invoked when digger survived initial digging && found treasure. Called when OnDiggRound rounds end.
+OnBootyRound:
+    if ($TREASURE_DEBUG) debugmes "OnBootyRound ->";
+    if (!(isloggedin(.digger))) set .failed, 2; // Treasure digger disappeared?
+    if (get(Hp, .digger) < 1)  set .failed, 3;  // Digger digger died?
+    if ((getmap(.digger) != strnpcinfo(3)) ||   // Digger left map?
+        (get(POS_X, .digger) != getnpcx()) ||
+        (get(POS_Y, .digger) != getnpcy()) ||
+        (get(TILES_WALKED, .digger) != .tiles))
+            set .failed, 4;                     // Has digger moved?
+    if (.failed) goto L_DiggFail; // Reuse digg failure handling above.
+    if (.round > 8) goto L_Finalize;
+    npctalk strnpcinfo(0), "Digging : ##3##B [TREASURE] [" + .round + "] "+ .diggernm$ + " found treasure, keep digger alive to collect collateral!";
+    if ($TREASURE_BOOTY > 0)
+        addtimer 0, "TreasureDigAux::OnCollateral10", .digger; // Collateral for supporters
+    set $TREASURE_BOOTY, $TREASURE_BOOTY - 10; // anti-milking cap, total ~20 rounds with booty top (configurable)
+    set .@round_power, call("treasure_estimate_team"); // get team level
+    if ($TREASURE_DEBUG) debugmes "treasure_dig_round: round power B0=" + .@round_power;
+    set .@round_power, (.@round_power * $TREASURE_DIFFICULTY2) / 170 + (.round / 7) + rand(3); // Adjust & randomize
+    if ($TREASURE_DEBUG) debugmes "treasure_dig_round: round power B1=" + .@round_power;
+    if (.round == 1) set .@mob, Emo; // Guy who yelled
+    else set .@mob, Ratto; // His ship ratto, also treasure contender
+    void call("spawn_in_radius", strnpcinfo(3), getnpcx(), getnpcy(), 2, .@mob, 1, "TreasureDigAux::OnPirateKill");
+    void call("spawn_in_radius", strnpcinfo(3), getnpcx(), getnpcy(), 4, Swashbuckler, .@round_power, "TreasureDigAux::OnPirateKill");
+    void call("spawn_in_radius", strnpcinfo(3), getnpcx(), getnpcy(), 4, Grenadier, .@round_power, "TreasureDigAux::OnPirateKill");
+    void call("spawn_in_radius", strnpcinfo(3), getnpcx(), getnpcy(), 4, Thug, .@round_power, "TreasureDigAux::OnPirateKill");
+    void call("spawn_in_radius", strnpcinfo(3), getnpcx(), getnpcy(), 4, Ratto, 5, "TreasureDigAux::OnPirateKill");
+    set .round, .round + 1;
+    addnpctimer .delay, strnpcinfo(0)+"::OnBootyRound"; // Hand over -> OnBootyRound but do not destroy puppet.
+    end;
+
+L_Finalize:
+    addtimer 0, "TreasureDigAux::OnMainBooty", .digger; // Hand over to final reward handler.
+    npctalk strnpcinfo(0), "Digging : ##3##B [TREASURE] Victory! Treasure hunter " + .diggernm$ + " got booty!";
+    destroy;
+
+OnDestroy:
+    debugmes "TreasureDig: GLOBAL TIME OUT, this shouldn't happen"; // Failsafe logic
+    npctalk strnpcinfo(0), "Digging : ##3##BSomething went wrong, your digging site has collapsed";
+    destroy;
+
+OnInit:
+    end;
+}
+
+// This function only meant to be called by TreasureDig's puppet.
+// Main digging round handling logic happens here, spawns + dig fallouts
+// Input: Arg0: round #
+//        Arg1: players str
+// Returns: 0 if all ok, 1 = failure, 
+function|script|treasure_dig_round
+{
+    set .@round,    getarg(0, -1);
+    set .@res, 0;     // > 0 halts next rounds, 1 = failure, 9 = "failed to find treasure"
+    set .@rounds0, 2; // # of rounds configuration.
+    set .@rounds1, 6;
+    set .@rounds2, 12;
+    set .@rounds3, 18;
+    set .@rounds4, 22;
+    if ($TREASURE_DEBUG) debugmes "treasure_digg_round: round # " +.@round + " r4=" + .@rounds4;
+    if (.@round < 1) goto L_Failed;
+    if ((.@round >= .@rounds4)) goto L_Done;
+    setarray .@mobs_0[0], CaveMaggot, HouseMaggot, VoidMaggot, Ratto;  // Mobs for round spawns
+    setarray .@mobs_1[0], AngryScorpion, Hyvern, Snake, Spider, Archant, RedSlime, AngrySeaSlime, AngryGreenSlime;
+    setarray .@mobs_2[0], VoidSnake, MountainSnake, GrassSnake, SoulSnake, BlackScorpion, CrotcherScorpion, VoidBat, HuntsmanSpider;
+    setarray .@mobs_3[0], Skeleton, LadySkeleton, Wight, RedBone, SoulEater;
+    setarray .@mobs_4[0], Thug, Swashbuckler, Grenadier;
+    if   (.@round <= .@rounds0) set .@mobID, .@mobs_0[rand(getarraysize(.@mobs_0))]; // Pick random mob for i-th round
+    elif (.@round <= .@rounds1) set .@mobID, .@mobs_1[rand(getarraysize(.@mobs_1))]; // Make mobs progressiveky harder
+    elif (.@round <= .@rounds2) set .@mobID, .@mobs_2[rand(getarraysize(.@mobs_2))];
+    elif (.@round <= .@rounds3) set .@mobID, .@mobs_3[rand(getarraysize(.@mobs_3))];
+    elif (.@round <= .@rounds4) set .@mobID, .@mobs_4[rand(getarraysize(.@mobs_4))];
+    else set .@mobID, MobMoubootaur; // Failsafe :)
+    set .@rand, rand(1, 100);   // Does digging site blows up, releases poison or stays stable?
+    if   (.@rand < 22) set .@dig_action$, "treasure_dig_poison";
+    elif (.@rand > 78) set .@dig_action$, "treasure_dig_blowup";
+    else  /* 30..70 */ set .@dig_action$, "treasure_dig_stable";
+    if ($TREASURE_DEBUG) debugmes "treasure_digg_round: round # " + .dig_round + " .@rand=" + .@rand + " .@dig_action$=" + .@dig_action$;
+    void call(.@dig_action$, .dig_round); // Avoids goto spaghetti but chosen func MUST exist, or server WILL crash!
+    set .@round_power, call("treasure_estimate_team"); // get team level
+    if ($TREASURE_DEBUG) debugmes "treasure_dig_round: round power0=" + .@round_power;
+    set .@round_power, (.@round_power * $TREASURE_DIFFICULTY) / 130 + (.@round / 7) + rand(3); // Adjust & randomize
+    if ($TREASURE_DEBUG) debugmes "treasure_dig_round: round power1=" + .@round_power;
+    addtimer 0, "TreasureDigAux::OnCollateral1", .digger;
+    void call("spawn_in_radius", strnpcinfo(3), getnpcx(), getnpcy(), 4, .@mobID, .@round_power, "TreasureDigAux::OnMobKill");
+    // Show some fancy messages
+    if   (.@round <= .@rounds2) npctalk strnpcinfo(0), "Digging : [" +.@round + "] " + .diggernm$ + " hit monster nest!";
+    elif (.@round <= .@rounds3) npctalk strnpcinfo(0), "Digging : [" +.@round + "] " + .diggernm$ + " Yuck! Skeleton I found moves!";
+    elif (.@round <= .@rounds4) npctalk strnpcinfo(0), "Digging : [" +.@round + "] " + .diggernm$ + " pirates got curious what this noise all about";
+    else npctalk strnpcinfo(0), "Digging : [" +.@round + "] " + .diggernm$ + " ?!?!?!";
+    return 0;
+
+L_Done:
+    if ($TREASURE_DEBUG) debugmes "treasure_digg_round: rounds done";
+    return 9; // Inform quest max rounds reached and no treasure been found.
+
+L_Failed:
+    debugmes "treasure_digg_round: call failed, arg0=" + getarg(0) + "arg1=" + getarg(1);
+    return 1;
+}
+
+// This spawns mobs in a given radius. Fallbacks to spot it it not fits map.
+// This function can be called in any context.
+// Input: Arg0: map where to spawn
+//        Arg1: X
+//        Arg2: Y
+//        Arg3: Radius
+//        Arg4: Mob id
+//        Arg5: # of mobs
+//        Arg6: Event for mob death (must be given, even as "")
+function|script|spawn_in_radius
+{
+    set .@map$, getarg(0, "");
+    set .@x,    getarg(1, -1);
+    set .@y,    getarg(2, -1);
+    set .@r,    getarg(3, -1);
+    set .@mob,  getarg(4, -1);
+    set .@qty,  getarg(5, -1);
+    set .@evt$, getarg(6, "");
+    // Args check.
+    if ((.@map$ == "") || (.@evt$ == "6") || (.@mob < 1) ||
+        (.@x < 1) || (.@x > getmapmaxx(.@map$)) || (.@r < 1) || (.@qty < 1) ||
+        (.@y < 1) || (.@y > getmapmaxy(.@map$)))
+        goto L_Fail;
+    // Does (x-r, y-r, x+r, y+r) rectangle fits map?
+    if ((.@x > .@r) && (.@y > .@r) &&
+        ((.@x + .@r) < getmapmaxx(.@map$)) &&
+        ((.@y + .@r) < getmapmaxy(.@map$))) //Enough room? Use area.
+        areamonster .@map$, (.@x-.@r), (.@y-.@r), (.@x+.@r), .@y+.@r, "", .@mob, .@qty, .@evt$;
+    else  // Rectangle does not fits, fallback
+        monster .@map$, .@x, .@y, "", .@mob, .@qty, .evt$;
+    return;
+
+L_Fail:
+    debugmes "spawn_in_radius: call failed, arg0=" + getarg(0) + " arg1=" + getarg(1) +
+             " arg2=" + getarg(2) + " arg3=" + getarg(3) + " arg4=" + getarg(4) +
+             " arg5=" + getarg(5)+ " arg6=" + getarg(6);
+    return;
+}
+
+// This function meant to be run in context of TreasureDig's *puppet* only
+function|script|treasure_dig_poison
+{
+    if ($TREASURE_DEBUG) debugmes "TreasureDigg: dig_poison";
+    npctalk strnpcinfo(0), "Digging : ["+getarg(0)+"] attempt to dig released poisonous gas!"; // Next throws events in digger (player) context
+    foreach 0, strnpcinfo(3), (getnpcx() - 7), (getnpcy() - 7), (getnpcx() + 7), (getnpcy() + 7), "TreasureDigAux::OnPoisonousGasPlayer", .digger;
+    foreach 2, strnpcinfo(3), (getnpcx() - 4), (getnpcy() - 4), (getnpcx() + 4), (getnpcy() + 4), "TreasureDigAux::OnPoisonousGasMob", .digger;
+    return;
+}
+
+// This function meant to be run in context of TreasureDig's *puppet* only
+function|script|treasure_dig_blowup
+{
+    if ($TREASURE_DEBUG) debugmes "TreasureDigg: dig_blowup";
+    npctalk strnpcinfo(0), "Digging : ["+getarg(0)+"] underground gas bubble blows up!"; // Next throws events in digger (player) context
+    foreach 0, strnpcinfo(3), (getnpcx() - 7), (getnpcy() - 7), (getnpcx() + 7), (getnpcy() + 7), "TreasureDigAux::OnBlowUpPlayer", .digger;
+    foreach 2, strnpcinfo(3), (getnpcx() - 4), (getnpcy() - 4), (getnpcx() + 4), (getnpcy() + 4), "TreasureDigAux::OnBlowUpMob", .digger;
+    return;
+}
+
+// This function meant to be run in context of TreasureDig's *puppet* only
+function|script|treasure_dig_stable
+{
+    if ($TREASURE_DEBUG) debugmes "TreasureDigg: dig_stable";
+    return;
+}
+
+// This function meant to be run in context of TreasureDig's *puppet* only
+function|script|treasure_is_here
+{
+    if ($TREASURE_DEBUG) debugmes "treasure_is_here ->";
+    set .@res, 0;
+    if (($TREASURE_MAP$ == strnpcinfo(3)) &&
+        ($TREASURE_X == getnpcx()) &&
+        ($TREASURE_Y == getnpcy()))
+        set .@res, 1;
+    if ($TREASURE_DEBUG) debugmes "treasure_is_here <- .@res=" + .@res;
+    return .@res;
+}
+
+// This function meant to be run in context of TreasureDig's *puppet* only
+function|script|treasure_estimate_team
+{
+    if ($TREASURE_DEBUG) debugmes "treasure_estimate_team: ->";
+    set @treasure_estimate_team, 1, .digger; // Prepare digger's context
+    if ($TREASURE_DEBUG) debugmes "team_est0 = " + get(@treasure_estimate_team, .digger); // This throws events in digger's context
+    foreach 0, strnpcinfo(3), (getnpcx() - 7), (getnpcy() - 7), (getnpcx() + 7), (getnpcy() + 7), "TreasureDigAux::OnPlayerEstimate", .digger;
+    if ($TREASURE_DEBUG) debugmes "team_est1 = " + get(@treasure_estimate_team, .digger); // This throws events in digger's context
+    return get(@treasure_estimate_team, .digger);
+}
+
+// This NPC handles aux things like poisoning, blow up, statuses cleanup, items placement, ...
+-|script|TreasureDigAux|32767
+{
+    end;
+
+// This cleans players statues like leftovers of poison or blowup stunning.
+// Invoked by timer set by site blowup/poison gas handlers
+OnPlayerStatusCleanup:
+    if ($TREASURE_DEBUG) debugmes "TreasureDigAux: status cleanup, BL ID=" + BL_ID;
+    if (sc_check(SC_POISON)) sc_end SC_POISON;
+    if (sc_check(SC_SLOWMOVE)) sc_end SC_SLOWMOVE;
+    if (sc_check(SC_HALT_REGENERATE)) sc_end SC_HALT_REGENERATE;
+    end;
+
+// Dig site poisonous gas - invoked per player (hurts players)
+OnPoisonousGasPlayer:
+//    debugmes "TreasureDigAux: poison/player, target ID=" + @target_id;
+    misceffect FX_EMOTE_DISGUST, strcharinfo(0, @target_id);
+    sc_start SC_POISON, 1, 60, @target_id;  // Poison player
+    sc_start SC_HALT_REGENERATE, 5000, 0;   // Even if fails, at least halt regen.
+    addtimer 5000, "TreasureDigAux::OnPlayerStatusCleanup"; // clean PC statuses
+    end;
+
+// Dig site poisonous gas - invoked per mob (aggravates mobs)
+OnPoisonousGasMob:
+//    debugmes "TreasureDigAux: poison/mob, target ID=" + @target_id;
+    set .@type, get(Class, @target_id);  // Dont poison undead
+    if ((.@type != Skeleton) && (.@type != LadySkeleton) && (.@type != Wight) &&
+        (.@type != RedBone) && (.@type != SoulEater))
+            sc_start SC_POISON, 1, 10, @target_id;  // Poison MOBS, too.
+    aggravate @target_id; // This aggravates mobs.
+    end;
+
+// Dig site blow up - invoked per player (hurts players)
+OnBlowUpPlayer:
+//    debugmes "TreasureDigAux: blowup/player, target ID=" + @target_id;
+    misceffect FX_MEDIUM_SMOKE, strcharinfo(0, @target_id);   // Show slow effect
+    sc_start SC_SLOWMOVE, 3000, 300, @target_id; // Slow player temporarily
+    sc_start SC_HALT_REGENERATE, 5000, 0;        // Stop regen temporarily
+    set Hp, (get(Hp, @target_id) * 2 / 3), @target_id;  // Yes explosion hurts.
+    addtimer 5000, "TreasureDigAux::OnPlayerStatusCleanup"; // clean statuses
+    end;
+
+// Dig site blow up - invoked per mob (aggravates mobs)
+OnBlowUpMob:
+//    debugmes "TreasureDigAux: blowup/mob, target ID=" + @target_id;
+    injure BL_ID, @target_id, get(Hp, @target_id) / 3; // Yes, explosion can hurt mobs, too!
+    aggravate @target_id; // This aggravates them!
+    end;
+
+// Event thrown when quest mobs die.
+OnMobKill:
+    if ($TREASURE_DEBUG) debugmes "TreasureDigAux: mob killed, @mobID=" + @mobID;
+    end;
+
+OnPirateKill:
+    if ($TREASURE_DEBUG) debugmes "TreasureDigAux: pirate killed, @mobID=" + @mobID;
+    end;
+
+// Event invoked by team estimation function.
+OnPlayerEstimate:
+    if (get(Hp, @target_id) > 0) set @treasure_estimate_team, @treasure_estimate_team + (get(BaseLevel, @target_id) / 10);
+    if ($TREASURE_DEBUG) debugmes "TreasureDigAux: player_estimate: @treasure_estimate_team=" + @treasure_estimate_team;
+    end;
+
+// Emit few collateral items spawner
+OnCollateral1:
+    if ($TREASURE_DEBUG) debugmes "OnCollateral1";
+    setarray .@items1[0], SulphurPowder, IronPowder, BlackScorpionStinger;
+    set .@itemID, .@items1[rand(getarraysize(.@items1))]; // random collateral
+    if ($TREASURE_DEBUG) debugmes "OnCollateral1 .@itemID=" + .@itemID;
+    makeitem .@itemID, 1, getmap(), rand(POS_X-2,POS_X+2), rand(POS_Y-2,POS_Y+2);
+    end;
+
+// Emit plenty of collateral items spawner (treasure reward mode)
+OnCollateral10:
+    if ($TREASURE_DEBUG) debugmes "OnCollateral10";
+    setarray .@items10[0], Pearl, Sapphire, Amethyst, GoldenTooth, GoldOre;
+    set .@count, 0;
+    goto L_RandomItems;
+
+L_RandomItems:
+    set .@itemID, .@items10[rand(getarraysize(.@items10))]; // random collateral
+    makeitem .@itemID, 4+rand(16), getmap(), rand(POS_X-3,POS_X+3), rand(POS_Y-3,POS_Y+3);
+    set .@count, .@count + 1;
+    if (.@count < 25) goto L_RandomItems;
+    end;
+
+// Hand over rewards + extra "collateral"
+// This handler invoked on digger who initiated digging session and won.
+OnMainBooty:
+    addtimer 0, "TreasureDigAux::OnCollateral10";
+    gmlog strcharinfo(0) + " found treasure!";
+    wgm strcharinfo(0) + " found treasure!";
+    getitem $TREASURE_REWARD, 1;
+    message strcharinfo(0), "Treasure Hunt : Success! You found [" + getitemlink($TREASURE_REWARD) + "]";
+    set $TREASURE_REWARD, 0; // Deny re-runs, treasure acquired
+    end;
+
+OnInit:
+    end;
+}
