@@ -103,8 +103,8 @@ OnDig:
         mobcount($TREASURE_MAP$, "TreasureDigAux::OnMobKill") +
         mobcount($TREASURE_MAP$, "TreasureDigAux::OnPirateKill");
     if ($TREASURE_DEBUG) debugmes "OnDig: mob count = " + @treasureMobs;
-    if (@treasureMobs > 220) message strcharinfo(0), "Its too crowded here to dig! Perhaps kill some mob first?";
-    if (@treasureMobs > 220) end; // Do not let users spam server by mobs indefinitely
+    if (@treasureMobs > 300) message strcharinfo(0), "Its too crowded here to dig! Perhaps kill some mob first?";
+    if (@treasureMobs > 300) end; // Do not let users spam server by mobs indefinitely
     set .@puppet$, "#"+strnpcinfo(0)+"#"+BL_ID;
     set .@puppet, puppet(getmap(), POS_X, POS_Y, .@puppet$, 127);
     if (.@puppet < 1) end; // It also denies player launching N instances at once.
@@ -206,6 +206,7 @@ OnBootyRound:
 
 L_Finalize:
     addtimer 0, "TreasureDigAux::OnMainBooty", .digger; // Hand over to final reward handler.
+    mapannounce strnpcinfo(3), "Treasure : Digger " + .diggernm$ + " found treasure!", 0;
     npctalk strnpcinfo(0), "Digging : ##3##B [TREASURE] Victory! Treasure hunter " + .diggernm$ + " got booty!";
     destroy;
 
@@ -222,7 +223,7 @@ OnInit:
 // Main digging round handling logic happens here, spawns + dig fallouts
 // Input: Arg0: round #
 //        Arg1: players str
-// Returns: 0 if all ok, 1 = failure, 
+// Returns: 0 if all ok, 1 = failure, 9 = max round reached.
 function|script|treasure_dig_round
 {
     set .@round,    getarg(0, -1);
@@ -432,7 +433,7 @@ OnPlayerEstimate:
 // Emit few collateral items spawner
 OnCollateral1:
     if ($TREASURE_DEBUG) debugmes "OnCollateral1";
-    setarray .@items1[0], SulphurPowder, IronPowder, BlackScorpionStinger;
+    setarray .@items1[0], SulphurPowder, IronPowder, BlackScorpionStinger, TreasureKey, Bone, Skull;
     set .@itemID, .@items1[rand(getarraysize(.@items1))]; // random collateral
     if ($TREASURE_DEBUG) debugmes "OnCollateral1 .@itemID=" + .@itemID;
     makeitem .@itemID, 1, getmap(), rand(POS_X-2,POS_X+2), rand(POS_Y-2,POS_Y+2);
@@ -441,7 +442,7 @@ OnCollateral1:
 // Emit plenty of collateral items spawner (treasure reward mode)
 OnCollateral10:
     if ($TREASURE_DEBUG) debugmes "OnCollateral10";
-    setarray .@items10[0], Pearl, Sapphire, Amethyst, GoldenTooth, GoldOre;
+    setarray .@items10[0], Pearl, Sapphire, Amethyst, GoldenTooth, GoldOre, CoinBag;
     set .@count, 0;
     goto L_RandomItems;
 
