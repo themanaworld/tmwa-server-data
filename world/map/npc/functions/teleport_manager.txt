@@ -126,32 +126,33 @@ OnCmdHelp:
 // Invoked when player steps on npc. Manager NPC ignores this.
 OnTouch:
     if (.IS_MANAGER) end;     // Manager NPC isnt teleport -> no interaction.
-    if (.inactive) end;       // If gate deactivated -> no interaction.
+    if (.inactive) goto L_CantPass;  // If gate deactivated -> can't pass
     if ((.cookie) && (teleport_cookie != .cookie)) goto L_CantPass;
-    set teleport_cookie, 0;   // Clear teleport cookie of player on teleport use.
-    sc_start SC_SLOWMOVE, .fx_time+200, 100000; // Slow player temporarily to avoid movement VS warp DCs
-    addtimer .fx_time, strnpcinfo(0)+"::OnTeleport"; // time before teleporting away
+    if (.cookie) set teleport_cookie, 0; // Clear teleport cookie of player on teleport use.
+    sc_start SC_SLOWMOVE, .fx_time+400, 100000; // Slow player temporarily to avoid DCs onwarp
     misceffect .fx;           // Default .fx set in teleport_add, other code can override it.
+    addtimer .fx_time, strnpcinfo(0)+"::OnTeleport"; // Defer warp to play FX
     end;
 L_CantPass:
     message strcharinfo(0), .cantpass$; // NPC var allows to change message.
     end;                      // "keyed" teleport and player didnt had proper cookie.
 
-// Teleportation timer event (attached to player). Queued by OnTouch.
+// Deferred teleportation timer event (attached to player). Queued by OnTouch.
 OnTeleport:
     warp .dstmap$, .dst_x, .dst_y;
-    addtimer 3000, strnpcinfo(0)+"::OnWarpDone"; // Mostly to clean up SC icon
+    addtimer 6000, strnpcinfo(0)+"::OnTeleportDone"; // Mostly to clean up SC icon
     end;
 
-// Mostly used to remove slow icon that sticks in some cases.
-OnWarpDone:
-    sc_end SC_SLOWMOVE;
+// Invoked after teleportation complete.
+OnTeleportDone:
+    sc_start SC_SLOWMOVE, 1, 100000; // If client been slow to load map
+    sc_end SC_SLOWMOVE; // and missed sc_end, force toggle to remove icon
     end;
 
 // Invoked on timed teleport's NPC timer expired.
 OnTeleportExpired:
     set .inactive, 1; // Flag shutdown so OnTouch ignores incoming players.
-    addnpctimer (.fx_time + 1000), strnpcinfo(0)+"::OnTeleportShutdown"; // Give time to in-flight players to teleport.
+    addnpctimer (.fx_time + 7000), strnpcinfo(0)+"::OnTeleportShutdown"; // Give time to in-flight players to teleport.
     end;
 
 // Does actual teleport shutdown.
