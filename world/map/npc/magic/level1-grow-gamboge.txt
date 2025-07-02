@@ -14,21 +14,15 @@
     set CASTS, CASTS + 1;
     if (CASTS < 0) set CASTS, 1; // overflow
     misceffect FX_MAGIC_GROW_CAST, strcharinfo(0);
-    setarray @summon[0], 0, (getskilllv(.school)/2)+1;
     callfunc "magic_exp";
     addtimer 4000-(@spellpower-9), strnpcinfo(0)+"::OnSummon";
     end;
 
 OnSummon:
     misceffect FX_MAGIC_GROW_SPAWN, strcharinfo(0);
-    callsub S_SummonAll;
+    //                            map       X      Y    Rad  QTY                        OWNER  DisplayName             Mob ID        AI Lifetime (no custom event)
+    void call("magic_summon_all", getmap(), POS_X, POS_Y, 2, (getskilllv(.school)/2)+1, BL_ID, "Gamboge Plant Summon", GambogePlant, 1, (@spellpower*50)+10000, "");
     end;
-
-S_SummonAll:
-    summon getmap(), rand(POS_X-2,POS_X+2), rand(POS_Y-2,POS_Y+2), BL_ID, "Gamboge Plant Summon", GambogePlant, 1, (@spellpower*50)+10000;
-    set @summon[0], @summon[0] + 1;
-    if (@summon[0] < @summon[1]) goto S_SummonAll;
-    return;
 
 OnInit:
     set .school, SKILL_MAGIC_NATURE;

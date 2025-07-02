@@ -339,6 +339,7 @@ L_LvCkFail:
 // This function used to lock out spell.
 // Input: arg0 - length of cooldown.
 // Input: arg1 - optional: custom SC_COOLDOWN ID to use.
+// Return: nothing, but configures spell lockout mechanics going.
 function|script|magic_block
 {
     if (getarg(0) <= 0) goto L_Block_Fail;
@@ -355,4 +356,56 @@ L_CustomCool:
 L_Block_Fail:
     debugmes "bug: magic_block needs arg(0) > 0";
     return; // Called wrong way -> spell bug.
+}
+
+// magic_summon_all function can be called in any context with or without player
+// This function SUMMONS one or more requested creature around given spot
+// Its effectively wrapper to summon builtin to summon >= 1 beings, in area
+// Inputs: see code below.
+// Return: GID of last summoned mob, 0 on failure.
+// TODO: "real" return of GID (after TMWA call actually patched).
+function|script|magic_summon_all
+{
+    set .@map$,     getarg(0,  "");  // Map where to summon.
+    set .@x,        getarg(1,  -1);  // X where to summon.
+    set .@y,        getarg(2,  -1);  // Y where to summon
+    set .@r,        getarg(3,  -1);  // Mob spread radius (X-R),(Y-R) <-> (X+R),(Y+R)
+    set .@qty,      getarg(4,  -1);  // # of mobs to summon
+    set .@owner,    getarg(5,  -1);  // owner of mob to set
+    set .@name$,    getarg(6,  "");  // mob display name
+    set .@mobID,    getarg(7,  -1);  // ID of mob to summon
+    set .@mobAI,    getarg(8,  -1);  // AI (mode) of mob to use
+    set .@lifetime, getarg(9,  -1);  // Mob's lifetime.
+    set .@event$,   getarg(10, "");  // Custom event on mob death (use "" if not needed)
+
+    if ((.@map$ == "") || (.@r < 0) ||  // FIXME: better map validity check?
+        (.@x <= .@r) || (.@y <= .@r) ||       // No spawns outside of map
+        (.@x > (getmapmaxx(.@map$) + .@r)) || // No spawns outside of map
+        (.@y > (getmapmaxy(.@map$) + .@r)) || // No spawns outside of map
+        (.@qty < 1) || (.@owner < 1) || (.@lifetime < 0) ||
+        (.@event$ == "10"))   // no event been given, not even ""
+        goto L_Fail;
+    goto L_Summon;
+
+L_Summon:
+    set .@qty, .@qty - 1;
+    set .@realx, rand(.@x-.@r, .@x+.@r); // Pick spot around (x,y)
+    set .@realy, rand(.@y-.@r, .@y+.@r);
+    if !(iscollision(.@map$, .@realx, .@realy)) goto L_SummonHere; // Spot ok?
+    set .@realx, .@x; // Fallback to (x, y) on collision (typically player x,y)
+    set .@realy, .@y;
+    goto L_SummonHere;
+
+L_SummonHere:
+    set .@mobGID, 1; // TODO: now its just placeholder for future summon() call prototype change
+    summon .@map$, .@realx, .@realy, .@owner, .@name$, .@mobID, .@mobAI, .@lifetime, .@event$;
+    if (.@qty > 0) goto L_Summon;
+    return .@mobGID;
+
+L_Fail:
+    debugmes "magic_summon_all: call failed, .@map$="+.@map$+" .@x="+.@x+" .@y="+.@y+
+             " .@r="+.@r+" .@qty="+.@qty+" .@owner="+.@owner+" .@name$="+.@name$+
+             " .@mobID="+.@mobID+" .@mobAI="+.@mobAI+" .@lifetime="+.@lifetime+
+             " .@event$="+.@event$+"getarg(10)=" + getarg(10);
+    return 0;
 }
