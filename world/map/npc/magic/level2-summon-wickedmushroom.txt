@@ -39,24 +39,21 @@ OnSummon:
     if(get(Hp, .master) < 1) destroy; // destroy if master is missing
     if(getmap(.master) != strnpcinfo(3)) destroy; // destroy if master left the map
     specialeffect FX_MAGIC_WICKED_SPAWN;
-    set .@i, 0;
-    set .@x, getnpcx();
-    set .@y, getnpcy();
-    set .@map$, strnpcinfo(3);
-    callsub S_SummonAll;
-    end;
+    goto L_SummonRandom; // Spawn one by one to randomize
 
-OnDestroy:
+L_SummonRandom:
+    set .count, .count - 1;
+    set .rnd, rand(0, 9);
+    if (.rnd < 6) set .mob, WickedMushroom;
+    elif (.rnd < 9) set .mob, Moonshroom;
+    else set .mob, EvilMushroom;
+    set .nm$, mobinfo(.mob, MOB_ENG_NAME) + " Summon"; // Get mob's name + add Summon
+    //                            map            X          Y         Rad QTY OWNER  Disp  MobID  AI Lifetime (no custom event)
+    void call("magic_summon_all", strnpcinfo(3), getnpcx(), getnpcy(), 2, 1, .master, .nm$, .mob, 2, .lifetime, "");
+    if (.count > 0) goto L_SummonRandom;
     destroy;
 
-S_SummonAll:
-    set .@rnd, rand(0, 9);
-
-    if   (.@rnd < 6) summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, "Wicked Mushroom Summon", WickedMushroom, 2, .lifetime;
-    elif (.@rnd < 9) summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, "Moonshroom Summon", Moonshroom, 2, .lifetime;
-    elif (.@rnd == 9) summon .@map$, rand(.@x-2,.@x+2), rand(.@y-2,.@y+2), .master, "Evil Mushroom Summon", EvilMushroom, 2, .lifetime;
-    set .@i, .@i + 1;
-    if (.@i < .count) goto S_SummonAll;
+OnDestroy:
     destroy;
 
 L_SpecialRules6:
