@@ -13,10 +13,9 @@ OnInit:
 
 - $@bifs_big and $@bifs_small must always have the same size as $@bifs
 
-- if "error_log: on" is in world/map/conf/battle_local.conf it displays messages like "npc_event: event not found [Miner_Mania::OnBifMined10]" which clutter the server console
-  but otherwise do no harm, its also possible to make "error_log: off" so they don't get displayed anymore but to be sure include a label with the mapnumber in it like:
-  OnBifMined99:
-      end;
+- Mob event labels MUST start with "~", e.g. "~Miner_Mania::OnBifMined". When event label
+    starts from "~", TMWA would know it should not throw event - labels starting from ~ are
+    designated for mob counting/labeling and do NOT throw events on mob death.
 
 - $@bifs/slimes_multi set after how many ticks this map/spot spawns.
   For example multi 6 would spawn on 6th tick which is 6 sec on 1 sec tick duration.
@@ -166,7 +165,7 @@ L_BifMapLoop:
 
     set $@bifs_multi_count[.map_nr], $@bifs_multi[.map_nr];
 
-    set .bifs_alive, mobcount($@bif_mine_maps$[.map_nr], "Miner_Mania::OnBifMined" + .map_nr)+1;
+    set .bifs_alive, mobcount($@bif_mine_maps$[.map_nr], "~Miner_Mania::OnBifMined" + .map_nr)+1;
     set .bifs_respawn_count, $@bifs_count[.map_nr] - .bifs_alive;
 
     if (.bifs_respawn_count < 1) goto L_BifContinue;
@@ -175,11 +174,11 @@ L_BifMapLoop:
     else set .bif, 0;
 
     if (rand(BIG_BIF_CHANCE)<1)
-        areamonster $@bif_mine_maps$[.map_nr], $@bif_mine_maps_x0[.map_nr], $@bif_mine_maps_y0[.map_nr], $@bif_mine_maps_x1[.map_nr], $@bif_mine_maps_y1[.map_nr], "",   $@bifs_big[.bif], 1, "Miner_Mania::OnBifMined" + .map_nr;
+        areamonster $@bif_mine_maps$[.map_nr], $@bif_mine_maps_x0[.map_nr], $@bif_mine_maps_y0[.map_nr], $@bif_mine_maps_x1[.map_nr], $@bif_mine_maps_y1[.map_nr], "",   $@bifs_big[.bif], 1, "~Miner_Mania::OnBifMined" + .map_nr;
     elif (rand(NORMAL_BIF_CHANCE)<1)
-        areamonster $@bif_mine_maps$[.map_nr], $@bif_mine_maps_x0[.map_nr], $@bif_mine_maps_y0[.map_nr], $@bif_mine_maps_x1[.map_nr], $@bif_mine_maps_y1[.map_nr], "",       $@bifs[.bif], 1, "Miner_Mania::OnBifMined" + .map_nr;
+        areamonster $@bif_mine_maps$[.map_nr], $@bif_mine_maps_x0[.map_nr], $@bif_mine_maps_y0[.map_nr], $@bif_mine_maps_x1[.map_nr], $@bif_mine_maps_y1[.map_nr], "",       $@bifs[.bif], 1, "~Miner_Mania::OnBifMined" + .map_nr;
     else
-        areamonster $@bif_mine_maps$[.map_nr], $@bif_mine_maps_x0[.map_nr], $@bif_mine_maps_y0[.map_nr], $@bif_mine_maps_x1[.map_nr], $@bif_mine_maps_y1[.map_nr], "", $@bifs_small[.bif], 1, "Miner_Mania::OnBifMined" + .map_nr;
+        areamonster $@bif_mine_maps$[.map_nr], $@bif_mine_maps_x0[.map_nr], $@bif_mine_maps_y0[.map_nr], $@bif_mine_maps_x1[.map_nr], $@bif_mine_maps_y1[.map_nr], "", $@bifs_small[.bif], 1, "~Miner_Mania::OnBifMined" + .map_nr;
 
     goto L_BifContinue;
 
@@ -200,14 +199,14 @@ L_SlimeMapLoop:
 
     set $@slimes_multi_count[.map_nr], $@slimes_multi[.map_nr];
 
-    set .slimes_alive, mobcount($@slime_mine_maps$[.map_nr], "Miner_Mania::OnSlimeSlain" + .map_nr)+1;
+    set .slimes_alive, mobcount($@slime_mine_maps$[.map_nr], "~Miner_Mania::OnSlimeSlain" + .map_nr)+1;
     set .slimes_respawn_count, $@slimes_count[.map_nr] - .slimes_alive;
 
     if (.slimes_respawn_count < 1) goto L_SlimeContinue;
 
     set .slime, rand(getarraysize($@slimes[0]));
 
-    areamonster $@slime_mine_maps$[.map_nr], $@slime_mine_maps_x0[.map_nr], $@slime_mine_maps_y0[.map_nr], $@slime_mine_maps_x1[.map_nr], $@slime_mine_maps_y1[.map_nr], "", $@slimes[.slime], 1, "Miner_Mania::OnSlimeSlain" + .map_nr;
+    areamonster $@slime_mine_maps$[.map_nr], $@slime_mine_maps_x0[.map_nr], $@slime_mine_maps_y0[.map_nr], $@slime_mine_maps_x1[.map_nr], $@slime_mine_maps_y1[.map_nr], "", $@slimes[.slime], 1, "~Miner_Mania::OnSlimeSlain" + .map_nr;
 
     goto L_SlimeContinue;
 
@@ -221,75 +220,5 @@ L_SlimeContinue:
     setnpctimer 0;
     startnpctimer;
 
-    end;
-
-OnBifMined0:
-    end;
-OnBifMined1:
-    end;
-OnBifMined2:
-    end;
-OnBifMined3:
-    end;
-OnBifMined4:
-    end;
-OnBifMined5:
-    end;
-OnBifMined6:
-    end;
-OnBifMined7:
-    end;
-OnBifMined8:
-    end;
-OnBifMined9:
-    end;
-OnBifMined10:
-    end;
-OnBifMined11:
-    end;
-OnBifMined12:
-    end;
-OnBifMined13:
-    end;
-OnBifMined14:
-    end;
-OnBifMined15:
-    end;
-OnBifMined16:
-    end;
-
-OnSlimeSlain0:
-    end;
-OnSlimeSlain1:
-    end;
-OnSlimeSlain2:
-    end;
-OnSlimeSlain3:
-    end;
-OnSlimeSlain4:
-    end;
-OnSlimeSlain5:
-    end;
-OnSlimeSlain6:
-    end;
-OnSlimeSlain7:
-    end;
-OnSlimeSlain8:
-    end;
-OnSlimeSlain9:
-    end;
-OnSlimeSlain10:
-    end;
-OnSlimeSlain11:
-    end;
-OnSlimeSlain12:
-    end;
-OnSlimeSlain13:
-    end;
-OnSlimeSlain14:
-    end;
-OnSlimeSlain15:
-    end;
-OnSlimeSlain16:
     end;
 }
