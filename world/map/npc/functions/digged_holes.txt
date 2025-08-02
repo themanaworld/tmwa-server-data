@@ -1,0 +1,108 @@
+// Digged holes as NPCs (c) 2025 Hello=). Thanks to HoraK for holes NPCs
+// Idea is:
+// * Digged hole is NPC.
+// * Treasure hunt NPCs are (semi)persistent
+// * Ideally they even saved across restarts by serializing NPC data
+//      Relies on finite size of digging area to avoid MAX_NPC_PER_MAP limit
+// * NPC created outside of TH area(s) are transient and disappear over time
+
+
+// This NPC handles various management tasks around digged holes.
+-|script|DiggedHoleManager|32767
+{
+    end;
+
+OnCmdAdd: // FIXME: add only exists for debug and prototyping.
+    debugmes "DiggedHoleManager::OnCmdAdd ->";
+    if (GM < 60) end;
+    set .@name$, "#digghole|" + getmap() + "|" + POS_X + "|" + POS_Y;
+    set .@res, call("digghole_create", getmap(), POS_X, POS_Y, .@name$, NPC_DIGGHOLE_MIN+rand(4), 48000);
+    debugmes "DiggedHoleManager::OnCmdAdd res=" + .@res;
+    set .npcid, .npcid + 1;
+    if (.npcid > NPC_DIGGHOLE_MAX) set .npcid, NPC_DIGGHOLE_MIN;
+    end;
+
+OnCmdRemove:
+    debugmes "DiggedHoleManager::OnCmdRemove ->";
+    if (GM < 60) end;
+    set .@map$, getmap(); // Find all NPCs on map.
+    foreach 1, .@map$, 0, 0, getmapmaxx(.@map$), getmapmaxy(.@map$), "DiggedHoleManager::OnNPC";
+    end;
+
+OnNPC:
+    set .@npcnm$, strnpcinfo(0, @target_id);
+    debugmes "DiggedHoleManager::OnNPC -> @target_id="+ @target_id + " nm=" + .@npcnm$;
+    if (get(.digghole, @target_id) == 1) destroy @target_id; // Digg hole -> destroy
+    end;
+
+OnInit:
+    // TODO: call persistent holes loader/deserializer here
+    registercmd "@removeholes", "DiggedHoleManager::OnCmdRemove";
+    registercmd "@addhole", "DiggedHoleManager::OnCmdAdd";
+    end;
+}
+
+
+// This NPC used as template to instatiate digged holes.
+-|script|DiggedHoleTemplate|32767
+{
+    end;
+
+OnNewHole: // to add hole using this NPC as template via donpcevent(). Do NOT throw this event directly!
+    debugmes "DiggedHoleTemplate::OnNewHole -> Map=" + .map$ + " x=" + .x + " y=" + .y + " nm=" + .name$ + " sprite=" + .sprite;
+    if !(mapexists(.map$)) end; // avoid server crash in puppet()
+    set .res, puppet(.map$, .x, .y, .name$, .sprite, 1, 1); // instatiate digg hole NPC
+    debugmes "DiggedHoleTemplate::OnNewHole .res="+ .res;
+    if (.res <= 0) end; // Omit puppet setup on failure. 
+    if (.lifetime > 0) addnpctimer .lifetime, .name$+"::OnHoleCollapse";
+    set .digghole, 1, .res; // Mark digg hole NPC as such
+    end;
+
+OnHoleCollapse: // Called on timing out digg holes (puppets only).
+    debugmes "DiggedHoleTemplate::OnHoleCollapse me="+strnpcinfo(0);
+    destroy;
+}
+
+// PUBLIC API. Creates requested digging hole NPC
+// This function designed to run in ANY context, whether RID attached or not.
+// It does rather fancy inter-NPC call to switch to "template" NPC.
+// Inputs: see code below.
+// Return: On success: NPC ID of hole NPC created, > 0
+//         On failure: 0 if puppet failed, -1 if arg check failed.
+// Side effects:
+// * Puppet NPC - possibly self destructing on timer
+// * Needs DiggedHoleTemplate NPC to exist
+function|script|digghole_create
+{
+    set .@map$,     getarg(0, "");   // Digged Hole map.
+    set .@x,        getarg(1, -10);  // Digged Hole X
+    set .@y,        getarg(2, -10);  // Digged Hole Y
+    set .@name$,    getarg(3, "");   // Digged Hole NPC label
+    set .@sprite,   getarg(4, -10);  // Digged Hole NPC sprite ID
+    set .@lifetime, getarg(5, 0);    // Should Digged Hole persist?
+    set .@res, -1;                   // Validate params, fail by default
+    set .@npc,  getnpcid("DiggedHoleTemplate"); // To stage inter-npc call
+    debugmes "digghole_create -> Map=" + .@map$ + " x=" + .@x + " y=" + .@y + " nm=" + .@name$ + " sprite=" + .@sprite + " lifetime=" + .@lifetime + " .@npc=" + .@npc;
+    if (!(mapexists(.@map$)) ||      // Map should exist
+        (.@x <= 0) || (.@y <= 0) ||  // (x,y) should fit map
+        (.@x > getmapmaxx(.@map$)) || (.@y > getmapmaxy(.@map$)) ||
+        (.@name$ == "") ||           // NPC name cant be empty
+        (.@sprite < NPC_DIGGHOLE_MIN) ||
+        (.@sprite > NPC_DIGGHOLE_MAX) || // NPC sprite should be digg hole
+        (.@npc < 1))                 // getnpcid(template) should succeed
+        goto L_Fail;
+    // NPC's var   value       NPC ID - copy vars (inter-npc call setup)
+    set .map$,     .@map$,     .@npc;
+    set .x,        .@x,        .@npc;
+    set .y,        .@y,        .@npc;
+    set .name$,    .@name$,    .@npc;
+    set .sprite,   .@sprite,   .@npc;
+    set .lifetime, .@lifetime, .@npc;
+    donpcevent("DiggedHoleTemplate::OnNewHole"); // actually do inter-npc call
+    set .@res, get(.res, .@npc); // Fetch .res from called npc
+    return .@res;
+
+L_Fail:
+    debugmes "digghole_create FAIL (bug!) Map=" + .@map$ + " x=" + .@x + " y=" + .@y + " nm=" + .@name$ + " sprite=" + .@sprite + " DHMIN=" + NPC_DIGGHOLE_MIN + " DHMAX="+ NPC_DIGGHOLE_MAX + " .@npc=" + .@npc;
+    return .@res;
+}
