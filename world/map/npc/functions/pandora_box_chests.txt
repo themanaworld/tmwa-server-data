@@ -1,0 +1,153 @@
+// Pandora box style chests (C) 2025 Hello=)
+// Loosely based on digg holes management code
+
+// This NPC handles management tasks around "pandorabox" chests placement
+-|script|PandoraboxManager|32767
+{
+    end;
+
+OnCmdAdd: // Lets GM to manually place "pandora box" chest.
+    debugmes "PandoraboxManager::OnCmdAdd ->";
+    if (GM < 60) end;
+    set #DD5A_EXPCHEST, 11; // So GM (caller) can NOT trigger chests
+    set .@name$, "??#pb" + getmap() + "|" + POS_X + "|" + POS_Y;
+    set .@res, call("pandorabox_create", getmap(), POS_X, POS_Y, .@name$, 111, 0);
+    debugmes "PandoraboxManager::OnCmdAdd res=" + .@res;
+    end;
+
+OnCmdRemove:
+    debugmes "PandoraboxManager::OnCmdRemove ->";
+    if (GM < 60) end;
+    set .@map$, getmap(); // Find all NPCs on map.
+    foreach 1, .@map$, 0, 0, getmapmaxx(.@map$), getmapmaxy(.@map$), "PandoraboxManager::OnNPC";
+    end;
+
+OnNPC:
+    set .@npcnm$, strnpcinfo(0, @target_id);
+    debugmes "PandoraboxManager::OnNPC -> @target_id="+ @target_id + " nm=" + .@npcnm$;
+    if (get(.pandorabox, @target_id) == 1) destroy @target_id; // Pandora box -> destroy
+    end;
+
+OnInit:
+    registercmd "@removechests", "PandoraboxManager::OnCmdRemove";
+    registercmd "@addchest", "PandoraboxManager::OnCmdAdd";
+    end;
+}
+
+
+// This NPC is template for pandora box chests instances
+-|script|PandoraboxTemplate|32767
+{
+    set .res, call("pandorabox_reward");
+    if ((.res > 0) && (.pandorabox == 1))  // Can only open pandora box once.
+        destroy;
+    end;
+
+// to add pandora box using this NPC as template via donpcevent(). Do NOT throw this event directly!
+OnNewPandorabox:
+    debugmes "PandoraboxTemplate::OnNewPandorabox -> Map=" + .map$ + " x=" + .x + " y=" + .y + " nm=" + .name$ + " sprite=" + .sprite;
+    if !(mapexists(.map$)) end; // avoid server crash in puppet()
+    set .res, puppet(.map$, .x, .y, .name$, .sprite, 1, 1); // instatiate pandora box NPC
+    debugmes "PandoraboxTemplate::OnNewPandorabox .res="+ .res;
+    if (.res <= 0) end; // Omit puppet setup on failure. 
+    if (.lifetime > 0) addnpctimer .lifetime, .name$+"::OnHoleCollapse";
+    set .pandorabox, 1, .res; // Mark pandora box NPC as such
+    end;
+
+OnPandoraExpired: // Called if pandora box timed out
+    debugmes "PandoraboxTemplate::OnPandoraExpired me="+strnpcinfo(0);
+    destroy;
+}
+
+// PUBLIC API. Creates requested pandora box chest NPC
+// This function designed to run in ANY context, whether RID attached or not.
+// It does rather fancy inter-NPC call to switch to "template" NPC.
+// Inputs: see code below.
+// Return: On success: NPC ID of chest NPC created, > 0
+//         On failure: 0 if puppet failed, -1 if arg check failed.
+// Side effects:
+// * Puppet NPC - possibly self destructing on timer
+// * Needs PandoraboxTemplate NPC to exist
+function|script|pandorabox_create
+{
+    set .@map$,     getarg(0, "");   // Chest's map.
+    set .@x,        getarg(1, -10);  // Chest's X
+    set .@y,        getarg(2, -10);  // Chest's Y
+    set .@name$,    getarg(3, "");   // Chest's NPC label
+    set .@sprite,   getarg(4, -10);  // Chest's NPC sprite ID
+    set .@lifetime, getarg(5, 0);    // Should chest persist?
+    set .@res, -1;                   // Validate params, fail by default
+    set .@npc,  getnpcid("PandoraboxTemplate"); // To stage inter-npc call
+    debugmes "pandorabox_create -> Map=" + .@map$ + " x=" + .@x + " y=" + .@y + " nm=" + .@name$ + " sprite=" + .@sprite + " lifetime=" + .@lifetime + " .@npc=" + .@npc;
+    if (!(mapexists(.@map$)) ||      // Map should exist
+        (.@x <= 0) || (.@y <= 0) ||  // (x,y) should fit map
+        (.@x > getmapmaxx(.@map$)) || (.@y > getmapmaxy(.@map$)) ||
+        (.@name$ == "") ||           // NPC name cant be empty
+        (.@npc < 1))                 // getnpcid(template) should succeed
+        goto L_Fail;
+    // NPC's var   value       NPC ID - copy vars (inter-npc call setup)
+    set .map$,     .@map$,     .@npc;
+    set .x,        .@x,        .@npc;
+    set .y,        .@y,        .@npc;
+    set .name$,    .@name$,    .@npc;
+    set .sprite,   .@sprite,   .@npc;
+    set .lifetime, .@lifetime, .@npc;
+    donpcevent("PandoraboxTemplate::OnNewPandorabox"); // actually do inter-npc call
+    set .@res, get(.res, .@npc); // Fetch .res from called npc
+    return .@res;
+
+L_Fail:
+    debugmes "pandorabox_create FAIL (bug!) Map=" + .@map$ + " x=" + .@x + " y=" + .@y + " nm=" + .@name$ + " sprite=" + .@sprite + " .@npc=" + .@npc;
+    return .@res;
+}
+
+// Internal function, do not call except by pandora box chest npcs.
+// This function should be called with RID attached.
+// Inputs: nothing, but assumes player attached.
+// Return: If player got reward, 1 (caller should renove chest, etc)
+//         If something wrong, 0 (do not remove chest so others can try)
+// Side effects:
+// * Player gets random reward.
+function|script|pandorabox_reward
+{
+    debugmes "pandorabox_reward -> NPC=" + strnpcinfo(0) + " Nmap = "+strnpcinfo(3);
+    if !(isin(strnpcinfo(3), getnpcx()-2, getnpcy()-2, getnpcx()+2, getnpcy()+2))
+        goto L_TooFar;  // Too far away -> cant open chest.
+
+    if (#DD5A_EXPCHEST > 10)
+        goto L_Greedy;  // GreedHead detection reuses existing DD5A_EXPCHEST var (saves server RAM)
+
+    set #DD5A_EXPCHEST, #DD5A_EXPCHEST+1;
+    set .@mode, rand(1, 3);
+    if (.@mode == 1) goto L_RandXP;
+    elif (.@mode == 2) goto L_RandGP;
+    // TODO more random rewards here?
+    goto L_RandBP;
+
+L_RandXP:
+    set .@reward_xp, 10000 + rand(220000); // 120K avg, original had fixed 200K,
+    set .@reward_jxp, 1 + rand(5000);      // 2500 avg, original had 10K
+    message strcharinfo(0), "[PandoraBox] : you feel stronger and wiser now! " + .@reward_xp + " XP gained!";
+    getexp .@reward_xp, .@reward_jxp;
+    return 1;
+
+L_RandGP:
+    set .@reward_gp, 10000 + rand(160000); // About 90K avg
+    message strcharinfo(0), "[PandoraBox] : Whoa! You find " + .@reward_gp + " gold coins!";
+    set Zeny, Zeny + .@reward_gp;
+    return 1;
+
+L_RandBP:
+    set .@reward_bp, 10 + rand(60); // 40 BP avg
+    set BOSS_POINTS, (BOSS_POINTS + .@reward_bp);
+    message strcharinfo(0), "[PandoraBox] : You feel daring today, " + .@reward_bp + " BP gained for " + BOSS_POINTS + " total!";
+    return 1;
+    
+L_Greedy:
+    message strcharinfo(0), "[PandoraBox] : don't be so greedy, let others to open chests, too!";
+    return 0;
+
+L_TooFar:
+    message strcharinfo(0), "[PandoraBox] : you are too far to open chest!";
+    return 0;
+}
