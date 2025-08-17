@@ -7,16 +7,13 @@
     end;
 
 OnCmdAdd: // Lets GM to manually place "pandora box" chest.
-    debugmes "PandoraboxManager::OnCmdAdd ->";
     if (GM < 60) end;
     set #DD5A_EXPCHEST, 11; // So GM (caller) can NOT trigger chests
     set .@name$, "??#pb" + getmap() + "|" + POS_X + "|" + POS_Y;
     set .@res, call("pandorabox_create", getmap(), POS_X, POS_Y, .@name$, 111, 0);
-    debugmes "PandoraboxManager::OnCmdAdd res=" + .@res;
     end;
 
 OnCmdRemove:
-    debugmes "PandoraboxManager::OnCmdRemove ->";
     if (GM < 60) end;
     set .@map$, getmap(); // Find all NPCs on map.
     foreach 1, .@map$, 0, 0, getmapmaxx(.@map$), getmapmaxy(.@map$), "PandoraboxManager::OnNPC";
@@ -24,7 +21,6 @@ OnCmdRemove:
 
 OnNPC:
     set .@npcnm$, strnpcinfo(0, @target_id);
-    debugmes "PandoraboxManager::OnNPC -> @target_id="+ @target_id + " nm=" + .@npcnm$;
     if (get(.pandorabox, @target_id) == 1) destroy @target_id; // Pandora box -> destroy
     end;
 
@@ -45,17 +41,14 @@ OnInit:
 
 // to add pandora box using this NPC as template via donpcevent(). Do NOT throw this event directly!
 OnNewPandorabox:
-    debugmes "PandoraboxTemplate::OnNewPandorabox -> Map=" + .map$ + " x=" + .x + " y=" + .y + " nm=" + .name$ + " sprite=" + .sprite;
     if !(mapexists(.map$)) end; // avoid server crash in puppet()
     set .res, puppet(.map$, .x, .y, .name$, .sprite, 1, 1); // instatiate pandora box NPC
-    debugmes "PandoraboxTemplate::OnNewPandorabox .res="+ .res;
     if (.res <= 0) end; // Omit puppet setup on failure. 
     if (.lifetime > 0) addnpctimer .lifetime, .name$+"::OnHoleCollapse";
     set .pandorabox, 1, .res; // Mark pandora box NPC as such
     end;
 
 OnPandoraExpired: // Called if pandora box timed out
-    debugmes "PandoraboxTemplate::OnPandoraExpired me="+strnpcinfo(0);
     destroy;
 }
 
@@ -78,7 +71,6 @@ function|script|pandorabox_create
     set .@lifetime, getarg(5, 0);    // Should chest persist?
     set .@res, -1;                   // Validate params, fail by default
     set .@npc,  getnpcid("PandoraboxTemplate"); // To stage inter-npc call
-    debugmes "pandorabox_create -> Map=" + .@map$ + " x=" + .@x + " y=" + .@y + " nm=" + .@name$ + " sprite=" + .@sprite + " lifetime=" + .@lifetime + " .@npc=" + .@npc;
     if (!(mapexists(.@map$)) ||      // Map should exist
         (.@x <= 0) || (.@y <= 0) ||  // (x,y) should fit map
         (.@x > getmapmaxx(.@map$)) || (.@y > getmapmaxy(.@map$)) ||
@@ -110,7 +102,6 @@ L_Fail:
 // * Player gets random reward.
 function|script|pandorabox_reward
 {
-    debugmes "pandorabox_reward -> NPC=" + strnpcinfo(0) + " Nmap = "+strnpcinfo(3);
     if !(isin(strnpcinfo(3), getnpcx()-2, getnpcy()-2, getnpcx()+2, getnpcy()+2))
         goto L_TooFar;  // Too far away -> cant open chest.
 
