@@ -8,18 +8,19 @@
 
 OnInit:
     set .map$, "099-8";
-    set .minx, 21;
-    set .maxx, 381;
-    set .miny, 23;
-    set .maxy, 380;
     freeloop 1; // inits 100 chests thus runs plenty of code
     goto L_SeedChest;
 
 L_SeedChest:
+    if (.chest > 100)
+        goto L_Done; // All 100 chests were placed? Done.
+    set .x, rand(21, 381);         // Pick random spot @ Labyrinth map
+    set .y, rand(23, 380);
+    if (iscollision(.map$, .x, .y)) // Is chosen spot collision?
+        goto L_SeedChest;           // Retry i-th chest placement
     set .chest, .chest + 1;
-    if (.chest > 100) goto L_Done;
-    set .nm$, "??#LabChest" + .chest; // ??:visible part, #LabChestNNN:hidden unique part.
-    void call("pandorabox_create", .map$, rand(.minx, .maxx), rand(.miny, .maxy), .nm$, 111, 0);
+    set .nm$, "??#LabyChest" + .chest; // ??:visible part, #LabyChestNNN:hidden unique part.
+    void call("pandorabox_create", .map$, .x, .y, .nm$, 111, 0);
     goto L_SeedChest;
 
 L_Done:
