@@ -12,18 +12,7 @@
 {
     end;
 
-OnCmdAdd: // FIXME: add only exists for debug and prototyping.
-    debugmes "DiggedHoleManager::OnCmdAdd ->";
-    if (GM < 60) end;
-    set .@name$, "#digghole|" + getmap() + "|" + POS_X + "|" + POS_Y;
-    set .@res, call("digghole_create", getmap(), POS_X, POS_Y, .@name$, NPC_DIGGHOLE_MIN+rand(4), 48000);
-    debugmes "DiggedHoleManager::OnCmdAdd res=" + .@res;
-    set .npcid, .npcid + 1;
-    if (.npcid > NPC_DIGGHOLE_MAX) set .npcid, NPC_DIGGHOLE_MIN;
-    end;
-
 OnCmdRemove:
-    debugmes "DiggedHoleManager::OnCmdRemove ->";
     if (GM < 60) end;
     set .@map$, getmap(); // Find all NPCs on map.
     foreach 1, .@map$, 0, 0, getmapmaxx(.@map$), getmapmaxy(.@map$), "DiggedHoleManager::OnNPC";
@@ -31,14 +20,12 @@ OnCmdRemove:
 
 OnNPC:
     set .@npcnm$, strnpcinfo(0, @target_id);
-    debugmes "DiggedHoleManager::OnNPC -> @target_id="+ @target_id + " nm=" + .@npcnm$;
     if (get(.digghole, @target_id) == 1) destroy @target_id; // Digg hole -> destroy
     end;
 
 OnInit:
     // TODO: call persistent holes loader/deserializer here
     registercmd "@removeholes", "DiggedHoleManager::OnCmdRemove";
-    registercmd "@addhole", "DiggedHoleManager::OnCmdAdd";
     end;
 }
 
@@ -49,17 +36,14 @@ OnInit:
     end;
 
 OnNewHole: // to add hole using this NPC as template via donpcevent(). Do NOT throw this event directly!
-    debugmes "DiggedHoleTemplate::OnNewHole -> Map=" + .map$ + " x=" + .x + " y=" + .y + " nm=" + .name$ + " sprite=" + .sprite;
     if !(mapexists(.map$)) end; // avoid server crash in puppet()
     set .res, puppet(.map$, .x, .y, .name$, .sprite, 1, 1); // instatiate digg hole NPC
-    debugmes "DiggedHoleTemplate::OnNewHole .res="+ .res;
     if (.res <= 0) end; // Omit puppet setup on failure. 
     if (.lifetime > 0) addnpctimer .lifetime, .name$+"::OnHoleCollapse";
     set .digghole, 1, .res; // Mark digg hole NPC as such
     end;
 
 OnHoleCollapse: // Called on timing out digg holes (puppets only).
-    debugmes "DiggedHoleTemplate::OnHoleCollapse me="+strnpcinfo(0);
     destroy;
 }
 
@@ -82,7 +66,6 @@ function|script|digghole_create
     set .@lifetime, getarg(5, 0);    // Should Digged Hole persist?
     set .@res, -1;                   // Validate params, fail by default
     set .@npc,  getnpcid("DiggedHoleTemplate"); // To stage inter-npc call
-    debugmes "digghole_create -> Map=" + .@map$ + " x=" + .@x + " y=" + .@y + " nm=" + .@name$ + " sprite=" + .@sprite + " lifetime=" + .@lifetime + " .@npc=" + .@npc;
     if (!(mapexists(.@map$)) ||      // Map should exist
         (.@x <= 0) || (.@y <= 0) ||  // (x,y) should fit map
         (.@x > getmapmaxx(.@map$)) || (.@y > getmapmaxy(.@map$)) ||
