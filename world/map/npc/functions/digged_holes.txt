@@ -19,7 +19,6 @@ OnCmdRemove:
     end;
 
 OnNPC:
-    set .@npcnm$, strnpcinfo(0, @target_id);
     if (get(.digghole, @target_id) == 1) destroy @target_id; // Digg hole -> destroy
     end;
 
@@ -39,7 +38,7 @@ OnNewHole: // to add hole using this NPC as template via donpcevent(). Do NOT th
     if !(mapexists(.map$)) end; // avoid server crash in puppet()
     set .res, puppet(.map$, .x, .y, .name$, .sprite, 1, 1); // instatiate digg hole NPC
     if (.res <= 0) end; // Omit puppet setup on failure. 
-    if (.lifetime > 0) addnpctimer .lifetime, .name$+"::OnHoleCollapse";
+    if (.lifetime > 0) addnpctimer .lifetime, strnpcinfo(0, .res)+"::OnHoleCollapse";
     set .digghole, 1, .res; // Mark digg hole NPC as such
     end;
 
