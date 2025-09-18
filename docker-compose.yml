@@ -1,0 +1,52 @@
+# Runs tmwa-login, tmwa-char, and tmwa-map from ghcr.io/themanaworld/tmwa
+# using the local server-data configuration. Host networking is used so the
+# 127.0.0.1 IPs and ports in the configs work as-is.
+#
+# Ports (from config):
+# - login (external): 6901
+# - char  (client + internal to map): 6122
+# - map   (external): 5122
+#
+# Startup order:
+# - char depends on login
+# - map depends on char
+
+services:
+  tmwa-login:
+    image: ghcr.io/themanaworld/tmwa:latest
+    container_name: tmwa-login
+    network_mode: host
+    # The tmwa binaries default to reading conf/tmwa-*.conf in CWD.
+    working_dir: /var/tmwa/login
+    entrypoint: ["tmwa-login"]
+    volumes:
+      # This compose file lives in server-data/, so "." is that directory.
+      - ./:/var/tmwa:rw
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: unless-stopped
+
+  tmwa-char:
+    image: ghcr.io/themanaworld/tmwa:latest
+    container_name: tmwa-char
+    network_mode: host
+    working_dir: /var/tmwa/world
+    entrypoint: ["tmwa-char"]
+    volumes:
+      - ./:/var/tmwa:rw
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: unless-stopped
+    depends_on:
+      - tmwa-login
+
+  tmwa-map:
+    image: ghcr.io/themanaworld/tmwa:latest
+    container_name: tmwa-map
+    network_mode: host
+    working_dir: /var/tmwa/world/map
+    entrypoint: ["tmwa-map"]
+    volumes:
+      - ./:/var/tmwa:rw
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: unless-stopped
+    depends_on:
+      - tmwa-char
