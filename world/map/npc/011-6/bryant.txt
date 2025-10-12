@@ -1,13 +1,11 @@
+//Quest: Bandit Bounty, see lena.txt
 //NPC to set the state for killing the bandit lord.
-// Variables used: nibble 0 of QUEST_Hurnscald
 
 011-6,27,200,0|script|Bryant|126
 {
-    set @state, ((QUEST_Hurnscald & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
-
-    if (@state >= 5) goto L_Bryant_Quiet;
-    if (@state == 4) goto L_Bryant_Waits;
-    if (@state == 3) goto L_Bryant_Summon;
+    if (QL_BANDIT_BOUNTY >= 5) goto L_Bryant_Quiet;
+    if (QL_BANDIT_BOUNTY == 4) goto L_Bryant_Waits;
+    if (QL_BANDIT_BOUNTY == 3) goto L_Bryant_Summon;
 
     mes "[Bryant]";
     mes "\"I'm looking everywhere for the bandit leader. I can't seem to find him.\"";
@@ -20,25 +18,21 @@ L_Bryant_Summon:
     mes "Bryant gives you a key, shaped to look like a small silver arrow.";
     next;
     mes "\"I believe I saw him run into a cave south and east of here. There is a red carpet in front of the cave entrance. Be careful and good luck.\"";
-    set @state, 4;
-    callsub S_Update_Var;
-    monster "011-6",260,250,"",1065,1, "Bryant::OnBanditLordDead";
+    set QL_BANDIT_BOUNTY, 4;
+    monster "011-6",260,250,"",1065,1, "Bryant::OnBanditLordDead"; //magic number for "Bandit Lord"
     goto L_Close;
 
 OnBanditLordDead:
     message strcharinfo(0), "You killed the bandit lord.";
-    set @state, ((QUEST_Hurnscald & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
-    if (@state != 4)
+    if (QL_BANDIT_BOUNTY != 4)
         goto L_End;
-    set @state, 5;
-    callsub S_Update_Var;
+    set QL_BANDIT_BOUNTY, 5;
     getexp 10000, 0;
     set BOSS_POINTS, BOSS_POINTS + 20;
     message strcharinfo(0), "You gain 20 Boss Points giving you a total of " + BOSS_POINTS + ".";
     goto L_End;
 
 L_End:
-    set @state, 0;
     end;
 
 L_Bryant_Waits:
@@ -68,10 +62,5 @@ L_Bryant_Quiet:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     close;
-
-S_Update_Var:
-    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@state << NIBBLE_0_SHIFT));
-    return;
 }
