@@ -1,0 +1,49 @@
+// Smarter Enchanter Amulet code (C) 2025 Hello=)
+// Lore wise, Enchanter Amulet item got mind of its own.
+// It prefers rangers, just like enchanters themselves.
+
+// This function invoked by Enchanter Amulet equip, it assumes RID attached.
+// Inputs:
+//      arg0 = default bonus, bHit.
+//      arg1 = default bonus, bCritical.
+//      arg2 = bonus if amulet likes PC, bHit.
+//      arg3 = bonus if amulet likes PC, bCritical.
+// Outputs: nothing but changes stats.
+// Side effects: "smart item" setting bonuses on player. See code.
+function|script|enchanter_amulet_bonus
+{
+    set .@amulet_happy, call("player_is_ranger", BL_ID);
+    if (get(BaseLevel, BL_ID) < 60) // Lv < Lv 60 -> no extras (balancing)
+        set .@amulet_happy, 0;
+    // bHit logic:
+    if !(.@amulet_happy)
+        bonus bHit, getarg(0); // Not happy -> use arg0
+    else
+        bonus bHit, getarg(2); // Happy -> use arg1
+    // bCritical logic:
+    if !(.@amulet_happy)
+        bonus bCritical, getarg(1); // Not happy -> use arg2
+    else
+        bonus bCritical, getarg(3); // Happy -> use arg3
+    return;
+}
+
+// This function tests if given RID is ranger
+// It can be called from any context but given RID must exist.
+// Inputs: see code below.
+// Outputs: 0: not ranger, 1: ranger
+function|script|player_is_ranger
+{
+    set .@rid, getarg(0, -1); // Arg(0) is RID to inspect
+    setarray .@weapons[0], Rainerang, ShortBow, ForestBow, DesertBow, ImperialBow, BansheeBow, Bow;
+    set .@ranger, 0;
+    if ((.@rid < 150000) || (.@rid > 110000000))
+        goto L_ParamFail;
+    if (array_search(getequipid(equip_hand1, strcharinfo(0, .@rid)), .@weapons) >= 0)
+        set .@ranger, 1;
+    return .@ranger;
+
+L_ParamFail:
+    debugmes "player_is_ranger: call failed (bug!) arg0=" + getarg(0);
+    return 0;
+}
