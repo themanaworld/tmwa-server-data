@@ -3,20 +3,20 @@
 // Needed: 10 Pink Antenna
 // Reward: Scythe
 //
-// Variables used: Nibble 1 of QUEST_Hurnscald (previously QUEST_Scythe_state)
+// CommonVar: QL_SCYTHE
+//
+//This file also connects to the inspector quest
 
 008-1,101,30,0|script|Hinnak|142
 {
     set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-
     if (@inspector == 10) goto L_NohMask;
-    goto L_No_NohMask;
 
-L_No_NohMask:
-    set @state, ((QUEST_Hurnscald & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    goto L_Begin;
 
-    if (@state == 1) goto L_Exchange;
-    if (@state == 2) goto L_ThanksAgain;
+L_Begin:
+    if (QL_SCYTHE == 1) goto L_Exchange;
+    if (QL_SCYTHE == 2) goto L_ThanksAgain;
     if (getequipid(equip_head) == PinkieHat) goto L_Intro_Hat;
 
     mes "[Farmer Hinnak]";
@@ -53,8 +53,7 @@ L_Help:
     mes "[Farmer Hinnak]";
     mes "\"Yes, you look quite fast. Maybe you can catch some of them. That will pay them a lesson.";
     mes "Slay some of them and bring me 10 of their antennae.\"";
-    set @state, 1;
-    callsub S_Update_Mask;
+    set QL_SCYTHE, 1;
     next;
     menu
         "Sure, I'm on my way", L_Close,
@@ -88,8 +87,7 @@ L_Exchange_Exchange:
         goto L_Exchange_TooMany;
     delitem PinkAntenna, 10;
     getitem Scythe, 1;
-    set @state, 2;
-    callsub S_Update_Mask;
+    set QL_SCYTHE, 2;
     mes "[Farmer Hinnak]";
     mes "\"Thank you very much. I've got something for you. My old scythe. Maybe you can use it as a weapon. It is a bit cumbersome but its strikes are deadly.\"";
     goto L_Close;
@@ -234,7 +232,7 @@ L_NohMask:
     menu
         "Did you see anyone in a mask come by here at night?", L_NohMask_Mask,
         "Did you see anyone with a large satchel come by here at night?", L_NohMask_Satchel,
-        "Hello.", L_No_NohMask;
+        "Hello.", L_Begin;
 
 L_NohMask_Mask:
     mes "[Farmer Hinnak]";
@@ -247,11 +245,6 @@ L_NohMask_Satchel:
     goto L_Close;
 
 L_Close:
-    set @state, 0;
     set @inspector, 0;
     close;
-
-S_Update_Mask:
-    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_1_MASK)) | (@state << NIBBLE_1_SHIFT);
-    return;
 }
