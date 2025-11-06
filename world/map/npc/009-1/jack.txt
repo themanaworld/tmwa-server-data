@@ -1,17 +1,18 @@
 //#################################################################################
-//#                                                                               #
-//# This script file contains the npc scripts for two quests:                     #
-//#                                                                               #
-//# Quest1: Obtaining a Forest bow                                                #
-//# Needed: About 20 Raw logs, 5000gp, some chatting and running                  #
-//# Reward: Forest bow                                                            #
-//#                                                                               #
-//# Quest2: Obtaining a Wooden shield                                             #
-//# Needed: 40 Raw logs, 5000gp                                                   #
-//# Reward: Wooden shield and 2500exp                                             #
-//#                                                                               #
-//# Variables used:  @QUEST_Forestbow_state, nibbles 0 and 1                      #
-//#################################################################################
+//#
+//# This script file contains the npc script to obtain a wooden shield.
+//#
+//# Needed: 40 Raw logs, 5000gp
+//# Reward: Wooden shield and 2500exp
+//#
+//# It also has a small part of the forest bow quest, see alan.txt
+//#
+//# Prerequisites: Forest Bow Quest
+//# ServerVar: QUEST_Forestbow_state
+//# CommonVar: QL_WOODEN_SHIELD
+//#
+//# This also has elements of the inspector quest embedded throughout
+//# Afterwards, it becomes a daily quest NPC
 
 // Lumberjack
 009-1,40,45,0|script|Jack|141
@@ -20,21 +21,12 @@
     set @SHIELD_COST, 5000;
     set @QUEST_SHIELD_EXP, 2500;
 
-    set @Q_Forestbow_MASK, NIBBLE_0_MASK;
-    set @Q_Forestbow_SHIFT, NIBBLE_0_SHIFT;
-
-    set @Q_Woodenshield_MASK, NIBBLE_1_MASK;
-    set @Q_Woodenshield_SHIFT, NIBBLE_1_SHIFT;
-
-    set @Q_Forestbow, ((QUEST_Forestbow_state & @Q_Forestbow_MASK) >> @Q_Forestbow_SHIFT);
-    set @Q_Woodenshield, ((QUEST_Forestbow_state & @Q_Woodenshield_MASK) >> @Q_Woodenshield_SHIFT);
-
     set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
 
-    if (@Q_Woodenshield >= 3) goto L_Shield_state_3;
-    if (@Q_Woodenshield == 2) goto L_Shield_state_2;
-    if (@Q_Woodenshield == 1) goto L_Shield_state_1;
-    if (@Q_Forestbow > 1) goto L_Bow_state_2;
+    if (QL_WOODEN_SHIELD >= 3) goto L_Shield_state_3;
+    if (QL_WOODEN_SHIELD == 2) goto L_Shield_state_2;
+    if (QL_WOODEN_SHIELD == 1) goto L_Shield_state_1;
+    if (QL_FOREST_BOW > 1) goto L_Bow_state_2;
 
     mes "[Jack Lumber]";
     mes "\"Hello there! My name is Jack Lumber, the enemy of all trees. If you need some firewood, just let me know.\"";
@@ -44,7 +36,7 @@
 
 L_NotInspector:
     next;
-    if (@Q_Forestbow < 1)
+    if (QL_FOREST_BOW < 1)
         goto L_Close;
     menu
         "I heard you aren't delivering any more living wood. Why not?", L_Next;
@@ -107,13 +99,12 @@ L_Next7:
         "Southwest you say? OK, thank you.", L_Next8;
 
 L_Next8:
-    set @Q_Forestbow, 2;
-    callsub S_Update_Mask;
+    set QL_FOREST_BOW, 2;
     goto L_Close;
 
 L_Bow_state_2:
     // Bow state 4: The player has found a perfect piece of wood.
-    if (@Q_Forestbow > 3) goto L_Bow_state_4;
+    if (QL_FOREST_BOW > 3) goto L_Bow_state_4;
 
     mes "\"Good luck hunting those tree monsters – you'll need it.\"";
     if (@inspector != 1)
@@ -132,7 +123,7 @@ L_Bow_state_4:
 
 L_Next9:
     // Check if the player tells the truth (continue on in any case)
-    if (@Q_Forestbow > 4) goto L_Shield_state_0;
+    if (QL_FOREST_BOW > 4) goto L_Shield_state_0;
 
     mes "[Jack Lumber]";
     mes "\"Hrmph. I'm someone who respects those speaking the truth.\"";
@@ -145,8 +136,7 @@ L_Bow_state_4_reaffirm:
     goto L_Close;
 
 L_Shield_state_0:
-    set @Q_Woodenshield, 1;
-    callsub S_Update_Mask;
+    set QL_WOODEN_SHIELD, 1;
 
     mes "[Jack Lumber]";
     mes "\"You no doubt remember how I struggled with those beasts, fighting for my life. Scared me, those seven-branched little stumps did!  Never since that day have I strayed near them, and yet there you are, cutting them down one by one. I'm proud of you – to dare to fight those trunks is admirable indeed. You're as strong as if you were my own child!\"";
@@ -170,8 +160,7 @@ L_Yes:
     mes "[Jack Lumber]";
     mes "\"All I need is " + @RAWLOGS_AMOUNT + " raw logs. This needn't be high quality wood; pretty much any log you can find should work. Oh, and I'll also need " + @SHIELD_COST + " GP for other materials.\"";
     next;
-    set @Q_Woodenshield, 2;
-    callsub S_Update_Mask;
+    set QL_WOODEN_SHIELD, 2;
     goto L_Close;
 
 L_Shield_state_2:
@@ -193,8 +182,7 @@ L_Next10:
     set Zeny, Zeny - @SHIELD_COST;
     getexp @QUEST_SHIELD_EXP, 0;
     getitem "WoodenShield", 1;
-    set @Q_Woodenshield, 3;
-    callsub S_Update_Mask;
+    set QL_WOODEN_SHIELD, 3;
     mes "[Jack Lumber]";
     mes "\"Have a seat.\"";
     mes "Jack saws the logs into pieces and then sands them until they are smooth to the touch.";
@@ -279,8 +267,4 @@ L_Daily:
 L_Close:
     set @inspector, 0;
     close;
-
-S_Update_Mask:
-    set QUEST_Forestbow_state, (QUEST_Forestbow_state & ~(@Q_Forestbow_MASK | @Q_Woodenshield_MASK)) | (@Q_Forestbow << @Q_Forestbow_SHIFT) | (@Q_Woodenshield << @Q_Woodenshield_SHIFT);
-    return;
 }
