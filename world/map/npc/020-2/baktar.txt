@@ -7,8 +7,7 @@
 //# you need to bring 7 different items, but only one of each kind.
 //#
 //# variable used:
-//# @QUEST_Nivalis_state: NIBBLE0, NIBBLE1, NIBBLE2, NIBBLE3:
-//# BYTE0 ( == NIBBLE0 | NIBBLE1)        stores in each bit information if that item was already brought.
+//# @QUEST_Nivalis_state: BYTE_0_MASK
 //# bits:
 //# bit 0        if you have met the npc already
 //# bit 1        Desert Hat
@@ -69,14 +68,23 @@ L_Delivery:
     goto L_Close;
 
 L_Start:
+    if ((QL_BAKTAR & BYTE_0_MASK) == BYTE_0_MASK)
+        goto L_Finished;
 
-    if(QL_BAKTAR & (1<<@BIT_KNOWHIM)) goto L_KnowAlready;
-        mes @npcname$;
-        mes "\"Hello, did you come from Tulimshar? Because you have a nice tan. \"";
+    if(QL_BAKTAR & (1<<@BIT_KNOWHIM))
+        goto L_KnowAlready;
+
+    mes @npcname$;
+    mes "\"Hello, did you come from Tulimshar? Because you have a nice tan.\"";
     menu
         "Yes, I'm from Tulimshar", L_exotic,
         "Well, I just like sunbathing", L_Close,
         "Good bye", L_Close;
+
+L_Finished:
+    mes @npcname$;
+    mes "\"Thank you for your help, these items look great on my shelf!\"";
+    goto L_Close;
 
 L_KnowAlready:
     mes @npcname$;
@@ -96,28 +104,28 @@ L_startitem:
     set @c, 0;
     set QL_BAKTAR, QL_BAKTAR | (1<<@BIT_KNOWHIM);
     if (countitem("DesertHat") < 1 || QL_BAKTAR & (1<<@BIT_DESERTHAT) ) goto L_DesertShirt;
-    set @exotic_item$[@c], "a Desert Hat ?";
+    set @exotic_item$[@c], "a Desert Hat?";
     set @menuid[@c], 0;
     set @c, @c + 1;
     goto L_DesertShirt;
 
 L_DesertShirt:
     if (countitem("DesertShirt") < 1 || QL_BAKTAR & (1<<@BIT_DESERTSHIRT) ) goto L_SerfHat;
-    set @exotic_item$[@c], "a Desert Shirt ?";
+    set @exotic_item$[@c], "a Desert Shirt?";
     set @menuid[@c], 1;
     set @c, @c + 1;
     goto L_SerfHat;
 
 L_SerfHat:
     if (countitem("SerfHat") < 1 || QL_BAKTAR & (1<<@BIT_SERFHAT) ) goto L_tongue;
-    set @exotic_item$[@c], "a Serf Hat ?";
+    set @exotic_item$[@c], "a Serf Hat?";
     set @menuid[@c], 2;
     set @c, @c + 1;
     goto L_tongue;
 
 L_tongue:
     if (countitem("MountainSnakeTongue") < 1 || QL_BAKTAR & (1<<@BIT_MS_TONGUE)) goto L_egg;
-    set @exotic_item$[@c], "a Mountain Snake Tongue ?";
+    set @exotic_item$[@c], "a Mountain Snake Tongue?";
     set @menuid[@c], 3;
     set @c, @c + 1;
     goto L_egg;
