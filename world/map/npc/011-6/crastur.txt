@@ -1,10 +1,12 @@
+//This is connected to the silk pants quest - see hetchel.txt
+//This also references the inspector quest, but that hasn't been migrated yet
+
 011-6,172,250,0|script|Crastur the Ugly|418
 {
-    set @spants_state, ((QUEST_WG_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
     set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-    if (@spants_state < 3) goto L_Regular;
-    if (@spants_state == 3) goto L_Ask;
-    if (@spants_state == 4 || @spants_state == 5 || @spants_state == 6) goto L_Ask_Again;
+    if (QL_SILK_PANTS < 3) goto L_Regular;
+    if (QL_SILK_PANTS == 3) goto L_Ask;
+    if (QL_SILK_PANTS == 4 || QL_SILK_PANTS == 5 || QL_SILK_PANTS == 6) goto L_Ask_Again;
     goto L_Main;
 
 
@@ -53,8 +55,7 @@ L_Jibber:
     mes "[Crastur]";
     mes "";
     mes "\"I do not care about petty problems, get to the point!\"";
-    set @spants_state, 4;
-    callsub S_Update_Spants;
+    set QL_SILK_PANTS, 4;
     menu
         "\"Hetchel needs the Plans for Cotton Trousers Stolen from Lora Tay\"", L_Jibber_Cont,
         "\"Don't talk to me like that\" (Leave)", L_Close;
@@ -81,8 +82,7 @@ L_Jibber_Cont:
     mes "";
     mes "\"Bring me proof that you killed all of the pirates!\"";
     next;
-    set @spants_state, 5;
-    callsub S_Update_Spants;
+    set QL_SILK_PANTS, 5;
     menu
         "\"I have it right here\"", L_Bandana,
         "\"What kind of proof?\"", L_Pirate_Proof;
@@ -100,7 +100,7 @@ L_Pirate_Proof:
 L_Bandana:
     getinventorylist;
     if (countitem("Bandana") < 1) goto L_No_Item;
-    if (@spants_state != 6) goto L_Wrong_Item;
+    if (QL_SILK_PANTS != 6) goto L_Wrong_Item;
     mes "Crasturs gazes at the bandana in your hand. He scratches his right arm, then he nods";
     mes "[Crastur]";
     mes "";
@@ -113,8 +113,7 @@ L_Bandana:
     mes "\"Crastur hands you a page ripped out of his Almanach that has dotted lines in green and red Ink all over it";
     next;
     mes "You put the plans into a hidden pocket";
-    set @spants_state, 7;
-    callsub S_Update_Spants;
+    set QL_SILK_PANTS, 7;
     goto L_Close;
 
 L_No_Item:
@@ -211,11 +210,6 @@ L_Hurnscald:
     mes "\"I am sorry but it is not in my best interest to talk about my business with you.\"";
     goto L_Close;
 
-S_Update_Spants:
-    set QUEST_WG_state, (QUEST_WG_state & ~(NIBBLE_2_MASK) | (@spants_state << NIBBLE_2_SHIFT));
-    return;
-
 L_Close:
-    set @spants_state, 0;
     close;
 }
