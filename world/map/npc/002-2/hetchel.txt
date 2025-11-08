@@ -7,20 +7,17 @@
 //  She could also sell, dyed sheets, Silk robes from Lora Tay.
 //  (6000 with cocoons, 40000 (?) with no cocoons).
 //
-//  @wg_state: variable indicating winter gloves status.
-//  Lora Tay proposes silk Robe if (@wg_state>= 11).
 //  @SHEET_COCOONS_NR:* Number of cocoons required per sheet.
 //  Might ne calculated from @ROBE_COCOONS_NR/@ROBE_SHEETS_NR
 //  Actually: 150∕6 = 25
 //  @SHEET_ZENY      :* Money to pay per sheet: A sixth of 10000-2*500-6000
 //  @SheetCount Number of sheets to buy (variable).
 //
-//  @silkpants_state: variable indicating silkpant quest status.
+//  QL_SILK_PANTS: variable indicating silk pants quest status
+//  The silk pants quest is only accessable when QL_FURQUEST >= 11 and level is >= 45
 
 002-2,76,92,0|script|Hetchel|376
 {
-    set @wg_state, ((QUEST_WG_state & BYTE_0_MASK) >> BYTE_0_SHIFT);
-    set @spants_state, ((QUEST_WG_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
     set @SHEET_COCOONS_NR, 25;
     set @SHEET_ZENY, 500;
     set @spants_minlvl, 45;
@@ -31,13 +28,13 @@
     set @spants_job_reward, 10000;
     set @SheetCount, 0;
 
-    if (@wg_state < 11)
+    if (QL_FURQUEST < 11)
         goto L_WG_quest_not_done;
-    if ( BaseLevel > @spants_minlvl && @spants_state < 1 ) goto L_Spants_Cry;
-    if ( @spants_state == 1 ) goto L_Spants_Cry_2;
-    if ( @spants_state == 2 ) goto L_Spants_Start;
-    if ( @spants_state > 2 && @spants_state < 8 ) goto L_Spants_Steal;
-    if ( @spants_state == 8 ) goto L_Spants_Make;
+    if ( BaseLevel >= @spants_minlvl && QL_SILK_PANTS < 1 ) goto L_Spants_Cry;
+    if ( QL_SILK_PANTS == 1 ) goto L_Spants_Cry_2;
+    if ( QL_SILK_PANTS == 2 ) goto L_Spants_Start;
+    if ( QL_SILK_PANTS > 2 && QL_SILK_PANTS < 8 ) goto L_Spants_Steal;
+    if ( QL_SILK_PANTS == 8 ) goto L_Spants_Make;
 
     mes "[Hetchel the weaver]";
     mes "";
@@ -147,8 +144,7 @@ L_Spants_Tears_Cont:
     mes "Hetchel dries her tears with the Red Piece of Cloth you gave her.";
     mes "This seems to have consoled her.";
     delitem "RedCottonCloth", 1;
-    set @spants_state, 2;
-    callsub S_Update_Spants;
+    set QL_SILK_PANTS, 2;
     goto L_Spants_No_Cry;
 
 L_Spants_No_Cry:
@@ -159,10 +155,10 @@ L_Spants_No_Cry:
     next;
     mes "I am just so sad because I realized that this is going to be the thing I will be doing for the rest of my life\"";
     menu
-        "\"You are still young, Hetchel, You can still accomplish things\"", L_Spants_Cry_Cont_2,
+        "\"You are still young, Hetchel, You can still accomplish things\"", L_Spants_No_Cry_Cont_2,
         "\"Yes, you are probably correct.\"", L_Close;
 
-L_Spants_Cry_Cont_2:
+L_Spants_No_Cry_Cont_2:
     mes "[Hetchel the weaver]";
     mes "";
     mes "Hetchel thinks for a while";
@@ -172,10 +168,10 @@ L_Spants_Cry_Cont_2:
     mes "\"They must be so embarrassed - they are true heroes to give up their dignity to be able to fight the perils of this world\"";
     mes "Hetchel sobs";
     menu
-        "\"So you want to make pants for mages?\"", L_Spants_Cry_Cont_3,
+        "\"So you want to make pants for mages?\"", L_Spants_No_Cry_Cont_3,
         "\"This sounds ridiculous. Good Bye.\"", L_Close;
 
-L_Spants_Cry_Cont_3:
+L_Spants_No_Cry_Cont_3:
     mes "[Hetchel the weaver]";
     mes "";
     mes "\"Ok, so I figured I could make some trousers like Lora Tay makes but from the much finer Material the Silk Worms are making for us\"";
@@ -183,11 +179,10 @@ L_Spants_Cry_Cont_3:
     mes "Can you get me those plans from her?\"";
     menu
         "\"No, sorry I am too busy for that\"", L_Close,
-        "\"Of course!\"", L_Spants_Cry_Cont_4;
+        "\"Of course!\"", L_Spants_No_Cry_Cont_4;
 
-L_Spants_Cry_Cont_4:
-    set @spants_state, 3;
-    callsub S_Update_Spants;
+L_Spants_No_Cry_Cont_4:
+    set QL_SILK_PANTS, 3;
     mes "[Hetchel the weaver]";
     mes "";
     mes "\"Oh wait! I am not sure if it is such a good idea to ask her about that, I think she would not give the plans to you anyway.";
@@ -203,8 +198,7 @@ L_Spants_Reply_Cry:
     mes "[Hetchel the weaver]";
     mes "";
     mes "\"...\"";
-    set @spants_state, 1;
-    callsub S_Update_Spants;
+    set QL_SILK_PANTS, 1;
     goto L_Close;
 
 
@@ -217,9 +211,8 @@ L_Spants_Steal_Cont:
         "No, not yet", L_Close;
 
 L_Spants_Steal_Cont2:
-    if @spants_state < 7 goto L_Spants_No_Item;
-    set @spants_state, 8;
-    callsub S_Update_Spants;
+    if QL_SILK_PANTS < 7 goto L_Spants_No_Item;
+    set QL_SILK_PANTS, 8;
     mes "[Hetchel the weaver]";
     mes "";
     mes "\"Oh this is miraculous\"";
@@ -269,8 +262,7 @@ L_Spants_Pay:
     delitem @spants_req$[1], @spants_req_amt[1];
     delitem @spants_req$[2], @spants_req_amt[2];
     getitem "SilkPants", 1;
-    set @spants_state, 9;
-    callsub S_Update_Spants;
+    set QL_SILK_PANTS, 9;
     next;
     mes "[Hetchel the weaver]";
     mes "";
@@ -389,14 +381,7 @@ L_TooMany:
     mes "\"Your bag hasn't room enough. Store some things and come back.\"";
     goto L_Close;
 
-S_Update_Spants:
-    set QUEST_WG_state, (QUEST_WG_state & ~(NIBBLE_2_MASK) | (@spants_state << NIBBLE_2_SHIFT));
-    return;
-
 L_Close:
-    set QUEST_WG_state, (QUEST_WG_state & ~(NIBBLE_2_MASK) | (@spants_state << NIBBLE_2_SHIFT));
-    set @wg_state, 0;
-    set @spants_state, 0;
     set @spants_minlvl, 0;
     set @spants_reward, 0;
     set @spants_job_reward, 0;
@@ -404,7 +389,6 @@ L_Close:
     set @SHEET_COCOONS_NR, 0;
     set @SHEET_ZENY, 0;
     set @SheetCount, 0;
-    set @wg_state, 0;
     cleararray @items$, "", getarraysize(@items$);
     cleararray @item_names$, "", getarraysize(@item_names$);
     close;
@@ -412,32 +396,25 @@ L_Close:
 
 002-2,73,95,0|script|HetchelDebug|376
 {
-set @wg_state, ((QUEST_WG_state & BYTE_0_MASK) >> BYTE_0_SHIFT);
-set @spants_state, ((QUEST_WG_state & NIBBLE_2_MASK) >> NIBBLE_2_SHIFT);
+    mes "Lora Tay Quest State: "+ QL_FURQUEST;
+    mes "Silk Pants Quest State: "+ QL_SILK_PANTS;
 
-mes "Lora Tay Quest State: "+ @wg_state;
-mes "Silk Pants Quest State: "+ @spants_state;
-
-menu
-    "Set Lora Tay Quest State", L_Lora_Tay,
-    "Set Silk Pants Quest State", L_Spants,
-    "Close", L_Close;
+    menu
+        "Set Lora Tay Quest State", L_Lora_Tay,
+        "Set Silk Pants Quest State", L_Spants,
+        "Close", L_Close;
 
 L_Lora_Tay:
     mes "Set Lora Tay Visited State (0 - reset , 11 - enough for SilkPants Quest)";
-    input @wg_state;
+    input QL_FURQUEST;
     goto L_Close;
 
 L_Spants:
     mes "Set SilkPants Quest State (0 - reset)";
-    input @spants_state;
+    input QL_SILK_PANTS;
     goto L_Close;
 
 L_Close:
-    set QUEST_WG_state, (QUEST_WG_state & ~(BYTE_0_MASK) | (@wg_state << BYTE_0_SHIFT));
-    set @wg_state, 0;
-    set QUEST_WG_state, (QUEST_WG_state & ~(NIBBLE_2_MASK) | (@spants_state << NIBBLE_2_SHIFT));
-    set @spants_state, 0;
     close;
 
 OnInit:
