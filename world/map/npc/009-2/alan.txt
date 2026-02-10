@@ -10,14 +10,12 @@
 //# ServerVar: QUEST_Forestbow_state
 //# CommonVar: QL_FOREST_BOW
 //#
-//# This also has elements of the inspector quest embedded throughout
+//Connected to the inspector quest, see 009-1/inspector.txt
 
 // Archer Shop Master
 009-2,99,23,0|script|Alan|125
 {
     set @BROKENLOG_EXP, 15;
-
-    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
 
     if (QL_FOREST_BOW == 1) goto L_State_1;
     if (QL_FOREST_BOW == 2) goto L_State_2;
@@ -28,7 +26,7 @@
     mes "[Alan]";
     mes "\"When you want to buy something then please speak to my apprentice. I am only doing special requests.\"";
     next;
-    if (@inspector == 1)
+    if (QL_INSPECTOR == 1)
         menu
             "OK, thanks.", L_Close,
             "Can you make me a really good bow?", L_State_0_1,
@@ -75,7 +73,7 @@ L_State_1:
     mes "[Alan]";
     mes "\"Did you already ask Jack why he won't deliver me any more living wood?\"";
     next;
-    if (@inspector == 1)
+    if (QL_INSPECTOR == 1)
         menu
             "No, I haven't had the time yet.", L_Close,
             "No, I didn't find him yet.", L_State_1_1,
@@ -93,14 +91,12 @@ L_State_2:
     mes "[Alan]";
     mes "\"Did you already ask Jack why he won't deliver me any more living wood?\"";
     next;
-    if (@inspector == 1)
+    if (QL_INSPECTOR == 1)
         menu
             "Yes, I did. He said that the trees turned into dangerous monsters.", L_Next1,
             "Have you seen anything strange recently that might be connected to the robberies?", L_NohMask_Answer;
-    if (@inspector != 1)
-        menu
-            "Yes, I did. He said that the trees turned into dangerous monsters.", L_Next1;
-    goto L_Next1;
+    menu
+        "Yes, I did. He said that the trees turned into dangerous monsters.", L_Next1;
 
 L_Next1:
     mes "[Alan]";
@@ -116,7 +112,7 @@ L_State_3:
     if (countitem("RawLog") < 1)
         goto L_Close;
     next;
-    if (@inspector == 1)
+    if (QL_INSPECTOR == 1)
         menu
             "Here, take a look!", L_State_3_try,
             "Yes, but I need it for something else.", L_Close,
@@ -160,7 +156,7 @@ L_State_4:
     mes "[Alan]";
     mes "\"I can make you a really nice forest bow out of this. I just need 10,000 GP for material and work time.\"";
     next;
-    if (@inspector == 1)
+    if (QL_INSPECTOR == 1)
         menu
             "10,000??? What a ripoff!", L_Close,
             "Sure, here you go!", L_State_4_pay,
@@ -195,7 +191,7 @@ L_State_4_TooMany:
 L_State_5:
     mes "[Alan]";
     mes "\"I hope you are satisfied with your forest bow. It is one of my best works.\"";
-    if (@inspector != 1)
+    if (QL_INSPECTOR != 1)
         goto L_Close;
     next;
     menu
@@ -213,6 +209,5 @@ L_No_Log:
     goto L_Close;
 
 L_Close:
-    set @inspector, 0;
     close;
 }
