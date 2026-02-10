@@ -11,7 +11,7 @@
 //# ServerVar: QUEST_Forestbow_state
 //# CommonVar: QL_WOODEN_SHIELD
 //#
-//# This also has elements of the inspector quest embedded throughout
+//# Connected to the inspector quest, see 009-1/inspector.txt
 //# Afterwards, it becomes a daily quest NPC
 
 // Lumberjack
@@ -21,8 +21,6 @@
     set @SHIELD_COST, 5000;
     set @QUEST_SHIELD_EXP, 2500;
 
-    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-
     if (QL_WOODEN_SHIELD >= 3) goto L_Shield_state_3;
     if (QL_WOODEN_SHIELD == 2) goto L_Shield_state_2;
     if (QL_WOODEN_SHIELD == 1) goto L_Shield_state_1;
@@ -30,7 +28,7 @@
 
     mes "[Jack Lumber]";
     mes "\"Hello there! My name is Jack Lumber, the enemy of all trees. If you need some firewood, just let me know.\"";
-    if (@inspector == 1)
+    if (QL_INSPECTOR == 1)
         goto L_NohMask_Ask;
     goto L_NotInspector;
 
@@ -107,7 +105,7 @@ L_Bow_state_2:
     if (QL_FOREST_BOW > 3) goto L_Bow_state_4;
 
     mes "\"Good luck hunting those tree monsters – you'll need it.\"";
-    if (@inspector != 1)
+    if (QL_INSPECTOR != 1)
         goto L_Close;
     goto L_NohMask_Ask;
 
@@ -147,7 +145,7 @@ L_Shield_state_1:
     mes "[Jack Lumber]";
     mes "\"I have an idea. What would you say about a new shield?\"";
     next;
-    if (@inspector == 1)
+    if (QL_INSPECTOR == 1)
         menu
             "No thanks.", L_Close,
             "Yes, please!", L_Yes,
@@ -221,7 +219,7 @@ L_Shield_state_3:
     mes "[Jack Lumber]";
     mes "\"I hope that my shield will serve you well!\"";
     next;
-    if (@inspector != 1)
+    if (QL_INSPECTOR != 1)
         goto L_Made_Shield;
     menu
         "Me too.", L_Made_Shield,
@@ -265,6 +263,5 @@ L_Daily:
     goto L_Close;
 
 L_Close:
-    set @inspector, 0;
     close;
 }

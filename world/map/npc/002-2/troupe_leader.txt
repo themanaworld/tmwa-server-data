@@ -1,11 +1,9 @@
-//
+//Connected to the inspector quest, see 009-1/inspector.txt
 
 002-2,81,21,0|script|Troupe Leader|165
 {
-    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-
-    if (@inspector == 4) goto L_NohMask_Troupe;
-    if (@inspector == 13) goto L_NohMask_Found;
+    if (QL_INSPECTOR == 4) goto L_NohMask_Troupe;
+    if (QL_INSPECTOR == 13) goto L_NohMask_Found;
 
     mes "[Troupe Leader]";
     mes "\"Hello. I'm the leader of a traveling theater troupe. We'll be staying here in Tulimshar for a while.\"";
@@ -21,8 +19,7 @@ L_NohMask_Troupe:
         "Hmm...", L_Close;
 
 L_NohMask_Idea:
-    set @inspector, 5;
-    callsub S_Update_Mask;
+    set QL_INSPECTOR, 5;
     mes "[Troupe Leader]";
     mes "\"Hm...I did see an old man hang out near the theater after our last show.\"";
     goto L_Close;
@@ -39,8 +36,7 @@ L_NohMask_Found:
     if (@inventorylist_count == 100) goto L_NohMask_TooMany;
     mes "[1500 experience points]";
     getexp 1500, 0;
-    set @inspector, 14;
-    callsub S_Update_Mask;
+    set QL_INSPECTOR, 14;
     getitem "NohMask", 1;
     next;
     mes "[Troupe Leader]";
@@ -54,10 +50,5 @@ L_NohMask_TooMany:
     goto L_Close;
 
 L_Close:
-    set @inspector, 0;
     close;
-
-S_Update_Mask:
-    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (@inspector << NIBBLE_3_SHIFT);
-    return;
 }

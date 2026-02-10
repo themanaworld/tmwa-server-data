@@ -1,32 +1,30 @@
-// Old woman
+//Connected to the inspector quest, see 009-1/inspector.txt
 
 009-1,29,43,0|script|Old Woman|154
 {
-    set @inspector, ((QUEST_Hurnscald & NIBBLE_3_MASK) >> NIBBLE_3_SHIFT);
-
     if (BaseLevel < 40) goto L_Lower;
 
     mes "[Old Woman]";
     mes "\"Hello deary.\"";
-    if ((@inspector >= 1  && @inspector <= 7) || @inspector == 9)
+    if ((QL_INSPECTOR >= 1  && QL_INSPECTOR <= 7) || QL_INSPECTOR == 9)
         goto L_NohMask;
     close;
 
 L_Lower:
     mes "[Old Woman]";
     mes "\"Watch out for these flowers. They don't like to be messed with.\"";
-    if ((@inspector >= 1  && @inspector <= 7) || @inspector == 9)
+    if ((QL_INSPECTOR >= 1  && QL_INSPECTOR <= 7) || QL_INSPECTOR == 9)
         goto L_NohMask;
     close;
 
 L_NohMask:
     next;
-    if (@inspector == 7)
+    if (QL_INSPECTOR == 7)
         goto L_NohMask_Alibi;
     callfunc "ProcessEquip";
     if (@torsoC == cDarkBlue && @legsC == cDarkBlue)
         goto L_NohMask_Fake;
-    if (@inspector >= 3 && @inspector <= 6)
+    if (QL_INSPECTOR >= 3 && QL_INSPECTOR <= 6)
         goto L_Close;
     menu
         "Have you seen anything strange lately?", L_NohMask_FirstAsk,
@@ -36,10 +34,9 @@ L_NohMask:
 L_NohMask_FirstAsk:
     mes "[Old Woman]";
     mes "\"Yes, but I'm only talking to the inspector himself!\"";
-    if (@inspector != 1)
+    if (QL_INSPECTOR != 1)
         goto L_Close;
-    set @inspector, 2;
-    callsub S_Update_Mask;
+    set QL_INSPECTOR, 2;
     goto L_Close;
 
 L_NohMask_Alibi:
@@ -49,18 +46,16 @@ L_NohMask_Alibi:
 L_Next:
     mes "[Old Woman]";
     mes "\"Yes, we were both at home all night.\"";
-    set @inspector, 8;
-    callsub S_Update_Mask;
+    set QL_INSPECTOR, 8;
     goto L_Close;
 
 L_NohMask_Fake:
-    if (@inspector == 9) goto L_NohMask_Fake_Satchel;
-    if (@inspector >= 3 && @inspector <= 6) goto L_NohMask_Filler;
+    if (QL_INSPECTOR == 9) goto L_NohMask_Fake_Satchel;
+    if (QL_INSPECTOR >= 3 && QL_INSPECTOR <= 6) goto L_NohMask_Filler;
 
     mes "[Old Woman]";
     mes "\"I saw someone sneaking around town wearing a theater mask. It looked like one of the masks used by the troupe that was in town recently.\"";
-    set @inspector, 3;
-    callsub S_Update_Mask;
+    set QL_INSPECTOR, 3;
     goto L_Close;
 
 L_NohMask_Filler:
@@ -71,15 +66,9 @@ L_NohMask_Filler:
 L_NohMask_Fake_Satchel:
     mes "[Old Woman]";
     mes "\"I've remembered something else. The night the troupe left, I saw someone with a theater mask take a large satchel out of town. He was heading north.\"";
-    set @inspector, 10;
-    callsub S_Update_Mask;
+    set QL_INSPECTOR, 10;
     goto L_Close;
 
 L_Close:
-    set @inspector, 0;
     close;
-
-S_Update_Mask:
-    set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_3_MASK)) | (@inspector << NIBBLE_3_SHIFT);
-    return;
 }
