@@ -19,6 +19,7 @@ function|script|ClearVariables
     callsub S_BlueSage;
     callsub S_Luca;
     callsub S_Keshlam;
+    callsub S_Katze;
 
     callsub S_Valentine2021;
 
@@ -232,6 +233,25 @@ S_Bandit: // move Bandit subquest into Nibble 0 of QUEST_Hurnscald
     set QUEST_Hurnscald, (QUEST_Hurnscald & ~(NIBBLE_0_MASK) | (@bandit << NIBBLE_0_SHIFT));
     set TMW_Quest, 40;
     set @bandit, 0;
+    return;
+
+S_Katze: //"Cat Ears" quest values became more granular so it'd look nicer in the quest log, now called "Mad Katze"
+    if(!Katze) goto S_Return;
+    set @Ears, ((Katze & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT); //the actual progress tracker
+    set @Hiss, ((Katze & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT); //used to track the hissing at the cave entrance
+
+    if (@Ears == 7) set @Ears, 13; //finished
+    if (@Ears == 6) set @Ears, 11; //needs privacy
+    if (@Ears == 5) set @Ears, 10; //needs stuff
+    if (@Ears == 4) set @Ears, 9; //what else can she say?
+    if (@Ears == 3) set @Ears, 7; //needs wood
+    if (@Ears == 2) set @Ears, 5; //needs fur
+    if (@Ears == 1) set @Ears, 3; //needs food
+
+    //finalized
+    set Katze, 0;
+    set QL_CAT_EARS, @Ears;
+    set QUEST_Katze, (QUEST_Katze & ~(NIBBLE_1_MASK)) | (@Hiss << NIBBLE_1_SHIFT);
     return;
 
 S_Valentine2021:

@@ -1,30 +1,25 @@
-// The pot where the player can deposit stuff for the cat.
+//The pot where the player can deposit stuff for the cat.
+//See katze.txt for more info
 
 015-3,37,29,0|script|Pot|400
 {
-    set @cat, ((Katze & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
-
-    if (@cat > 0)
-        mes "It's that old pot again.";
-    if (@cat == 0)
-        mes "It's a pot.";
+    if (QL_CAT_EARS < 3) mes "It's a pot.";
+    if (QL_CAT_EARS >= 3) mes "It's that old pot again.";
     next;
 
-    if (@cat == 1 && @catNeedsAlone == 0)
-        goto L_NeedsFood;
-    if (@cat == 1)
-        goto L_HasMilk;
-    if (@cat == 2 && @catNeedsAlone == 0)
-        goto L_NeedsFur;
-    if (@cat == 2)
-        goto L_HasFood;
-    if (@cat == 3)
-        goto L_NeedsWood;
-    if (@cat == 4 && @catNeedsAlone == 1)
-        goto L_HasWood;
-    if (@cat >= 4)
-        goto L_Close;
-    goto L_NeedsMilk;
+    //handle each state
+    if (QL_CAT_EARS == 8) goto L_HasWood; //leave to progress
+    if (QL_CAT_EARS == 7) goto L_NeedsWood; //has asked
+
+    if (QL_CAT_EARS == 5) goto L_NeedsFur;
+
+    if (QL_CAT_EARS == 4) goto L_HasFood; //leave to progress
+    if (QL_CAT_EARS == 3) goto L_NeedsFood;
+
+    if (QL_CAT_EARS == 2) goto L_HasMilk; //leave to progress
+    if (QL_CAT_EARS == 1) goto L_NeedsMilk;
+
+    close;
 
 L_NeedsMilk:
     if (countitem("Milk") > 0)
@@ -35,9 +30,7 @@ L_NeedsMilk:
 
 L_GiveMilk:
     delitem "Milk", 1;
-    set @cat, 1;
-    callsub S_Update_Katze;
-    set @catNeedsAlone, 1;
+    set QL_CAT_EARS, 2;
     goto L_Close;
 
 L_HasMilk:
@@ -65,16 +58,12 @@ L_NeedsFood:
 
 L_GiveBird:
     delitem "BirdLeg", 1;
-    set @cat, 2;
-    callsub S_Update_Katze;
-    set @catNeedsAlone, 1;
+    set QL_CAT_EARS, 4;
     goto L_Close;
 
 L_GiveSteak:
     delitem "Steak", 1;
-    set @cat, 2;
-    callsub S_Update_Katze;
-    set @catNeedsAlone, 1;
+    set QL_CAT_EARS, 4;
     goto L_Close;
 
 L_HasFood:
@@ -84,7 +73,6 @@ L_HasFood:
 L_NeedsFur:
     mes "And it's empty!";
     next;
-
     if (countitem("WhiteFur") > 0)
         menu
             "Put a white fur next to the pot.", L_GiveFur,
@@ -104,9 +92,7 @@ L_NeedsWood:
 
 L_GiveWood:
     delitem "RawLog", 1;
-    set @cat, 4;
-    callsub S_Update_Katze;
-    set @catNeedsAlone, 1;
+    set QL_CAT_EARS, 8;
     mes "You put the wooden log next to the pot. The cat eyes it suspiciously, but remains on her spot.";
     goto L_Close;
 
@@ -115,10 +101,5 @@ L_HasWood:
     goto L_Close;
 
 L_Close:
-    set @cat, 0;
     close;
-
-S_Update_Katze:
-    set Katze, (Katze & ~(NIBBLE_0_MASK)) | (@cat << NIBBLE_0_SHIFT);
-    return;
 }
