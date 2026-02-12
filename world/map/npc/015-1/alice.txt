@@ -1,16 +1,60 @@
-// A herb collector giving the players some hints about finding and brewing
-// herbs.
+//A herb collector giving the players some hints about finding and brewing
+//herbs, but more importantly she gives hints about how to handle Katze.
+//See katze.txt for more info
+
+015-1,55,53,0|script|Alice Debug|106
+{
+    //we need to use the older bitshift technique for this var
+    //see 015-3/barrier.txt for more info
+    set @Hiss, ((QUEST_Katze & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+
+    mes "[Alice Debug]";
+    mes "What do you want to do?";
+    menu
+        "Show Quest State", L_ShowState,
+        "Set Quest State", L_SetState,
+        "Reset", L_Reset,
+        "Nothing.", L_Close;
+
+L_ShowState:
+    mes "Ears: " + QL_CAT_EARS;
+    mes "Hiss: " + @Hiss;
+    goto L_Close;
+
+L_SetState:
+    mes "What state do you want?";
+    input QL_CAT_EARS;
+    set @Hiss, 0;
+    mes "Set to " + QL_CAT_EARS;
+    goto L_Close;
+
+L_Reset:
+    set QL_CAT_EARS, 0;
+    set @Hiss, 0;
+    mes "Reset!";
+    goto L_Close;
+
+L_Close:
+    set QUEST_Katze, (QUEST_Katze & ~(NIBBLE_1_MASK)) | (@Hiss << NIBBLE_1_SHIFT);
+    close;
+
+OnInit:
+    if (!debug)
+        disablenpc "Alice Debug";
+    end;
+}
 
 015-1,52,53,0|script|Alice|106
 {
-    set @cat, ((Katze & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
-    set @Hiss, ((Katze & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
+    //we need to use the older bitshift technique for this var
+    //see 015-3/barrier.txt for more info
+    set @Hiss, ((QUEST_Katze & NIBBLE_1_MASK) >> NIBBLE_1_SHIFT);
 
     mes "[Alice]";
     mes "\"Greeting, fellow wanderer.";
     mes "Are you collecting herbs, too?\"";
     next;
-    if (@Hiss == 2 && @cat < 4)
+    if (@Hiss == 2 && QL_CAT_EARS < 10) //10 means Katze has said she likes the player
         menu
             "Yes, sure.", L_findmany,
             "Herbs?", L_herbs,
@@ -91,7 +135,6 @@ L_Next3:
     goto L_Close;
 
 L_Close:
-    set @cat, 0;
     set @Hiss, 0;
     close;
 }

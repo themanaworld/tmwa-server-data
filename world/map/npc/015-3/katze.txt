@@ -18,38 +18,45 @@
 
 015-3,32,25,0|script|Katze|172
 {
-    set @cat, ((Katze & NIBBLE_0_MASK) >> NIBBLE_0_SHIFT);
+    //handle each state
+    if (QL_CAT_EARS >= 13) goto L_Finished;
+    if (QL_CAT_EARS == 12) goto L_GivesReward;
+    if (QL_CAT_EARS == 11) goto L_HasStuff; //leave to progress
+    if (QL_CAT_EARS == 10) goto L_NeedsStuff;
+    if (QL_CAT_EARS == 9) goto L_OffersReward;
 
-    if (@cat == 1 && @catNeedsAlone == 0) goto L_NeedsFood;
-    if (@cat == 1) goto L_NeedsFood;
-    if (@cat == 2 && @catNeedsAlone == 0) goto L_NeedsFur;
-    if (@cat == 2) goto L_NeedsFur;
-    if (@cat == 3) goto L_NeedsWood;
-    if (@cat == 4 && @catNeedsAlone == 0) goto L_NeedsStuff;
-    if (@cat == 4) goto L_PreNeedsStuff;
-    if (@cat == 5) goto L_NeedsStuff2;
-    if (@cat == 6 && @catNeedsAlone == 0) goto L_GainEars;
-    if (@cat == 6) goto L_PreGainEars;
-    if (@cat == 7) goto L_Finished;
-    goto L_NeedsMilk;
+    if (QL_CAT_EARS == 8) goto L_HasWood; //leave to progress
+    if (QL_CAT_EARS == 7) goto L_NeedsWood; //has asked
+    if (QL_CAT_EARS == 6) goto L_NeedsWood; //hasn't asked, still shocked
+    if (QL_CAT_EARS == 5) goto L_NeedsFur;
 
-L_NeedsMilk:
-    mes "[Katze]";
-    mes "\"Meow.\"";
-    next;
-    menu "Throw a stone at the cat.", L_ThrowStone,
-         "Leave the cat alone.", L_Close;
+    if (QL_CAT_EARS == 4) goto L_NeedsFood; //leave to progress
+    if (QL_CAT_EARS == 3) goto L_NeedsFood;
 
+    if (QL_CAT_EARS == 2) goto L_NeedsMilk; //leave to progress
+    if (QL_CAT_EARS == 1) goto L_NeedsMilk;
+
+    //catch any errors
+    mes "Something went wrong.";
+    close;
+
+//resets the quest
 L_ThrowStone:
-    set @cat, 0;
-    callsub S_Update_Katze;
+    set QL_CAT_EARS, 1; //reset to the beginning
     heal ((MaxHp/100) * -30), 0;
     warp "015-1", 60, 32;
     mes "\"GRAAUWL! Hissss...\"";
     mes "Yikes, the cat attacked you! Your whole body is scratched. Maybe throwing a stone wasn't such a great idea...";
     goto L_Close;
 
-L_NeedsFood:
+L_NeedsMilk: //also covers "HasMilk"
+    mes "[Katze]";
+    mes "\"Meow.\"";
+    next;
+    menu "Throw a stone at the cat.", L_ThrowStone,
+         "Leave the cat alone.", L_Close;
+
+L_NeedsFood: //also covers "HasFood"
     mes "[Katze]";
     mes "\"Meow, prrrr...\"";
     next;
@@ -74,14 +81,14 @@ L_NeedsFur:
 
 L_MoveFur:
     delitem "WhiteFur", 1;
-    set @cat, 3;
-    callsub S_Update_Katze;
+    set QL_CAT_EARS, 6;
     mes "The cat jumps at the fur! You quickly let go of it. The cat happily returns to its spot, carrying the fur in its mouth.";
     next;
     mes "The cat drops the fur and looks at you with half opened eyes. Suddenly she starts talking, and says: \"That was very kind of you.\" She seems to be smiling.";
     goto L_Close;
 
 L_NeedsWood:
+    set QL_CAT_EARS, 7;
     mes "[Katze]";
     mes "\"Prrrr, now I'd like something to sharpen my claws on.\"";
     next;
@@ -97,13 +104,12 @@ L_GiveWood:
     mes "\"Sure! Please put it next to the pot.\"";
     goto L_Close;
 
-L_PreNeedsStuff:
+L_HasWood:
     mes "The cat is still eyeing the piece of wood. She probably needs to be left alone for a bit again.";
     goto L_Close;
 
-L_NeedsStuff:
-    set @cat, 5;
-    callsub S_Update_Katze;
+L_OffersReward:
+    set QL_CAT_EARS, 10;
     mes "[Katze]";
     mes "\"You've been really kind to me. I can make you something nice, but I will need";
     mes "2 Snake Skins,";
@@ -114,7 +120,7 @@ L_NeedsStuff:
     mes "2 Tiny Healing Potions.\"";
     goto L_Close;
 
-L_NeedsStuff2:
+L_NeedsStuff:
     mes "[Katze]";
     mes "\"Did you bring what I asked you for?\"";
     next;
@@ -161,24 +167,21 @@ L_GiveStuff:
     delitem "WhiteFur", 2;
     delitem "HardSpike", 2;
     delitem "TinyHealingPotion", 2;
-    set @cat, 6;
-    callsub S_Update_Katze;
-    set @catNeedsAlone, 1;
+    set QL_CAT_EARS, 11;
     mes "[Katze]";
     mes "\"Nicely done! Now leave me alone for a while, I need some time to prepare your present.\"";
     goto L_Close;
 
-L_PreGainEars:
+L_HasStuff:
     mes "[Katze]";
     mes "\"Please leave me alone for a while, so I can prepare your present.\"";
     goto L_Close;
 
-L_GainEars:
+L_GivesReward:
     getitem "CatEars", 1;
     set @xpval, 5000;
     getexp @xpval, 0;
-    set @cat, 7;
-    callsub S_Update_Katze;
+    set QL_CAT_EARS, 13;
     mes "[Katze]";
     mes "\"Look what I made for you! It makes you look a bit like me! Maybe it will give you a feeling of what it is like to be a cat.\"";
     mes "The cat winks at you.";
@@ -194,10 +197,5 @@ L_Finished:
     goto L_Close;
 
 L_Close:
-    set @cat, 0;
     close;
-
-S_Update_Katze:
-    set Katze, (Katze & ~(NIBBLE_0_MASK)) | (@cat << NIBBLE_0_SHIFT);
-    return;
 }
