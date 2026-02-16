@@ -22,6 +22,8 @@
 // 10) OnBattleEnd invokes OnMaybeReward to give BPs to whoever survived it.
 // 11) OnBattleEnd resets NPCs to pre-battle state.
 
+// "Failed run" means "everyone died". Win by timeout is OK, like in candor.
+
 // Strange dark shadow craving for Souls and Dark Crystals
 027-4,120,75,0|script|Dark Shadow#ZS|369
 {
@@ -74,8 +76,8 @@ OnInit:
 OnBattleStart:
     set $@ZS_SURVIVAL, 1; // Room locked, etc
     set .periodic, 2000;  // Team alive status checks period
+    set .failed, 0;       // Not a failed attempt so far
     set .round, 0;        // Round # cleanup from prev battles
-    set .failsafe, 30 * 60 * 1000; // max battle time (failsafe)
     set .mul, if_then_else(($ZS_DIFFICULTY_MUL > 0), $ZS_DIFFICULTY_MUL, 1); // Difficulty = team estimate * mul / div
     set .div, if_then_else(($ZS_DIFFICULTY_DIV > 0), $ZS_DIFFICULTY_DIV, 1);
     set .round_delay,  if_then_else(($ZS_DIFFICULTY_RDELAY > 0), $ZS_DIFFICULTY_RDELAY, 30000); // Delay between rounds
@@ -96,7 +98,6 @@ OnBattleInit:
     if ($ZS_DEBUG) debugmes "OBS2: Team = " + .team_str + "DiffAdj = " + .difficulty +
                             "Skels = " + .skels + " bp = " + .bp;
     addnpctimer 0, strnpcinfo(0) + "::OnBattleRound"; // Enqueue 1st round
-    addnpctimer .failsafe, strnpcinfo(0) + "::OnBattleEnd"; // Failsafe battle end.
     end;
 
 OnBattleRound:
@@ -120,12 +121,13 @@ L_AddSpawner:
     end;
 
 OnBattleEnd:
-    set $@ZS_SURVIVAL, 0; // Unlock room
-    areatimer 0, "027-4", 89, 70, 128, 84, 0, strnpcinfo(0) + "::OnMaybeReward"; // Reward PCs still alive
+    if !(.failed) // Try to reward players if it isn't failed run
+        areatimer 0, "027-4", 89, 70, 128, 84, 0, strnpcinfo(0) + "::OnMaybeReward";
     disablenpc "Reaper#ZS"; // Reaper disappears
     enablenpc "Dark Shadow#ZS"; // Shadow again
     fakenpcname "#ZS_WarpBouncerInt", "#ZS_WarpBouncerInt", 127; // Remove door shroud
     killmonster "027-4", "~ZoundsOfSkele~mob"; // Remove all mobs from battle
+    set $@ZS_SURVIVAL, 0; // Unlock room
     end;
 
 OnTeamEstimate: // Team Estimator handler, invoked per-player.
@@ -146,7 +148,7 @@ OnBattlePeriodic: // Faster loop. Mostly monitors if all dead @ battle.
 
 L_AllDead:
     mapannounce "027-4", "Reaper : Ha-ha-ha, pathetic mortals are no match to my legions! Soon you all will be in land of dead!", 0;
-    set $@ZS_SURVIVAL, 0; // Unlock door, etc
+    set .failed, 1; // Explicitly mark failed attempt (more robust vs cheats)
     donpcevent strnpcinfo(0) + "::OnBattleEnd"; // Do cleanup
     end;
 
