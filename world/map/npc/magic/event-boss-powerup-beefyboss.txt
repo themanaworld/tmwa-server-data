@@ -1,0 +1,25 @@
+-|script|powerup-beefyboss|32767
+{
+    end;
+
+OnBeefy:
+    if(call("boss_powerup_checks")) end;
+    gmlog strcharinfo(0) + " used #beefyboss boss HP bonus.";
+    bonus bMaxHP, 20000;
+    set Hp, (Hp+20000), BL_ID;
+    addtimer (2*3600*1000), strnpcinfo(0)+"::OnWeak"; // Remove bonus after 2h
+    message strcharinfo(0), "[beefyboss] : HP bonus activated!";
+    end;
+
+OnWeak:
+    if(call("boss_powerup_checks")) end;
+    message strcharinfo(0, BL_ID), "[beefyboss] : HP bonus ended!";
+    bonus bMaxHP, 0;
+    set Hp, 100, BL_ID;
+    end;
+
+OnInit:
+    registercmd "#beefyboss", "powerup-beefyboss::OnBeefy";
+    registercmd "#weakboss", "powerup-beefyboss::OnWeak";
+    end;
+}
