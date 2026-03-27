@@ -712,3 +712,125 @@ L_Done:
 }
 
 
+// FIXME: This feature may need to be factored out to separate component.
+// This is Bonus Mob NPC for CRC 2026 event.
+-|script|BonusMobsNPC|32767
+{
+    end;
+
+OnPirateShipSpawn:
+    if (call("celestia_access_check")) end; // Command access check
+    monster getmap(), POS_X, POS_Y, "Pirate Galleon", MontBlanc, 1, "BonusMobsNPC::OnPirateShipDeath";
+    monster getmap(), POS_X, POS_Y, "Ratto", Ratto, 10, "BonusMobsNPC::OnRattoDeath"; // Drop equalizer for noobs
+    end;
+
+OnPirateShipDeath:
+    callfunc("bunch_of_pirates"); // Some pirates and rattos flee sinking galleon!
+    setarray .@galleon_loot, Pearl, GoldenTooth, GoldOre, CoinBag;
+    set .booty, rand(1, 14);
+    goto L_GalleonBooty;
+
+L_GalleonBooty:
+    set .@itemID, .@galleon_loot[rand(getarraysize(.@galleon_loot))]; // pick random collateral
+    set .@x, rand(POS_X-3, POS_X+5); // Prefer right side bias due to ship parking
+    set .@y, rand(POS_Y-3, POS_Y+3);
+    if (iscollision(getmap(), .@x, .@y)) goto L_GalleonBooty;
+    makeitem .@itemID, rand(1, 12), getmap(), rand(POS_X-3,POS_X+5), rand(POS_Y-3,POS_Y+3);
+    set .booty, .booty - 1;
+    if (.booty > 0) goto L_GalleonBooty;
+    end;
+
+OnPirateSpawn:
+    if (call("celestia_access_check")) end; // Command access check
+    callfunc("bunch_of_pirates");
+    end;
+
+OnPirateDeath:
+    setarray .@pirate_loot[0], Pearl, GoldenTooth, GoldOre, CoinBag, Bandana, PirateHat;
+    set .@itemID, .@pirate_loot[rand(getarraysize(.@pirate_loot))]; // pick random collateral
+    makeitem .@itemID, 1+rand(2), getmap(), POS_X, POS_Y;
+    monster getmap(), POS_X, POS_Y, "Ratto", Ratto, 3, "BonusMobsNPC::OnRattoDeath"; // Drop equalizer for noobs
+    end;
+
+OnRattoDeath:
+    set Zeny, Zeny + 100 + rand(200);
+    message strcharinfo(0), "[Narrator] : Whoa! This ratto had small purse!";
+    end;
+
+OnInit:
+    registercmd "@pirateship", "BonusMobsNPC::OnPirateShipSpawn";
+    registercmd "@pirates", "BonusMobsNPC::OnPirateSpawn";
+    end;
+}
+
+// This function prints allowed players list to caller PC
+function|script|bunch_of_pirates
+{
+    monster getmap(), POS_X, POS_Y, "Pirate!", Thug, 3, "BonusMobsNPC::OnPirateDeath";
+    monster getmap(), POS_X, POS_Y, "Pirate!", Grenadier, 3, "BonusMobsNPC::OnPirateDeath";
+    monster getmap(), POS_X, POS_Y, "Pirate!", Swashbuckler, 3, "BonusMobsNPC::OnPirateDeath";
+    monster getmap(), POS_X, POS_Y, "Ratto", Ratto, 7, "BonusMobsNPC::OnRattoDeath"; // Drop equalizer for noobs
+    return;
+}
+
+// FIXME: This feature may need to be factored out to separate component.
+// This is tool to shut up too noisy crowd during eventing (staff is exempt)
+// Effect hard clamped to 10 min top and is not persistent.
+-|script|EventingSilencer|32767
+{
+    end;
+
+OnSilenceArea:
+    if (call("celestia_access_check")) end; // Command access check
+    set .time, @args$;
+    if (.time < 10) || (.time > 600) goto L_ParamError;
+    set .silenced, 0;
+    set .range, 14;
+    set .x1, max(1, POS_X - .range);
+    set .y1, max(1, POS_Y - .range);
+    set .x2, min(getmapmaxx(getmap()), POS_X + .range);
+    set .y2, min(getmapmaxy(getmap()), POS_Y + .range);
+    foreach 0, getmap(), .x1, .y1, .x2, .y2, "EventingSilencer::OnPCSilence";
+    message strcharinfo(0), "[Silence] : Silenced " + .silenced + " players around you for " + .time + " seconds";
+    end;
+
+L_ParamError:
+    message strcharinfo(0), "[Silence] : @silence <time> should be 10 to 600 seconds";
+    end;
+
+OnPCSilence:
+    if (get(GM, @target_id) >= 40) end; // Don't silence staff
+    set MUTE_GLOBAL, 1, @target_id;
+    addtimer (.time * 1000), strnpcinfo(0) + "::OnSilenceExpiry", @target_id;
+    set .silenced, .silenced + 1;
+    end;
+
+OnSilenceExpiry:
+    set MUTE_GLOBAL, 0;
+    end;
+
+OnUnsilenceArea:
+    if (call("celestia_access_check")) end; // Command access check
+    set .unsilenced, 0;
+    set .range, 14;
+    set .x1, max(1, POS_X - .range);
+    set .y1, max(1, POS_Y - .range);
+    set .x2, min(getmapmaxx(getmap()), POS_X + .range);
+    set .y2, min(getmapmaxy(getmap()), POS_Y + .range);
+    foreach 0, getmap(), .x1, .y1, .x2, .y2, "EventingSilencer::OnPCUnSilence";
+    message strcharinfo(0), "[UnSilence] : Unsilenced " + .unsilenced + " players around you";
+    end;
+
+OnPCUnSilence:
+    set MUTE_GLOBAL, 0, @target_id;
+    set .unsilenced, .unsilenced + 1;
+    end;
+
+OnInit:
+    registercmd "@silence", "EventingSilencer::OnSilenceArea";
+    registercmd "@silence_area", "EventingSilencer::OnSilenceArea";
+    registercmd "@unsilence", "EventingSilencer::OnUnsilenceArea";
+    registercmd "@unsilence_area", "EventingSilencer::OnUnsilenceArea";
+    end;
+}
+
