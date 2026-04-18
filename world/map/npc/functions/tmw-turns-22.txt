@@ -1,0 +1,589 @@
+// This function invoked by Lightning Ball Orb usage attempt
+// It would be called with RID attached but no NPC (item usage func).
+function|script|SpawnBallLightning
+{
+    if (BaseLevel < 60) goto L_TooLow;  // Level 60 to use this item
+    if (getmapflag(getmap(), MF_TOWN)) goto L_Fail_town;
+    if ((countitem("IronPowder") < 1) && !(IS_EVENTER)) goto L_NoItem;
+    if (@_M_BLOCK) goto L_Cooldown;
+//  misceffect FX_GETITEM, strcharinfo(0);
+    addtimer 0, "BallLightningMaster::OnLightningBallSpawn", BL_ID;
+    return;
+
+L_TooLow:
+    message strcharinfo(0), "This item looks interesting. Unfortunately you are not wise enough to operate it yet (Lv 60 required)";
+    return;
+
+L_Fail_town:
+    message strcharinfo(0), "Protective spells of city interfere with Reaper's magic";
+    return;
+
+L_NoItem:
+    message strcharinfo(0), "Nothing happens... perhaps orb needs some item to work?";
+    return;
+
+L_Cooldown:
+    message strcharinfo(0), "Orb haven't accumulated enough charge yet...";
+    return;
+}
+
+// FIXME: This feature snould be factored out to separate component.
+// This NPC controls lightning ball spawns by lightning ball orb
+// Lightning balls would live for brief time, pick targets and then blow up!
+// Design setpoint so far:
+// * Input: 1 iron powder.
+// * Yield:
+//      - 1..2 sparks (1.5 avg) - nonmagic users using "leftover magic"
+//      - 2..3 sparks: Mages depending on M.Atk
+//      - 4 sparks
+-|script|BallLightningMaster|32767
+{
+    end;
+
+// Entry point to Lightning Balls spawn (pseudo) spell
+OnLightningBallSpawn:
+    // Defaults. Recast delay tunable by server var on the fly
+    set .@lifetime, 2500; // Time before ball blows up
+    set .@recast, if_then_else(($LB_RECAST > 0), $LB_RECAST, 7000);
+    if (IS_EVENTER) set .@recast, (.@recast / 2);  // Rventers can be faster/more challenging.
+    set .@count, 1; // Count to spawn, max 4 for balancing reasons
+    // Check prerequisites and cooldown
+    if ($LB_DISABLE) end; // Kill switch in case it backfires.
+    if (call("magic_checks", 1)) end; // "Nonmagic" to allow nonmagic users at reduced eff.
+    if !(IS_EVENTER) delitem "IronPowder", 1; // Eventer -> free recasts,
+    set @_M_BLOCK, 1;
+    addtimer .@recast, "Magic Timer::OnClear"; // set the new debuff
+    sc_start SC_COOLDOWN, .@recast, 0, BL_ID;
+    set .@count, .@count + (MATK1 / 500); // ...up to 3 sparks @ strong nage
+    if (.@count < 2) set .@count, rand(1, 2); // If user not good, rand(1..2)
+    if (IS_EVENTER) set .@count, 4; // Eventers may throw all 4 at once                                            // Mob Modes, use 2
+    if ($REAPER_DEBUG) debugmes "=== Mobs:" + .@count + " recast:" + .@recast; 
+    if (.@count > 0) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 1 aggro
+    if (.@count > 1) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 2 normal summon
+    if (.@count > 2) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 3 friendly
+    if (.@count > 3) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 4 Zero 
+    if (IS_EVENTER) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // Extra for eventer
+    if (IS_EVENTER) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // Extra for eventer
+    foreach 2, getmap(), POS_X, POS_Y, POS_X, POS_Y, strnpcinfo(0) + "::OnMob"; // Register all our sparks
+    addtimer .@lifetime, strnpcinfo(0)+"::OnBlowupTimer";
+    end;
+
+OnMob:
+    if ($REAPER_DEBUG) debugmes "+? mob:" + @target_id + " Class=" + get(Class, @target_id) + " POS_X=" + get(POS_X, @target_id) + " POS_Y=" + get(POS_Y, @target_id) + " Hp=" + get(Hp, @target_id) + " MaxHp=" + get(MaxHp, @target_id) + " Sum? " + (issummon(@target_id));
+    if ((get(Class, @target_id) != BallLightning) || !(issummon(@target_id))) end; // Not a mob of interest
+    if (getarraysize(@l_balls) > 100) end; // Full? No more mobs.
+    if ($REAPER_DEBUG) debugmes "Mob acquired! ArrSz=" + getarraysize(@l_balls);
+    set @l_balls[getarraysize(@l_balls)], @target_id;
+    end;
+
+OnBlowupTimer:
+    set .@i, 0; // Process all sparks we captured before -> explode them
+    goto L_ProcessSpark; // NB no damage ecceeds 1/3 max HP to avoid instakills
+
+L_ProcessSpark:
+    set .@i, .@i + 1;
+    if ((@l_balls[.@i] == 0) || (.@i >= getarraysize(@l_balls))) goto L_Done; // Np sparks to process?
+    if (get(Hp, @l_balls[.@i]) <= 0) goto L_ProcessSpark; // Spark died? Skip it!
+    set .@x, get(POS_X, @l_balls[.@i]);
+    set .@y, get(POS_Y, @l_balls[.@i]);
+    if ($REAPER_DEBUG) debugmes "BlowupTimer - spark " + .@i + " map=" + getmap() + " .@x=" + .@x + " .@y=" + .@y;
+    // PvP splash damage.
+    set .dmgcap, rand(800, 1000); // For players @ r = 2
+    if (PVP_CHANNEL || getmapflag(getmap(), MF_PVP)) // Shoulld we do PvP?
+        foreach 0, getmap(), .@x-2, .@y-2, .@x+2, .@y+2, strnpcinfo(0) + "::OnSparkExplodePC";
+    // PvE 2 level splash damage
+    set .dmgcap, rand(650, 900); // For mobs @ r = 2
+    foreach 2, getmap(), .@x-2, .@y-2, .@x+2, .@y+2, strnpcinfo(0) + "::OnSparkExplodeMob";
+    set .dmgcap, rand(350, 600); // For mobs @ r = 3
+    foreach 2, getmap(), .@x-3, .@y-3, .@x+3, .@y+3, strnpcinfo(0) + "::OnSparkExplodeMob";
+    goto L_ProcessSpark;
+
+L_Done:
+    if ($REAPER_DEBUG) debugmes "BlowupTimer - done - i= " + .@i;
+    cleararray @l_balls[0], 0, getarraysize(@l_balls);
+    end;
+
+OnSparkExplodePC:
+    if ($REAPER_DEBUG) debugmes "? PC:" + @target_id + " Class=" + get(Class, @target_id) + " POS_X=" + get(POS_X, @target_id) + " POX_Y=" + get(POS_Y, @target_id) + " Hp=" + get(Hp, @target_id) + " MaxHp=" + get(MaxHp, @target_id) + " Sum? " + (issummon(@target_id)) + " dmg=" + .@dmg;
+    if (@target_id == BL_ID) end; // Sparks do not blow up their master.
+    if (!(get(PVP_CHANNEL, @target_id)) && !(getmapflag(getmap(@target_id), MF_PVP))) end;
+    if (get(Hp, @target_id) < 1) end; // Do not hit dead
+    set .@dmg, min(get(MaxHp, @target_id) / 3, .dmgcap);
+    injure BL_ID, @target_id, .@dmg;
+    sc_start SC_HALT_REGENERATE, 6000, 0, @target_id; // Stop regen temporarily
+    if ($REAPER_DEBUG) debugmes "X PC:" + @target_id + " Class=" + get(Class, @target_id) + " POS_X=" + get(POS_X, @target_id) + " POX_Y=" + get(POS_Y, @target_id) + " Hp=" + get(Hp, @target_id) + " MaxHp=" + get(MaxHp, @target_id) + " Sum? " + (issummon(@target_id)) + " dmg=" + .@dmg;
+    end;
+
+OnSparkExplodeMob:
+    if ($REAPER_DEBUG) debugmes "? mob:" + @target_id + " Class=" + get(Class, @target_id) + " POS_X=" + get(POS_X, @target_id) + " POX_Y=" + get(POS_Y, @target_id) + " Hp=" + get(Hp, @target_id) + " MaxHp=" + get(MaxHp, @target_id) + " Sum? " + (issummon(@target_id)) + " dmg=" + .@dmg;
+    if (get(Hp, @target_id) < 1) end; // Do not hit dead
+    if ((get(Class, @target_id) == BallLightning) && (issummon(@target_id))) end; // Dont explode spark summons prematurely.
+    set .@dmg, min(get(MaxHp, @target_id) / 3, .dmgcap);
+    if ($REAPER_DEBUG) debugmes "X mob:" + @target_id + " Class=" + get(Class, @target_id) + " POS_X=" + get(POS_X, @target_id) + " POX_Y=" + get(POS_Y, @target_id) + " Hp=" + get(Hp, @target_id) + " MaxHp=" + get(MaxHp, @target_id) + " Sum? " + (issummon(@target_id)) + " dmg=" + .@dmg;
+    injure BL_ID, @target_id, .@dmg;
+    end;
+}
+
+
+// This NPC allows to add "impostor" Reapers on map
+// It allows both NPC and mob based Reapers to be added.
+// It also allows to spawn Reaper's servants.
+-|script|ReaperHqController|32767
+{
+    end;
+
+OnAddReaperNpc:
+    if ((GM < 40) && (IS_EVENTER != 42)) goto L_NotAllowed;
+    set .count, .count + 1;
+    set .map$, getmap(), "ReaperNpcTemplate";
+    set .x, POS_X, "ReaperNpcTemplate";
+    set .y, POS_Y, "ReaperNpcTemplate";
+    set .count, .count, "ReaperNpcTemplate";
+    donpcevent "ReaperNpcTemplate::OnReaperAdd";
+    end;
+
+OnAddReaperMob:
+    if ((GM < 40) && (IS_EVENTER != 42)) goto L_NotAllowed;
+    if (rand(1, 2) == 1) // Pick random Reaper type.
+        monster getmap(), POS_X, POS_Y, "", Reaper,  1, "ReaperHqController::OnReaperDown";
+    else
+        monster getmap(), POS_X, POS_Y, "", Reaper2, 1, "ReaperHqController::OnReaperDown";
+    end;
+
+OnAddMinions:
+    if (((GM < 40) && (IS_EVENTER != 42))) goto L_NotAllowed;
+    set .@mobID, $@UNDEADMOBS[rand(getarraysize($@UNDEADMOBS))]; // Pick random mob from list
+    monster getmap(), POS_X, POS_Y, "", .@mobID,  rand(1, 4), "~ReaperServant";
+    end;
+
+OnReaperFly:
+    if ((GM < 40) && (IS_EVENTER != 42)) goto L_NotAllowed;
+    nude;
+    setpvpchannel 1;
+    bonus bMaxHP, 20000;
+    set Hp, MaxHp;
+    set Class, 1068;
+    set @reaperfly, 1;
+    warp getmap(), POS_X, POS_Y; // Refresh look
+    message strcharinfo(0), "[Reaper] : Configured as Reaper impersonation. Do not forget orb and maybe GMAmulet!";
+    end;
+
+OnReaperPoisonWell:
+    if !(isin(strnpcinfo(3, "Water Pump"), getnpcx("Water Pump")-2, getnpcy("Water Pump")-2, getnpcx("Water Pump")+2, getnpcy("Water Pump")+2))
+        goto L_TooFar;  // Too far away -> cant poison well
+    if ((GM < 40) && (IS_EVENTER != 42)) goto L_NotAllowed;
+    if (Class != 1068) goto L_Impostor;
+    if (($@SPELL_CORE[1] + $@SPELL_CORE[2] + $@SPELL_CORE[3] + $@SPELL_CORE[4]) >= 42) goto L_CaptureFailed;
+    if !(PVP_CHANNEL || getmapflag(getmap(), MF_PVP)) goto L_DontCheat; // Say no to killable eventer cheats!
+    if (HIDDEN) goto L_DontCheat; // Say no to killable eventer cheats!
+    set $WELL_POISONED, 1;
+    disablenpc "Water Pump"; 
+    enablenpc "Sign#WaterPump";
+    gmlog strcharinfo(0) + " poisoned Hurns well! " + @args$;
+    wgm strcharinfo(0) + " poisoned Hurns well! " + @args$;
+    end;
+
+OnReaperUnPoisonWell:
+    if (GM < 40) goto L_NotAllowed;
+    set $WELL_POISONED, 0;
+    enablenpc "Water Pump"; 
+    disablenpc "Sign#WaterPump";
+    gmlog strcharinfo(0) + " UNpoisoned Hurns well! " + @args$;
+    wgm strcharinfo(0) + " UNpoisoned Hurns well! " + @args$;
+    end;
+
+OnReaperStabBanker:
+    if !(isin(strnpcinfo(3, "Richard"), getnpcx("Richard")-2, getnpcy("Richard")-2, getnpcx("Richard")+2, getnpcy("Richard")+2))
+        goto L_TooFar;  // Too far away -> cant stab banker
+    if ((GM < 40) && (IS_EVENTER != 42)) goto L_NotAllowed;
+    if (Class != 1068) goto L_Impostor;
+    if (($@SPELL_CORE[1] + $@SPELL_CORE[2] + $@SPELL_CORE[3] + $@SPELL_CORE[4]) >= 42) goto L_CaptureFailed;
+    if !(PVP_CHANNEL || getmapflag(getmap(), MF_PVP)) goto L_DontCheat; // Say no to killable eventer cheats!
+    if (HIDDEN) goto L_DontCheat; // Say no to killable eventer cheats!
+    set $BANKER_STABBED, 1;
+    disablenpc "Richard";
+    enablenpc "Sign#Richard";
+    gmlog strcharinfo(0) + " Stabbed Hurns banker! " + @args$;
+    wgm strcharinfo(0) + " Stabbed Hurns banker! " + @args$;
+    end;
+
+OnReaperRecoverBanker:
+    if (GM < 40) goto L_NotAllowed;
+    set $BANKER_STABBED, 0;
+    enablenpc "Richard";
+    disablenpc "Sign#Richard";
+    gmlog strcharinfo(0) + " Healed Hurns banker! " + @args$;
+    wgm strcharinfo(0) + " Healed Hurns banker! " + @args$;
+    end;
+
+L_NotAllowed:
+    message strcharinfo(0), "[ReaperHQ] : You can't use this feature at this time, sorry!";
+    end;
+
+L_DontCheat:
+    message strcharinfo(0), "[Siege] : Nono, can't be used hidden or non-pvp attackable! Give players chance, cheater!";
+    end;
+
+L_TooFar:
+    message strcharinfo(0), "[Siege] : You should be to target!";
+    end;
+
+L_Impostor:
+    message strcharinfo(0), "[Siege] : Only Reapers are strong enough to do this. Protective spells of city hurt you!";
+    heal -Hp, 0;
+    end;
+
+L_CaptureFailed:
+    message strcharinfo(0), "[Siege] : Defensive spells too strong! Want: sum of cores < 42," +
+                            " have " + ($@SPELL_CORE[1] + $@SPELL_CORE[2] + $@SPELL_CORE[3] + $@SPELL_CORE[4]);
+    end;
+
+// Mob reaper down! Give some BP and maybe reward.
+// NPC On death is in Reaper npc template
+OnReaperMobDown:
+    message strcharinfo(0), " Reaper : " + call("random_taunt");
+    set BOSS_POINTS, BOSS_POINTS + 10;
+    message strcharinfo(0), "[Reaper] : You defeated nasty Reaper and gain 10 BossPoints for " + BOSS_POINTS + " total";
+    if (rand(1, 4) != 3) end; // 25% chance to get orb from Reaper mob
+    message strcharinfo(0), "[Reaper] : Hey! This clumsy Reaper dropped something! Look!";
+    makeitem LightningOrb, 1, getmap(), POS_X, POS_Y;
+    end;
+
+// If player kills eventer impersonating reaper
+OnPCKillEvent:
+    if ((@victimrid < 1) || !(isloggedin(@victimrid)) || (get(Class, @victimrid) != 1068)) end;
+    message strcharinfo(0), " Reaper : " + call("random_taunt");
+    set BOSS_POINTS, BOSS_POINTS + 10;
+    message strcharinfo(0), "[Reaper] : You defeated nasty Reaper and gain 10 BossPoints for " + BOSS_POINTS + " total";
+    if (rand(1,2) != 2) end; // 50% chance to get orb from eventer abomination!
+    message strcharinfo(0), "[Reaper] : Hey! This clumsy Reaper dropped something! Look!";
+    makeitem LightningOrb, 1, getmap(), get(POS_X, @victimrid), get(POS_Y, @victimrid);
+    end;
+
+OnReaperHelp:
+    message strcharinfo(0), "[ReaperHQ] : Welcome to Reaper Headquarters! Builtin help:";
+    message strcharinfo(0), "[ReaperHQ] : @reaper-npc - place NPC Reaper on current map";
+    message strcharinfo(0), "[ReaperHQ] : @reaper-mob - spawn MOB Reaper on current map, random type";
+    message strcharinfo(0), "[ReaperHQ] : @reaper-minions and @reaper-servants - spawn some undeads on current map";
+    message strcharinfo(0), "[ReaperHQ] : @reaper-servants - spawn some undeads on current map";
+    message strcharinfo(0), "[ReaperHQ] : @reaper-fly and @reaperfly - starts Reaper impersonation";
+    message strcharinfo(0), "[ReaperHQ] : @reaper-siege and @reapersiege - initiate Hurns siege sequence";
+    message strcharinfo(0), "[ReaperHQ] : @reaper-poisonwell and @reaper-stabbanker - do damage!" +
+                            "Poison well or stab banker! (only works if protective spells dispelled)";
+    message strcharinfo(0), "[ReaperHQ] : @reaper-unpoisonwell and @reaper-healbanker - UNdoes damage";
+    end;
+
+OnInit:
+    set .count, 0;
+    registercmd "@reaper", "ReaperHqController::OnReaperHelp";
+    registercmd "@reaper-help", "ReaperHqController::OnReaperHelp";
+    registercmd "@reaper-npc", "ReaperHqController::OnAddReaperNpc";
+    registercmd "@reaper-mob", "ReaperHqController::OnAddReaperMob";
+    registercmd "@reaper-minions", "ReaperHqController::OnAddMinions";
+    registercmd "@reaper-servants", "ReaperHqController::OnAddMinions";
+    registercmd "@reaper-fly", "ReaperHqController::OnReaperFly";
+    registercmd "@reaperfly", "ReaperHqController::OnReaperFly";
+    registercmd "@reaper-stabbanker", "ReaperHqController::OnReaperStabBanker";
+    registercmd "@reaper-healbanker", "ReaperHqController::OnReaperRecoverBanker";
+    registercmd "@reaper-poisonwell", "ReaperHqController::OnReaperPoisonWell";
+    registercmd "@reaper-unpoisonwell", "ReaperHqController::OnReaperUnPoisonWell";
+    registercmd "@reaper-siege", "ReaperSiegeController::OnReaperSiege";
+    registercmd "@reapersiege", "ReaperSiegeController::OnReaperSiege";
+    setarray $@UNDEADMOBS[0], LadySkeleton, Skeleton, VoidSoldier, SoulEater, Wight, RedBone, WitchGuard, Zombie, Fallen;
+    end;
+}
+
+
+// This is Reaper NPC template dummy.
+// Used by all Reaper NPCs
+-|script|ReaperNpcTemplate|32767
+{
+// Triggered when player "attacks" NPC
+    message strcharinfo(0), "[Reaper] : " + call("random_taunt");
+    set BOSS_POINTS, BOSS_POINTS + 5;
+    message strcharinfo(0), "[Reaper] : Seems this Reaper didn't expected your stab! 5 Boss points gained for " + BOSS_POINTS + "total!";
+    set .@mobID, $@UNDEADMOBS[rand(getarraysize($@UNDEADMOBS))]; // Pick random mob from list
+    monster getmap(), POS_X, POS_Y, "", .@mobID,  rand(1, 3), "~ReaperServant";
+    destroy;
+
+// Triggered when player steps on NPC area.
+OnTouch:
+    message strcharinfo(0), "[Reaper] : " + call("random_taunt");
+    set .@mobID, $@UNDEADMOBS[rand(getarraysize($@UNDEADMOBS))]; // Pick random mob from list
+    if (rand(10) > 7) monster getmap(), POS_X, POS_Y, "", .@mobID,  1, "~ReaperServant";
+    end;
+
+// Hook to switch NPC context and add another Reaper NPC
+OnReaperAdd:
+    if !(mapexists(.map$)) end; // avoid server crash in puppet()
+    set .res, puppet(.map$, .x, .y, "Reaper#" + .count, 1068, 3, 3); // instatiate pandora box NPC
+    if (.res <= 0) end; // Omit puppet setup on failure.
+    if (.lifetime > 0) addnpctimer .lifetime, strnpcinfo(0, .res) + "::OnScarecrowExpired";
+    set .reapernpc, 1, .res; // Mark pandora box NPC as such
+    end;
+
+OnScarecrowExpired:
+    destroy;
+}
+
+
+
+// This NPC controls siege logic around Hurns.
+// Most user facing commands provided by Hq instead, this one is battle logic
+-|script|ReaperSiegeController|32767
+{
+    end;
+
+OnReaperSiege:
+    if ((GM < 40) && (IS_EVENTER != 42)) goto L_NotAllowed;
+    if (Class != 1068) goto L_NotReaper;
+    if !(PVP_CHANNEL || getmapflag(getmap(), MF_PVP)) goto L_NonAttackable;
+    if (HIDDEN) goto L_NonAttackable;
+    set @siege_tiles, TILES_WALKED;
+    set .sp_core, 0;
+    if ((POS_X == getnpcx("Spell Core#1")) && (POS_Y == getnpcy("Spell Core#1")))
+        set .sp_core, 1;
+    if ((POS_X == getnpcx("Spell Core#2")) && (POS_Y == getnpcy("Spell Core#2")))
+        set .sp_core, 2;
+    if ((POS_X == getnpcx("Spell Core#3")) && (POS_Y == getnpcy("Spell Core#3")))
+        set .sp_core, 3;
+    if ((POS_X == getnpcx("Spell Core#4")) && (POS_Y == getnpcy("Spell Core#4")))
+        set .sp_core, 4;
+    if (.sp_core) goto L_SiegeStart; // Shall we start siege on N-th core?
+    message strcharinfo(0), "[Siege] : Pick one of spell cores to besiege - you should stand on it and do siege!" + @siege_tiles;
+    end;
+
+L_SiegeStart:
+    if ((.sp_core == 1) && ($@SPELL_CORE_LOCK[1])) goto L_Fallout; // Reapers can fail too!
+    if ((.sp_core == 2) && ($@SPELL_CORE_LOCK[2])) goto L_Fallout;
+    if ((.sp_core == 3) && ($@SPELL_CORE_LOCK[3])) goto L_Fallout;
+    if ((.sp_core == 4) && ($@SPELL_CORE_LOCK[4])) goto L_Fallout;
+    announce "Siege : Reaper trying to dispel protective spell of Hurnscald city!", 0;
+    set $@SPELL_CORE_LOCK[.sp_core], 20;
+    if (.sp_core == 1) addtimer 0, "ReaperSiegeController::OnSiege1";
+    if (.sp_core == 2) addtimer 0, "ReaperSiegeController::OnSiege2";
+    if (.sp_core == 3) addtimer 0, "ReaperSiegeController::OnSiege3";
+    if (.sp_core == 4) addtimer 0, "ReaperSiegeController::OnSiege4";
+    end;
+
+OnSiege1:
+    if ((@siege_tiles == TILES_WALKED) && (Hp > 0)) // Alive and well?
+        set $@SPELL_CORE[1], $@SPELL_CORE[1] - 1; // Then dispel spell!
+    else
+        goto L_Failbag; // Or else siege FAILs - and yet cooldown lockout stays.
+    if !(PVP_CHANNEL || getmapflag(getmap(), MF_PVP)) goto L_Failbag; // Say no to killable eventer cheats!
+    if (HIDDEN) goto L_Failbag; // Say no to killable eventer cheats!
+    message strcharinfo(0), "[Siege] : dispelled spell 1 strength to " + $@SPELL_CORE[1];
+    if ($@SPELL_CORE[1] < 7) message strcharinfo(0), "[Siege] : Spell 1 becomes weak...";
+    if ($@SPELL_CORE[1] > 0) addtimer $@SPCORE_RECHARGE_TIME / 10, "ReaperSiegeController::OnSiege1";
+    else message strcharinfo(0), "[Siege] : Spell 1 dispelled! Take on another ones!";
+    if ($@SPELL_CORE[1] + $@SPELL_CORE[2] + $@SPELL_CORE[3] + $@SPELL_CORE[4] < 42)
+        message strcharinfo(0), "[Siege] : City is now yours! Go for it!";
+    end;
+
+OnSiege2:
+    if ((@siege_tiles == TILES_WALKED) && (Hp > 0)) // Alive and well?
+        set $@SPELL_CORE[2], $@SPELL_CORE[2] - 1; // Then dispel spell!
+    else
+        goto L_Failbag; // Or else siege FAILs - and yet cooldown lockout stays.
+    if !(PVP_CHANNEL || getmapflag(getmap(), MF_PVP)) goto L_Failbag; // Say no to killable eventer cheats!
+    if (HIDDEN) goto L_Failbag; // Say no to killable eventer cheats!
+    message strcharinfo(0), "[Siege] : dispelled spell 2 strength to " + $@SPELL_CORE[2];
+    if ($@SPELL_CORE[2] < 7) message strcharinfo(0), "[Siege] : Spell 2 becomes weak...";
+    if ($@SPELL_CORE[2] > 0) addtimer $@SPCORE_RECHARGE_TIME / 10, "ReaperSiegeController::OnSiege2";
+    else message strcharinfo(0), "[Siege] : Spell 2 dispelled! Take on another ones!";
+    if ($@SPELL_CORE[1] + $@SPELL_CORE[2] + $@SPELL_CORE[3] + $@SPELL_CORE[4] < 42)
+        message strcharinfo(0), "[Siege] : City is now yours! Go for it!";
+    end;
+
+OnSiege3:
+    if ((@siege_tiles == TILES_WALKED) && (Hp > 0)) // Alive and well?
+        set $@SPELL_CORE[3], $@SPELL_CORE[3] - 1; // Then dispel spell!
+    else
+        goto L_Failbag; // Or else siege FAILs - and yet cooldown lockout stays.
+    if !(PVP_CHANNEL || getmapflag(getmap(), MF_PVP)) goto L_Failbag; // Say no to killable eventer cheats!
+    if (HIDDEN) goto L_Failbag; // Say no to killable eventer cheats!
+    message strcharinfo(0), "[Siege] : dispelled spell 3 strength to " + $@SPELL_CORE[3];
+    if ($@SPELL_CORE[3] < 7) message strcharinfo(0), "[Siege] : Spell 3 becomes weak...";
+    if ($@SPELL_CORE[3] > 0) addtimer $@SPCORE_RECHARGE_TIME / 10, "ReaperSiegeController::OnSiege3";
+    else message strcharinfo(0), "[Siege] : Spell 3 dispelled! Take on another ones!";
+    if ($@SPELL_CORE[1] + $@SPELL_CORE[2] + $@SPELL_CORE[3] + $@SPELL_CORE[4] < 42)
+        message strcharinfo(0), "[Siege] : City is now yours! Go for it!";
+    end;
+
+OnSiege4:
+    if ((@siege_tiles == TILES_WALKED) && (Hp > 0)) // Alive and well?
+        set $@SPELL_CORE[4], $@SPELL_CORE[4] - 1; // Then dispel spell!
+    else
+        goto L_Failbag; // Or else siege FAILs - and yet cooldown lockout stays.
+    if !(PVP_CHANNEL || getmapflag(getmap(), MF_PVP)) goto L_Failbag; // Say no to killable eventer cheats!
+    if (HIDDEN) goto L_Failbag; // Say no to killable eventer cheats!
+    message strcharinfo(0), "[Siege] : dispelled spell 4 strength to " + $@SPELL_CORE[4];
+    if ($@SPELL_CORE[4] < 7) message strcharinfo(0), "[Siege] : Spell 4 becomes weak...";
+    if ($@SPELL_CORE[4] > 0) addtimer $@SPCORE_RECHARGE_TIME / 10, "ReaperSiegeController::OnSiege4";
+    else message strcharinfo(0), "[Siege] : Spell 4 dispelled! Take on another ones!";
+    if ($@SPELL_CORE[1] + $@SPELL_CORE[2] + $@SPELL_CORE[3] + $@SPELL_CORE[4] < 42)
+        message strcharinfo(0), "[Siege] : City is now yours! Go for it!";
+    end;
+
+L_Failbag:
+    message strcharinfo(0), "[Siege] : Siege attempt FAILED. Reaper moved, died or not attackable!";
+    end;
+
+L_Fallout:
+    message strcharinfo(0), "[Siege] : Previous dispel attempt failed on this core! " +
+                " Cooldowns: Core 1:" + $@SPELL_CORE_LOCK[1] +  " Core 2:" + $@SPELL_CORE_LOCK[2] +
+                " Core 3:" + $@SPELL_CORE_LOCK[3] + " Core 4:" + $@SPELL_CORE_LOCK[4] + " min";
+    end;
+
+L_NotAllowed:
+    message strcharinfo(0), "[Spell Core] : Only few strongest beings can try to take on spell core...";
+    end;
+
+L_NotReaper:
+    message strcharinfo(0), "[Siege] : Only Reapers strong enough to take on spell cores! You are not Reaper...";
+    end;
+
+L_NonAttackable:
+    message strcharinfo(0), "[Siege] : Besieger MUST be ATTACKABLE by either @pvpon map or @pvp on flag!";
+    end;
+
+OnCoreRecharge:
+    if ($@SPELL_CORE[1] < 100) set $@SPELL_CORE[1], $@SPELL_CORE[1] + 1;
+    if ($@SPELL_CORE[2] < 100) set $@SPELL_CORE[2], $@SPELL_CORE[2] + 1;
+    if ($@SPELL_CORE[3] < 100) set $@SPELL_CORE[3], $@SPELL_CORE[3] + 1;
+    if ($@SPELL_CORE[4] < 100) set $@SPELL_CORE[4], $@SPELL_CORE[4] + 1;
+    set .@malus, call("estimate_undead", "008-1");
+    if ($REAPER_DEBUG) debugmes "EstUndead: malus=" + .@malus;
+    addnpctimer $@SPCORE_RECHARGE_TIME + (.@malus * 2000), strnpcinfo(0) + "::OnCoreRecharge";
+    end;
+
+OnFailedSiegeDispel:
+    if ($REAPER_DEBUG) debugmes  "OnFailedSiegeDispel : Core 1:" + $@SPELL_CORE_LOCK[1] +  " Core 2:" + $@SPELL_CORE_LOCK[2] +
+              " Core 3:" + $@SPELL_CORE_LOCK[3] + " Core 4:" + $@SPELL_CORE_LOCK[4] + " min";
+    if ($@SPELL_CORE_LOCK[1] > 0) set $@SPELL_CORE_LOCK[1], $@SPELL_CORE_LOCK[1] - 1;
+    if ($@SPELL_CORE_LOCK[2] > 0) set $@SPELL_CORE_LOCK[2], $@SPELL_CORE_LOCK[2] - 1;
+    if ($@SPELL_CORE_LOCK[3] > 0) set $@SPELL_CORE_LOCK[3], $@SPELL_CORE_LOCK[3] - 1;
+    if ($@SPELL_CORE_LOCK[4] > 0) set $@SPELL_CORE_LOCK[4], $@SPELL_CORE_LOCK[4] - 1;
+    addnpctimer $@SPCORE_RECHARGE_TIME, strnpcinfo(0) + "::OnFailedSiegeDispel";
+    end;
+
+OnInit:
+    setarray $@SPELL_CORE[1], 90, 90, 90, 90;
+    set $@SPCORE_RECHARGE_TIME, 30000;
+    addnpctimer 0, strnpcinfo(0) + "::OnCoreRecharge";
+    addnpctimer 0, strnpcinfo(0) + "::OnFailedSiegeDispel";
+    end;
+}
+
+// This function estimates undead horde on map in getarg(0)
+// It would be called with RID attached but no NPC (item usage func).
+function|script|estimate_undead
+{
+    set .@ret, 0;
+    if !(mapexists(getarg(0))) goto L_Done;
+    set .@reapers, 1 + mobcount(getarg(0), "ReaperHqController::OnReaperDown");
+    set .@servants, 1 + mobcount(getarg(0), "~ReaperServant");
+    if (.@reapers > 0) set .@ret, .@ret + 4 * .@reapers;
+    if (.@servants > 0) set .@ret, .@ret + .@servants;
+    goto L_Done;
+
+L_Done:
+    return .@ret;
+}
+
+// Aux NPCs portraying naked cores of defensive city spells, 204 or 166 as ID
+008-1,128,81,0|script|Spell Core#1|204
+{
+    message strcharinfo(0), "[Spell Core 1] : Its city's defensive spell. It not normally visible. " +
+                             "If you see it, perhaps something nasty goes on. Spell 1 now at " + $@SPELL_CORE[1] + " % of strength";
+    end;
+}
+
+008-1,128,48,0|script|Spell Core#2|204
+{
+    message strcharinfo(0), "[Spell Core 2] : Its city's defensive spell. It not normally visible. " +
+                            "If you see it, perhaps something nasty goes on! Spell 2 now at " + $@SPELL_CORE[2] + " % of strength";
+    end;
+}
+
+008-1,53,48,0|script|Spell Core#3|204
+{
+    message strcharinfo(0), "[Spell Core 3] : Its city's defensive spell. It not normally visible. " +
+                            "If you see it, perhaps something nasty goes on! Spell 3 now at " + $@SPELL_CORE[3] + " % of strength";
+    end;
+}
+
+008-1,53,81,0|script|Spell Core#4|204
+{
+    message strcharinfo(0), "[Spell Core 4] : Its city's defensive spell. It not normally visible. " +
+                            "If you see it, perhaps something nasty goes on! Spell 4 now at " + $@SPELL_CORE[4] + " % of strength";
+    end;
+}
+
+// Substitute NPC when Reaper claws banker
+009-2,20,99,0|script|Sign#Richard|186
+{
+    message strcharinfo(0), "[Sign] : Bank closed. Reaper has attacked city and stabbed banker. Try visiting bank later.";
+    end;
+
+OnInit:
+    if ($BANKER_STABBED) disablenpc "Richard";
+    else disablenpc "Sign#Richard";
+    end;
+}
+
+009-1,76,33,0|script|Sign#WaterPump|186
+{
+    message strcharinfo(0), "[Sign] : Reaper has attacked city and poisoned well - do not use this water yet!";
+    end;
+
+OnInit:
+    if ($WELL_POISONED) disablenpc "Water Pump"; 
+    else disablenpc "Sign#WaterPump";
+    end;
+}
+
+-|script|ReaperTaunts|32767
+{
+    end;
+
+OnInit:
+setarray $@REAPER_TAUNTS$[0],
+    "Death to mortals comes swift but lasssts forever !",
+    "Life iss exxxaggerated... do come closer motals !",
+    "become ssstronger... become dead !",
+    "who wantsss to live forever anyway ?",
+    "Do you want to exxxplore the world for all eternity ?",
+    "Why bother with fffood, drink, love or sleep ?",
+    "Life isss pain but I can help you out !",
+    "I can sssolve all your mortal problems !",
+    "If you're a chess pawn, you're soon leaving the board !",
+    "Sssnuff it mortal !",
+    "Here you can casssh in your chips !",
+    "I have layers and layers of dussst for you to bite in !",
+    "Enter my shop of bucketsss and kick anyone of them !",
+    "Pop offf mortal !",
+    "Would you like to go to a... better... placcce mortal ?",
+    "Buy the fffarm mortal !",
+    "Eat radishesss from the bottom mortal !",
+    "I have free tickets to the eternal hunting groundsss !",
+    "How dare you to be alllive mortal ?",
+    "Every warrior livesss, not all truly dies !",
+    "Im having a mid-death crisisss !",
+    "Life is an insssult... death is the best excuse !",
+    "I also couldnt help it and made a limerick : " +
+    "Have you ever heard of a monster called reaper - " +
+    "Who roams in a garden of souls as the keeper",
+    "death is so fast",
+    "will eternity last",
+    "In that garden you'd surely be a deep sleeper";
+    end;
+}
+
+// This returns random Reaper-themed taunt for mortals.
+function|script|random_taunt
+{
+    set .@ret$, $@REAPER_TAUNTS$[rand(getarraysize($@REAPER_TAUNTS$))];
+    return .@ret$;
+}
