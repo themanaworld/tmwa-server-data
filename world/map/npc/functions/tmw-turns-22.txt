@@ -145,9 +145,9 @@ OnAddReaperNpc:
 OnAddReaperMob:
     if ((GM < 40) && (IS_EVENTER != 42)) goto L_NotAllowed;
     if (rand(1, 2) == 1) // Pick random Reaper type.
-        monster getmap(), POS_X, POS_Y, "", Reaper,  1, "ReaperHqController::OnReaperDown";
+        monster getmap(), POS_X, POS_Y, "", Reaper,  1, "ReaperHqController::OnReaperMobDown";
     else
-        monster getmap(), POS_X, POS_Y, "", Reaper2, 1, "ReaperHqController::OnReaperDown";
+        monster getmap(), POS_X, POS_Y, "", Reaper2, 1, "ReaperHqController::OnReaperMobDown";
     end;
 
 OnAddMinions:
@@ -244,7 +244,7 @@ OnReaperMobDown:
     message strcharinfo(0), " Reaper : " + call("random_taunt");
     set BOSS_POINTS, BOSS_POINTS + 10;
     message strcharinfo(0), "[Reaper] : You defeated nasty Reaper and gain 10 BossPoints for " + BOSS_POINTS + " total";
-    if (rand(1, 4) != 3) end; // 25% chance to get orb from Reaper mob
+    if (rand(1, 10) != 3) end; // 10% chance to get orb from Reaper mob
     message strcharinfo(0), "[Reaper] : Hey! This clumsy Reaper dropped something! Look!";
     makeitem LightningOrb, 1, getmap(), POS_X, POS_Y;
     end;
@@ -301,9 +301,12 @@ OnInit:
 // Triggered when player "attacks" NPC
     message strcharinfo(0), "[Reaper] : " + call("random_taunt");
     set BOSS_POINTS, BOSS_POINTS + 5;
-    message strcharinfo(0), "[Reaper] : Seems this Reaper didn't expected your stab! 5 Boss points gained for " + BOSS_POINTS + "total!";
+    message strcharinfo(0), "[Reaper] : Seems this Reaper didn't expected your stab! 5 Boss points gained for " + BOSS_POINTS + " total!";
     set .@mobID, $@UNDEADMOBS[rand(getarraysize($@UNDEADMOBS))]; // Pick random mob from list
     monster getmap(), POS_X, POS_Y, "", .@mobID,  rand(1, 3), "~ReaperServant";
+    if (rand(1, 20) != 3) destroy; // 5% chance to get orb from Reaper NPC (NPCs are scarecrows, easy to kill)
+    message strcharinfo(0), "[Reaper] : Hey! This clumsy Reaper dropped something! Look!";
+    makeitem LightningOrb, 1, strnpcinfo(3), getnpcx(), getnpcy();
     destroy;
 
 // Triggered when player steps on NPC area.
@@ -334,6 +337,7 @@ OnScarecrowExpired:
 {
     end;
 
+// Entry point when Reaper initiates siege by @reaper-siege standing on spell core.
 OnReaperSiege:
     if ((GM < 40) && (IS_EVENTER != 42)) goto L_NotAllowed;
     if (Class != 1068) goto L_NotReaper;
@@ -477,7 +481,7 @@ OnInit:
 }
 
 // This function estimates undead horde on map in getarg(0)
-// It would be called with RID attached but no NPC (item usage func).
+// It can be invoked from any context whether RID attached or not.
 function|script|estimate_undead
 {
     set .@ret, 0;
