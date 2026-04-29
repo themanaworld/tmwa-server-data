@@ -18,7 +18,6 @@
 
 009-8,31,123,0|script|Celestia|144
 {
-    if call("celestia_hank_rewards") close; // No further chat if reward handled
     callfunc "CelestiaState";
     if (getequipid(equip_head) == YetiMask) // check if yeti mask (4027) is equipped
         goto L_YetiMask;
@@ -437,104 +436,9 @@ OnPCLoginEvent:
     end;
 }
 
-// CRC 2026 Event code below.
-
-// *** Global variables ***
-// $CELESTIA_PLAYER_ID[] - RIDs of player accounts eligible for reward
-// $CELESTIA_PLAYER_REWARD[] - 1 if RID allowed but not collected reward yet
-// $CELESTIA_PLAYER_NAME$[] - name of char used during @celestia_add
-// Index is shared: if "player1" _NAME$ at index [1] their _IDS and _REWARDED also [1]
-// So in total effect it like array of structs with 3 fields.
-
-// $CELESTIA_TEAPOT - celestia teapot state ON/OFF
-
-// This is AUX NPC for CRC 2026 event.
-// It mostly to help Celestia to hand over CRC2026 rewards to players.
-// It manages reward lists, enables/disables teapot and so on.
--|script|CelestiaCrcAux|32767
-{
-    end;
-
-OnAdd:
-    if (call("celestia_access_check")) end; // Command access check
-    if (call("celestia_add_player", @args$))
-        message strcharinfo(0), "[CelestiaRewards] : Error adding player " + @args$;
-    else
-        message strcharinfo(0), "[CelestiaRewards] : Player " + @args$ + " added successfully";
-    end;
-
-OnAddMap:
-    if (call("celestia_access_check")) end; // Command access check
-    set .added, 0;
-    set .range, 14;
-    set .x1, max(1, POS_X - .range);
-    set .y1, max(1, POS_Y - .range);
-    set .x2, min(getmapmaxx(getmap()), POS_X + .range);
-    set .y2, min(getmapmaxy(getmap()), POS_Y + .range);
-    foreach 0, getmap(), .x1, .y1, .x2, .y2, "CelestiaCrcAux::OnNthPlayer";
-    message strcharinfo(0), "[CelestiaRewards] : Added " + .added + " players around you";
-    end;
-
-// Invoked by foreach to add ALL players in eventer's viewport to list.
-OnNthPlayer:
-    set .@r, call("celestia_add_player", strcharinfo(0, @target_id));
-    if (.@r == 0) set .added, .added + 1;
-    else message strcharinfo(0), "[CelestiaRewards] : skipping " + strcharinfo(0, @target_id);
-    end;
-
-OnDel:
-    if (call("celestia_access_check")) end; // Command access check
-    if (call("celestia_del_player", @args$))
-        message strcharinfo(0), "[CelestiaRewards] : Error deleting player " + @args$;
-    else
-        message strcharinfo(0), "[CelestiaRewards] : Player " + @args$ + " deleted successfully";
-    end;
-
-OnList:
-    callfunc("celestia_list_players");
-    end;
-
-OnHelp:
-    callfunc("celestia_help");
-    end;
-
-// Teapot state control follows.
-OnTeapot:
-    if (call("celestia_access_check")) end; // Command access check
-    if ((@args$ == "on") || (@args$ == "enable") || (@args$ == "show"))
-        goto L_TeapotShow;
-    if ((@args$ == "off") || (@args$ == "disable") || (@args$ == "hide"))
-        goto L_TeapotHide;
-    message strcharinfo(0), "[CelestiaTeapot] : Teapot can be either on/enable/show OR it can be off/disable/hide. E.g. @teapot on";
-    end;
-
-L_TeapotShow:
-    set $CELESTIA_TEAPOT, 1; // Remember teapot state across server restarts
-    enablenpc "Celestia's Teapot";
-    message strcharinfo(0), "[CelestiaTeapot] : Celestia Teapot now DISPLAYED!";
-    end;
-
-L_TeapotHide:
-    set $CELESTIA_TEAPOT, 0; // Remember teapot state across server restarts
-    disablenpc "Celestia's Teapot";
-    message strcharinfo(0), "[CelestiaTeapot] : Celestia Teapot now HIDDEN!";
-    end;
-
-OnInit:
-    registercmd "@celestia", "CelestiaCrcAux::OnHelp";
-    registercmd "@celestia_help", "CelestiaCrcAux::OnHelp";
-    registercmd "@celestia_add", "CelestiaCrcAux::OnAdd";
-    registercmd "@celestia_addmap", "CelestiaCrcAux::OnAddMap";
-    registercmd "@celestia_del", "CelestiaCrcAux::OnDel";
-    registercmd "@celestia_list", "CelestiaCrcAux::OnList";
-    registercmd "@teapot", "CelestiaCrcAux::OnTeapot";
-    end;
-}
-
 
 // This is fabled Celestia teapot stolen by Hank.
-// This is NPC to actually display part of lore "in action".
-// In MMORPG it possible to not just TELL story but also SHOW it.
+// This NPC is part of CRC-2026 event.  In MMORPG it possible to SHOW lore :)
 009-8,28,125,0|script|Celestia's Teapot|448
 {
     message strcharinfo(0), "[Celestia Teapot] : A fabled teapot owned by Celestia. " +
@@ -542,173 +446,6 @@ OnInit:
                              "but was later recovered and returned to her through the " +
                              "brave efforts of the Manaworldians.";
     end;
-
-OnInit:
-    if !($CELESTIA_TEAPOT) disablenpc "Celestia's Teapot";
-    end;
-}
-
-
-// This function adds player to Celestia's CRC Event allowed rewards list
-// Does alts tracking to some extent (tracks RID so other chars on same account detected)
-function|script|celestia_add_player
-{
-    set .@res, 1;
-    if (getarg(0) == "") goto L_Fail; // No name given?
-    set .@res, 2;
-    set .@rid, getcharid(3, getarg(0)); // Is given player present? Get acct ID if so.
-    if (.@rid < 1) goto L_Fail; // Got no adequate RID?
-    set .@res, 3;
-    set .@idx, array_search(.@rid, $CELESTIA_PLAYER_ID); // Perhaps we know player or alt already?
-    if (.@idx >= 0) goto L_Fail;
-    // New player ID -> add them
-    set .@res, 4;
-    set .@idx, getarraysize($CELESTIA_PLAYER_ID); // List full? Seriously?!
-    if .@idx > 100 goto L_Fail;
-    set $CELESTIA_PLAYER_ID[.@idx], .@rid;
-    set $CELESTIA_PLAYER_REWARD[.@idx], 1;
-    set $CELESTIA_PLAYER_NAME$[.@idx], getarg(0);
-    return 0;
-
-L_Fail:
-    if (.@res == 1) message strcharinfo(0), "[CelestiaRewards] : Error! Need player name to add it to Celestia rewards list!";
-    if (.@res == 2) message strcharinfo(0), "[CelestiaRewards] : Error! Player: " + getarg(0) + " not online!";
-    if (.@res == 3) message strcharinfo(0), "[CelestiaRewards] : Player " + getarg(0) + " or their alt already in list (as " + $CELESTIA_PLAYER_NAME$[.@idx] + ")";
-    if (.@res == 4) message strcharinfo(0), "[CelestiaRewards] : Error! Too many accounts in list, up to 100 accounts tracked. If you ever see this, contact Hello=)";
-    return .@res;
-}
-
-// This function deletes player from list.
-// It also trying to downsize array on delete.
-function|script|celestia_del_player
-{
-    set .@res, 1; // No name given?
-    if (getarg(0) == "") goto L_Fail;
-    set .@res, 2; // Is it in list?
-    set .@idx, array_search(getarg(0), $CELESTIA_PLAYER_NAME$);
-    if (.@idx < 0) goto L_Fail;
-    set .@res, 3;
-    set .@tail, (getarraysize($CELESTIA_PLAYER_NAME) - 1);
-    if (.@tail < 0) goto L_Fail;
-    // Fancy deletion and arrays downsize. Move [tail] data -> [player] and cut (unset) [tail]
-    set $CELESTIA_PLAYER_ID[.@idx], $CELESTIA_PLAYER_ID[.@tail];
-    set $CELESTIA_PLAYER_REWARD[.@idx], $CELESTIA_PLAYER_REWARD[.@tail];
-    set $CELESTIA_PLAYER_NAME$[.@idx], $CELESTIA_PLAYER_NAME$[.@tail];
-    // Now that [tail] data replaced [player] data, clean arrays[tail] (and downsize them).
-    set $CELESTIA_PLAYER_ID[.@tail], 0;
-    set $CELESTIA_PLAYER_REWARD[.@tail], 0;
-    set $CELESTIA_PLAYER_NAME$[.@tail], "";
-    return 0;
-
-L_Fail:
-    if (.@res == 1) message strcharinfo(0), "[CelestiaRewards] : Error! Need player name to delete from Celestia rewards list!";
-    if (.@res == 2) message strcharinfo(0), "[CelestiaRewards] : Error! Player: " + getarg(0) + " not in list!";
-    if (.@res == 3) message strcharinfo(0), "[CelestiaRewards] : List already empty!";
-    return .@res;
-}
-
-
-// Access checks for CelestiaCrcEventAux commands to manage CRC 2026 rewards
-function|script|celestia_access_check
-{
-    if ($CELESTIA_DISABLE) goto L_NotAllowed; // Global killswitch (if things go REALLY wrong).
-    if (#CELESTIA_DISABLE) goto L_NotAllowed; // If someone abuses feature their access can get revoked.
-    if (GM < 40) goto L_NotAllowed;           // GM >= 40 can control celestia rewards list.
-    return 0; // All ok -> allowed.
-
-L_NotAllowed:
-    message strcharinfo(0), "[CelestiaRewards] : You can't use this feature at this time.";
-    return 1;
-}
-
-// Just celestia event commands help
-function|script|celestia_help
-{
-    message strcharinfo(0), "[CelestiaHelp] : Commands are";
-    message strcharinfo(0), "[CelestiaHelp] : @celestia or @celestia_help - show this help";
-    message strcharinfo(0), "[CelestiaHelp] : @celestia_add <nick> - marks nick as eligible for event reward";
-    message strcharinfo(0), "[CelestiaHelp] : @celestia_addmap - marks everyone around eventer as eligible for event reward";
-    message strcharinfo(0), "[CelestiaHelp] : @celestia_del <nick> - UNmarks nick as eligible for event reward (if added by mistake, etc)";
-    message strcharinfo(0), "[CelestiaHelp] : @celestia_list <nick> - UNmarks nick as eligible for event reward (if added by mistake, etc)";
-    message strcharinfo(0), "[CelestiaHelp] : @teapot <what> - controls teapot display. Can be on | enable | show VS off | hide | disable. E.g. @teapot on";
-    message strcharinfo(0), "[CelestiaHelp] : Keep in mind: there's interlock. No rewards given unless teapot is on display!";
-    return;
-}
-
-// This function prints allowed players list to caller PC
-function|script|celestia_list_players
-{
-    message strcharinfo(0), "[CelestiaRewards] : --- Players allowed to get CRC'2026 reward --- " + getarraysize($CELESTIA_PLAYER_ID);
-    set .@idx, 1;
-    freeloop 1;
-    goto L_PrintEntry;
-
-L_PrintEntry:
-    if (.@idx >= getarraysize($CELESTIA_PLAYER_ID)) goto L_Done;
-    message strcharinfo(0), "[CelestiaRewards] : " + $CELESTIA_PLAYER_NAME$[.@idx] +
-                            " (" + $CELESTIA_PLAYER_ID[.@idx] + ")";
-    set .@idx, .@idx + 1;
-    goto L_PrintEntry;
-
-L_Done:
-    freeloop 0;
-    message strcharinfo(0), "[CelestiaRewards] : --- End of CRC'2026 players reward list ------ ";
-    return;
-}
-
-
-// Celestia extra chat function if player eligible for CRC 2026 rewards.
-// This function does actual handling of event rewards
-// Returns 1 if reward handled (no normal chats) or 0 if normal Celestia chat should continue.
-function|script|celestia_hank_rewards
-{   // Is this player even interesting?
-    if array_search(strcharinfo(0), $CELESTIA_PLAYER_NAME$) < 0 goto L_Done;
-    if !($CELESTIA_TEAPOT) goto L_Done; // No teapot -> No rewards!
-
-    mes "To thank you for your help in returning my treasured Teapot, please accept " +
-        "a small gift from my collection of eye shades. I have them in ten different colors.";
-    mes "";
-    mes "[" + getitemlink(RedShades) + "] [" + getitemlink(GreenShades) + "] [" + 
-        getitemlink(DarkBlueShades)+ "] [" + getitemlink(YellowShades) + "] [" +
-        getitemlink(LightBlueShades) + "] [" + getitemlink(PinkShades) + "] [" +
-        getitemlink(BlackShades) + "] [" + getitemlink(OrangeShades) + "] [" +
-        getitemlink(PurpleShades) + "] [" + getitemlink(DarkGreenShades) + "]";
-    mes "";
-    mes "Which color would you like?";
-
-    
-    menu
-        "I need to think about it...", L_Later,
-        "Red Shades",        L_Reward, // 5241
-        "Green Shades",      L_Reward, // 5242
-        "Dark Blue Shades",  L_Reward, // 5242
-        "Yellow Shades",     L_Reward, // 5244
-        "Light Blue Shades", L_Reward, // 5245
-        "Pink Shades",       L_Reward, // 5246
-        "Black Shades",      L_Reward, // 5247
-        "Orange Shades",     L_Reward, // 5248
-        "Purple Shades",     L_Reward, // 5249
-        "Dark Green Shades", L_Reward; // 5250
-
-L_Reward:
-    set .@item, (RedShades + @menu - 2); // -2 for menu offset, IDs sequential, so...
-    getinventorylist; // Check they can carry reward
-    if (@inventorylist_count == 100 || (checkweight(.@item, 1) == 0))
-        goto L_NoRoom;
-    getitem .@item, 1;
-    message strcharinfo(0), "[CelestiaRewards] : You have chosen " + getitemlink(.@item);
-    void call("celestia_del_player", strcharinfo(0));
-    return 1;
-
-L_Later:
-    return 1;
-
-L_NoRoom:
-    mes "Oops, you do not have room in your inventory! Try making some space and come again.";
-    return 1;
-
-L_Done:
-    return 0;
 }
 
 
@@ -746,7 +483,7 @@ OnPirateSpawn:
     end;
 
 OnPirateDeath:
-    setarray .@pirate_loot[0], Pearl, GoldenTooth, GoldOre, CoinBag, Bandana, PirateHat;
+    setarray .@pirate_loot[0], Pearl, GoldenTooth, GoldOre, CoinBag;
     set .@itemID, .@pirate_loot[rand(getarraysize(.@pirate_loot))]; // pick random collateral
     makeitem .@itemID, 1+rand(2), getmap(), POS_X, POS_Y;
     monster getmap(), POS_X, POS_Y, "Ratto", Ratto, 3, "BonusMobsNPC::OnRattoDeath"; // Drop equalizer for noobs
