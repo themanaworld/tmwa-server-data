@@ -2,7 +2,7 @@
 // It would be called with RID attached but no NPC (item usage func).
 function|script|SpawnBallLightning
 {
-    if (BaseLevel < 60) goto L_TooLow;  // Level 60 to use this item
+    if (BaseLevel < 75) goto L_TooLow;  // Level 60 to use this item
     if (getmapflag(getmap(), MF_TOWN)) goto L_Fail_town;
     if ((countitem("IronPowder") < 1) && !(IS_EVENTER)) goto L_NoItem;
     if (@_M_BLOCK) goto L_Cooldown;
@@ -44,7 +44,7 @@ L_Cooldown:
 OnLightningBallSpawn:
     // Defaults. Recast delay tunable by server var on the fly
     set .@lifetime, 2500; // Time before ball blows up
-    set .@recast, if_then_else(($LB_RECAST > 0), $LB_RECAST, 7000);
+    set .@recast, if_then_else(($LB_RECAST > 0), $LB_RECAST, 12000);
     if (IS_EVENTER) set .@recast, (.@recast / 2);  // Rventers can be faster/more challenging.
     set .@count, 1; // Count to spawn, max 4 for balancing reasons
     // Check prerequisites and cooldown
@@ -55,15 +55,16 @@ OnLightningBallSpawn:
     addtimer .@recast, "Magic Timer::OnClear"; // set the new debuff
     sc_start SC_COOLDOWN, .@recast, 0, BL_ID;
     set .@count, .@count + (MATK1 / 500); // ...up to 3 sparks @ strong nage
-    if (.@count < 2) set .@count, rand(1, 2); // If user not good, rand(1..2)
+    if ((.@count < 2) && (rand(10) > 7))
+        set .@count, .@count + 1; // If user not good, biased to 1 but 30% chance to get 2
     if (IS_EVENTER) set .@count, 4; // Eventers may throw all 4 at once                                            // Mob Modes, use 2
     if ($REAPER_DEBUG) debugmes "=== Mobs:" + .@count + " recast:" + .@recast; 
-    if (.@count > 0) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 1 aggro
-    if (.@count > 1) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 2 normal summon
-    if (.@count > 2) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 3 friendly
-    if (.@count > 3) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 4 Zero 
-    if (IS_EVENTER) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // Extra for eventer
-    if (IS_EVENTER) summon getmap(), POS_X, POS_Y, BL_ID, "", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // Extra for eventer
+    if (.@count > 0) summon getmap(), POS_X, POS_Y, BL_ID, "Ball Lightning Summon", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 1 aggro
+    if (.@count > 1) summon getmap(), POS_X, POS_Y, BL_ID, "Ball Lightning Summon", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 2 normal summon
+    if (.@count > 2) summon getmap(), POS_X, POS_Y, BL_ID, "Ball Lightning Summon", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 3 friendly
+    if (.@count > 3) summon getmap(), POS_X, POS_Y, BL_ID, "Ball Lightning Summon", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // 4 Zero 
+    if (IS_EVENTER) summon getmap(), POS_X, POS_Y, BL_ID, "Ball Lightning Summon", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // Extra for eventer
+    if (IS_EVENTER) summon getmap(), POS_X, POS_Y, BL_ID, "Ball Lightning Summon", BallLightning, 2, .@lifetime+200, "~OrbBall"+BL_ID; // Extra for eventer
     foreach 2, getmap(), POS_X, POS_Y, POS_X, POS_Y, strnpcinfo(0) + "::OnMob"; // Register all our sparks
     addtimer .@lifetime, strnpcinfo(0)+"::OnBlowupTimer";
     end;
@@ -92,10 +93,8 @@ L_ProcessSpark:
     if (PVP_CHANNEL || getmapflag(getmap(), MF_PVP)) // Shoulld we do PvP?
         foreach 0, getmap(), .@x-2, .@y-2, .@x+2, .@y+2, strnpcinfo(0) + "::OnSparkExplodePC";
     // PvE 2 level splash damage
-    set .dmgcap, rand(650, 900); // For mobs @ r = 2
+    set .dmgcap, rand(700, 1000); // For mobs @ r = 2
     foreach 2, getmap(), .@x-2, .@y-2, .@x+2, .@y+2, strnpcinfo(0) + "::OnSparkExplodeMob";
-    set .dmgcap, rand(350, 600); // For mobs @ r = 3
-    foreach 2, getmap(), .@x-3, .@y-3, .@x+3, .@y+3, strnpcinfo(0) + "::OnSparkExplodeMob";
     goto L_ProcessSpark;
 
 L_Done:
@@ -108,7 +107,7 @@ OnSparkExplodePC:
     if (@target_id == BL_ID) end; // Sparks do not blow up their master.
     if (!(get(PVP_CHANNEL, @target_id)) && !(getmapflag(getmap(@target_id), MF_PVP))) end;
     if (get(Hp, @target_id) < 1) end; // Do not hit dead
-    set .@dmg, min(get(MaxHp, @target_id) / 3, .dmgcap);
+    set .@dmg, min(get(MaxHp, @target_id) / 4, .dmgcap);
     injure BL_ID, @target_id, .@dmg;
     sc_start SC_HALT_REGENERATE, 6000, 0, @target_id; // Stop regen temporarily
     if ($REAPER_DEBUG) debugmes "X PC:" + @target_id + " Class=" + get(Class, @target_id) + " POS_X=" + get(POS_X, @target_id) + " POX_Y=" + get(POS_Y, @target_id) + " Hp=" + get(Hp, @target_id) + " MaxHp=" + get(MaxHp, @target_id) + " Sum? " + (issummon(@target_id)) + " dmg=" + .@dmg;
@@ -118,7 +117,7 @@ OnSparkExplodeMob:
     if ($REAPER_DEBUG) debugmes "? mob:" + @target_id + " Class=" + get(Class, @target_id) + " POS_X=" + get(POS_X, @target_id) + " POX_Y=" + get(POS_Y, @target_id) + " Hp=" + get(Hp, @target_id) + " MaxHp=" + get(MaxHp, @target_id) + " Sum? " + (issummon(@target_id)) + " dmg=" + .@dmg;
     if (get(Hp, @target_id) < 1) end; // Do not hit dead
     if ((get(Class, @target_id) == BallLightning) && (issummon(@target_id))) end; // Dont explode spark summons prematurely.
-    set .@dmg, min(get(MaxHp, @target_id) / 3, .dmgcap);
+    set .@dmg, min(get(MaxHp, @target_id) / 5, .dmgcap);
     if ($REAPER_DEBUG) debugmes "X mob:" + @target_id + " Class=" + get(Class, @target_id) + " POS_X=" + get(POS_X, @target_id) + " POX_Y=" + get(POS_Y, @target_id) + " Hp=" + get(Hp, @target_id) + " MaxHp=" + get(MaxHp, @target_id) + " Sum? " + (issummon(@target_id)) + " dmg=" + .@dmg;
     injure BL_ID, @target_id, .@dmg;
     end;
