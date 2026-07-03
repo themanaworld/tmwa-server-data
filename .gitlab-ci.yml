@@ -1,34 +1,31 @@
 stages:
-- sync
+- verify
 - deploy
 
 image: ubuntu:18.04
 before_script:
   - uname -a
 
-legacy:
-  stage: sync
+verify:
+  stage: verify
   tags:
   - trusted
   script:
   - apt-get -qq update
   - apt-get install -qq -y make zip zlib1g-dev zlibc python ssh rsync python3 git
-  - git config --global credential.helper store
-  - echo "https://numa:$SYNC_KEY@git.themanaworld.org" > ~/.git-credentials
-  - git checkout master
   - git submodule update --init
-  - pwd
-  - cd tools
-  - ./evolved.py
-  - cd ..
-  - git status
-  - (git status --porcelain  | grep '.*') || exit 0 # skip if nothing to commit
-  - git config user.email "numa@themanaworld.org"
-  - git config user.name "Numa"
-  - git commit -a -m "Regenerate databases" --author="Numa <numa@themanaworld.org>"
-  - git push # may cause a CI loop >.<
-  only:
-  - master
+  - make db
+  # Verify the regenerated databases match what is committed. If they differ,
+  # the merge request changed a source DB without regenerating the derived
+  # files: run "make db" locally and commit the result.
+  - |
+    if [ -n "$(git status --porcelain)" ]; then
+      echo "Derived database files are out of date."
+      echo "Run 'make db' locally and commit the result in your merge request."
+      git --no-pager diff
+      exit 1
+    fi
+  - echo "Derived database files are up to date."
 
 evolved:
   stage: deploy

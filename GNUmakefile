@@ -39,6 +39,12 @@ news: world/map/news.txt world/map/news.html world/map/news.rss world/map/news.j
 updates:
 	cd tools/client/ ; ./make-updates.sh
 
+# Regenerate the checked-in TMWA database files from the evol2 sources.
+# Deliberately not a .PHONY target: unlike the targets above, which build
+# artifacts that are not committed, this regenerates files tracked in the repo.
+db:
+	cd tools && ./evolved.py
+
 frob:
 	deno run --allow-read=. --allow-write=world/save tools/server/frob/index.ts -- $(items)
 
