@@ -1,0 +1,44 @@
+// A warp helper that respects the nowarp/nowarpto map flags.
+//
+// Regular warps are disabled by the nowarp/nowarpto map flags, which can
+// be toggled at runtime with @warpoff/@warpon/@warptooff/@warptoon, for
+// example to close off maps during an event. Scripted warps ignore these
+// flags, since a blocked warp would leave the calling script running with
+// the player in an unexpected place.
+//
+// Scripted warps that act like regular travel (a door, a ferry, a
+// teleport pad) can opt in to the flags by calling this function instead
+// of warp. The return value tells the caller whether the player was
+// warped, so it can handle the blocked case.
+//
+// Arguments:
+//     0: destination map
+//     1: destination x
+//     2: destination y
+//     3: message shown to the player when the warp is blocked (optional;
+//        pass "" to leave messaging entirely to the caller)
+//
+// Returns 1 when the player was warped, 0 when the warp was blocked.
+//
+// Usage:
+//     if (!call("conditional_warp", "009-1", 52, 39)) goto L_Blocked;
+// or, when the default message is enough:
+//     void call("conditional_warp", "009-1", 52, 39);
+
+function|script|conditional_warp
+{
+    if (getgmlevel() >= WARP_BYPASS) goto L_Warp;
+    if (getmapflag(getmap(), MF_NOWARP)) goto L_Blocked;
+    if (getmapflag(getarg(0), MF_NOWARPTO)) goto L_Blocked;
+    goto L_Warp;
+
+L_Warp:
+    warp getarg(0), getarg(1), getarg(2);
+    return 1;
+
+L_Blocked:
+    set .@message$, getarg(3, "A mysterious force prevents you from going there right now.");
+    if (.@message$ != "")
+        message strcharinfo(0), .@message$;
+    return 0;
+}
