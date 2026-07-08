@@ -23,6 +23,9 @@
 //     1 when blocked by the nowarp flag on the player's current map
 //     2 when blocked by the nowarpto flag on the destination map
 //
+// GMs at or above the any_warp_GM_min_level battle config setting are
+// never blocked, mirroring how the map server treats regular warps.
+//
 // Usage:
 //     if (call("conditional_warp", "009-1", 52, 39)) goto L_Blocked;
 // or, when a single blocked message is enough:
@@ -30,7 +33,7 @@
 
 function|script|conditional_warp
 {
-    if (getgmlevel() >= WARP_BYPASS) goto L_Warp;
+    if (getgmlevel() >= getbattleconfig("any_warp_GM_min_level")) goto L_Warp;
     if (getmapflag(getmap(), MF_NOWARP)) goto L_BlockedBySource;
     if (getmapflag(getarg(0), MF_NOWARPTO)) goto L_BlockedByDestination;
     goto L_Warp;
