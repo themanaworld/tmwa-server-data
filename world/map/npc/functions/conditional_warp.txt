@@ -15,8 +15,12 @@
 //     0: destination map
 //     1: destination x
 //     2: destination y
-//     3: message shown to the player when the warp is blocked (optional;
-//        when omitted, messaging is left entirely to the caller)
+//     3: message shown to the player when the warp is blocked by the
+//        nowarp flag on their current map (optional; when omitted,
+//        messaging is left entirely to the caller)
+//     4: message shown to the player when the warp is blocked by the
+//        nowarpto flag on the destination map (optional; defaults to
+//        the argument 3 message)
 //
 // Returns:
 //     0 when the player was warped
@@ -30,6 +34,8 @@
 //     if (call("conditional_warp", "009-1", 52, 39)) goto L_Blocked;
 // or, when a single blocked message is enough:
 //     void call("conditional_warp", "009-1", 52, 39, "The door won't budge.");
+// or, with a separate message per blocked case:
+//     void call("conditional_warp", "009-1", 52, 39, "You cannot leave right now.", "The door won't budge.");
 
 function|script|conditional_warp
 {
@@ -44,14 +50,16 @@ L_Warp:
 
 L_BlockedBySource:
     set .@result, 1;
+    set .@message$, getarg(3, "");
     goto L_Blocked;
 
 L_BlockedByDestination:
     set .@result, 2;
+    set .@message$, getarg(4, getarg(3, ""));
     goto L_Blocked;
 
 L_Blocked:
-    if (getarg(3, "") != "")
-        message strcharinfo(0), getarg(3, "");
+    if (.@message$ != "")
+        message strcharinfo(0), .@message$;
     return .@result;
 }
