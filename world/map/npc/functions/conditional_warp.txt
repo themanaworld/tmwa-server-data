@@ -9,36 +9,46 @@
 // Scripted warps that act like regular travel (a door, a ferry, a
 // teleport pad) can opt in to the flags by calling this function instead
 // of warp. The return value tells the caller whether the player was
-// warped, so it can handle the blocked case.
+// warped and why not, so it can handle the blocked case.
 //
 // Arguments:
 //     0: destination map
 //     1: destination x
 //     2: destination y
 //     3: message shown to the player when the warp is blocked (optional;
-//        pass "" to leave messaging entirely to the caller)
+//        when omitted, messaging is left entirely to the caller)
 //
-// Returns 1 when the player was warped, 0 when the warp was blocked.
+// Returns:
+//     0 when the player was warped
+//     1 when blocked by the nowarp flag on the player's current map
+//     2 when blocked by the nowarpto flag on the destination map
 //
 // Usage:
-//     if (!call("conditional_warp", "009-1", 52, 39)) goto L_Blocked;
-// or, when the default message is enough:
-//     void call("conditional_warp", "009-1", 52, 39);
+//     if (call("conditional_warp", "009-1", 52, 39)) goto L_Blocked;
+// or, when a single blocked message is enough:
+//     void call("conditional_warp", "009-1", 52, 39, "The door won't budge.");
 
 function|script|conditional_warp
 {
     if (getgmlevel() >= WARP_BYPASS) goto L_Warp;
-    if (getmapflag(getmap(), MF_NOWARP)) goto L_Blocked;
-    if (getmapflag(getarg(0), MF_NOWARPTO)) goto L_Blocked;
+    if (getmapflag(getmap(), MF_NOWARP)) goto L_BlockedBySource;
+    if (getmapflag(getarg(0), MF_NOWARPTO)) goto L_BlockedByDestination;
     goto L_Warp;
 
 L_Warp:
     warp getarg(0), getarg(1), getarg(2);
-    return 1;
+    return 0;
+
+L_BlockedBySource:
+    set .@result, 1;
+    goto L_Blocked;
+
+L_BlockedByDestination:
+    set .@result, 2;
+    goto L_Blocked;
 
 L_Blocked:
-    set .@message$, getarg(3, "A mysterious force prevents you from going there right now.");
-    if (.@message$ != "")
-        message strcharinfo(0), .@message$;
-    return 0;
+    if (getarg(3, "") != "")
+        message strcharinfo(0), getarg(3, "");
+    return .@result;
 }
