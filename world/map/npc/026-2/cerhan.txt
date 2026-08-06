@@ -20,6 +20,7 @@ L_Story:
         menu
             "Do you know something about 'Mylarin Dust'?", L_Mylarin,
             "Do you work with bows or only swords and armor?", L_Banshee,
+            "Do you work with helmets at all?", L_Bull,
             "Good luck with that.", L_GoodLuckWith;
     goto L_GoodLuckWith;
 
@@ -30,7 +31,8 @@ L_GoodLuckWith:
         menu
             "[Leave]",L_Close,
             "Actually, I exchanged my Mylarin Dust with a bunny girl.", L_SandCutter,
-            "Do you work with bows or only swords and armor?", L_Banshee;
+            "Do you work with bows or only swords and armor?", L_Banshee,
+            "Do you work with helmets at all?", L_Bull;
     close;
 
 L_SandCutter:
@@ -59,7 +61,7 @@ L_Banshee:
     if (countitem(BansheeBow) < 1) goto L_Close;
     next;
     mes "[Cerhan]";
-    mes "\"Actually, what the fletching. How could you curse your [@@"+ImperialBow+"|@@] like that?! It is ruined! Would you really sacrifice anything for just some extra points in attack speed? Don't you have any virtues?!\""; // TRANSLATORS: Fletching is the fin-shaped aerodynamic stabilization device attached on arrows, bolts, darts, or javelins.
+    mes "\"Actually, what the fletching. How could you curse your [@@"+ImperialBow+"|@@] like that!? It is ruined! Would you really sacrifice anything for just some extra points in attack speed? Don't you have any virtues!?\""; // TRANSLATORS: Fletching is the fin-shaped aerodynamic stabilization device attached on arrows, bolts, darts, or javelins.
     next;
     mes "[Cerhan]";
     mes "\"Sure, I can see it is much more powerful now as a [@@"+BansheeBow+"|@@] but really. A cursed item. Aren't you afraid of dying?!\"";
@@ -75,7 +77,29 @@ L_Banshee:
     mes "\"So whaddaya say? Do we have a deal?\"";
     menu
         "I'm a bit broke right now, so maybe later.", L_NoMoney,
-        "Sure, please purify my Banshee Bow.", L_Purify;
+        "Sure, please purify my Banshee Bow.", L_PurifyBow;
+
+L_Bull:
+    mes "[Cerhan]";
+    mes "\"I work mostly with ##Bdaggers##b and armor, not swords. There is an armor smith in Hurnscald that makes helmets though. Speak to Nicholas, if you go there.\"";
+    if (countitem(BullHelmet) < 1) goto L_Close;
+    next;
+    mes "\"Actually, is that a cursed [@@"+ImperialHelmet+"|@@]?. What's wrong with you!? It's totally destroyed! You're sacrificing self preservation for destructive power! How can one survive wearing that monstrosity!?\"";
+    next;
+    [Cerhan]";
+    mes "\"Sure, it harnesses raw power as a [@@"+BullHelmet+"|@@], but ... a cursed item? Are you not concerned with your own well being!?\"";
+    mes "\"I doubt, permanently removing a curse like this would even be possible by a cleric of the highest ranks, but suppressing... I can suppress the curse on your helmet and restore it to its true excellence...\"";
+    next;
+    mes "[Cerhan]";
+    mes "\"...For only 5,000 GP. Understand it will be purified, not uncursed. If it was lying in, say, a chest for too long and you put it there again, the curse will resurrect and it'll be ruined again.\"";
+    next;
+    if (Zeny < 5000) goto L_NoMoney;
+    mes "[Cerhan]";
+    mes "\"So whaddaya say? Do we have a deal?\"";
+    menu
+        "I'll have to come back a bit later.", L_NoMoney,
+        "Sure, please purify my Bull Helmet.", L_PurifyHelm;
+
 L_Lab:
     mes "[Cerhan]";
     mes "\"I've seen Leofwin use the gear on that table over there. She makes stuff for her shop and in some cases, even sells the required items.\"";
@@ -90,7 +114,7 @@ L_NoMoney:
     mes "\"Just bring me the money, and I'll do it in a jiff.\"";
     close;
 
-L_Purify:
+L_PurifyBow:
     if (countitem(BansheeBow) < 1) goto L_Banshee;
     if (Zeny < 5000) goto L_NoMoney;
     set Zeny, Zeny - 5000;
@@ -103,6 +127,19 @@ L_Purify:
     mes "[Cerhan]";
     mes "\"I'll even give you a little memento. Now go, and make me proud!\"";
     getitem ArmorBreaker, 50; // In average, each arrow went for 100 gp, a bargain
+    close;
+
+L_PurifyHelm:
+    if (countitem(BullHelmet) < 1) goto L_Bull;
+    if (Zeny < 5000) goto L_NoMoney;
+    set Zeny, Zeny - 5000;
+    delitem BullHelmet, 1;
+    getitem ImperialHelmet, 1;
+    mes "[Cerhan]";
+    mes "\"And here we go, your Imperial Helmet was restored to its former true excellence! You should be more protected now, huh?\"";
+    next;
+    mes "[Cerhan]";
+    mes "\"It's hard to believe all this time, that shimmer and shine was hidden. Now you'll look like true nobility!\"";
     close;
 
 L_Close:
