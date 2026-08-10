@@ -231,10 +231,12 @@ L_See:
         goto L_No;
     delitem "RedTulip", @RedTulip_Amount;
     set Rossy_Quest, 13;
+    // Grant the experience before the "next", or closing the dialog here
+    // would cost the player their reward.
+    getexp @Flower_EXP, 0;
     mes "\"That's better! Go and tell my mother that she is the nicest mother in the world.\"";
     next;
     mes "\"Now I should really find my sister. Come back later.\"";
-    getexp @Flower_EXP, 0;
     close;
 
 L_Best:
@@ -262,19 +264,17 @@ L_End:
         "I didn't see her yet, sorry.", L_No;
 
 L_Found:
+    // Nothing may change before the "next": closing the dialog there used to
+    // leave Rossy_Quest at 19, which no branch of this script handles, so the
+    // quest could no longer be completed. Both 17 and 18 lead straight to
+    // L_Clear anyway, so the intermediate values served no purpose.
     mes "[Rossy]";
-    if (Rossy_Quest == 17)
-        set Rossy_Quest, 18;
-    if (Rossy_Quest == 18)
-        set Rossy_Quest, 19;
     mes "\"Oh, "+ strcharinfo(0) +", thank you very much! Take this, you deserve it!\"";
     next;
     mes "Rossy hands you a huge bag full of coins.";
     getexp @Finish_EXP, 0;
     set Zeny, Zeny + @Finish_Money;
-    if (Rossy_Quest == 19)
-        goto L_Clear;
-    close;
+    goto L_Clear;
 
 L_Clear:
     set Rossy_Quest, 0;

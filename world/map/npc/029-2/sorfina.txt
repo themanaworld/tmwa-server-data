@@ -149,14 +149,17 @@ L_Clothes:
 
     mes "\"Oh, and if you're looking for extra work, you should talk to Aidan and Valon when you go outside. They're giving rewards for monster hunting.";
     mes "You can find Aidan near the camp fire outside and Valon out by the fields in the east.\"";
+    // Hand out everything before the "next", so that closing the dialog here
+    // can't leave the player with the towel but without the money, free to
+    // come back for another towel.
+    mapmask getmask() | 8;
+    set Zeny, Zeny + 30;
+    set QL_BEGIN, 4;
     next;
 
     mes "She digs in her pocket for a moment.";
     mes "\"And here is some money for you. Don't spend it all in one place.";
     mes "Now go help Tanisha downstairs.\"";
-    mapmask getmask() | 8;
-    set Zeny, Zeny + 30;
-    set QL_BEGIN, 4;
     goto L_Close;
 
 L_Again:
@@ -364,12 +367,14 @@ L_Shirt:
     mes "You take a simple Cotton Shirt and some very worn-out Ragged Shorts out of the dresser.";
     getitem "RaggedShirt", 1;
     getitem "RaggedShorts", 1;
+    // Advance before the "next", or closing the dialog here would leave the
+    // dresser ready to hand out another set of clothes.
+    set QL_BEGIN, 3;
     mes "[Sorfina]";
     mes "\"Great! Now you can equip it.\"";
     mes "\"You can open your inventory by pressing F3 or clicking on the 'Inventory' button in the bar at the upper right corner.\"";
     next;
     mes "\"After we finish talking, click on the clothes and press the equip button.\"";
-    set QL_BEGIN, 3;
     close;
 
 L_Empty:
