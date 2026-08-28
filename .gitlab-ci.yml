@@ -27,6 +27,24 @@ verify:
     fi
   - echo "Derived database files are up to date."
 
+boot:
+  stage: verify
+  # No tag: the tmwa image is built for both amd64 and arm64, and the job
+  # needs no credentials, so any runner will do.
+  image: ghcr.io/themanaworld/tmwa:latest
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  # Boots the map-server against this branch's data. It refuses to start when
+  # an NPC script or a database entry fails to parse, which is otherwise only
+  # noticed by whoever next runs the server.
+  script:
+  - .tools/boot-test.sh
+  artifacts:
+    paths:
+    - map-server.log
+    when: on_failure
+    expire_in: 1 week
+
 evolved:
   stage: deploy
   tags:
