@@ -126,8 +126,16 @@ clientdata:
   - git status
   - git config user.email "numa@themanaworld.org"
   - git config user.name "Numa"
-  - git add graphics/sprites/monsters/
-  - git commit -a -m "Sync with Legacy repo" --author="Numa <numa@themanaworld.org>"
+  # Stage every path this job copies over. "git add <dir>" also records
+  # deletions, so the wiped-and-recopied directories sync both ways.
+  - git add monsters.xml graphics/sprites/monsters/ sfx/
+  # Having nothing to sync is normal and is not a failure.
+  - |
+    if git diff --cached --quiet; then
+      echo "Nothing to sync."
+      exit 0
+    fi
+  - git commit -m "Sync with Legacy repo" --author="Numa <numa@themanaworld.org>"
   - git push
   only:
   - stable@tmw/serverdata
