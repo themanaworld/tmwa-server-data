@@ -120,9 +120,11 @@ L_AskLeaving:
     mes "It's time to leave this place now.";
     next;
     if (countitem(ImperialBow)) goto L_Banshee;
+    if (countitem(ImperialHelmet)) goto L_Bull;
     goto L_ReallyLeave;
 
 L_ReallyLeave:
+    message strcharinfo(0), "There's nothing left to do here.";
     // Force the hero to leave last, as this event triggers the end of the quest
     // as well as some dialogs from Valia, when the hero returns.
     if (strcharinfo(0) == $@ILLIA_HERO$ && getareausers("052-2", 19, 8, 137, 88) > 1)
@@ -130,21 +132,53 @@ L_ReallyLeave:
     goto L_PrepareLeaving;
 
 L_Banshee:
+    if (countitem(ImperialBow) < 1) goto L_ReallyLeave;
     mes "Actually, should I place the [@@"+ImperialBow+"|@@] here? If I do, it'll be cursed into a [@@"+BansheeBow+"|@@] again.";
     menu
         "Ridiculous. Why would I curse my weapon again?", L_ReallyLeave,
-        "Yes, that's a good idea. I would sacrifice anything for the extra power.", L_CurseBanshee;
+        "Yes, that's a good idea. I would sacrifice anything for the extra power.", L_CurseBanshee,
+        "Wait now... I wonder if I could curse an Imperial Helmet.", L_Bull;
+
+L_Bull:
+    if (countitem(ImperialHelmet) < 1) goto L_ReallyLeave;
+    mes "Actually, should I place the [@@"+ImperialHelmet+"|@@] here? If I do, it'll be cursed into a [@@"+BullHelmet+"|@@] again.";
+    menu
+        "Ridiculous. Why would I curse my helmet again?", L_ReallyLeave,
+        "Yes, that's a good idea. I would sacrifice anything for the extra power.", L_CurseBull,
+        "Wait now... I wonder if I could curse an Imperial Bow.", L_Banshee;
 
 L_CurseBanshee:
     if (countitem(ImperialBow) < 1) goto L_ReallyLeave;
+    mes "Am I sure I want to curse my bow again?";
+    menu
+        "For sure.", L_CurseBanshee2,
+        "On second thought... nah.", L_ReallyLeave;
+        
+L_CurseBanshee2:
+    message strcharinfo(0), "As you drop the bow into the chest, you watch it darken and transform, right in front of your own eyes.";
     delitem ImperialBow, 1;
     getitem BansheeBow, 1;
+    if (countitem(ImperialHelmet)) goto L_Bull;
+    goto L_ReallyLeave;
+
+L_CurseBull:
+    if (countitem(ImperialHelmet) < 1) goto L_ReallyLeave;
+    mes "Am I sure I want to curse my helmet again?";
+    menu
+        "For sure.", L_CurseBull2,
+        "On second thought... nah.", L_ReallyLeave;
+        
+L_CurseBull2:
+    message strcharinfo(0), "As you drop the helmet into the chest, you watch it darken and transform, right in front of your own eyes.";
+    delitem ImperialHelmet, 1;
+    getitem BullHelmet, 1;
+    if (countitem(ImperialBow)) goto L_Banshee;
     goto L_ReallyLeave;
 
 L_WaitHelpersLeave:
-    mes "However, I'd better wait my friends leave before I do.";
+    mes "However, I'd better wait for my friends to leave before I do.";
     next;
-    mes "I prefer to know they left safely this place.";
+    mes "I prefer to know they left this place safely.";
     close;
 
 L_PrepareLeaving:
@@ -164,7 +198,7 @@ L_Leave:
     close;
 
 OnMsg1:
-    message strcharinfo(0), "At the moment you are wearing the ring, you start to feel dizzy...";
+    message strcharinfo(0), "At the moment, you are wearing the ring. You start to feel dizzy...";
     end;
 
 OnMsg2:
