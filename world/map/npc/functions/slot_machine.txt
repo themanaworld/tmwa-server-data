@@ -9,6 +9,7 @@ function|script|SlotMachine
         "Maybe later", L_Close;
 
 L_Play:
+    clear;
     if(countitem("CasinoCoins") < 1)
         goto L_NoCoin;
     delitem "CasinoCoins", 1;
@@ -43,16 +44,27 @@ L_Jackpot:
     mes "as a token of apology.\"";
     getitem "Monocle", 1;
     set CSN, 9;
-    goto L_Close;
+    goto L_Again;
 
 L_Default:
     mes "Congratulations! You won!";
     mes "You get 10 casino coins";
     getitem "CasinoCoins", 10;
-    goto L_Close;
+    goto L_Again;
 
 L_Lost:
     mes "You lost!";
+    goto L_Again;
+
+L_Again:
+    if(countitem("CasinoCoins") < 1)
+        goto L_OutOfCoins;
+    menu
+        "Pull again", L_Play,
+        "That's enough", L_Close;
+
+L_OutOfCoins:
+    mes "You are out of casino coins.";
     goto L_Close;
 
 L_NoCoin:
