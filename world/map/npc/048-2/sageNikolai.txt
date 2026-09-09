@@ -8,22 +8,22 @@
     set @halloween_npc_id, $@halloween_npc_nikolai;
     callfunc "TrickOrTreat";
 
-    set @bookpages, ((QUEST_BlueSage & $@Q_BlueSageBookPages_MASK) >> $@Q_BlueSageBookPages_SHIFT);
-    set @slimes, ((QUEST_BlueSage & $@Q_BlueSageSlimes_MASK) >> $@Q_BlueSageSlimes_SHIFT);
-    set @material, ((QUEST_BlueSage & $@Q_BlueSageMaterial_MASK) >> $@Q_BlueSageMaterial_SHIFT);
+    set @bookpages, (QL_BSAGE_PAGES & $@Q_BlueSageBookPages_MASK);
+    set @slimes, (QL_BSAGE_SLIMES & $@Q_BlueSageSlimes_MASK);
+    set @material, QL_BSAGE_MATERIALS;
 
     if ((@bookpages == 31)
-            && (QUEST_BlueSage & $@Q_BlueSageMaterialInk)
-            && (QUEST_BlueSage & $@Q_BlueSageMaterialClaw)
-            && (QUEST_BlueSage & $@Q_BlueSageMaterialReed)
-            && (QUEST_BlueSage & $@Q_BlueSageMaterialSilk)
-            && !(QUEST_BlueSage & $@Q_BlueSageGrimoire))
+            && (QL_BSAGE_MATERIALS & $@Q_BlueSageMaterialInk)
+            && (QL_BSAGE_MATERIALS & $@Q_BlueSageMaterialClaw)
+            && (QL_BSAGE_MATERIALS & $@Q_BlueSageMaterialReed)
+            && (QL_BSAGE_MATERIALS & $@Q_BlueSageMaterialSilk)
+            && !(QL_BSAGE_PAGES & $@Q_BlueSageGrimoire))
         goto L_GrimoireReward;
 
-    if ((@slimes == 255) && !(QUEST_BlueSage & $@Q_BlueSageIceSword))
+    if ((@slimes == 255) && !(QL_BSAGE_SLIMES & $@Q_BlueSageIceSword))
         goto L_SlimesReward;
 
-    if ((QUEST_BlueSage & $@Q_BlueSageGrimoire) && (QUEST_BlueSage & $@Q_BlueSageIceSword))
+    if ((QL_BSAGE_PAGES & $@Q_BlueSageGrimoire) && (QL_BSAGE_SLIMES & $@Q_BlueSageIceSword))
         goto L_Done;
 
     if (QUEST_BlueSage > 0)
@@ -247,7 +247,7 @@ L_GrimoireReward:
     if ((checkweight("Grimoire", 1) == 0) || (@inventorylist_count == 100))
         goto L_Full_Inv;
     getitem "Grimoire", 1;
-    set QUEST_BlueSage, QUEST_BlueSage | $@Q_BlueSageGrimoire;
+    set QL_BSAGE_PAGES, QL_BSAGE_PAGES | $@Q_BlueSageGrimoire;
     mes "He hands you a very precious book.";
     next;
     mes "\"This is an artifact of great power, and holding it while attempting to use magic will allow you to access your inner magic power much better. Use it wisely.\"";
@@ -262,7 +262,7 @@ L_SlimesReward:
     if ((checkweight("IceGladius", 1) == 0) || (@inventorylist_count == 100))
         goto L_Full_Inv;
     getitem "IceGladius", 1;
-    set QUEST_BlueSage, QUEST_BlueSage | $@Q_BlueSageIceSword;
+    set QL_BSAGE_SLIMES, QL_BSAGE_SLIMES | $@Q_BlueSageIceSword;
     mes "He gives you a sword with a shimmering blue blade.";
     next;
     mes "\"I'm sure you can use this well.\"";
