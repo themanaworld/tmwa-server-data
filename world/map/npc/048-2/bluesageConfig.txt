@@ -5,6 +5,14 @@
 // Variable used: QUEST_BlueSage
 // Author: Jenalya
 
+// The subquests are accessed through the quest log views defined in db/quest-log.txt,
+// so that the client is kept up to date:
+// QL_BSAGE_PAGES:       bits 0 - 5 (book pages and Grimoire flag)
+// QL_BSAGE_MATERIALS:   nibble 2
+// QL_BSAGE_INVESTIGATE: nibble 3
+// QL_BSAGE_SLIMES:      bytes 2 and 3 (slime nests and Ice Gladius flag)
+// The $@Q_BlueSage* constants below are relative to these views.
+
 // Subquests:
 
 // Byte 0:
@@ -13,7 +21,7 @@
 // they need the missing bookpages for that
 // value gives the number of new pages given to the helpers (up to 31)
 // bit 5: got Grimoire as reward for collecting the bookpages and bringing material to repair the books
-// Bit 6: got reward for defeating the remaining slimes in the library
+// Bit 6: unused (formerly the Ice Gladius flag, moved to byte 3 by ClearVariables)
 // Bit 7: unused
 
 // Nibble 2 as flags: Bring material to repair the books and make new books
@@ -51,6 +59,9 @@
 // Bit 0: started the subquest
 // Bit 1 - 7: each spawn point is unique and saved with a flag
 
+// Byte 3:
+// Bit 0: got Ice Gladius as reward for defeating the remaining slimes in the library
+
 -|script|#bluesageconfig|32767
 {
     end;
@@ -58,30 +69,27 @@
 OnInit:
     set $@Q_BlueSageMinimumLevel, 60;
 
+    // in QL_BSAGE_PAGES
     set $@Q_BlueSageBookPages_MASK, 0x1F;
-    set $@Q_BlueSageBookPages_SHIFT, 0;
-
     set $@Q_BlueSageGrimoire, 0x20;
-    set $@Q_BlueSageIceSword, 0x40;
 
-    set $@Q_BlueSageMaterial_MASK, NIBBLE_2_MASK;
-    set $@Q_BlueSageMaterial_SHIFT, NIBBLE_2_SHIFT;
+    // in QL_BSAGE_MATERIALS
+    set $@Q_BlueSageMaterialReed, 0x1;
+    set $@Q_BlueSageMaterialSilk, 0x2;
+    set $@Q_BlueSageMaterialClaw, 0x4;
+    set $@Q_BlueSageMaterialInk,  0x8;
 
-    set $@Q_BlueSageMaterialReed, 0x100;
-    set $@Q_BlueSageMaterialSilk, 0x200;
-    set $@Q_BlueSageMaterialClaw, 0x400;
-    set $@Q_BlueSageMaterialInk,  0x800;
-
-    set $@Q_BlueSageSlimes_MASK, BYTE_2_MASK;
-    set $@Q_BlueSageSlimes_SHIFT, BYTE_2_SHIFT;
-    set $@Q_BlueSageSlimesStart,    0x010000;
-    set $@Q_BlueSageSlime0,         0x020000;
-    set $@Q_BlueSageSlime1,         0x040000;
-    set $@Q_BlueSageSlime2,         0x080000;
-    set $@Q_BlueSageSlime3,         0x100000;
-    set $@Q_BlueSageSlime4,         0x200000;
-    set $@Q_BlueSageSlime5,         0x400000;
-    set $@Q_BlueSageSlime6,         0x800000;
+    // in QL_BSAGE_SLIMES
+    set $@Q_BlueSageSlimes_MASK, 0xFF; // started flag and nest flags
+    set $@Q_BlueSageSlimesStart,    0x01;
+    set $@Q_BlueSageSlime0,         0x02;
+    set $@Q_BlueSageSlime1,         0x04;
+    set $@Q_BlueSageSlime2,         0x08;
+    set $@Q_BlueSageSlime3,         0x10;
+    set $@Q_BlueSageSlime4,         0x20;
+    set $@Q_BlueSageSlime5,         0x40;
+    set $@Q_BlueSageSlime6,         0x80;
+    set $@Q_BlueSageIceSword,       0x100;
     //white
     set $@BlueSageSlime0_Amount, 6;
     set $@BlueSageSlime1_Amount, 5;
@@ -96,26 +104,26 @@ OnInit:
 
 function|script|updateBlueSageBookPages
 {
-    set QUEST_BlueSage, (QUEST_BlueSage & ~($@Q_BlueSageBookPages_MASK) | (@bookpages << $@Q_BlueSageBookPages_SHIFT));
+    set QL_BSAGE_PAGES, (QL_BSAGE_PAGES & ~($@Q_BlueSageBookPages_MASK)) | @bookpages;
     return;
 }
 
 function|script|blueSageNumberOfClearedNests
 {
     set @slimenests, 0;
-    if (QUEST_BlueSage & $@Q_BlueSageSlime0)
+    if (QL_BSAGE_SLIMES & $@Q_BlueSageSlime0)
         set @slimenests, @slimenests+1;
-    if (QUEST_BlueSage & $@Q_BlueSageSlime1)
+    if (QL_BSAGE_SLIMES & $@Q_BlueSageSlime1)
         set @slimenests, @slimenests+1;
-    if (QUEST_BlueSage & $@Q_BlueSageSlime2)
+    if (QL_BSAGE_SLIMES & $@Q_BlueSageSlime2)
         set @slimenests, @slimenests+1;
-    if (QUEST_BlueSage & $@Q_BlueSageSlime3)
+    if (QL_BSAGE_SLIMES & $@Q_BlueSageSlime3)
         set @slimenests, @slimenests+1;
-    if (QUEST_BlueSage & $@Q_BlueSageSlime4)
+    if (QL_BSAGE_SLIMES & $@Q_BlueSageSlime4)
         set @slimenests, @slimenests+1;
-    if (QUEST_BlueSage & $@Q_BlueSageSlime5)
+    if (QL_BSAGE_SLIMES & $@Q_BlueSageSlime5)
         set @slimenests, @slimenests+1;
-    if (QUEST_BlueSage & $@Q_BlueSageSlime6)
+    if (QL_BSAGE_SLIMES & $@Q_BlueSageSlime6)
         set @slimenests, @slimenests+1;
     return;
 }
