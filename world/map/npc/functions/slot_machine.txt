@@ -1,68 +1,602 @@
-//
+//Author: Unknown | Known co-authors: Kandiman (formatting), o11c (formatting), Wushin (formatting), gumi (formatting),
+//Jesusalva (Monocle addition), bjorn (Made continued play possible), Ledmitz (Added bonus round & jackpots, effects,
+//random events, increased digits from 7 to 10 and increased payouts)
+
+//Caution: Altering prizes can drastically change total payouts and house take (~7+%). Keep in mind, it is a GP sink,
+//but also that no one will play if there is no chance to win big or not enough total wins. No one playing = no GP sink.
+//Chance of winning Super Lucky Jackpot(SLJP) are 1 in 1M. Lesser JP odds subtract the total wins of the jackpot just
+//higher than itself(7s). Odds example calc: (6 chances of 10 digits)=10^6=1M. (5 chances of 10)=10^5=100K...
+// 1M/100K=10. 10-1(because 1 of these includes SLJP)=9 chances to win Lucky Jackpot(LJP).
+//(2/3 7s)=n=(10^2*3(3 total combinations)). 1M/n(total possibilities)-(777 total wins)=(take in). 
+//(1/3 7s)=n=10x3(3 total combinations). 1M/n-(77 total wins)=(take in).
+//3xn=(1 in 1K)=1K*(10-1=9(since 777 is Mini-Jackpot))=9K. 9K*(prize)=(take in).
+//Win		Amount of wins		Each payout		Total Payout
+//6x7		1			177,777			177,777
+//5x7		9			7,777			69,993
+//4x7		91			777			70,707
+//3x7		909			77			69,993
+//2x7		29,094			7			203,658
+//1x7*		271,206			1			271,206
+//3xn		9000			7			63,000
+//TOTAL payout:							926,334
+//* 1x7=freespin=1 coin.
+//House take / profit: 1,000,000(take in)-926,334(payout)=73,666=7.37%
+//Yes, it's complicated. Do not change anything without doing the proper calculations and ensuring the house always takes
+//in a small percentage. 7+% is still a bit high, but one small change means recalculating everything.
+
 
 function|script|SlotMachine
 {
-    goto L_Again;
+    //Slot states allow playing from when the window was last closed, if within a part of the bonus round.
+    //Slots states are as follows: SLOTS:
+    //0 = No state saved or GP was collected, 1 = L_777(Mini-Jackpot - bonus round), 2 = L_JP(Jackpot),
+    //3 = L_LJP(Lucky Jackpot), 4 = L_SLJP(Super Lucky Jackpot).
+    //SLOTS_BET will be re/saved whenever a bet is changed. This ensures the correct bet is used when a
+    //state is loaded and will also be used for convenience at any time.
+    set @Bet, SLOTS_BET;
+    if(@Bet == 0)
+        set @Bet, 1;
+    if(SLOTS == 1)
+        goto L_777;
+    if(SLOTS == 2)
+        goto L_JP;
+    if(SLOTS == 3)
+        goto L_LJP;
+    if(SLOTS == 4)
+        goto L_SLJP;
+    set SLOTS, 0;
 
+    //If CSN is only for the Monocle, set back to 9 to save bytes or keep for records?
+    //if (CSN > 9)
+    //    set CSN, 9;
+    misceffect 10104, strcharinfo(0);
+    specialeffect 319;
+    goto L_Instructions;
+    
+L_Instructions:
+    clear;
+    music "win.ogg";
+    mes "##B##2S##3U##4P##6E##2R ##2L##3U##4C##6K##2Y ##17##b";
+    mes "##27##3: Free spin.";
+    mes "##277##3: 7 coins.";
+    mes "##23 of a kind##3: 7 coins.";
+    mes "##2777##3 - Mini-Jackpot / Bonus(jackpot unlocker): 77 coins.";
+    mes "##2777##3+##27##1__##3 - Jackpot: 777 coins.";
+    mes "##2777##3+##277##1_##3 - Lucky Jackpot: 7,777 coins.";
+    mes "##2777##3+##2777##3 - Super Lucky Jackpot: 177,777 coins.";
+    mes "Change bet to increase your winnings!";
+    mes "Do you feel lucky today?";
+    mes "##6*Max bet is 100. 1 coin = 10GP. All jackpots are paid in GP.*##0";
+    mes "There is a safeguard built in, in the case of disconnections during";
+    mes "the ##B##3bonus round##0##b, from power outages, window crashes, etc.";
+    mes "If you encounter a problem, play again when a connection is available.";
+    mes "##3Bet: " + @Bet + "##0";
+    next;
+    music "none.ogg";
+    goto L_Again;
+    
+L_Bet:
+    clear;
+    mes "Bet: " + @Bet;
+    mes "##3Change bet... Valid bets are 1 to 100.##0";
+    input @Bet;
+    if (@Bet == 0)
+        goto L_Bet;
+    if (@Bet > 100)
+        goto L_Bet;
+    set SLOTS_BET, @Bet;
+    specialeffect 318;
+    goto L_Again;
+        
 L_Again:
-    mes "Pull the lever...";
+    if (@Bet > 9)&&(@DND != 1)
+        set @Drink,rand(500);
+    if (@Drink == 499)&&(@DND != 1)
+        goto L_Drink;
+    //mes "";
+    //mes "##3Pull the lever...##0";
+    //next;
     menu
         "Pull", L_Play,
+        "Change bet", L_Bet,
+        "Beckon attendant", L_BuyCoins,
+        "I need to chat and can't with this menu open.", L_Chat,
+        "Instructions", L_Instructions,
         "Maybe later", L_Close;
 
 L_Play:
     clear;
-    if(countitem("CasinoCoins") < 1)
+    if(countitem("CasinoCoins") < @Bet)
         goto L_NoCoin;
-    delitem "CasinoCoins", 1;
-    set @Temp1,rand(7);
-    set @Temp2,rand(7);
-    set @Temp3,rand(7);
-    mes "Numbers: " + @Temp1 + "/" + @Temp2 + "/" + @Temp3 + ".";
-    next;
+    delitem "CasinoCoins", @Bet;
+    set @Coin,rand(3);
+    if (@Coin == 0)
+        specialeffect 303;
+    if (@Coin == 1)
+        specialeffect 304;
+    if (@Coin == 2)
+        specialeffect 305;
+    set @Temp1,rand(10);
+    set @Temp2,rand(10);
+    set @Temp3,rand(10);
+    mes "Bet: " + @Bet;
+    mes "##3|##7" + @Temp1 + "##3|##7" + @Temp2 + "##3|##7" + @Temp3 + "##3| - Lucky##0";
+    mes "##3|_|_|_| - Super##0";
+    //next;
 
-    if(@Temp1 != @Temp2)
-        goto L_Lost;
-    if(@Temp2 != @Temp3)
-        goto L_Lost;
-    if(@Temp1 != @Temp3)
-        goto L_Lost;
-    if (CSN >= 9)
-        goto L_Default;
+    if(@Temp1 != @Temp2)&&(@Temp2 != @Temp3)&&(@Temp1 != @Temp3)
+        goto L_Play2;
+    //Monocle check
+    if (CSN >= 6)
+        goto L_Play2;
     if (rand(6) < CSN)
-        goto L_Jackpot;
-    set CSN, CSN+1;
-    goto L_Default;
+        goto L_Monocle;
+    goto L_Play2;
+        
+L_Play2:
+    //if(1 == 1)
+    //    goto L_777;
+    //666
+    if(@Temp1 == 6)&&(@Temp2 == 6)&&(@Temp3 == 6)
+        goto L_666;
+    //777
+    if(@Temp1 == 7)&&(@Temp2 == 7)&&(@Temp3 == 7)
+        goto L_777;
+     //nnn
+    if(@Temp1 == @Temp2)&&(@Temp2 == @Temp3)&&(@Temp1 == @Temp3)
+        goto L_nnn;
+    //77
+    if(@Temp1 == 7)&&(@Temp2 == 7)
+        goto L_77x;
+    if(@Temp2 == 7)&&(@Temp3 == 7)
+        goto L_x77;
+    if(@Temp1 == 7)&&(@Temp3 == 7)
+        goto L_7x7;
+    //7
+    if(@Temp1 == 7)||(@Temp2 == 7)||(@Temp3 == 7)
+        goto L_Freespin;
+    goto L_Lost;
 
-L_Jackpot:
-    mes "Congratulations! You won!";
+L_Lost:
+    if(rand(50) == 49)
+        misceffect 10116, strcharinfo(0);
+        specialeffect 307;
+    mes "##1Try again?##0";
+    //Comic relief
+    if(@Temp1 == 0)&&(@Temp2 == 0)&&(@Temp3 == 1)
+        goto L_001;
+    if(@Temp1 == 0)&&(@Temp2 == 1)&&(@Temp3 == 3)
+        goto L_013;
+    if(@Temp1 == 0)&&(@Temp2 == 2)&&(@Temp3 == 1)
+        goto L_021;
+    if(@Temp1 == 0)&&(@Temp2 == 2)&&(@Temp3 == 2)
+        goto L_022;
+    if(@Temp1 == 0)&&(@Temp2 == 6)&&(@Temp3 == 9)
+        goto L_069;
+    if(@Temp1 == 0)&&(@Temp2 == 9)&&(@Temp3 == 9)
+        goto L_099;
+    if(@Temp1 == 1)&&(@Temp2 == 0)&&(@Temp3 == 0)
+        goto L_100;
+    if(@Temp1 == 1)&&(@Temp2 == 0)&&(@Temp3 == 4)
+        goto L_104;
+    if(@Temp1 == 1)&&(@Temp2 == 0)&&(@Temp3 == 1)
+        goto L_101;
+    if(@Temp1 == 1)&&(@Temp2 == 2)&&(@Temp3 == 3)
+        goto L_123;
+    if(@Temp1 == 1)&&(@Temp2 == 5)&&(@Temp3 == 1)
+        goto L_151;
+    if(@Temp1 == 3)&&(@Temp2 == 2)&&(@Temp3 == 1)
+        goto L_321;
+    if(@Temp1 == 4)&&(@Temp2 == 1)&&(@Temp3 == 1)
+        goto L_411;
+    if(@Temp1 == 4)&&(@Temp2 == 2)&&(@Temp3 == 0)
+        goto L_420;
+    if(@Temp1 == 6)&&(@Temp2 == 4)&&(@Temp3 == 1)
+        goto L_641;
+    if(@Temp1 == 6)&&(@Temp2 == 4)&&(@Temp3 == 2)
+        goto L_642;
+    if(@Temp1 == 6)&&(@Temp2 == 4)&&(@Temp3 == 3)
+        goto L_643;
+    if(@Temp1 == 8)&&(@Temp2 == 0)&&(@Temp3 == 0)
+        goto L_800;
+    if(@Temp1 == 8)&&(@Temp2 == 1)&&(@Temp3 == 2)
+        goto L_812;
+    if(@Temp1 == 9)&&(@Temp2 == 1)&&(@Temp3 == 1)
+        goto L_911;
+    goto L_Again;
+
+L_001:
+    message strcharinfo(0), "Numero uno! You got that right... though, I'd have had to win for it to be true.";
+    goto L_Again;
+
+L_013:
+    if(getmap() == "002-2")
+        monster "002-2", 82, 64, "", 1163, 1;
+    goto L_Again;
+
+L_021:
+    message strcharinfo(0), "Blackjack!... Wrong game.";
+    goto L_Again;
+
+L_022:
+    message strcharinfo(0), "Catch-22; Can't win if you play. Can't win if you don't.";
+    goto L_Again;
+
+L_069:
+    message strcharinfo(0), "Wine, dine and... yeah, right.";
+    goto L_Again;
+
+L_099:
+    message strcharinfo(0), "The Great One!";
+    goto L_Again;
+
+L_100:
+    message strcharinfo(0), "100%! Give it all ya got!";
+    goto L_Again;
+
+L_101:
+    message strcharinfo(0), "Gambling 101; never bet more than you're willing to lose.";
+    goto L_Again;
+
+L_104:
+    message strcharinfo(0), "10-4, copy that. Over and out.";
+    goto L_Again;
+
+L_123:
+    set @Funtext,rand(2);
+    if (@Funtext == 0)
+        message strcharinfo(0), "123... is a terrible password.";
+    if(@Funtext == 1)
+        message strcharinfo(0), "A, B, C... as easy as 1, 2, 3.";
+    goto L_Again;
+    
+L_151:
+    message strcharinfo(0), "I sure could go for a bottle of Crazy Rum, about now.";
+    goto L_Again;
+
+L_321:
+    message strcharinfo(0), "3... 2... 1... We have ignition.";
+    goto L_Again;
+
+L_411:
+    message strcharinfo(0), "*nasal voice:* Directory assistance. How may I assist you, today?";
+    goto L_Again;
+
+L_420:
+    misceffect 32, strcharinfo(0);
+    misceffect 32, strcharinfo(0);
+    message strcharinfo(0), "*Puff, puff, pass* 'ere.";
+    goto L_Again;
+
+L_641:
+    message strcharinfo(0), "SOMEbody's got a date with Palmela Handerson.";
+    goto L_Again;
+
+L_642:
+    message strcharinfo(0), "642... too easy... just like many are!";
+    goto L_Again;
+
+L_643:
+    message strcharinfo(0), "643... now, that's just being greedy... NOT!";
+    goto L_Again;
+
+L_800:
+    message strcharinfo(0), "Don't delay! Call 1-800-get-rich, today!";
+    goto L_Again;
+
+L_812:
+    message strcharinfo(0), "Yes, I ate one too.";
+    goto L_Again;
+
+L_911:
+    message strcharinfo(0), "Somebody, call an ambulace before they hurt themselves!";
+    goto L_Again;
+
+L_Freespin:
+    if(@Temp1 == 0)&&(@Temp2 == 0)&&(@Temp3 == 7)
+        message strcharinfo(0), "The name's Mana... " + strcharinfo(0) + " Mana.";
+    if(@Temp1 == 3)&&(@Temp2 == 5)&&(@Temp3 == 7)
+        message strcharinfo(0), "Go ahead... make my day.";
+    if(@Temp1 == 7)&&(@Temp2 == 1)&&(@Temp3 == 1)
+        message strcharinfo(0), "I sure could go for a slurpee, right now.";
+    misceffect 10104, strcharinfo(0);
+    specialeffect 308;
+    mes "##3Free spin...##0";
+    getitem "CasinoCoins", @Bet;
+    goto L_Again;
+
+L_666:
+    set CSN, CSN+1;
+    specialeffect 313;
+    misceffect 10004, strcharinfo(0);
+    mes "##2You won " + (7 * @Bet) + " casino coins.##0";
+    getitem "CasinoCoins", (7 * @Bet);
+    goto L_Again;
+
+L_nnn:
+    set CSN, CSN+1;
+    specialeffect 313;
+    misceffect 10002, strcharinfo(0);
+    mes "##2You won " + (7 * @Bet) + " casino coins.##0";
+    getitem "CasinoCoins", (7 * @Bet);
+    goto L_Again;
+
+L_77x:
+    specialeffect 314;
+    misceffect 10002, strcharinfo(0);
+    mes "##2You won " + (7 * @Bet) + " casino coins.##0";
+    getitem "CasinoCoins", (7 * @Bet);
+    goto L_Again;
+    
+L_x77:
+    specialeffect 315;
+    misceffect 10002, strcharinfo(0);
+    mes "##2You won " + (7 * @Bet) + " casino coins.##0";
+    getitem "CasinoCoins", (7 * @Bet);
+    goto L_Again;
+    
+L_7x7:
+    specialeffect 316;
+    misceffect 10002, strcharinfo(0);
+    mes "##2You won " + (7 * @Bet) + " casino coins.##0";
+    getitem "CasinoCoins", (7 * @Bet);
+    goto L_Again;
+
+//Jackpots - All pay GP; coin x 10.
+L_777:
+    set SLOTS, 1;
+    clear;
+    mes "Bet: " + @Bet;
+    mes "##B##3|##27##3|##27##3|##27##3| - ##2Lucky##0##b";
+    mes "##B##3|##1_##3|##1_##3|##1_##3| - ##1Super##0##b";
+    mes "##B##2Bonus Round##0##b";
+    mes "##2Jackpots unlocked##0";
+    mes "##2Good Luck!##0";
+    specialeffect 309;
+    misceffect 10009, strcharinfo(0);
+    music "win.ogg";
+    next;
+        menu
+            "Continue?", L_7772;
+    L_7772:
+        //if(1 == 1)
+        //    goto L_JP;
+        set @Temp4,rand(10);
+        if(@Temp4 == 7)
+            goto L_JP;
+        goto L_777nobonus;
+
+L_777nobonus:
+    clear;
+    mes "Bet: " + @Bet;
+    mes "##B##3|##27##3|##27##3|##27##3| - ##2Lucky##0##b";
+    mes "##B##3|##1_##3|##1_##3|##1_##3| - ##1Super##0##b";
+    specialeffect 317;
+    mes "##1No bonus##3 this time, but...";
+    mes "##2You won " + (770 * @Bet) + " GP!##0";
+    set Zeny, Zeny + (770 * @Bet);
+    set SLOTS, 0;
+        menu
+            "Continue?", L_MusicOff;
+
+L_JP:
+    set SLOTS, 2;
+    clear;
+    mes "Bet: " + @Bet;
+    mes "##B##3|##27##3|##27##3|##27##3| - ##2Lucky!##0##b";
+    mes "##B##3|##27##3|##1_##3|##1_##3| - ##2S##1uper!##0##b";
+    mes "##B##2Jackpot!##0##b";
+    specialeffect 310;
+    misceffect 10101, strcharinfo(0);
+    next;
+        menu
+            "Continue?", L_JP2;
+    L_JP2:
+        //if(1 == 1)
+        //    goto L_LJP;
+        set @Temp5,rand(10);
+        if(@Temp5 == 7)
+            goto L_LJP;
+        mes "##3Woo-HOO!";
+        mes "##2Congratulations! ##3You ##4won ##6the ##2JACKPOT!##0";
+        mes "##2You won " + (7770 * @Bet) + " GP!##0";
+        set Zeny, Zeny + (7770 * @Bet);
+        set SLOTS, 0;
+        specialeffect 317;
+            menu
+                "Continue?", L_MusicOff;
+
+L_LJP:
+    set SLOTS, 3;
+    clear;
+    mes "Bet: " + @Bet;
+    mes "##B##3|##27##3|##27##3|##27##3| - ##2Lucky!!##0##b";
+    mes "##B##3|##27##3|##27##3|##1_##3| - ##2Sup##1er!!##0##b";
+    mes "##B##2Lucky Jackpot!!##0##b";
+    specialeffect 311;
+    misceffect 10103, strcharinfo(0);
+    next;
+        menu
+            "Continue?", L_LJP2;
+    L_LJP2:
+        //if(1 == 1)
+        //    goto L_SLJP;
+        set @Temp6,rand(10);
+        if(@Temp6 == 7)
+            goto L_SLJP;
+        mes "##3Oh my WORD! It's unbelievable!##0";
+        mes "##2Congratulations! ##3You ##4won ##6the ##2LUCKY JACKPOT!!##0";
+        mes "##2You won " + (77770 * @Bet) + " GP!!##0";
+        set Zeny, Zeny + (77770 * @Bet);
+        set SLOTS, 0;
+        specialeffect 317;
+        specialeffect 317;
+            menu
+                "Continue?", L_MusicOff;
+    
+L_SLJP:
+    set SLOTS, 4;
+    clear;
+    mes "Bet: " + @Bet;
+    mes "##B##3|##27##3|##27##3|##27##3| - ##2Lucky!!!##0##b";
+    mes "##B##3|##27##3|##27##3|##27##3| - ##2Super!!!##0##b";
+    mes "##B##2S##3U##4P##6E##2R ##2L##3U##4C##6K##2Y ##2J##3A##4C##6K##2P##3O##4T##2!!!##0##b";
+    specialeffect 312;
+    misceffect 10121, strcharinfo(0);
+    next;
+        menu
+            "Continue?", L_SLJP2;
+    L_SLJP2:
+        misceffect 10101, strcharinfo(0);
+
+        mes "##3W...w..w....what.. WHAT!? TOP PRIZE!? Oh my God! Incredible!##0";
+        mes "##2Congratulations! ##3You ##4won ##6the ##2SUPER LUCKY JACKPOT!!!##0";
+        mes "##2You won " + (1777770 * @Bet) + " GP!!!##0";
+        set Zeny, Zeny + (1777770 * @Bet);
+        set SLOTS, 0;
+        specialeffect 317;
+        specialeffect 317;
+        specialeffect 317;
+        announce "Gambling Commision: ##3" + strcharinfo(0) + " has just won ##2" + (1777770 * @Bet) + "##4GP##3 on the ##B##2S##3U##4P##6E##2R ##2L##3U##4C##6K##2Y ##2J##3A##4C##6K##2P##3O##4T##2!!!##0##b##3 You can be a winner too! Play today!##0", 0;
+            menu
+                "Continue?", L_MusicOff;
+//End of jackpots.
+
+L_MusicOff:
+    music "none.ogg";
+    goto L_Again;
+
+L_Drink:
+    if(getmap() != "002-2")
+        goto L_Again;
+    mes "[Attendant]";
+    mes "\"Would you care for a beverage, on the house?\"";
+    next;
+        menu
+            "Continue?", L_Drink2;
+L_Drink2:
+    menu
+        "A Cactus Drink would be nice.", L_Cactus,
+        "Water, please.", L_Water,
+        "Beer is fine, thanks.", L_Beer,
+        "Not at the moment, thank you.", L_Again,
+        "Thanks, but I won't be needing anything for the duration.", L_DND,
+        "I'd rather something strong, for later. *wink*", L_Strong;
+        L_Cactus:
+            getitem "CactusDrink", 1;
+            mes "You catch a glimpse of them, shaking their head.";
+            goto L_Drink3;
+        L_Water:
+            getitem BottleOfWater, 1;
+            goto L_Drink3;
+        L_Beer:
+            getitem "Beer", 1;
+            goto L_Drink3;
+
+L_DND:
+    set @DND, 1;
+    mes "[Attendant]";
+    mes "\"We shan't bother you any further.\"";
+    goto L_Again;
+
+        L_Strong:
+            mes "[Attendant]";
+            mes "I'm terribly sorry, but all refreshments are to be consumed, in house only.";
+            if (@Bet == 100)
+                menu
+                    "Offer a tip, to help persuade them.", L_Tip,
+                    "*shrugs* ... Oh well, worth a shot.", L_Drink3;
+            goto L_Drink3;
+
+L_Tip:
+    set @Bribe, rand(100, 1001);
+    //if(@Bribe < 100)
+    //    goto L_Tip;
+    mes "How many Casino Coins?";
+    input @Tip;
+    if(@Tip == 0)
+        goto L_Unfunny;
+    if(countitem("CasinoCoins") < @Tip)
+        goto L_Shortcoin;
+    if(countitem("CasinoCoins") >= @Tip)
+        delitem "CasinoCoins", @Tip;
+        clear;
+        mes "[Attendant]";
+        mes "\"Oh, thank you so much!\"";
+    if(@Tip < @Bribe)
+        goto L_Drink3;
+    mes "They leave for the back room and are back in no time with something tucked under their coat.";
+    mes "They whisper, \"Please don't tell anyone\", as they pass something to you, very discretely.";
+    next;
+    getitem "CrazyRum", 1;
+    misceffect 318, strcharinfo(0);
+    mes "Nice! It's Crazy Rum! Oh yeah, this'll do the trick.";
+    goto L_Drink3;
+
+L_Unfunny:
+    mes "[Attendant]";
+    mes "\"Veeeeeery funny... not.\"";
+    goto L_Again;
+
+L_Shortcoin:
+    mes "You don't have enough Casino Coins.";
+    misceffect 306, strcharinfo(0);
+    goto L_Tip;
+
+L_Drink3:
+    mes "\"Enjoy yourself and the best of luck to you.\"";
+    goto L_Again;
+
+L_Monocle:
+    mes "##B##2Congratulations! You won!##0##b";
     mes "However, the slot machine";
     mes "does not give you the coins!";
+    misceffect 10112, strcharinfo(0);
     next;
     mes "[Staff]";
     mes "\"I apologize for this problem.";
     mes "I see you are a huge client of";
-    mes "ours, so I'll give you a Monocle";
-    mes "as a token of our apology.\"";
+    mes "ours, so I'll give you a ##2Monocle##0";
+    mes "as a token of our apology.";
+    mes "Let us also refund your bet, this time.\"";
+    //Get back bet, since we could have won the monocle on a bet of 1.
+    getitem "CasinoCoins", @Bet;
     getitem "Monocle", 1;
+    misceffect 318, strcharinfo(0);
+    misceffect 10002, strcharinfo(0);
     set CSN, 9;
+    next;
     goto L_Again;
 
-L_Default:
-    mes "Congratulations! You won!";
-    mes "You get 10 casino coins";
-    getitem "CasinoCoins", 10;
-    goto L_Again;
-
-L_Lost:
-    mes "You lost!";
-    goto L_Again;
+L_BuyCoins:
+    mes "[Attendant]";
+    mes "\"How many Casino Coins would you like?\"";
+        input @Coins;
+        if(@Coins == 0)
+            goto L_Again;
+        if((@Coins * 10) > Zeny)
+            goto L_BuyCoins;
+        set Zeny, (Zeny - (@Coins * 10));
+        getitem "CasinoCoins", @Coins;
+        mes "\"Enjoy! If you need to cash out, just see one of our staff.\"";
+        goto L_Again;
 
 L_NoCoin:
-    mes "Insert coin";
-    goto L_Close;
+    misceffect 10111, strcharinfo(0);
+    specialeffect 306;
+    mes "##1Insert coin.##0";
+    next;
+    goto L_Again;
+    
+L_Chat:
+    clear;
+    mes "You may now type freely, without needing to close this window.";
+    mes "Hit \"Next\" to return to Super Lucky 777.";
+    next;
+    goto L_Again;
 
 L_Close:
+    music "none.ogg";
     close2;
     return;
 }
