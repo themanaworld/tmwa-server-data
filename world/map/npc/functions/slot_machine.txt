@@ -26,21 +26,16 @@
 //3x7		900			77			69,300
 //2x7		27,000			7			189,000
 //1x7*		243,000			1			243,000
-//3x0		27,000			3			81,000
+//3x0		1000			70			70,000
 //3xn		8000			7			56,000
-//TOTAL payout:							956,000
-//House take:							44,000(4.4%)
+//TOTAL payout:							945,000
+//House take:							55,000(5.5%)
 
 //* 1x7=freespin=1 coin.
-//House take: 1,000,000(take in)-882,000(payout)=44,000(4.4%).
+//House take: 1,000,000(take in)-945,000(payout)=55,000(5.5%).
 //Yes, it's complicated. Do not change anything without doing the proper calculations and ensuring the house always takes
-//in a small percentage. 4.4% is the best I could do to reach a target of 5%, without going over. If 3x0 only paid 2, the
-//take would be 7.1%, which is a bit too high. Let's keep the players interested.
+//in a small percentage. 5.5% is the best I could do to reach a target of 5%, without paying more than the mini-jackpot.
 
-//TEST SLEEP
-//message strcharinfo(0), "This is a test!";
-//sleep(3);
-//message strcharinfo(0), "Have 3 seconds passed?";
 
 function|script|SlotMachine
 {
@@ -77,10 +72,11 @@ L_Instructions:
     mes "##27##3: Free spin.";
     mes "##277##3: 7 coins.";
     mes "##23 of a kind##3: 7 coins.";
-    mes "##2777##3 - Mini-Jackpot / Bonus(jackpot unlocker): 77 coins.";
-    mes "##2777##3+##27##1__##3 - Jackpot: 777 coins.";
-    mes "##2777##3+##277##1_##3 - Lucky Jackpot: 7,777 coins.";
-    mes "##2777##3+##2777##3 - Super Lucky Jackpot: 177,777 coins.";
+    mes "##2000##3: Triple 0 - 70 coins.";
+    mes "##2777##3: Mini-Jackpot / Bonus(jackpot unlocker) - 77 coins.";
+    mes "##2777##3+##27##1__##3: Jackpot - 777 coins.";
+    mes "##2777##3+##277##1_##3: Lucky Jackpot - 7,777 coins.";
+    mes "##2777##3+##2777##3: Super Lucky Jackpot - 177,777 coins.";
     mes "Change bet to increase your winnings!";
     mes "Do you feel lucky today?";
     mes "##6*Max bet is 100. 1 coin = 10GP. All jackpots are paid in GP.*##0";
@@ -155,6 +151,9 @@ L_Play:
 L_Play2:
     //if(1 == 1)
     //    goto L_777;
+    //000
+    if(@Temp1 == 0)&&(@Temp2 == 0)&&(@Temp3 == 0)
+        goto L_000;
     //666
     if(@Temp1 == 6)&&(@Temp2 == 6)&&(@Temp3 == 6)
         goto L_666;
@@ -322,6 +321,14 @@ L_Freespin:
     specialeffect 308;
     mes "##3Free spin...##0";
     getitem "CasinoCoins", @Bet;
+    goto L_Again;
+
+L_000:
+    set CSN, CSN+1;
+    specialeffect 320;
+    misceffect 10102, strcharinfo(0);
+    mes "##2You won " + (70 * @Bet) + " casino coins.##0";
+    getitem "CasinoCoins", (70 * @Bet);
     goto L_Again;
 
 L_666:
