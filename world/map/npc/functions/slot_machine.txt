@@ -1,29 +1,46 @@
 //Author: Unknown | Known co-authors: Kandiman (formatting), o11c (formatting), Wushin (formatting), gumi (formatting),
-//Jesusalva (Monocle addition), bjorn (Made continued play possible), Ledmitz (Added bonus round & jackpots, effects,
-//random events, increased digits from 7 to 10 and increased payouts)
+//Jesusalva (Monocle addition), Thorbjorn (Made continued play possible), Ledmitz (Added bonus round & jackpots, effects,
+//random events, increased digits from 7 to 10 and increased payouts (special thanks to Thorbjorn for correcting my odds
+//calculations)).
 
-//Caution: Altering prizes can drastically change total payouts and house take (~7+%). Keep in mind, it is a GP sink,
+//Thorbjorn: "The 777 chain: 1000 per million reach the bonus, and a tenth of each step goes on, so
+//900 mini, 90 JP, 9 LJP, 1 SLJP"
+//(777(Mini-JP(bonus round)): 1000(chances)/10(amount of digits on each spinner)=100, 1000/10(one tenth)=100. 1000-100=900),
+//(777+7(JP): 900/10=90), (777+77: 90/10=9) and we already know:
+//(777+777: 10^6, 1 in 1,000,000. It's top prize, so there is nothing to subtract. This remains 1 in 1M).
+//Thorbjorn: "Per 1000 spins: exactly two 7s is 3 positions for the non-7 times 9 values = 27".
+//77: 3(amount of combos)*9(amount of digits left on each spinner after taking one away from each for 777)=27,
+//27*1000=27,000. Thorbjorn: "Exactly one 7 is 3 positions times 9 times 9 = 243".
+//7: 3*9(spinners*digits left on each spinner)*9(because there is one more spinner left)=243, 243*1000=243,000.
+//3xn: 9(amount of digits left on each spinner)*1000(chances)=9000. Since the original take-in was 11.8% and
+//I'm shooting for 5%, I've had to adjust the payouts somehow, so 000 will be treated special, which takes 1 more
+//digit away from each spinner on 3xn.
+
+//Caution: Altering prizes can drastically change total payouts and house take (~5%). Keep in mind, it is a GP sink,
 //but also that no one will play if there is no chance to win big or not enough total wins. No one playing = no GP sink.
-//Chance of winning Super Lucky Jackpot(SLJP) are 1 in 1M. Lesser JP odds subtract the total wins of the jackpot just
-//higher than itself(7s). Odds example calc: (6 chances of 10 digits)=10^6=1M. (5 chances of 10)=10^5=100K...
-// 1M/100K=10. 10-1(because 1 of these includes SLJP)=9 chances to win Lucky Jackpot(LJP).
-//(2/3 7s)=n=(10^2*3(3 total combinations)). 1M/n(total possibilities)-(777 total wins)=(take in). 
-//(1/3 7s)=n=10x3(3 total combinations). 1M/n-(77 total wins)=(take in).
-//3xn=(1 in 1K)=1K*(10-1=9(since 777 is Mini-Jackpot))=9K. 9K*(prize)=(take in).
+//Chances of winning Super Lucky Jackpot(SLJP) are 1 in 1M.
 //Win		Amount of wins		Each payout		Total Payout
 //6x7		1			177,777			177,777
 //5x7		9			7,777			69,993
-//4x7		91			777			70,707
-//3x7		909			77			69,993
-//2x7		29,094			7			203,658
-//1x7*		271,206			1			271,206
-//3xn		9000			7			63,000
-//TOTAL payout:							926,334
-//* 1x7=freespin=1 coin.
-//House take / profit: 1,000,000(take in)-926,334(payout)=73,666=7.37%
-//Yes, it's complicated. Do not change anything without doing the proper calculations and ensuring the house always takes
-//in a small percentage. 7+% is still a bit high, but one small change means recalculating everything.
+//4x7		90			777			69,930
+//3x7		900			77			69,300
+//2x7		27,000			7			189,000
+//1x7*		243,000			1			243,000
+//3x0		27,000			3			81,000
+//3xn		8000			7			56,000
+//TOTAL payout:							956,000
+//House take:							44,000(4.4%)
 
+//* 1x7=freespin=1 coin.
+//House take: 1,000,000(take in)-882,000(payout)=44,000(4.4%).
+//Yes, it's complicated. Do not change anything without doing the proper calculations and ensuring the house always takes
+//in a small percentage. 4.4% is the best I could do to reach a target of 5%, without going over. If 3x0 only paid 2, the
+//take would be 7.1%, which is a bit too high. Let's keep the players interested.
+
+//TEST SLEEP
+//message strcharinfo(0), "This is a test!";
+//sleep(3);
+//message strcharinfo(0), "Have 3 seconds passed?";
 
 function|script|SlotMachine
 {
@@ -91,22 +108,20 @@ L_Bet:
     goto L_Again;
         
 L_Again:
-    if (@Bet > 9)&&(@DND != 1)
-        set @Drink,rand(500);
-    if (@Drink == 499)&&(@DND != 1)
-        goto L_Drink;
     //mes "";
     //mes "##3Pull the lever...##0";
     //next;
     menu
-        "Pull", L_Play,
+        "Pull lever", L_Play,
         "Change bet", L_Bet,
         "Beckon attendant", L_BuyCoins,
         "Instructions", L_Instructions,
-        "I need to chat and can't with this menu open.", L_Chat,
+        "I can't access chat with this menu open. (for MV users)", L_Chat,
         "Maybe later", L_Close;
 
 L_Play:
+    if (@Bet > 9)&&(@DND != 1)&&(rand(500) == 499)
+        goto L_Drink;
     clear;
     if(countitem("CasinoCoins") < @Bet)
         goto L_NoCoin;
@@ -126,10 +141,12 @@ L_Play:
     mes "##3|_|_|_| - Super##0";
     //next;
 
-    if(@Temp1 != @Temp2)&&(@Temp2 != @Temp3)&&(@Temp1 != @Temp3)
+    if(@Temp1 != @Temp2)||(@Temp2 != @Temp3)||(@Temp1 != @Temp3)
+        goto L_Play2;
+    if(@Temp1 == 7)&&(@Temp2 == 7)&&(@Temp3 == 7)
         goto L_Play2;
     //Monocle check
-    if (CSN >= 6)
+    if (CSN >= 9)
         goto L_Play2;
     if (rand(6) < CSN)
         goto L_Monocle;
@@ -162,7 +179,7 @@ L_Play2:
 L_Lost:
     if(rand(50) == 49)
         misceffect 10116, strcharinfo(0);
-        specialeffect 307;
+    specialeffect 307;
     mes "##1Try again?##0";
     //Comic relief
     if(@Temp1 == 0)&&(@Temp2 == 0)&&(@Temp3 == 1)
@@ -576,7 +593,7 @@ L_BuyCoins:
         input @Coins;
         if(@Coins == 0)
             goto L_Again;
-        if((@Coins * 10) > Zeny)
+        if(Coins > (Zeny / 10))
             goto L_BuyCoins;
         set Zeny, (Zeny - (@Coins * 10));
         getitem "CasinoCoins", @Coins;
